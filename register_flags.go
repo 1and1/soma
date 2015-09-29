@@ -1,0 +1,50 @@
+package main
+
+import (
+  "github.com/codegangsta/cli"
+)
+
+func registerFlags(app cli.App) *cli.App {
+  app.Flags = []cli.Flag {
+    cli.StringFlag{
+      Name: "host, H",
+      Value: "localhost",
+      Usage: "database server host",
+    },
+    cli.IntFlag{
+      Name: "port, p",
+      Value: 5432,
+      Usage: "database server port",
+    },
+    cli.StringFlag{
+      Name: "database, d",
+      Value: "soma",
+      Usage: "database name",
+    },
+    cli.StringFlag{
+      Name: "user, u",
+      Value: "soma_dba",
+      Usage: "database user name",
+    },
+    cli.BoolFlag{
+      Name: "password, P",
+      Usage: "prompt for password",
+    },
+    cli.IntFlag{
+      Name: "timeout, t",
+      Value: 3,
+      Usage: "connect timeout in seconds",
+    },
+    cli.StringFlag{
+      Name: "tls, T",
+      Value: "verify-full",
+      Usage: "TLS connection mode setting",
+    },
+    cli.StringFlag{
+      Name: "config, c",
+      Value: "somadbctl.conf",
+      Usage: "configuration file location",
+    },
+  }
+  return &app
+}
