@@ -60,7 +60,8 @@ func sqlAuthTables01() {
   }
 
   _, err = db.Exec(`create table if not exists auth.tools (
-    tool_name                   varchar(256)    PRIMARY KEY,
+    tool_id                     uuid            PRIMARY KEY,
+    tool_name                   varchar(256)    UNIQUE NOT NULL,
     tool_owner_id               uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE RESTRICT,
     created                     timestamptz(3)  NOT NULL DEFAULT NOW(),
     CHECK( EXTRACT( TIMEZONE FROM created ) = '0' )
@@ -69,7 +70,7 @@ func sqlAuthTables01() {
   }
 
   _, err = db.Exec(`create table if not exists auth.tool_authentication (
-    tool_name                   varchar(256)    NOT NULL REFERENCES auth.tools ( tool_name ) ON UPDATE CASCADE ON DELETE CASCADE,
+    tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
     algorithm                   varchar(16)     NOT NULL,
     rounds                      numeric(10,0)   NOT NULL,
     salt                        text            NOT NULL,
@@ -84,7 +85,7 @@ func sqlAuthTables01() {
   }
 
   _, err = db.Exec(`create table if not exists auth.tool_token_authentication (
-    tool_name                   varchar(256)    NOT NULL REFERENCES auth.tools ( tool_name ) ON UPDATE CASCADE ON DELETE CASCADE,
+    tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
     token                       varchar(256)    UNIQUE NOT NULL,
     valid_from                  timestamptz(3)  NOT NULL,
     valid_until                 timestamptz(3)  NOT NULL,
@@ -96,7 +97,7 @@ func sqlAuthTables01() {
 
   _, err = db.Exec(`create table if not exists auth.password_reset (
     user_id                     uuid            NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE,
-    tool_name                   varchar(256)    NULL REFERENCES auth.tools ( tool_name ) ON UPDATE CASCADE ON DELETE CASCADE,
+    tool_id                     uuid            NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
     token                       varchar(256)    UNIQUE NOT NULL,
     valid_from                  timestamptz(3)  NOT NULL,
     valid_until                 timestamptz(3)  NOT NULL,
@@ -104,8 +105,8 @@ func sqlAuthTables01() {
     token_invalidated           boolean         NOT NULL DEFAULT 'no',
     CHECK( EXTRACT( TIMEZONE FROM valid_from )  = '0' ),
     CHECK( EXTRACT( TIMEZONE FROM valid_until ) = '0' ),
-    CHECK(    ( user_id IS NOT NULL AND tool_name IS     NULL )
-           OR ( user_id IS     NULL AND tool_name IS NOT NULL ) )
+    CHECK(    ( user_id IS NOT NULL AND tool_id IS     NULL )
+           OR ( user_id IS     NULL AND tool_id IS NOT NULL ) )
   );`); if err != nil {
     log.Fatal( err )
   }
