@@ -1,6 +1,6 @@
 package main
 
-func createTablesMetaData(printOnly bool) {
+func createTablesMetaData(printOnly bool, verbose bool) {
   idx := 0
   // map for storing the SQL statements by name
   queryMap := make( map[string]string )
@@ -37,10 +37,10 @@ create table if not exists soma.object_types (
   queries[idx] = "createTableObjectTypes"; idx++
 
 
-  performDatabaseTask( printOnly, queries, queryMap )
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }
 
-func createTablesDatacenterMetaData(printOnly bool) {
+func createTablesDatacenterMetaData(printOnly bool, verbose bool) {
   idx := 0
   // map for storing the SQL statements by name
   queryMap := make( map[string]string )
@@ -63,5 +63,5 @@ create index _datacenter_groups
   queries[idx] = "createTableDatacenterGroups"; idx++
 
 
-  performDatabaseTask( printOnly, queries, queryMap )
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }

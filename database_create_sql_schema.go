@@ -1,12 +1,10 @@
 package main
 
 import (
-  "log"
   "fmt"
 )
 
-func createSqlSchema(printOnly bool) {
-  var err error
+func createSqlSchema(printOnly bool, verbose bool) {
   idx := 0
   // map for storing the SQL statements by name
   queryMap := make( map[string]string )
@@ -15,8 +13,7 @@ func createSqlSchema(printOnly bool) {
   queries := make( []string, 5 )
 
 
-  queryMap["createSchemaSoma"] = `
-create schema if not exists soma;`
+  queryMap["createSchemaSoma"] = `create schema if not exists soma;`
   queries[idx] = "createSchemaSoma"; idx++
 
 
@@ -36,20 +33,5 @@ create schema if not exists soma;`
   queries[idx] = "alterDatabaseSearchPath"; idx++
 
 
-  for _, query := range queries {
-    // ignore over-allocated slice
-    if query == "" {
-      continue
-    }
-
-    if printOnly {
-      log.Print( queryMap[query] )
-      continue
-    }
-
-    _, err = db.Exec( queryMap[query] ); if err != nil {
-      log.Fatal( "Error executing query '", query, "': ", err )
-    }
-    log.Print( "Executed query: ", query )
-  }
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }

@@ -40,6 +40,10 @@ func registerFlags(app cli.App) *cli.App {
       Value: "verify-full",
       Usage: "TLS connection mode setting",
     },
+    cli.BoolFlag{
+      Name: "no-execute, n",
+      Usage: "print SQL statements",
+    },
     cli.StringFlag{
       Name: "config, c",
       Value: "somadbctl.conf",

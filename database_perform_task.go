@@ -5,7 +5,7 @@ import (
   "log"
 )
 
-func performDatabaseTask(printOnly bool, queries []string, queryMap map[string]string) {
+func performDatabaseTask(printOnly bool, verbose bool, queries []string, queryMap map[string]string) {
   var err error
 
   for _, query := range queries {
@@ -14,9 +14,11 @@ func performDatabaseTask(printOnly bool, queries []string, queryMap map[string]s
       continue
     }
 
-    if printOnly {
+    if printOnly || verbose {
       fmt.Printf( "%s\n", queryMap[query] )
-      continue
+      if printOnly {
+        continue
+      }
     }
 
     _, err = db.Exec( queryMap[query] ); if err != nil {

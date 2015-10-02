@@ -15,9 +15,17 @@ func registerCommands(app cli.App) *cli.App {
       Usage:    "initialize an empty database",
       Before:   configSetup,
       After:    dbClose,
+      Flags:    []cli.Flag {
+        cli.BoolFlag{
+          Name: "verbose, v",
+          Usage: "print full query on execute",
+        },
+      },
       Action:   func(c *cli.Context) {
         done := make(chan bool, 1)
-        commandInitialize( done )
+        printOnly := c.GlobalBool("no-execute")
+        verbose := c.Bool("verbose")
+        commandInitialize( done, printOnly, verbose )
         <-done
       },
     },

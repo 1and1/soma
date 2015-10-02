@@ -1,6 +1,6 @@
 package main
 
-func createTablesMetricsMonitoring(printOnly bool) {
+func createTablesMetricsMonitoring(printOnly bool, verbose bool) {
   idx := 0
   // map for storing the SQL statements by name
   queryMap := make( map[string]string )
@@ -85,5 +85,5 @@ create table if not exists soma.monitoring_capabilities (
   queries[idx] = "createTableMonitoringCapabilities"; idx++
 
 
-  performDatabaseTask( printOnly, queries, queryMap )
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }
