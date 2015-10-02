@@ -6,8 +6,7 @@ import (
 
 func commandInitialize(done chan<- bool) {
     dbOpen()
-    sqlSchema()
-    log.Print("Installed: Schema")
+    createSqlSchema( false )
     sqlMetaTables01()
     log.Print("Installed: Meta01")
     sqlInventoryTables01()
@@ -42,7 +41,6 @@ func commandInitialize(done chan<- bool) {
     sqlPermissionTables01()
     log.Print("Installed: Permission01")
     createTablesMetricsMonitoring( false )
-    log.Print("Installed: MetricsMonitoring")
     done <- true
 }
 
