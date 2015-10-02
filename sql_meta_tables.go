@@ -1,51 +1,67 @@
 package main
 
-import (
-  "log"
-)
+func createTablesMetaData(printOnly bool) {
+  idx := 0
+  // map for storing the SQL statements by name
+  queryMap := make( map[string]string )
+  // slice storing the required statement order so foreign keys can
+  // resolve successfully
+  queries := make( []string, 5 )
 
-func sqlMetaTables01() {
-  var err error;
 
-  _, err = db.Exec(`create table if not exists soma.views (
-    view                        varchar(64)     PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableViews"] = `
+create table if not exists soma.views (
+  view                        varchar(64)     PRIMARY KEY
+);`
+  queries[idx] = "createTableViews"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.environments (
-    environment                 varchar(32)     PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
 
-  _, err = db.Exec(`create table if not exists soma.object_states (
-    object_state                varchar(64)     PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableEnvironments"] = `
+create table if not exists soma.environments (
+  environment                 varchar(32)     PRIMARY KEY
+);`
+  queries[idx] = "createTableEnvironments"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.object_types (
-    object_type                 varchar(64)     PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+
+  queryMap["createTableObjectStates"] = `
+create table if not exists soma.object_states (
+  object_state                varchar(64)     PRIMARY KEY
+);`
+  queries[idx] = "createTableObjectStates"; idx++
+
+
+  queryMap["createTableObjectTypes"] = `
+create table if not exists soma.object_types (
+  object_type                 varchar(64)     PRIMARY KEY
+);`
+  queries[idx] = "createTableObjectTypes"; idx++
+
+
+  performDatabaseTask( printOnly, queries, queryMap )
 }
 
-func sqlMetaTables02() {
-  var err error;
+func createTablesDatacenterMetaData(printOnly bool) {
+  idx := 0
+  // map for storing the SQL statements by name
+  queryMap := make( map[string]string )
+  // slice storing the required statement order so foreign keys can
+  // resolve successfully
+  queries := make( []string, 5 )
 
-  _, err = db.Exec(`create table if not exists soma.datacenter_groups (
-    datacenter_group            varchar(32)     NOT NULL,
-    datacenter                  varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
 
-  _, err = db.Exec(`create index _datacenter_groups
-    on soma.datacenter_groups ( datacenter_group )
-  ;`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableDatacenterGroups"] = `
+create table if not exists soma.datacenter_groups (
+  datacenter_group            varchar(32)     NOT NULL,
+  datacenter                  varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter )
+);`
+  queries[idx] = "createTableDatacenterGroups"; idx++
 
+
+  queryMap["createIndexDatacenterGroups"] = `
+create index _datacenter_groups
+  on soma.datacenter_groups ( datacenter_group );`
+  queries[idx] = "createTableDatacenterGroups"; idx++
+
+
+  performDatabaseTask( printOnly, queries, queryMap )
 }

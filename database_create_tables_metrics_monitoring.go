@@ -1,11 +1,6 @@
 package main
 
-import (
-  "log"
-)
-
 func createTablesMetricsMonitoring(printOnly bool) {
-  var err error
   idx := 0
   // map for storing the SQL statements by name
   queryMap := make( map[string]string )
@@ -90,20 +85,5 @@ create table if not exists soma.monitoring_capabilities (
   queries[idx] = "createTableMonitoringCapabilities"; idx++
 
 
-  for _, query := range queries {
-    // ignore over-allocated slice
-    if query == "" {
-      continue
-    }
-
-    if printOnly {
-      log.Print( queryMap[query] )
-      continue
-    }
-
-    _, err = db.Exec( queryMap[query] ); if err != nil {
-      log.Fatal( "Error executing query '", query, "': ", err )
-    }
-    log.Print( "Executed query: ", query )
-  }
+  performDatabaseTask( printOnly, queries, queryMap )
 }
