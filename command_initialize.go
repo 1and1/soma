@@ -41,6 +41,8 @@ func commandInitialize(done chan<- bool) {
     log.Print("Installed: Group01")
     sqlPermissionTables01()
     log.Print("Installed: Permission01")
+    createTablesMetricsMonitoring( false )
+    log.Print("Installed: MetricsMonitoring")
     done <- true
 }
 
