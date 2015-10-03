@@ -20,14 +20,12 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
     createTablesAuthentication( printOnly, verbose )
     // root_token table
 
-    sqlPropertyTables01()
-    log.Print("Installed: Property01")
+    createTablesProperties( printOnly, verbose )
 
     sqlRepositoryTables01()
     log.Print("Installed: Repository01")
 
-    sqlPropertyTables02()
-    log.Print("Installed: Property02")
+    createTableCustomProperties( printOnly, verbose )
 
     sqlRepositoryTables02()
     log.Print("Installed: Repository02")

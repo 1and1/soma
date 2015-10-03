@@ -1,87 +1,102 @@
 package main
 
-import (
-  "log"
-)
+func createTablesProperties(printOnly bool, verbose bool) {
+  idx := 0
+  // map for storing the SQL statements by name
+  queryMap := make( map[string]string )
+  // slice storing the required statement order so foreign keys can
+  // resolve successfully
+  queries := make( []string, 10 )
 
-func sqlPropertyTables01() {
-  var err error;
 
-  /* Service Property
-  */
-  _, err = db.Exec(`create table if not exists soma.service_properties (
-    service_property            varchar(64)     PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableServiceProperties"] = `
+create table if not exists soma.service_properties (
+  service_property            varchar(64)     PRIMARY KEY
+);`
+  queries[idx] = "createTableServiceProperties"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.service_property_attributes (
-    service_property_attribute  varchar(64)     PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
 
-  _, err = db.Exec(`create table if not exists soma.service_property_values (
-    service_property            varchar(64)     NOT NULL REFERENCES soma.service_properties ( service_property ),
-    service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
-    value                       varchar(64)     NOT NULL
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableServicePropertyAttributes"] = `
+create table if not exists soma.service_property_attributes (
+  service_property_attribute  varchar(64)     PRIMARY KEY
+);`
+  queries[idx] = "createTableServicePropertyAttributes"; idx++
 
-  /* Team Service Property
-  */
-  _, err = db.Exec(`create table if not exists soma.team_service_properties (
-    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
-    service_property            varchar(64)     NOT NULL,
-    UNIQUE( organizational_team_id, service_property )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
 
-  _, err = db.Exec(`create table if not exists soma.team_service_property_values (
-    organizational_team_id      uuid            NOT NULL,
-    service_property            varchar(64)     NOT NULL,
-    service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
-    value                       varchar(64)     NOT NULL,
-    FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableServicePropertyValues"] = `
+create table if not exists soma.service_property_values (
+  service_property            varchar(64)     NOT NULL REFERENCES soma.service_properties ( service_property ),
+  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
+  value                       varchar(64)     NOT NULL
+);`
+  queries[idx] = "createTableServicePropertyValues"; idx++
 
-  /* System Property
-  */
-  _, err = db.Exec(`create table if not exists soma.system_properties (
-    system_property             varchar(128)    PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
 
-  _, err = db.Exec(`create table if not exists soma.system_property_validity (
-    system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ),
-    object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
-    UNIQUE( system_property, object_type )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  queryMap["createTableTeamServiceProperties"] = `
+create table if not exists soma.team_service_properties (
+  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
+  service_property            varchar(64)     NOT NULL,
+  UNIQUE( organizational_team_id, service_property )
+);`
+  queries[idx] = "createTableTeamServiceProperties"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.native_properties (
-    native_property             varchar(128)    PRIMARY KEY
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+
+  queryMap["createTableTeamServicePropertyValues"] = `
+create table if not exists soma.team_service_property_values (
+  organizational_team_id      uuid            NOT NULL,
+  service_property            varchar(64)     NOT NULL,
+  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
+  value                       varchar(64)     NOT NULL,
+  FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property )
+);`
+  queries[idx] = "createTableTeamServicePropertyValues"; idx++
+
+
+  queryMap["createTableSystemProperties"] = `
+create table if not exists soma.system_properties (
+  system_property             varchar(128)    PRIMARY KEY
+);`
+  queries[idx] = "createTableSystemProperties"; idx++
+
+
+  queryMap["createTableSystemPropertyValidity"] = `
+create table if not exists soma.system_property_validity (
+  system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ),
+  object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
+  UNIQUE( system_property, object_type )
+);`
+  queries[idx] = "createTableSystemPropertyValidity"; idx++
+
+
+  queryMap["createTableNativeProperties"] = `
+create table if not exists soma.native_properties (
+  native_property             varchar(128)    PRIMARY KEY
+);`
+  queries[idx] = "createTableNativeProperties"; idx++
+
+
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }
 
-func sqlPropertyTables02() {
-  var err error;
+func createTableCustomProperties(printOnly bool, verbose bool) {
+  idx := 0
+  // map for storing the SQL statements by name
+  queryMap := make( map[string]string )
+  // slice storing the required statement order so foreign keys can
+  // resolve successfully
+  queries := make( []string, 5 )
 
-  _, err = db.Exec(`create table if not exists soma.custom_properties (
-    custom_property_id          uuid            PRIMARY KEY,
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
-    custom_property             varchar(128)    NOT NULL,
-    UNIQUE( repository_id, custom_property ),
-    UNIQUE( repository_id, custom_property_id )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+
+  queryMap["createTableCustomProperties"] = `
+create table if not exists soma.custom_properties (
+  custom_property_id          uuid            PRIMARY KEY,
+  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+  custom_property             varchar(128)    NOT NULL,
+  UNIQUE( repository_id, custom_property ),
+  UNIQUE( repository_id, custom_property_id )
+);`
+  queries[idx] = "createTableCustomProperties"; idx++
+
+
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }
