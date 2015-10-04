@@ -32,8 +32,7 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
     createTablesNodes( printOnly, verbose )
 
-    sqlClusterTables01()
-    log.Print("Installed: Cluster01")
+    createTablesClusters( printOnly, verbose )
 
     sqlGroupTables01()
     log.Print("Installed: Group01")

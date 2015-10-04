@@ -1,13 +1,15 @@
 package main
 
-import (
-  "log"
-)
+func createTablesClusters(printOnly bool, verbose bool) {
+  idx := 0
+  // map for storing the SQL statements by name
+  queryMap := make( map[string]string )
+  // slice storing the required statement order so foreign keys can
+  // resolve successfully
+  queries := make( []string, 10 )
 
-func sqlClusterTables01() {
-  var err error;
 
-  _, err = db.Exec(`create table if not exists soma.clusters (
+  queryMap["createTableClusters"] = `create table if not exists soma.clusters (
     cluster_id                  uuid            PRIMARY KEY,
     cluster_name                varchar(256)    NOT NULL,
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
@@ -21,11 +23,11 @@ func sqlClusterTables01() {
     UNIQUE( cluster_id, organizational_team_id ),
     -- cluster must be configured like bucket it is in
     FOREIGN KEY ( bucket_id, organizational_team_id ) REFERENCES soma.buckets ( bucket_id, organizational_team_id )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  );`
+  queries[idx] = "createTableClusters"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.cluster_membership (
+
+  queryMap["createTableClusterMembership"] = `create table if not exists soma.cluster_membership (
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     node_id                     uuid            NOT NULL REFERENCES soma.nodes ( node_id ),
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
@@ -34,22 +36,22 @@ func sqlClusterTables01() {
     -- node and cluster must belong to the same bucket
     FOREIGN KEY ( bucket_id, cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id ),
     FOREIGN KEY ( node_id, bucket_id ) REFERENCES soma.node_bucket_assignment ( node_id, bucket_id )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  );`
+  queries[idx] = "createTableClusterMembership"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.cluster_oncall_properties (
+
+  queryMap["createTableClusterOncallProperty"] = `create table if not exists soma.cluster_oncall_properties (
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     UNIQUE ( cluster_id, view )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  );`
+  queries[idx] = "createTableClusterOncallProperty"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.cluster_service_properties (
+
+  queryMap["createTableClusterServiceProperties"] = `create table if not exists soma.cluster_service_properties (
     cluster_id                  uuid            NOT NULL REFERENCES clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES views ( view ),
     service_property            varchar(64)     NOT NULL,
@@ -60,11 +62,11 @@ func sqlClusterTables01() {
     UNIQUE( cluster_id, service_property, view ),
     FOREIGN KEY ( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ),
     FOREIGN KEY ( cluster_id, organizational_team_id ) REFERENCES soma.clusters ( cluster_id, organizational_team_id )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  );`
+  queries[idx] = "createTableClusterServiceProperties"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.cluster_system_properties (
+
+  queryMap["createTableClusterSystemProperties"] = `create table if not exists soma.cluster_system_properties (
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ),
@@ -74,20 +76,20 @@ func sqlClusterTables01() {
     value                       text            NOT NULL,
     FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ),
     CHECK ( object_type = 'cluster' )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  );`
+  queries[idx] = "createTableClusterSystemProperties"; idx++
+
 
   // restrict all system properties to once per cluster+view, except
   // tags which would be silly if limited to once
-  _, err = db.Exec(`create unique index _unique_cluster_system_properties
+  queryMap["createIndexUniqueClusterSystemProperties"] = `create unique index _unique_cluster_system_properties
     on soma.cluster_system_properties ( cluster_id, system_property, view )
     where system_property != 'tag'
-  ;`); if err != nil {
-    log.Fatal( err )
-  }
+  ;`
+  queries[idx] = "createIndexUniqueClusterSystemProperties"; idx++
 
-  _, err = db.Exec(`create table if not exists soma.cluster_custom_properties (
+
+  queryMap["createTableClusterCustomProperties"] = `create table if not exists soma.cluster_custom_properties (
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ),
@@ -102,7 +104,9 @@ func sqlClusterTables01() {
     FOREIGN KEY ( bucket_id, cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id ),
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ),
     FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id )
-  );`); if err != nil {
-    log.Fatal( err )
-  }
+  );`
+  queries[idx] = "createTableClusterCustomProperties"; idx++
+
+
+  performDatabaseTask( printOnly, verbose, queries, queryMap )
 }
