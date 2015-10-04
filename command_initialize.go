@@ -34,8 +34,7 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
     createTablesClusters( printOnly, verbose )
 
-    sqlGroupTables01()
-    log.Print("Installed: Group01")
+    createTablesGroups( printOnly, verbose )
 
     sqlPermissionTables01()
     log.Print("Installed: Permission01")
