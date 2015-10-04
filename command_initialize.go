@@ -22,13 +22,11 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
     createTablesProperties( printOnly, verbose )
 
-    sqlRepositoryTables01()
-    log.Print("Installed: Repository01")
+    createTableRepositories( printOnly, verbose )
 
     createTableCustomProperties( printOnly, verbose )
 
-    sqlRepositoryTables02()
-    log.Print("Installed: Repository02")
+    createTablesRepositoryProperties( printOnly, verbose )
 
     createTablesBuckets( printOnly, verbose )
 
