@@ -1,9 +1,5 @@
 package main
 
-import (
-  "log"
-)
-
 func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
     dbOpen()
 
@@ -36,8 +32,7 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
     createTablesGroups( printOnly, verbose )
 
-    sqlPermissionTables01()
-    log.Print("Installed: Permission01")
+    createTablesPermissions( printOnly, verbose )
 
     createTablesMetricsMonitoring( printOnly, verbose )
 
