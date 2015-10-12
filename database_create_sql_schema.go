@@ -10,7 +10,7 @@ func createSqlSchema(printOnly bool, verbose bool) {
   queryMap := make( map[string]string )
   // slice storing the required statement order so foreign keys can
   // resolve successfully
-  queries := make( []string, 5 )
+  queries := make( []string, 10 )
 
 
   queryMap["createSchemaSoma"] = `create schema if not exists soma;`
@@ -31,6 +31,18 @@ func createSqlSchema(printOnly bool, verbose bool) {
 
   queryMap["alterDatabaseSearchPath"] = `set search_path to soma,inventory,auth;`
   queries[idx] = "alterDatabaseSearchPath"; idx++
+
+
+  queryMap["grantServiceUserSchemaSoma"] = `grant select, insert, update, delete on all tables in schema soma to soma_svc;`
+  queries[idx] = "grantServiceUserSchemaSoma"; idx++
+
+
+  queryMap["grantServiceUserSchemaInventory"] = `grant select, insert, update, delete on all tables in schema inventory to soma_svc;`
+  queries[idx] = "grantServiceUserSchemaInventory"; idx++
+
+
+  queryMap["grantServiceUserSchemaAuth"] = `grant select, insert, update, delete on all tables in schema auth to soma_svc;`
+  queries[idx] = "grantServiceUserSchemaAuth"; idx++
 
 
   performDatabaseTask( printOnly, verbose, queries, queryMap )
