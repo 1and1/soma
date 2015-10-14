@@ -3,12 +3,18 @@ package main
 func startHandlers() {
 	spawnViewReadHandler()
 	spawnViewWriteHandler()
+
 	spawnEnvironmentReadHandler()
 	spawnEnvironmentWriteHandler()
+
 	spawnObjectStateReadHandler()
 	spawnObjectStateWriteHandler()
+
 	spawnObjectTypeReadHandler()
 	spawnObjectTypeWriteHandler()
+
+	spawnDatacenterReadHandler()
+	spawnDatacenterWriteHandler()
 }
 
 func spawnViewReadHandler() {
@@ -81,6 +87,24 @@ func spawnObjectTypeWriteHandler() {
 	objectTypeWriteHandler.conn = conn
 	handlerMap["objectTypeWriteHandler"] = objectTypeWriteHandler
 	go objectTypeWriteHandler.run()
+}
+
+func spawnDatacenterReadHandler() {
+	var datacenterReadHandler somaDatacenterReadHandler
+	datacenterReadHandler.input = make(chan somaDatacenterRequest)
+	datacenterReadHandler.shutdown = make(chan bool)
+	datacenterReadHandler.conn = conn
+	handlerMap["datacenterReadHandler"] = datacenterReadHandler
+	go datacenterReadHandler.run()
+}
+
+func spawnDatacenterWriteHandler() {
+	var datacenterWriteHandler somaDatacenterWriteHandler
+	datacenterWriteHandler.input = make(chan somaDatacenterRequest, 64)
+	datacenterWriteHandler.shutdown = make(chan bool)
+	datacenterWriteHandler.conn = conn
+	handlerMap["datacenterWriteHandler"] = datacenterWriteHandler
+	go datacenterWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
