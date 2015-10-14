@@ -84,6 +84,38 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end views
+		{
+			Name:   "environments",
+			Usage:  "subcommands for environments",
+			Before: configSetup,
+			Subcommands: []cli.Command{
+				{
+					Name:   "add",
+					Usage:  "",
+					Action: cmdEnvironmentsAdd,
+				},
+				{
+					Name:   "remove",
+					Usage:  "",
+					Action: cmdEnvironmentsRemove,
+				},
+				{
+					Name:   "rename",
+					Usage:  "",
+					Action: cmdEnvironmentsRename,
+				},
+				{
+					Name:   "list",
+					Usage:  "",
+					Action: cmdEnvironmentsList,
+				},
+				{
+					Name:   "show",
+					Usage:  "",
+					Action: cmdEnvironmentsShow,
+				},
+			},
+		}, // end environments
 	}
 	return &app
 }
