@@ -180,6 +180,38 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end states
+		{
+			Name:   "datacenters",
+			Usage:  "subcommands for datacenters",
+			Before: configSetup,
+			Subcommands: []cli.Command{
+				{
+					Name:   "add",
+					Usage:  "",
+					Action: cmdObjectStatesAdd,
+				},
+				{
+					Name:   "remove",
+					Usage:  "",
+					Action: cmdObjectStatesRemove,
+				},
+				{
+					Name:   "rename",
+					Usage:  "",
+					Action: cmdObjectStatesRename,
+				},
+				{
+					Name:   "list",
+					Usage:  "",
+					Action: cmdObjectStatesList,
+				},
+				{
+					Name:   "show",
+					Usage:  "",
+					Action: cmdObjectStatesShow,
+				},
+			},
+		}, // end datacenters
 	}
 	return &app
 }
