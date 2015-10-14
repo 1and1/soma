@@ -1,15 +1,14 @@
 package main
 
 func createTablesGroups(printOnly bool, verbose bool) {
-  idx := 0
-  // map for storing the SQL statements by name
-  queryMap := make( map[string]string )
-  // slice storing the required statement order so foreign keys can
-  // resolve successfully
-  queries := make( []string, 15 )
+	idx := 0
+	// map for storing the SQL statements by name
+	queryMap := make(map[string]string)
+	// slice storing the required statement order so foreign keys can
+	// resolve successfully
+	queries := make([]string, 15)
 
-
-  queryMap["createTableGroups"] = `create table if not exists soma.groups (
+	queryMap["createTableGroups"] = `create table if not exists soma.groups (
     group_id                    uuid            PRIMARY KEY,
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
     group_name                  varchar(256)    NOT NULL,
@@ -23,10 +22,10 @@ func createTablesGroups(printOnly bool, verbose bool) {
     UNIQUE ( bucket_id, group_id ),
     UNIQUE ( group_id, organizational_team_id )
   );`
-  queries[idx] = "createTableGroups"; idx++
+	queries[idx] = "createTableGroups"
+	idx++
 
-
-  queryMap["createTableGroupMembershipNodes"] = `create table if not exists soma.group_membership_nodes (
+	queryMap["createTableGroupMembershipNodes"] = `create table if not exists soma.group_membership_nodes (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     child_node_id               uuid            NOT NULL REFERENCES soma.nodes ( node_id ),
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
@@ -35,10 +34,10 @@ func createTablesGroups(printOnly bool, verbose bool) {
     FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
     FOREIGN KEY ( child_node_id, bucket_id ) REFERENCES soma.node_bucket_assignment ( node_id, bucket_id )
   );`
-  queries[idx] = "createTableGroupMembershipNodes"; idx++
+	queries[idx] = "createTableGroupMembershipNodes"
+	idx++
 
-
-  queryMap["createTableGroupMembershipCounters"] = `create table if not exists soma.group_membership_clusters (
+	queryMap["createTableGroupMembershipCounters"] = `create table if not exists soma.group_membership_clusters (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     child_cluster_id            uuid            NOT NULL REFERENCES clusters ( cluster_id ),
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
@@ -47,10 +46,10 @@ func createTablesGroups(printOnly bool, verbose bool) {
     FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
     FOREIGN KEY ( bucket_id, child_cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id )
   );`
-  queries[idx] = "createTableGroupMembershipCounters"; idx++
+	queries[idx] = "createTableGroupMembershipCounters"
+	idx++
 
-
-  queryMap["createTableGroupMembershipGroups"] = `create table if not exists soma.group_membership_groups (
+	queryMap["createTableGroupMembershipGroups"] = `create table if not exists soma.group_membership_groups (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     child_group_id              uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
@@ -61,10 +60,10 @@ func createTablesGroups(printOnly bool, verbose bool) {
     FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
     FOREIGN KEY ( bucket_id, child_group_id ) REFERENCES soma.groups ( bucket_id, group_id )
   );`
-  queries[idx] = "createTableGroupMembershipGroups"; idx++
+	queries[idx] = "createTableGroupMembershipGroups"
+	idx++
 
-
-  queryMap["createTableGroupOncallProperty"] = `create table if not exists soma.group_oncall_properties (
+	queryMap["createTableGroupOncallProperty"] = `create table if not exists soma.group_oncall_properties (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ),
@@ -72,10 +71,10 @@ func createTablesGroups(printOnly bool, verbose bool) {
     children_only               boolean         NOT NULL DEFAULT 'no',
     UNIQUE ( group_id, view )
   );`
-  queries[idx] = "createTableGroupOncallProperty"; idx++
+	queries[idx] = "createTableGroupOncallProperty"
+	idx++
 
-
-  queryMap["createTableGroupServiceProperties"] = `create table if not exists soma.group_service_properties (
+	queryMap["createTableGroupServiceProperties"] = `create table if not exists soma.group_service_properties (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     service_property            varchar(64)     NOT NULL,
@@ -87,10 +86,10 @@ func createTablesGroups(printOnly bool, verbose bool) {
     FOREIGN KEY ( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ),
     FOREIGN KEY ( group_id, organizational_team_id ) REFERENCES soma.groups ( group_id, organizational_team_id )
   );`
-  queries[idx] = "createTableGroupServiceProperties"; idx++
+	queries[idx] = "createTableGroupServiceProperties"
+	idx++
 
-
-  queryMap["createTableGroupSystemProperties"] = `create table if not exists soma.group_system_properties (
+	queryMap["createTableGroupSystemProperties"] = `create table if not exists soma.group_system_properties (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ),
@@ -101,19 +100,19 @@ func createTablesGroups(printOnly bool, verbose bool) {
     FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ),
     CHECK ( object_type = 'group' )
   );`
-  queries[idx] = "createTableGroupSystemProperties"; idx++
+	queries[idx] = "createTableGroupSystemProperties"
+	idx++
 
-
-  // restrict all system properties to once per group+view, except
-  // tags which would be silly if limited to once
-  queryMap["createIndexUniqueGroupSystemProperties"] = `create unique index _unique_group_system_properties
+	// restrict all system properties to once per group+view, except
+	// tags which would be silly if limited to once
+	queryMap["createIndexUniqueGroupSystemProperties"] = `create unique index _unique_group_system_properties
     on soma.group_system_properties ( group_id, system_property, view )
     where system_property != 'tag'
   ;`
-  queries[idx] = "createIndexUniqueGroupSystemProperties"; idx++
+	queries[idx] = "createIndexUniqueGroupSystemProperties"
+	idx++
 
-
-  queryMap["createTableGroupsCustomProperties"] = `create table if not exists soma.group_custom_properties (
+	queryMap["createTableGroupsCustomProperties"] = `create table if not exists soma.group_custom_properties (
     group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ),
@@ -129,8 +128,8 @@ func createTablesGroups(printOnly bool, verbose bool) {
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ),
     FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id )
   );`
-  queries[idx] = "createTableGroupsCustomProperties"; idx++
+	queries[idx] = "createTableGroupsCustomProperties"
+	idx++
 
-
-  performDatabaseTask( printOnly, verbose, queries, queryMap )
+	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

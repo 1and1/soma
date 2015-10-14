@@ -1,21 +1,21 @@
 package main
 
 func createTablesInventoryAssets(printOnly bool, verbose bool) {
-  idx := 0
-  // map for storing the SQL statements by name
-  queryMap := make( map[string]string )
-  // slice storing the required statement order so foreign keys can
-  // resolve successfully
-  queries := make( []string, 10 )
+	idx := 0
+	// map for storing the SQL statements by name
+	queryMap := make(map[string]string)
+	// slice storing the required statement order so foreign keys can
+	// resolve successfully
+	queries := make([]string, 10)
 
-
-  queryMap["createTableDatacenters"] = `
+	queryMap["createTableDatacenters"] = `
 create table if not exists inventory.datacenters (
   datacenter                  varchar(32)     PRIMARY KEY
 );`
-  queries[idx] = "createTableDatacenters"; idx++
+	queries[idx] = "createTableDatacenters"
+	idx++
 
-  queryMap["createTableServers"] = `
+	queryMap["createTableServers"] = `
 create table if not exists inventory.servers (
   server_id                   uuid            PRIMARY KEY,
   server_asset_id             numeric(16,0)   UNIQUE NOT NULL,
@@ -25,46 +25,48 @@ create table if not exists inventory.servers (
   server_online               boolean         NOT NULL DEFAULT 'yes',
   server_deleted              boolean         NOT NULL DEFAULT 'no'
 );`
-  queries[idx] = "createTableServers"; idx++
+	queries[idx] = "createTableServers"
+	idx++
 
-  queryMap["createIndexUniqueServersOnline"] = `
+	queryMap["createIndexUniqueServersOnline"] = `
 create unique index _unique_server_online
   on inventory.servers ( server_name )
   where server_online
 ;`
-  queries[idx] = "createIndexUniqueServersOnline"; idx++
+	queries[idx] = "createIndexUniqueServersOnline"
+	idx++
 
-
-  performDatabaseTask( printOnly, verbose, queries, queryMap )
+	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
 
 func createTablesInventoryAccounts(printOnly bool, verbose bool) {
-  idx := 0
-  // map for storing the SQL statements by name
-  queryMap := make( map[string]string )
-  // slice storing the required statement order so foreign keys can
-  // resolve successfully
-  queries := make( []string, 10 )
+	idx := 0
+	// map for storing the SQL statements by name
+	queryMap := make(map[string]string)
+	// slice storing the required statement order so foreign keys can
+	// resolve successfully
+	queries := make([]string, 10)
 
-
-  queryMap["createTableOrganizationalTeams"] = `
+	queryMap["createTableOrganizationalTeams"] = `
 create table if not exists inventory.organizational_teams (
   organizational_team_id      uuid            PRIMARY KEY,
   organizational_team_name    varchar(384)    UNIQUE NOT NULL,
   organizational_team_ldap_id numeric(16,0)   UNIQUE NOT NULL,
   organizational_team_system  boolean         NOT NULL DEFAULT 'no'
 );`
-  queries[idx] = "createTableOrganizationalTeams"; idx++
+	queries[idx] = "createTableOrganizationalTeams"
+	idx++
 
-  queryMap["createTableOncallDuty"] = `
+	queryMap["createTableOncallDuty"] = `
 create table if not exists inventory.oncall_duty_teams (
   oncall_duty_id              uuid            PRIMARY KEY,
   oncall_duty_name            varchar(256)    UNIQUE NOT NULL,
   oncall_duty_phone_number    numeric(4,0)    UNIQUE NOT NULL
 );`
-  queries[idx] = "createTableOncallDuty"; idx++
+	queries[idx] = "createTableOncallDuty"
+	idx++
 
-  queryMap["createTableUsers"] = `
+	queryMap["createTableUsers"] = `
 create table if not exists inventory.users (
   user_id                     uuid            PRIMARY KEY,
   user_uid                    varchar(256)    UNIQUE NOT NULL,
@@ -76,15 +78,16 @@ create table if not exists inventory.users (
   user_is_system              boolean         NOT NULL DEFAULT 'no',
   organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id )
 );`
-  queries[idx] = "createTableUsers"; idx++
+	queries[idx] = "createTableUsers"
+	idx++
 
-  queryMap["createTableOncallDutyMembership"] = `
+	queryMap["createTableOncallDutyMembership"] = `
 create table if not exists inventory.oncall_duty_membership (
   user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ),
   oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id )
 );`
-  queries[idx] = "createTableOncallDutyMembership"; idx++
+	queries[idx] = "createTableOncallDutyMembership"
+	idx++
 
-
-  performDatabaseTask( printOnly, verbose, queries, queryMap )
+	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

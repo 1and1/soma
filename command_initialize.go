@@ -1,44 +1,42 @@
 package main
 
 func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
-    dbOpen()
+	dbOpen()
 
-    createSqlSchema( printOnly, verbose )
+	createSqlSchema(printOnly, verbose)
 
-    createTablesMetaData( printOnly, verbose )
+	createTablesMetaData(printOnly, verbose)
 
-    createTablesInventoryAssets( printOnly, verbose )
+	createTablesInventoryAssets(printOnly, verbose)
 
-    createTablesDatacenterMetaData( printOnly, verbose )
+	createTablesDatacenterMetaData(printOnly, verbose)
 
-    createTablesInventoryAccounts( printOnly, verbose )
+	createTablesInventoryAccounts(printOnly, verbose)
 
-    createTablesAuthentication( printOnly, verbose )
-    // root_token table
+	createTablesAuthentication(printOnly, verbose)
+	// root_token table
 
-    createTablesProperties( printOnly, verbose )
+	createTablesProperties(printOnly, verbose)
 
-    createTableRepositories( printOnly, verbose )
+	createTableRepositories(printOnly, verbose)
 
-    createTableCustomProperties( printOnly, verbose )
+	createTableCustomProperties(printOnly, verbose)
 
-    createTablesRepositoryProperties( printOnly, verbose )
+	createTablesRepositoryProperties(printOnly, verbose)
 
-    createTablesBuckets( printOnly, verbose )
+	createTablesBuckets(printOnly, verbose)
 
-    createTablesNodes( printOnly, verbose )
+	createTablesNodes(printOnly, verbose)
 
-    createTablesClusters( printOnly, verbose )
+	createTablesClusters(printOnly, verbose)
 
-    createTablesGroups( printOnly, verbose )
+	createTablesGroups(printOnly, verbose)
 
-    createTablesPermissions( printOnly, verbose )
+	createTablesPermissions(printOnly, verbose)
 
-    createTablesMetricsMonitoring( printOnly, verbose )
+	createTablesMetricsMonitoring(printOnly, verbose)
 
-    grantPermissions( printOnly, verbose )
+	grantPermissions(printOnly, verbose)
 
-    done <- true
+	done <- true
 }
-
-

@@ -1,11 +1,11 @@
 package main
 
 import (
-  "github.com/codegangsta/cli"
+	"github.com/codegangsta/cli"
 )
 
 func dbClose(c *cli.Context) error {
-  defer db.Close()
+	defer db.Close()
 
-  return nil
+	return nil
 }

@@ -1,15 +1,14 @@
 package main
 
 func createTablesPermissions(printOnly bool, verbose bool) {
-  idx := 0
-  // map for storing the SQL statements by name
-  queryMap := make( map[string]string )
-  // slice storing the required statement order so foreign keys can
-  // resolve successfully
-  queries := make( []string, 25 )
+	idx := 0
+	// map for storing the SQL statements by name
+	queryMap := make(map[string]string)
+	// slice storing the required statement order so foreign keys can
+	// resolve successfully
+	queries := make([]string, 25)
 
-
-  queryMap["createTablePermissionTypes"] = `
+	queryMap["createTablePermissionTypes"] = `
 create table if not exists soma.permission_types (
   permission_type             varchar(32)     PRIMARY KEY
   -- OMNIPOTENCE
@@ -19,10 +18,10 @@ create table if not exists soma.permission_types (
   -- REPO_GRANT
   -- REPO
 );`
-  queries[idx] = "createTablePermissionTypes"; idx++
+	queries[idx] = "createTablePermissionTypes"
+	idx++
 
-
-  queryMap["createTableSomaPermissions"] = `
+	queryMap["createTableSomaPermissions"] = `
 create table if not exists soma.permissions (
   permission_id               uuid            PRIMARY KEY,
   permission_name             varchar(128)    NOT NULL,
@@ -30,10 +29,10 @@ create table if not exists soma.permissions (
   UNIQUE ( permission_name ),
   UNIQUE ( permission_id, permission_type )
 );`
-  queries[idx] = "createTableSomaPermissions"; idx++
+	queries[idx] = "createTableSomaPermissions"
+	idx++
 
-
-  queryMap["createTableGlobalAuthorizations"] = `
+	queryMap["createTableGlobalAuthorizations"] = `
 create table if not exists soma.global_authorizations (
   admin_id                    uuid            REFERENCES auth.admins ( admin_id ),
   user_id                     uuid            REFERENCES inventory.users ( user_id ),
@@ -46,10 +45,10 @@ create table if not exists soma.global_authorizations (
          OR ( admin_id IS     NULL AND user_id IS     NULL AND tool_id IS NOT NULL ) ),
   CHECK ( permission_type IN ( 'OMNIPOTENCE', 'SYSTEM_GRANT', 'SYSTEM', 'GLOBAL' ) )
 );`
-  queries[idx] = "createTableGlobalAuthorizations"; idx++
+	queries[idx] = "createTableGlobalAuthorizations"
+	idx++
 
-
-  queryMap["createTableRepoAuthorizations"] = `
+	queryMap["createTableRepoAuthorizations"] = `
 create table if not exists soma.repo_authorizations (
   user_id                     uuid            REFERENCES inventory.users ( user_id ),
   tool_id                     uuid            REFERENCES auth.tools ( tool_id ),
@@ -63,10 +62,10 @@ create table if not exists soma.repo_authorizations (
          OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
   CHECK ( permission_type IN ( 'REPO_GRANT', 'REPO' ) )
 );`
-  queries[idx] = "createTableRepoAuthorizations"; idx++
+	queries[idx] = "createTableRepoAuthorizations"
+	idx++
 
-
-  queryMap["createTableBucketAuthorizations"] = `
+	queryMap["createTableBucketAuthorizations"] = `
 create table if not exists soma.bucket_authorizations (
   user_id                     uuid            REFERENCES inventory.users ( user_id ),
   tool_id                     uuid            REFERENCES auth.tools ( tool_id ),
@@ -82,10 +81,10 @@ create table if not exists soma.bucket_authorizations (
          OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
   CHECK ( permission_type = 'REPO' )
 );`
-  queries[idx] = "createTableBucketAuthorizations"; idx++
+	queries[idx] = "createTableBucketAuthorizations"
+	idx++
 
-
-  queryMap["createTableGroupAuthorizations"] = `
+	queryMap["createTableGroupAuthorizations"] = `
 create table if not exists soma.group_authorizations (
   user_id                     uuid            REFERENCES inventory.users ( user_id ),
   tool_id                     uuid            REFERENCES auth.tools ( tool_id ),
@@ -103,10 +102,10 @@ create table if not exists soma.group_authorizations (
          OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
   CHECK ( permission_type = 'REPO' )
 );`
-  queries[idx] = "createTableGroupAuthorizations"; idx++
+	queries[idx] = "createTableGroupAuthorizations"
+	idx++
 
-
-  queryMap["createTableClusterAuthorizations"] = `
+	queryMap["createTableClusterAuthorizations"] = `
 create table if not exists soma.cluster_authorizations (
   user_id                     uuid            REFERENCES inventory.users ( user_id ),
   tool_id                     uuid            REFERENCES auth.tools ( tool_id ),
@@ -124,8 +123,8 @@ create table if not exists soma.cluster_authorizations (
          OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
   CHECK ( permission_type = 'REPO' )
 );`
-  queries[idx] = "createTableClusterAuthorizations"; idx++
+	queries[idx] = "createTableClusterAuthorizations"
+	idx++
 
-
-  performDatabaseTask( printOnly, verbose, queries, queryMap )
+	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
