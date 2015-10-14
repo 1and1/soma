@@ -91,3 +91,5 @@ create table if not exists inventory.oncall_duty_membership (
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

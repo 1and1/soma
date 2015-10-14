@@ -28,3 +28,5 @@ func performDatabaseTask(printOnly bool, verbose bool, queries []string, queryMa
 		log.Print("Executed query: ", query)
 	}
 }
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
