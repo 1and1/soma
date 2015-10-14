@@ -116,6 +116,70 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end environments
+		{
+			Name:   "types",
+			Usage:  "subcommands for object types",
+			Before: configSetup,
+			Subcommands: []cli.Command{
+				{
+					Name:   "add",
+					Usage:  "",
+					Action: cmdObjectTypesAdd,
+				},
+				{
+					Name:   "remove",
+					Usage:  "",
+					Action: cmdObjectTypesRemove,
+				},
+				{
+					Name:   "rename",
+					Usage:  "",
+					Action: cmdObjectTypesRename,
+				},
+				{
+					Name:   "list",
+					Usage:  "",
+					Action: cmdObjectTypesList,
+				},
+				{
+					Name:   "show",
+					Usage:  "",
+					Action: cmdObjectTypesShow,
+				},
+			},
+		}, // end types
+		{
+			Name:   "states",
+			Usage:  "subcommands for states",
+			Before: configSetup,
+			Subcommands: []cli.Command{
+				{
+					Name:   "add",
+					Usage:  "",
+					Action: cmdObjectStatesAdd,
+				},
+				{
+					Name:   "remove",
+					Usage:  "",
+					Action: cmdObjectStatesRemove,
+				},
+				{
+					Name:   "rename",
+					Usage:  "",
+					Action: cmdObjectStatesRename,
+				},
+				{
+					Name:   "list",
+					Usage:  "",
+					Action: cmdObjectStatesList,
+				},
+				{
+					Name:   "show",
+					Usage:  "",
+					Action: cmdObjectStatesShow,
+				},
+			},
+		}, // end states
 	}
 	return &app
 }
