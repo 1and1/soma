@@ -13,7 +13,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.1"
+	version := "0.0.2"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -37,6 +37,12 @@ func main() {
 	router.POST("/environments", AddEnvironment)
 	router.DELETE("/environments/:environment", DeleteEnvironment)
 	router.PUT("/environments/:environment", RenameEnvironment)
+
+	router.GET("/objstates", ListObjectStates)
+	router.GET("/objstates/:state", ShowObjectState)
+	router.POST("/objstates", AddObjectState)
+	router.DELETE("/objstates/:state", DeleteObjectState)
+	router.PUT("/objstates/:state", RenameObjectState)
 
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
