@@ -7,6 +7,8 @@ func startHandlers() {
 	spawnEnvironmentWriteHandler()
 	spawnObjectStateReadHandler()
 	spawnObjectStateWriteHandler()
+	spawnObjectTypeReadHandler()
+	spawnObjectTypeWriteHandler()
 }
 
 func spawnViewReadHandler() {
@@ -61,6 +63,24 @@ func spawnObjectStateWriteHandler() {
 	objectStateWriteHandler.conn = conn
 	handlerMap["objectStateWriteHandler"] = objectStateWriteHandler
 	go objectStateWriteHandler.run()
+}
+
+func spawnObjectTypeReadHandler() {
+	var objectTypeReadHandler somaObjectTypeReadHandler
+	objectTypeReadHandler.input = make(chan somaObjectTypeRequest)
+	objectTypeReadHandler.shutdown = make(chan bool)
+	objectTypeReadHandler.conn = conn
+	handlerMap["objectTypeReadHandler"] = objectTypeReadHandler
+	go objectTypeReadHandler.run()
+}
+
+func spawnObjectTypeWriteHandler() {
+	var objectTypeWriteHandler somaObjectTypeWriteHandler
+	objectTypeWriteHandler.input = make(chan somaObjectTypeRequest, 64)
+	objectTypeWriteHandler.shutdown = make(chan bool)
+	objectTypeWriteHandler.conn = conn
+	handlerMap["objectTypeWriteHandler"] = objectTypeWriteHandler
+	go objectTypeWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
