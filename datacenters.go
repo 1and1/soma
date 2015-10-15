@@ -10,6 +10,7 @@ import (
 type somaDatacenterRequest struct {
 	action     string
 	datacenter string
+	group      string
 	rename     string
 	reply      chan []somaDatacenterResult
 }
@@ -28,19 +29,51 @@ type somaDatacenterReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	grp_list  *sql.Stmt
+	grp_show  *sql.Stmt
 }
 
 func (r *somaDatacenterReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare("SELECT datacenter FROM soma.datacenters;")
+	r.list_stmt, err = r.conn.Prepare(`
+	SELECT datacenter
+	FROM inventory.datacenters;
+	`)
 	if err != nil {
 		log.Fatal(err)
 	}
-	r.show_stmt, err = r.conn.Prepare("SELECT datacenter FROM soma.datacenters WHERE view = $1;")
+	defer r.list_stmt.Close()
+
+	r.show_stmt, err = r.conn.Prepare(`
+	SELECT datacenter
+	FROM inventory.datacenters
+	WHERE datacenter = $1;
+	`)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer r.show_stmt.Close()
+
+	r.grp_list, err = r.conn.Prepare(`
+	SELECT DISTINCT datacenter_group
+	FROM soma.datacenter_groups;
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.grp_list.Close()
+
+	r.grp_show, err = r.conn.Prepare(`
+	SELECT DISTINCT datacenter
+	FROM soma.datacenter_groups
+	WHERE datacenter_group = $1;
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.grp_show.Close()
+
 	for {
 		select {
 		case <-r.shutdown:
@@ -102,6 +135,59 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 			err:        nil,
 			datacenter: datacenter,
 		})
+	case "grouplist":
+		rows, err = r.grp_list.Query()
+		defer rows.Close()
+		if err != nil {
+			result = append(result, somaDatacenterResult{
+				err:        err,
+				datacenter: q.datacenter,
+			})
+			q.reply <- result
+			return
+		}
+
+		for rows.Next() {
+			err = rows.Scan(&datacenter)
+			if err != nil {
+				result = append(result, somaDatacenterResult{
+					err:        err,
+					datacenter: q.datacenter,
+				})
+				err = nil
+				continue
+			}
+			result = append(result, somaDatacenterResult{
+				err:        nil,
+				datacenter: datacenter,
+			})
+		}
+	case "groupshow":
+		rows, err = r.grp_show.Query(q.datacenter)
+		if err != nil {
+			result = append(result, somaDatacenterResult{
+				err:        err,
+				datacenter: q.datacenter,
+			})
+			q.reply <- result
+			return
+		}
+
+		for rows.Next() {
+			err = rows.Scan(&datacenter)
+			if err != nil {
+				result = append(result, somaDatacenterResult{
+					err:        err,
+					datacenter: q.datacenter,
+				})
+				err = nil
+				continue
+			}
+			result = append(result, somaDatacenterResult{
+				err:        nil,
+				datacenter: datacenter,
+			})
+		}
 	default:
 		result = append(result, somaDatacenterResult{
 			err:        errors.New("not implemented"),
@@ -122,15 +208,17 @@ type somaDatacenterWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	ren_stmt *sql.Stmt
+	grp_add  *sql.Stmt
+	grp_del  *sql.Stmt
 }
 
 func (w *somaDatacenterWriteHandler) run() {
 	var err error
 
 	w.add_stmt, err = w.conn.Prepare(`
-  INSERT INTO soma.datacenters (datacenter)
+  INSERT INTO inventory.datacenters (datacenter)
   SELECT $1 WHERE NOT EXISTS (
-    SELECT datacenter FROM soma.datacenters WHERE datacenter = $2
+    SELECT datacenter FROM inventory.datacenters WHERE datacenter = $2
   );
   `)
 	if err != nil {
@@ -139,7 +227,7 @@ func (w *somaDatacenterWriteHandler) run() {
 	defer w.add_stmt.Close()
 
 	w.del_stmt, err = w.conn.Prepare(`
-  DELETE FROM soma.datacenters
+  DELETE FROM inventory.datacenters
   WHERE datacenter = $1;
   `)
 	if err != nil {
@@ -148,13 +236,36 @@ func (w *somaDatacenterWriteHandler) run() {
 	defer w.del_stmt.Close()
 
 	w.ren_stmt, err = w.conn.Prepare(`
-  UPDATE soma.datacenters SET datacenter = $1
+  UPDATE inventory.datacenters SET datacenter = $1
   WHERE datacenter = $2;
   `)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer w.ren_stmt.Close()
+
+	w.grp_add, err = w.conn.Prepare(`
+	INSERT INTO soma.datacenter_groups ( datacenter_group, datacenter )
+	SELECT $1, $2 WHERE NOT EXISTS (
+		SELECT datacenter FROM soma.datacenter_groups
+		WHERE datacenter_group = $3
+		AND datacenter = $4
+	);
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.grp_add.Close()
+
+	w.grp_del, err = w.conn.Prepare(`
+	DELETE FROM soma.datacenter_groups
+	WHERE datacenter_group = $1
+	AND	  datacenter = $2;
+	`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.grp_del.Close()
 
 	for {
 		select {
@@ -174,8 +285,12 @@ func (w *somaDatacenterWriteHandler) process(q *somaDatacenterRequest) {
 	switch q.action {
 	case "add":
 		res, err = w.add_stmt.Exec(q.datacenter, q.datacenter)
+	case "groupadd":
+		res, err = w.grp_add.Exec(q.group, q.datacenter, q.group, q.datacenter)
 	case "delete":
 		res, err = w.del_stmt.Exec(q.datacenter)
+	case "groupdel":
+		res, err = w.grp_del.Exec(q.group, q.datacenter)
 	case "rename":
 		res, err = w.ren_stmt.Exec(q.rename, q.datacenter)
 	default:
