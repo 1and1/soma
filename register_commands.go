@@ -188,27 +188,47 @@ func registerCommands(app cli.App) *cli.App {
 				{
 					Name:   "add",
 					Usage:  "",
-					Action: cmdObjectStatesAdd,
+					Action: cmdDatacentersAdd,
 				},
 				{
 					Name:   "remove",
 					Usage:  "",
-					Action: cmdObjectStatesRemove,
+					Action: cmdDatacentersRemove,
 				},
 				{
 					Name:   "rename",
 					Usage:  "",
-					Action: cmdObjectStatesRename,
+					Action: cmdDatacentersRename,
 				},
 				{
 					Name:   "list",
 					Usage:  "",
-					Action: cmdObjectStatesList,
+					Action: cmdDatacentersList,
 				},
 				{
 					Name:   "show",
 					Usage:  "",
-					Action: cmdObjectStatesShow,
+					Action: cmdDatacentersShow,
+				},
+				{
+					Name:   "groupadd",
+					Usage:  "",
+					Action: cmdDatacentersAddToGroup,
+				},
+				{
+					Name:   "groupdel",
+					Usage:  "",
+					Action: cmdDatacentersRemoveFromGroup,
+				},
+				{
+					Name:   "grouplist",
+					Usage:  "",
+					Action: cmdDatacentersListGroups,
+				},
+				{
+					Name:   "groupshow",
+					Usage:  "",
+					Action: cmdDatacentersShowGroup,
 				},
 			},
 		}, // end datacenters
