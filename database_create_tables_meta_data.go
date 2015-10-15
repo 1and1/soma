@@ -58,7 +58,7 @@ create table if not exists soma.datacenter_groups (
 	queryMap["createIndexDatacenterGroups"] = `
 create index _datacenter_groups
   on soma.datacenter_groups ( datacenter_group );`
-	queries[idx] = "createTableDatacenterGroups"
+	queries[idx] = "createIndexDatacenterGroups"
 	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
