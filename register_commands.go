@@ -272,6 +272,16 @@ func registerCommands(app cli.App) *cli.App {
 					Usage:  "",
 					Action: cmdServerOffline,
 				},
+				{
+					Name:   "move",
+					Usage:  "",
+					Action: cmdServerMove,
+				},
+				{
+					Name:   "list",
+					Usage:  "",
+					Action: cmdServerList,
+				},
 			},
 		}, // end servers
 	}

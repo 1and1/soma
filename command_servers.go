@@ -413,4 +413,125 @@ func cmdServerOffline(c *cli.Context) {
 	// TODO check delete action success
 }
 
+func cmdServerMove(c *cli.Context) {
+	url := getApiUrl()
+	var (
+		assetId uint64
+		err     error
+	)
+
+	a := c.Args()
+	args := make([]string, 1)
+	if !a.Present() {
+		Slog.Fatal("Syntax error")
+	}
+	if a.First() == "by-name" {
+		assetId = getServerAssetIdByName(a.Get(1))
+		tail := a.Tail()
+		subTail := tail[1:]
+		args = append(args, subTail...)
+	} else {
+		assetId, err = strconv.ParseUint(a.First(), 10, 64)
+		if err != nil || a.Get(1) != "to" || a.Get(2) == "" {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+		tail := a.Tail()
+		args = append(args, tail...)
+	}
+	url.Path = fmt.Sprintf("/servers/%d", assetId)
+
+	var req somaproto.ProtoRequestServer
+
+	// golang on its own can't iterate over a slice two items at a time
+	skipNext := false
+	argumentCheck := map[string]bool{
+		"datacenter": false,
+		"location":   false,
+	}
+	for pos, val := range args {
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		switch val {
+		case "datacenter":
+			checkServerKeyword(args[pos+1])
+			req.Server.Datacenter = args[pos+1]
+			skipNext = true
+			argumentCheck["datacenter"] = true
+		case "location":
+			checkServerKeyword(args[pos+1])
+			req.Server.Datacenter = args[pos+1]
+			skipNext = true
+			argumentCheck["location"] = true
+		}
+	}
+	missingArgument := false
+	for k, v := range argumentCheck {
+		if !v {
+			fmt.Fprintf(os.Stderr, "Missing argument: %s\n", k)
+			missingArgument = true
+		}
+	}
+	if missingArgument {
+		os.Exit(1)
+	}
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Patch(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// checks the embedded status code
+	_ = decodeProtoResultServerFromResponse(resp)
+}
+
+func cmdServerList(c *cli.Context) {
+	url := getApiUrl()
+	url.Path = "/servers"
+	var resp *resty.Response
+	var err error
+
+	a := c.Args()
+	if a.Present() {
+		if len(a) > 1 {
+			Slog.Fatal("Syntax error")
+		}
+		var req somaproto.ProtoRequestServer
+		switch a.First() {
+		case "online":
+			req.Filter.Online = true
+		case "offline":
+			req.Filter.Online = false
+		case "deleted":
+			req.Filter.Deleted = true
+		default:
+			Slog.Fatal("Syntax error")
+		}
+
+		resp, err = resty.New().
+			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+			R().
+			SetBody(req).
+			Get(url.String())
+	} else {
+		resp, err = resty.New().
+			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+			R().
+			Get(url.String())
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// TODO check list action
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
