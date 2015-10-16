@@ -232,6 +232,48 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end datacenters
+		{
+			Name:   "servers",
+			Usage:  "subcommands for servers",
+			Before: configSetup,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "",
+					Action: cmdServerCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "",
+					Action: cmdServerMarkAsDeleted,
+				},
+				{
+					Name:   "purge",
+					Usage:  "",
+					Action: cmdServerPurgeDeleted,
+				},
+				{
+					Name:   "update",
+					Usage:  "",
+					Action: cmdServerUpdate,
+				},
+				{
+					Name:   "rename",
+					Usage:  "",
+					Action: cmdServerRename,
+				},
+				{
+					Name:   "online",
+					Usage:  "",
+					Action: cmdServerOnline,
+				},
+				{
+					Name:   "offline",
+					Usage:  "",
+					Action: cmdServerOffline,
+				},
+			},
+		}, // end servers
 	}
 	return &app
 }

@@ -1,12 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"gopkg.in/resty.v0"
-	//"net/url"
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"os"
 	"strconv"
 )
@@ -27,7 +24,13 @@ func cmdServerCreate(c *cli.Context) {
 
 	// golang on its own can't iterate over a slice two items at a time
 	skipNext := false
-	onlineArgGiven := false
+	argumentCheck := map[string]bool{
+		"id":         false,
+		"datacenter": false,
+		"location":   false,
+		"name":       false,
+		"online":     false,
+	}
 	for pos, val := range args {
 		if skipNext {
 			skipNext = false
@@ -44,18 +47,22 @@ func cmdServerCreate(c *cli.Context) {
 				Slog.Fatal(err)
 			}
 			skipNext = true
+			argumentCheck["id"] = true
 		case "datacenter":
 			checkServerKeyword(args[pos+1])
 			req.Server.Datacenter = args[pos+1]
 			skipNext = true
+			argumentCheck["datacenter"] = true
 		case "location":
 			checkServerKeyword(args[pos+1])
 			req.Server.Location = args[pos+1]
 			skipNext = true
+			argumentCheck["location"] = true
 		case "name":
 			checkServerKeyword(args[pos+1])
 			req.Server.Name = args[pos+1]
 			skipNext = true
+			argumentCheck["name"] = true
 		case "online":
 			checkServerKeyword(args[pos+1])
 			req.Server.Online, err = strconv.ParseBool(args[pos+1])
@@ -65,16 +72,24 @@ func cmdServerCreate(c *cli.Context) {
 				Slog.Fatal(err)
 			}
 			skipNext = true
-			onlineArgGiven = true
+			argumentCheck["online"] = true
 		}
 	}
 
-	// optional argument handling, false is the zero value of booleans,
-	// so we need onlineArgGiven to detect if req.Server.Online was set
-	// to false or is in its default field state.
-	// Our servers are by default online
-	if onlineArgGiven == false {
+	// online argument is optional and defaults to true
+	if !argumentCheck["online"] {
+		argumentCheck["online"] = true
 		req.Server.Online = true
+	}
+	missingArgument := false
+	for k, v := range argumentCheck {
+		if !v {
+			fmt.Fprintf(os.Stderr, "Missing argument: %s\n", k)
+			missingArgument = true
+		}
+	}
+	if missingArgument {
+		os.Exit(1)
 	}
 
 	resp, err := resty.New().
@@ -86,25 +101,316 @@ func cmdServerCreate(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	Slog.Printf("HTTP Response: %s\n", resp.Status())
+	checkRestyResponse(resp)
+	// checks the embedded status code
+	_ = decodeProtoResultServerFromResponse(resp)
+}
 
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
-	var serverResult somaproto.ProtoResultServer
-	err = decoder.Decode(&serverResult)
+func cmdServerMarkAsDeleted(c *cli.Context) {
+	url := getApiUrl()
+	var (
+		assetId uint64
+		err     error
+	)
+
+	a := c.Args()
+	if !a.Present() {
+		Slog.Fatal("Syntax error")
+	}
+	if a.First() == "by-name" {
+		server := a.Get(1)
+		if server == "" {
+			Slog.Fatal("Syntax error")
+		}
+		assetId = getServerAssetIdByName(server)
+	} else {
+		assetId, err = strconv.ParseUint(a.First(), 10, 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+	}
+	url.Path = fmt.Sprintf("/servers/%d", assetId)
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		Delete(url.String())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error decoding server response body\n")
-		Slog.Printf("Error decoding server response body\n")
+		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	if serverResult.Code > 299 {
-		fmt.Fprintf(os.Stderr, "Request failed: %d - %s\n",
-			serverResult.Code, serverResult.Status)
-		for _, e := range serverResult.Text {
-			fmt.Fprintf(os.Stderr, "%s\n", e)
-			Slog.Printf("%s\n", e)
+	checkRestyResponse(resp)
+	// TODO check delete action success
+}
+
+func cmdServerPurgeDeleted(c *cli.Context) {
+	url := getApiUrl()
+
+	if c.Bool("all") {
+		url.Path = fmt.Sprintf("/servers")
+	} else {
+		a := c.Args()
+		if !a.Present() || len(a.Tail()) != 0 {
+			Slog.Fatal("Syntax error")
 		}
+		assetId, err := strconv.ParseUint(a.First(), 10, 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+		url.Path = fmt.Sprintf("/servers/%d", assetId)
+	}
+
+	var req somaproto.ProtoRequestServer
+	req.Purge = true
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Delete(url.String())
+	if err != nil {
+	}
+	checkRestyResponse(resp)
+	// TODO check delete action success
+}
+
+func cmdServerUpdate(c *cli.Context) {
+	url := getApiUrl()
+
+	// required gymnastics to get a []string
+	a := c.Args()
+	args := make([]string, 1)
+	args[0] = a.First()
+	tail := a.Tail()
+	args = append(args, tail...)
+
+	var req somaproto.ProtoRequestServer
+	var err error
+
+	// golang on its own can't iterate over a slice two items at a time
+	skipNext := false
+	argumentCheck := map[string]bool{
+		"id":         false,
+		"datacenter": false,
+		"location":   false,
+		"name":       false,
+		"online":     false,
+	}
+	for pos, val := range args {
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		switch val {
+		case "id":
+			checkServerKeyword(args[pos+1])
+			req.Server.AssetId, err = strconv.ParseUint(args[pos+1],
+				10, 64)
+			if err != nil {
+				fmt.Fprintf(os.Stderr,
+					"Cannot parse id argument to uint64\n")
+				Slog.Fatal(err)
+			}
+			skipNext = true
+			argumentCheck["id"] = true
+		case "datacenter":
+			checkServerKeyword(args[pos+1])
+			req.Server.Datacenter = args[pos+1]
+			skipNext = true
+			argumentCheck["datacenter"] = true
+		case "location":
+			checkServerKeyword(args[pos+1])
+			req.Server.Location = args[pos+1]
+			skipNext = true
+			argumentCheck["location"] = true
+		case "name":
+			checkServerKeyword(args[pos+1])
+			req.Server.Name = args[pos+1]
+			skipNext = true
+			argumentCheck["name"] = true
+		case "online":
+			checkServerKeyword(args[pos+1])
+			req.Server.Online, err = strconv.ParseBool(args[pos+1])
+			if err != nil {
+				fmt.Fprintf(os.Stderr,
+					"parameter online must be true or false\n")
+				Slog.Fatal(err)
+			}
+			skipNext = true
+			argumentCheck["online"] = true
+		}
+	}
+
+	// online argument is optional and defaults to true
+	if !argumentCheck["online"] {
+		argumentCheck["online"] = true
+		req.Server.Online = true
+	}
+	missingArgument := false
+	for k, v := range argumentCheck {
+		if !v {
+			fmt.Fprintf(os.Stderr, "Missing argument: %s\n", k)
+			missingArgument = true
+		}
+	}
+	if missingArgument {
 		os.Exit(1)
 	}
+	url.Path = fmt.Sprintf("/servers/%d", req.Server.AssetId)
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Post(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// checks the embedded status code
+	_ = decodeProtoResultServerFromResponse(resp)
+}
+
+func cmdServerRename(c *cli.Context) {
+	url := getApiUrl()
+	var (
+		assetId uint64
+		err     error
+		newName string
+	)
+
+	a := c.Args()
+	if !a.Present() {
+		Slog.Fatal("Syntax error")
+	}
+	if a.First() == "by-name" {
+		server := a.Get(1)
+		if server == "" || a.Get(2) != "to" || a.Get(3) == "" {
+			Slog.Fatal("Syntax error")
+		}
+		assetId = getServerAssetIdByName(server)
+		newName = a.Get(3)
+	} else {
+		assetId, err = strconv.ParseUint(a.First(), 10, 64)
+		if err != nil || a.Get(1) != "to" || a.Get(2) == "" {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+		newName = a.Get(2)
+	}
+	url.Path = fmt.Sprintf("/servers/%d", assetId)
+
+	var req somaproto.ProtoRequestServer
+	req.Server.Name = newName
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Patch(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// TODO check delete action success
+}
+
+func cmdServerOnline(c *cli.Context) {
+	url := getApiUrl()
+	var (
+		assetId uint64
+		err     error
+	)
+
+	a := c.Args()
+	if !a.Present() {
+		Slog.Fatal("Syntax error")
+	}
+	if a.First() == "by-name" {
+		server := a.Get(1)
+		if server == "" {
+			Slog.Fatal("Syntax error")
+		}
+		assetId = getServerAssetIdByName(server)
+	} else {
+		idString := a.First()
+		if idString == "" {
+			fmt.Fprintf(os.Stderr, "Could not read assetId\n")
+			Slog.Fatal(err)
+		}
+		assetId, err = strconv.ParseUint(idString, 10, 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+	}
+	url.Path = fmt.Sprintf("/servers/%d", assetId)
+
+	var req somaproto.ProtoRequestServer
+	req.Server.Online = true
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Patch(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// TODO check delete action success
+}
+
+func cmdServerOffline(c *cli.Context) {
+	url := getApiUrl()
+	var (
+		assetId uint64
+		err     error
+	)
+
+	a := c.Args()
+	if !a.Present() {
+		Slog.Fatal("Syntax error")
+	}
+	if a.First() == "by-name" {
+		server := a.Get(1)
+		if server == "" {
+			Slog.Fatal("Syntax error")
+		}
+		assetId = getServerAssetIdByName(server)
+	} else {
+		idString := a.First()
+		if idString == "" {
+			fmt.Fprintf(os.Stderr, "Could not read assetId\n")
+			Slog.Fatal(err)
+		}
+		assetId, err = strconv.ParseUint(idString, 10, 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+	}
+	url.Path = fmt.Sprintf("/servers/%d", assetId)
+
+	var req somaproto.ProtoRequestServer
+	req.Server.Online = false
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Patch(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// TODO check delete action success
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
