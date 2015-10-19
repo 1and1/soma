@@ -534,4 +534,82 @@ func cmdServerList(c *cli.Context) {
 	// TODO check list action
 }
 
+func cmdServerShow(c *cli.Context) {
+	url := getApiUrl()
+	var (
+		assetId uint64
+		err     error
+	)
+
+	a := c.Args()
+	if !a.Present() {
+		Slog.Fatal("Syntax error")
+	}
+	if a.First() == "by-name" {
+		server := a.Get(1)
+		if server == "" {
+			Slog.Fatal("Syntax error")
+		}
+		assetId = getServerAssetIdByName(server)
+	} else {
+		idString := a.First()
+		if idString == "" {
+			fmt.Fprintf(os.Stderr, "Could not read assetId\n")
+			Slog.Fatal(err)
+		}
+		assetId, err = strconv.ParseUint(idString, 10, 64)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
+			Slog.Fatal(err)
+		}
+	}
+	url.Path = fmt.Sprintf("/servers/%d", assetId)
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		Get(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// TODO output data received from action
+}
+
+func cmdServerSyncRequest(c *cli.Context) {
+	url := getApiUrl()
+	url.Path = "/jobs"
+
+	a := c.Args()
+	// arguments must be present, and the arguments after the first must
+	// be zero => 1 argument given
+	if !a.Present() || len(a.Tail()) != 0 {
+		Slog.Fatal("Syntax error")
+	}
+	assetId, err := strconv.ParseUint(a.First(), 10, 64)
+
+	var req somaproto.ProtoRequestJob
+	req.JobType = "server"
+	req.Server.Action = "sync"
+	req.Server.Server.AssetId = assetId
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Patch(url.String())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, err.Error())
+		Slog.Fatal(err)
+	}
+	checkRestyResponse(resp)
+	// TODO save jobid locally as outstanding
+	/*
+		TODO: decode resp.Body -> ProtoResultJob
+		job := ProtoResultJob.JobId
+		jobDbAddOutstandingJob(job)
+	*/
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

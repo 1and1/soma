@@ -11,7 +11,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "somaadm"
 	app.Usage = "SOMA Administrative Interface"
-	app.Version = "0.0.9"
+	app.Version = "0.0.10"
 
 	app = registerCommands(*app)
 	app = registerFlags(*app)
