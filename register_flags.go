@@ -17,7 +17,6 @@ func registerFlags(app cli.App) *cli.App {
 		},
 		cli.IntFlag{
 			Name:   "timeout, t",
-			Value:  3,
 			Usage:  "connect timeout in seconds",
 			EnvVar: "SOMA_ADM_TIMEOUT",
 		},
@@ -27,8 +26,17 @@ func registerFlags(app cli.App) *cli.App {
 			EnvVar: "SOMA_ADM_API",
 		},
 		cli.StringFlag{
+			Name:   "jobdb, j",
+			Usage:  "name of the jobs data subdirectory",
+			EnvVar: "SOMA_ADM_JOBSDB",
+		},
+		cli.StringFlag{
+			Name:   "logdir, l",
+			Usage:  "name of the log subdirectory",
+			EnvVar: "SOMA_ADM_LOGDIR",
+		},
+		cli.StringFlag{
 			Name:   "config, c",
-			Value:  "somaadm.conf",
 			Usage:  "configuration file location",
 			EnvVar: "SOMA_ADM_CONFIG",
 		},

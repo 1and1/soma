@@ -3,17 +3,21 @@ package main
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"log"
 )
 
 func registerCommands(app cli.App) *cli.App {
-	log.Print("Registering cli commands")
 
 	app.Commands = []cli.Command{
 		{
+			Name:   "init",
+			Usage:  "initialize local client files",
+			Before: runtimePreCmd,
+			Action: cmdClientInit,
+		}, // end init
+		{
 			Name:   "servers",
 			Usage:  "subcommands for servers",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:  "create",
@@ -27,7 +31,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "buckets",
 			Usage:  "subcommands for buckets",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:  "create",
@@ -55,7 +59,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "views",
 			Usage:  "subcommands for views",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
@@ -87,7 +91,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "environments",
 			Usage:  "subcommands for environments",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
@@ -119,7 +123,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "types",
 			Usage:  "subcommands for object types",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
@@ -151,7 +155,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "states",
 			Usage:  "subcommands for states",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
@@ -183,7 +187,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "datacenters",
 			Usage:  "subcommands for datacenters",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
@@ -235,7 +239,7 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "servers",
 			Usage:  "subcommands for servers",
-			Before: configSetup,
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "create",

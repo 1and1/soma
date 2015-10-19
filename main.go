@@ -8,12 +8,10 @@ import (
 var Cfg Config
 
 func main() {
-	initLogFile()
-
 	app := cli.NewApp()
 	app.Name = "somaadm"
 	app.Usage = "SOMA Administrative Interface"
-	app.Version = "0.0.7"
+	app.Version = "0.0.8"
 
 	app = registerCommands(*app)
 	app = registerFlags(*app)

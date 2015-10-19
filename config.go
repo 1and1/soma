@@ -3,21 +3,33 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/nahanni/go-ucl"
+	"github.com/syndtr/goleveldb/leveldb"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 type Config struct {
 	Timeout string     `json:"timeout"`
 	Api     string     `json:"api"`
 	JobDb   string     `json:"jobdb"`
+	LogDir  string     `json:"logdir"`
 	Auth    AuthConfig `json:"auth"`
+	Run     RunTimeConfig
 }
 
 type AuthConfig struct {
 	User string `json:"user"`
 	Pass string `json:"pass"`
+}
+
+type RunTimeConfig struct {
+	LevelDB     *leveldb.DB
+	PathLevelDB string
+	PathLogs    string
+	Logger      *log.Logger
 }
 
 func (c *Config) populateFromFile(fname string) error {
@@ -26,20 +38,20 @@ func (c *Config) populateFromFile(fname string) error {
 		return err
 	}
 
-	log.Printf("Loading configuration from %s", fname)
-
 	// UCL parses into map[string]interface{}
 	fileBytes := bytes.NewBuffer([]byte(file))
 	parser := ucl.NewParser(fileBytes)
 	uclData, err := parser.Ucl()
 	if err != nil {
-		log.Fatal("UCL error: ", err)
+		fmt.Fprintf(os.Stderr, "UCL error: %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	// take detour via JSON to load UCL into struct
 	uclJson, err := json.Marshal(uclData)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "JSON marshal error: %s\n", err.Error())
+		os.Exit(1)
 	}
 	json.Unmarshal([]byte(uclJson), &c)
 
