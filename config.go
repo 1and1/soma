@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Timeout string     `json:"timeout"`
 	Api     string     `json:"api"`
+	JobDb   string     `json:"jobdb"`
 	Auth    AuthConfig `json:"auth"`
 }
 
