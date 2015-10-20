@@ -288,6 +288,99 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end servers
+		{
+			Name:   "permissions",
+			Usage:  "subcommands for permissions",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:  "type",
+					Usage: "subcommands for permission types",
+					Subcommands: []cli.Command{
+						{
+							Name:   "add",
+							Action: cmdPermissionTypeAdd,
+						},
+						{
+							Name:   "remove",
+							Action: cmdPermissionTypeDel,
+						},
+						{
+							Name:   "rename",
+							Action: cmdPermissionTypeRename,
+						},
+						{
+							Name:   "list",
+							Action: cmdPermissionTypeList,
+						},
+						{
+							Name:   "show",
+							Action: cmdPermissionTypeShow,
+						},
+					}, // end permissions type
+				},
+				{
+					Name:   "add",
+					Action: cmdPermissionAdd,
+				},
+				{
+					Name:   "remove",
+					Action: cmdPermissionDel,
+				},
+				{
+					Name:   "list",
+					Action: cmdPermissionList,
+				},
+				{
+					Name:  "show",
+					Usage: "subcommands for permission show",
+					Subcommands: []cli.Command{
+						{
+							Name:   "user",
+							Action: cmdPermissionShowUser,
+						},
+						{
+							Name:   "team",
+							Action: cmdPermissionShowTeam,
+						},
+						{
+							Name:   "tool",
+							Action: cmdPermissionShowTool,
+						},
+						{
+							Name:   "permission",
+							Action: cmdPermissionShowPermission,
+						},
+					},
+				}, // end permissions show
+				{
+					Name:   "audit",
+					Action: cmdPermissionAudit,
+				},
+				{
+					Name:  "grant",
+					Usage: "subcommands for permission grant",
+					Subcommands: []cli.Command{
+						{
+							Name:   "enable",
+							Action: cmdPermissionGrantEnable,
+						},
+						{
+							Name:   "global",
+							Action: cmdPermissionGrantGlobal,
+						},
+						{
+							Name:   "limited",
+							Action: cmdPermissionGrantLimited,
+						},
+						{
+							Name:   "system",
+							Action: cmdPermissionGrantSystem,
+						},
+					},
+				}, // end permissions grant
+			},
+		},
 	}
 	return &app
 }

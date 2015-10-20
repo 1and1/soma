@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/codegangsta/cli"
 	"gopkg.in/resty.v0"
 	"log"
 	"net/url"
@@ -104,6 +105,90 @@ func decodeProtoResultServerFromResponse(resp *resty.Response) *somaproto.ProtoR
 		os.Exit(1)
 	}
 	return &res
+}
+
+func validateCliArgumentCount(c *cli.Context, i uint8) {
+	a := c.Args()
+	if i == 0 {
+		if a.Present() {
+			Slog.Fatal("Syntax error, command takes no arguments")
+		}
+	} else {
+		if !a.Present() || len(a.Tail()) != (int(i)-1) {
+			Slog.Fatal("Syntax error")
+		}
+	}
+}
+
+func validateCliArgument(c *cli.Context, pos uint8, s string) {
+	a := c.Args()
+	if a.Get(int(pos)-1) != s {
+		Slog.Fatal("Syntax error, missing keyword: ", s)
+	}
+}
+
+func getCliArgumentCount(c *cli.Context) int {
+	a := c.Args()
+	if !a.Present() {
+		return 0
+	}
+	return len(a.Tail()) + 1
+}
+
+func parseLimitedGrantArguments(keys []string, args []string) *map[string]string {
+	result := make(map[string]string)
+	argumentCheck := make(map[string]bool)
+	for _, key := range keys {
+		argumentCheck[key] = false
+	}
+
+	skipNext := false
+
+	for pos, val := range args {
+		if skipNext {
+			skipNext = false
+			continue
+		}
+		switch val {
+		case "repository":
+			checkStringNotAKeyword(args[pos+1], keys)
+			result["repository"] = args[pos+1]
+			skipNext = true
+			argumentCheck["repository"] = true
+		case "bucket":
+			checkStringNotAKeyword(args[pos+1], keys)
+			result["bucket"] = args[pos+1]
+			skipNext = true
+			argumentCheck["bucket"] = true
+		case "group":
+			checkStringNotAKeyword(args[pos+1], keys)
+			result["group"] = args[pos+1]
+			skipNext = true
+			argumentCheck["group"] = true
+		case "cluster":
+			checkStringNotAKeyword(args[pos+1], keys)
+			result["group"] = args[pos+1]
+			skipNext = true
+			argumentCheck["cluster"] = true
+		}
+	}
+
+	// check we managed to collect all required keywords
+	for k, v := range argumentCheck {
+		if !v {
+			Slog.Fatal("Syntax error, missing keyword for argument count: ", k)
+		}
+	}
+
+	return &result
+}
+
+func checkStringNotAKeyword(s string, keys []string) {
+	for _, val := range keys {
+		if val == s {
+			Slog.Fatal("Syntax error, back-to-back keywords")
+		}
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
