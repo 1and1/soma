@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path"
+
 	"github.com/codegangsta/cli"
 	"github.com/mitchellh/go-homedir"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/opt"
-	"os"
-	"path"
 )
 
 // This command runs before the config file exists
