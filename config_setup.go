@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/mitchellh/go-homedir"
@@ -84,7 +83,8 @@ func configSetup(c *cli.Context) error {
 
 	// TODO prompt for Password
 	if Cfg.Auth.Pass == "" {
-		return errors.New("Password required")
+		fmt.Fprintf(os.Stderr, "Password required")
+		os.Exit(1)
 	}
 	return nil
 }
