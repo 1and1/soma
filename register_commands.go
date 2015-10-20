@@ -10,7 +10,6 @@ func registerCommands(app cli.App) *cli.App {
 		{
 			Name:   "init",
 			Usage:  "initialize local client files",
-			Before: runtimePreCmd,
 			Action: cmdClientInit,
 		}, // end init
 		{
@@ -337,7 +336,30 @@ func registerCommands(app cli.App) *cli.App {
 					},
 				}, // end permissions grant
 			},
-		},
+		}, // end permissions
+		{
+			Name:   "teams",
+			Usage:  "subcommands for teams",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "add",
+					Action: cmdTeamAdd,
+				},
+				{
+					Name:   "remove",
+					Action: cmdTeamDel,
+				},
+				{
+					Name:   "rename",
+					Action: cmdTeamRename,
+				},
+				{
+					Name:   "migrate",
+					Action: cmdTeamMigrate,
+				},
+			},
+		}, // end teams
 	}
 	return &app
 }
