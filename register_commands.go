@@ -358,6 +358,14 @@ func registerCommands(app cli.App) *cli.App {
 					Name:   "migrate",
 					Action: cmdTeamMigrate,
 				},
+				{
+					Name:   "list",
+					Action: cmdTeamList,
+				},
+				{
+					Name:   "show",
+					Action: cmdTeamShow,
+				},
 			},
 		}, // end teams
 	}
