@@ -84,7 +84,7 @@ func cmdTeamRename(c *cli.Context) {
 		validateCliArgument(c, 2, "to")
 		id, err = uuid.FromString(c.Args().First())
 		abortOnError(err, "Could not parse argument as uuid")
-		teamName = c.Args().Get(1)
+		teamName = c.Args().Get(2)
 	case 4:
 		validateCliArgument(c, 1, "by-name")
 		validateCliArgument(c, 3, "to")
@@ -116,7 +116,7 @@ func cmdTeamList(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/teams"
 
-	validateCliArgumentCount(0)
+	validateCliArgumentCount(c, 0)
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -130,9 +130,8 @@ func cmdTeamList(c *cli.Context) {
 func cmdTeamShow(c *cli.Context) {
 	url := getApiUrl()
 	var (
-		id       uuid.UUID
-		err      error
-		teamName string
+		id  uuid.UUID
+		err error
 	)
 
 	switch getCliArgumentCount(c) {
