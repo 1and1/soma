@@ -221,6 +221,29 @@ func getTeamIdByName(teamName string) uuid.UUID {
 	return teamResult.Teams[0].TeamId
 }
 
+func getOncallIdByName(oncall string) uuid.UUID {
+	url := getApiUrl()
+	url.Path = "/oncall"
+
+	var req somaproto.ProtoRequestOncall
+	var err error
+	req.Filter.Name = oncall
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Get(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	oncallResult := decodeProtoResultOncallFromResponse(resp)
+
+	if oncall != oncallResult.Oncalls[0].Name {
+		abort("Received result set for incorrect team")
+	}
+	return oncallResult.Oncalls[0].Id
+}
+
 func decodeProtoResultTeamFromResponse(resp *resty.Response) *somaproto.ProtoResultTeam {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
 	var res somaproto.ProtoResultTeam
@@ -238,6 +261,20 @@ func decodeProtoResultTeamFromResponse(resp *resty.Response) *somaproto.ProtoRes
 			Slog.Printf("%s\n", e)
 		}
 		os.Exit(1)
+	}
+	return &res
+}
+
+func decodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoResultOncall {
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	var res somaproto.ProtoResultOncall
+	err := decoder.Decode(&res)
+	abortOnError(err, "Error decoding server response body")
+	if res.Code > 299 {
+		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
+		msgs := []string{s}
+		msgs = append(msgs, res.Text...)
+		abort(msgs...)
 	}
 	return &res
 }
