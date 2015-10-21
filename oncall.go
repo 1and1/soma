@@ -6,6 +6,7 @@ import (
 
 type ProtoRequestOncall struct {
 	OnCall  ProtoOncall         `json:"oncall,omitempty"`
+	Filter  ProtoOncallFilter   `json:"filter,omitempty"`
 	Members []ProtoOncallMember `json:"members,omitempty"`
 }
 
@@ -17,10 +18,10 @@ type ProtoResultOncall struct {
 }
 
 type ProtoOncall struct {
-	Id      uuid.UUID         `json:"id,omitempty"`
-	Name    string            `json:"name,omitempty"`
-	Number  string            `json:"number,omitempty"`
-	Details ProtoOncallDetail `json:"details,omitempty"`
+	Id      uuid.UUID          `json:"id,omitempty"`
+	Name    string             `json:"name,omitempty"`
+	Number  string             `json:"number,omitempty"`
+	Details ProtoOncallDetails `json:"details,omitempty"`
 }
 
 type ProtoOncallDetails struct {
@@ -32,4 +33,9 @@ type ProtoOncallDetails struct {
 type ProtoOncallMember struct {
 	UserName string    `json:"username,omitempty"`
 	UserId   uuid.UUID `json"userid,omitempty"`
+}
+
+type ProtoOncallFilter struct {
+	Name   string `json:"name,omitempty"`
+	Number string `json:"number,omitempty"`
 }
