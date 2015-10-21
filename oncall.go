@@ -5,7 +5,8 @@ import (
 )
 
 type ProtoRequestOncall struct {
-	OnCall ProtoOncall `json:"oncall,omitempty"`
+	OnCall  ProtoOncall         `json:"oncall,omitempty"`
+	Members []ProtoOncallMember `json:"members,omitempty"`
 }
 
 type ProtoResultOncall struct {
@@ -26,4 +27,9 @@ type ProtoOncallDetails struct {
 	CreatedAt string   `json:"createdat,omitempty"`
 	CreatedBy string   `json:"createdby,omitempty"`
 	Members   []string `json:"members,omitempty"`
+}
+
+type ProtoOncallMember struct {
+	UserName string    `json:"username,omitempty"`
+	UserId   uuid.UUID `json"userid,omitempty"`
 }
