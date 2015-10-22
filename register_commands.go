@@ -198,9 +198,10 @@ func registerCommands(app cli.App) *cli.App {
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
-					Name:   "create",
-					Usage:  "Create a new physical server",
-					Action: cmdServerCreate,
+					Name:        "create",
+					Usage:       "Create a new physical server",
+					Description: help.CmdServerCreate,
+					Action:      cmdServerCreate,
 				},
 				{
 					Name:   "delete",
