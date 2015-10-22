@@ -9,328 +9,355 @@ func registerCommands(app cli.App) *cli.App {
 	app.Commands = []cli.Command{
 		{
 			Name:   "init",
-			Usage:  "initialize local client files",
+			Usage:  "Initialize local client files",
 			Action: cmdClientInit,
 		}, // end init
 		{
 			Name:   "views",
-			Usage:  "subcommands for views",
+			Usage:  "SUBCOMMANDS for views",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
-					Usage:  "",
+					Usage:  "Register a new view",
 					Action: cmdViewsAdd,
 				},
 				{
 					Name:   "remove",
-					Usage:  "",
+					Usage:  "Remove an existing view",
 					Action: cmdViewsRemove,
 				},
 				{
 					Name:   "rename",
-					Usage:  "",
+					Usage:  "Rename an existing view",
 					Action: cmdViewsRename,
 				},
 				{
 					Name:   "list",
-					Usage:  "",
+					Usage:  "List all registered views",
 					Action: cmdViewsList,
 				},
 				{
 					Name:   "show",
-					Usage:  "",
+					Usage:  "Show information about a specific view",
 					Action: cmdViewsShow,
 				},
 			},
 		}, // end views
 		{
 			Name:   "environments",
-			Usage:  "subcommands for environments",
+			Usage:  "SUBCOMMANDS for environments",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
-					Usage:  "",
+					Usage:  "Register a new view",
 					Action: cmdEnvironmentsAdd,
 				},
 				{
 					Name:   "remove",
-					Usage:  "",
+					Usage:  "Remove an existing unused environment",
 					Action: cmdEnvironmentsRemove,
 				},
 				{
 					Name:   "rename",
-					Usage:  "",
+					Usage:  "Rename an existing environment",
 					Action: cmdEnvironmentsRename,
 				},
 				{
 					Name:   "list",
-					Usage:  "",
+					Usage:  "List all available environments",
 					Action: cmdEnvironmentsList,
 				},
 				{
 					Name:   "show",
-					Usage:  "",
+					Usage:  "Show information about a specific environment",
 					Action: cmdEnvironmentsShow,
 				},
 			},
 		}, // end environments
 		{
 			Name:   "types",
-			Usage:  "subcommands for object types",
+			Usage:  "SUBCOMMANDS for object types",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
-					Usage:  "",
+					Usage:  "Add a new object type",
 					Action: cmdObjectTypesAdd,
 				},
 				{
 					Name:   "remove",
-					Usage:  "",
+					Usage:  "Remove an existing object type",
 					Action: cmdObjectTypesRemove,
 				},
 				{
 					Name:   "rename",
-					Usage:  "",
+					Usage:  "Rename an existing object type",
 					Action: cmdObjectTypesRename,
 				},
 				{
 					Name:   "list",
-					Usage:  "",
+					Usage:  "List all object types",
 					Action: cmdObjectTypesList,
 				},
 				{
 					Name:   "show",
-					Usage:  "",
+					Usage:  "Show information about a specific object type",
 					Action: cmdObjectTypesShow,
 				},
 			},
 		}, // end types
 		{
 			Name:   "states",
-			Usage:  "subcommands for states",
+			Usage:  "SUBCOMMANDS for states",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
-					Usage:  "",
+					Usage:  "Add a new object state",
 					Action: cmdObjectStatesAdd,
 				},
 				{
 					Name:   "remove",
-					Usage:  "",
+					Usage:  "Remove an existing object state",
 					Action: cmdObjectStatesRemove,
 				},
 				{
 					Name:   "rename",
-					Usage:  "",
+					Usage:  "Rename an existing object state",
 					Action: cmdObjectStatesRename,
 				},
 				{
 					Name:   "list",
-					Usage:  "",
+					Usage:  "List all object states",
 					Action: cmdObjectStatesList,
 				},
 				{
 					Name:   "show",
-					Usage:  "",
+					Usage:  "Show information about an object states",
 					Action: cmdObjectStatesShow,
 				},
 			},
 		}, // end states
 		{
 			Name:   "datacenters",
-			Usage:  "subcommands for datacenters",
+			Usage:  "SUBCOMMANDS for datacenters",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
-					Usage:  "",
+					Usage:  "Register a new datacenter",
 					Action: cmdDatacentersAdd,
 				},
 				{
 					Name:   "remove",
-					Usage:  "",
+					Usage:  "Remove an existing datacenter",
 					Action: cmdDatacentersRemove,
 				},
 				{
 					Name:   "rename",
-					Usage:  "",
+					Usage:  "Rename an existing datacenter",
 					Action: cmdDatacentersRename,
 				},
 				{
 					Name:   "list",
-					Usage:  "",
+					Usage:  "List all datacenters",
 					Action: cmdDatacentersList,
 				},
 				{
 					Name:   "show",
-					Usage:  "",
+					Usage:  "Show information about a specific datacenter",
 					Action: cmdDatacentersShow,
 				},
 				{
 					Name:   "groupadd",
-					Usage:  "",
+					Usage:  "Add a datacenter to a datacenter group",
 					Action: cmdDatacentersAddToGroup,
 				},
 				{
 					Name:   "groupdel",
-					Usage:  "",
+					Usage:  "Remove a datacenter from a datacenter group",
 					Action: cmdDatacentersRemoveFromGroup,
 				},
 				{
 					Name:   "grouplist",
-					Usage:  "",
+					Usage:  "List all datacenter groups",
 					Action: cmdDatacentersListGroups,
 				},
 				{
 					Name:   "groupshow",
-					Usage:  "",
+					Usage:  "Show information about a datacenter group",
 					Action: cmdDatacentersShowGroup,
 				},
 			},
 		}, // end datacenters
 		{
 			Name:   "servers",
-			Usage:  "subcommands for servers",
+			Usage:  "SUBCOMMANDS for servers",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "create",
-					Usage:  "",
+					Usage:  "Create a new physical server",
 					Action: cmdServerCreate,
 				},
 				{
 					Name:   "delete",
-					Usage:  "",
+					Usage:  "Mark an existing physical server as deleted",
 					Action: cmdServerMarkAsDeleted,
 				},
 				{
 					Name:   "purge",
-					Usage:  "",
+					Usage:  "Remove all unreferenced servers marked as deleted",
 					Action: cmdServerPurgeDeleted,
 				},
 				{
 					Name:   "update",
-					Usage:  "",
+					Usage:  "Full update of server attributes (replace, not merge)",
 					Action: cmdServerUpdate,
 				},
 				{
 					Name:   "rename",
-					Usage:  "",
+					Usage:  "Rename an existing server",
 					Action: cmdServerRename,
 				},
 				{
 					Name:   "online",
-					Usage:  "",
+					Usage:  "Set an existing server to online",
 					Action: cmdServerOnline,
 				},
 				{
 					Name:   "offline",
-					Usage:  "",
+					Usage:  "Set an existing server to offline",
 					Action: cmdServerOffline,
 				},
 				{
 					Name:   "move",
-					Usage:  "",
+					Usage:  "Change a server's registered location",
 					Action: cmdServerMove,
 				},
 				{
 					Name:   "list",
-					Usage:  "",
+					Usage:  "List all servers, see full description for possible filters",
 					Action: cmdServerList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a specific server",
+					Action: cmdServerShow,
+				},
+				{
+					Name:   "sync",
+					Usage:  "Request a data sync for a server",
+					Action: cmdServerSyncRequest,
 				},
 			},
 		}, // end servers
 		{
 			Name:   "permissions",
-			Usage:  "subcommands for permissions",
+			Usage:  "SUBCOMMANDS for permissions",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:  "type",
-					Usage: "subcommands for permission types",
+					Usage: "SUBCOMMANDS for permission types",
 					Subcommands: []cli.Command{
 						{
 							Name:   "add",
+							Usage:  "Register a new permission type",
 							Action: cmdPermissionTypeAdd,
 						},
 						{
 							Name:   "remove",
+							Usage:  "Remove an existing permission type",
 							Action: cmdPermissionTypeDel,
 						},
 						{
 							Name:   "rename",
+							Usage:  "Rename an existing permission type",
 							Action: cmdPermissionTypeRename,
 						},
 						{
 							Name:   "list",
+							Usage:  "List all permission types",
 							Action: cmdPermissionTypeList,
 						},
 						{
 							Name:   "show",
+							Usage:  "Show details for a permission type",
 							Action: cmdPermissionTypeShow,
 						},
 					}, // end permissions type
 				},
 				{
 					Name:   "add",
+					Usage:  "Register a new permission",
 					Action: cmdPermissionAdd,
 				},
 				{
 					Name:   "remove",
+					Usage:  "Remove a permission",
 					Action: cmdPermissionDel,
 				},
 				{
 					Name:   "list",
+					Usage:  "List all permissions",
 					Action: cmdPermissionList,
 				},
 				{
 					Name:  "show",
-					Usage: "subcommands for permission show",
+					Usage: "SUBCOMMANDS for permission show",
 					Subcommands: []cli.Command{
 						{
 							Name:   "user",
+							Usage:  "Show permissions of a user",
 							Action: cmdPermissionShowUser,
 						},
 						{
 							Name:   "team",
+							Usage:  "Show permissions of a team",
 							Action: cmdPermissionShowTeam,
 						},
 						{
 							Name:   "tool",
+							Usage:  "Show permissions of a tool account",
 							Action: cmdPermissionShowTool,
 						},
 						{
 							Name:   "permission",
+							Usage:  "Show details about a permission",
 							Action: cmdPermissionShowPermission,
 						},
 					},
 				}, // end permissions show
 				{
 					Name:   "audit",
+					Usage:  "Show all limited permissions associated with a repository",
 					Action: cmdPermissionAudit,
 				},
 				{
 					Name:  "grant",
-					Usage: "subcommands for permission grant",
+					Usage: "SUBCOMMANDS for permission grant",
 					Subcommands: []cli.Command{
 						{
 							Name:   "enable",
+							Usage:  "Enable a useraccount to receive GRANT permissions",
 							Action: cmdPermissionGrantEnable,
 						},
 						{
 							Name:   "global",
+							Usage:  "Grant a global permission",
 							Action: cmdPermissionGrantGlobal,
 						},
 						{
 							Name:   "limited",
+							Usage:  "Grant a limited permission",
 							Action: cmdPermissionGrantLimited,
 						},
 						{
 							Name:   "system",
+							Usage:  "Grant a system permission",
 							Action: cmdPermissionGrantSystem,
 						},
 					},
@@ -339,31 +366,37 @@ func registerCommands(app cli.App) *cli.App {
 		}, // end permissions
 		{
 			Name:   "teams",
-			Usage:  "subcommands for teams",
+			Usage:  "SUBCOMMANDS for teams",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "add",
+					Usage:  "Register a new team",
 					Action: cmdTeamAdd,
 				},
 				{
 					Name:   "remove",
+					Usage:  "Delete an existing team",
 					Action: cmdTeamDel,
 				},
 				{
 					Name:   "rename",
+					Usage:  "Rename an existing team",
 					Action: cmdTeamRename,
 				},
 				{
 					Name:   "migrate",
+					Usage:  "Migrate users between teams",
 					Action: cmdTeamMigrate,
 				},
 				{
 					Name:   "list",
+					Usage:  "List all teams",
 					Action: cmdTeamList,
 				},
 				{
 					Name:   "show",
+					Usage:  "Show information about a team",
 					Action: cmdTeamShow,
 				},
 			},
