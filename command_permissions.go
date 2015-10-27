@@ -297,23 +297,25 @@ func cmdPermissionGrantLimited(c *cli.Context) {
 	// the keys array is ordered towars increasing detail, ie. there can
 	// not be a limited grant on a cluster without specifying the
 	// repository
+	// Also, slicing uses halfopen interval [a:b), ie `a` is part of the
+	// resulting slice, but `b` is not
 	switch getCliArgumentCount(c) {
 	case 5:
-		keySlice = keys[1:1]
+		keySlice = keys[0:1]
 	case 7:
-		keySlice = keys[1:2]
+		keySlice = keys[0:2]
 	case 9:
-		keySlice = keys[1:3]
+		keySlice = keys[0:3]
 	case 11:
-		keySlice = keys[1:4]
+		keySlice = keys[:]
 	default:
 		Slog.Fatal("Syntax error, unexpected argument count")
 	}
-	// Tail() skips the first argument, which is returned by First(),
-	// thus contains arguments 2-n. The first 3 arguments are fixed in
-	// order, the variable parts are arguments 4-n -- element 3-n in the
-	// tail slice. Slice element numbering starts at 1...
-	argSlice := c.Args().Tail()[3:]
+	// Tail() skips the first argument 0, which is returned by First(),
+	// thus contains arguments 1-n. The first 3 arguments 0-2 are fixed in
+	// order, the variable parts are arguments 4+ (argv 3-10) -- element
+	// 2-9 in the tail slice.
+	argSlice := c.Args().Tail()[2:]
 	options := *parseLimitedGrantArguments(keySlice, argSlice)
 
 	switch c.Args().Get(1) {
