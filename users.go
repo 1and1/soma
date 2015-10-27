@@ -34,8 +34,9 @@ type ProtoUser struct {
 }
 
 type ProtoUserCredentials struct {
-	Reset    bool `json:"reset,omitempty"`
-	Password bool `json:"password,omitempty"`
+	Reset    bool   `json:"reset,omitempty"`
+	Force    bool   `json:"force,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 type ProtoUserDetails struct {
