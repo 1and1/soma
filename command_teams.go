@@ -12,28 +12,26 @@ import (
 func cmdTeamAdd(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/teams"
-	keys := [...]string{"ldap", "system"}
-	keySlice := make([]string, 0)
+	keySlice := []string{"ldap", "system"}
+	reqSlice := []string{"ldap"}
 	var err error
 	var req somaproto.ProtoRequestTeam
 
 	switch getCliArgumentCount(c) {
-	case 3:
-		keySlice = keys[1:1]
-	case 5:
-		keySlice = keys[1:2]
+	case 3, 5:
+		break // nop
 	default:
 		abort("Syntax error, unexpected argument count")
 	}
 
-	options := *parseVariableArguments(keySlice, c.Args().Tail())
+	options, optArgs := parseVariableArguments(keySlice, reqSlice, c.Args().Tail())
 	req.Team.TeamName = c.Args().Get(0)
 	req.Team.LdapId = options["ldap"]
-	if options["system"] == "" {
-		req.Team.System = false
-	} else {
+	if sliceContainsString("system", optArgs) {
 		req.Team.System, err = strconv.ParseBool(options["system"])
 		abortOnError(err, "Syntax error, system argument not boolean")
+	} else {
+		req.Team.System = false
 	}
 
 	resp, err := resty.New().

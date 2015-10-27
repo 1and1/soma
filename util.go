@@ -279,10 +279,11 @@ func decodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoR
 	return &res
 }
 
-func parseVariableArguments(keys []string, args []string) *map[string]string {
+func parseVariableArguments(keys []string, rKeys []string, args []string) (map[string]string, []string) {
 	result := make(map[string]string)
 	argumentCheck := make(map[string]bool)
-	for _, key := range keys {
+	optionalKeys := make([]string, 0)
+	for _, key := range rKeys {
 		argumentCheck[key] = false
 	}
 	skipNext := false
@@ -298,6 +299,9 @@ func parseVariableArguments(keys []string, args []string) *map[string]string {
 			result[val] = args[pos+1]
 			argumentCheck[val] = true
 			skipNext = true
+			if !stringIsKeyword(val, rKeys) {
+				optionalKeys = append(optionalKeys, val)
+			}
 			continue
 		}
 		// keywords trigger continue, arguments are skipped over.
@@ -312,7 +316,11 @@ func parseVariableArguments(keys []string, args []string) *map[string]string {
 		}
 	}
 
-	return &result
+	return result, optionalKeys
+}
+
+func sliceContainsString(s string, sl []string) bool {
+	return stringIsKeyword(s, sl)
 }
 
 func stringIsKeyword(s string, keys []string) bool {

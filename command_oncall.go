@@ -14,10 +14,15 @@ func cmdOnCallAdd(c *cli.Context) {
 	url.Path = "/oncall"
 
 	validateCliArgumentCount(c, 4)
+	// possible keys
 	keySlice := []string{"name", "phone"}
+	// required keys
+	reqSlice := []string{"name", "phone"}
+	// received arguments
 	argSlice := []string{c.Args().First()}
 	argSlice = append(argSlice, c.Args().Tail()...)
-	options := *parseVariableArguments(keySlice, argSlice)
+	// discard list of optional arguments
+	options, _ := parseVariableArguments(keySlice, reqSlice, argSlice)
 
 	// validate phone number as numeric(4,0) --> 1-9999
 	phoneNumber, err := strconv.Atoi(options["phone"])
