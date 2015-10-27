@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/mail"
 	"net/url"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/codegangsta/cli"
 	"github.com/satori/go.uuid"
@@ -239,9 +241,32 @@ func getOncallIdByName(oncall string) uuid.UUID {
 	oncallResult := decodeProtoResultOncallFromResponse(resp)
 
 	if oncall != oncallResult.Oncalls[0].Name {
-		abort("Received result set for incorrect team")
+		abort("Received result set for incorrect oncall duty")
 	}
 	return oncallResult.Oncalls[0].Id
+}
+
+func getUserIdByName(user string) uuid.UUID {
+	url := getApiUrl()
+	url.Path = "/users"
+
+	var req somaproto.ProtoRequestUser
+	var err error
+	req.Filter.UserName = user
+
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(req).
+		Get(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	userResult := decodeProtoResultUserFromResponse(resp)
+
+	if user != userResult.Users[0].UserName {
+		abort("Received result set for incorrect user")
+	}
+	return userResult.Users[0].Id
 }
 
 func decodeProtoResultTeamFromResponse(resp *resty.Response) *somaproto.ProtoResultTeam {
@@ -268,6 +293,20 @@ func decodeProtoResultTeamFromResponse(resp *resty.Response) *somaproto.ProtoRes
 func decodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoResultOncall {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
 	var res somaproto.ProtoResultOncall
+	err := decoder.Decode(&res)
+	abortOnError(err, "Error decoding server response body")
+	if res.Code > 299 {
+		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
+		msgs := []string{s}
+		msgs = append(msgs, res.Text...)
+		abort(msgs...)
+	}
+	return &res
+}
+
+func decodeProtoResultUserFromResponse(resp *resty.Response) *somaproto.ProtoResultUser {
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	var res somaproto.ProtoResultUser
 	err := decoder.Decode(&res)
 	abortOnError(err, "Error decoding server response body")
 	if res.Code > 299 {
@@ -356,6 +395,62 @@ func abort(txt ...string) {
 		Slog.Print(e)
 	}
 	os.Exit(1)
+}
+
+func validateStringAsEmployeeNumber(s string) {
+	employeeNumber, err := strconv.Atoi(s)
+	abortOnError(err, "Syntax error, employeenr argument not a number")
+	if employeeNumber < 0 {
+		abort("Negative employee number is not allowed")
+	}
+}
+
+func validateStringAsMailAddress(s string) {
+	_, err := mail.ParseAddress(s)
+	abortOnError(err, "Syntax error, mailaddr does not parse as RFC 5322 address")
+}
+
+func patchRequestWithBody(body interface{}, url *url.URL) *resty.Response {
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(body).
+		Patch(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	return resp
+}
+
+func deleteRequest(url *url.URL) *resty.Response {
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		Delete(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	return resp
+}
+
+func deleteRequestWithBody(body interface{}, url *url.URL) *resty.Response {
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(body).
+		Delete(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	return resp
+}
+
+func postRequestWithBody(body interface{}, url *url.URL) *resty.Response {
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		SetBody(body).
+		Post(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	return resp
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
