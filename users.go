@@ -7,6 +7,7 @@ import (
 type ProtoRequestUser struct {
 	User        ProtoUser            `json:"user,omitempty"`
 	Credentials ProtoUserCredentials `json:"credentials,omitempty"`
+	Filter      ProtoUserFilter      `json:"filter,omitempty"`
 	Restore     bool                 `json:"restore,omitempty"`
 	Purge       bool                 `json:"purge,omitempty"`
 }
