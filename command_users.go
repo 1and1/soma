@@ -6,7 +6,6 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/satori/go.uuid"
-	"gopkg.in/resty.v0"
 )
 
 func cmdUserAdd(c *cli.Context) {
@@ -221,31 +220,69 @@ func cmdUserRename(c *cli.Context) {
 }
 
 func cmdUserActivate(c *cli.Context) {
-	abort("Not implemented")
+	url := getApiUrl()
+	id := utl.UserIdByUuidOrName(c)
+	url.Path = fmt.Sprintf("/users/%s", id.String())
+
+	var req somaproto.ProtoRequestUser
+	req.User.IsActive = true
+
+	_ = patchRequestWithBody(req, url)
 }
 
 func cmdUserDeactivate(c *cli.Context) {
-	abort("Not implemented")
+	url := getApiUrl()
+	id := utl.UserIdByUuidOrName(c)
+	url.Path = fmt.Sprintf("/users/%s", id.String())
+
+	var req somaproto.ProtoRequestUser
+	req.User.IsActive = false
+
+	_ = patchRequestWithBody(req, url)
 }
 
 func cmdUserList(c *cli.Context) {
-	abort("Not implemented")
+	_ = utl.GetRequest("/users")
 }
 
 func cmdUserShow(c *cli.Context) {
-	abort("Not implemented")
+	id := utl.UserIdByUuidOrName(c)
+	path := fmt.Sprintf("/users/%s", id.String())
+
+	_ = utl.GetRequest(path)
 }
 
 func cmdUserPasswordUpdate(c *cli.Context) {
-	abort("Not implemented")
+	id := utl.UserIdByUuidOrName(c)
+	path := fmt.Sprintf("/users/%s/password", id.String())
+	pass := utl.GetNewPassword()
+
+	var req somaproto.ProtoRequestUser
+	req.Credentials.Password = pass
+
+	_ = utl.PutRequestWithBody(req, path)
 }
 
 func cmdUserPasswordReset(c *cli.Context) {
-	abort("Not implemented")
+	id := utl.UserIdByUuidOrName(c)
+	path := fmt.Sprintf("/users/%s/password", id.String())
+
+	var req somaproto.ProtoRequestUser
+	req.Credentials.Reset = true
+
+	_ = utl.PutRequestWithBody(req, path)
 }
 
 func cmdUserPasswordForce(c *cli.Context) {
-	abort("Not implemented")
+	id := utl.UserIdByUuidOrName(c)
+	path := fmt.Sprintf("/users/%s/password", id.String())
+	pass := utl.GetNewPassword()
+
+	var req somaproto.ProtoRequestUser
+	req.Credentials.Force = true
+	req.Credentials.Password = pass
+
+	_ = utl.PutRequestWithBody(req, path)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
