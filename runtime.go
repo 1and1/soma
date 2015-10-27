@@ -15,5 +15,9 @@ func runtimePreCmd(c *cli.Context) error {
 	initLogFile()
 
 	//
+	utl.SetLog(Cfg.Run.Logger)
+	utl.SetUrl(Cfg.Api)
+
+	//
 	return nil
 }

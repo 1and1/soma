@@ -6,12 +6,13 @@ import (
 )
 
 var Cfg Config
+var utl util.SomaUtil
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "somaadm"
 	app.Usage = "SOMA Administrative Interface"
-	app.Version = "0.0.15"
+	app.Version = "0.0.16"
 
 	app = registerCommands(*app)
 	app = registerFlags(*app)
