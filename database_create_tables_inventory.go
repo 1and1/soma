@@ -6,7 +6,7 @@ func createTablesInventoryAssets(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 10)
+	queries := make([]string, 15)
 
 	queryMap["createTableDatacenters"] = `
 create table if not exists inventory.datacenters (
@@ -74,11 +74,30 @@ create table if not exists inventory.users (
   user_last_name              varchar(256)    NOT NULL,
   user_employee_number        numeric(16,0)   UNIQUE NOT NULL,
   user_mail_address           text            NOT NULL,
-  user_active                 boolean         NOT NULL DEFAULT 'yes',
+  user_is_active              boolean         NOT NULL DEFAULT 'yes',
   user_is_system              boolean         NOT NULL DEFAULT 'no',
+  user_is_deleted             boolean         NOT NULL DEFAULT 'no',
   organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id )
 );`
 	queries[idx] = "createTableUsers"
+	idx++
+
+	queryMap["createIndexUsersDeleted"] = `
+create index _users_deleted on inventory.users ( user_is_deleted, user_id )
+  where user_is_deleted;`
+	queries[idx] = "createIndexUsersDeleted"
+	idx++
+
+	queryMap["createIndexUsersSystem"] = `
+create index _users_system on inventory.users ( user_is_system, user_id )
+  where user_is_system;`
+	queries[idx] = "createIndexUsersSystem"
+	idx++
+
+	queryMap["createIndexUsersDeactivated"] = `
+create index _users_deactivated on inventory.users ( user_is_active, user_id )
+  where user_is_active = 'no';`
+	queries[idx] = "createIndexUsersSystem"
 	idx++
 
 	queryMap["createTableOncallDutyMembership"] = `
