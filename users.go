@@ -7,7 +7,7 @@ import (
 type ProtoRequestUser struct {
 	User        ProtoUser            `json:"user,omitempty"`
 	Credentials ProtoUserCredentials `json:"credentials,omitempty"`
-	Restore     bool                 `json:"purge,omitempty"`
+	Restore     bool                 `json:"restore,omitempty"`
 	Purge       bool                 `json:"purge,omitempty"`
 }
 
@@ -27,6 +27,7 @@ type ProtoUser struct {
 	MailAddress    string           `json:"mailaddress,omitempty"`
 	IsActive       bool             `json:"active,omitempty"`
 	IsSystem       bool             `json:"system,omitempty"`
+	IsDeleted      bool             `json:"deleted,omitempty"`
 	Team           string           `json:"team,omitempty"`
 	Details        ProtoUserDetails `json:"details,omitempty"`
 }
