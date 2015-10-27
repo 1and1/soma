@@ -29,3 +29,5 @@ type ProtoPermissionGrant struct {
 	Group      string `json:"group,omitempty"`
 	Cluster    string `json:"cluster,omitempty"`
 }
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
