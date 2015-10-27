@@ -212,6 +212,12 @@ func registerCommands(app cli.App) *cli.App {
 					Name:   "purge",
 					Usage:  "Remove all unreferenced servers marked as deleted",
 					Action: cmdServerPurgeDeleted,
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "all, a",
+							Usage: "Purge all deleted servers",
+						},
+					},
 				},
 				{
 					Name:   "update",
@@ -460,6 +466,96 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end oncall
+		{
+			Name:   "users",
+			Usage:  "SUBCOMMANDS for users",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new user",
+					Action: cmdUserAdd,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Mark a user as deleted",
+					Action: cmdUserMarkDeleted,
+				},
+				{
+					Name:   "purge",
+					Usage:  "Purge a user marked as deleted",
+					Action: cmdUserPurgeDeleted,
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "all, a",
+							Usage: "Purge all deleted users",
+						},
+					},
+				},
+				{
+					Name:   "restore",
+					Usage:  "Restore a user marked as deleted",
+					Action: cmdUserRestoreDeleted,
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "all, a",
+							Usage: "Restore all deleted users",
+						},
+					},
+				},
+				{
+					Name:   "update",
+					Usage:  "Set/change user information",
+					Action: cmdUserUpdate,
+				},
+				{
+					Name:   "rename",
+					Usage:  "Change a user's username",
+					Action: cmdUserRename,
+				},
+				{
+					Name:   "activate",
+					Usage:  "Activate a deativated user",
+					Action: cmdUserActivate,
+				},
+				{
+					Name:   "deactivate",
+					Usage:  "Deactivate a user account",
+					Action: cmdUserDeactivate,
+				},
+				{
+					Name:  "password",
+					Usage: "SUBCOMMANDS for user passwords",
+					Subcommands: []cli.Command{
+						{
+							Name:   "update",
+							Usage:  "Update the password of one's own user account",
+							Action: cmdUserPasswordUpdate,
+						},
+						{
+							Name:   "reset",
+							Usage:  "Trigger a password reset for a user",
+							Action: cmdUserPasswordReset,
+						},
+						{
+							Name:   "force",
+							Usage:  "Forcefully set the password of a user",
+							Action: cmdUserPasswordForce,
+						},
+					},
+				}, // end users password
+				{
+					Name:   "list",
+					Usage:  "List all registered users",
+					Action: cmdUserList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show information about a specific user",
+					Action: cmdUserShow,
+				},
+			},
+		}, // end users
 	}
 	return &app
 }
