@@ -453,4 +453,14 @@ func postRequestWithBody(body interface{}, url *url.URL) *resty.Response {
 	return resp
 }
 
+func getRequest(url *url.URL) *resty.Response {
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		Get(url.String())
+	abortOnError(err)
+	checkRestyResponse(resp)
+	return resp
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
