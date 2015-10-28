@@ -23,7 +23,7 @@ func cmdNodeAdd(c *cli.Context) {
 	var req somaproto.ProtoRequestNode
 
 	utl.ValidateStringAsNodeAssetId(options["assetid"])
-	if sliceContainsString("online", optional) {
+	if utl.SliceContainsString("online", optional) {
 		utl.ValidateStringAsBool(options["online"])
 		req.Node.IsOnline, _ = strconv.ParseBool(options["online"])
 	} else {

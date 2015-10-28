@@ -10,7 +10,7 @@ func cmdPermissionTypeAdd(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/permissions/types"
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().First()
 	Slog.Printf("Command: add permission type [%s]", permissionType)
 
@@ -31,7 +31,7 @@ func cmdPermissionTypeAdd(c *cli.Context) {
 func cmdPermissionTypeDel(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().First()
 	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
 	Slog.Printf("Command: delete permission type [%s]", permissionType)
@@ -48,8 +48,8 @@ func cmdPermissionTypeDel(c *cli.Context) {
 func cmdPermissionTypeRename(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 3)
-	validateCliArgument(c, 2, "to") // starts args counting at 1
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "to") // starts args counting at 1
 	permissionType := c.Args().Get(0)
 	newPermissionType := c.Args().Get(2)
 	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
@@ -71,7 +71,7 @@ func cmdPermissionTypeList(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/permissions/types"
 
-	validateCliArgumentCount(c, 0)
+	utl.ValidateCliArgumentCount(c, 0)
 
 	_, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -86,7 +86,7 @@ func cmdPermissionTypeList(c *cli.Context) {
 func cmdPermissionTypeShow(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().Get(0)
 	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
 
@@ -104,8 +104,8 @@ func cmdPermissionAdd(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/permissions"
 
-	validateCliArgumentCount(c, 3)
-	validateCliArgument(c, 2, "type")
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "type")
 	permission := c.Args().Get(0)
 	permissionType := c.Args().Get(2)
 
@@ -126,7 +126,7 @@ func cmdPermissionAdd(c *cli.Context) {
 func cmdPermissionDel(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	permission := c.Args().Get(0)
 	url.Path = fmt.Sprintf("/permissions/%s", permission)
 
@@ -143,7 +143,7 @@ func cmdPermissionList(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/permissions"
 
-	validateCliArgumentCount(c, 0)
+	utl.ValidateCliArgumentCount(c, 0)
 
 	_, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -163,11 +163,11 @@ func cmdPermissionShowGeneric(c *cli.Context, objType string) {
 		hasRepo bool
 	)
 
-	switch getCliArgumentCount(c) {
+	switch utl.GetCliArgumentCount(c) {
 	case 1:
 		hasRepo = false
 	case 3:
-		validateCliArgument(c, 2, "repository")
+		utl.ValidateCliArgument(c, 2, "repository")
 		hasRepo = true
 	default:
 		Slog.Fatal("Syntax error, unexpected argument count")
@@ -207,7 +207,7 @@ func cmdPermissionShowTool(c *cli.Context) {
 func cmdPermissionShowPermission(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	url.Path = fmt.Sprintf("/permissions/permission/%s", c.Args().Get(0))
 
 	_, err := resty.New().
@@ -223,7 +223,7 @@ func cmdPermissionShowPermission(c *cli.Context) {
 func cmdPermissionAudit(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	url.Path = fmt.Sprintf("/permissions/repository/%s", c.Args().Get(0))
 
 	_, err := resty.New().
@@ -239,7 +239,7 @@ func cmdPermissionAudit(c *cli.Context) {
 func cmdPermissionGrantEnable(c *cli.Context) {
 	url := getApiUrl()
 
-	validateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 1)
 	url.Path = fmt.Sprintf("/permissions/user/%s", c.Args().Get(0))
 
 	var req somaproto.ProtoRequestPermission
@@ -260,7 +260,7 @@ func cmdPermissionGrantGlobal(c *cli.Context) {
 	url := getApiUrl()
 	var objType string
 
-	validateCliArgumentCount(c, 3)
+	utl.ValidateCliArgumentCount(c, 3)
 	switch c.Args().Get(1) {
 	case "user":
 		objType = "user"
@@ -299,7 +299,7 @@ func cmdPermissionGrantLimited(c *cli.Context) {
 	// repository
 	// Also, slicing uses halfopen interval [a:b), ie `a` is part of the
 	// resulting slice, but `b` is not
-	switch getCliArgumentCount(c) {
+	switch utl.GetCliArgumentCount(c) {
 	case 5:
 		keySlice = keys[0:1]
 	case 7:

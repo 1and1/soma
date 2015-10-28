@@ -5,13 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/mail"
 	"net/url"
 	"os"
 	"path"
-	"strconv"
 
-	"github.com/codegangsta/cli"
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
@@ -112,34 +109,6 @@ func decodeProtoResultServerFromResponse(resp *resty.Response) *somaproto.ProtoR
 	return &res
 }
 
-func validateCliArgumentCount(c *cli.Context, i uint8) {
-	a := c.Args()
-	if i == 0 {
-		if a.Present() {
-			Slog.Fatal("Syntax error, command takes no arguments")
-		}
-	} else {
-		if !a.Present() || len(a.Tail()) != (int(i)-1) {
-			Slog.Fatal("Syntax error")
-		}
-	}
-}
-
-func validateCliArgument(c *cli.Context, pos uint8, s string) {
-	a := c.Args()
-	if a.Get(int(pos)-1) != s {
-		Slog.Fatal("Syntax error, missing keyword: ", s)
-	}
-}
-
-func getCliArgumentCount(c *cli.Context) int {
-	a := c.Args()
-	if !a.Present() {
-		return 0
-	}
-	return len(a.Tail()) + 1
-}
-
 func parseLimitedGrantArguments(keys []string, args []string) *map[string]string {
 	result := make(map[string]string)
 	argumentCheck := make(map[string]bool)
@@ -236,12 +205,12 @@ func getOncallIdByName(oncall string) uuid.UUID {
 		R().
 		SetBody(req).
 		Get(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 	oncallResult := decodeProtoResultOncallFromResponse(resp)
 
 	if oncall != oncallResult.Oncalls[0].Name {
-		abort("Received result set for incorrect oncall duty")
+		utl.Abort("Received result set for incorrect oncall duty")
 	}
 	return oncallResult.Oncalls[0].Id
 }
@@ -259,12 +228,12 @@ func getUserIdByName(user string) uuid.UUID {
 		R().
 		SetBody(req).
 		Get(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 	userResult := decodeProtoResultUserFromResponse(resp)
 
 	if user != userResult.Users[0].UserName {
-		abort("Received result set for incorrect user")
+		utl.Abort("Received result set for incorrect user")
 	}
 	return userResult.Users[0].Id
 }
@@ -294,12 +263,12 @@ func decodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoR
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
 	var res somaproto.ProtoResultOncall
 	err := decoder.Decode(&res)
-	abortOnError(err, "Error decoding server response body")
+	utl.AbortOnError(err, "Error decoding server response body")
 	if res.Code > 299 {
 		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
 		msgs := []string{s}
 		msgs = append(msgs, res.Text...)
-		abort(msgs...)
+		utl.Abort(msgs...)
 	}
 	return &res
 }
@@ -308,12 +277,12 @@ func decodeProtoResultUserFromResponse(resp *resty.Response) *somaproto.ProtoRes
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
 	var res somaproto.ProtoResultUser
 	err := decoder.Decode(&res)
-	abortOnError(err, "Error decoding server response body")
+	utl.AbortOnError(err, "Error decoding server response body")
 	if res.Code > 299 {
 		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
 		msgs := []string{s}
 		msgs = append(msgs, res.Text...)
-		abort(msgs...)
+		utl.Abort(msgs...)
 	}
 	return &res
 }
@@ -333,12 +302,12 @@ func parseVariableArguments(keys []string, rKeys []string, args []string) (map[s
 			continue
 		}
 
-		if stringIsKeyword(val, keys) {
+		if utl.StringIsKeyword(val, keys) {
 			checkStringNotAKeyword(args[pos+1], keys)
 			result[val] = args[pos+1]
 			argumentCheck[val] = true
 			skipNext = true
-			if !stringIsKeyword(val, rKeys) {
+			if !utl.StringIsKeyword(val, rKeys) {
 				optionalKeys = append(optionalKeys, val)
 			}
 			continue
@@ -356,111 +325,6 @@ func parseVariableArguments(keys []string, rKeys []string, args []string) (map[s
 	}
 
 	return result, optionalKeys
-}
-
-func sliceContainsString(s string, sl []string) bool {
-	return stringIsKeyword(s, sl)
-}
-
-func stringIsKeyword(s string, keys []string) bool {
-	for _, key := range keys {
-		if key == s {
-			return true
-		}
-	}
-	return false
-}
-
-func abortOnError(err error, txt ...string) {
-	if err != nil {
-		for _, s := range txt {
-			fmt.Fprintf(os.Stderr, "%s\n", s)
-			Slog.Print(s)
-		}
-		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
-	}
-}
-
-func abort(txt ...string) {
-	for _, s := range txt {
-		fmt.Fprintf(os.Stderr, "%s\n", s)
-		Slog.Print(s)
-	}
-
-	// ensure there is _something_
-	if len(txt) == 0 {
-		e := `abort called without error message. Sorry!`
-		fmt.Fprintf(os.Stderr, "%s\n", e)
-		Slog.Print(e)
-	}
-	os.Exit(1)
-}
-
-func validateStringAsEmployeeNumber(s string) {
-	employeeNumber, err := strconv.Atoi(s)
-	abortOnError(err, "Syntax error, employeenr argument not a number")
-	if employeeNumber < 0 {
-		abort("Negative employee number is not allowed")
-	}
-}
-
-func validateStringAsMailAddress(s string) {
-	_, err := mail.ParseAddress(s)
-	abortOnError(err, "Syntax error, mailaddr does not parse as RFC 5322 address")
-}
-
-func patchRequestWithBody(body interface{}, url *url.URL) *resty.Response {
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Patch(url.String())
-	abortOnError(err)
-	checkRestyResponse(resp)
-	return resp
-}
-
-func deleteRequest(url *url.URL) *resty.Response {
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	abortOnError(err)
-	checkRestyResponse(resp)
-	return resp
-}
-
-func deleteRequestWithBody(body interface{}, url *url.URL) *resty.Response {
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Delete(url.String())
-	abortOnError(err)
-	checkRestyResponse(resp)
-	return resp
-}
-
-func postRequestWithBody(body interface{}, url *url.URL) *resty.Response {
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Post(url.String())
-	abortOnError(err)
-	checkRestyResponse(resp)
-	return resp
-}
-
-func getRequest(url *url.URL) *resty.Response {
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	abortOnError(err)
-	checkRestyResponse(resp)
-	return resp
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -13,7 +13,7 @@ func cmdOnCallAdd(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/oncall"
 
-	validateCliArgumentCount(c, 4)
+	utl.ValidateCliArgumentCount(c, 4)
 	// possible keys
 	keySlice := []string{"name", "phone"}
 	// required keys
@@ -26,9 +26,9 @@ func cmdOnCallAdd(c *cli.Context) {
 
 	// validate phone number as numeric(4,0) --> 1-9999
 	phoneNumber, err := strconv.Atoi(options["phone"])
-	abortOnError(err, "Syntax error, phone argument not a number")
+	utl.AbortOnError(err, "Syntax error, phone argument not a number")
 	if phoneNumber <= 0 || phoneNumber > 9999 {
-		abort("Phone number must be 4-digit extension")
+		utl.Abort("Phone number must be 4-digit extension")
 	}
 
 	var req somaproto.ProtoRequestOncall
@@ -40,7 +40,7 @@ func cmdOnCallAdd(c *cli.Context) {
 		R().
 		SetBody(req).
 		Post(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 }
 
@@ -51,15 +51,15 @@ func cmdOnCallDel(c *cli.Context) {
 		err error
 	)
 
-	switch getCliArgumentCount(c) {
+	switch utl.GetCliArgumentCount(c) {
 	case 1:
 		id, err = uuid.FromString(c.Args().First())
-		abortOnError(err, "Syntax error, argument not a uuid")
+		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 	case 2:
-		validateCliArgument(c, 1, "by-name")
+		utl.ValidateCliArgument(c, 1, "by-name")
 		id = getOncallIdByName(c.Args().Get(1))
 	default:
-		abort("Syntax error, unexpected argument count")
+		utl.Abort("Syntax error, unexpected argument count")
 	}
 	url.Path = fmt.Sprintf("/oncall/%s", id.String())
 
@@ -67,7 +67,7 @@ func cmdOnCallDel(c *cli.Context) {
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
 		R().
 		Delete(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 }
 
@@ -79,19 +79,19 @@ func cmdOnCallRename(c *cli.Context) {
 		oncall string
 	)
 
-	switch getCliArgumentCount(c) {
+	switch utl.GetCliArgumentCount(c) {
 	case 3:
-		validateCliArgument(c, 2, "to")
+		utl.ValidateCliArgument(c, 2, "to")
 		id, err = uuid.FromString(c.Args().First())
-		abortOnError(err, "Syntax error, argument not a uuid")
+		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 		oncall = c.Args().Get(2)
 	case 4:
-		validateCliArgument(c, 1, "by-name")
-		validateCliArgument(c, 3, "to")
+		utl.ValidateCliArgument(c, 1, "by-name")
+		utl.ValidateCliArgument(c, 3, "to")
 		id = getOncallIdByName(c.Args().Get(1))
 		oncall = c.Args().Get(3)
 	default:
-		abort("Syntax error, unexpected argument count")
+		utl.Abort("Syntax error, unexpected argument count")
 	}
 	url.Path = fmt.Sprintf("/oncall/%s", id.String())
 
@@ -103,7 +103,7 @@ func cmdOnCallRename(c *cli.Context) {
 		R().
 		SetBody(req).
 		Patch(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 }
 
@@ -115,24 +115,24 @@ func cmdOnCallUpdate(c *cli.Context) {
 		phone string
 	)
 
-	switch getCliArgumentCount(c) {
+	switch utl.GetCliArgumentCount(c) {
 	case 3:
-		validateCliArgument(c, 2, "phone")
+		utl.ValidateCliArgument(c, 2, "phone")
 		id, err = uuid.FromString(c.Args().First())
-		abortOnError(err, "Syntax error, argument not a uuid")
+		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 		phone = c.Args().Get(2)
 	case 4:
-		validateCliArgument(c, 1, "by-name")
-		validateCliArgument(c, 3, "phone")
+		utl.ValidateCliArgument(c, 1, "by-name")
+		utl.ValidateCliArgument(c, 3, "phone")
 		id = getOncallIdByName(c.Args().Get(1))
 		phone = c.Args().Get(3)
 	default:
-		abort("Syntax error, unexpected argument count")
+		utl.Abort("Syntax error, unexpected argument count")
 	}
 	num, err := strconv.Atoi(phone)
-	abortOnError(err, "Syntax error, argument is not a number")
+	utl.AbortOnError(err, "Syntax error, argument is not a number")
 	if num <= 0 || num > 9999 {
-		abort("Phone number must be 4-digit extension")
+		utl.Abort("Phone number must be 4-digit extension")
 	}
 
 	url.Path = fmt.Sprintf("/oncall/%s", id.String())
@@ -144,7 +144,7 @@ func cmdOnCallUpdate(c *cli.Context) {
 		R().
 		SetBody(req).
 		Patch(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 }
 
@@ -152,13 +152,13 @@ func cmdOnCallList(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/oncall"
 
-	validateCliArgumentCount(c, 0)
+	utl.ValidateCliArgumentCount(c, 0)
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
 		R().
 		Get(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 	// TODO print list
 }
@@ -170,15 +170,15 @@ func cmdOnCallShow(c *cli.Context) {
 		err error
 	)
 
-	switch getCliArgumentCount(c) {
+	switch utl.GetCliArgumentCount(c) {
 	case 1:
 		id, err = uuid.FromString(c.Args().First())
-		abortOnError(err, "Syntax error, argument not a uuid")
+		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 	case 2:
-		validateCliArgument(c, 1, "by-name")
+		utl.ValidateCliArgument(c, 1, "by-name")
 		id = getOncallIdByName(c.Args().Get(1))
 	default:
-		abort("Syntax error, unexpected argument count")
+		utl.Abort("Syntax error, unexpected argument count")
 	}
 	url.Path = fmt.Sprintf("/oncall/%s", id.String())
 
@@ -186,7 +186,7 @@ func cmdOnCallShow(c *cli.Context) {
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
 		R().
 		Get(url.String())
-	abortOnError(err)
+	utl.AbortOnError(err)
 	checkRestyResponse(resp)
 }
 
