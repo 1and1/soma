@@ -191,45 +191,39 @@ func cmdOnCallShow(c *cli.Context) {
 }
 
 func cmdOnCallMemberAdd(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
-
-	switch getCliArgumentCount(c) {
-	case 3:
-		validateCliArgument(c, 2, "from")
-		id, err = uuid.FromString(c.Args().Get(2))
-	case 4:
-		validateCliArgument(c, 2, "from")
-		validateCliArgument(c, 3, "by-name")
-		id = getOncallIdByName(c.Args().Get(4))
-	default:
-		abort("Syntax error, unexpected argument count")
-	}
-	user := c.Args().Get(0)
-	url.Path = fmt.Sprintf("/oncall/%s/members", id.String())
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "to")
+	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
+	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
 
 	var req somaproto.ProtoRequestOncall
 	var member somaproto.ProtoOncallMember
-	member.UserName = user
+	member.UserId = userId
 	reqMembers := []somaproto.ProtoOncallMember{member}
 	req.Members = reqMembers
+	path := fmt.Sprintf("/oncall/%s/members", oncallId.String())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	abortOnError(err)
-	checkRestyResponse(resp)
+	_ = utl.PatchRequestWithBody(req, path)
 }
 
 func cmdOnCallMemberDel(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "from")
+	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
+	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
+
+	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId.String(), userId.String())
+
+	_ = utl.DeleteRequest(path)
 }
 
 func cmdOnCallMemberList(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 1)
+	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(0))
+
+	path := fmt.Sprintf("/oncall/%s/members/", oncallId.String())
+
+	_ = utl.GetRequest(path)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

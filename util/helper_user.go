@@ -1,41 +1,28 @@
 package util
 
 import (
-	//"bytes"
-	//"encoding/json"
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"strconv"
 
-	//"github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) ValidateStringAsNodeAssetId(s string) {
-	_, err := strconv.ParseUint(s, 10, 64)
-	u.AbortOnError(err)
+func (u *SomaUtil) TryGetUserByUUIDOrName(s string) uuid.UUID {
+	id, err := uuid.FromString(s)
+	if err != nil {
+		// aborts on failure
+		id = u.GetUserIdByName(s)
+	}
+	return id
 }
 
-func (u *SomaUtil) ValidateStringAsBool(s string) {
-	_, err := strconv.ParseBool(s)
-	u.AbortOnError(err)
-}
-
-/*
 func (u *SomaUtil) GetUserIdByName(user string) uuid.UUID {
-	url := *u.ApiUrl
-	url.Path = "/users"
-
 	var req somaproto.ProtoRequestUser
-	var err error
 	req.Filter.UserName = user
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Get(url.String())
-	u.AbortOnError(err)
-	u.CheckRestyResponse(resp)
+	resp := u.GetRequestWithBody(req, "/users")
 	userResult := u.DecodeProtoResultUserFromResponse(resp)
 
 	if user != userResult.Users[0].UserName {
@@ -43,15 +30,7 @@ func (u *SomaUtil) GetUserIdByName(user string) uuid.UUID {
 	}
 	return userResult.Users[0].Id
 }
-*/
 
-func (u *SomaUtil) CheckRestyResponse(resp *resty.Response) {
-	if resp.StatusCode() >= 400 {
-		u.Abort(fmt.Sprintf("Request error: %s\n", resp.Status()))
-	}
-}
-
-/*
 func (u *SomaUtil) DecodeProtoResultUserFromResponse(resp *resty.Response) *somaproto.ProtoResultUser {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
 	var res somaproto.ProtoResultUser
@@ -65,6 +44,5 @@ func (u *SomaUtil) DecodeProtoResultUserFromResponse(resp *resty.Response) *soma
 	}
 	return &res
 }
-*/
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
