@@ -57,7 +57,7 @@ func cmdOnCallDel(c *cli.Context) {
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
-		id = getOncallIdByName(c.Args().Get(1))
+		id = utl.GetOncallIdByName(c.Args().Get(1))
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
@@ -88,7 +88,7 @@ func cmdOnCallRename(c *cli.Context) {
 	case 4:
 		utl.ValidateCliArgument(c, 1, "by-name")
 		utl.ValidateCliArgument(c, 3, "to")
-		id = getOncallIdByName(c.Args().Get(1))
+		id = utl.GetOncallIdByName(c.Args().Get(1))
 		oncall = c.Args().Get(3)
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
@@ -124,7 +124,7 @@ func cmdOnCallUpdate(c *cli.Context) {
 	case 4:
 		utl.ValidateCliArgument(c, 1, "by-name")
 		utl.ValidateCliArgument(c, 3, "phone")
-		id = getOncallIdByName(c.Args().Get(1))
+		id = utl.GetOncallIdByName(c.Args().Get(1))
 		phone = c.Args().Get(3)
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
@@ -176,7 +176,7 @@ func cmdOnCallShow(c *cli.Context) {
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
-		id = getOncallIdByName(c.Args().Get(1))
+		id = utl.GetOncallIdByName(c.Args().Get(1))
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}

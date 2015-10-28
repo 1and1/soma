@@ -72,7 +72,7 @@ func cmdUserMarkDeleted(c *cli.Context) {
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
-		id = getUserIdByName(c.Args().Get(1))
+		id = utl.GetUserIdByName(c.Args().Get(1))
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
@@ -98,7 +98,7 @@ func cmdUserPurgeDeleted(c *cli.Context) {
 			utl.AbortOnError(err, "Syntax error, argument not a uuid")
 		case 2:
 			utl.ValidateCliArgument(c, 1, "by-name")
-			id = getUserIdByName(c.Args().Get(1))
+			id = utl.GetUserIdByName(c.Args().Get(1))
 		default:
 			utl.Abort("Syntax error, unexpected argument count")
 		}
@@ -128,7 +128,7 @@ func cmdUserRestoreDeleted(c *cli.Context) {
 			utl.AbortOnError(err, "Syntax error, argument not a uuid")
 		case 2:
 			utl.ValidateCliArgument(c, 1, "by-name")
-			id = getUserIdByName(c.Args().Get(1))
+			id = utl.GetUserIdByName(c.Args().Get(1))
 		default:
 			utl.Abort("Syntax error, unexpected argument count")
 		}
@@ -159,7 +159,7 @@ func cmdUserUpdate(c *cli.Context) {
 		argSlice = c.Args().Tail()
 	case 2, 4, 6, 8, 10, 12:
 		utl.ValidateCliArgument(c, 1, "by-name")
-		id = getUserIdByName(c.Args().Tail()[0])
+		id = utl.GetUserIdByName(c.Args().Tail()[0])
 		argSlice = c.Args().Tail()[1:]
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
@@ -206,7 +206,7 @@ func cmdUserRename(c *cli.Context) {
 	case 4:
 		utl.ValidateCliArgument(c, 1, "by-name")
 		utl.ValidateCliArgument(c, 3, "to")
-		id = getUserIdByName(c.Args().Get(1))
+		id = utl.GetUserIdByName(c.Args().Get(1))
 		newName = c.Args().Get(3)
 	default:
 		utl.Abort("Syntax error, unexpected argument count")

@@ -55,7 +55,7 @@ func cmdTeamDel(c *cli.Context) {
 		id, err = uuid.FromString(c.Args().First())
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
-		id = getTeamIdByName(c.Args().Get(1))
+		id = utl.GetTeamIdByName(c.Args().Get(1))
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
@@ -86,7 +86,7 @@ func cmdTeamRename(c *cli.Context) {
 	case 4:
 		utl.ValidateCliArgument(c, 1, "by-name")
 		utl.ValidateCliArgument(c, 3, "to")
-		id = getTeamIdByName(c.Args().Get(1))
+		id = utl.GetTeamIdByName(c.Args().Get(1))
 		teamName = c.Args().Get(3)
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
@@ -138,7 +138,7 @@ func cmdTeamShow(c *cli.Context) {
 		utl.AbortOnError(err, "Could not parse argument as uuid")
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
-		id = getTeamIdByName(c.Args().Get(1))
+		id = utl.GetTeamIdByName(c.Args().Get(1))
 	default:
 		utl.AbortOnError(err)
 	}
