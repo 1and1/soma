@@ -38,7 +38,7 @@ func cmdServerCreate(c *cli.Context) {
 		}
 		switch val {
 		case "id":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.AssetId, err = strconv.ParseUint(args[pos+1],
 				10, 64)
 			if err != nil {
@@ -49,22 +49,22 @@ func cmdServerCreate(c *cli.Context) {
 			skipNext = true
 			argumentCheck["id"] = true
 		case "datacenter":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Datacenter = args[pos+1]
 			skipNext = true
 			argumentCheck["datacenter"] = true
 		case "location":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Location = args[pos+1]
 			skipNext = true
 			argumentCheck["location"] = true
 		case "name":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Name = args[pos+1]
 			skipNext = true
 			argumentCheck["name"] = true
 		case "online":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Online, err = strconv.ParseBool(args[pos+1])
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
@@ -101,9 +101,9 @@ func cmdServerCreate(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
-	_ = decodeProtoResultServerFromResponse(resp)
+	_ = utl.DecodeProtoResultServerFromResponse(resp)
 }
 
 func cmdServerMarkAsDeleted(c *cli.Context) {
@@ -122,7 +122,7 @@ func cmdServerMarkAsDeleted(c *cli.Context) {
 		if server == "" {
 			Slog.Fatal("Syntax error")
 		}
-		assetId = getServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
 		if err != nil {
@@ -140,7 +140,7 @@ func cmdServerMarkAsDeleted(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
 }
 
@@ -172,7 +172,7 @@ func cmdServerPurgeDeleted(c *cli.Context) {
 		Delete(url.String())
 	if err != nil {
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
 }
 
@@ -205,7 +205,7 @@ func cmdServerUpdate(c *cli.Context) {
 		}
 		switch val {
 		case "id":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.AssetId, err = strconv.ParseUint(args[pos+1],
 				10, 64)
 			if err != nil {
@@ -216,22 +216,22 @@ func cmdServerUpdate(c *cli.Context) {
 			skipNext = true
 			argumentCheck["id"] = true
 		case "datacenter":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Datacenter = args[pos+1]
 			skipNext = true
 			argumentCheck["datacenter"] = true
 		case "location":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Location = args[pos+1]
 			skipNext = true
 			argumentCheck["location"] = true
 		case "name":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Name = args[pos+1]
 			skipNext = true
 			argumentCheck["name"] = true
 		case "online":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Online, err = strconv.ParseBool(args[pos+1])
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
@@ -269,9 +269,9 @@ func cmdServerUpdate(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
-	_ = decodeProtoResultServerFromResponse(resp)
+	_ = utl.DecodeProtoResultServerFromResponse(resp)
 }
 
 func cmdServerRename(c *cli.Context) {
@@ -291,7 +291,7 @@ func cmdServerRename(c *cli.Context) {
 		if server == "" || a.Get(2) != "to" || a.Get(3) == "" {
 			Slog.Fatal("Syntax error")
 		}
-		assetId = getServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(server)
 		newName = a.Get(3)
 	} else {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
@@ -315,7 +315,7 @@ func cmdServerRename(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
 }
 
@@ -335,7 +335,7 @@ func cmdServerOnline(c *cli.Context) {
 		if server == "" {
 			Slog.Fatal("Syntax error")
 		}
-		assetId = getServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		idString := a.First()
 		if idString == "" {
@@ -362,7 +362,7 @@ func cmdServerOnline(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
 }
 
@@ -382,7 +382,7 @@ func cmdServerOffline(c *cli.Context) {
 		if server == "" {
 			Slog.Fatal("Syntax error")
 		}
-		assetId = getServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		idString := a.First()
 		if idString == "" {
@@ -409,7 +409,7 @@ func cmdServerOffline(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
 }
 
@@ -426,7 +426,7 @@ func cmdServerMove(c *cli.Context) {
 		Slog.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
-		assetId = getServerAssetIdByName(a.Get(1))
+		assetId = utl.GetServerAssetIdByName(a.Get(1))
 		tail := a.Tail()
 		subTail := tail[1:]
 		args = append(args, subTail...)
@@ -456,12 +456,12 @@ func cmdServerMove(c *cli.Context) {
 		}
 		switch val {
 		case "datacenter":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Datacenter = args[pos+1]
 			skipNext = true
 			argumentCheck["datacenter"] = true
 		case "location":
-			checkServerKeyword(args[pos+1])
+			utl.CheckServerKeyword(args[pos+1])
 			req.Server.Datacenter = args[pos+1]
 			skipNext = true
 			argumentCheck["location"] = true
@@ -487,9 +487,9 @@ func cmdServerMove(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
-	_ = decodeProtoResultServerFromResponse(resp)
+	_ = utl.DecodeProtoResultServerFromResponse(resp)
 }
 
 func cmdServerList(c *cli.Context) {
@@ -530,7 +530,7 @@ func cmdServerList(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO check list action
 }
 
@@ -550,7 +550,7 @@ func cmdServerShow(c *cli.Context) {
 		if server == "" {
 			Slog.Fatal("Syntax error")
 		}
-		assetId = getServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		idString := a.First()
 		if idString == "" {
@@ -573,7 +573,7 @@ func cmdServerShow(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO output data received from action
 }
 
@@ -603,7 +603,7 @@ func cmdServerSyncRequest(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, err.Error())
 		Slog.Fatal(err)
 	}
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO save jobid locally as outstanding
 	/*
 		TODO: decode resp.Body -> ProtoResultJob

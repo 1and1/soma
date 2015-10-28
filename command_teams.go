@@ -40,7 +40,7 @@ func cmdTeamAdd(c *cli.Context) {
 		SetBody(req).
 		Post(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdTeamDel(c *cli.Context) {
@@ -66,7 +66,7 @@ func cmdTeamDel(c *cli.Context) {
 		R().
 		Delete(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdTeamRename(c *cli.Context) {
@@ -102,7 +102,7 @@ func cmdTeamRename(c *cli.Context) {
 		SetBody(req).
 		Patch(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdTeamMigrate(c *cli.Context) {
@@ -121,7 +121,7 @@ func cmdTeamList(c *cli.Context) {
 		R().
 		Get(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO print list
 }
 
@@ -149,7 +149,7 @@ func cmdTeamShow(c *cli.Context) {
 		R().
 		Get(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO print record
 }
 

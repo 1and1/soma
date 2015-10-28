@@ -31,4 +31,12 @@ func (u *SomaUtil) StringIsKeyword(s string, keys []string) bool {
 	return false
 }
 
+func (u *SomaUtil) CheckStringNotAKeyword(s string, keys []string) {
+	for _, val := range keys {
+		if val == s {
+			u.Log.Fatal("Syntax error, back-to-back keywords")
+		}
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

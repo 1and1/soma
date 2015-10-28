@@ -41,7 +41,7 @@ func cmdOnCallAdd(c *cli.Context) {
 		SetBody(req).
 		Post(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdOnCallDel(c *cli.Context) {
@@ -68,7 +68,7 @@ func cmdOnCallDel(c *cli.Context) {
 		R().
 		Delete(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdOnCallRename(c *cli.Context) {
@@ -104,7 +104,7 @@ func cmdOnCallRename(c *cli.Context) {
 		SetBody(req).
 		Patch(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdOnCallUpdate(c *cli.Context) {
@@ -145,7 +145,7 @@ func cmdOnCallUpdate(c *cli.Context) {
 		SetBody(req).
 		Patch(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdOnCallList(c *cli.Context) {
@@ -159,7 +159,7 @@ func cmdOnCallList(c *cli.Context) {
 		R().
 		Get(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	// TODO print list
 }
 
@@ -187,7 +187,7 @@ func cmdOnCallShow(c *cli.Context) {
 		R().
 		Get(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 }
 
 func cmdOnCallMemberAdd(c *cli.Context) {

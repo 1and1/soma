@@ -39,76 +39,6 @@ func getApiUrl() *url.URL {
 	return url
 }
 
-func checkServerKeyword(s string) {
-	keywords := []string{"id", "datacenter", "location", "name", "online"}
-	for _, k := range keywords {
-		if s == k {
-			fmt.Fprintf(os.Stderr, "Syntax error: back-to-back keywords")
-			os.Exit(1)
-		}
-	}
-}
-
-func getServerAssetIdByName(serverName string) uint64 {
-	url := getApiUrl()
-	url.Path = "/servers"
-
-	var req somaproto.ProtoRequestServer
-	var err error
-	req.Filter.Name = serverName
-	req.Filter.Online = true
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Get(url.String())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
-	}
-
-	checkRestyResponse(resp)
-	serverResult := decodeProtoResultServerFromResponse(resp)
-
-	// XXX really needed?
-	if len(serverResult.Servers) != 1 {
-		Slog.Fatal("Unexpected result set length - expected one server result")
-	}
-	if serverName != serverResult.Servers[0].Name {
-		Slog.Fatal("Received result set for incorrect server")
-	}
-	return serverResult.Servers[0].AssetId
-}
-
-func checkRestyResponse(resp *resty.Response) {
-	if resp.StatusCode() >= 400 {
-		fmt.Fprintf(os.Stderr, "Request error: %s\n", resp.Status())
-		Slog.Fatal(resp.Status())
-	}
-}
-
-func decodeProtoResultServerFromResponse(resp *resty.Response) *somaproto.ProtoResultServer {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
-	var res somaproto.ProtoResultServer
-	err := decoder.Decode(&res)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error decoding server response body\n")
-		Slog.Printf("Error decoding server response body\n")
-		Slog.Fatal(err)
-	}
-	if res.Code > 299 {
-		fmt.Fprintf(os.Stderr, "Request failed: %d - %s\n",
-			res.Code, res.Status)
-		for _, e := range res.Text {
-			fmt.Fprintf(os.Stderr, "%s\n", e)
-			Slog.Printf("%s\n", e)
-		}
-		os.Exit(1)
-	}
-	return &res
-}
-
 func parseLimitedGrantArguments(keys []string, args []string) *map[string]string {
 	result := make(map[string]string)
 	argumentCheck := make(map[string]bool)
@@ -125,22 +55,22 @@ func parseLimitedGrantArguments(keys []string, args []string) *map[string]string
 		}
 		switch val {
 		case "repository":
-			checkStringNotAKeyword(args[pos+1], keys)
+			utl.CheckStringNotAKeyword(args[pos+1], keys)
 			result["repository"] = args[pos+1]
 			skipNext = true
 			argumentCheck["repository"] = true
 		case "bucket":
-			checkStringNotAKeyword(args[pos+1], keys)
+			utl.CheckStringNotAKeyword(args[pos+1], keys)
 			result["bucket"] = args[pos+1]
 			skipNext = true
 			argumentCheck["bucket"] = true
 		case "group":
-			checkStringNotAKeyword(args[pos+1], keys)
+			utl.CheckStringNotAKeyword(args[pos+1], keys)
 			result["group"] = args[pos+1]
 			skipNext = true
 			argumentCheck["group"] = true
 		case "cluster":
-			checkStringNotAKeyword(args[pos+1], keys)
+			utl.CheckStringNotAKeyword(args[pos+1], keys)
 			result["group"] = args[pos+1]
 			skipNext = true
 			argumentCheck["cluster"] = true
@@ -155,14 +85,6 @@ func parseLimitedGrantArguments(keys []string, args []string) *map[string]string
 	}
 
 	return &result
-}
-
-func checkStringNotAKeyword(s string, keys []string) {
-	for _, val := range keys {
-		if val == s {
-			Slog.Fatal("Syntax error, back-to-back keywords")
-		}
-	}
 }
 
 func getTeamIdByName(teamName string) uuid.UUID {
@@ -183,7 +105,7 @@ func getTeamIdByName(teamName string) uuid.UUID {
 		Slog.Fatal(err)
 	}
 
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	teamResult := decodeProtoResultTeamFromResponse(resp)
 
 	if teamName != teamResult.Teams[0].TeamName {
@@ -206,7 +128,7 @@ func getOncallIdByName(oncall string) uuid.UUID {
 		SetBody(req).
 		Get(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	oncallResult := decodeProtoResultOncallFromResponse(resp)
 
 	if oncall != oncallResult.Oncalls[0].Name {
@@ -229,7 +151,7 @@ func getUserIdByName(user string) uuid.UUID {
 		SetBody(req).
 		Get(url.String())
 	utl.AbortOnError(err)
-	checkRestyResponse(resp)
+	utl.CheckRestyResponse(resp)
 	userResult := decodeProtoResultUserFromResponse(resp)
 
 	if user != userResult.Users[0].UserName {
@@ -303,7 +225,7 @@ func parseVariableArguments(keys []string, rKeys []string, args []string) (map[s
 		}
 
 		if utl.StringIsKeyword(val, keys) {
-			checkStringNotAKeyword(args[pos+1], keys)
+			utl.CheckStringNotAKeyword(args[pos+1], keys)
 			result[val] = args[pos+1]
 			argumentCheck[val] = true
 			skipNext = true
