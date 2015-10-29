@@ -24,7 +24,7 @@ func cmdTeamAdd(c *cli.Context) {
 		utl.Abort("Syntax error, unexpected argument count")
 	}
 
-	options, optArgs := parseVariableArguments(keySlice, reqSlice, c.Args().Tail())
+	options, optArgs := utl.ParseVariableArguments(keySlice, reqSlice, c.Args().Tail())
 	req.Team.TeamName = c.Args().Get(0)
 	req.Team.LdapId = options["ldap"]
 	if utl.SliceContainsString("system", optArgs) {

@@ -82,44 +82,4 @@ func parseLimitedGrantArguments(keys []string, args []string) *map[string]string
 	return &result
 }
 
-func parseVariableArguments(keys []string, rKeys []string, args []string) (map[string]string, []string) {
-	result := make(map[string]string)
-	argumentCheck := make(map[string]bool)
-	optionalKeys := make([]string, 0)
-	for _, key := range rKeys {
-		argumentCheck[key] = false
-	}
-	skipNext := false
-
-	for pos, val := range args {
-		if skipNext {
-			skipNext = false
-			continue
-		}
-
-		if utl.StringIsKeyword(val, keys) {
-			utl.CheckStringNotAKeyword(args[pos+1], keys)
-			result[val] = args[pos+1]
-			argumentCheck[val] = true
-			skipNext = true
-			if !utl.StringIsKeyword(val, rKeys) {
-				optionalKeys = append(optionalKeys, val)
-			}
-			continue
-		}
-		// keywords trigger continue, arguments are skipped over.
-		// reaching this is an error
-		Slog.Fatal("Syntax error, erroneus argument: ", val)
-	}
-
-	// check we managed to collect all required keywords
-	for k, v := range argumentCheck {
-		if !v {
-			Slog.Fatal("Syntax error, missing keyword: ", k)
-		}
-	}
-
-	return result, optionalKeys
-}
-
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

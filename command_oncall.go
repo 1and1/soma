@@ -22,7 +22,7 @@ func cmdOnCallAdd(c *cli.Context) {
 	argSlice := []string{c.Args().First()}
 	argSlice = append(argSlice, c.Args().Tail()...)
 	// discard list of optional arguments
-	options, _ := parseVariableArguments(keySlice, reqSlice, argSlice)
+	options, _ := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
 
 	// validate phone number as numeric(4,0) --> 1-9999
 	phoneNumber, err := strconv.Atoi(options["phone"])

@@ -19,7 +19,7 @@ func cmdNodeAdd(c *cli.Context) {
 	}
 	argSlice := utl.GetFullArgumentSlice(c)
 
-	options, optional := parseVariableArguments(keySlice, reqSlice, argSlice)
+	options, optional := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
 	var req somaproto.ProtoRequestNode
 
 	utl.ValidateStringAsNodeAssetId(options["assetid"])

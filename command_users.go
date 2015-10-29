@@ -26,7 +26,7 @@ func cmdUserAdd(c *cli.Context) {
 	}
 
 	argSlice := c.Args().Tail()
-	options, opts := parseVariableArguments(keySlice, reqSlice, argSlice)
+	options, opts := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
 
 	// validate
 	utl.ValidateStringAsEmployeeNumber(options["employeenr"])
@@ -166,7 +166,7 @@ func cmdUserUpdate(c *cli.Context) {
 	}
 	url.Path = fmt.Sprintf("/users/%s", id.String())
 
-	options, opts := parseVariableArguments(keySlice, reqSlice, argSlice)
+	options, opts := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
 	var req somaproto.ProtoRequestUser
 
 	for _, v := range opts {
