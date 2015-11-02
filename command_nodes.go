@@ -84,12 +84,45 @@ func cmdNodeRestore(c *cli.Context) {
 }
 
 func cmdNodeRename(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "to")
+	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/nodes/%s", id.String())
+
+	var req somaproto.ProtoRequestNode
+	req.Node.Name = c.Args().Get(2)
+
+	_ = utl.PatchRequestWithBody(req, path)
 }
 
 func cmdNodeRepo(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "to")
+	id := utl.TryGetNodeByUUIDOrName(c.Args().Get(0))
+	team := c.Args().Get(2)
+	// try resolving team name to uuid as name validation
+	_ = utl.GetTeamIdByName(team)
+	path := fmt.Sprintf("/nodes/%s", id.String())
+
+	var req somaproto.ProtoRequestNode
+	req.Node.Team = team
+
+	_ = utl.PatchRequestWithBody(req, path)
 }
 
 func cmdNodeMove(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "to")
+	id := utl.TryGetNodeByUUIDOrName(c.Args().Get(0))
+	server := c.Args().Get(2)
+	// try resolving server name to uuid as name validation
+	_ = utl.GetServerAssetIdByName(server)
+	path := fmt.Sprintf("/nodes/%s", id.String())
+
+	var req somaproto.ProtoRequestNode
+	req.Node.Server = server
+
+	_ = utl.PatchRequestWithBody(req, path)
 }
 
 func cmdNodeOnline(c *cli.Context) {
@@ -115,12 +148,34 @@ func cmdNodeOffline(c *cli.Context) {
 }
 
 func cmdNodeAssign(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 6)
+	utl.ValidateCliArgument(c, 2, "to")
+	keySlice := []string{"repository", "bucket"}
+	argSlice := utl.GetFullArgumentSlice(c)[2:]
+
+	options, _ := utl.ParseVariableArguments(keySlice, keySlice, argSlice)
+	var req somaproto.ProtoRequestJob
+	req.JobType = "node"
+	req.Node.Action = "assign"
+	req.Node.Node.Config.RepositoryName = options["repository"]
+	req.Node.Node.Config.BucketName = options["bucket"]
+
+	_ = utl.PostRequestWithBody(req, "/jobs/")
+	// TODO save jobid locally as outstanding
 }
 
 func cmdNodeList(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 0)
+
+	_ = utl.GetRequest("/nodes/")
 }
 
 func cmdNodeShow(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/nodes/%s", id.String())
+
+	_ = utl.GetRequest(path)
 }
 
 func cmdNodePropertyAdd(c *cli.Context) {
