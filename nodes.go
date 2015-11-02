@@ -16,6 +16,7 @@ type ProtoResultNode struct {
 	Status string      `json:"status,omitempty"`
 	Text   []string    `json:"text,omitempty"`
 	Nodes  []ProtoNode `json:"nodes,omitempty"`
+	JobId  uuid.UUID   `json:"jobid,omitempty"`
 }
 
 type ProtoNode struct {

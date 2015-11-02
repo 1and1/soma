@@ -8,6 +8,7 @@ type ProtoRequestJob struct {
 	JobId      uuid.UUID          `json:"jobid,omitempty"`
 	JobType    string             `json:"jobtype"`
 	Server     ProtoJobServer     `json:"server,omitempty"`
+	Node       ProtoJobNode       `json:"node,omitempty"`
 	Team       ProtoJobTeam       `json:"team,omitempty"`
 	Bucket     ProtoJobBucket     `json:"bucket,omitempty"`
 	Repository ProtoJobRepository `json:"repository,omitempty"`
@@ -23,6 +24,11 @@ type ProtoResultJob struct {
 type ProtoJobServer struct {
 	Action string      `json:"action"`
 	Server ProtoServer `json:"server"`
+}
+
+type ProtoJobNode struct {
+	Action string    `json:"action"`
+	Node   ProtoNode `json:"node"`
 }
 
 type ProtoJobTeam struct {
