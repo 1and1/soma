@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
@@ -17,6 +18,15 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 			os.Exit(1)
 		}
 	}
+}
+
+func (u SomaUtil) TryGetServerByUUIDOrName(s string) uuid.UUID {
+	id, err := uuid.FromString(s)
+	if err != nil {
+		// aborts on failure
+		id = u.GetNodeIdByName(s)
+	}
+	return id
 }
 
 func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {
