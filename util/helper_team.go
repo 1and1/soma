@@ -4,31 +4,28 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
+func (u SomaUtil) TryGetTeamByUUIDOrName(s string) uuid.UUID {
+	id, err := uuid.FromString(s)
+	if err != nil {
+		// aborts on failure
+		id = u.GetNodeIdByName(s)
+	}
+	return id
+}
+
 func (u SomaUtil) GetTeamIdByName(teamName string) uuid.UUID {
 	url := u.ApiUrl
-	url.Path = "/teams"
+	url.Path = "/teams/"
 
 	var req somaproto.ProtoRequestTeam
-	var err error
 	req.Filter.TeamName = teamName
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Get(url.String())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		u.Log.Fatal(err)
-	}
-
-	u.CheckRestyResponse(resp)
+	resp := u.GetRequestWithBody(req, url.String())
 	teamResult := u.DecodeProtoResultTeamFromResponse(resp)
 
 	if teamName != teamResult.Teams[0].TeamName {
@@ -41,19 +38,12 @@ func (u SomaUtil) DecodeProtoResultTeamFromResponse(resp *resty.Response) *somap
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
 	var res somaproto.ProtoResultTeam
 	err := decoder.Decode(&res)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error decoding server response body\n")
-		u.Log.Printf("Error decoding server response body\n")
-		u.Log.Fatal(err)
-	}
+	u.AbortOnError(err, "Error decoding server response body")
 	if res.Code > 299 {
-		fmt.Fprintf(os.Stderr, "Request failed: %d - %s\n",
-			res.Code, res.Status)
-		for _, e := range res.Text {
-			fmt.Fprintf(os.Stderr, "%s\n", e)
-			u.Log.Printf("%s\n", e)
-		}
-		os.Exit(1)
+		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
+		msgs := []string{s}
+		msgs = append(msgs, res.Text...)
+		u.Abort(msgs...)
 	}
 	return &res
 }
