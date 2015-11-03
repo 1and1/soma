@@ -284,9 +284,6 @@ func cmdNodePropertyDel(c *cli.Context) {
 	utl.ValidateStringInSlice(argSlice[0], utl.PropertyTypes)
 	utl.ValidateStringInSlice(argSlice[5], utl.Views)
 
-	propertyType := argSlice[0]
-	property := argSlice[1]
-
 	// get which node is being modified
 	id := utl.TryGetNodeByUUIDOrName(argSlice[3])
 
@@ -298,7 +295,7 @@ func cmdNodePropertyDel(c *cli.Context) {
 		argSlice[1], //property
 	)
 
-	_ = DeleteRequest(path)
+	_ = utl.DeleteRequest(path)
 }
 
 func cmdNodePropertyList(c *cli.Context) {
@@ -310,10 +307,10 @@ func cmdNodePropertyList(c *cli.Context) {
 
 	if c.Bool("all") {
 		req.Filter.LocalProperty = false
-		_ = GetRequest(path)
+		_ = utl.GetRequest(path)
 	} else {
 		req.Filter.LocalProperty = true
-		_ = GetRequestWithBody(req, path)
+		_ = utl.GetRequestWithBody(req, path)
 	}
 }
 
@@ -322,7 +319,7 @@ func cmdNodePropertyShow(c *cli.Context) {
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/property/", id.String())
 
-	_ = GetRequest(path)
+	_ = utl.GetRequest(path)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
