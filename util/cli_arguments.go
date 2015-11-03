@@ -46,8 +46,11 @@ func (u *SomaUtil) ParseVariableArguments(keys []string, rKeys []string, args []
 	argumentCheck := make(map[string]bool)
 	// return slice which optional keys were found
 	optionalKeys := make([]string, 0)
-	for _, key := range rKeys {
-		argumentCheck[key] = false
+	// no required keys is valid
+	if len(rKeys) > 0 {
+		for _, key := range rKeys {
+			argumentCheck[key] = false
+		}
 	}
 	skipNext := false
 
