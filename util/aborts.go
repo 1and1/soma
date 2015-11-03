@@ -11,7 +11,7 @@ func (u *SomaUtil) AbortOnError(err error, txt ...string) {
 			fmt.Fprintf(os.Stderr, "%s\n", s)
 			u.Log.Print(s)
 		}
-		fmt.Fprintf(os.Stderr, err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		u.Log.Fatal(err)
 	}
 }
