@@ -179,6 +179,75 @@ func cmdNodeShow(c *cli.Context) {
 }
 
 func cmdNodePropertyAdd(c *cli.Context) {
+	// preliminary argv validation
+	switch utl.GetCliArgumentCount(c) {
+	case 4, 6, 8, 10, 12:
+		break
+	default:
+		utl.Abort("Syntax error, unexpected argument count")
+	}
+	utl.ValidateCliArgument(c, 3, "to")
+	argSlice := utl.GetFullArgumentSlice(c)
+
+	// define property types
+	typSlice := []string{"service", "system", "custom"}
+
+	// first argument must be a valid property type
+	utl.ValidateStringInSlice(argSlice[0], typSlice)
+
+	// TODO: validate property of that type and name exists
+	propertyType := argSlice[0]
+	property := argSlice[1]
+
+	// get which node is being modified
+	id := utl.TryGetNodeByUUIDOrName(argSlice[3])
+	path := fmt.Sprintf("/nodes/%s/property/", id.String())
+
+	// variable key/value part of argv
+	argSlice = argSlice[4:]
+
+	// define accepted and required keys
+	keySlice := []string{"inheritance", "childrenonly", "view", "value"}
+	reqSlice := []string{"view"}
+	if propertyType != "service" {
+		// non service properties require values, services are
+		// predefined and do not
+		reqSlice = append(reqSlice, "value")
+	}
+	options, optional := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
+
+	// build node property JSON
+	var prop somaproto.ProtoNodeProperty
+	prop.Type = propertyType
+	prop.View = options["view"] //required
+	prop.Property = property
+	// add value if it was required
+	if utl.SliceContainsString("value", reqSlice) {
+		prop.Value = options["value"]
+	}
+
+	// optional inheritance, default true
+	if utl.SliceContainsString("inheritance", optional) {
+		utl.ValidateStringAsBool(options["inheritance"])
+		prop.Inheritance, _ = strconv.ParseBool(options["inheritance"])
+	} else {
+		prop.Inheritance = true
+	}
+
+	// optional childrenonly, default false
+	if utl.SliceContainsString("childrenonly", optional) {
+		utl.ValidateStringAsBool(options["childrenonly"])
+		prop.ChildrenOnly, _ = strconv.ParseBool(options["childrenonly"])
+	} else {
+		prop.ChildrenOnly = false
+	}
+
+	// build request JSON
+	var req somaproto.ProtoRequestNode
+	req.Node.Properties = append(req.Node.Properties, prop)
+
+	_ = utl.PostRequestWithBody(req, path)
+	// TODO save jobid locally as outstanding
 }
 
 func cmdNodePropertyGet(c *cli.Context) {
