@@ -189,8 +189,8 @@ func cmdNodePropertyAdd(c *cli.Context) {
 	utl.ValidateCliArgument(c, 3, "to")
 	argSlice := utl.GetFullArgumentSlice(c)
 
-	// define property types
-	typSlice := []string{"service", "system", "custom"}
+	// get property types
+	typSlice := utl.PropertyTypes
 
 	// first argument must be a valid property type
 	utl.ValidateStringInSlice(argSlice[0], typSlice)
@@ -251,15 +251,78 @@ func cmdNodePropertyAdd(c *cli.Context) {
 }
 
 func cmdNodePropertyGet(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 6)
+	utl.ValidateCliArgument(c, 3, "from")
+	utl.ValidateCliArgument(c, 5, "view")
+	argSlice := utl.GetFullArgumentSlice(c)
+
+	// first argument must be a valid property type, sixth a view
+	utl.ValidateStringInSlice(argSlice[0], utl.PropertyTypes)
+	utl.ValidateStringInSlice(argSlice[5], utl.Views)
+
+	// get which node is being modified
+	id := utl.TryGetNodeByUUIDOrName(argSlice[3])
+
+	// TODO: validate property of that type and name exists
+	path := fmt.Sprintf("/nodes/%s/property/%s/%s/%s",
+		id.String(),
+		argSlice[0], // type
+		argSlice[5], // view
+		argSlice[1], // property
+	)
+
+	_ = utl.GetRequest(path)
 }
 
 func cmdNodePropertyDel(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 6)
+	utl.ValidateCliArgument(c, 3, "from")
+	utl.ValidateCliArgument(c, 5, "view")
+	argSlice := utl.GetFullArgumentSlice(c)
+
+	// first argument must be a valid property type, sixth a view
+	utl.ValidateStringInSlice(argSlice[0], utl.PropertyTypes)
+	utl.ValidateStringInSlice(argSlice[5], utl.Views)
+
+	propertyType := argSlice[0]
+	property := argSlice[1]
+
+	// get which node is being modified
+	id := utl.TryGetNodeByUUIDOrName(argSlice[3])
+
+	// TODO: validate property of that type and name exists
+	path := fmt.Sprintf("/nodes/%s/property/%s/%s/%s",
+		id.String(),
+		argSlice[0], //type
+		argSlice[5], //view
+		argSlice[1], //property
+	)
+
+	_ = DeleteRequest(path)
 }
 
 func cmdNodePropertyList(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/nodes/%s/property/", id.String())
+
+	var req somaproto.ProtoRequestNode
+
+	if c.Bool("all") {
+		req.Filter.LocalProperty = false
+		_ = GetRequest(path)
+	} else {
+		req.Filter.LocalProperty = true
+		_ = GetRequestWithBody(req, path)
+	}
 }
 
 func cmdNodePropertyShow(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/nodes/%s/property/", id.String())
+
+	_ = GetRequest(path)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
