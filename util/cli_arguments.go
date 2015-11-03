@@ -87,4 +87,76 @@ func (u *SomaUtil) ParseVariableArguments(keys []string, rKeys []string, args []
 	return result, optionalKeys
 }
 
+/*
+ * This function parses whitespace separated argument lists of
+ * keyword/value pairs were keywords can be specified multiple
+ * times, some keywords are required and some only allowed once.
+ * Sequence of multiple keywords are detected and lead to abort
+ *
+ * multKeys => [ "port", "transport" ]
+ * uniqKeys => [ "team" ]
+ * reqKeys  => [ "team" ]
+ * args     => [ "port", "53", "transport", "tcp", "transport",
+ *               "udp", "team", "ITOMI" ]
+ *
+ * result => result["team"] = [ "ITOMI" ]
+ *           result["port"] = [ "53" ]
+ *           result["transport"] = [ "tcp", "udp" ]
+ */
+func (u *SomaUtil) ParseVariadicArguments(
+	multKeys []string, // keys that may appear multiple times
+	uniqKeys []string, // keys that are allowed at most once
+	reqKeys []string, // keys that are required at least one
+	args []string, // arguments to parse
+) map[string][]string {
+	// returns a map of slices of string
+	result := make(map[string][]string)
+
+	// merge key slices
+	keys := append(multKeys, uniqKeys...)
+
+	// helper to skip over next value in args slice
+	skip := false
+
+	for pos, val := range args {
+		// skip current arg if last argument was a keyword
+		if skip {
+			skip = false
+			continue
+		}
+
+		if u.SliceContainsString(val, keys) {
+			// check for back-to-back keyswords
+			u.CheckStringNotAKeyword(args[pos+1], keys)
+
+			// append value of current keyword into result map
+			result[val] = append(result[val], args[pos+1])
+			skip = true
+			continue
+		}
+		// keywords trigger continue before this
+		// values after keywords are skip'ed
+		// reaching this is an error
+		u.Abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
+	}
+
+	// check if we managed to collect all required keywords
+	for _, key := range reqKeys {
+		_, ok := result[key] // ok is false if slice is nil
+		if !ok {
+			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
+		}
+	}
+
+	// check if unique keywords were only specified once
+	for _, key := range uniqKeys {
+		sl, ok := result[key]
+		if ok && (len(sl) > 1) {
+			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
+		}
+	}
+
+	return result
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
