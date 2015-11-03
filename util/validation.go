@@ -1,7 +1,7 @@
 package util
 
 import (
-	//	"fmt"
+	"fmt"
 	"net/mail"
 	"strconv"
 )
@@ -27,6 +27,22 @@ func (u *SomaUtil) ValidateStringAsEmployeeNumber(s string) {
 func (u *SomaUtil) ValidateStringAsMailAddress(s string) {
 	_, err := mail.ParseAddress(s)
 	u.AbortOnError(err, "Syntax error, mailaddr does not parse as RFC 5322 address")
+}
+
+func (u *SomaUtil) ValidateStringInSlice(s string, sl []string) {
+	if !u.SliceContainsString(s, sl) {
+		if len(sl) == 0 {
+			u.Abort("Error, cannot compare '%s' to empty keyword list")
+		}
+
+		// default []string.String() method prints [elem0 elem1 ...]
+		// without quoting whitespace: []string{"a", "a b",} -> "[a a b]"
+		errStr := fmt.Sprintf("Error, '%s' not one of: '%s'", s, sl[0])
+		for _, v := range sl[1:] {
+			errStr = fmt.Sprintf("%s, '%s'", errStr, v)
+		}
+		u.Abort(errStr)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
