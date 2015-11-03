@@ -15,6 +15,8 @@ func runtimePreCmd(c *cli.Context) error {
 
 	//
 	utl.SetUrl(Cfg.Api)
+	utl.SetPropertyTypes([]string{"system", "service", "custom", "oncall"})
+	utl.SetViews([]string{"internal", "external", "local", "any"})
 
 	//
 	return nil
