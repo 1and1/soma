@@ -17,19 +17,18 @@ func initLogFile() {
 		fmt.Fprintf(os.Stderr, "Error initializing logging: %s\n", err.Error())
 		os.Exit(1)
 	}
-	defer f.Close()
 
-	Cfg.Run.Logger = log.New(f, "", log.Ldate|log.Ltime|log.LUTC)
-	Slog = Cfg.Run.Logger
-
-	Slog.Print("Initialized logger")
+	utl.SetLog(log.New(f, "", log.Ldate|log.Ltime|log.LUTC))
+	// XXX COMPAT
+	Cfg.Run.Logger = utl.Log
+	Slog = utl.Log
 }
 
 func getApiUrl() *url.URL {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
-		Slog.Printf("Error parsing API address from config file")
-		Slog.Fatal(err)
+		utl.Log.Printf("Error parsing API address from config file")
+		utl.Log.Fatal(err)
 	}
 	return url
 }
@@ -75,7 +74,7 @@ func parseLimitedGrantArguments(keys []string, args []string) *map[string]string
 	// check we managed to collect all required keywords
 	for k, v := range argumentCheck {
 		if !v {
-			Slog.Fatal("Syntax error, missing keyword for argument count: ", k)
+			utl.Log.Fatal("Syntax error, missing keyword for argument count: ", k)
 		}
 	}
 
