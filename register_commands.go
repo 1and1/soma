@@ -654,12 +654,12 @@ func registerCommands(app cli.App) *cli.App {
 						},
 						{
 							Name:   "list",
-							Usage:  "List a nodes local properties",
+							Usage:  "List a nodes' local properties",
 							Action: cmdNodePropertyList,
 							Flags: []cli.Flag{
 								cli.BoolFlag{
 									Name:  "all, a",
-									Usage: "List a nodes full properties",
+									Usage: "List a nodes full properties (incl. inherited)",
 								},
 							},
 						},
