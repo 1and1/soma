@@ -557,8 +557,9 @@ func registerCommands(app cli.App) *cli.App {
 			},
 		}, // end users
 		{
-			Name:  "nodes",
-			Usage: "SUBCOMMANDS for nodes",
+			Name:   "nodes",
+			Usage:  "SUBCOMMANDS for nodes",
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "create",
