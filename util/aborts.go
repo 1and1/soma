@@ -24,7 +24,22 @@ func (u *SomaUtil) Abort(txt ...string) {
 
 	// ensure there is _something_
 	if len(txt) == 0 {
-		e := `abort called without error message. Sorry!`
+		e := `Abort() called without error message. Sorry!`
+		fmt.Fprintf(os.Stderr, "%s\n", e)
+		u.Log.Print(e)
+	}
+	os.Exit(1)
+}
+
+func (u *SomaUtil) NotImplemented(txt ...string) {
+	for _, s := range txt {
+		fmt.Fprintf(os.Stderr, "%s\n", s)
+		u.Log.Print(s)
+	}
+
+	// ensure there is _something_ in the log
+	if len(txt) == 0 {
+		e := `This command is currently not implemented.`
 		fmt.Fprintf(os.Stderr, "%s\n", e)
 		u.Log.Print(e)
 	}
