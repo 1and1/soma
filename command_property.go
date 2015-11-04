@@ -9,8 +9,8 @@ import (
 // GLOBAL SERVICE PROPERTY TEMPLATES
 func cmdPropertyTemplateCreate(c *cli.Context) {
 	multKeys := []string{"transport", "application", "port", "process",
-		"file", "directory", "socket", "uid", "provider"}
-	uniqKeys := []string{"tls"}
+		"file", "directory", "socket", "uid"}
+	uniqKeys := []string{"tls", "provider"}
 	reqKeys := []string{}
 
 	argCount := utl.GetCliArgumentCount(c)
@@ -24,7 +24,45 @@ func cmdPropertyTemplateCreate(c *cli.Context) {
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	argSlice := utl.GetFullArgumentSlice(c)
+	argSlice := c.Args().Tail()
+
+	opts := utl.ParseVariadicArguments(multKeys, uniqKeys,
+		reqKeys, argSlice)
+
+	var req somaproto.ProtoRequestProperty
+	req.Service.Property = c.Args().First()
+	for optKey, optVal := range opts {
+		switch optKey {
+		case "transport":
+			req.Service.Attributes.Transport = optVal
+		case "application":
+			req.Service.Attributes.Application = optVal
+		case "port":
+			req.Service.Attributes.Port = optVal
+		case "process":
+			req.Service.Attributes.Process = optVal
+		case "file":
+			req.Service.Attributes.File = optVal
+		case "directory":
+			req.Service.Attributes.Directory = optVal
+		case "socket":
+			req.Service.Attributes.Socket = optVal
+		case "uid":
+			req.Service.Attributes.Uid = optVal
+		case "provider":
+			if optVal != nil {
+				req.Service.Attributes.Tls = optVal[0]
+			}
+		case "tls":
+			if optVal != nil {
+				req.Service.Attributes.Provider = optVal[0]
+			}
+		default:
+			utl.Abort("Error assigning service attributes")
+		}
+	}
+
+	_ = utl.PostRequestWithBody(req, "/property/service/global/")
 }
 
 func cmdPropertyTemplateDelete(c *cli.Context) {
@@ -53,7 +91,11 @@ func cmdPropertyTemplateList(c *cli.Context) {
 
 // GLOBAL SYSTEM PROPERTIES
 func cmdPropertySystemCreate(c *cli.Context) {
-	utl.NotImplemented()
+	utl.ValidateCliArgumentCount(c, 1)
+	var req somaproto.ProtoRequestProperty
+	req.System.Property = c.Args().First()
+
+	_ = utl.PostRequestWithBody(req, "/property/system/")
 }
 
 func cmdPropertySystemDelete(c *cli.Context) {
@@ -78,7 +120,65 @@ func cmdPropertySystemList(c *cli.Context) {
 
 // PER-TEAM SERVICE PROPERTIES
 func cmdPropertyServiceCreate(c *cli.Context) {
-	utl.NotImplemented()
+	multKeys := []string{"transport", "application", "port", "process",
+		"file", "directory", "socket", "uid"}
+	uniqKeys := []string{"tls", "provider", "team"}
+	reqKeys := []string{"team"}
+
+	argCount := utl.GetCliArgumentCount(c)
+	switch {
+	// first argument is the name of template, then attributes and
+	// values are added in pairs of two -> valid are 3,5,7,... args
+	case argCount == 0 || argCount == 1:
+		utl.Abort("Syntax error, unexpected argument count")
+	case (argCount % 2) == 0:
+		break
+	default:
+		utl.Abort("Syntax error, unexpected argument count")
+	}
+	argSlice := c.Args().Tail()
+
+	opts := utl.ParseVariadicArguments(multKeys, uniqKeys,
+		reqKeys, argSlice)
+
+	teamId := utl.TryGetTeamByUUIDOrName(opts["team"][0])
+
+	var req somaproto.ProtoRequestProperty
+	req.Service.Property = c.Args().First()
+	req.Service.Team = opts["team"][0] // required argument
+	for optKey, optVal := range opts {
+		switch optKey {
+		case "transport":
+			req.Service.Attributes.Transport = optVal
+		case "application":
+			req.Service.Attributes.Application = optVal
+		case "port":
+			req.Service.Attributes.Port = optVal
+		case "process":
+			req.Service.Attributes.Process = optVal
+		case "file":
+			req.Service.Attributes.File = optVal
+		case "directory":
+			req.Service.Attributes.Directory = optVal
+		case "socket":
+			req.Service.Attributes.Socket = optVal
+		case "uid":
+			req.Service.Attributes.Uid = optVal
+		case "provider":
+			if optVal != nil {
+				req.Service.Attributes.Tls = optVal[0]
+			}
+		case "tls":
+			if optVal != nil {
+				req.Service.Attributes.Provider = optVal[0]
+			}
+		default:
+			utl.Abort("Error assigning service attributes")
+		}
+	}
+	path := fmt.Sprintf("/property/service/team/%s/", teamId.String())
+
+	_ = utl.PostRequestWithBody(req, path)
 }
 
 func cmdPropertyServiceDelete(c *cli.Context) {
@@ -109,7 +209,15 @@ func cmdPropertyServiceShow(c *cli.Context) {
 
 // PER-REPO CUSTOM PROPERTIES
 func cmdPropertyCustomCreate(c *cli.Context) {
-	utl.NotImplemented()
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "repository")
+	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
+	var req somaproto.ProtoRequestProperty
+	req.Custom.Property = c.Args().First()
+	req.Custom.Repository = c.Args().Get(2)
+	path := fmt.Sprintf("/property/custom/%s/", repoId.String())
+
+	_ = utl.PostRequestWithBody(req, path)
 }
 
 func cmdPropertyCustomDelete(c *cli.Context) {
