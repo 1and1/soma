@@ -8,7 +8,23 @@ import (
 
 // GLOBAL SERVICE PROPERTY TEMPLATES
 func cmdPropertyTemplateCreate(c *cli.Context) {
-	utl.NotImplemented()
+	multKeys := []string{"transport", "application", "port", "process",
+		"file", "directory", "socket", "uid", "provider"}
+	uniqKeys := []string{"tls"}
+	reqKeys := []string{}
+
+	argCount := utl.GetCliArgumentCount(c)
+	switch {
+	// first argument is the name of template, then attributes and
+	// values are added in pairs of two -> valid are 1,3,5,7,... args
+	case argCount == 0:
+		utl.Abort("Syntax error, unexpected argument count")
+	case (argCount % 2) == 0:
+		break
+	default:
+		utl.Abort("Syntax error, unexpected argument count")
+	}
+	argSlice := utl.GetFullArgumentSlice(c)
 }
 
 func cmdPropertyTemplateDelete(c *cli.Context) {
