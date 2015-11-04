@@ -672,6 +672,39 @@ func registerCommands(app cli.App) *cli.App {
 				}, // end nodes property
 			},
 		}, // end nodes
+		{
+			Name:   "property",
+			Usage:  "SUBCOMMANDS for property",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:  "create",
+					Usage: "SUBCOMMANDS for property create",
+					Subcommands: []cli.Command{
+						{
+							Name:   "service",
+							Usage:  "Create a new per-team service property",
+							Action: cmdPropertyServiceCreate,
+						},
+						{
+							Name:   "system",
+							Usage:  "Create a new global system property",
+							Action: cmdPropertySystemCreate,
+						},
+						{
+							Name:   "custom",
+							Usage:  "Create a new per-repo custom property",
+							Action: cmdPropertyCustomCreate,
+						},
+						{
+							Name:   "servicetemplate",
+							Usage:  "Create a new global service template",
+							Action: cmdPropertyTemplateCreate,
+						},
+					},
+				}, // end property create
+			},
+		}, // end property
 	}
 	return &app
 }
