@@ -5,9 +5,9 @@ import (
 )
 
 type ProtoRequestProperty struct {
-	Custom  ProtoCustomProperty  `json:"custom,omitempty"`
-	System  ProtoSystemProperty  `json:"system,omitempty"`
-	Service ProtoServiceProperty `json:"service,omitempty"`
+	Custom  ProtoPropertyCustom  `json:"custom,omitempty"`
+	System  ProtoPropertySystem  `json:"system,omitempty"`
+	Service ProtoPropertyService `json:"service,omitempty"`
 	Filter  ProtoPropertyFilter  `json:"filter,omitempty"`
 }
 
@@ -15,25 +15,25 @@ type ProtoResultProperty struct {
 	Code    uint16                 `json:"code,omitempty"`
 	Status  string                 `json:"status,omitempty"`
 	Text    []string               `json:"text,omitempty"`
-	Custom  []ProtoCustomProperty  `json:"custom,omitempty"`
-	System  []ProtoSystemProperty  `json:"system,omitempty"`
-	Service []ProtoServiceProperty `json:"service,omitempty"`
+	Custom  []ProtoPropertyCustom  `json:"custom,omitempty"`
+	System  []ProtoPropertySystem  `json:"system,omitempty"`
+	Service []ProtoPropertyService `json:"service,omitempty"`
 }
 
-type ProtoCustomProperty struct {
+type ProtoPropertyCustom struct {
 	Id         uuid.UUID `json:"id,omitempty"`
 	Repository string    `json:"repository,omitempty"`
 	Property   string    `json:"property,omitempty"`
 	Value      string    `json:"value,omitempty"`
 }
 
-type ProtoSystemProperty struct {
+type ProtoPropertySystem struct {
 	Id       uuid.UUID `json:"id,omitempty"`
 	Property string    `json:"property,omitempty"`
 	Value    string    `json:"value,omitempty"`
 }
 
-type ProtoServiceProperty struct {
+type ProtoPropertyService struct {
 	Id         uuid.UUID              `json:"id,omitempty"`
 	Property   string                 `json:"property,omitempty"`
 	Team       string                 `json:"team,omitempty"`
