@@ -1,13 +1,14 @@
 package somaproto
 
 import (
-//"github.com/satori/go.uuid"
+	"github.com/satori/go.uuid"
 )
 
 type ProtoRequestProperty struct {
 	Custom  ProtoCustomProperty  `json:"custom,omitempty"`
 	System  ProtoSystemProperty  `json:"system,omitempty"`
 	Service ProtoServiceProperty `json:"service,omitempty"`
+	Filter  ProtoPropertyFilter  `json:"filter,omitempty"`
 }
 
 type ProtoResultProperty struct {
@@ -20,17 +21,20 @@ type ProtoResultProperty struct {
 }
 
 type ProtoCustomProperty struct {
-	Repository string `json:"repository,omitempty"`
-	Property   string `json:"property,omitempty"`
-	Value      string `json:"value,omitempty"`
+	Id         uuid.UUID `json:"id,omitempty"`
+	Repository string    `json:"repository,omitempty"`
+	Property   string    `json:"property,omitempty"`
+	Value      string    `json:"value,omitempty"`
 }
 
 type ProtoSystemProperty struct {
-	Property string `json:"property,omitempty"`
-	Value    string `json:"value,omitempty"`
+	Id       uuid.UUID `json:"id,omitempty"`
+	Property string    `json:"property,omitempty"`
+	Value    string    `json:"value,omitempty"`
 }
 
 type ProtoServiceProperty struct {
+	Id         uuid.UUID              `json:"id,omitempty"`
 	Property   string                 `json:"property,omitempty"`
 	Team       string                 `json:"team,omitempty"`
 	Attributes ProtoServiceAttributes `json:"attributes,omitempty"`
@@ -47,6 +51,10 @@ type ProtoServiceAttributes struct {
 	Uid         []string `json:"uid,omitempty"`
 	Tls         string   `json:"tls,omitempty"`
 	Provider    string   `json:"provider,omitempty"`
+}
+
+type ProtoPropertyFilter struct {
+	Name string `json:"name,omitempty"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
