@@ -4,16 +4,96 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-func cmdPropertyServiceCreate(c *cli.Context) {
-}
-
-func cmdPropertySystemCreate(c *cli.Context) {
-}
-
-func cmdPropertyCustomCreate(c *cli.Context) {
-}
-
+// GLOBAL SERVICE PROPERTY TEMPLATES
 func cmdPropertyTemplateCreate(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyTemplateDelete(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyTemplateEdit(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyTemplateRename(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyTemplateShow(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyTemplateList(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+// GLOBAL SYSTEM PROPERTIES
+func cmdPropertySystemCreate(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertySystemDelete(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertySystemRename(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertySystemShow(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertySystemList(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+// PER-TEAM SERVICE PROPERTIES
+func cmdPropertyServiceCreate(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyServiceDelete(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyServiceEdit(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyServiceRename(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyServiceList(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyServiceShow(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+// PER-REPO CUSTOM PROPERTIES
+func cmdPropertyCustomCreate(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyCustomDelete(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyCustomRename(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyCustomShow(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyCustomList(c *cli.Context) {
+	utl.NotImplemented()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

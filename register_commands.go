@@ -697,12 +697,132 @@ func registerCommands(app cli.App) *cli.App {
 							Action: cmdPropertyCustomCreate,
 						},
 						{
-							Name:   "servicetemplate",
+							Name:   "template",
 							Usage:  "Create a new global service template",
 							Action: cmdPropertyTemplateCreate,
 						},
 					},
 				}, // end property create
+				{
+					Name:  "delete",
+					Usage: "SUBCOMMANDS for property delete",
+					Subcommands: []cli.Command{
+						{
+							Name:   "service",
+							Usage:  "Delete a team service property",
+							Action: cmdPropertyServiceDelete,
+						},
+						{
+							Name:   "system",
+							Usage:  "Delete a system property",
+							Action: cmdPropertySystemDelete,
+						},
+						{
+							Name:   "custom",
+							Usage:  "Delete a repository custom property",
+							Action: cmdPropertyCustomDelete,
+						},
+						{
+							Name:   "template",
+							Usage:  "Delete a global service property template",
+							Action: cmdPropertyTemplateDelete,
+						},
+					},
+				}, // end property delete
+				{
+					Name:  "edit",
+					Usage: "SUBCOMMANDS for property edit",
+					Subcommands: []cli.Command{
+						{
+							Name:   "service",
+							Usage:  "Edit a service property",
+							Action: cmdPropertyServiceEdit,
+						},
+						{
+							Name:   "template",
+							Usage:  "Edit a service property template",
+							Action: cmdPropertyTemplateEdit,
+						},
+					},
+				}, // end property edit
+				{
+					Name:  "rename",
+					Usage: "SUBCOMMANDS for property rename",
+					Subcommands: []cli.Command{
+						{
+							Name:   "service",
+							Usage:  "Rename a service property",
+							Action: cmdPropertyServiceRename,
+						},
+						{
+							Name:   "custom",
+							Usage:  "Rename a custom property",
+							Action: cmdPropertyCustomRename,
+						},
+						{
+							Name:   "system",
+							Usage:  "Rename a system property",
+							Action: cmdPropertySystemRename,
+						},
+						{
+							Name:   "template",
+							Usage:  "Rename a service property template",
+							Action: cmdPropertyTemplateRename,
+						},
+					},
+				}, // end property rename
+				{
+					Name:  "show",
+					Usage: "SUBCOMMANDS for property show",
+					Subcommands: []cli.Command{
+						{
+							Name:   "service",
+							Usage:  "Show a service property",
+							Action: cmdPropertyServiceShow,
+						},
+						{
+							Name:   "custom",
+							Usage:  "Show a custom property",
+							Action: cmdPropertyCustomShow,
+						},
+						{
+							Name:   "system",
+							Usage:  "Show a system property",
+							Action: cmdPropertySystemShow,
+						},
+						{
+							Name:   "template",
+							Usage:  "Show a service property template",
+							Action: cmdPropertyTemplateShow,
+						},
+					},
+				}, // end property show
+				{
+					Name:  "list",
+					Usage: "SUBCOMMANDS for property list",
+					Subcommands: []cli.Command{
+						{
+							Name:   "service",
+							Usage:  "List service properties",
+							Action: cmdPropertyServiceList,
+						},
+						{
+							Name:   "custom",
+							Usage:  "List custom properties",
+							Action: cmdPropertyCustomList,
+						},
+						{
+							Name:   "system",
+							Usage:  "List system properties",
+							Action: cmdPropertySystemList,
+						},
+						{
+							Name:   "template",
+							Usage:  "List service property templates",
+							Action: cmdPropertyTemplateList,
+						},
+					},
+				}, // end property list
 			},
 		}, // end property
 	}
