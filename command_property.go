@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/codegangsta/cli"
 )
 
@@ -10,7 +12,11 @@ func cmdPropertyTemplateCreate(c *cli.Context) {
 }
 
 func cmdPropertyTemplateDelete(c *cli.Context) {
-	utl.NotImplemented()
+	utl.ValidateCliArgumentCount(c, 1)
+	propId := utl.TryGetTemplatePropertyByUUIDOrName(c.Args().Get(0))
+	path := fmt.Sprintf("/property/service/global/%s", propId.String())
+
+	_ = utl.DeleteRequest(path)
 }
 
 func cmdPropertyTemplateEdit(c *cli.Context) {
@@ -35,7 +41,11 @@ func cmdPropertySystemCreate(c *cli.Context) {
 }
 
 func cmdPropertySystemDelete(c *cli.Context) {
-	utl.NotImplemented()
+	utl.ValidateCliArgumentCount(c, 1)
+	propId := utl.TryGetSystemPropertyByUUIDOrName(c.Args().Get(0))
+	path := fmt.Sprintf("/property/system/%s", propId.String())
+
+	_ = utl.DeleteRequest(path)
 }
 
 func cmdPropertySystemRename(c *cli.Context) {
@@ -56,7 +66,13 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 }
 
 func cmdPropertyServiceDelete(c *cli.Context) {
-	utl.NotImplemented()
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "team")
+	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
+	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId.String())
+	path := fmt.Sprintf("/property/service/team/%s/%s", teamId.String(), propId.String())
+
+	_ = utl.DeleteRequest(path)
 }
 
 func cmdPropertyServiceEdit(c *cli.Context) {
@@ -81,7 +97,13 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 }
 
 func cmdPropertyCustomDelete(c *cli.Context) {
-	utl.NotImplemented()
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "repository")
+	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
+	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().Get(0), repoId.String())
+	path := fmt.Sprintf("/property/custom/%s/%s", repoId.String(), propId.String())
+
+	_ = utl.DeleteRequest(path)
 }
 
 func cmdPropertyCustomRename(c *cli.Context) {
