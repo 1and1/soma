@@ -11,6 +11,8 @@ func createTableRepositories(printOnly bool, verbose bool) {
 	queryMap["createTableRepositories"] = `create table if not exists soma.repositories (
     repository_id               uuid            PRIMARY KEY,
     repository_name             varchar(128)    UNIQUE NOT NULL,
+	repository_deleted          boolean         NOT NULL DEFAULT 'no',
+	repository_active           boolean         NOT NULL DEFAULT 'yes',
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
     UNIQUE( repository_id, organizational_team_id )
   );`
