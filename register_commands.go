@@ -873,21 +873,25 @@ func registerCommands(app cli.App) *cli.App {
 					Usage:  "Change the owner of a repository",
 					Action: cmdRepositoryRepossess,
 				},
-				{
-					Name:   "clone",
-					Usage:  "Create a clone of an existing repository",
-					Action: cmdRepositoryClone,
-				},
+				/*
+					{
+						Name:   "clone",
+						Usage:  "Create a clone of an existing repository",
+						Action: cmdRepositoryClone,
+					},
+				*/
 				{
 					Name:   "activate",
 					Usage:  "Activate a cloned repository",
 					Action: cmdRepositoryActivate,
 				},
-				{
-					Name:   "wipe",
-					Usage:  "Clear all repository contents",
-					Action: cmdRepositoryWipe,
-				},
+				/*
+					{
+						Name:   "wipe",
+						Usage:  "Clear all repository contents",
+						Action: cmdRepositoryWipe,
+					},
+				*/
 				{
 					Name:   "list",
 					Usage:  "List all existing repositories",
