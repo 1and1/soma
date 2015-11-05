@@ -12,6 +12,8 @@ func createTablesBuckets(printOnly bool, verbose bool) {
 create table if not exists soma.buckets (
   bucket_id                   uuid            PRIMARY KEY,
   bucket_name                 varchar(512)    UNIQUE NOT NULL,
+  bucket_frozen               boolean         NOT NULL DEFAULT 'no',
+  bucket_deleted              boolean         NOT NULL DEFAULT 'no',
   repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
   environment                 varchar(32)     NOT NULL REFERENCES soma.environments ( environment ),
   organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
