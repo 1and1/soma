@@ -904,6 +904,48 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end repository
+		{
+			Name:   "buckets",
+			Usage:  "SUBCOMMANDS for buckets",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new bucket inside a repository",
+					Action: cmdBucketCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Mark an existing bucket as deleted",
+					Action: cmdBucketDelete,
+				},
+				{
+					Name:   "restore",
+					Usage:  "Restore a bucket marked as deleted",
+					Action: cmdBucketRestore,
+				},
+				{
+					Name:   "purge",
+					Usage:  "Remove a deleted bucket",
+					Action: cmdBucketPurge,
+				},
+				{
+					Name:   "freeze",
+					Usage:  "Freeze a bucket",
+					Action: cmdBucketFreeze,
+				},
+				{
+					Name:   "thaw",
+					Usage:  "Thaw a frozen bucket",
+					Action: cmdBucketThaw,
+				},
+				{
+					Name:   "rename",
+					Usage:  "Rename an existing bucket",
+					Action: cmdBucketRename,
+				},
+			},
+		}, // end buckets
 	}
 	return &app
 }
