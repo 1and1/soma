@@ -152,6 +152,16 @@ func cmdPropertyTemplateCreate(c *cli.Context) {
 /*
  * DELETE
  */
+func cmdPropertyCustomDelete(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 3)
+	utl.ValidateCliArgument(c, 2, "repository")
+	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
+	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().Get(0), repoId.String())
+	path := fmt.Sprintf("/property/custom/%s/%s", repoId.String(), propId.String())
+
+	_ = utl.DeleteRequest(path)
+}
+
 func cmdPropertySystemDelete(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	propId := utl.TryGetSystemPropertyByUUIDOrName(c.Args().Get(0))
@@ -178,19 +188,12 @@ func cmdPropertyTemplateDelete(c *cli.Context) {
 	_ = utl.DeleteRequest(path)
 }
 
-func cmdPropertyCustomDelete(c *cli.Context) {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().Get(0), repoId.String())
-	path := fmt.Sprintf("/property/custom/%s/%s", repoId.String(), propId.String())
-
-	_ = utl.DeleteRequest(path)
-}
-
 /*
  * EDIT
  */
+func cmdPropertyServiceEdit(c *cli.Context) {
+	utl.NotImplemented()
+}
 
 func cmdPropertyTemplateEdit(c *cli.Context) {
 	utl.NotImplemented()
@@ -199,39 +202,11 @@ func cmdPropertyTemplateEdit(c *cli.Context) {
 /*
  * RENAME
  */
-func cmdPropertyTemplateRename(c *cli.Context) {
+func cmdPropertyCustomRename(c *cli.Context) {
 	utl.NotImplemented()
 }
 
-/*
- * SHOW
- */
-func cmdPropertyTemplateShow(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-/*
- * LIST
- */
-func cmdPropertyTemplateList(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-// GLOBAL SYSTEM PROPERTIES
 func cmdPropertySystemRename(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertySystemShow(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertySystemList(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-// PER-TEAM SERVICE PROPERTIES
-func cmdPropertyServiceEdit(c *cli.Context) {
 	utl.NotImplemented()
 }
 
@@ -239,7 +214,18 @@ func cmdPropertyServiceRename(c *cli.Context) {
 	utl.NotImplemented()
 }
 
-func cmdPropertyServiceList(c *cli.Context) {
+func cmdPropertyTemplateRename(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+/*
+ * SHOW
+ */
+func cmdPropertyCustomShow(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertySystemShow(c *cli.Context) {
 	utl.NotImplemented()
 }
 
@@ -247,16 +233,26 @@ func cmdPropertyServiceShow(c *cli.Context) {
 	utl.NotImplemented()
 }
 
-// PER-REPO CUSTOM PROPERTIES
-func cmdPropertyCustomRename(c *cli.Context) {
+func cmdPropertyTemplateShow(c *cli.Context) {
 	utl.NotImplemented()
 }
 
-func cmdPropertyCustomShow(c *cli.Context) {
-	utl.NotImplemented()
-}
-
+/*
+ * LIST
+ */
 func cmdPropertyCustomList(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertySystemList(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyServiceList(c *cli.Context) {
+	utl.NotImplemented()
+}
+
+func cmdPropertyTemplateList(c *cli.Context) {
 	utl.NotImplemented()
 }
 
