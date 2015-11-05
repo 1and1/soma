@@ -729,6 +729,7 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				}, // end property delete
+				/* XXX NOT IMPLEMENTED YET
 				{
 					Name:  "edit",
 					Usage: "SUBCOMMANDS for property edit",
@@ -745,6 +746,8 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				}, // end property edit
+				*/
+				/* XXX NOT IMPLEMENTED YET
 				{
 					Name:  "rename",
 					Usage: "SUBCOMMANDS for property rename",
@@ -771,6 +774,8 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				}, // end property rename
+				*/
+				/* XXX NOT IMPLEMENTED YET
 				{
 					Name:  "show",
 					Usage: "SUBCOMMANDS for property show",
@@ -797,6 +802,8 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				}, // end property show
+				*/
+				/* XXX NOT IMPLEMENTED YET
 				{
 					Name:  "list",
 					Usage: "SUBCOMMANDS for property list",
@@ -823,6 +830,7 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				}, // end property list
+				*/
 			},
 		}, // end property
 		{
