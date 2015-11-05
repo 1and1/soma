@@ -825,6 +825,73 @@ func registerCommands(app cli.App) *cli.App {
 				}, // end property list
 			},
 		}, // end property
+		{
+			Name:   "repository",
+			Usage:  "SUBCOMMANDS for repository",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new repository",
+					Action: cmdRepositoryCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Mark an existing repository as deleted",
+					Action: cmdRepositoryDelete,
+				},
+				{
+					Name:   "restore",
+					Usage:  "Restore a repository marked as deleted",
+					Action: cmdRepositoryRestore,
+				},
+				{
+					Name:   "purge",
+					Usage:  "Remove an unreferenced deleted repository",
+					Action: cmdRepositoryPurge,
+				},
+				{
+					Name:   "clear",
+					Usage:  "Clear all check instances for this repository",
+					Action: cmdRepositoryClear,
+				},
+				{
+					Name:   "rename",
+					Usage:  "Rename an existing repository",
+					Action: cmdRepositoryRename,
+				},
+				{
+					Name:   "repossess",
+					Usage:  "Change the owner of a repository",
+					Action: cmdRepositoryRepossess,
+				},
+				{
+					Name:   "clone",
+					Usage:  "Create a clone of an existing repository",
+					Action: cmdRepositoryClone,
+				},
+				{
+					Name:   "activate",
+					Usage:  "Activate a cloned repository",
+					Action: cmdRepositoryActivate,
+				},
+				{
+					Name:   "wipe",
+					Usage:  "Clear all repository contents",
+					Action: cmdRepositoryWipe,
+				},
+				{
+					Name:   "list",
+					Usage:  "List all existing repositories",
+					Action: cmdRepositoryList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show information about a specific repository",
+					Action: cmdRepositoryShow,
+				},
+			},
+		}, // end repository
 	}
 	return &app
 }
