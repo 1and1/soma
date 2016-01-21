@@ -12,6 +12,7 @@ func registerCommands(app cli.App) *cli.App {
 			Usage:  "Initialize local client files",
 			Action: cmdClientInit,
 		}, // end init
+		// views
 		{
 			Name:   "views",
 			Usage:  "SUBCOMMANDS for views",
@@ -44,6 +45,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end views
+		// environments
 		{
 			Name:   "environments",
 			Usage:  "SUBCOMMANDS for environments",
@@ -76,6 +78,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end environments
+		// types
 		{
 			Name:   "types",
 			Usage:  "SUBCOMMANDS for object types",
@@ -108,6 +111,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end types
+		// states
 		{
 			Name:   "states",
 			Usage:  "SUBCOMMANDS for states",
@@ -140,6 +144,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end states
+		// datacenters
 		{
 			Name:   "datacenters",
 			Usage:  "SUBCOMMANDS for datacenters",
@@ -192,6 +197,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end datacenters
+		// servers
 		{
 			Name:   "servers",
 			Usage:  "SUBCOMMANDS for servers",
@@ -261,6 +267,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end servers
+		// permissions
 		{
 			Name:   "permissions",
 			Usage:  "SUBCOMMANDS for permissions",
@@ -371,6 +378,7 @@ func registerCommands(app cli.App) *cli.App {
 				}, // end permissions grant
 			},
 		}, // end permissions
+		// teams
 		{
 			Name:   "teams",
 			Usage:  "SUBCOMMANDS for teams",
@@ -408,6 +416,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end teams
+		// oncall
 		{
 			Name:   "oncall",
 			Usage:  "SUBCOMMANDS for oncall duty teams",
@@ -466,6 +475,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end oncall
+		// users
 		{
 			Name:   "users",
 			Usage:  "SUBCOMMANDS for users",
@@ -556,6 +566,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end users
+		// nodes
 		{
 			Name:   "nodes",
 			Usage:  "SUBCOMMANDS for nodes",
@@ -672,6 +683,7 @@ func registerCommands(app cli.App) *cli.App {
 				}, // end nodes property
 			},
 		}, // end nodes
+		// property
 		{
 			Name:   "property",
 			Usage:  "SUBCOMMANDS for property",
@@ -833,6 +845,7 @@ func registerCommands(app cli.App) *cli.App {
 				*/
 			},
 		}, // end property
+		// repository
 		{
 			Name:   "repository",
 			Usage:  "SUBCOMMANDS for repository",
@@ -904,6 +917,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end repository
+		// buckets
 		{
 			Name:   "buckets",
 			Usage:  "SUBCOMMANDS for buckets",
@@ -946,6 +960,60 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end buckets
+		// clusters
+		{
+			Name:   "clusters",
+			Usage:  "SUBCOMMANDS for clusters",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new cluster",
+					Action: cmdClusterCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a cluster",
+					Action: cmdClusterDelete,
+				},
+				{
+					Name:   "rename",
+					Usage:  "Rename a cluster",
+					Action: cmdClusterRename,
+				},
+				{
+					Name:   "list",
+					Usage:  "List all clusters",
+					Action: cmdClusterList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a cluster",
+					Action: cmdClusterShow,
+				},
+				{
+					Name:  "members",
+					Usage: "SUBCOMMANDS for cluster members",
+					Subcommands: []cli.Command{
+						{
+							Name:   "add",
+							Usage:  "Add a node to a cluster",
+							Action: cmdClusterMemberAdd,
+						},
+						{
+							Name:   "delete",
+							Usage:  "Delete a node from a cluster",
+							Action: cmdClusterMemberDelete,
+						},
+						{
+							Name:   "list",
+							Usage:  "List members of a cluster",
+							Action: cmdClusterMemberList,
+						},
+					},
+				},
+			},
+		}, // end clusters
 	}
 	return &app
 }
