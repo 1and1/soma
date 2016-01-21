@@ -18,6 +18,15 @@ func (u SomaUtil) TryGetBucketByUUIDOrName(b string, r string) uuid.UUID {
 	return id
 }
 
+func (u SomaUtil) BucketByUUIDOrName(b string) string {
+	id, err := uuid.FromString(b)
+	if err != nil {
+		// aborts on failure
+		id = u.BucketIdByName(b)
+	}
+	return id.String()
+}
+
 func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) uuid.UUID {
 	var req somaproto.ProtoRequestBucket
 	req.Filter.Name = bucket
@@ -30,6 +39,46 @@ func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) uuid.UUID {
 		u.Abort("Received result set for incorrect bucket")
 	}
 	return repoResult.Buckets[0].Id
+}
+
+func (u SomaUtil) BucketIdByName(bucket string) uuid.UUID {
+	var req somaproto.ProtoRequestBucket
+	req.Filter.Name = bucket
+
+	resp := u.GetRequestWithBody(req, "/buckets/")
+	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
+
+	if bucket != repoResult.Buckets[0].Name {
+		u.Abort("Received result set for incorrect bucket")
+	}
+	return repoResult.Buckets[0].Id
+}
+
+func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
+	var req somaproto.ProtoRequestBucket
+	receivedUuidArgument := false
+
+	id, err := uuid.FromString(bucket)
+	if err != nil {
+		req.Filter.Name = bucket
+	} else {
+		receivedUuidArgument = true
+		req.Filter.Id = id.String()
+	}
+
+	resp := u.GetRequestWithBody(req, "/buckets/")
+	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
+
+	if receivedUuidArgument {
+		if bucket != bucketResult.Buckets[0].Id.String() {
+			u.Abort("Received result set for incorrect bucket")
+		}
+	} else {
+		if bucket != bucketResult.Buckets[0].Name {
+			u.Abort("Received result set for incorrect bucket")
+		}
+	}
+	return bucketResult.Buckets[0].RepositoryId
 }
 
 func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *somaproto.ProtoResultBucket {
