@@ -37,6 +37,7 @@ type ProtoBucket struct {
 
 type ProtoBucketFilter struct {
 	Name         string `json:"name,omitempty"`
+	Id           string `json:"id,omitempty"`
 	RepositoryId string `json:"repositoryid,omitempty"`
 	IsDeleted    bool   `json:"deleted,omitempty"`
 	IsFrozen     bool   `json:"frozen,omitempty"`
