@@ -64,9 +64,35 @@ func cmdClusterRename(c *cli.Context) {
 }
 
 func cmdClusterList(c *cli.Context) {
+	multKeys := []string{"bucket"}
+	uniqKeys := []string{}
+
+	opts := utl.ParseVariadicArguments(multKeys,
+		uniqKeys,
+		uniqKeys,
+		c.Args().Tail())
+
+	var req somaproto.ProtoRequestCluster
+	req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
+	_ = utl.GetRequestWithBody(req, "/clusters/")
 }
 
 func cmdClusterShow(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 3)
+	multKeys := []string{"bucket"}
+
+	opts := utl.ParseVariadicArguments(multKeys,
+		multKeys,
+		multKeys,
+		c.Args().Tail())
+
+	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(
+		c.Args().First(),
+		bucketId)
+	path := fmt.Sprintf("/clusters/%s", clusterId)
+
+	_ = utl.GetRequest(path)
 }
 
 func cmdClusterMemberAdd(c *cli.Context) {
