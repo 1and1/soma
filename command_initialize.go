@@ -38,6 +38,8 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
 	createTablesChecks(printOnly, verbose)
 
+	createTablesTemplates(printOnly, verbose)
+
 	grantPermissions(printOnly, verbose)
 
 	done <- true
