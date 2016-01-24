@@ -79,7 +79,9 @@ create table if not exists soma.monitoring_capabilities (
   capability_monitoring       uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ),
   capability_metric           varchar(512)    NOT NULL REFERENCES soma.metrics ( metric ),
   capability_view             varchar(64)     NOT NULL REFERENCES soma.views ( view ),
-  CHECK ( capability_view != 'any' )
+  threshold_amount            integer         NOT NULL,
+  CHECK ( capability_view != 'any' ),
+  CHECK ( threshold_amount >= 0 )
 );`
 	queries[idx] = "createTableMonitoringCapabilities"
 	idx++
