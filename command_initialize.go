@@ -36,6 +36,8 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
 	createTablesMetricsMonitoring(printOnly, verbose)
 
+	createTablesChecks(printOnly, verbose)
+
 	grantPermissions(printOnly, verbose)
 
 	done <- true
