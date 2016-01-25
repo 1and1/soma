@@ -1100,6 +1100,32 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end groups
+		{
+			Name:  "levels",
+			Usage: "SUBCOMMANDS for notification levels",
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new notification level",
+					Action: cmdLevelCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a notification level",
+					Action: cmdLevelDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List notification levels",
+					Action: cmdLevelList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a notification level",
+					Action: cmdLevelShow,
+				},
+			},
+		},
 	}
 	return &app
 }
