@@ -1154,6 +1154,33 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end predicates
+		// status
+		{
+			Name:  "status",
+			Usage: "SUBCOMMANDS for check instance status",
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Add a check instance status",
+					Action: cmdStatusCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a check instance status",
+					Action: cmdStatusDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List check instance status",
+					Action: cmdStatusList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a check instance status",
+					Action: cmdStatusShow,
+				},
+			},
+		}, // end status
 	}
 	return &app
 }
