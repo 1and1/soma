@@ -1100,6 +1100,7 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end groups
+		// levels
 		{
 			Name:  "levels",
 			Usage: "SUBCOMMANDS for notification levels",
@@ -1126,6 +1127,33 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		},
+		// predicates
+		{
+			Name:  "predicates",
+			Usage: "SUBCOMMANDS for threshold predicates",
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Add a predicate",
+					Action: cmdPredicateCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a predicate",
+					Action: cmdPredicateDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List predicates",
+					Action: cmdPredicateList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a predicate",
+					Action: cmdPredicateShow,
+				},
+			},
+		}, // end predicates
 	}
 	return &app
 }
