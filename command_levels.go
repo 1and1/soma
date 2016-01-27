@@ -8,7 +8,7 @@ import (
 )
 
 func cmdLevelCreate(c *cli.Context) {
-	utl.ValidateCliArgumentCount(c, 6)
+	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
