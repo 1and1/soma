@@ -28,7 +28,7 @@ func (u *SomaUtil) ValidateCliArgumentCount(c *cli.Context, i uint8) {
 		}
 	} else {
 		if !a.Present() || len(a.Tail()) != (int(i)-1) {
-			u.Abort("Syntax error")
+			u.Abort("Syntax error, incorrect argument count")
 		}
 	}
 }
