@@ -1102,8 +1102,9 @@ func registerCommands(app cli.App) *cli.App {
 		}, // end groups
 		// levels
 		{
-			Name:  "levels",
-			Usage: "SUBCOMMANDS for notification levels",
+			Name:   "levels",
+			Usage:  "SUBCOMMANDS for notification levels",
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "create",
@@ -1129,8 +1130,9 @@ func registerCommands(app cli.App) *cli.App {
 		},
 		// predicates
 		{
-			Name:  "predicates",
-			Usage: "SUBCOMMANDS for threshold predicates",
+			Name:   "predicates",
+			Usage:  "SUBCOMMANDS for threshold predicates",
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "create",
@@ -1156,8 +1158,9 @@ func registerCommands(app cli.App) *cli.App {
 		}, // end predicates
 		// status
 		{
-			Name:  "status",
-			Usage: "SUBCOMMANDS for check instance status",
+			Name:   "status",
+			Usage:  "SUBCOMMANDS for check instance status",
+			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
 					Name:   "create",
