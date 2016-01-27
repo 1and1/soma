@@ -10,7 +10,7 @@ func createTablesInstances(printOnly bool, verbose bool) {
 
 	queryMap["createTableCheckInstanceStatus"] = `
 create table if not exists soma.check_instance_status (
-  status                      varchar(32)     PRIMARY
+  status                      varchar(32)     PRIMARY KEY
 );`
 	queries[idx] = "createTableCheckInstanceStatus"
 	idx++
@@ -20,7 +20,7 @@ create table if not exists soma.check_instances (
   check_instance_id           uuid            PRIMARY KEY,
   last_configuration_created  timestamptz(3)  NOT NULL DEFAULT NOW(),
   update_available            boolean         NOT NULL DEFAULT 'no',
-  deleted                     boolean         NOT NULL DEFAULT 'no',
+  deleted                     boolean         NOT NULL DEFAULT 'no'
 );`
 	queries[idx] = "createTableCheckInstances"
 	idx++
@@ -32,17 +32,18 @@ create table if not exists soma.check_instance_configurations (
   monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ),
   created                     timestamptz(3)  NOT NULL DEFAULT NOW(),
   activated_at                timestamptz(3)  NOT NULL DEFAULT NOW(),
-  state                       varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ),
-  next_state                  varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ),
+  status                      varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ),
+  next_status                 varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ),
   awaiting_deletion           boolean         NOT NULL DEFAULT 'no',
   configuration               jsonb           NOT NULL,
   CHECK ( status != 'none' )
 );`
 	queries[idx] = "createTableCheckInstanceConfigurations"
+	idx++
 
 	queryMap["createUniqueIndexActiveConfigurations"] = `
 create unique index _unique_check_instance_configurations_active
-  on table soma.check_instance_configurations ( check_id, status )
+  on soma.check_instance_configurations ( check_id, status )
   where status = 'active';`
 	queries[idx] = "createUniqueIndexActiveConfigurations"
 	idx++

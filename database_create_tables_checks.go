@@ -41,7 +41,7 @@ create table if not exists soma.check_configurations (
   enabled                     boolean         NOT NULL DEFAULT 'yes',
   external_id                 varchar(64)     NOT NULL DEFAULT 'none',
   CHECK ( configuration_object_type != 'server' ),
-  CHECK ( external_id == 'none' OR configuration_object_type != 'template' )
+  CHECK ( external_id = 'none' OR configuration_object_type != 'template' )
 );`
 	queries[idx] = "createTableCheckConfigurations"
 	idx++
@@ -96,7 +96,7 @@ create table if not exists soma.constraints_service_property (
 	queryMap["createTableCheckConstraintsServiceAttributes"] = `
 create table if not exists soma.constraints_service_attribute (
   configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  servprop_attr_type          varchar(64)     NOT NULL REFERENCES soma.service_property_attribute_types ( servprop_attr_type ),
+  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
   attribute_value             varchar(64)
 );`
 	queries[idx] = "createTableCheckConstraintsServiceAttributes"
@@ -105,7 +105,7 @@ create table if not exists soma.constraints_service_attribute (
 	queryMap["createTableCheckConstraintsOncallProperty"] = `
 create table if not exists soma.constraints_oncall_property (
   configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty ( oncall_duty_id )
+  oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id )
 );`
 	queries[idx] = "createTableCheckConstraintsOncallProperty"
 	idx++
