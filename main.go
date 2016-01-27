@@ -61,6 +61,8 @@ func main() {
 	router.PATCH("/datacentergroups/:datacentergroup", AddDatacenterToGroup)
 	router.DELETE("/datacentergroups/:datacentergroup", DeleteDatacenterFromGroup)
 
+	router.GET("/levels", ListLevels)
+
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
 
