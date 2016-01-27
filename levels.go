@@ -67,6 +67,7 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 
 	switch q.action {
 	case "list":
+		log.Printf("R: levels/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if err != nil {
@@ -97,12 +98,15 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 			})
 		}
 	case "show":
+		log.Printf("R: levels/show for %s", q.level.Name)
 		err = r.show_stmt.QueryRow(q.level.Name).Scan(&level, &short, &numeric)
 		if err != nil {
-			result = append(result, somaLevelResult{
-				rErr: err,
-				lErr: nil,
-			})
+			if err.Error() != "sql: no rows in result set" {
+				result = append(result, somaLevelResult{
+					rErr: err,
+					lErr: nil,
+				})
+			}
 			q.reply <- result
 			return
 		}

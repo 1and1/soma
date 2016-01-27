@@ -62,6 +62,7 @@ func main() {
 	router.DELETE("/datacentergroups/:datacentergroup", DeleteDatacenterFromGroup)
 
 	router.GET("/levels", ListLevels)
+	router.GET("/levels/:level", ShowLevels)
 
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
