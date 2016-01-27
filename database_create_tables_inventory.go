@@ -97,7 +97,7 @@ create index _users_system on inventory.users ( user_is_system, user_id )
 	queryMap["createIndexUsersDeactivated"] = `
 create index _users_deactivated on inventory.users ( user_is_active, user_id )
   where user_is_active = 'no';`
-	queries[idx] = "createIndexUsersSystem"
+	queries[idx] = "createIndexUsersDeactivated"
 	idx++
 
 	queryMap["createTableOncallDutyMembership"] = `
