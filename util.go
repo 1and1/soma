@@ -62,6 +62,26 @@ func CheckErrorHandler(res interface{}, protoRes interface{}) bool {
 		t.Code = 200
 		t.Status = "OK"
 		return false
+	case *[]somaStatusResult:
+		r := res.(*[]somaStatusResult)
+		t := protoRes.(*somaproto.ProtoResultStatus)
+
+		if len(*r) == 0 {
+			t.Code = 404
+			t.Status = "NOTFOUND"
+			return true
+		}
+		// r has elements
+		if (*r)[0].rErr != nil {
+			t.Code = 500
+			t.Status = "ERROR"
+			t.Text = make([]string, 0)
+			t.Text = append(t.Text, (*r)[0].rErr.Error())
+			return true
+		}
+		t.Code = 200
+		t.Status = "OK"
+		return false
 	default:
 		log.Printf("CheckErrorHandler: unhandled type %s", reflect.TypeOf(res))
 	}
@@ -78,6 +98,9 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 		err = decoder.Decode(c)
 	case *somaproto.ProtoRequestPredicate:
 		c := s.(*somaproto.ProtoRequestPredicate)
+		err = decoder.Decode(c)
+	case *somaproto.ProtoRequestStatus:
+		c := s.(*somaproto.ProtoRequestStatus)
 		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)

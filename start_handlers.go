@@ -21,6 +21,9 @@ func startHandlers() {
 
 	spawnPredicateReadHandler()
 	spawnPredicateWriteHandler()
+
+	spawnStatusReadHandler()
+	spawnStatusWriteHandler()
 }
 
 func spawnViewReadHandler() {
@@ -147,6 +150,24 @@ func spawnPredicateWriteHandler() {
 	predicateWriteHandler.conn = conn
 	handlerMap["predicateWriteHandler"] = predicateWriteHandler
 	go predicateWriteHandler.run()
+}
+
+func spawnStatusReadHandler() {
+	var statusReadHandler somaStatusReadHandler
+	statusReadHandler.input = make(chan somaStatusRequest, 64)
+	statusReadHandler.shutdown = make(chan bool)
+	statusReadHandler.conn = conn
+	handlerMap["statusReadHandler"] = statusReadHandler
+	go statusReadHandler.run()
+}
+
+func spawnStatusWriteHandler() {
+	var statusWriteHandler somaStatusWriteHandler
+	statusWriteHandler.input = make(chan somaStatusRequest, 64)
+	statusWriteHandler.shutdown = make(chan bool)
+	statusWriteHandler.conn = conn
+	handlerMap["statusWriteHandler"] = statusWriteHandler
+	go statusWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
