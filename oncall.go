@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 
+	"github.com/satori/go.uuid"
 )
 
 type somaOncallRequest struct {
@@ -129,33 +131,50 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 /* Write Access
  *
  */
-/*
-type somaStatusWriteHandler struct {
-	input    chan somaStatusRequest
+type somaOncallWriteHandler struct {
+	input    chan somaOncallRequest
 	shutdown chan bool
 	conn     *sql.DB
 	add_stmt *sql.Stmt
+	upd_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 }
 
-func (w *somaStatusWriteHandler) run() {
+func (w *somaOncallWriteHandler) run() {
 	var err error
 
+	log.Println("Prepare: oncall/add")
 	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.check_instance_status (
-	status)
-SELECT $1 WHERE NOT EXISTS (
-	SELECT status
-	FROM soma.check_instance_status
-	WHERE status = $2);`)
+INSERT INTO inventory.oncall_duty_teams (
+	oncall_duty_id,
+	oncall_duty_name,
+	oncall_duty_phone_number)
+SELECT $1, $2, $3 WHERE NOT EXISTS (
+	SELECT oncall_duty_id
+	FROM inventory.oncall_duty_teams
+	WHERE oncall_duty_id = $4
+	OR oncall_duty_name = $5
+	OR oncall_duty_phone_number = $6);`)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer w.add_stmt.Close()
 
+	log.Println("Prepare: oncall/upd")
+	w.upd_stmt, err = w.conn.Prepare(`
+UPDATE inventory.oncall_duty_teams
+SET oncall_duty_name = CASE WHEN $1::varchar IS NOT NULL THEN $2::varchar ELSE oncall_duty_name END,
+    oncall_duty_phone_number = CASE WHEN $3::numeric IS NOT NULL THEN $4::numeric ELSE oncall_duty_phone_number END
+WHERE oncall_duty_id = $5;`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.upd_stmt.Close()
+
+	log.Println("Prepare: oncall/del")
 	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.check_instance_status
-WHERE status = $1;`)
+DELETE FROM inventory.oncall_duty_teams
+WHERE oncall_duty_id = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -172,33 +191,67 @@ runloop:
 	}
 }
 
-func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
+func (w *somaOncallWriteHandler) process(q *somaOncallRequest) {
 	var res sql.Result
 	var err error
-	result := make([]somaStatusResult, 0)
+	result := make([]somaOncallResult, 0)
 
 	switch q.action {
 	case "add":
-		log.Printf("R: status/add for %s", q.status.Status)
+		log.Printf("R: oncall/add for %s", q.oncall.Name)
+		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
-			q.status.Status,
-			q.status.Status,
+			id.String(),
+			q.oncall.Name,
+			q.oncall.Number,
+			id.String(),
+			q.oncall.Name,
+			q.oncall.Number,
+		)
+	case "update":
+		log.Printf("R: oncall/update for %s", q.oncall.Id)
+		// our update statement uses NULL to check which of the values
+		// should be updated
+		var name sql.NullString
+		if q.oncall.Name == "" {
+			name = sql.NullString{String: "", Valid: false}
+		} else {
+			name = sql.NullString{String: q.oncall.Name, Valid: true}
+		}
+
+		var n int // ensure err not redeclared in if block
+		var number sql.NullInt64
+		if q.oncall.Number != "" {
+			n, err = strconv.Atoi(q.oncall.Number)
+			if err != nil {
+				break
+			}
+			number = sql.NullInt64{Int64: int64(n), Valid: true}
+		} else {
+			number = sql.NullInt64{Int64: 0, Valid: false}
+		}
+		res, err = w.upd_stmt.Exec(
+			name,
+			name,
+			number,
+			number,
+			q.oncall.Id,
 		)
 	case "delete":
-		log.Printf("R: statuss/del for %s", q.status.Status)
+		log.Printf("R: oncall/del for %s", q.oncall.Id)
 		res, err = w.del_stmt.Exec(
-			q.status.Status,
+			q.oncall.Id,
 		)
 	default:
-		log.Printf("R: unimplemented statuss/%s", q.action)
-		result = append(result, somaStatusResult{
+		log.Printf("R: unimplemented oncall/%s", q.action)
+		result = append(result, somaOncallResult{
 			rErr: errors.New("not implemented"),
 		})
 		q.reply <- result
 		return
 	}
 	if err != nil {
-		result = append(result, somaStatusResult{
+		result = append(result, somaOncallResult{
 			rErr: err,
 		})
 		q.reply <- result
@@ -208,20 +261,19 @@ func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result = append(result, somaStatusResult{
+		result = append(result, somaOncallResult{
 			lErr: errors.New("No rows affected"),
 		})
 	case rowCnt > 1:
-		result = append(result, somaStatusResult{
+		result = append(result, somaOncallResult{
 			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
 		})
 	default:
-		result = append(result, somaStatusResult{
-			status: q.status,
+		result = append(result, somaOncallResult{
+			oncall: q.oncall,
 		})
 	}
 	q.reply <- result
 }
-*/
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

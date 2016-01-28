@@ -13,7 +13,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.8"
+	version := "0.0.9"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -78,6 +78,10 @@ func main() {
 
 	router.GET("/oncall/", ListOncall)
 	router.GET("/oncall/:oncall", ShowOncall)
+	router.POST("/oncall/", AddOncall)
+	router.PATCH("/oncall/:oncall", UpdateOncall)
+	router.DELETE("/oncall/:oncall", DeleteOncall)
+	router.POST("/filter/oncall/", ListOncall)
 
 	log.Fatal(http.ListenAndServe(":8888", router))
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -22,15 +21,12 @@ func ListOncall(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 	results := <-returnChannel
 
-	var cReq somaproto.ProtoRequestOncall
-	b, _ := ioutil.ReadAll((*r).Body)
-	if string(b) != "" {
-		err := DecodeJsonBody(r, &cReq)
-		if err != nil || cReq.Filter.Name == "" {
-			DispatchBadRequest(&w, err)
-			return
-		}
+	cReq := somaproto.ProtoRequestOncall{}
+	cFil := somaproto.ProtoOncallFilter{}
+	cReq.Filter = &cFil
 
+	_ = DecodeJsonBody(r, &cReq)
+	if cReq.Filter.Name != "" {
 		filtered := make([]somaOncallResult, 0)
 	filterloop:
 		for _, onCall := range results {
@@ -67,46 +63,70 @@ func ShowOncall(w http.ResponseWriter, r *http.Request, params httprouter.Params
 /*
  * Write functions
  */
-/*
-func AddStatus(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddOncall(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	var cReq somaproto.ProtoRequestStatus
+	var cReq somaproto.ProtoRequestOncall
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
 		return
 	}
 
-	returnChannel := make(chan []somaStatusResult)
-	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)
-	handler.input <- somaStatusRequest{
+	returnChannel := make(chan []somaOncallResult)
+	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)
+	handler.input <- somaOncallRequest{
 		action: "add",
 		reply:  returnChannel,
-		status: somaproto.ProtoStatus{
-			Status: cReq.Status.Status,
+		oncall: somaproto.ProtoOncall{
+			Name:   cReq.OnCall.Name,
+			Number: cReq.OnCall.Number,
 		},
 	}
 	results := <-returnChannel
-	SendStatusReply(&w, &results)
+	SendOncallReply(&w, &results)
 }
 
-func DeleteStatus(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func UpdateOncall(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaStatusResult)
-	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)
-	handler.input <- somaStatusRequest{
-		action: "delete",
+	var cReq somaproto.ProtoRequestOncall
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan []somaOncallResult)
+	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)
+	handler.input <- somaOncallRequest{
+		action: "update",
 		reply:  returnChannel,
-		status: somaproto.ProtoStatus{
-			Status: params.ByName("status"),
+		oncall: somaproto.ProtoOncall{
+			Id:     params.ByName("oncall"),
+			Name:   cReq.OnCall.Name,
+			Number: cReq.OnCall.Number,
 		},
 	}
 	results := <-returnChannel
-	SendStatusReply(&w, &results)
+	SendOncallReply(&w, &results)
 }
-*/
+
+func DeleteOncall(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan []somaOncallResult)
+	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)
+	handler.input <- somaOncallRequest{
+		action: "delete",
+		reply:  returnChannel,
+		oncall: somaproto.ProtoOncall{
+			Id: params.ByName("oncall"),
+		},
+	}
+	results := <-returnChannel
+	SendOncallReply(&w, &results)
+}
 
 /*
  * Utility
