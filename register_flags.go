@@ -40,6 +40,10 @@ func registerFlags(app cli.App) *cli.App {
 			Usage:  "configuration file location",
 			EnvVar: "SOMA_ADM_CONFIG",
 		},
+		cli.BoolFlag{
+			Name:  "json, J",
+			Usage: "output reply as JSON",
+		},
 	}
 	return &app
 }
