@@ -183,6 +183,8 @@ func (w *somaEnvironmentWriteHandler) process(q *somaEnvironmentRequest) {
 			err:         errors.New("not implemented"),
 			environment: "",
 		})
+		q.reply <- result
+		return
 	}
 	if err != nil {
 		result = append(result, somaEnvironmentResult{

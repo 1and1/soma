@@ -298,6 +298,8 @@ func (w *somaDatacenterWriteHandler) process(q *somaDatacenterRequest) {
 			err:        errors.New("not implemented"),
 			datacenter: "",
 		})
+		q.reply <- result
+		return
 	}
 	if err != nil {
 		result = append(result, somaDatacenterResult{

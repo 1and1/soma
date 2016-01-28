@@ -183,6 +183,8 @@ func (w *somaViewWriteHandler) process(q *somaViewRequest) {
 			err:  errors.New("not implemented"),
 			view: "",
 		})
+		q.reply <- result
+		return
 	}
 	if err != nil {
 		result = append(result, somaViewResult{

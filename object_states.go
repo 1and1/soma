@@ -183,6 +183,8 @@ func (w *somaObjectStateWriteHandler) process(q *somaObjectStateRequest) {
 			err:   errors.New("not implemented"),
 			state: "",
 		})
+		q.reply <- result
+		return
 	}
 	if err != nil {
 		result = append(result, somaObjectStateResult{

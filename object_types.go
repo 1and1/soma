@@ -193,6 +193,8 @@ func (w *somaObjectTypeWriteHandler) process(q *somaObjectTypeRequest) {
 			err:        errors.New("not implemented"),
 			objectType: "",
 		})
+		q.reply <- result
+		return
 	}
 	if err != nil {
 		result = append(result, somaObjectTypeResult{
