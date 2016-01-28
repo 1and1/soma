@@ -76,6 +76,9 @@ func main() {
 	router.POST("/status/", AddStatus)
 	router.DELETE("/status/:status", DeleteStatus)
 
+	router.GET("/oncall/", ListOncall)
+	router.GET("/oncall/:oncall", ShowOncall)
+
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
 

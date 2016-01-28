@@ -24,6 +24,8 @@ func startHandlers() {
 
 	spawnStatusReadHandler()
 	spawnStatusWriteHandler()
+
+	spawnOncallReadHandler()
 }
 
 func spawnViewReadHandler() {
@@ -168,6 +170,15 @@ func spawnStatusWriteHandler() {
 	statusWriteHandler.conn = conn
 	handlerMap["statusWriteHandler"] = statusWriteHandler
 	go statusWriteHandler.run()
+}
+
+func spawnOncallReadHandler() {
+	var oncallReadHandler somaOncallReadHandler
+	oncallReadHandler.input = make(chan somaOncallRequest, 64)
+	oncallReadHandler.shutdown = make(chan bool)
+	oncallReadHandler.conn = conn
+	handlerMap["oncallReadHandler"] = oncallReadHandler
+	go oncallReadHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
