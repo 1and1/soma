@@ -180,12 +180,12 @@ func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
 			q.status.Status,
 		)
 	case "delete":
-		log.Printf("R: statuss/del for %s", q.status.Status)
+		log.Printf("R: status/del for %s", q.status.Status)
 		res, err = w.del_stmt.Exec(
 			q.status.Status,
 		)
 	default:
-		log.Printf("R: unimplemented statuss/%s", q.action)
+		log.Printf("R: unimplemented status/%s", q.action)
 		result = append(result, somaStatusResult{
 			rErr: errors.New("not implemented"),
 		})
