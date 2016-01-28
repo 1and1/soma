@@ -35,7 +35,7 @@ func (u SomaUtil) GetTeamIdByName(teamName string) uuid.UUID {
 }
 
 func (u SomaUtil) DecodeProtoResultTeamFromResponse(resp *resty.Response) *somaproto.ProtoResultTeam {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultTeam
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

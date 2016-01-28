@@ -34,7 +34,7 @@ func (u SomaUtil) GetGroupIdByName(g string, bId string) string {
 }
 
 func (u SomaUtil) DecodeProtoResultGroupFromResponse(resp *resty.Response) *somaproto.ProtoResultGroup {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultGroup
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

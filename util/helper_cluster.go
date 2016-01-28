@@ -34,7 +34,7 @@ func (u SomaUtil) GetClusterIdByName(c string, bId string) string {
 }
 
 func (u SomaUtil) DecodeProtoResultClusterFromResponse(resp *resty.Response) *somaproto.ProtoResultCluster {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultCluster
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

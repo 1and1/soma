@@ -32,7 +32,7 @@ func (u SomaUtil) GetRepositoryIdByName(repo string) uuid.UUID {
 }
 
 func (u SomaUtil) DecodeProtoResultRepositoryFromResponse(resp *resty.Response) *somaproto.ProtoResultRepository {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultRepository
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

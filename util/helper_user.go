@@ -52,7 +52,7 @@ func (u *SomaUtil) GetUserIdByName(user string) uuid.UUID {
 }
 
 func (u *SomaUtil) DecodeProtoResultUserFromResponse(resp *resty.Response) *somaproto.ProtoResultUser {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultUser
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

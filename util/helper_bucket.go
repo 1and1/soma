@@ -82,7 +82,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 }
 
 func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *somaproto.ProtoResultBucket {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultBucket
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

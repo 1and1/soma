@@ -201,7 +201,7 @@ func cmdDatacentersListGroups(c *cli.Context) {
 	}
 	log.Printf("Response: %s\n", resp.Status())
 
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var serverResult somaproto.ProtoResultDatacenterList
 	err = decoder.Decode(&serverResult)
 	if err != nil {
@@ -238,7 +238,7 @@ func cmdDatacentersShowGroup(c *cli.Context) {
 	}
 	log.Printf("Response: %s\n", resp.Status())
 
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var serverResult somaproto.ProtoResultDatacenterDetail
 	err = decoder.Decode(&serverResult)
 	if err != nil {

@@ -91,7 +91,7 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) uui
 }
 
 func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *somaproto.ProtoResultProperty {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultProperty
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")

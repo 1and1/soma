@@ -62,7 +62,7 @@ func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {
 }
 
 func (u SomaUtil) DecodeProtoResultServerFromResponse(resp *resty.Response) *somaproto.ProtoResultServer {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultServer
 	err := decoder.Decode(&res)
 	if err != nil {
