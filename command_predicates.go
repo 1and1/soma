@@ -12,7 +12,8 @@ func cmdPredicateCreate(c *cli.Context) {
 	var req somaproto.ProtoRequestPredicate
 	req.Predicate.Predicate = c.Args().First()
 
-	_ = utl.PostRequestWithBody(req, "/predicates/")
+	resp := utl.PostRequestWithBody(req, "/predicates/")
+	fmt.Println(resp)
 }
 
 func cmdPredicateDelete(c *cli.Context) {
@@ -20,11 +21,13 @@ func cmdPredicateDelete(c *cli.Context) {
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdPredicateList(c *cli.Context) {
-	_ = utl.GetRequest("/predicates/")
+	resp := utl.GetRequest("/predicates/")
+	fmt.Println(resp)
 }
 
 func cmdPredicateShow(c *cli.Context) {
@@ -32,7 +35,8 @@ func cmdPredicateShow(c *cli.Context) {
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
