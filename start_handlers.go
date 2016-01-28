@@ -18,6 +18,9 @@ func startHandlers() {
 
 	spawnLevelReadHandler()
 	spawnLevelWriteHandler()
+
+	spawnPredicateReadHandler()
+	spawnPredicateWriteHandler()
 }
 
 func spawnViewReadHandler() {
@@ -126,6 +129,24 @@ func spawnLevelWriteHandler() {
 	levelWriteHandler.conn = conn
 	handlerMap["levelWriteHandler"] = levelWriteHandler
 	go levelWriteHandler.run()
+}
+
+func spawnPredicateReadHandler() {
+	var predicateReadHandler somaPredicateReadHandler
+	predicateReadHandler.input = make(chan somaPredicateRequest, 64)
+	predicateReadHandler.shutdown = make(chan bool)
+	predicateReadHandler.conn = conn
+	handlerMap["predicateReadHandler"] = predicateReadHandler
+	go predicateReadHandler.run()
+}
+
+func spawnPredicateWriteHandler() {
+	var predicateWriteHandler somaPredicateWriteHandler
+	predicateWriteHandler.input = make(chan somaPredicateRequest, 64)
+	predicateWriteHandler.shutdown = make(chan bool)
+	predicateWriteHandler.conn = conn
+	handlerMap["predicateWriteHandler"] = predicateWriteHandler
+	go predicateWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
