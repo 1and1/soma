@@ -1,9 +1,5 @@
 package somaproto
 
-import (
-	"github.com/satori/go.uuid"
-)
-
 type ProtoRequestOncall struct {
 	OnCall  ProtoOncall         `json:"oncall,omitempty"`
 	Filter  ProtoOncallFilter   `json:"filter,omitempty"`
@@ -18,7 +14,7 @@ type ProtoResultOncall struct {
 }
 
 type ProtoOncall struct {
-	Id      uuid.UUID           `json:"id,omitempty"`
+	Id      string              `json:"id,omitempty"`
 	Name    string              `json:"name,omitempty"`
 	Number  string              `json:"number,omitempty"`
 	Details *ProtoOncallDetails `json:"details,omitempty"`
@@ -31,8 +27,8 @@ type ProtoOncallDetails struct {
 }
 
 type ProtoOncallMember struct {
-	UserName string    `json:"username,omitempty"`
-	UserId   uuid.UUID `json"userid,omitempty"`
+	UserName string `json:"username,omitempty"`
+	UserId   string `json"userid,omitempty"`
 }
 
 type ProtoOncallFilter struct {
