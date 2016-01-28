@@ -17,6 +17,7 @@ func startHandlers() {
 	spawnDatacenterWriteHandler()
 
 	spawnLevelReadHandler()
+	spawnLevelWriteHandler()
 }
 
 func spawnViewReadHandler() {
@@ -116,6 +117,15 @@ func spawnLevelReadHandler() {
 	levelReadHandler.conn = conn
 	handlerMap["levelReadHandler"] = levelReadHandler
 	go levelReadHandler.run()
+}
+
+func spawnLevelWriteHandler() {
+	var levelWriteHandler somaLevelWriteHandler
+	levelWriteHandler.input = make(chan somaLevelRequest, 64)
+	levelWriteHandler.shutdown = make(chan bool)
+	levelWriteHandler.conn = conn
+	handlerMap["levelWriteHandler"] = levelWriteHandler
+	go levelWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

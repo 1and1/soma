@@ -2,10 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
-	"runtime/debug"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -13,7 +10,7 @@ import (
 /*
  * Read functions
  */
-func ListLevels(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListLevel(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan []somaLevelResult)
@@ -23,35 +20,10 @@ func ListLevels(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		reply:  returnChannel,
 	}
 	results := <-returnChannel
-
-	var res somaproto.ProtoResultLevel
-	var res somaproto.ProtoResultLevel
-	dispatchError := CheckErrorHandler(&results, &res)
-	if dispatchError {
-		goto submission
-	}
-	res.Text = make([]string, 0)
-	res.Levels = make([]somaproto.ProtoLevel, 0)
-	for _, l := range results {
-		res.Levels = append(res.Levels, l.level)
-		if l.lErr != nil {
-			res.Text = append(res.Text, l.lErr.Error())
-		}
-	}
-
-submission:
-	json, jErr := json.Marshal(res)
-	if jErr != nil {
-		http.Error(w, jErr.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(json)
+	SendLevelReply(&w, &results)
 }
 
-func ShowLevels(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowLevel(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan []somaLevelResult)
@@ -64,31 +36,73 @@ func ShowLevels(w http.ResponseWriter, r *http.Request, params httprouter.Params
 		},
 	}
 	results := <-returnChannel
+	SendLevelReply(&w, &results)
+}
 
+func AddLevel(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	defer PanicCatcher(w)
+
+	var cReq somaproto.ProtoRequestLevel
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan []somaLevelResult)
+	handler := handlerMap["levelWriteHandler"].(somaLevelWriteHandler)
+	handler.input <- somaLevelRequest{
+		action: "add",
+		reply:  returnChannel,
+		level: somaproto.ProtoLevel{
+			Name:      cReq.Level.Name,
+			ShortName: cReq.Level.ShortName,
+			Numeric:   cReq.Level.Numeric,
+		},
+	}
+	results := <-returnChannel
+	SendLevelReply(&w, &results)
+}
+
+func DeleteLevel(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan []somaLevelResult)
+	handler := handlerMap["levelWriteHandler"].(somaLevelWriteHandler)
+	handler.input <- somaLevelRequest{
+		action: "delete",
+		reply:  returnChannel,
+		level: somaproto.ProtoLevel{
+			Name: params.ByName("level"),
+		},
+	}
+	results := <-returnChannel
+	SendLevelReply(&w, &results)
+}
+
+func SendLevelReply(w *http.ResponseWriter, r *[]somaLevelResult) {
 	var res somaproto.ProtoResultLevel
-	dispatchError := CheckErrorHandler(&results, &res)
+	dispatchError := CheckErrorHandler(r, &res)
 	if dispatchError {
-		goto submission
+		goto dispatch
 	}
 	res.Text = make([]string, 0)
 	res.Levels = make([]somaproto.ProtoLevel, 0)
-	for _, l := range results {
+	for _, l := range *r {
 		res.Levels = append(res.Levels, l.level)
 		if l.lErr != nil {
 			res.Text = append(res.Text, l.lErr.Error())
 		}
 	}
 
-submission:
-	json, jErr := json.Marshal(res)
-	if jErr != nil {
-		http.Error(w, jErr.Error(), http.StatusInternalServerError)
+dispatch:
+	json, err := json.Marshal(res)
+	if err != nil {
+		DispatchInternalError(w, err)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(json)
+	DispatchJsonReply(w, &json)
+	return
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

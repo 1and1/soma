@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 
 )
@@ -124,6 +125,110 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 		result = append(result, somaLevelResult{
 			rErr: errors.New("not implemented"),
 			lErr: nil,
+		})
+	}
+	q.reply <- result
+}
+
+/* Write Access
+ *
+ */
+type somaLevelWriteHandler struct {
+	input    chan somaLevelRequest
+	shutdown chan bool
+	conn     *sql.DB
+	add_stmt *sql.Stmt
+	del_stmt *sql.Stmt
+}
+
+func (w *somaLevelWriteHandler) run() {
+	var err error
+
+	w.add_stmt, err = w.conn.Prepare(`
+INSERT INTO soma.notification_levels (
+	level_name,
+	level_shortname,
+	level_numeric)
+SELECT $1, $2, $3 WHERE NOT EXISTS (
+	SELECT level_name
+	FROM soma.notification_levels
+	WHERE level_name = $4
+	OR level_shortname = $5
+	OR level_numeric = $6);`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.add_stmt.Close()
+
+	w.del_stmt, err = w.conn.Prepare(`
+DELETE FROM soma.notification_levels
+WHERE level_name = $1;`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer w.del_stmt.Close()
+
+runloop:
+	for {
+		select {
+		case <-w.shutdown:
+			break runloop
+		case req := <-w.input:
+			w.process(&req)
+		}
+	}
+}
+
+func (w *somaLevelWriteHandler) process(q *somaLevelRequest) {
+	var res sql.Result
+	var err error
+	result := make([]somaLevelResult, 0)
+
+	switch q.action {
+	case "add":
+		log.Printf("R: levels/add for %s", q.level.Name)
+		res, err = w.add_stmt.Exec(
+			q.level.Name,
+			q.level.ShortName,
+			q.level.Numeric,
+			q.level.Name,
+			q.level.ShortName,
+			q.level.Numeric,
+		)
+	case "delete":
+		log.Printf("R: levels/del for %s", q.level.Name)
+		res, err = w.del_stmt.Exec(
+			q.level.Name,
+		)
+	default:
+		log.Printf("R: unimplemented levels/%s", q.action)
+		result = append(result, somaLevelResult{
+			rErr: errors.New("not implemented"),
+		})
+		q.reply <- result
+		return
+	}
+	if err != nil {
+		result = append(result, somaLevelResult{
+			rErr: err,
+		})
+		q.reply <- result
+		return
+	}
+
+	rowCnt, _ := res.RowsAffected()
+	switch {
+	case rowCnt == 0:
+		result = append(result, somaLevelResult{
+			lErr: errors.New("No rows affected"),
+		})
+	case rowCnt > 1:
+		result = append(result, somaLevelResult{
+			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
+		})
+	default:
+		result = append(result, somaLevelResult{
+			level: q.level,
 		})
 	}
 	q.reply <- result
