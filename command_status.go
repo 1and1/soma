@@ -12,7 +12,8 @@ func cmdStatusCreate(c *cli.Context) {
 	var req somaproto.ProtoRequestStatus
 	req.Status.Status = c.Args().First()
 
-	_ = utl.PostRequestWithBody(req, "/status/")
+	resp := utl.PostRequestWithBody(req, "/status/")
+	fmt.Println(resp)
 }
 
 func cmdStatusDelete(c *cli.Context) {
@@ -20,11 +21,13 @@ func cmdStatusDelete(c *cli.Context) {
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdStatusList(c *cli.Context) {
-	_ = utl.GetRequest("/status/")
+	resp := utl.GetRequest("/status/")
+	fmt.Println(resp)
 }
 
 func cmdStatusShow(c *cli.Context) {
@@ -32,7 +35,8 @@ func cmdStatusShow(c *cli.Context) {
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
