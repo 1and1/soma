@@ -23,7 +23,8 @@ func cmdLevelCreate(c *cli.Context) {
 	utl.AbortOnError(err, "Syntax error, numeric argument not numeric")
 	req.Level.Numeric = uint16(l)
 
-	_ = utl.PostRequestWithBody(req, "/levels/")
+	resp := utl.PostRequestWithBody(req, "/levels/")
+	fmt.Println(resp)
 }
 
 func cmdLevelDelete(c *cli.Context) {
@@ -31,11 +32,13 @@ func cmdLevelDelete(c *cli.Context) {
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdLevelList(c *cli.Context) {
-	_ = utl.GetRequest("/levels/")
+	resp := utl.GetRequest("/levels/")
+	fmt.Println(resp)
 }
 
 func cmdLevelShow(c *cli.Context) {
@@ -43,7 +46,8 @@ func cmdLevelShow(c *cli.Context) {
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
