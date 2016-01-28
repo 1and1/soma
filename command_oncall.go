@@ -6,13 +6,9 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/satori/go.uuid"
-	"gopkg.in/resty.v0"
 )
 
 func cmdOnCallAdd(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/oncall"
-
 	utl.ValidateCliArgumentCount(c, 4)
 	// possible keys
 	keySlice := []string{"name", "phone"}
@@ -35,20 +31,13 @@ func cmdOnCallAdd(c *cli.Context) {
 	req.OnCall.Name = options["name"]
 	req.OnCall.Number = options["phone"]
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.PostRequestWithBody(req, "/oncall/")
+	fmt.Println(resp)
 }
 
 func cmdOnCallDel(c *cli.Context) {
-	url := getApiUrl()
 	var (
-		id  string
-		err error
+		id string
 	)
 
 	switch utl.GetCliArgumentCount(c) {
@@ -62,21 +51,15 @@ func cmdOnCallDel(c *cli.Context) {
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	url.Path = fmt.Sprintf("/oncall/%s", id)
+	path := fmt.Sprintf("/oncall/%s", id)
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdOnCallRename(c *cli.Context) {
-	url := getApiUrl()
 	var (
 		id     string
-		err    error
 		oncall string
 	)
 
@@ -95,22 +78,16 @@ func cmdOnCallRename(c *cli.Context) {
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	url.Path = fmt.Sprintf("/oncall/%s", id)
+	path := fmt.Sprintf("/oncall/%s", id)
 
 	var req somaproto.ProtoRequestOncall
 	req.OnCall.Name = oncall
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdOnCallUpdate(c *cli.Context) {
-	url := getApiUrl()
 	var (
 		id    string
 		err   error
@@ -138,39 +115,24 @@ func cmdOnCallUpdate(c *cli.Context) {
 		utl.Abort("Phone number must be 4-digit extension")
 	}
 
-	url.Path = fmt.Sprintf("/oncall/%s", id)
+	path := fmt.Sprintf("/oncall/%s", id)
 	var req somaproto.ProtoRequestOncall
 	req.OnCall.Number = phone
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdOnCallList(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/oncall"
-
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
-	// TODO print list
+	resp := utl.GetRequest("/oncall/")
+	fmt.Println(resp)
 }
 
 func cmdOnCallShow(c *cli.Context) {
-	url := getApiUrl()
 	var (
-		id  string
-		err error
+		id string
 	)
 
 	switch utl.GetCliArgumentCount(c) {
@@ -184,14 +146,10 @@ func cmdOnCallShow(c *cli.Context) {
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	url.Path = fmt.Sprintf("/oncall/%s", id)
+	path := fmt.Sprintf("/oncall/%s", id)
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdOnCallMemberAdd(c *cli.Context) {
@@ -207,7 +165,8 @@ func cmdOnCallMemberAdd(c *cli.Context) {
 	req.Members = reqMembers
 	path := fmt.Sprintf("/oncall/%s/members", oncallId)
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdOnCallMemberDel(c *cli.Context) {
@@ -218,7 +177,8 @@ func cmdOnCallMemberDel(c *cli.Context) {
 
 	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId.String())
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdOnCallMemberList(c *cli.Context) {
@@ -227,7 +187,8 @@ func cmdOnCallMemberList(c *cli.Context) {
 
 	path := fmt.Sprintf("/oncall/%s/members/", oncallId)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
