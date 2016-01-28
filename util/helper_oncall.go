@@ -9,16 +9,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetOncallByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetOncallByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetOncallIdByName(s)
+		return u.GetOncallIdByName(s)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) GetOncallIdByName(oncall string) uuid.UUID {
+func (u SomaUtil) GetOncallIdByName(oncall string) string {
 	url := u.ApiUrl
 	url.Path = "/oncall/"
 

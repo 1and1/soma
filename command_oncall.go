@@ -47,21 +47,22 @@ func cmdOnCallAdd(c *cli.Context) {
 func cmdOnCallDel(c *cli.Context) {
 	url := getApiUrl()
 	var (
-		id  uuid.UUID
+		id  string
 		err error
 	)
 
 	switch utl.GetCliArgumentCount(c) {
 	case 1:
-		id, err = uuid.FromString(c.Args().First())
+		uid, err := uuid.FromString(c.Args().First())
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
+		id = uid.String()
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
 		id = utl.GetOncallIdByName(c.Args().Get(1))
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	url.Path = fmt.Sprintf("/oncall/%s", id.String())
+	url.Path = fmt.Sprintf("/oncall/%s", id)
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -74,7 +75,7 @@ func cmdOnCallDel(c *cli.Context) {
 func cmdOnCallRename(c *cli.Context) {
 	url := getApiUrl()
 	var (
-		id     uuid.UUID
+		id     string
 		err    error
 		oncall string
 	)
@@ -82,8 +83,9 @@ func cmdOnCallRename(c *cli.Context) {
 	switch utl.GetCliArgumentCount(c) {
 	case 3:
 		utl.ValidateCliArgument(c, 2, "to")
-		id, err = uuid.FromString(c.Args().First())
+		uid, err := uuid.FromString(c.Args().First())
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
+		id = uid.String()
 		oncall = c.Args().Get(2)
 	case 4:
 		utl.ValidateCliArgument(c, 1, "by-name")
@@ -93,7 +95,7 @@ func cmdOnCallRename(c *cli.Context) {
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	url.Path = fmt.Sprintf("/oncall/%s", id.String())
+	url.Path = fmt.Sprintf("/oncall/%s", id)
 
 	var req somaproto.ProtoRequestOncall
 	req.OnCall.Name = oncall
@@ -110,7 +112,7 @@ func cmdOnCallRename(c *cli.Context) {
 func cmdOnCallUpdate(c *cli.Context) {
 	url := getApiUrl()
 	var (
-		id    uuid.UUID
+		id    string
 		err   error
 		phone string
 	)
@@ -118,8 +120,9 @@ func cmdOnCallUpdate(c *cli.Context) {
 	switch utl.GetCliArgumentCount(c) {
 	case 3:
 		utl.ValidateCliArgument(c, 2, "phone")
-		id, err = uuid.FromString(c.Args().First())
+		uid, err := uuid.FromString(c.Args().First())
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
+		id = uid.String()
 		phone = c.Args().Get(2)
 	case 4:
 		utl.ValidateCliArgument(c, 1, "by-name")
@@ -135,7 +138,7 @@ func cmdOnCallUpdate(c *cli.Context) {
 		utl.Abort("Phone number must be 4-digit extension")
 	}
 
-	url.Path = fmt.Sprintf("/oncall/%s", id.String())
+	url.Path = fmt.Sprintf("/oncall/%s", id)
 	var req somaproto.ProtoRequestOncall
 	req.OnCall.Number = phone
 
@@ -166,21 +169,22 @@ func cmdOnCallList(c *cli.Context) {
 func cmdOnCallShow(c *cli.Context) {
 	url := getApiUrl()
 	var (
-		id  uuid.UUID
+		id  string
 		err error
 	)
 
 	switch utl.GetCliArgumentCount(c) {
 	case 1:
-		id, err = uuid.FromString(c.Args().First())
+		uid, err := uuid.FromString(c.Args().First())
 		utl.AbortOnError(err, "Syntax error, argument not a uuid")
+		id = uid.String()
 	case 2:
 		utl.ValidateCliArgument(c, 1, "by-name")
 		id = utl.GetOncallIdByName(c.Args().Get(1))
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	url.Path = fmt.Sprintf("/oncall/%s", id.String())
+	url.Path = fmt.Sprintf("/oncall/%s", id)
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -198,10 +202,10 @@ func cmdOnCallMemberAdd(c *cli.Context) {
 
 	var req somaproto.ProtoRequestOncall
 	var member somaproto.ProtoOncallMember
-	member.UserId = userId
+	member.UserId = userId.String()
 	reqMembers := []somaproto.ProtoOncallMember{member}
 	req.Members = reqMembers
-	path := fmt.Sprintf("/oncall/%s/members", oncallId.String())
+	path := fmt.Sprintf("/oncall/%s/members", oncallId)
 
 	_ = utl.PatchRequestWithBody(req, path)
 }
@@ -212,7 +216,7 @@ func cmdOnCallMemberDel(c *cli.Context) {
 	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
 	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
 
-	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId.String(), userId.String())
+	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId.String())
 
 	_ = utl.DeleteRequest(path)
 }
@@ -221,7 +225,7 @@ func cmdOnCallMemberList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(0))
 
-	path := fmt.Sprintf("/oncall/%s/members/", oncallId.String())
+	path := fmt.Sprintf("/oncall/%s/members/", oncallId)
 
 	_ = utl.GetRequest(path)
 }
