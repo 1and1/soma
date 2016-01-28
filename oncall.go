@@ -1,9 +1,9 @@
 package somaproto
 
 type ProtoRequestOncall struct {
-	OnCall  ProtoOncall         `json:"oncall,omitempty"`
-	Filter  ProtoOncallFilter   `json:"filter,omitempty"`
-	Members []ProtoOncallMember `json:"members,omitempty"`
+	OnCall  *ProtoOncall         `json:"oncall,omitempty"`
+	Filter  *ProtoOncallFilter   `json:"filter,omitempty"`
+	Members *[]ProtoOncallMember `json:"members,omitempty"`
 }
 
 type ProtoResultOncall struct {
