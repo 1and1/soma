@@ -13,8 +13,8 @@ type ProtoResultStatus struct {
 }
 
 type ProtoStatus struct {
-	Status  string             `json:"status,omitempty"`
-	Details ProtoStatusDetails `json:"details,omitempty"`
+	Status  string              `json:"status,omitempty"`
+	Details *ProtoStatusDetails `json:"details,omitempty"`
 }
 
 type ProtoStatusDetails struct {

@@ -27,7 +27,7 @@ type ProtoRepository struct {
 	Team       string                    `json:"team,omitempty"`
 	IsDeleted  bool                      `json:"deleted,omitempty"`
 	IsActive   bool                      `json:"active,omitempty"`
-	Details    ProtoRepositoryDetails    `json:"details,omitempty"`
+	Details    *ProtoRepositoryDetails   `json:"details,omitempty"`
 	Properties []ProtoRepositoryProperty `json:"properties,omitempty"`
 }
 

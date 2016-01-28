@@ -27,7 +27,7 @@ type ProtoNode struct {
 	Server     string              `json:"server,omitempty"`
 	IsOnline   bool                `json:"online,omitempty"`
 	IsDeleted  bool                `json:"deleted,omitempty"`
-	Details    ProtoNodeDetails    `json:"details,omitempty"`
+	Details    *ProtoNodeDetails   `json:"details,omitempty"`
 	Config     ProtoNodeConfig     `json:"config,omitempty"`
 	Properties []ProtoNodeProperty `json:"properties,omitempty"`
 }

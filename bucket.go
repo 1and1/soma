@@ -22,16 +22,16 @@ type ProtoResultBucket struct {
 }
 
 type ProtoBucket struct {
-	Id           uuid.UUID          `json:"id,omitempty"`
-	Name         string             `json:"name,omitempty"`
-	Repository   string             `json:"repository,omitempty"`
-	RepositoryId string             `json:"repositoryid,omitempty"`
-	Team         string             `json:"team,omitempty"`
-	TeamId       string             `json:"team,omitempty"`
-	Environment  string             `json:"environment,omitempty"`
-	IsDeleted    bool               `json:"deleted,omitempty"`
-	IsFrozen     bool               `json:"frozen,omitempty"`
-	Details      ProtoBucketDetails `json:"details,omitempty"`
+	Id           uuid.UUID           `json:"id,omitempty"`
+	Name         string              `json:"name,omitempty"`
+	Repository   string              `json:"repository,omitempty"`
+	RepositoryId string              `json:"repositoryid,omitempty"`
+	Team         string              `json:"team,omitempty"`
+	TeamId       string              `json:"team,omitempty"`
+	Environment  string              `json:"environment,omitempty"`
+	IsDeleted    bool                `json:"deleted,omitempty"`
+	IsFrozen     bool                `json:"frozen,omitempty"`
+	Details      *ProtoBucketDetails `json:"details,omitempty"`
 	//	Properties []ProtoBucketProperty `json:"properties,omitempty"`
 }
 

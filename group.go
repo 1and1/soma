@@ -22,7 +22,7 @@ type ProtoGroup struct {
 	MemberGroups   []ProtoGroup         `json:"membergroups,omitempty"`
 	MemberClusters []ProtoCluster       `json:"memberclusters,omitempty"`
 	MemberNodes    []ProtoNode          `json:"membernodes,omitempty"`
-	Details        ProtoGroupDetails    `json:"details,omitempty"`
+	Details        *ProtoGroupDetails   `json:"details,omitempty"`
 	Properties     []ProtoGroupProperty `json:"properties,omitempty"`
 }
 

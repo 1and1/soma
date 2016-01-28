@@ -18,10 +18,10 @@ type ProtoResultOncall struct {
 }
 
 type ProtoOncall struct {
-	Id      uuid.UUID          `json:"id,omitempty"`
-	Name    string             `json:"name,omitempty"`
-	Number  string             `json:"number,omitempty"`
-	Details ProtoOncallDetails `json:"details,omitempty"`
+	Id      uuid.UUID           `json:"id,omitempty"`
+	Name    string              `json:"name,omitempty"`
+	Number  string              `json:"number,omitempty"`
+	Details *ProtoOncallDetails `json:"details,omitempty"`
 }
 
 type ProtoOncallDetails struct {

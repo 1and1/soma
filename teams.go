@@ -17,11 +17,11 @@ type ProtoResultTeam struct {
 }
 
 type ProtoTeam struct {
-	TeamId   uuid.UUID        `json:"teamid,omitempty"`
-	TeamName string           `json:"teamname,omitempty"`
-	LdapId   string           `json:"ldapid,omitempty"`
-	System   bool             `json:"system,omitempty"`
-	Details  ProtoTeamDetails `json:"details,omitempty"`
+	TeamId   uuid.UUID         `json:"teamid,omitempty"`
+	TeamName string            `json:"teamname,omitempty"`
+	LdapId   string            `json:"ldapid,omitempty"`
+	System   bool              `json:"system,omitempty"`
+	Details  *ProtoTeamDetails `json:"details,omitempty"`
 }
 
 type ProtoTeamDetails struct {

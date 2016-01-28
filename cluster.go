@@ -20,7 +20,7 @@ type ProtoCluster struct {
 	BucketId    string                 `json:"bucketid,omitempty"`
 	ObjectState string                 `json:"objectstate,omitempty"`
 	Members     []ProtoNode            `json:"members,omitempty"`
-	Details     ProtoClusterDetails    `json:"details,omitempty"`
+	Details     *ProtoClusterDetails   `json:"details,omitempty"`
 	Properties  []ProtoClusterProperty `json:"properties,omitempty"`
 }
 

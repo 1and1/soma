@@ -20,17 +20,17 @@ type ProtoResultUser struct {
 }
 
 type ProtoUser struct {
-	Id             uuid.UUID        `json:"id,omitempty"`
-	UserName       string           `json:"username,omitempty"`
-	FirstName      string           `json:"firstname,omitempty"`
-	LastName       string           `json:"lastname,omitempty"`
-	EmployeeNumber string           `json:"employeenumber,omitempty"`
-	MailAddress    string           `json:"mailaddress,omitempty"`
-	IsActive       bool             `json:"active,omitempty"`
-	IsSystem       bool             `json:"system,omitempty"`
-	IsDeleted      bool             `json:"deleted,omitempty"`
-	Team           string           `json:"team,omitempty"`
-	Details        ProtoUserDetails `json:"details,omitempty"`
+	Id             uuid.UUID         `json:"id,omitempty"`
+	UserName       string            `json:"username,omitempty"`
+	FirstName      string            `json:"firstname,omitempty"`
+	LastName       string            `json:"lastname,omitempty"`
+	EmployeeNumber string            `json:"employeenumber,omitempty"`
+	MailAddress    string            `json:"mailaddress,omitempty"`
+	IsActive       bool              `json:"active,omitempty"`
+	IsSystem       bool              `json:"system,omitempty"`
+	IsDeleted      bool              `json:"deleted,omitempty"`
+	Team           string            `json:"team,omitempty"`
+	Details        *ProtoUserDetails `json:"details,omitempty"`
 }
 
 type ProtoUserCredentials struct {

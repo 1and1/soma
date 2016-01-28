@@ -14,10 +14,10 @@ type ProtoResultLevel struct {
 }
 
 type ProtoLevel struct {
-	Name      string            `json:"name,omitempty"`
-	ShortName string            `json:"shortname,omitempty"`
-	Numeric   uint16            `json:"numeric,omitempty"`
-	Details   ProtoLevelDetails `json:"details,omitempty"`
+	Name      string             `json:"name,omitempty"`
+	ShortName string             `json:"shortname,omitempty"`
+	Numeric   uint16             `json:"numeric,omitempty"`
+	Details   *ProtoLevelDetails `json:"details,omitempty"`
 }
 
 type ProtoLevelFilter struct {

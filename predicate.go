@@ -13,8 +13,8 @@ type ProtoResultPredicate struct {
 }
 
 type ProtoPredicate struct {
-	Predicate string                `json:"predicate,omitempty"`
-	Details   ProtoPredicateDetails `json:"details,omitempty"`
+	Predicate string                 `json:"predicate,omitempty"`
+	Details   *ProtoPredicateDetails `json:"details,omitempty"`
 }
 
 type ProtoPredicateDetails struct {

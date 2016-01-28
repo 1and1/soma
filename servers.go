@@ -14,12 +14,12 @@ type ProtoResultServer struct {
 }
 
 type ProtoServer struct {
-	AssetId    uint64             `json:"assetid,omitempty"`
-	Datacenter string             `json:"datacenter,omitempty"`
-	Location   string             `json:"location,omitempty"`
-	Name       string             `json:"name,omitempty"`
-	Online     bool               `json:"online,omitempty"`
-	Details    ProtoServerDetails `json:"details,omitempty"`
+	AssetId    uint64              `json:"assetid,omitempty"`
+	Datacenter string              `json:"datacenter,omitempty"`
+	Location   string              `json:"location,omitempty"`
+	Name       string              `json:"name,omitempty"`
+	Online     bool                `json:"online,omitempty"`
+	Details    *ProtoServerDetails `json:"details,omitempty"`
 }
 
 type ProtoServerDetails struct {
