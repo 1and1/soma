@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/codegangsta/cli"
 )
@@ -18,7 +17,8 @@ func cmdOnCallAdd(c *cli.Context) {
 		c.Args().Tail())
 	utl.ValidatePhoneNumber(opts["phone"][0])
 
-	var req somaproto.ProtoRequestOncall
+	req := somaproto.ProtoRequestOncall{}
+	req.OnCall = &somaproto.ProtoOncall{}
 	req.OnCall.Name = c.Args().First()
 	req.OnCall.Number = opts["phone"][0]
 
@@ -43,7 +43,8 @@ func cmdOnCallRename(c *cli.Context) {
 	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
-	var req somaproto.ProtoRequestOncall
+	req := somaproto.ProtoRequestOncall{}
+	req.OnCall = &somaproto.ProtoOncall{}
 	req.OnCall.Name = opts["to"][0]
 
 	resp := utl.PatchRequestWithBody(req, path)
@@ -60,7 +61,8 @@ func cmdOnCallUpdate(c *cli.Context) {
 	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
-	var req somaproto.ProtoRequestOncall
+	req := somaproto.ProtoRequestOncall{}
+	req.OnCall = &somaproto.ProtoOncall{}
 	validUpdate := false
 	if len(opts["phone"]) > 0 {
 		utl.ValidatePhoneNumber(opts["phone"][0])
@@ -106,7 +108,7 @@ func cmdOnCallMemberAdd(c *cli.Context) {
 	var member somaproto.ProtoOncallMember
 	member.UserId = userId.String()
 	reqMembers := []somaproto.ProtoOncallMember{member}
-	req.Members = reqMembers
+	req.Members = &reqMembers
 	path := fmt.Sprintf("/oncall/%s/members", oncallId)
 
 	resp := utl.PatchRequestWithBody(req, path)

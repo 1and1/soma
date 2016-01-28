@@ -20,10 +20,11 @@ func (u SomaUtil) TryGetOncallByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetOncallIdByName(oncall string) string {
-	var req somaproto.ProtoRequestOncall
+	req := somaproto.ProtoRequestOncall{}
+	req.Filter = &somaproto.ProtoOncallFilter{}
 	req.Filter.Name = oncall
 
-	resp := u.GetRequestWithBody(req, "/oncall/")
+	resp := u.PostRequestWithBody(req, "/filter/oncall/")
 	oncallResult := u.DecodeProtoResultOncallFromResponse(resp)
 
 	if oncall != oncallResult.Oncalls[0].Name {
@@ -33,7 +34,7 @@ func (u SomaUtil) GetOncallIdByName(oncall string) string {
 }
 
 func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoResultOncall {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body))
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultOncall
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")
