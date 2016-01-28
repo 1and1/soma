@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
@@ -19,13 +20,10 @@ func (u SomaUtil) TryGetOncallByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetOncallIdByName(oncall string) string {
-	url := u.ApiUrl
-	url.Path = "/oncall/"
-
 	var req somaproto.ProtoRequestOncall
 	req.Filter.Name = oncall
 
-	resp := u.GetRequestWithBody(req, url.String())
+	resp := u.GetRequestWithBody(req, "/oncall/")
 	oncallResult := u.DecodeProtoResultOncallFromResponse(resp)
 
 	if oncall != oncallResult.Oncalls[0].Name {
@@ -46,6 +44,14 @@ func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *som
 		u.Abort(msgs...)
 	}
 	return &res
+}
+
+func (u SomaUtil) ValidatePhoneNumber(n string) {
+	num, err := strconv.Atoi(n)
+	u.AbortOnError(err, "Syntax error, argument is not a number")
+	if num <= 0 || num > 9999 {
+		u.Abort("Phone number must be 4-digit extension")
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

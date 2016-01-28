@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+
 	"github.com/codegangsta/cli"
 )
 
@@ -17,6 +18,13 @@ func (u *SomaUtil) ValidateCliArgument(c *cli.Context, pos uint8, s string) {
 	a := c.Args()
 	if a.Get(int(pos)-1) != s {
 		u.Abort(fmt.Sprintf("Syntax error, missing keyword: ", s))
+	}
+}
+
+func (u *SomaUtil) ValidateCliMinArgumentCount(c *cli.Context, i uint8) {
+	ct := u.GetCliArgumentCount(c)
+	if ct < int(i) {
+		u.Abort("Syntax error, incorrect argument count")
 	}
 }
 
