@@ -1,5 +1,14 @@
 package main
 
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"log"
+
+	"github.com/satori/go.uuid"
+)
+
 type somaNodeRequest struct {
 	action string
 	node   somaproto.ProtoNode
@@ -9,7 +18,7 @@ type somaNodeRequest struct {
 type somaNodeResult struct {
 	rErr error
 	lErr error
-	team somaproto.ProtoNode
+	node somaproto.ProtoNode
 }
 
 /* Read Access
@@ -66,7 +75,9 @@ runloop:
 }
 
 func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
-	var nodeId, nodeName string
+	var nodeId, nodeName, nodeTeam, nodeServer, nodeState string
+	var nodeAsset int
+	var nodeOnline, nodeDeleted bool
 	var rows *sql.Rows
 	var err error
 	result := make([]somaNodeResult, 0)
@@ -74,10 +85,70 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 	switch q.action {
 	case "list":
 		log.Printf("R: node/list")
+		rows, err = r.list_stmt.Query()
+		defer rows.Close()
+		result = append(result, somaNodeResult{
+			rErr: err,
+		})
+		q.reply <- result
+		return
+
+		for rows.Next() {
+			err := rows.Scan(&nodeId, &nodeName)
+			if err != nil {
+				result = append(result, somaNodeResult{
+					lErr: err,
+				})
+				err = nil
+				continue
+			}
+			result = append(result, somaNodeResult{
+				node: somaproto.ProtoNode{
+					Id:   nodeId,
+					Name: nodeName,
+				},
+			})
+		}
 	case "show":
 		log.Printf("R: node/show")
+		err = r.show_stmt.QueryRow(q.node.Id).Scan(
+			&nodeId,
+			&nodeAsset,
+			&nodeName,
+			&nodeTeam,
+			&nodeServer,
+			&nodeState,
+			&nodeOnline,
+			&nodeDeleted,
+		)
+		if err != nil {
+			if err.Error() != "sql: no rows in result set" {
+				result = append(result, somaNodeResult{
+					rErr: err,
+				})
+			}
+			q.reply <- result
+			return
+		}
+
+		result = append(result, somaNodeResult{
+			node: somaproto.ProtoNode{
+				Id:        nodeId,
+				AssetId:   uint64(nodeAsset),
+				Name:      nodeName,
+				Team:      nodeTeam,
+				Server:    nodeServer,
+				State:     nodeState,
+				IsOnline:  nodeOnline,
+				IsDeleted: nodeDeleted,
+			},
+		})
+	default:
+		result = append(result, somaNodeResult{
+			rErr: errors.New("not implemented"),
+		})
 	}
-	// XXX TODO
+	q.reply <- result
 }
 
 /* Write Access
@@ -150,7 +221,7 @@ runloop:
 	}
 }
 
-func (w *somaOncallWriteHandler) process(q *somaOncallRequest) {
+func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	var res sql.Result
 	var err error
 	result := make([]somaNodeResult, 0)

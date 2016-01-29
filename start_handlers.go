@@ -212,4 +212,22 @@ func spawnTeamWriteHandler() {
 	go teamWriteHandler.run()
 }
 
+func spawnNodeReadHandler() {
+	var nodeReadHandler somaNodeReadHandler
+	nodeReadHandler.input = make(chan somaNodeRequest, 64)
+	nodeReadHandler.shutdown = make(chan bool)
+	nodeReadHandler.conn = conn
+	handlerMap["nodeReadHandler"] = nodeReadHandler
+	go nodeReadHandler.run()
+}
+
+func spwanNodeWriteHandler() {
+	var nodeWriteHandler somaNodeWriteHandler
+	nodeWriteHandler.input = make(chan somaNodeRequest, 64)
+	nodeWriteHandler.shutdown = make(chan bool)
+	nodeWriteHandler.conn = conn
+	handlerMap["nodeWriteHandler"] = nodeWriteHandler
+	go nodeWriteHandler.run()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

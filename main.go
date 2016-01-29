@@ -89,6 +89,11 @@ func main() {
 	router.DELETE("/teams/:team", DeleteTeam)
 	router.POST("/filter/teams/", ListTeam)
 
+	router.GET("/nodes/", ListNode)
+	router.GET("/nodes/:node", ShowNode)
+	router.POST("/nodes/", AddNode)
+	router.POST("/filter/nodes/", ListNode)
+
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
 
