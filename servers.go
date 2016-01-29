@@ -34,13 +34,16 @@ type ProtoServerDetails struct {
 
 type ProtoServerFilter struct {
 	Online     bool   `json:"online,omitempty"`
+	NotOnline  bool   `json:"notonline,omitempty"`
 	Deleted    bool   `json:"deleted,omitempty"`
+	NotDeleted bool   `json:"notdeleted,omitempty"`
 	Datacenter string `json:"datacenter,omitempty"`
 	Name       string `json:"name,omitempty"`
 }
 
 //
-func (p *ProtoResultServer) ErrorMark(err error, imp bool, found bool, length int) bool {
+func (p *ProtoResultServer) ErrorMark(err error, imp bool, found bool,
+	length int) bool {
 	if p.markError(err) {
 		return true
 	}
