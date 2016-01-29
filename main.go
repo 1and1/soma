@@ -66,6 +66,9 @@ func main() {
 	router.GET("/nodes/:node", ShowNode)
 	router.POST("/filter/nodes/", ListNode)
 
+	router.GET("/servers/", ListServer)
+	//	router.GET("/servers/:server", ShowServer)
+
 	if !SomaCfg.ReadOnly {
 		router.POST("/views", AddView)
 		router.DELETE("/views/:view", DeleteView)
