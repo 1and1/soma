@@ -1,14 +1,10 @@
 package somaproto
 
-import (
-	"github.com/satori/go.uuid"
-)
-
 type ProtoRequestNode struct {
-	Node    ProtoNode       `json:"node,omitempty"`
-	Filter  ProtoNodeFilter `json:"filter,omitempty"`
-	Restore bool            `json:"restore,omitempty"`
-	Purge   bool            `json:"purge,omitempty"`
+	Node    *ProtoNode       `json:"node,omitempty"`
+	Filter  *ProtoNodeFilter `json:"filter,omitempty"`
+	Restore bool             `json:"restore,omitempty"`
+	Purge   bool             `json:"purge,omitempty"`
 }
 
 type ProtoResultNode struct {
@@ -16,19 +12,20 @@ type ProtoResultNode struct {
 	Status string      `json:"status,omitempty"`
 	Text   []string    `json:"text,omitempty"`
 	Nodes  []ProtoNode `json:"nodes,omitempty"`
-	JobId  uuid.UUID   `json:"jobid,omitempty"`
+	JobId  string      `json:"jobid,omitempty"`
 }
 
 type ProtoNode struct {
-	Id         uuid.UUID           `json:"id,omitempty"`
+	Id         string              `json:"id,omitempty"`
 	AssetId    uint64              `json:"assetid,omitempty"`
 	Name       string              `json:"name,omitempty"`
 	Team       string              `json:"team,omitempty"`
 	Server     string              `json:"server,omitempty"`
+	State      string              `json:"state,omitempty"`
 	IsOnline   bool                `json:"online,omitempty"`
 	IsDeleted  bool                `json:"deleted,omitempty"`
 	Details    *ProtoNodeDetails   `json:"details,omitempty"`
-	Config     ProtoNodeConfig     `json:"config,omitempty"`
+	Config     *ProtoNodeConfig    `json:"config,omitempty"`
 	Properties []ProtoNodeProperty `json:"properties,omitempty"`
 }
 
@@ -50,10 +47,10 @@ type ProtoNodeFilter struct {
 }
 
 type ProtoNodeConfig struct {
-	RepositoryId   uuid.UUID `json:"repositoryid,omitempty"`
-	RepositoryName string    `json:"repositoryname,omitempty"`
-	BucketId       uuid.UUID `json:"bucketid,omitempty"`
-	BucketName     string    `json:"bucketname,omitempty"`
+	RepositoryId   string `json:"repositoryid,omitempty"`
+	RepositoryName string `json:"repositoryname,omitempty"`
+	BucketId       string `json:"bucketid,omitempty"`
+	BucketName     string `json:"bucketname,omitempty"`
 }
 
 type ProtoNodeProperty struct {
