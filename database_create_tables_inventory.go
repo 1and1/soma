@@ -23,7 +23,8 @@ create table if not exists inventory.servers (
   server_datacenter_location  varchar(256)    NOT NULL,
   server_name                 varchar(256)    NOT NULL,
   server_online               boolean         NOT NULL DEFAULT 'yes',
-  server_deleted              boolean         NOT NULL DEFAULT 'no'
+  server_deleted              boolean         NOT NULL DEFAULT 'no',
+  CHECK( NOT (server_online AND server_deleted) )
 );`
 	queries[idx] = "createTableServers"
 	idx++
