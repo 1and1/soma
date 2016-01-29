@@ -86,7 +86,7 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 			utl.Abort("Error assigning service attributes")
 		}
 	}
-	path := fmt.Sprintf("/property/service/team/%s/", teamId.String())
+	path := fmt.Sprintf("/property/service/team/%s/", teamId)
 
 	_ = utl.PostRequestWithBody(req, path)
 }
@@ -174,8 +174,8 @@ func cmdPropertyServiceDelete(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
 	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId.String())
-	path := fmt.Sprintf("/property/service/team/%s/%s", teamId.String(), propId.String())
+	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId)
+	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId.String())
 
 	_ = utl.DeleteRequest(path)
 }

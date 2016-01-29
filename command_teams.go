@@ -5,104 +5,65 @@ import (
 	"strconv"
 
 	"github.com/codegangsta/cli"
-	"github.com/satori/go.uuid"
-	"gopkg.in/resty.v0"
 )
 
 func cmdTeamAdd(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/teams"
-	keySlice := []string{"ldap", "system"}
-	reqSlice := []string{"ldap"}
-	var err error
-	var req somaproto.ProtoRequestTeam
-
+	utl.ValidateCliMinArgumentCount(c, 3)
 	switch utl.GetCliArgumentCount(c) {
 	case 3, 5:
 		break // nop
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
+	allowed := []string{"ldap", "system"}
+	required := []string{"ldap"}
+	unique := []string{"ldap", "system"}
 
-	options, optArgs := utl.ParseVariableArguments(keySlice, reqSlice, c.Args().Tail())
-	req.Team.TeamName = c.Args().Get(0)
-	req.Team.LdapId = options["ldap"]
-	if utl.SliceContainsString("system", optArgs) {
-		req.Team.System, err = strconv.ParseBool(options["system"])
-		utl.AbortOnError(err, "Syntax error, system argument not boolean")
-	} else {
-		req.Team.System = false
+	opts := utl.ParseVariadicArguments(
+		allowed,
+		unique,
+		required,
+		c.Args().Tail())
+
+	req := somaproto.ProtoRequestTeam{}
+	req.Team = &somaproto.ProtoTeam{}
+	req.Team.Name = c.Args().First()
+	req.Team.Ldap = opts["ldap"][0]
+	if len(opts["system"]) > 0 {
+		bl, err := strconv.ParseBool(opts["system"][0])
+		if err != nil {
+			utl.Abort("Argument to system parameter must be boolean")
+		}
+		req.Team.System = bl
 	}
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.PostRequestWithBody(req, "/teams/")
+	fmt.Println(resp)
 }
 
 func cmdTeamDel(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/teams/%s", id)
 
-	switch utl.GetCliArgumentCount(c) {
-	case 1:
-		id, err = uuid.FromString(c.Args().First())
-	case 2:
-		utl.ValidateCliArgument(c, 1, "by-name")
-		id = utl.GetTeamIdByName(c.Args().Get(1))
-	default:
-		utl.Abort("Syntax error, unexpected argument count")
-	}
-	url.Path = fmt.Sprintf("/teams/%s", id.String())
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdTeamRename(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id       uuid.UUID
-		err      error
-		teamName string
-	)
+	utl.ValidateCliArgumentCount(c, 3)
+	key := []string{"to"}
+	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	switch utl.GetCliArgumentCount(c) {
-	case 3:
-		utl.ValidateCliArgument(c, 2, "to")
-		id, err = uuid.FromString(c.Args().First())
-		utl.AbortOnError(err, "Could not parse argument as uuid")
-		teamName = c.Args().Get(2)
-	case 4:
-		utl.ValidateCliArgument(c, 1, "by-name")
-		utl.ValidateCliArgument(c, 3, "to")
-		id = utl.GetTeamIdByName(c.Args().Get(1))
-		teamName = c.Args().Get(3)
-	default:
-		utl.Abort("Syntax error, unexpected argument count")
-	}
-	url.Path = fmt.Sprintf("/teams/%s", id.String())
+	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/teams/%s", id)
 
-	var req somaproto.ProtoRequestTeam
-	req.Team.TeamName = teamName
+	req := somaproto.ProtoRequestTeam{}
+	req.Team = &somaproto.ProtoTeam{}
+	req.Team.Name = opts["to"][0]
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdTeamMigrate(c *cli.Context) {
@@ -111,46 +72,20 @@ func cmdTeamMigrate(c *cli.Context) {
 }
 
 func cmdTeamList(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/teams"
-
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
-	// TODO print list
+	resp := utl.GetRequest("/teams/")
+	fmt.Println(resp)
 }
 
 func cmdTeamShow(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
+	utl.ValidateCliArgumentCount(c, 1)
 
-	switch utl.GetCliArgumentCount(c) {
-	case 1:
-		id, err = uuid.FromString(c.Args().First())
-		utl.AbortOnError(err, "Could not parse argument as uuid")
-	case 2:
-		utl.ValidateCliArgument(c, 1, "by-name")
-		id = utl.GetTeamIdByName(c.Args().Get(1))
-	default:
-		utl.AbortOnError(err)
-	}
-	url.Path = fmt.Sprintf("/teams/%s", id.String())
+	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/teams/%s", id)
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	utl.AbortOnError(err)
-	utl.CheckRestyResponse(resp)
-	// TODO print record
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

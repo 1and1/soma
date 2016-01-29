@@ -9,29 +9,27 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetTeamByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetTeamByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetNodeIdByName(s)
+		return u.GetTeamIdByName(s)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) GetTeamIdByName(teamName string) uuid.UUID {
-	url := u.ApiUrl
-	url.Path = "/teams/"
+func (u SomaUtil) GetTeamIdByName(teamName string) string {
+	req := somaproto.ProtoRequestTeam{}
+	req.Filter = &somaproto.ProtoTeamFilter{}
+	req.Filter.Name = teamName
 
-	var req somaproto.ProtoRequestTeam
-	req.Filter.TeamName = teamName
-
-	resp := u.GetRequestWithBody(req, url.String())
+	resp := u.PostRequestWithBody(req, "/filter/teams/")
 	teamResult := u.DecodeProtoResultTeamFromResponse(resp)
 
-	if teamName != teamResult.Teams[0].TeamName {
+	if teamName != teamResult.Teams[0].Name {
 		u.Log.Fatal("Received result set for incorrect team")
 	}
-	return teamResult.Teams[0].TeamId
+	return teamResult.Teams[0].Id
 }
 
 func (u SomaUtil) DecodeProtoResultTeamFromResponse(resp *resty.Response) *somaproto.ProtoResultTeam {

@@ -47,9 +47,10 @@ func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) uuid.UUID {
 
 func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) uuid.UUID {
 	var (
-		req   somaproto.ProtoRequestProperty
-		ctxId uuid.UUID
-		path  string
+		req         somaproto.ProtoRequestProperty
+		ctxId       uuid.UUID
+		ctxIdString string
+		path        string
 	)
 	req.Filter.Name = prop
 
@@ -64,8 +65,8 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) uui
 		path = "/property/service/global/"
 	case "service":
 		// context ctx is team
-		ctxId = u.TryGetTeamByUUIDOrName(ctx)
-		path = fmt.Sprintf("/property/service/team/%s/", ctxId.String())
+		ctxIdString = u.TryGetTeamByUUIDOrName(ctx)
+		path = fmt.Sprintf("/property/service/team/%s/", ctxIdString)
 	default:
 		u.Abort("Unsupported property type in util.GetPropertyIdByName()")
 	}
