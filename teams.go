@@ -1,12 +1,8 @@
 package somaproto
 
-import (
-	"github.com/satori/go.uuid"
-)
-
 type ProtoRequestTeam struct {
-	Team   ProtoTeam       `json:"team,omitempty"`
-	Filter ProtoTeamFilter `json:"filter,omitempty"`
+	Team   *ProtoTeam       `json:"team,omitempty"`
+	Filter *ProtoTeamFilter `json:"filter,omitempty"`
 }
 
 type ProtoResultTeam struct {
@@ -17,11 +13,11 @@ type ProtoResultTeam struct {
 }
 
 type ProtoTeam struct {
-	TeamId   uuid.UUID         `json:"teamid,omitempty"`
-	TeamName string            `json:"teamname,omitempty"`
-	LdapId   string            `json:"ldapid,omitempty"`
-	System   bool              `json:"system,omitempty"`
-	Details  *ProtoTeamDetails `json:"details,omitempty"`
+	Id      string            `json:"id,omitempty"`
+	Name    string            `json:"name,omitempty"`
+	Ldap    string            `json:"ldap,omitempty"`
+	System  bool              `json:"system,omitempty"`
+	Details *ProtoTeamDetails `json:"details,omitempty"`
 }
 
 type ProtoTeamDetails struct {
@@ -31,9 +27,9 @@ type ProtoTeamDetails struct {
 }
 
 type ProtoTeamFilter struct {
-	TeamName string `json:"teamname,omitempty"`
-	LdapId   string `json:"ldapid,omitempty"`
-	System   bool   `json:"system,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Ldap   string `json:"ldap,omitempty"`
+	System bool   `json:"system,omitempty"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
