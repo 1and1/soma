@@ -1,5 +1,7 @@
 package somaproto
 
+import "github.com/satori/go.uuid"
+
 type ProtoRequestServer struct {
 	Server ProtoServer       `json:"server,omitempty"`
 	Filter ProtoServerFilter `json:"filter,omitempty"`
@@ -14,6 +16,7 @@ type ProtoResultServer struct {
 }
 
 type ProtoServer struct {
+	Id         uuid.UUID           `json:"id,omitempty"`
 	AssetId    uint64              `json:"assetid,omitempty"`
 	Datacenter string              `json:"datacenter,omitempty"`
 	Location   string              `json:"location,omitempty"`
