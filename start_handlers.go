@@ -11,6 +11,7 @@ func startHandlers() {
 	spawnStatusReadHandler()
 	spawnOncallReadHandler()
 	spawnTeamReadHandler()
+	//spawnNodeReadHandler()
 	spawnServerReadHandler()
 
 	if !SomaCfg.ReadOnly {
@@ -24,6 +25,8 @@ func startHandlers() {
 		spawnStatusWriteHandler()
 		spawnOncallWriteHandler()
 		spawnTeamWriteHandler()
+		//spawnNodeWriteHandler()
+		spawnServerWriteHandler()
 	}
 }
 
@@ -232,6 +235,15 @@ func spawnServerReadHandler() {
 	serverReadHandler.conn = conn
 	handlerMap["serverReadHandler"] = serverReadHandler
 	go serverReadHandler.run()
+}
+
+func spawnServerWriteHandler() {
+	var serverWriteHandler somaServerWriteHandler
+	serverWriteHandler.input = make(chan somaServerRequest, 64)
+	serverWriteHandler.shutdown = make(chan bool)
+	serverWriteHandler.conn = conn
+	handlerMap["serverWriteHandler"] = serverWriteHandler
+	go serverWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

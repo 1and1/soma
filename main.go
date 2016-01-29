@@ -13,7 +13,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.11"
+	version := "0.0.12"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -67,7 +67,7 @@ func main() {
 	router.POST("/filter/nodes/", ListNode)
 
 	router.GET("/servers/", ListServer)
-	//	router.GET("/servers/:server", ShowServer)
+	router.GET("/servers/:server", ShowServer)
 
 	if !SomaCfg.ReadOnly {
 		router.POST("/views", AddView)
@@ -110,6 +110,10 @@ func main() {
 		router.DELETE("/teams/:team", DeleteTeam)
 
 		router.POST("/nodes/", AddNode)
+
+		router.POST("/servers/", AddServer)
+		router.DELETE("/servers/:server", DeleteServer)
+		router.PUT("/servers/:server", InsertNullServer)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))

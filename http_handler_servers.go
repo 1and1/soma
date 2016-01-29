@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -9,7 +10,8 @@ import (
 
 /* Read functions
  */
-func ListServer(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListServer(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
@@ -39,6 +41,105 @@ func ListServer(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 skip:
+	SendServerReply(&w, &result)
+}
+
+func ShowServer(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	handler.input <- somaServerRequest{
+		action: "show",
+		reply:  returnChannel,
+		Server: somaproto.ProtoServer{
+			Id: params.ByName("server"),
+		},
+	}
+	result := <-returnChannel
+	SendServerReply(&w, &result)
+}
+
+/* Write functions
+ */
+func AddServer(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestServer{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler.input <- somaServerRequest{
+		action: "add",
+		reply:  returnChannel,
+		Server: somaproto.ProtoServer{
+			Id:         cReq.Server.Id,
+			AssetId:    cReq.Server.AssetId,
+			Datacenter: cReq.Server.Datacenter,
+			Location:   cReq.Server.Location,
+			Name:       cReq.Server.Name,
+			IsOnline:   cReq.Server.IsOnline,
+			IsDeleted:  false,
+		},
+	}
+	result := <-returnChannel
+	SendServerReply(&w, &result)
+}
+
+func DeleteServer(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	action := "delete"
+
+	cReq := somaproto.ProtoRequestServer{}
+	_ = DecodeJsonBody(r, &cReq)
+	if cReq.Purge {
+		action = "purge"
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler.input <- somaServerRequest{
+		action: action,
+		reply:  returnChannel,
+		Server: somaproto.ProtoServer{
+			Id: params.ByName("server"),
+		},
+	}
+	result := <-returnChannel
+	SendServerReply(&w, &result)
+}
+
+func InsertNullServer(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestServer{}
+	cReq.Server = &somaproto.ProtoServer{}
+
+	if cReq.Server.Id != "00000000-0000-0000-0000-000000000000" ||
+		params.ByName("server") != "null" {
+		DispatchBadRequest(&w, errors.New("not null server"))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler.input <- somaServerRequest{
+		action: "insert-null",
+		reply:  returnChannel,
+		Server: somaproto.ProtoServer{
+			Datacenter: cReq.Server.Datacenter,
+		},
+	}
+	result := <-returnChannel
 	SendServerReply(&w, &result)
 }
 

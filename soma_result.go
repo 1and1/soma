@@ -16,8 +16,12 @@ type somaResult struct {
 	Servers        []somaServerResult
 }
 
-func (r *somaResult) SetRequestError(err error) {
-	r.RequestError = err
+func (r *somaResult) SetRequestError(err error) bool {
+	if err != nil {
+		r.RequestError = err
+		return true
+	}
+	return false
 }
 
 func (r *somaResult) SetNotFound() {
@@ -49,13 +53,8 @@ func (r *somaResult) Append(err error, res interface{}) {
 }
 
 func (r *somaResult) MarkErrors(reply ErrorMarker) bool {
-	//	switch reply.(type) {
-	//	case *somaproto.ProtoResultServer:
-	return reply.ErrorMark(r.RequestError, r.NotImplemented, r.NotFound, len(r.Servers))
-	//	default:
-	//		log.Printf("somaResult.MarkErrors(): unhandled type %s", reflect.TypeOf(reply))
-	//	}
-	//	return false
+	return reply.ErrorMark(r.RequestError, r.NotImplemented, r.NotFound,
+		len(r.Servers))
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
