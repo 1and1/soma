@@ -87,11 +87,13 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		log.Printf("R: node/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		result = append(result, somaNodeResult{
-			rErr: err,
-		})
-		q.reply <- result
-		return
+		if err != nil {
+			result = append(result, somaNodeResult{
+				rErr: err,
+			})
+			q.reply <- result
+			return
+		}
 
 		for rows.Next() {
 			err := rows.Scan(&nodeId, &nodeName)
