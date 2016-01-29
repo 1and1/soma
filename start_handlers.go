@@ -27,6 +27,9 @@ func startHandlers() {
 
 	spawnOncallReadHandler()
 	spawnOncallWriteHandler()
+
+	spawnTeamReadHandler()
+	spawnTeamWriteHandler()
 }
 
 func spawnViewReadHandler() {
@@ -189,6 +192,24 @@ func spawnOncallWriteHandler() {
 	oncallWriteHandler.conn = conn
 	handlerMap["oncallWriteHandler"] = oncallWriteHandler
 	go oncallWriteHandler.run()
+}
+
+func spawnTeamReadHandler() {
+	var teamReadHandler somaTeamReadHandler
+	teamReadHandler.input = make(chan somaTeamRequest, 64)
+	teamReadHandler.shutdown = make(chan bool)
+	teamReadHandler.conn = conn
+	handlerMap["teamReadHandler"] = teamReadHandler
+	go teamReadHandler.run()
+}
+
+func spawnTeamWriteHandler() {
+	var teamWriteHandler somaTeamWriteHandler
+	teamWriteHandler.input = make(chan somaTeamRequest, 64)
+	teamWriteHandler.shutdown = make(chan bool)
+	teamWriteHandler.conn = conn
+	handlerMap["teamWriteHandler"] = teamWriteHandler
+	go teamWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

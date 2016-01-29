@@ -101,6 +101,26 @@ func CheckErrorHandler(res interface{}, protoRes interface{}) bool {
 		t.Code = 200
 		t.Status = "OK"
 		return false
+	case *[]somaTeamResult:
+		r := res.(*[]somaTeamResult)
+		t := protoRes.(*somaproto.ProtoResultTeam)
+
+		if len(*r) == 0 {
+			t.Code = 404
+			t.Status = "NOTFOUND"
+			return true
+		}
+		// r has elements
+		if (*r)[0].rErr != nil {
+			t.Code = 500
+			t.Status = "ERROR"
+			t.Text = make([]string, 0)
+			t.Text = append(t.Text, (*r)[0].rErr.Error())
+			return true
+		}
+		t.Code = 200
+		t.Status = "OK"
+		return false
 	default:
 		log.Printf("CheckErrorHandler: unhandled type %s", reflect.TypeOf(res))
 	}

@@ -36,6 +36,9 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	case *somaproto.ProtoRequestOncall:
 		c := s.(*somaproto.ProtoRequestOncall)
 		err = decoder.Decode(c)
+	case *somaproto.ProtoRequestTeam:
+		c := s.(*somaproto.ProtoRequestTeam)
+		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)
 		return fmt.Errorf("DecodeJsonBody: Unhandled request type: %s", rt)
