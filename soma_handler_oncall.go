@@ -208,6 +208,7 @@ func (w *somaOncallWriteHandler) process(q *somaOncallRequest) {
 			q.oncall.Name,
 			q.oncall.Number,
 		)
+		q.oncall.Id = id.String()
 	case "update":
 		log.Printf("R: oncall/update for %s", q.oncall.Id)
 		// our update statement uses NULL to check which of the values
