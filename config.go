@@ -12,6 +12,7 @@ type SomaConfig struct {
 	Environment string       `json:"environment"`
 	Timeout     string       `json:"timeout"`
 	TlsMode     string       `json:"tlsmode"`
+	ReadOnly    bool         `json:"readonly,string"`
 	Database    SomaDbConfig `json:"database"`
 }
 

@@ -2,34 +2,28 @@ package main
 
 func startHandlers() {
 	spawnViewReadHandler()
-	spawnViewWriteHandler()
-
 	spawnEnvironmentReadHandler()
-	spawnEnvironmentWriteHandler()
-
 	spawnObjectStateReadHandler()
-	spawnObjectStateWriteHandler()
-
 	spawnObjectTypeReadHandler()
-	spawnObjectTypeWriteHandler()
-
 	spawnDatacenterReadHandler()
-	spawnDatacenterWriteHandler()
-
 	spawnLevelReadHandler()
-	spawnLevelWriteHandler()
-
 	spawnPredicateReadHandler()
-	spawnPredicateWriteHandler()
-
 	spawnStatusReadHandler()
-	spawnStatusWriteHandler()
-
 	spawnOncallReadHandler()
-	spawnOncallWriteHandler()
-
 	spawnTeamReadHandler()
-	spawnTeamWriteHandler()
+
+	if !SomaCfg.ReadOnly {
+		spawnViewWriteHandler()
+		spawnEnvironmentWriteHandler()
+		spawnObjectStateWriteHandler()
+		spawnObjectTypeWriteHandler()
+		spawnDatacenterWriteHandler()
+		spawnLevelWriteHandler()
+		spawnPredicateWriteHandler()
+		spawnStatusWriteHandler()
+		spawnOncallWriteHandler()
+		spawnTeamWriteHandler()
+	}
 }
 
 func spawnViewReadHandler() {

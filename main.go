@@ -13,7 +13,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.10"
+	version := "0.0.11"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -26,73 +26,88 @@ func main() {
 	startHandlers()
 
 	router := httprouter.New()
+
 	router.GET("/views", ListViews)
 	router.GET("/views/:view", ShowView)
-	router.POST("/views", AddView)
-	router.DELETE("/views/:view", DeleteView)
-	router.PUT("/views/:view", RenameView)
 
 	router.GET("/environments", ListEnvironments)
 	router.GET("/environments/:environment", ShowEnvironment)
-	router.POST("/environments", AddEnvironment)
-	router.DELETE("/environments/:environment", DeleteEnvironment)
-	router.PUT("/environments/:environment", RenameEnvironment)
 
 	router.GET("/objstates", ListObjectStates)
 	router.GET("/objstates/:state", ShowObjectState)
-	router.POST("/objstates", AddObjectState)
-	router.DELETE("/objstates/:state", DeleteObjectState)
-	router.PUT("/objstates/:state", RenameObjectState)
 
 	router.GET("/objtypes", ListObjectTypes)
 	router.GET("/objtypes/:type", ShowObjectType)
-	router.POST("/objtypes", AddObjectType)
-	router.DELETE("/objtypes/:type", DeleteObjectType)
-	router.PUT("/objtypes/:type", RenameObjectType)
 
 	router.GET("/datacenters", ListDatacenters)
 	router.GET("/datacenters/:datacenter", ShowDatacenter)
-	router.POST("/datacenters", AddDatacenter)
-	router.DELETE("/datacenters/:datacenter", DeleteDatacenter)
-	router.PUT("/datacenters/:datacenter", RenameDatacenter)
 
 	router.GET("/datacentergroups", ListDatacenterGroups)
 	router.GET("/datacentergroups/:datacentergroup", ShowDatacenterGroup)
-	router.PATCH("/datacentergroups/:datacentergroup", AddDatacenterToGroup)
-	router.DELETE("/datacentergroups/:datacentergroup", DeleteDatacenterFromGroup)
 
 	router.GET("/levels/", ListLevel)
 	router.GET("/levels/:level", ShowLevel)
-	router.POST("/levels/", AddLevel)
-	router.DELETE("/levels/:level", DeleteLevel)
 
 	router.GET("/predicates/", ListPredicate)
 	router.GET("/predicates/:predicate", ShowPredicate)
-	router.POST("/predicates/", AddPredicate)
-	router.DELETE("/predicates/:predicate", DeletePredicate)
 
 	router.GET("/status/", ListStatus)
 	router.GET("/status/:status", ShowStatus)
-	router.POST("/status/", AddStatus)
-	router.DELETE("/status/:status", DeleteStatus)
 
 	router.GET("/oncall/", ListOncall)
 	router.GET("/oncall/:oncall", ShowOncall)
-	router.POST("/oncall/", AddOncall)
-	router.PATCH("/oncall/:oncall", UpdateOncall)
-	router.DELETE("/oncall/:oncall", DeleteOncall)
 	router.POST("/filter/oncall/", ListOncall)
 
 	router.GET("/teams/", ListTeam)
 	router.GET("/teams/:team", ShowTeam)
-	router.POST("/teams/", AddTeam)
-	router.DELETE("/teams/:team", DeleteTeam)
 	router.POST("/filter/teams/", ListTeam)
 
 	router.GET("/nodes/", ListNode)
 	router.GET("/nodes/:node", ShowNode)
-	router.POST("/nodes/", AddNode)
 	router.POST("/filter/nodes/", ListNode)
+
+	if !SomaCfg.ReadOnly {
+		router.POST("/views", AddView)
+		router.DELETE("/views/:view", DeleteView)
+		router.PUT("/views/:view", RenameView)
+
+		router.POST("/environments", AddEnvironment)
+		router.DELETE("/environments/:environment", DeleteEnvironment)
+		router.PUT("/environments/:environment", RenameEnvironment)
+
+		router.POST("/objstates", AddObjectState)
+		router.DELETE("/objstates/:state", DeleteObjectState)
+		router.PUT("/objstates/:state", RenameObjectState)
+
+		router.POST("/objtypes", AddObjectType)
+		router.DELETE("/objtypes/:type", DeleteObjectType)
+		router.PUT("/objtypes/:type", RenameObjectType)
+
+		router.POST("/datacenters", AddDatacenter)
+		router.DELETE("/datacenters/:datacenter", DeleteDatacenter)
+		router.PUT("/datacenters/:datacenter", RenameDatacenter)
+
+		router.PATCH("/datacentergroups/:datacentergroup", AddDatacenterToGroup)
+		router.DELETE("/datacentergroups/:datacentergroup", DeleteDatacenterFromGroup)
+
+		router.POST("/levels/", AddLevel)
+		router.DELETE("/levels/:level", DeleteLevel)
+
+		router.POST("/predicates/", AddPredicate)
+		router.DELETE("/predicates/:predicate", DeletePredicate)
+
+		router.POST("/status/", AddStatus)
+		router.DELETE("/status/:status", DeleteStatus)
+
+		router.POST("/oncall/", AddOncall)
+		router.PATCH("/oncall/:oncall", UpdateOncall)
+		router.DELETE("/oncall/:oncall", DeleteOncall)
+
+		router.POST("/teams/", AddTeam)
+		router.DELETE("/teams/:team", DeleteTeam)
+
+		router.POST("/nodes/", AddNode)
+	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))
 }
