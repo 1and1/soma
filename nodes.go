@@ -39,8 +39,10 @@ type ProtoNodeFilter struct {
 	Name          string `json:"name,omitempty"`
 	Team          string `json:"team,omitempty"`
 	Server        string `json:"server,omitempty"`
-	IsOnline      bool   `json:"online,omitempty"`
-	IsDeleted     bool   `json:"deleted,omitempty"`
+	Online        bool   `json:"online,omitempty"`
+	NotOnline     bool   `json:"notonline,omitempty"`
+	Deleted       bool   `json:"deleted,omitempty"`
+	NotDeleted    bool   `json:"notdeleted,omitempty"`
 	PropertyType  string `json:"propertytype,omitempty"`
 	Property      string `json:"property,omitempty"`
 	LocalProperty bool   `json:"localproperty,omitempty"`
@@ -61,6 +63,49 @@ type ProtoNodeProperty struct {
 	Inheritance  bool   `json:"inheritance,omitempty"`
 	ChildrenOnly bool   `json:"children,omitempty"`
 	Source       string `json:"source,omitempty"`
+}
+
+//
+func (p *ProtoResultNode) ErrorMark(err error, imp bool, found bool,
+	length int) bool {
+	if p.markError(err) {
+		return true
+	}
+	if p.markImplemented(imp) {
+		return true
+	}
+	if p.markFound(found, length) {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultNode) markError(err error) bool {
+	if err != nil {
+		p.Code = 500
+		p.Status = "ERROR"
+		p.Text = []string{err.Error()}
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultNode) markImplemented(f bool) bool {
+	if f {
+		p.Code = 501
+		p.Status = "NOT IMPLEMENTED"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultNode) markFound(f bool, i int) bool {
+	if f || i == 0 {
+		p.Code = 404
+		p.Status = "NOT FOUND"
+		return true
+	}
+	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
