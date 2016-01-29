@@ -163,12 +163,12 @@ INSERT INTO inventory.organizational_teams (
 	organizational_team_name,
 	organizational_team_ldap_id,
 	organizational_team_system)
-SELECT $1, $2, $3, $4 WHERE NOT EXISTS (
+SELECT $1::uuid, $2::varchar, $3::numeric, $4 WHERE NOT EXISTS (
 	SELECT organizational_team_id
 	FROM   inventory.organizational_teams
-	WHERE  organizational_team_id = $5
-	OR     organizational_team_name = $6
-	OR     organizational_team_ldap_id = $7);`)
+	WHERE  organizational_team_id = $1::uuid
+	OR     organizational_team_name = $2::varchar
+	OR     organizational_team_ldap_id = $3::numeric);`)
 	if err != nil {
 		log.Fatal("team/add: ", err)
 	}
@@ -208,9 +208,6 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 			q.team.Name,
 			q.team.Ldap,
 			q.team.System,
-			id.String(),
-			q.team.Name,
-			q.team.Ldap,
 		)
 		q.team.Id = id.String()
 	case "delete":
