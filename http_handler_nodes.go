@@ -9,58 +9,61 @@ import (
 
 /* Read functions
  */
-func ListNode(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListNode(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaNodeResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
 	handler.input <- somaNodeRequest{
 		action: "list",
 		reply:  returnChannel,
 	}
-	results := <-returnChannel
+	result := <-returnChannel
 
+	// declare here since goto does not jump over declarations
 	cReq := somaproto.ProtoRequestNode{}
 	cReq.Filter = &somaproto.ProtoNodeFilter{}
+	if result.Failure() {
+		goto skip
+	}
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Name != "" {
 		filtered := make([]somaNodeResult, 0)
-	filterloop:
-		for _, iterNode := range results {
-			if iterNode.rErr != nil {
-				filtered = append(filtered, iterNode)
-				break filterloop
-			}
-			if iterNode.node.Name == cReq.Filter.Name {
-				filtered = append(filtered, iterNode)
+		for _, i := range result.Nodes {
+			if i.Node.Name == cReq.Filter.Name {
+				filtered = append(filtered, i)
 			}
 		}
-		results = filtered
+		result.Nodes = filtered
 	}
 
-	SendNodeReply(&w, &results)
+skip:
+	SendNodeReply(&w, &result)
 }
 
-func ShowNode(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaNodeResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
 	handler.input <- somaNodeRequest{
 		action: "show",
 		reply:  returnChannel,
-		node: somaproto.ProtoNode{
+		Node: somaproto.ProtoNode{
 			Id: params.ByName("node"),
 		},
 	}
-	results := <-returnChannel
-	SendNodeReply(&w, &results)
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
 }
 
 /* Write functions
  */
-func AddNode(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddNode(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	cReq := somaproto.ProtoRequestNode{}
@@ -70,13 +73,13 @@ func AddNode(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	returnChannel := make(chan []somaNodeResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeWriteHandler"].(somaNodeWriteHandler)
 	handler.input <- somaNodeRequest{
 		action: "add",
 		reply:  returnChannel,
 		// TODO: assign default server if no server information provided
-		node: somaproto.ProtoNode{
+		Node: somaproto.ProtoNode{
 			AssetId:   cReq.Node.AssetId,
 			Name:      cReq.Node.Name,
 			Team:      cReq.Node.Team,
@@ -86,29 +89,52 @@ func AddNode(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			IsDeleted: false,
 		},
 	}
-	results := <-returnChannel
-	SendNodeReply(&w, &results)
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
+func DeleteNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	action := "delete"
+
+	cReq := somaproto.ProtoRequestNode{}
+	_ = DecodeJsonBody(r, &cReq)
+	if cReq.Purge {
+		action = "purge"
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["nodeWriteHandler"].(somaNodeWriteHandler)
+	handler.input <- somaNodeRequest{
+		action: action,
+		reply:  returnChannel,
+		Node: somaproto.ProtoNode{
+			Id: params.ByName("node"),
+		},
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
 }
 
 /* Utility
  */
-func SendNodeReply(w *http.ResponseWriter, r *[]somaNodeResult) {
-	res := somaproto.ProtoResultNode{}
-	dispatchError := CheckErrorHandler(r, &res)
-	if dispatchError {
+func SendNodeReply(w *http.ResponseWriter, r *somaResult) {
+	result := somaproto.ProtoResultNode{}
+	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	res.Text = make([]string, 0)
-	res.Nodes = make([]somaproto.ProtoNode, 0)
-	for _, l := range *r {
-		res.Nodes = append(res.Nodes, l.node)
-		if l.lErr != nil {
-			res.Text = append(res.Text, l.lErr.Error())
+	result.Text = make([]string, 0)
+	result.Nodes = make([]somaproto.ProtoNode, 0)
+	for _, i := range (*r).Nodes {
+		result.Nodes = append(result.Nodes, i.Node)
+		if i.ResultError != nil {
+			result.Text = append(result.Text, i.ResultError.Error())
 		}
 	}
 
 dispatch:
-	json, err := json.Marshal(res)
+	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)
 		return

@@ -13,6 +13,7 @@ type somaResult struct {
 	RequestError   error
 	NotFound       bool
 	NotImplemented bool
+	Nodes          []somaNodeResult
 	Servers        []somaServerResult
 }
 
@@ -47,6 +48,12 @@ func (r *somaResult) Append(err error, res interface{}) {
 			break
 		}
 		r.Servers = append(r.Servers, res.(somaServerResult))
+	case somaNodeResult:
+		if err != nil {
+			r.Nodes = append(r.Nodes, somaNodeResult{ResultError: err})
+			break
+		}
+		r.Nodes = append(r.Nodes, res.(somaNodeResult))
 	default:
 		log.Printf("somaResult.Append(): unhandled type %s", reflect.TypeOf(res))
 	}

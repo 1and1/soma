@@ -11,14 +11,13 @@ import (
 
 type somaNodeRequest struct {
 	action string
-	node   somaproto.ProtoNode
-	reply  chan []somaNodeResult
+	Node   somaproto.ProtoNode
+	reply  chan somaResult
 }
 
 type somaNodeResult struct {
-	rErr error
-	lErr error
-	node somaproto.ProtoNode
+	ResultError error
+	Node        somaproto.ProtoNode
 }
 
 /* Read Access
@@ -80,32 +79,22 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 	var nodeOnline, nodeDeleted bool
 	var rows *sql.Rows
 	var err error
-	result := make([]somaNodeResult, 0)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
 		log.Printf("R: node/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaNodeResult{
-				rErr: err,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err := rows.Scan(&nodeId, &nodeName)
-			if err != nil {
-				result = append(result, somaNodeResult{
-					lErr: err,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaNodeResult{
-				node: somaproto.ProtoNode{
+			result.Append(err, somaNodeResult{
+				Node: somaproto.ProtoNode{
 					Id:   nodeId,
 					Name: nodeName,
 				},
@@ -113,7 +102,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		}
 	case "show":
 		log.Printf("R: node/show")
-		err = r.show_stmt.QueryRow(q.node.Id).Scan(
+		err = r.show_stmt.QueryRow(q.Node.Id).Scan(
 			&nodeId,
 			&nodeAsset,
 			&nodeName,
@@ -125,16 +114,16 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
-				result = append(result, somaNodeResult{
-					rErr: err,
-				})
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
 			}
 			q.reply <- result
 			return
 		}
 
-		result = append(result, somaNodeResult{
-			node: somaproto.ProtoNode{
+		result.Append(err, somaNodeResult{
+			Node: somaproto.ProtoNode{
 				Id:        nodeId,
 				AssetId:   uint64(nodeAsset),
 				Name:      nodeName,
@@ -146,9 +135,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			},
 		})
 	default:
-		result = append(result, somaNodeResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
@@ -179,13 +166,13 @@ INSERT INTO soma.nodes (
 	object_state,
 	node_online,
     node_deleted)
-SELECT $1, $2, $3, $4, $5, $6, $7, $8
+SELECT $1::uuid, $2::numeric, $3::varchar, $4, $5, $6, $7, $8
 WHERE NOT EXISTS (
 	SELECT node_id
 	FROM   soma.nodes
-	WHERE  node_id = $9
-	OR     node_asset_id = $10
-    OR     (node_name = $11 AND node_online));`)
+	WHERE  node_id = $1::uuid
+	OR     node_asset_id = $2::numeric
+	OR     (node_name = $3::varchar AND node_online));`)
 	if err != nil {
 		log.Fatal("node/add: ", err)
 	}
@@ -226,49 +213,41 @@ runloop:
 func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	var res sql.Result
 	var err error
-	result := make([]somaNodeResult, 0)
+	result := somaResult{}
 
 	switch q.action {
 	case "add":
-		log.Printf("R: node/add for %s", q.node.Name)
+		log.Printf("R: node/add for %s", q.Node.Name)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
-			q.node.AssetId,
-			q.node.Name,
-			q.node.Team,
-			q.node.Server,
-			q.node.State,
-			q.node.IsOnline,
-			q.node.IsDeleted,
-			id.String(),
-			q.node.AssetId,
-			q.node.Name,
+			q.Node.AssetId,
+			q.Node.Name,
+			q.Node.Team,
+			q.Node.Server,
+			q.Node.State,
+			q.Node.IsOnline,
+			false,
 		)
-		q.node.Id = id.String()
+		q.Node.Id = id.String()
 	case "delete":
-		log.Printf("R: node/delete for %s", q.node.Id)
+		log.Printf("R: node/delete for %s", q.Node.Id)
 		res, err = w.del_stmt.Exec(
-			q.node.Id,
+			q.Node.Id,
 		)
 		// TODO trigger undeployment
 	case "purge":
-		log.Printf("R: node/purge for %s", q.node.Id)
+		log.Printf("R: node/purge for %s", q.Node.Id)
 		res, err = w.prg_stmt.Exec(
-			q.node.Id,
+			q.Node.Id,
 		)
 	default:
 		log.Printf("R: unimplemented node/%s", q.action)
-		result = append(result, somaNodeResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaNodeResult{
-			rErr: err,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
@@ -276,16 +255,13 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result = append(result, somaNodeResult{
-			lErr: errors.New("No rows affected"),
-		})
+		result.Append(errors.New("No rows affected"), somaNodeResult{})
 	case rowCnt > 1:
-		result = append(result, somaNodeResult{
-			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
-		})
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			somaNodeResult{})
 	default:
-		result = append(result, somaNodeResult{
-			node: q.node,
+		result.Append(nil, somaNodeResult{
+			Node: q.Node,
 		})
 	}
 	q.reply <- result
