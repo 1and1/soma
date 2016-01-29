@@ -17,6 +17,7 @@ create table if not exists soma.nodes (
   server_id                   uuid            NOT NULL REFERENCES inventory.servers ( server_id ),
   object_state                varchar(64)     NOT NULL DEFAULT 'standalone' REFERENCES soma.object_states ( object_state ),
   node_online                 boolean         NOT NULL DEFAULT 'yes',
+  node_deleted                boolean         NOT NULL DEFAULT 'no',
   UNIQUE ( node_id, organizational_team_id )
 );`
 	queries[idx] = "createTableNodes"
