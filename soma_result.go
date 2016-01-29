@@ -1,12 +1,12 @@
 package main
 
-import (
-	"log"
-	"reflect"
-)
-
 type ErrorMarker interface {
 	ErrorMark(err error, imp bool, found bool, length int) bool
+}
+
+type SomaAppender interface {
+	SomaAppendResult(r somaResult)
+	SomaAppendError(r somaResult, err error)
 }
 
 type somaResult struct {
@@ -40,23 +40,12 @@ func (r *somaResult) Failure() bool {
 	return false
 }
 
-func (r *somaResult) Append(err error, res interface{}) {
-	switch res.(type) {
-	case somaServerResult:
-		if err != nil {
-			r.Servers = append(r.Servers, somaServerResult{ResultError: err})
-			break
-		}
-		r.Servers = append(r.Servers, res.(somaServerResult))
-	case somaNodeResult:
-		if err != nil {
-			r.Nodes = append(r.Nodes, somaNodeResult{ResultError: err})
-			break
-		}
-		r.Nodes = append(r.Nodes, res.(somaNodeResult))
-	default:
-		log.Printf("somaResult.Append(): unhandled type %s", reflect.TypeOf(res))
+func (r *somaResult) Append(err error, res SomaAppender) {
+	if err != nil {
+		res.SomaAppendError(*r, err)
+		return
 	}
+	res.SomaAppendResult(*r)
 }
 
 func (r *somaResult) MarkErrors(reply ErrorMarker) bool {

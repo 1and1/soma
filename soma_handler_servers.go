@@ -21,6 +21,16 @@ type somaServerResult struct {
 	Server      somaproto.ProtoServer
 }
 
+func (a *somaServerResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Servers = append(r.Servers, somaServerResult{ResultError: err})
+	}
+}
+
+func (a *somaServerResult) SomaAppendResult(r somaResult) {
+	r.Servers = append(r.Servers, *a)
+}
+
 /* Read
  */
 type somaServerReadHandler struct {
@@ -96,7 +106,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 
 		for rows.Next() {
 			err := rows.Scan(&serverId, &serverName)
-			result.Append(err, somaServerResult{
+			result.Append(err, &somaServerResult{
 				Server: somaproto.ProtoServer{
 					Id:   serverId,
 					Name: serverName,
@@ -124,7 +134,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 			return
 		}
 
-		result.Append(err, somaServerResult{
+		result.Append(err, &somaServerResult{
 			Server: somaproto.ProtoServer{
 				Id:         serverId,
 				AssetId:    uint64(serverAsset),
@@ -272,12 +282,12 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result.Append(errors.New("No rows affected"), somaServerResult{})
+		result.Append(errors.New("No rows affected"), &somaServerResult{})
 	case rowCnt >= 1:
 		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
-			somaServerResult{})
+			&somaServerResult{})
 	default:
-		result.Append(nil, somaServerResult{
+		result.Append(nil, &somaServerResult{
 			Server: q.Server,
 		})
 	}

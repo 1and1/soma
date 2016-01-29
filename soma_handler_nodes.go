@@ -20,6 +20,16 @@ type somaNodeResult struct {
 	Node        somaproto.ProtoNode
 }
 
+func (a *somaNodeResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Nodes = append(r.Nodes, somaNodeResult{ResultError: err})
+	}
+}
+
+func (a *somaNodeResult) SomaAppendResult(r somaResult) {
+	r.Nodes = append(r.Nodes, *a)
+}
+
 /* Read Access
  *
  */
@@ -93,7 +103,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 
 		for rows.Next() {
 			err := rows.Scan(&nodeId, &nodeName)
-			result.Append(err, somaNodeResult{
+			result.Append(err, &somaNodeResult{
 				Node: somaproto.ProtoNode{
 					Id:   nodeId,
 					Name: nodeName,
@@ -122,7 +132,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			return
 		}
 
-		result.Append(err, somaNodeResult{
+		result.Append(err, &somaNodeResult{
 			Node: somaproto.ProtoNode{
 				Id:        nodeId,
 				AssetId:   uint64(nodeAsset),
@@ -255,12 +265,12 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result.Append(errors.New("No rows affected"), somaNodeResult{})
+		result.Append(errors.New("No rows affected"), &somaNodeResult{})
 	case rowCnt > 1:
 		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
-			somaNodeResult{})
+			&somaNodeResult{})
 	default:
-		result.Append(nil, somaNodeResult{
+		result.Append(nil, &somaNodeResult{
 			Node: q.Node,
 		})
 	}
