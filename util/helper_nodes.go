@@ -9,16 +9,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetNodeByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetNodeByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetNodeIdByName(s)
+		return u.GetNodeIdByName(s)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) GetNodeIdByName(node string) uuid.UUID {
+func (u SomaUtil) GetNodeIdByName(node string) string {
 	var req somaproto.ProtoRequestNode
 	req.Filter.Name = node
 

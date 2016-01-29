@@ -136,7 +136,7 @@ func cmdClusterMemberDelete(c *cli.Context) {
 		opts["from"][0], bucketId)
 
 	path := fmt.Sprintf("/clusters/%s/members/%s", clusterId,
-		nodeId.String())
+		nodeId)
 
 	_ = utl.DeleteRequest(path)
 }

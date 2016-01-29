@@ -24,9 +24,22 @@ func (u SomaUtil) TryGetServerByUUIDOrName(s string) uuid.UUID {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetNodeIdByName(s)
+		id = u.GetServerIdByName(s)
 	}
 	return id
+}
+
+func (u SomaUtil) GetServerIdByName(server string) uuid.UUID {
+	var req somaproto.ProtoRequestServer
+	req.Filter.Name = server
+
+	resp := u.GetRequestWithBody(req, "/server/")
+	serverResult := u.DecodeProtoResultServerFromResponse(resp)
+
+	if server != serverResult.Servers[0].Name {
+		u.Abort("Received result set for incorrect oncall duty")
+	}
+	return serverResult.Servers[0].Id
 }
 
 func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {

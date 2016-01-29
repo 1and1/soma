@@ -40,7 +40,7 @@ func cmdNodeAdd(c *cli.Context) {
 func cmdNodeDel(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	_ = utl.DeleteRequest(path)
 }
@@ -56,7 +56,7 @@ func cmdNodePurge(c *cli.Context) {
 	} else {
 		utl.ValidateCliArgumentCount(c, 1)
 		id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-		path = fmt.Sprintf("/nodes/%s", id.String())
+		path = fmt.Sprintf("/nodes/%s", id)
 	}
 
 	req.Purge = true
@@ -75,7 +75,7 @@ func cmdNodeRestore(c *cli.Context) {
 	} else {
 		utl.ValidateCliArgumentCount(c, 1)
 		id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-		path = fmt.Sprintf("/nodes/%s", id.String())
+		path = fmt.Sprintf("/nodes/%s", id)
 	}
 
 	req.Restore = true
@@ -87,7 +87,7 @@ func cmdNodeRename(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	var req somaproto.ProtoRequestNode
 	req.Node.Name = c.Args().Get(2)
@@ -102,7 +102,7 @@ func cmdNodeRepo(c *cli.Context) {
 	team := c.Args().Get(2)
 	// try resolving team name to uuid as name validation
 	_ = utl.GetTeamIdByName(team)
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	var req somaproto.ProtoRequestNode
 	req.Node.Team = team
@@ -117,7 +117,7 @@ func cmdNodeMove(c *cli.Context) {
 	server := c.Args().Get(2)
 	// try resolving server name to uuid as name validation
 	_ = utl.GetServerAssetIdByName(server)
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	var req somaproto.ProtoRequestNode
 	req.Node.Server = server
@@ -128,7 +128,7 @@ func cmdNodeMove(c *cli.Context) {
 func cmdNodeOnline(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	var req somaproto.ProtoRequestNode
 	req.Node.IsOnline = true
@@ -139,7 +139,7 @@ func cmdNodeOnline(c *cli.Context) {
 func cmdNodeOffline(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	var req somaproto.ProtoRequestNode
 	req.Node.IsOnline = false
@@ -173,7 +173,7 @@ func cmdNodeList(c *cli.Context) {
 func cmdNodeShow(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id.String())
+	path := fmt.Sprintf("/nodes/%s", id)
 
 	_ = utl.GetRequest(path)
 }
@@ -201,7 +201,7 @@ func cmdNodePropertyAdd(c *cli.Context) {
 
 	// get which node is being modified
 	id := utl.TryGetNodeByUUIDOrName(argSlice[3])
-	path := fmt.Sprintf("/nodes/%s/property/", id.String())
+	path := fmt.Sprintf("/nodes/%s/property/", id)
 
 	// variable key/value part of argv
 	argSlice = argSlice[4:]
@@ -265,7 +265,7 @@ func cmdNodePropertyGet(c *cli.Context) {
 
 	// TODO: validate property of that type and name exists
 	path := fmt.Sprintf("/nodes/%s/property/%s/%s/%s",
-		id.String(),
+		id,
 		argSlice[0], // type
 		argSlice[5], // view
 		argSlice[1], // property
@@ -289,7 +289,7 @@ func cmdNodePropertyDel(c *cli.Context) {
 
 	// TODO: validate property of that type and name exists
 	path := fmt.Sprintf("/nodes/%s/property/%s/%s/%s",
-		id.String(),
+		id,
 		argSlice[0], //type
 		argSlice[5], //view
 		argSlice[1], //property
@@ -301,7 +301,7 @@ func cmdNodePropertyDel(c *cli.Context) {
 func cmdNodePropertyList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s/property/", id.String())
+	path := fmt.Sprintf("/nodes/%s/property/", id)
 
 	var req somaproto.ProtoRequestNode
 
@@ -317,7 +317,7 @@ func cmdNodePropertyList(c *cli.Context) {
 func cmdNodePropertyShow(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/nodes/%s/property/", id.String())
+	path := fmt.Sprintf("/nodes/%s/property/", id)
 
 	_ = utl.GetRequest(path)
 }

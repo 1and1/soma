@@ -236,7 +236,7 @@ func cmdGroupMemberDeleteNode(c *cli.Context) {
 		bucketId)
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
-		mNodeId.String())
+		mNodeId)
 
 	_ = utl.DeleteRequest(path)
 }
