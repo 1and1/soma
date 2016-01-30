@@ -65,7 +65,7 @@ func cmdServerCreate(c *cli.Context) {
 			argumentCheck["name"] = true
 		case "online":
 			utl.CheckServerKeyword(args[pos+1])
-			req.Server.Online, err = strconv.ParseBool(args[pos+1])
+			req.Server.IsOnline, err = strconv.ParseBool(args[pos+1])
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
 					"parameter online must be true or false\n")
@@ -79,7 +79,7 @@ func cmdServerCreate(c *cli.Context) {
 	// online argument is optional and defaults to true
 	if !argumentCheck["online"] {
 		argumentCheck["online"] = true
-		req.Server.Online = true
+		req.Server.IsOnline = true
 	}
 	missingArgument := false
 	for k, v := range argumentCheck {
@@ -232,7 +232,7 @@ func cmdServerUpdate(c *cli.Context) {
 			argumentCheck["name"] = true
 		case "online":
 			utl.CheckServerKeyword(args[pos+1])
-			req.Server.Online, err = strconv.ParseBool(args[pos+1])
+			req.Server.IsOnline, err = strconv.ParseBool(args[pos+1])
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
 					"parameter online must be true or false\n")
@@ -246,7 +246,7 @@ func cmdServerUpdate(c *cli.Context) {
 	// online argument is optional and defaults to true
 	if !argumentCheck["online"] {
 		argumentCheck["online"] = true
-		req.Server.Online = true
+		req.Server.IsOnline = true
 	}
 	missingArgument := false
 	for k, v := range argumentCheck {
@@ -351,7 +351,7 @@ func cmdServerOnline(c *cli.Context) {
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
 
 	var req somaproto.ProtoRequestServer
-	req.Server.Online = true
+	req.Server.IsOnline = true
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -398,7 +398,7 @@ func cmdServerOffline(c *cli.Context) {
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
 
 	var req somaproto.ProtoRequestServer
-	req.Server.Online = false
+	req.Server.IsOnline = false
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).

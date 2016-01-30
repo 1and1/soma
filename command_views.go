@@ -36,7 +36,7 @@ func cmdViewsRename(c *cli.Context) {
 		c.Args().Tail())
 
 	var req somaproto.ProtoRequestView
-	req.View = somaproto.ProtoView{}
+	req.View = &somaproto.ProtoView{}
 	req.View.View = opts["to"][0]
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 

@@ -20,16 +20,16 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 	}
 }
 
-func (u SomaUtil) TryGetServerByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetServerByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetServerIdByName(s)
+		return u.GetServerIdByName(s)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) GetServerIdByName(server string) uuid.UUID {
+func (u SomaUtil) GetServerIdByName(server string) string {
 	var req somaproto.ProtoRequestServer
 	req.Filter.Name = server
 
