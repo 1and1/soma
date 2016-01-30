@@ -9,7 +9,8 @@ import (
 func cmdStatusCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	var req somaproto.ProtoRequestStatus
+	req := somaproto.ProtoRequestStatus{}
+	req.Status = &somaproto.ProtoStatus{}
 	req.Status.Status = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/status/")

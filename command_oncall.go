@@ -104,8 +104,8 @@ func cmdOnCallMemberAdd(c *cli.Context) {
 	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
 	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
 
-	var req somaproto.ProtoRequestOncall
-	var member somaproto.ProtoOncallMember
+	req := somaproto.ProtoRequestOncall{}
+	member := somaproto.ProtoOncallMember{}
 	member.UserId = userId.String()
 	reqMembers := []somaproto.ProtoOncallMember{member}
 	req.Members = &reqMembers

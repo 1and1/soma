@@ -20,7 +20,8 @@ func cmdNodeAdd(c *cli.Context) {
 	argSlice := utl.GetFullArgumentSlice(c)
 
 	options, optional := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 
 	utl.ValidateStringAsNodeAssetId(options["assetid"])
 	if utl.SliceContainsString("online", optional) {
@@ -89,7 +90,8 @@ func cmdNodeRename(c *cli.Context) {
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 	req.Node.Name = c.Args().Get(2)
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -104,7 +106,8 @@ func cmdNodeRepo(c *cli.Context) {
 	_ = utl.GetTeamIdByName(team)
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 	req.Node.Team = team
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -119,7 +122,8 @@ func cmdNodeMove(c *cli.Context) {
 	_ = utl.GetServerAssetIdByName(server)
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 	req.Node.Server = server
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -130,7 +134,8 @@ func cmdNodeOnline(c *cli.Context) {
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 	req.Node.IsOnline = true
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -141,7 +146,8 @@ func cmdNodeOffline(c *cli.Context) {
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 	req.Node.IsOnline = false
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -243,7 +249,8 @@ func cmdNodePropertyAdd(c *cli.Context) {
 	}
 
 	// build request JSON
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
 	req.Node.Properties = append(req.Node.Properties, prop)
 
 	_ = utl.PostRequestWithBody(req, path)
@@ -303,7 +310,8 @@ func cmdNodePropertyList(c *cli.Context) {
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/property/", id)
 
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Filter = &somaproto.ProtoNodeFilter{}
 
 	if c.Bool("all") {
 		req.Filter.LocalProperty = false
