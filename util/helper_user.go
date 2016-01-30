@@ -5,44 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/codegangsta/cli"
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetUserByUUIDOrName(s string) uuid.UUID {
+func (u *SomaUtil) TryGetUserByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetUserIdByName(s)
+		return u.GetUserIdByName(s)
 	}
-	return id
+	return id.String()
 }
 
-func (u *SomaUtil) UserIdByUuidOrName(c *cli.Context) uuid.UUID {
-	var (
-		id  uuid.UUID
-		err error
-	)
-
-	switch u.GetCliArgumentCount(c) {
-	case 1:
-		id, err = uuid.FromString(c.Args().First())
-		u.AbortOnError(err, "Syntax error, argument not a uuid")
-	case 2:
-		u.ValidateCliArgument(c, 1, "by-name")
-		id = u.GetUserIdByName(c.Args().Get(1))
-	default:
-		u.Abort("Syntax error, unexpected argument count")
-	}
-	return id
-}
-
-func (u *SomaUtil) GetUserIdByName(user string) uuid.UUID {
-	var req somaproto.ProtoRequestUser
+func (u *SomaUtil) GetUserIdByName(user string) string {
+	req := somaproto.ProtoRequestUser{}
+	req.Filter = &somaproto.ProtoUserFilter{}
 	req.Filter.UserName = user
 
-	resp := u.GetRequestWithBody(req, "/users")
+	resp := u.PostRequestWithBody(req, "/filter/users/")
 	userResult := u.DecodeProtoResultUserFromResponse(resp)
 
 	if user != userResult.Users[0].UserName {

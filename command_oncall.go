@@ -106,7 +106,7 @@ func cmdOnCallMemberAdd(c *cli.Context) {
 
 	req := somaproto.ProtoRequestOncall{}
 	member := somaproto.ProtoOncallMember{}
-	member.UserId = userId.String()
+	member.UserId = userId
 	reqMembers := []somaproto.ProtoOncallMember{member}
 	req.Members = &reqMembers
 	path := fmt.Sprintf("/oncall/%s/members", oncallId)
@@ -121,7 +121,7 @@ func cmdOnCallMemberDel(c *cli.Context) {
 	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
 	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
 
-	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId.String())
+	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId)
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)

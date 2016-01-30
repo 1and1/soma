@@ -507,58 +507,62 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				},
-				{
-					Name:   "restore",
-					Usage:  "Restore a user marked as deleted",
-					Action: cmdUserRestoreDeleted,
-					Flags: []cli.Flag{
-						cli.BoolFlag{
-							Name:  "all, a",
-							Usage: "Restore all deleted users",
+				/*
+					{
+						Name:   "restore",
+						Usage:  "Restore a user marked as deleted",
+						Action: cmdUserRestoreDeleted,
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "all, a",
+								Usage: "Restore all deleted users",
+							},
 						},
 					},
-				},
-				{
-					Name:   "update",
-					Usage:  "Set/change user information",
-					Action: cmdUserUpdate,
-				},
-				{
-					Name:   "rename",
-					Usage:  "Change a user's username",
-					Action: cmdUserRename,
-				},
-				{
-					Name:   "activate",
-					Usage:  "Activate a deativated user",
-					Action: cmdUserActivate,
-				},
-				{
-					Name:   "deactivate",
-					Usage:  "Deactivate a user account",
-					Action: cmdUserDeactivate,
-				},
-				{
-					Name:  "password",
-					Usage: "SUBCOMMANDS for user passwords",
-					Subcommands: []cli.Command{
-						{
-							Name:   "update",
-							Usage:  "Update the password of one's own user account",
-							Action: cmdUserPasswordUpdate,
-						},
-						{
-							Name:   "reset",
-							Usage:  "Trigger a password reset for a user",
-							Action: cmdUserPasswordReset,
-						},
-						{
-							Name:   "force",
-							Usage:  "Forcefully set the password of a user",
-							Action: cmdUserPasswordForce,
-						},
+					{
+						Name:   "update",
+						Usage:  "Set/change user information",
+						Action: cmdUserUpdate,
 					},
-				}, // end users password
+					{
+						Name:   "rename",
+						Usage:  "Change a user's username",
+						Action: cmdUserRename,
+					},
+					{
+						Name:   "activate",
+						Usage:  "Activate a deativated user",
+						Action: cmdUserActivate,
+					},
+					{
+						Name:   "deactivate",
+						Usage:  "Deactivate a user account",
+						Action: cmdUserDeactivate,
+					},
+				*/
+				/*
+					{
+						Name:  "password",
+						Usage: "SUBCOMMANDS for user passwords",
+						Subcommands: []cli.Command{
+							{
+								Name:   "update",
+								Usage:  "Update the password of one's own user account",
+								Action: cmdUserPasswordUpdate,
+							},
+							{
+								Name:   "reset",
+								Usage:  "Trigger a password reset for a user",
+								Action: cmdUserPasswordReset,
+							},
+							{
+								Name:   "force",
+								Usage:  "Forcefully set the password of a user",
+								Action: cmdUserPasswordForce,
+							},
+						},
+					}, // end users password
+				*/
 				{
 					Name:   "list",
 					Usage:  "List all registered users",

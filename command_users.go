@@ -5,112 +5,80 @@ import (
 	"strconv"
 
 	"github.com/codegangsta/cli"
-	"github.com/satori/go.uuid"
 )
 
 func cmdUserAdd(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/users"
-
-	keySlice := []string{"firstname", "lastname", "employeenr",
+	utl.ValidateCliMinArgumentCount(c, 11)
+	multiple := []string{}
+	unique := []string{"firstname", "lastname", "employeenr",
 		"mailaddr", "team", "active", "system"}
-	reqSlice := []string{"firstname", "lastname", "employeenr",
+	required := []string{"firstname", "lastname", "employeenr",
 		"mailaddr", "team"}
 	var err error
 
-	switch utl.GetCliArgumentCount(c) {
-	case 11, 13, 15:
-		break
-	default:
-		utl.Abort("Syntax error, unexpected argument count")
-	}
-
-	argSlice := c.Args().Tail()
-	options, opts := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
+	opts := utl.ParseVariadicArguments(
+		multiple,
+		unique,
+		required,
+		c.Args().Tail())
 
 	// validate
-	utl.ValidateStringAsEmployeeNumber(options["employeenr"])
-	utl.ValidateStringAsMailAddress(options["mailaddr"])
+	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])
+	utl.ValidateStringAsMailAddress(opts["mailaddr"][0])
 
-	var req somaproto.ProtoRequestUser
+	req := somaproto.ProtoRequestUser{}
+	req.User = &somaproto.ProtoUser{}
 	req.User.UserName = c.Args().First()
-	req.User.FirstName = options["firstname"]
-	req.User.LastName = options["LastName"]
-	req.User.Team = options["team"]
-	req.User.MailAddress = options["mailaddr"]
-	req.User.EmployeeNumber = options["employeenr"]
+	req.User.FirstName = opts["firstname"][0]
+	req.User.LastName = opts["lastname"][0]
+	req.User.Team = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	req.User.MailAddress = opts["mailaddr"][0]
+	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = false
 
 	// optional arguments
-	if utl.SliceContainsString("active", opts) {
-		req.User.IsActive, err = strconv.ParseBool(options["active"])
+	if _, ok := opts["active"]; ok {
+		req.User.IsActive, err = strconv.ParseBool(opts["active"][0])
 		utl.AbortOnError(err, "Syntax error, active argument not boolean")
 	} else {
 		req.User.IsActive = true
 	}
 
-	if utl.SliceContainsString("system", opts) {
-		req.User.IsSystem, err = strconv.ParseBool(options["system"])
+	if _, ok := opts["system"]; ok {
+		req.User.IsSystem, err = strconv.ParseBool(opts["system"][0])
 		utl.AbortOnError(err, "Syntax error, system argument not boolean")
 	} else {
 		req.User.IsSystem = false
 	}
 
-	_ = utl.PostRequestWithBody(req, url.String())
+	resp := utl.PostRequestWithBody(req, "/users/")
+	fmt.Println(resp)
 }
 
 func cmdUserMarkDeleted(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
+	utl.ValidateCliArgumentCount(c, 1)
 
-	switch utl.GetCliArgumentCount(c) {
-	case 1:
-		id, err = uuid.FromString(c.Args().First())
-		utl.AbortOnError(err, "Syntax error, argument not a uuid")
-	case 2:
-		utl.ValidateCliArgument(c, 1, "by-name")
-		id = utl.GetUserIdByName(c.Args().Get(1))
-	default:
-		utl.Abort("Syntax error, unexpected argument count")
-	}
-	url.Path = fmt.Sprintf("/users/%s", id.String())
+	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/users/%s", userId)
 
-	_ = utl.DeleteRequest(url.String())
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdUserPurgeDeleted(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
+	utl.ValidateCliArgumentCount(c, 1)
 
-	if c.Bool("all") {
-		utl.ValidateCliArgumentCount(c, 0)
-		url.Path = fmt.Sprintf("/users")
-	} else {
-		switch utl.GetCliArgumentCount(c) {
-		case 1:
-			id, err = uuid.FromString(c.Args().First())
-			utl.AbortOnError(err, "Syntax error, argument not a uuid")
-		case 2:
-			utl.ValidateCliArgument(c, 1, "by-name")
-			id = utl.GetUserIdByName(c.Args().Get(1))
-		default:
-			utl.Abort("Syntax error, unexpected argument count")
-		}
-		url.Path = fmt.Sprintf("/users/%s", id.String)
-	}
+	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/users/%s", userId)
 
-	var req somaproto.ProtoRequestUser
+	req := somaproto.ProtoRequestUser{}
 	req.Purge = true
 
-	_ = utl.DeleteRequestWithBody(req, url.String())
+	resp := utl.DeleteRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
+/*
 func cmdUserRestoreDeleted(c *cli.Context) {
 	url := getApiUrl()
 	var (
@@ -240,18 +208,23 @@ func cmdUserDeactivate(c *cli.Context) {
 
 	_ = utl.PatchRequestWithBody(req, url.String())
 }
+*/
 
 func cmdUserList(c *cli.Context) {
-	_ = utl.GetRequest("/users")
+	resp := utl.GetRequest("/users/")
+	fmt.Println(resp)
 }
 
 func cmdUserShow(c *cli.Context) {
-	id := utl.UserIdByUuidOrName(c)
-	path := fmt.Sprintf("/users/%s", id.String())
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetUserByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/users/%s", id)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
+/*
 func cmdUserPasswordUpdate(c *cli.Context) {
 	id := utl.UserIdByUuidOrName(c)
 	path := fmt.Sprintf("/users/%s/password", id.String())
@@ -284,5 +257,6 @@ func cmdUserPasswordForce(c *cli.Context) {
 
 	_ = utl.PutRequestWithBody(req, path)
 }
+*/
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
