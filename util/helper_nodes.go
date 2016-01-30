@@ -19,10 +19,11 @@ func (u SomaUtil) TryGetNodeByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetNodeIdByName(node string) string {
-	var req somaproto.ProtoRequestNode
+	req := somaproto.ProtoRequestNode{}
+	req.Filter = &somaproto.ProtoNodeFilter{}
 	req.Filter.Name = node
 
-	resp := u.GetRequestWithBody(req, "/nodes/")
+	resp := u.PostRequestWithBody(req, "/filter/nodes/")
 	nodeResult := u.DecodeProtoResultNodeFromResponse(resp)
 
 	if node != nodeResult.Nodes[0].Name {

@@ -176,7 +176,8 @@ func cmdNodeAssign(c *cli.Context) {
 func cmdNodeList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	_ = utl.GetRequest("/nodes/")
+	resp := utl.GetRequest("/nodes/")
+	fmt.Println(resp)
 }
 
 func cmdNodeShow(c *cli.Context) {
@@ -184,7 +185,8 @@ func cmdNodeShow(c *cli.Context) {
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdNodePropertyAdd(c *cli.Context) {

@@ -495,88 +495,18 @@ func cmdServerMove(c *cli.Context) {
 }
 
 func cmdServerList(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/servers"
-	var resp *resty.Response
-	var err error
-
-	a := c.Args()
-	if a.Present() {
-		if len(a) > 1 {
-			Slog.Fatal("Syntax error")
-		}
-		var req somaproto.ProtoRequestServer
-		switch a.First() {
-		case "online":
-			req.Filter.Online = true
-		case "offline":
-			req.Filter.Online = false
-		case "deleted":
-			req.Filter.Deleted = true
-		default:
-			Slog.Fatal("Syntax error")
-		}
-
-		resp, err = resty.New().
-			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-			R().
-			SetBody(req).
-			Get(url.String())
-	} else {
-		resp, err = resty.New().
-			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-			R().
-			Get(url.String())
-	}
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
-	}
-	utl.CheckRestyResponse(resp)
-	// TODO check list action
+	resp := utl.GetRequest("/servers/")
+	fmt.Println(resp)
 }
 
 func cmdServerShow(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		assetId uint64
-		err     error
-	)
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if !a.Present() {
-		Slog.Fatal("Syntax error")
-	}
-	if a.First() == "by-name" {
-		server := a.Get(1)
-		if server == "" {
-			Slog.Fatal("Syntax error")
-		}
-		assetId = utl.GetServerAssetIdByName(server)
-	} else {
-		idString := a.First()
-		if idString == "" {
-			fmt.Fprintf(os.Stderr, "Could not read assetId\n")
-			Slog.Fatal(err)
-		}
-		assetId, err = strconv.ParseUint(idString, 10, 64)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
-		}
-	}
-	url.Path = fmt.Sprintf("/servers/%d", assetId)
+	serverId := utl.TryGetServerByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/servers/%s", serverId)
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
-	}
-	utl.CheckRestyResponse(resp)
-	// TODO output data received from action
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdServerSyncRequest(c *cli.Context) {
