@@ -10,18 +10,27 @@ import (
 
 type somaPredicateRequest struct {
 	action    string
-	predicate somaproto.ProtoPredicate
-	reply     chan []somaPredicateResult
+	Predicate somaproto.ProtoPredicate
+	reply     chan somaResult
 }
 
 type somaPredicateResult struct {
-	rErr      error
-	lErr      error
-	predicate somaproto.ProtoPredicate
+	ResultError error
+	Predicate   somaproto.ProtoPredicate
+}
+
+func (a *somaPredicateResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Predicates = append(r.Predicates,
+			somaPredicateResult{ResultError: err})
+	}
+}
+
+func (a *somaPredicateResult) SomaAppendResult(r somaResult) {
+	r.Predicates = append(r.Predicates, *a)
 }
 
 /* Read Access
- *
  */
 type somaPredicateReadHandler struct {
 	input     chan somaPredicateRequest
@@ -34,20 +43,24 @@ type somaPredicateReadHandler struct {
 func (r *somaPredicateReadHandler) run() {
 	var err error
 
+	log.Println("Prepare: predicate/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT predicate
-FROM soma.configuration_predicates; `)
+FROM   soma.configuration_predicates; `)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("predicate/list: ", err)
 	}
+	defer r.list_stmt.Close()
 
+	log.Println("Prepare: predicate/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT predicate
-FROM soma.configuration_predicates
-WHERE predicate = $1;`)
+FROM   soma.configuration_predicates
+WHERE  predicate = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -63,67 +76,58 @@ runloop:
 }
 
 func (r *somaPredicateReadHandler) process(q *somaPredicateRequest) {
-	var predicate string
-	var rows *sql.Rows
-	var err error
-	result := make([]somaPredicateResult, 0)
+	var (
+		predicate string
+		rows      *sql.Rows
+		err       error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
 		log.Printf("R: predicates/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaPredicateResult{
-				rErr: err,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err := rows.Scan(&predicate)
-			if err != nil {
-				result = append(result, somaPredicateResult{
-					lErr: err,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaPredicateResult{
-				predicate: somaproto.ProtoPredicate{
+			result.Append(err, &somaPredicateResult{
+				Predicate: somaproto.ProtoPredicate{
 					Predicate: predicate,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: predicates/show for %s", q.predicate.Predicate)
-		err = r.show_stmt.QueryRow(q.predicate.Predicate).Scan(&predicate)
+		log.Printf("R: predicate/show for %s", q.Predicate.Predicate)
+		err = r.show_stmt.QueryRow(q.Predicate.Predicate).Scan(
+			&predicate,
+		)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
-				result = append(result, somaPredicateResult{
-					rErr: err,
-				})
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
 			}
 			q.reply <- result
 			return
 		}
 
-		result = append(result, somaPredicateResult{
-			predicate: somaproto.ProtoPredicate{
+		result.Append(err, &somaPredicateResult{
+			Predicate: somaproto.ProtoPredicate{
 				Predicate: predicate,
 			},
 		})
 	default:
-		result = append(result, somaPredicateResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
 
 /* Write Access
- *
  */
 type somaPredicateWriteHandler struct {
 	input    chan somaPredicateRequest
@@ -136,23 +140,25 @@ type somaPredicateWriteHandler struct {
 func (w *somaPredicateWriteHandler) run() {
 	var err error
 
+	log.Println("Prepare: predicate/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.configuration_predicates (
 	predicate)
 SELECT $1 WHERE NOT EXISTS (
 	SELECT predicate
-	FROM soma.configuration_predicates
-	WHERE predicate = $2);`)
+	FROM   soma.configuration_predicates
+	WHERE  predicate = $1);`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("predicate/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
+	log.Println("Prepare: predicate/del")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.configuration_predicates
-WHERE predicate = $1;`)
+WHERE  predicate = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("predicate/del: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -168,34 +174,30 @@ runloop:
 }
 
 func (w *somaPredicateWriteHandler) process(q *somaPredicateRequest) {
-	var res sql.Result
-	var err error
-	result := make([]somaPredicateResult, 0)
+	var (
+		res sql.Result
+		err error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "add":
-		log.Printf("R: predicates/add for %s", q.predicate.Predicate)
+		log.Printf("R: predicates/add for %s", q.Predicate.Predicate)
 		res, err = w.add_stmt.Exec(
-			q.predicate.Predicate,
-			q.predicate.Predicate,
+			q.Predicate.Predicate,
 		)
 	case "delete":
-		log.Printf("R: predicates/del for %s", q.predicate.Predicate)
+		log.Printf("R: predicates/del for %s", q.Predicate.Predicate)
 		res, err = w.del_stmt.Exec(
-			q.predicate.Predicate,
+			q.Predicate.Predicate,
 		)
 	default:
 		log.Printf("R: unimplemented predicates/%s", q.action)
-		result = append(result, somaPredicateResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaPredicateResult{
-			rErr: err,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
@@ -203,16 +205,13 @@ func (w *somaPredicateWriteHandler) process(q *somaPredicateRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result = append(result, somaPredicateResult{
-			lErr: errors.New("No rows affected"),
-		})
+		result.Append(errors.New("No rows affected"), &somaPredicateResult{})
 	case rowCnt > 1:
-		result = append(result, somaPredicateResult{
-			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
-		})
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			&somaPredicateResult{})
 	default:
-		result = append(result, somaPredicateResult{
-			predicate: q.predicate,
+		result.Append(nil, &somaPredicateResult{
+			Predicate: q.Predicate,
 		})
 	}
 	q.reply <- result

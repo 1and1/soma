@@ -10,18 +10,26 @@ import (
 
 type somaLevelRequest struct {
 	action string
-	level  somaproto.ProtoLevel
-	reply  chan []somaLevelResult
+	Level  somaproto.ProtoLevel
+	reply  chan somaResult
 }
 
 type somaLevelResult struct {
-	rErr  error
-	lErr  error
-	level somaproto.ProtoLevel
+	ResultError error
+	Level       somaproto.ProtoLevel
+}
+
+func (a *somaLevelResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Levels = append(r.Levels, somaLevelResult{ResultError: err})
+	}
+}
+
+func (a *somaLevelResult) SomaAppendResult(r somaResult) {
+	r.Levels = append(r.Levels, *a)
 }
 
 /* Read Access
- *
  */
 type somaLevelReadHandler struct {
 	input     chan somaLevelRequest
@@ -34,17 +42,27 @@ type somaLevelReadHandler struct {
 func (r *somaLevelReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare("SELECT level_name FROM soma.notification_levels;")
+	log.Println("Prepare: level/list")
+	r.list_stmt, err = r.conn.Prepare(`
+SELECT level_name
+FROM   soma.notification_levels;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("level/list: ", err)
 	}
+	defer r.list_stmt.Close()
+
+	log.Println("Prepare: level/show")
 	r.show_stmt, err = r.conn.Prepare(`
-		SELECT level_name, level_shortname, level_numeric
-		FROM soma.notification_levels
-		WHERE level_name = $1;`)
+SELECT level_name,
+       level_shortname,
+	   level_numeric
+FROM   soma.notification_levels
+WHERE  level_name = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("level/show: ", err)
 	}
+	defer r.show_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -59,79 +77,63 @@ runloop:
 }
 
 func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
-	var level string
-	var short string
-	var numeric uint16
-	var rows *sql.Rows
-	var err error
-	result := make([]somaLevelResult, 0)
+	var (
+		level, short string
+		numeric      uint16
+		rows         *sql.Rows
+		err          error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
 		log.Printf("R: levels/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaLevelResult{
-				rErr: err,
-				lErr: nil,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err := rows.Scan(&level)
-			if err != nil {
-				result = append(result, somaLevelResult{
-					rErr: nil,
-					lErr: err,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaLevelResult{
-				rErr: nil,
-				lErr: nil,
-				level: somaproto.ProtoLevel{
+			result.Append(err, &somaLevelResult{
+				Level: somaproto.ProtoLevel{
 					Name: level,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: levels/show for %s", q.level.Name)
-		err = r.show_stmt.QueryRow(q.level.Name).Scan(&level, &short, &numeric)
+		log.Printf("R: levels/show for %s", q.Level.Name)
+		err = r.show_stmt.QueryRow(q.Level.Name).Scan(
+			&level,
+			&short,
+			&numeric,
+		)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
-				result = append(result, somaLevelResult{
-					rErr: err,
-					lErr: nil,
-				})
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
 			}
 			q.reply <- result
 			return
 		}
 
-		result = append(result, somaLevelResult{
-			rErr: nil,
-			lErr: nil,
-			level: somaproto.ProtoLevel{
+		result.Append(err, &somaLevelResult{
+			Level: somaproto.ProtoLevel{
 				Name:      level,
 				ShortName: short,
 				Numeric:   numeric,
 			},
 		})
 	default:
-		result = append(result, somaLevelResult{
-			rErr: errors.New("not implemented"),
-			lErr: nil,
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
 
 /* Write Access
- *
  */
 type somaLevelWriteHandler struct {
 	input    chan somaLevelRequest
@@ -144,6 +146,7 @@ type somaLevelWriteHandler struct {
 func (w *somaLevelWriteHandler) run() {
 	var err error
 
+	log.Println("Prepare: level/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.notification_levels (
 	level_name,
@@ -152,17 +155,18 @@ INSERT INTO soma.notification_levels (
 SELECT $1, $2, $3 WHERE NOT EXISTS (
 	SELECT level_name
 	FROM soma.notification_levels
-	WHERE level_name = $4
-	OR level_shortname = $5
-	OR level_numeric = $6);`)
+	WHERE level_name = $1
+	OR level_shortname = $2
+	OR level_numeric = $3);`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("level/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
+	log.Println("Prepare: server/del")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.notification_levels
-WHERE level_name = $1;`)
+WHERE  level_name = $1;`)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -180,38 +184,32 @@ runloop:
 }
 
 func (w *somaLevelWriteHandler) process(q *somaLevelRequest) {
-	var res sql.Result
-	var err error
-	result := make([]somaLevelResult, 0)
+	var (
+		res sql.Result
+		err error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "add":
-		log.Printf("R: levels/add for %s", q.level.Name)
+		log.Printf("R: levels/add for %s", q.Level.Name)
 		res, err = w.add_stmt.Exec(
-			q.level.Name,
-			q.level.ShortName,
-			q.level.Numeric,
-			q.level.Name,
-			q.level.ShortName,
-			q.level.Numeric,
+			q.Level.Name,
+			q.Level.ShortName,
+			q.Level.Numeric,
 		)
 	case "delete":
-		log.Printf("R: levels/del for %s", q.level.Name)
+		log.Printf("R: levels/del for %s", q.Level.Name)
 		res, err = w.del_stmt.Exec(
-			q.level.Name,
+			q.Level.Name,
 		)
 	default:
 		log.Printf("R: unimplemented levels/%s", q.action)
-		result = append(result, somaLevelResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaLevelResult{
-			rErr: err,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
@@ -219,16 +217,13 @@ func (w *somaLevelWriteHandler) process(q *somaLevelRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result = append(result, somaLevelResult{
-			lErr: errors.New("No rows affected"),
-		})
+		result.Append(errors.New("No rows affected"), &somaLevelResult{})
 	case rowCnt > 1:
-		result = append(result, somaLevelResult{
-			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
-		})
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			&somaLevelResult{})
 	default:
-		result = append(result, somaLevelResult{
-			level: q.level,
+		result.Append(nil, &somaLevelResult{
+			Level: q.Level,
 		})
 	}
 	q.reply <- result

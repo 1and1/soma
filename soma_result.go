@@ -15,6 +15,8 @@ type somaResult struct {
 	NotImplemented bool
 	Nodes          []somaNodeResult
 	Servers        []somaServerResult
+	Levels         []somaLevelResult
+	Predicates     []somaPredicateResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

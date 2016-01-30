@@ -21,46 +21,6 @@ import (
 func CheckErrorHandler(res interface{}, protoRes interface{}) bool {
 
 	switch res.(type) {
-	case *[]somaLevelResult:
-		r := res.(*[]somaLevelResult)
-		t := protoRes.(*somaproto.ProtoResultLevel)
-
-		if len(*r) == 0 {
-			t.Code = 404
-			t.Status = "NOTFOUND"
-			return true
-		}
-		// r has elements
-		if (*r)[0].rErr != nil {
-			t.Code = 500
-			t.Status = "ERROR"
-			t.Text = make([]string, 0)
-			t.Text = append(t.Text, (*r)[0].rErr.Error())
-			return true
-		}
-		t.Code = 200
-		t.Status = "OK"
-		return false
-	case *[]somaPredicateResult:
-		r := res.(*[]somaPredicateResult)
-		t := protoRes.(*somaproto.ProtoResultPredicate)
-
-		if len(*r) == 0 {
-			t.Code = 404
-			t.Status = "NOTFOUND"
-			return true
-		}
-		// r has elements
-		if (*r)[0].rErr != nil {
-			t.Code = 500
-			t.Status = "ERROR"
-			t.Text = make([]string, 0)
-			t.Text = append(t.Text, (*r)[0].rErr.Error())
-			return true
-		}
-		t.Code = 200
-		t.Status = "OK"
-		return false
 	case *[]somaStatusResult:
 		r := res.(*[]somaStatusResult)
 		t := protoRes.(*somaproto.ProtoResultStatus)
