@@ -16,6 +16,7 @@ func startHandlers() {
 	spawnUnitReadHandler()
 	spawnProviderReadHandler()
 	spawnMetricReadHandler()
+	spawnModeReadHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnViewWriteHandler()
@@ -33,6 +34,7 @@ func startHandlers() {
 		spawnUnitWriteHandler()
 		spawnProviderWriteHandler()
 		spawnMetricWriteHandler()
+		spawnModeWriteHandler()
 	}
 }
 
@@ -304,6 +306,24 @@ func spawnMetricWriteHandler() {
 	metricWriteHandler.conn = conn
 	handlerMap["metricWriteHandler"] = metricWriteHandler
 	go metricWriteHandler.run()
+}
+
+func spawnModeReadHandler() {
+	var modeReadHandler somaModeReadHandler
+	modeReadHandler.input = make(chan somaModeRequest, 64)
+	modeReadHandler.shutdown = make(chan bool)
+	modeReadHandler.conn = conn
+	handlerMap["modeReadHandler"] = modeReadHandler
+	go modeReadHandler.run()
+}
+
+func spawnModeWriteHandler() {
+	var modeWriteHandler somaModeWriteHandler
+	modeWriteHandler.input = make(chan somaModeRequest, 64)
+	modeWriteHandler.shutdown = make(chan bool)
+	modeWriteHandler.conn = conn
+	handlerMap["modeWriteHandler"] = modeWriteHandler
+	go modeWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
