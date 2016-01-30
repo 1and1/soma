@@ -31,7 +31,7 @@ func (a *somaServerResult) SomaAppendResult(r somaResult) {
 	r.Servers = append(r.Servers, *a)
 }
 
-/* Read
+/* Read Access
  */
 type somaServerReadHandler struct {
 	input     chan somaServerRequest
@@ -87,11 +87,13 @@ runloop:
 }
 
 func (r *somaServerReadHandler) process(q *somaServerRequest) {
-	var serverId, serverDc, serverDcLoc, serverName string
-	var serverAsset int
-	var serverOnline, serverDeleted bool
-	var rows *sql.Rows
-	var err error
+	var (
+		serverId, serverDc, serverDcLoc, serverName string
+		serverAsset                                 int
+		serverOnline, serverDeleted                 bool
+		rows                                        *sql.Rows
+		err                                         error
+	)
 	result := somaResult{}
 
 	switch q.action {
@@ -114,7 +116,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: server/show")
+		log.Printf("R: server/show for %s", q.Server.Id)
 		err = r.show_stmt.QueryRow(q.Server.Id).Scan(
 			&serverId,
 			&serverAsset,
@@ -151,7 +153,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 	q.reply <- result
 }
 
-/* Write
+/* Write Access
  */
 type somaServerWriteHandler struct {
 	input    chan somaServerRequest
@@ -223,8 +225,10 @@ runloop:
 }
 
 func (w *somaServerWriteHandler) process(q *somaServerRequest) {
-	var res sql.Result
-	var err error
+	var (
+		res sql.Result
+		err error
+	)
 	result := somaResult{}
 
 	switch q.action {
