@@ -1,15 +1,11 @@
 package somaproto
 
-import (
-	"github.com/satori/go.uuid"
-)
-
 type ProtoRequestUser struct {
-	User        ProtoUser            `json:"user,omitempty"`
-	Credentials ProtoUserCredentials `json:"credentials,omitempty"`
-	Filter      ProtoUserFilter      `json:"filter,omitempty"`
-	Restore     bool                 `json:"restore,omitempty"`
-	Purge       bool                 `json:"purge,omitempty"`
+	User    *ProtoUser       `json:"user,omitempty"`
+	Filter  *ProtoUserFilter `json:"filter,omitempty"`
+	Restore bool             `json:"restore,omitempty"`
+	Purge   bool             `json:"purge,omitempty"`
+	//	Credentials ProtoUserCredentials `json:"credentials,omitempty"`
 }
 
 type ProtoResultUser struct {
@@ -17,10 +13,11 @@ type ProtoResultUser struct {
 	Status string      `json:"status,omitempty"`
 	Text   []string    `json:"text,omitempty"`
 	Users  []ProtoUser `json:"users,omitempty"`
+	JobId  string      `json:"jobid,omitempty"`
 }
 
 type ProtoUser struct {
-	Id             uuid.UUID         `json:"id,omitempty"`
+	Id             string            `json:"id,omitempty"`
 	UserName       string            `json:"username,omitempty"`
 	FirstName      string            `json:"firstname,omitempty"`
 	LastName       string            `json:"lastname,omitempty"`
@@ -49,6 +46,55 @@ type ProtoUserFilter struct {
 	IsActive  bool   `json:"active,omitempty"`
 	IsSystem  bool   `json:"system,omitempty"`
 	IsDeleted bool   `json:"deleted,omitempty"`
+}
+
+//
+func (p *ProtoResultUser) ErrorMark(err error, imp bool, found bool,
+	length int) bool {
+	if p.markError(err) {
+		return true
+	}
+	if p.markImplemented(imp) {
+		return true
+	}
+	if p.markFound(found, length) {
+		return true
+	}
+	return p.markOk()
+}
+
+func (p *ProtoResultUser) markError(err error) bool {
+	if err != nil {
+		p.Code = 500
+		p.Status = "ERROR"
+		p.Text = []string{err.Error()}
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultUser) markImplemented(f bool) bool {
+	if f {
+		p.Code = 501
+		p.Status = "NOT IMPLEMENTED"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultUser) markFound(f bool, i int) bool {
+	if f || i == 0 {
+		p.Code = 404
+		p.Status = "NOT FOUND"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultUser) markOk() bool {
+	p.Code = 200
+	p.Status = "OK"
+	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
