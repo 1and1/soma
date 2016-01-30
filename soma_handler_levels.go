@@ -152,23 +152,23 @@ INSERT INTO soma.notification_levels (
 	level_name,
 	level_shortname,
 	level_numeric)
-SELECT $1, $2, $3 WHERE NOT EXISTS (
+SELECT $1::varchar, $2::varchar, $3::smallint WHERE NOT EXISTS (
 	SELECT level_name
 	FROM soma.notification_levels
-	WHERE level_name = $1
-	OR level_shortname = $2
-	OR level_numeric = $3);`)
+	WHERE level_name = $1::varchar
+	OR level_shortname = $2::varchar
+	OR level_numeric = $3::smallint);`)
 	if err != nil {
 		log.Fatal("level/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: server/del")
+	log.Println("Prepare: level/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.notification_levels
 WHERE  level_name = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("level/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 

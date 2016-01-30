@@ -17,6 +17,9 @@ type somaResult struct {
 	Servers        []somaServerResult
 	Levels         []somaLevelResult
 	Predicates     []somaPredicateResult
+	Status         []somaStatusResult
+	Teams          []somaTeamResult
+	Oncall         []somaOncallResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

@@ -7,94 +7,100 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
+/* Read functions
  */
-func ListStatus(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListStatus(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaStatusResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusReadHandler"].(somaStatusReadHandler)
 	handler.input <- somaStatusRequest{
 		action: "list",
 		reply:  returnChannel,
 	}
-	results := <-returnChannel
-	SendStatusReply(&w, &results)
+	result := <-returnChannel
+	SendStatusReply(&w, &result)
 }
 
-func ShowStatus(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowStatus(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaStatusResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusReadHandler"].(somaStatusReadHandler)
 	handler.input <- somaStatusRequest{
 		action: "show",
 		reply:  returnChannel,
-		status: somaproto.ProtoStatus{
+		Status: somaproto.ProtoStatus{
 			Status: params.ByName("status"),
 		},
 	}
-	results := <-returnChannel
-	SendStatusReply(&w, &results)
+	result := <-returnChannel
+	SendStatusReply(&w, &result)
 }
 
-func AddStatus(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+/* Write functions
+ */
+func AddStatus(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	var cReq somaproto.ProtoRequestStatus
+	cReq := somaproto.ProtoRequestStatus{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
 		return
 	}
 
-	returnChannel := make(chan []somaStatusResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)
 	handler.input <- somaStatusRequest{
 		action: "add",
 		reply:  returnChannel,
-		status: somaproto.ProtoStatus{
+		Status: somaproto.ProtoStatus{
 			Status: cReq.Status.Status,
 		},
 	}
-	results := <-returnChannel
-	SendStatusReply(&w, &results)
+	result := <-returnChannel
+	SendStatusReply(&w, &result)
 }
 
-func DeleteStatus(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func DeleteStatus(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaStatusResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)
 	handler.input <- somaStatusRequest{
 		action: "delete",
 		reply:  returnChannel,
-		status: somaproto.ProtoStatus{
+		Status: somaproto.ProtoStatus{
 			Status: params.ByName("status"),
 		},
 	}
-	results := <-returnChannel
-	SendStatusReply(&w, &results)
+	result := <-returnChannel
+	SendStatusReply(&w, &result)
 }
 
-func SendStatusReply(w *http.ResponseWriter, r *[]somaStatusResult) {
-	var res somaproto.ProtoResultStatus
-	dispatchError := CheckErrorHandler(r, &res)
-	if dispatchError {
+/* Utility
+ */
+func SendStatusReply(w *http.ResponseWriter, r *somaResult) {
+	result := somaproto.ProtoResultStatus{}
+	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	res.Text = make([]string, 0)
-	res.StatusList = make([]somaproto.ProtoStatus, 0)
-	for _, l := range *r {
-		res.StatusList = append(res.StatusList, l.status)
-		if l.lErr != nil {
-			res.Text = append(res.Text, l.lErr.Error())
+	result.Text = make([]string, 0)
+	result.StatusList = make([]somaproto.ProtoStatus, 0)
+	for _, i := range (*r).Status {
+		result.StatusList = append(result.StatusList, i.Status)
+		if i.ResultError != nil {
+			result.Text = append(result.Text, i.ResultError.Error())
 		}
 	}
 
 dispatch:
-	json, err := json.Marshal(res)
+	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)
 		return

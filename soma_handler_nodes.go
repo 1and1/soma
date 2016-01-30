@@ -51,7 +51,7 @@ SELECT node_id,
 FROM   soma.nodes
 WHERE  node_online;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("node/list: ", err)
 	}
 
 	log.Println("Prepare: node/show")
@@ -63,11 +63,11 @@ SELECT node_id,
        server_id,
        object_state,
        node_online,
-       node_deleted,
+       node_deleted
 FROM   soma.nodes
 WHERE  node_id = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("node/show: ", err)
 	}
 
 runloop:
@@ -188,24 +188,24 @@ WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: node/del")
+	log.Println("Prepare: node/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE soma.nodes
-SET    node_deleted = yes
+SET    node_deleted = 'yes'
 WHERE  node_id = $1
-AND    node_deleted = no;`)
+AND    node_deleted = 'no';`)
 	if err != nil {
-		log.Fatal("node/del: ", err)
+		log.Fatal("node/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: node/prg")
+	log.Println("Prepare: node/purge")
 	w.prg_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.nodes
 WHERE       node_id = $1
 AND         node_deleted;`)
 	if err != nil {
-		log.Fatal("node/prg: ", err)
+		log.Fatal("node/purge: ", err)
 	}
 	defer w.prg_stmt.Close()
 

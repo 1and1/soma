@@ -10,59 +10,61 @@ import (
 /*
  * Read functions
  */
-func ListTeam(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListTeam(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaTeamResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
 	handler.input <- somaTeamRequest{
 		action: "list",
 		reply:  returnChannel,
 	}
-	results := <-returnChannel
+	result := <-returnChannel
 
+	// declare here since goto does not jump over declarations
 	cReq := somaproto.ProtoRequestTeam{}
 	cReq.Filter = &somaproto.ProtoTeamFilter{}
+	if result.Failure() {
+		goto skip
+	}
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Name != "" {
 		filtered := make([]somaTeamResult, 0)
-	filterloop:
-		for _, iterTeam := range results {
-			if iterTeam.rErr != nil {
-				filtered = append(filtered, iterTeam)
-				break filterloop
-			}
-			if iterTeam.team.Name == cReq.Filter.Name {
-				filtered = append(filtered, iterTeam)
+		for _, i := range result.Teams {
+			if i.Team.Name == cReq.Filter.Name {
+				filtered = append(filtered, i)
 			}
 		}
-		results = filtered
+		result.Teams = filtered
 	}
 
-	SendTeamReply(&w, &results)
+skip:
+	SendTeamReply(&w, &result)
 }
 
-func ShowTeam(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowTeam(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaTeamResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
 	handler.input <- somaTeamRequest{
 		action: "show",
 		reply:  returnChannel,
-		team: somaproto.ProtoTeam{
+		Team: somaproto.ProtoTeam{
 			Id: params.ByName("team"),
 		},
 	}
-	results := <-returnChannel
-	SendTeamReply(&w, &results)
+	result := <-returnChannel
+	SendTeamReply(&w, &result)
 }
 
-/*
- * Write functions
+/* Write functions
  */
-func AddTeam(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddTeam(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	cReq := somaproto.ProtoRequestTeam{}
@@ -72,57 +74,57 @@ func AddTeam(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	returnChannel := make(chan []somaTeamResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)
 	handler.input <- somaTeamRequest{
 		action: "add",
 		reply:  returnChannel,
-		team: somaproto.ProtoTeam{
+		Team: somaproto.ProtoTeam{
 			Name:   cReq.Team.Name,
 			Ldap:   cReq.Team.Ldap,
 			System: cReq.Team.System,
 		},
 	}
-	results := <-returnChannel
-	SendTeamReply(&w, &results)
+	result := <-returnChannel
+	SendTeamReply(&w, &result)
 }
 
-func DeleteTeam(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func DeleteTeam(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan []somaTeamResult)
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)
 	handler.input <- somaTeamRequest{
 		action: "delete",
 		reply:  returnChannel,
-		team: somaproto.ProtoTeam{
+		Team: somaproto.ProtoTeam{
 			Id: params.ByName("team"),
 		},
 	}
-	results := <-returnChannel
-	SendTeamReply(&w, &results)
+	result := <-returnChannel
+	SendTeamReply(&w, &result)
 }
 
 /*
  * Utility
  */
-func SendTeamReply(w *http.ResponseWriter, r *[]somaTeamResult) {
-	var res somaproto.ProtoResultTeam
-	dispatchError := CheckErrorHandler(r, &res)
-	if dispatchError {
+func SendTeamReply(w *http.ResponseWriter, r *somaResult) {
+	result := somaproto.ProtoResultTeam{}
+	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	res.Text = make([]string, 0)
-	res.Teams = make([]somaproto.ProtoTeam, 0)
-	for _, l := range *r {
-		res.Teams = append(res.Teams, l.team)
-		if l.lErr != nil {
-			res.Text = append(res.Text, l.lErr.Error())
+	result.Text = make([]string, 0)
+	result.Teams = make([]somaproto.ProtoTeam, 0)
+	for _, i := range (*r).Teams {
+		result.Teams = append(result.Teams, i.Team)
+		if i.ResultError != nil {
+			result.Text = append(result.Text, i.ResultError.Error())
 		}
 	}
 
 dispatch:
-	json, err := json.Marshal(res)
+	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)
 		return

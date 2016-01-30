@@ -58,7 +58,7 @@ SELECT predicate
 FROM   soma.configuration_predicates
 WHERE  predicate = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("predicate/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -144,21 +144,21 @@ func (w *somaPredicateWriteHandler) run() {
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.configuration_predicates (
 	predicate)
-SELECT $1 WHERE NOT EXISTS (
+SELECT $1::varchar WHERE NOT EXISTS (
 	SELECT predicate
 	FROM   soma.configuration_predicates
-	WHERE  predicate = $1);`)
+	WHERE  predicate = $1::varchar);`)
 	if err != nil {
 		log.Fatal("predicate/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: predicate/del")
+	log.Println("Prepare: predicate/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.configuration_predicates
 WHERE  predicate = $1;`)
 	if err != nil {
-		log.Fatal("predicate/del: ", err)
+		log.Fatal("predicate/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 

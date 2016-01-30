@@ -13,7 +13,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.15"
+	version := "0.0.16"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {

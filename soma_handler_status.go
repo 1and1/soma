@@ -10,18 +10,26 @@ import (
 
 type somaStatusRequest struct {
 	action string
-	status somaproto.ProtoStatus
-	reply  chan []somaStatusResult
+	Status somaproto.ProtoStatus
+	reply  chan somaResult
 }
 
 type somaStatusResult struct {
-	rErr   error
-	lErr   error
-	status somaproto.ProtoStatus
+	ResultError error
+	Status      somaproto.ProtoStatus
+}
+
+func (a *somaStatusResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Status = append(r.Status, somaStatusResult{ResultError: err})
+	}
+}
+
+func (a *somaStatusResult) SomaAppendResult(r somaResult) {
+	r.Status = append(r.Status, *a)
 }
 
 /* Read Access
- *
  */
 type somaStatusReadHandler struct {
 	input     chan somaStatusRequest
@@ -34,20 +42,23 @@ type somaStatusReadHandler struct {
 func (r *somaStatusReadHandler) run() {
 	var err error
 
+	log.Println("Prepare: status/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT status
-FROM soma.check_instance_status; `)
+FROM   soma.check_instance_status;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("status/list: ", err)
 	}
+	defer r.list_stmt.Close()
 
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT status
-FROM soma.check_instance_status
-WHERE status = $1;`)
+FROM   soma.check_instance_status
+WHERE  status = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("status/show: ", err)
 	}
+	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -63,67 +74,58 @@ runloop:
 }
 
 func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
-	var status string
-	var rows *sql.Rows
-	var err error
-	result := make([]somaStatusResult, 0)
+	var (
+		status string
+		rows   *sql.Rows
+		err    error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
 		log.Printf("R: status/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaStatusResult{
-				rErr: err,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err := rows.Scan(&status)
-			if err != nil {
-				result = append(result, somaStatusResult{
-					lErr: err,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaStatusResult{
-				status: somaproto.ProtoStatus{
+			result.Append(err, &somaStatusResult{
+				Status: somaproto.ProtoStatus{
 					Status: status,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: status/show for %s", q.status.Status)
-		err = r.show_stmt.QueryRow(q.status.Status).Scan(&status)
+		log.Printf("R: status/show for %s", q.Status.Status)
+		err = r.show_stmt.QueryRow(q.Status.Status).Scan(
+			&status,
+		)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
-				result = append(result, somaStatusResult{
-					rErr: err,
-				})
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
 			}
 			q.reply <- result
 			return
 		}
 
-		result = append(result, somaStatusResult{
-			status: somaproto.ProtoStatus{
+		result.Append(err, &somaStatusResult{
+			Status: somaproto.ProtoStatus{
 				Status: status,
 			},
 		})
 	default:
-		result = append(result, somaStatusResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
 
 /* Write Access
- *
  */
 type somaStatusWriteHandler struct {
 	input    chan somaStatusRequest
@@ -136,23 +138,25 @@ type somaStatusWriteHandler struct {
 func (w *somaStatusWriteHandler) run() {
 	var err error
 
+	log.Println("Prepare: status/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.check_instance_status (
 	status)
-SELECT $1 WHERE NOT EXISTS (
+SELECT $1::varchar WHERE NOT EXISTS (
 	SELECT status
-	FROM soma.check_instance_status
-	WHERE status = $2);`)
+	FROM   soma.check_instance_status
+	WHERE  status = $1::varchar);`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("status/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
+	log.Println("Prepare: status/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.check_instance_status
-WHERE status = $1;`)
+WHERE  status = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("status/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -168,34 +172,30 @@ runloop:
 }
 
 func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
-	var res sql.Result
-	var err error
-	result := make([]somaStatusResult, 0)
+	var (
+		res sql.Result
+		err error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "add":
-		log.Printf("R: status/add for %s", q.status.Status)
+		log.Printf("R: status/add for %s", q.Status.Status)
 		res, err = w.add_stmt.Exec(
-			q.status.Status,
-			q.status.Status,
+			q.Status.Status,
 		)
 	case "delete":
-		log.Printf("R: status/del for %s", q.status.Status)
+		log.Printf("R: status/del for %s", q.Status.Status)
 		res, err = w.del_stmt.Exec(
-			q.status.Status,
+			q.Status.Status,
 		)
 	default:
 		log.Printf("R: unimplemented status/%s", q.action)
-		result = append(result, somaStatusResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaStatusResult{
-			rErr: err,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
@@ -203,16 +203,13 @@ func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result = append(result, somaStatusResult{
-			lErr: errors.New("No rows affected"),
-		})
+		result.Append(errors.New("No rows affected"), &somaStatusResult{})
 	case rowCnt > 1:
-		result = append(result, somaStatusResult{
-			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
-		})
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			&somaStatusResult{})
 	default:
-		result = append(result, somaStatusResult{
-			status: q.status,
+		result.Append(nil, &somaStatusResult{
+			Status: q.Status,
 		})
 	}
 	q.reply <- result

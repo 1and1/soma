@@ -12,18 +12,26 @@ import (
 
 type somaTeamRequest struct {
 	action string
-	team   somaproto.ProtoTeam
-	reply  chan []somaTeamResult
+	Team   somaproto.ProtoTeam
+	reply  chan somaResult
 }
 
 type somaTeamResult struct {
-	rErr error
-	lErr error
-	team somaproto.ProtoTeam
+	ResultError error
+	Team        somaproto.ProtoTeam
+}
+
+func (a *somaTeamResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Teams = append(r.Teams, somaTeamResult{ResultError: err})
+	}
+}
+
+func (a *somaTeamResult) SomaAppendResult(r somaResult) {
+	r.Teams = append(r.Teams, *a)
 }
 
 /* Read Access
- *
  */
 type somaTeamReadHandler struct {
 	input     chan somaTeamRequest
@@ -42,8 +50,9 @@ SELECT organizational_team_id,
        organizational_team_name 
 FROM   inventory.organizational_teams;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("team/list: ", err)
 	}
+	defer r.list_stmt.Close()
 
 	log.Println("Prepare: team/show")
 	r.show_stmt, err = r.conn.Prepare(`
@@ -54,8 +63,9 @@ SELECT organizational_team_id,
 FROM   inventory.organizational_teams
 WHERE  organizational_team_id = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("team/show: ", err)
 	}
+	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -71,45 +81,37 @@ runloop:
 }
 
 func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
-	var teamId, teamName string
-	var ldapId int
-	var systemFlag bool
-	var rows *sql.Rows
-	var err error
-	result := make([]somaTeamResult, 0)
+	var (
+		teamId, teamName string
+		ldapId           int
+		systemFlag       bool
+		rows             *sql.Rows
+		err              error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
 		log.Printf("R: team/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaTeamResult{
-				rErr: err,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err := rows.Scan(&teamId, &teamName)
-			if err != nil {
-				result = append(result, somaTeamResult{
-					lErr: err,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaTeamResult{
-				team: somaproto.ProtoTeam{
+			result.Append(err, &somaTeamResult{
+				Team: somaproto.ProtoTeam{
 					Id:   teamId,
 					Name: teamName,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: team/show for %s", q.team.Id)
-		err = r.show_stmt.QueryRow(q.team.Id).Scan(
+		log.Printf("R: team/show for %s", q.Team.Id)
+		err = r.show_stmt.QueryRow(q.Team.Id).Scan(
 			&teamId,
 			&teamName,
 			&ldapId,
@@ -117,16 +119,16 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 		)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
-				result = append(result, somaTeamResult{
-					rErr: err,
-				})
-				q.reply <- result
-				return
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
 			}
+			q.reply <- result
+			return
 		}
 
-		result = append(result, somaTeamResult{
-			team: somaproto.ProtoTeam{
+		result.Append(err, &somaTeamResult{
+			Team: somaproto.ProtoTeam{
 				Id:     teamId,
 				Name:   teamName,
 				Ldap:   strconv.Itoa(ldapId),
@@ -134,22 +136,18 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 			},
 		})
 	default:
-		result = append(result, somaTeamResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
 
 /* Write Access
- *
  */
 type somaTeamWriteHandler struct {
 	input    chan somaTeamRequest
 	shutdown chan bool
 	conn     *sql.DB
 	add_stmt *sql.Stmt
-	//  upd_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 }
 
@@ -174,12 +172,12 @@ SELECT $1::uuid, $2::varchar, $3::numeric, $4 WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: team/del")
+	log.Println("Prepare: team/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.organizational_teams
 WHERE organizational_team_id = $1;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("team/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -195,38 +193,35 @@ runloop:
 }
 
 func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
-	var res sql.Result
-	var err error
-	result := make([]somaTeamResult, 0)
+	var (
+		res sql.Result
+		err error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "add":
-		log.Printf("R: team/add for %s", q.team.Name)
+		log.Printf("R: team/add for %s", q.Team.Name)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
-			q.team.Name,
-			q.team.Ldap,
-			q.team.System,
+			q.Team.Name,
+			q.Team.Ldap,
+			q.Team.System,
 		)
-		q.team.Id = id.String()
+		q.Team.Id = id.String()
 	case "delete":
-		log.Printf("R: team/del for %s", q.team.Id)
+		log.Printf("R: team/del for %s", q.Team.Id)
 		res, err = w.del_stmt.Exec(
-			q.team.Id,
+			q.Team.Id,
 		)
 	default:
 		log.Printf("R: unimplemented team/%s", q.action)
-		result = append(result, somaTeamResult{
-			rErr: errors.New("not implemented"),
-		})
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaTeamResult{
-			rErr: err,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
@@ -234,16 +229,13 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
-		result = append(result, somaTeamResult{
-			lErr: errors.New("No rows affected"),
-		})
+		result.Append(errors.New("No rows affected"), &somaTeamResult{})
 	case rowCnt > 1:
-		result = append(result, somaTeamResult{
-			lErr: fmt.Errorf("Too many rows affected: %d", rowCnt),
-		})
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			&somaTeamResult{})
 	default:
-		result = append(result, somaTeamResult{
-			team: q.team,
+		result.Append(nil, &somaTeamResult{
+			Team: q.Team,
 		})
 	}
 	q.reply <- result

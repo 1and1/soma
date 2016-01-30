@@ -188,7 +188,7 @@ WHERE	NOT EXISTS(
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: server/del")
+	log.Println("Prepare: server/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE inventory.servers
 SET    server_online = 'no'
@@ -196,18 +196,18 @@ WHERE  server_id = $1::uuid
 AND    server_online
 AND    server_id != '00000000-0000-0000-0000-000000000000';`)
 	if err != nil {
-		log.Fatal("server/del: ", err)
+		log.Fatal("server/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: server/prg")
+	log.Println("Prepare: server/purge")
 	w.prg_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.servers
 WHERE  server_id = $1::uuid
 AND    server_deleted
 AND    server_id != '00000000-0000-0000-0000-000000000000';`)
 	if err != nil {
-		log.Fatal("server/prg: ", err)
+		log.Fatal("server/purge: ", err)
 	}
 	defer w.prg_stmt.Close()
 
