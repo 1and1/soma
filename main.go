@@ -2,9 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 // global variables
@@ -13,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.16"
+	version := "0.0.17"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -27,7 +28,7 @@ func main() {
 
 	router := httprouter.New()
 
-	router.GET("/views", ListViews)
+	router.GET("/views", ListView)
 	router.GET("/views/:view", ShowView)
 
 	router.GET("/environments", ListEnvironments)
@@ -73,7 +74,7 @@ func main() {
 	if !SomaCfg.ReadOnly {
 		router.POST("/views", AddView)
 		router.DELETE("/views/:view", DeleteView)
-		router.PUT("/views/:view", RenameView)
+		router.PATCH("/views/:view", RenameView)
 
 		router.POST("/environments", AddEnvironment)
 		router.DELETE("/environments/:environment", DeleteEnvironment)

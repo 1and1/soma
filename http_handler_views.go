@@ -2,219 +2,136 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
+
+	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
+/* Read functions
  */
-func ListViews(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	returnChannel := make(chan []somaViewResult)
+func ListView(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
+	defer PanicCatcher(w)
 
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewReadHandler"].(somaViewReadHandler)
 	handler.input <- somaViewRequest{
 		action: "list",
 		reply:  returnChannel,
 	}
-
-	results := <-returnChannel
-	views := make([]string, len(results))
-	for pos, res := range results {
-		views[pos] = res.view
-	}
-	json, err := json.Marshal(somaproto.ProtoResultViewList{Code: 200, Status: "OK", Views: views})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	result := <-returnChannel
+	SendViewReply(&w, &result)
 }
 
-func ShowView(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	returnChannel := make(chan []somaViewResult)
+func ShowView(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
 
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewReadHandler"].(somaViewReadHandler)
 	handler.input <- somaViewRequest{
 		action: "show",
-		view:   params.ByName("view"),
 		reply:  returnChannel,
+		View: somaproto.ProtoView{
+			View: params.ByName("view"),
+		},
 	}
-
-	results := <-returnChannel
-	if len(results) == 0 {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-	if len(results) != 1 {
-		http.Error(w, "Not found", http.StatusInternalServerError)
-		return
-	}
-	result := results[0]
-	json, err := json.Marshal(somaproto.ProtoResultViewDetail{
-		Code:    200,
-		Status:  "OK",
-		Details: somaproto.ProtoViewDetails{View: result.view},
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	result := <-returnChannel
+	SendViewReply(&w, &result)
 }
 
-func AddView(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	returnChannel := make(chan []somaViewResult)
+/* Write functions
+ */
+func AddView(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
+	defer PanicCatcher(w)
 
-	// read POST body
-	decoder := json.NewDecoder(r.Body)
-	var clientRequest somaproto.ProtoRequestView
-	err := decoder.Decode(&clientRequest)
+	cReq := somaproto.ProtoRequestView{}
+	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		DispatchBadRequest(&w, err)
 		return
 	}
 
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
 	handler.input <- somaViewRequest{
 		action: "add",
-		view:   clientRequest.View,
 		reply:  returnChannel,
+		View: somaproto.ProtoView{
+			View: cReq.View.View,
+		},
 	}
-
-	results := <-returnChannel
-	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultView{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-		return
-	}
-
-	result := results[0]
-	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultView{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-		return
-	}
-
-	txt := fmt.Sprintf("Added view: %s", result.view)
-	json, _ := json.Marshal(somaproto.ProtoResultView{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
-	})
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	result := <-returnChannel
+	SendViewReply(&w, &result)
 }
 
-func DeleteView(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	returnChannel := make(chan []somaViewResult)
+func DeleteView(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
 
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
 	handler.input <- somaViewRequest{
 		action: "delete",
-		view:   params.ByName("view"),
 		reply:  returnChannel,
+		View: somaproto.ProtoView{
+			View: params.ByName("view"),
+		},
 	}
-
-	results := <-returnChannel
-	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultView{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-		return
-	}
-
-	result := results[0]
-	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultView{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-		return
-	}
-
-	txt := fmt.Sprintf("Deleted view: %s", result.view)
-	json, _ := json.Marshal(somaproto.ProtoResultView{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
-	})
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	result := <-returnChannel
+	SendViewReply(&w, &result)
 }
 
-func RenameView(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	returnChannel := make(chan []somaViewResult)
+func RenameView(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
 
-	// read POST body
-	decoder := json.NewDecoder(r.Body)
-	var clientRequest somaproto.ProtoRequestView
-	err := decoder.Decode(&clientRequest)
+	cReq := somaproto.ProtoRequestView{}
+	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotAcceptable)
+		DispatchBadRequest(&w, err)
 		return
 	}
 
+	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
 	handler.input <- somaViewRequest{
 		action: "rename",
-		view:   params.ByName("view"),
-		rename: clientRequest.View,
 		reply:  returnChannel,
+		name:   params.ByName("view"),
+		View: somaproto.ProtoView{
+			View: cReq.View.View,
+		},
+	}
+	result := <-returnChannel
+	SendViewReply(&w, &result)
+}
+
+/* Utility
+ */
+func SendViewReply(w *http.ResponseWriter, r *somaResult) {
+	result := somaproto.ProtoResultView{}
+	if r.MarkErrors(&result) {
+		goto dispatch
+	}
+	result.Text = make([]string, 0)
+	result.Views = make([]somaproto.ProtoView, 0)
+	for _, i := range (*r).Views {
+		result.Views = append(result.Views, i.View)
+		if i.ResultError != nil {
+			result.Text = append(result.Text, i.ResultError.Error())
+		}
 	}
 
-	results := <-returnChannel
-	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultView{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
+dispatch:
+	json, err := json.Marshal(result)
+	if err != nil {
+		DispatchInternalError(w, err)
 		return
 	}
-
-	result := results[0]
-	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultView{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-		return
-	}
-
-	txt := fmt.Sprintf("Renamed view: %s to %s", result.view, clientRequest.View)
-	json, _ := json.Marshal(somaproto.ProtoResultView{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
-	})
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	DispatchJsonReply(w, &json)
+	return
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

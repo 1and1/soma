@@ -3,24 +3,35 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
+
 )
 
 // Message structs
 type somaViewRequest struct {
 	action string
-	view   string
-	rename string
-	reply  chan []somaViewResult
+	name   string
+	View   somaproto.ProtoView
+	reply  chan somaResult
 }
 
 type somaViewResult struct {
-	err  error
-	view string
+	ResultError error
+	View        somaproto.ProtoView
+}
+
+func (a *somaViewResult) SomaAppendError(r somaResult, err error) {
+	if err != nil {
+		r.Views = append(r.Views, somaViewResult{ResultError: err})
+	}
+}
+
+func (a *somaViewResult) SomaAppendResult(r somaResult) {
+	r.Views = append(r.Views, *a)
 }
 
 /*  Read Access
- *
  */
 type somaViewReadHandler struct {
 	input     chan somaViewRequest
@@ -33,14 +44,25 @@ type somaViewReadHandler struct {
 func (r *somaViewReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare("SELECT view FROM soma.views;")
+	log.Println("Prepare: view/list")
+	r.list_stmt, err = r.conn.Prepare(`
+SELECT view
+FROM   soma.views;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("view/list: ", err)
 	}
-	r.show_stmt, err = r.conn.Prepare("SELECT view FROM soma.views WHERE view = $1;")
+	defer r.list_stmt.Close()
+
+	log.Println("Prepare: view/show")
+	r.show_stmt, err = r.conn.Prepare(`
+SELECT view
+FROM   soma.views
+WHERE  view = $1::varchar;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("view/show: ", err)
 	}
+	defer r.show_stmt.Close()
+
 	for {
 		select {
 		case <-r.shutdown:
@@ -54,65 +76,58 @@ func (r *somaViewReadHandler) run() {
 }
 
 func (r *somaViewReadHandler) process(q *somaViewRequest) {
-	var view string
-	var rows *sql.Rows
-	var err error
-	result := make([]somaViewResult, 0)
+	var (
+		view string
+		rows *sql.Rows
+		err  error
+	)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
+		log.Printf("R: view/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaViewResult{
-				err:  err,
-				view: q.view,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err = rows.Scan(&view)
-			if err != nil {
-				result = append(result, somaViewResult{
-					err:  err,
-					view: q.view,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaViewResult{
-				err:  nil,
-				view: view,
+			result.Append(err, &somaViewResult{
+				View: somaproto.ProtoView{
+					View: view,
+				},
 			})
 		}
 	case "show":
-		err = r.show_stmt.QueryRow(q.view).Scan(&view)
+		log.Printf("R: view/show for %s", q.View.View)
+		err = r.show_stmt.QueryRow(q.View.View).Scan(
+			&view,
+		)
 		if err != nil {
-			result = append(result, somaViewResult{
-				err:  err,
-				view: q.view,
-			})
+			if err.Error() != "sql: no rows in result set" {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
 			q.reply <- result
 			return
 		}
 
-		result = append(result, somaViewResult{
-			err:  nil,
-			view: view,
+		result.Append(err, &somaViewResult{
+			View: somaproto.ProtoView{
+				View: view,
+			},
 		})
 	default:
-		result = append(result, somaViewResult{
-			err:  errors.New("not implemented"),
-			view: "",
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
 
-/*
- * Write Access
+/* Write Access
  */
 
 type somaViewWriteHandler struct {
@@ -127,39 +142,43 @@ type somaViewWriteHandler struct {
 func (w *somaViewWriteHandler) run() {
 	var err error
 
+	log.Println("Prepare: view/add")
 	w.add_stmt, err = w.conn.Prepare(`
-  INSERT INTO soma.views (view)
-  SELECT $1 WHERE NOT EXISTS (
-    SELECT view FROM soma.views WHERE view = $2
-  );
-  `)
+INSERT INTO soma.views (
+	view)
+SELECT $1::varchar WHERE NOT EXISTS (
+    SELECT view
+	FROM   soma.views
+	WHERE  view = $1::varchar);`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("view/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
+	log.Println("Prepare: view/delete")
 	w.del_stmt, err = w.conn.Prepare(`
-  DELETE FROM soma.views
-  WHERE view = $1;
-  `)
+DELETE FROM soma.views
+WHERE  view = $1::varchar;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("view/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
+	log.Println("Prepare: view/rename")
 	w.ren_stmt, err = w.conn.Prepare(`
-  UPDATE soma.views SET view = $1
-  WHERE view = $2;
-  `)
+UPDATE soma.views
+SET    view = $1::varchar
+WHERE  view = $2::varchar;`)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("view/rename: ", err)
 	}
 	defer w.ren_stmt.Close()
 
+runloop:
 	for {
 		select {
 		case <-w.shutdown:
-			break
+			break runloop
 		case req := <-w.input:
 			w.process(&req)
 		}
@@ -167,49 +186,50 @@ func (w *somaViewWriteHandler) run() {
 }
 
 func (w *somaViewWriteHandler) process(q *somaViewRequest) {
-	var res sql.Result
-	var err error
+	var (
+		res sql.Result
+		err error
+	)
+	result := somaResult{}
 
-	result := make([]somaViewResult, 0)
 	switch q.action {
 	case "add":
-		res, err = w.add_stmt.Exec(q.view, q.view)
+		log.Printf("R: view/add for %s", q.View.View)
+		res, err = w.add_stmt.Exec(
+			q.View.View,
+		)
 	case "delete":
-		res, err = w.del_stmt.Exec(q.view)
+		log.Printf("R: view/delete for %s", q.View.View)
+		res, err = w.del_stmt.Exec(
+			q.View.View,
+		)
 	case "rename":
-		res, err = w.ren_stmt.Exec(q.rename, q.view)
+		log.Printf("R: view/rename for %s", q.name)
+		res, err = w.ren_stmt.Exec(
+			q.View.View,
+			q.name,
+		)
 	default:
-		result = append(result, somaViewResult{
-			err:  errors.New("not implemented"),
-			view: "",
-		})
+		log.Printf("R: unimplemented levels/%s", q.action)
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaViewResult{
-			err:  err,
-			view: q.view,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
 
 	rowCnt, _ := res.RowsAffected()
-	if rowCnt == 0 {
-		result = append(result, somaViewResult{
-			err:  errors.New("No rows affected"),
-			view: q.view,
-		})
-	} else if rowCnt > 1 {
-		result = append(result, somaViewResult{
-			err:  errors.New("Too many rows affected"),
-			view: q.view,
-		})
-	} else {
-		result = append(result, somaViewResult{
-			err:  nil,
-			view: q.view,
+	switch {
+	case rowCnt == 0:
+		result.Append(errors.New("No rows affected"), &somaViewResult{})
+	case rowCnt > 1:
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			&somaViewResult{})
+	default:
+		result.Append(nil, &somaViewResult{
+			View: q.View,
 		})
 	}
 	q.reply <- result
