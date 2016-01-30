@@ -5,8 +5,8 @@ type ErrorMarker interface {
 }
 
 type SomaAppender interface {
-	SomaAppendResult(r somaResult)
-	SomaAppendError(r somaResult, err error)
+	SomaAppendResult(r *somaResult)
+	SomaAppendError(r *somaResult, err error)
 }
 
 type somaResult struct {
@@ -48,15 +48,15 @@ func (r *somaResult) Failure() bool {
 
 func (r *somaResult) Append(err error, res SomaAppender) {
 	if err != nil {
-		res.SomaAppendError(*r, err)
+		res.SomaAppendError(r, err)
 		return
 	}
-	res.SomaAppendResult(*r)
+	res.SomaAppendResult(r)
 }
 
 func (r *somaResult) MarkErrors(reply ErrorMarker) bool {
 	return reply.ErrorMark(r.RequestError, r.NotImplemented, r.NotFound,
-		len(r.Servers))
+		ResultLength(r, reply))
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

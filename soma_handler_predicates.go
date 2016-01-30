@@ -19,14 +19,14 @@ type somaPredicateResult struct {
 	Predicate   somaproto.ProtoPredicate
 }
 
-func (a *somaPredicateResult) SomaAppendError(r somaResult, err error) {
+func (a *somaPredicateResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Predicates = append(r.Predicates,
 			somaPredicateResult{ResultError: err})
 	}
 }
 
-func (a *somaPredicateResult) SomaAppendResult(r somaResult) {
+func (a *somaPredicateResult) SomaAppendResult(r *somaResult) {
 	r.Predicates = append(r.Predicates, *a)
 }
 

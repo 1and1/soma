@@ -21,13 +21,13 @@ type somaOncallResult struct {
 	Oncall      somaproto.ProtoOncall
 }
 
-func (a *somaOncallResult) SomaAppendError(r somaResult, err error) {
+func (a *somaOncallResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Oncall = append(r.Oncall, somaOncallResult{ResultError: err})
 	}
 }
 
-func (a *somaOncallResult) SomaAppendResult(r somaResult) {
+func (a *somaOncallResult) SomaAppendResult(r *somaResult) {
 	r.Oncall = append(r.Oncall, *a)
 }
 

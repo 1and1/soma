@@ -21,13 +21,13 @@ type somaTeamResult struct {
 	Team        somaproto.ProtoTeam
 }
 
-func (a *somaTeamResult) SomaAppendError(r somaResult, err error) {
+func (a *somaTeamResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Teams = append(r.Teams, somaTeamResult{ResultError: err})
 	}
 }
 
-func (a *somaTeamResult) SomaAppendResult(r somaResult) {
+func (a *somaTeamResult) SomaAppendResult(r *somaResult) {
 	r.Teams = append(r.Teams, *a)
 }
 

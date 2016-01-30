@@ -19,13 +19,13 @@ type somaLevelResult struct {
 	Level       somaproto.ProtoLevel
 }
 
-func (a *somaLevelResult) SomaAppendError(r somaResult, err error) {
+func (a *somaLevelResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Levels = append(r.Levels, somaLevelResult{ResultError: err})
 	}
 }
 
-func (a *somaLevelResult) SomaAppendResult(r somaResult) {
+func (a *somaLevelResult) SomaAppendResult(r *somaResult) {
 	r.Levels = append(r.Levels, *a)
 }
 

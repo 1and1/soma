@@ -19,13 +19,13 @@ type somaStatusResult struct {
 	Status      somaproto.ProtoStatus
 }
 
-func (a *somaStatusResult) SomaAppendError(r somaResult, err error) {
+func (a *somaStatusResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Status = append(r.Status, somaStatusResult{ResultError: err})
 	}
 }
 
-func (a *somaStatusResult) SomaAppendResult(r somaResult) {
+func (a *somaStatusResult) SomaAppendResult(r *somaResult) {
 	r.Status = append(r.Status, *a)
 }
 

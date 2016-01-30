@@ -20,13 +20,13 @@ type somaNodeResult struct {
 	Node        somaproto.ProtoNode
 }
 
-func (a *somaNodeResult) SomaAppendError(r somaResult, err error) {
+func (a *somaNodeResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Nodes = append(r.Nodes, somaNodeResult{ResultError: err})
 	}
 }
 
-func (a *somaNodeResult) SomaAppendResult(r somaResult) {
+func (a *somaNodeResult) SomaAppendResult(r *somaResult) {
 	r.Nodes = append(r.Nodes, *a)
 }
 

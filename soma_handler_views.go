@@ -21,13 +21,13 @@ type somaViewResult struct {
 	View        somaproto.ProtoView
 }
 
-func (a *somaViewResult) SomaAppendError(r somaResult, err error) {
+func (a *somaViewResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Views = append(r.Views, somaViewResult{ResultError: err})
 	}
 }
 
-func (a *somaViewResult) SomaAppendResult(r somaResult) {
+func (a *somaViewResult) SomaAppendResult(r *somaResult) {
 	r.Views = append(r.Views, *a)
 }
 

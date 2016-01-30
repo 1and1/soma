@@ -21,13 +21,13 @@ type somaServerResult struct {
 	Server      somaproto.ProtoServer
 }
 
-func (a *somaServerResult) SomaAppendError(r somaResult, err error) {
+func (a *somaServerResult) SomaAppendError(r *somaResult, err error) {
 	if err != nil {
 		r.Servers = append(r.Servers, somaServerResult{ResultError: err})
 	}
 }
 
-func (a *somaServerResult) SomaAppendResult(r somaResult) {
+func (a *somaServerResult) SomaAppendResult(r *somaResult) {
 	r.Servers = append(r.Servers, *a)
 }
 

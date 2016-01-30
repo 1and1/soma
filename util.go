@@ -55,6 +55,26 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	return nil
 }
 
+func ResultLength(r *somaResult, t ErrorMarker) int {
+	switch t.(type) {
+	case *somaproto.ProtoResultLevel:
+		return len(r.Levels)
+	case *somaproto.ProtoResultPredicate:
+		return len(r.Predicates)
+	case *somaproto.ProtoResultStatus:
+		return len(r.Status)
+	case *somaproto.ProtoResultOncall:
+		return len(r.Oncall)
+	case *somaproto.ProtoResultTeam:
+		return len(r.Teams)
+	case *somaproto.ProtoResultNode:
+		return len(r.Nodes)
+	case *somaproto.ProtoResultView:
+		return len(r.Views)
+	}
+	return 0
+}
+
 func DispatchBadRequest(w *http.ResponseWriter, err error) {
 	http.Error(*w, err.Error(), http.StatusBadRequest)
 }
