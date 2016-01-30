@@ -1248,7 +1248,7 @@ func registerCommands(app cli.App) *cli.App {
 		// metrics
 		{
 			Name:   "metrics",
-			Usage:  "SUCOMMANDS for metric metrics",
+			Usage:  "SUCOMMANDS for metrics",
 			Before: runtimePreCmd,
 			Subcommands: []cli.Command{
 				{
@@ -1273,6 +1273,34 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end metrics
+		// modes
+		{
+			Name:   "modes",
+			Usage:  "SUCOMMANDS for monitoring system modes",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new monitoring system mode",
+					Action: cmdModeCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a monitoring system mode",
+					Action: cmdModeDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List monitoring system modes",
+					Action: cmdModeList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a monitoring mode",
+					Action: cmdModeShow,
+				},
+			},
+		}, // end modes
 	}
 	return &app
 }
