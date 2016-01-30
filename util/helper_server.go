@@ -30,10 +30,11 @@ func (u SomaUtil) TryGetServerByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetServerIdByName(server string) string {
-	var req somaproto.ProtoRequestServer
+	req := somaproto.ProtoRequestServer{}
+	req.Filter = &somaproto.ProtoServerFilter{}
 	req.Filter.Name = server
 
-	resp := u.GetRequestWithBody(req, "/server/")
+	resp := u.PostRequestWithBody(req, "/filter/servers/")
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
 	if server != serverResult.Servers[0].Name {

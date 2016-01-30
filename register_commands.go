@@ -265,6 +265,11 @@ func registerCommands(app cli.App) *cli.App {
 					Usage:  "Request a data sync for a server",
 					Action: cmdServerSyncRequest,
 				},
+				{
+					Name:   "null",
+					Usage:  "Bootstrap the null server",
+					Action: cmdServerNull,
+				},
 			},
 		}, // end servers
 		// permissions

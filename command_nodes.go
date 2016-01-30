@@ -9,10 +9,10 @@ import (
 
 func cmdNodeAdd(c *cli.Context) {
 	keySlice := []string{"assetid", "name", "team", "server", "online"}
-	reqSlice := []string{"assetid", "name", "team", "server"}
+	reqSlice := []string{"assetid", "name", "team"}
 
 	switch utl.GetCliArgumentCount(c) {
-	case 8, 10:
+	case 6, 8, 10:
 		break
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
@@ -30,12 +30,15 @@ func cmdNodeAdd(c *cli.Context) {
 	} else {
 		req.Node.IsOnline = true
 	}
+	if utl.SliceContainsString("server", optional) {
+		req.Node.Server = utl.TryGetServerByUUIDOrName(options["server"])
+	}
 	req.Node.AssetId, _ = strconv.ParseUint(options["assetid"], 10, 64)
 	req.Node.Name = options["name"]
-	req.Node.Team = options["team"]
-	req.Node.Server = options["server"]
+	req.Node.Team = utl.TryGetTeamByUUIDOrName(options["team"])
 
-	_ = utl.PostRequestWithBody(req, "/nodes/")
+	resp := utl.PostRequestWithBody(req, "/nodes/")
+	fmt.Println(resp)
 }
 
 func cmdNodeDel(c *cli.Context) {

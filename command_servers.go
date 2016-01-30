@@ -10,7 +10,7 @@ import (
 
 func cmdServerCreate(c *cli.Context) {
 	url := getApiUrl()
-	url.Path = "/servers"
+	url.Path = "/servers/"
 
 	// required gymnastics to get a []string
 	a := c.Args()
@@ -19,7 +19,8 @@ func cmdServerCreate(c *cli.Context) {
 	tail := a.Tail()
 	args = append(args, tail...)
 
-	var req somaproto.ProtoRequestServer
+	req := somaproto.ProtoRequestServer{}
+	req.Server = &somaproto.ProtoServer{}
 	var err error
 
 	// golang on its own can't iterate over a slice two items at a time
@@ -104,6 +105,7 @@ func cmdServerCreate(c *cli.Context) {
 	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
 	_ = utl.DecodeProtoResultServerFromResponse(resp)
+	fmt.Println(resp)
 }
 
 func cmdServerMarkAsDeleted(c *cli.Context) {
@@ -610,6 +612,21 @@ func cmdServerSyncRequest(c *cli.Context) {
 		job := ProtoResultJob.JobId
 		jobDbAddOutstandingJob(job)
 	*/
+}
+
+func cmdServerNull(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 2)
+	key := []string{"datacenter"}
+
+	opts := utl.ParseVariadicArguments(key, key, key, c.Args())
+
+	req := somaproto.ProtoRequestServer{}
+	req.Server = &somaproto.ProtoServer{}
+	req.Server.Id = "00000000-0000-0000-0000-000000000000"
+	req.Server.Datacenter = opts["datacenter"][0]
+
+	resp := utl.PutRequestWithBody(req, "/servers/null")
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
