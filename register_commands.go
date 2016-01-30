@@ -1245,6 +1245,34 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end providers
+		// metrics
+		{
+			Name:   "metrics",
+			Usage:  "SUCOMMANDS for metric metrics",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new metric",
+					Action: cmdMetricCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a metric",
+					Action: cmdMetricDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List metrics",
+					Action: cmdMetricList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a metric",
+					Action: cmdMetricShow,
+				},
+			},
+		}, // end metrics
 	}
 	return &app
 }
