@@ -39,7 +39,7 @@ func (p *ProtoResultProvider) ErrorMark(err error, imp bool, found bool,
 	if p.markFound(found, length) {
 		return true
 	}
-	return false
+	return p.markOk()
 }
 
 func (p *ProtoResultProvider) markError(err error) bool {
@@ -67,6 +67,12 @@ func (p *ProtoResultProvider) markFound(f bool, i int) bool {
 		p.Status = "NOT FOUND"
 		return true
 	}
+	return false
+}
+
+func (p *ProtoResultProvider) markOk() bool {
+	p.Code = 200
+	p.Status = "OK"
 	return false
 }
 
