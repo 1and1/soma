@@ -23,6 +23,7 @@ type somaResult struct {
 	Views          []somaViewResult
 	Units          []somaUnitResult
 	Providers      []somaProviderResult
+	Metrics        []somaMetricResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {
