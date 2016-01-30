@@ -1189,6 +1189,34 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end status
+		// units
+		{
+			Name:   "units",
+			Usage:  "SUCOMMANDS for metric units",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new metric unit",
+					Action: cmdUnitCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a metric unit",
+					Action: cmdUnitDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List metric units",
+					Action: cmdUnitList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a metric unit",
+					Action: cmdUnitShow,
+				},
+			},
+		}, // end units
 	}
 	return &app
 }
