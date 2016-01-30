@@ -2,142 +2,60 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
-	"log"
-	"net/url"
 )
 
 func cmdViewsAdd(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/views"
-
-	a := c.Args()
-	view := a.First()
-	if view == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: add view [%s]", view)
+	utl.ValidateCliArgumentCount(c, 1)
 
 	var req somaproto.ProtoRequestView
-	req.View = view
+	req.View.View = c.Args().First()
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.PostRequestWithBody(req, "/views/")
+	fmt.Println(resp)
 }
 
 func cmdViewsRemove(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	view := a.First()
-	if view == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: remove view [%s]", view)
-	url.Path = fmt.Sprintf("/views/%s", view)
+	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdViewsRename(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 3)
+	key := []string{"to"}
 
-	a := c.Args()
-	// we expected exactly 3 arguments
-	if len(a) != 3 {
-		log.Fatal("Syntax error")
-	}
-	// second arg must be `to`
-	if a.Get(1) != "to" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: rename view [%s] to [%s]", a.Get(0), a.Get(2))
+	opts := utl.ParseVariadicArguments(
+		key,
+		key,
+		key,
+		c.Args().Tail())
 
 	var req somaproto.ProtoRequestView
-	req.View = a.Get(2)
-	url.Path = fmt.Sprintf("/views/%s", a.Get(0))
+	req.View = somaproto.ProtoView{}
+	req.View.View = opts["to"][0]
+	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Put(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdViewsList(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/views"
-
-	a := c.Args()
-	if len(a) != 0 {
-		log.Fatal("Syntax error")
-	}
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.GetRequest("/views/")
+	fmt.Println(resp)
 }
 
 func cmdViewsShow(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if len(a) != 1 {
-		log.Fatal("Syntax error")
-	}
-	view := a.First()
-	if view == "" {
-		log.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/views/%s", view)
+	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
