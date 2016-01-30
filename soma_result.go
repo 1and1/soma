@@ -21,6 +21,7 @@ type somaResult struct {
 	Teams          []somaTeamResult
 	Oncall         []somaOncallResult
 	Views          []somaViewResult
+	Units          []somaUnitResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {
