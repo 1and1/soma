@@ -287,7 +287,7 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 	switch {
 	case rowCnt == 0:
 		result.Append(errors.New("No rows affected"), &somaServerResult{})
-	case rowCnt >= 1:
+	case rowCnt > 1:
 		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
 			&somaServerResult{})
 	default:

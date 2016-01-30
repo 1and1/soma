@@ -80,7 +80,6 @@ func AddServer(w http.ResponseWriter, r *http.Request,
 		action: "add",
 		reply:  returnChannel,
 		Server: somaproto.ProtoServer{
-			Id:         cReq.Server.Id,
 			AssetId:    cReq.Server.AssetId,
 			Datacenter: cReq.Server.Datacenter,
 			Location:   cReq.Server.Location,
@@ -122,7 +121,11 @@ func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	cReq := somaproto.ProtoRequestServer{}
-	cReq.Server = &somaproto.ProtoServer{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
 
 	if cReq.Server.Id != "00000000-0000-0000-0000-000000000000" ||
 		params.ByName("server") != "null" {

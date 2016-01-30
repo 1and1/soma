@@ -229,6 +229,9 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	case "add":
 		log.Printf("R: node/add for %s", q.Node.Name)
 		id := uuid.NewV4()
+		if q.Node.Server == "" {
+			q.Node.Server = "00000000-0000-0000-0000-000000000000"
+		}
 		res, err = w.add_stmt.Exec(
 			id.String(),
 			q.Node.AssetId,
