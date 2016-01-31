@@ -26,6 +26,7 @@ type somaResult struct {
 	Metrics        []somaMetricResult
 	Modes          []somaModeResult
 	Users          []somaUserResult
+	Systems        []somaMonitoringResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

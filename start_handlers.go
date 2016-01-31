@@ -18,6 +18,7 @@ func startHandlers() {
 	spawnMetricReadHandler()
 	spawnModeReadHandler()
 	spawnUserReadHandler()
+	spawnMonitoringReadHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnViewWriteHandler()
@@ -37,6 +38,7 @@ func startHandlers() {
 		spawnMetricWriteHandler()
 		spawnModeWriteHandler()
 		spawnUserWriteHandler()
+		spawnMonitoringWriteHandler()
 	}
 }
 
@@ -344,6 +346,24 @@ func spawnUserWriteHandler() {
 	userWriteHandler.conn = conn
 	handlerMap["userWriteHandler"] = userWriteHandler
 	go userWriteHandler.run()
+}
+
+func spawnMonitoringReadHandler() {
+	var monitoringReadHandler somaMonitoringReadHandler
+	monitoringReadHandler.input = make(chan somaMonitoringRequest, 64)
+	monitoringReadHandler.shutdown = make(chan bool)
+	monitoringReadHandler.conn = conn
+	handlerMap["monitoringReadHandler"] = monitoringReadHandler
+	go monitoringReadHandler.run()
+}
+
+func spawnMonitoringWriteHandler() {
+	var monitoringWriteHandler somaMonitoringWriteHandler
+	monitoringWriteHandler.input = make(chan somaMonitoringRequest, 64)
+	monitoringWriteHandler.shutdown = make(chan bool)
+	monitoringWriteHandler.conn = conn
+	handlerMap["monitoringWriteHandler"] = monitoringWriteHandler
+	go monitoringWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
