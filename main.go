@@ -13,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "somadbctl"
 	app.Usage = "SOMA Database Control Utility"
-	app.Version = "0.1.2"
+	app.Version = "0.2.0"
 
 	app = registerCommands(*app)
 	app = registerFlags(*app)

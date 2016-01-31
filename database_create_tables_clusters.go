@@ -40,41 +40,53 @@ func createTablesClusters(printOnly bool, verbose bool) {
 	idx++
 
 	queryMap["createTableClusterOncallProperty"] = `create table if not exists soma.cluster_oncall_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ),
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
-    UNIQUE ( cluster_id, view )
+    UNIQUE ( cluster_id, view ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableClusterOncallProperty"
 	idx++
 
 	queryMap["createTableClusterServiceProperties"] = `create table if not exists soma.cluster_service_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     cluster_id                  uuid            NOT NULL REFERENCES clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES views ( view ),
     service_property            varchar(64)     NOT NULL,
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
     UNIQUE( cluster_id, service_property, view ),
     FOREIGN KEY ( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ),
-    FOREIGN KEY ( cluster_id, organizational_team_id ) REFERENCES soma.clusters ( cluster_id, organizational_team_id )
+    FOREIGN KEY ( cluster_id, organizational_team_id ) REFERENCES soma.clusters ( cluster_id, organizational_team_id ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableClusterServiceProperties"
 	idx++
 
 	queryMap["createTableClusterSystemProperties"] = `create table if not exists soma.cluster_system_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ),
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
     FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ),
-    CHECK ( object_type = 'cluster' )
+    CHECK ( object_type = 'cluster' ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableClusterSystemProperties"
 	idx++
@@ -89,6 +101,8 @@ func createTablesClusters(printOnly bool, verbose bool) {
 	idx++
 
 	queryMap["createTableClusterCustomProperties"] = `create table if not exists soma.cluster_custom_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ),
@@ -102,7 +116,8 @@ func createTablesClusters(printOnly bool, verbose bool) {
     -- together these three foreign keys link cluster_id with valid custom_property_id target
     FOREIGN KEY ( bucket_id, cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id ),
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ),
-    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id )
+    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableClusterCustomProperties"
 	idx++

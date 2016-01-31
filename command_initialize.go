@@ -20,11 +20,15 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
 	createTableRepositories(printOnly, verbose)
 
+	createTablesBuckets(printOnly, verbose)
+
+	createTablesPropertyInstances(printOnly, verbose)
+
 	createTableCustomProperties(printOnly, verbose)
 
 	createTablesRepositoryProperties(printOnly, verbose)
 
-	createTablesBuckets(printOnly, verbose)
+	createTablesBucketsProperties(printOnly, verbose)
 
 	createTablesNodes(printOnly, verbose)
 

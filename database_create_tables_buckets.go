@@ -23,56 +23,82 @@ create table if not exists soma.buckets (
 	queries[idx] = "createTableBuckets"
 	idx++
 
+	performDatabaseTask(printOnly, verbose, queries, queryMap)
+}
+
+func createTablesBucketsProperties(printOnly bool, verbose bool) {
+	idx := 0
+	// map for storing the SQL statements by name
+	queryMap := make(map[string]string)
+	// slice storing the required statement order so foreign keys can
+	// resolve successfully
+	queries := make([]string, 5)
+
 	queryMap["createTableBucketOncall"] = `
   create table if not exists soma.bucket_oncall_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ),
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
-    children_only               boolean         NOT NULL DEFAULT 'no'
+    children_only               boolean         NOT NULL DEFAULT 'no',
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableBucketOncall"
 	idx++
 
 	queryMap["createTableBucketService"] = `
   create table if not exists soma.bucket_service_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     bucket_id                   uuid            NOT NULL REFERENCES buckets ( bucket_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES views ( view ),
     service_property            varchar(64)     NOT NULL,
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
-    FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property )
+    FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableBucketService"
 	idx++
 
 	queryMap["createTableBucketSystem"] = `
   create table if not exists soma.bucket_system_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ),
     object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
     FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ),
-    CHECK( object_type = 'bucket' )
+    CHECK( object_type = 'bucket' ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableBucketSystem"
 	idx++
 
 	queryMap["createTableBucketCustom"] = `
   create table if not exists soma.bucket_custom_properties (
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	source_instance_id          uuid            NOT NULL,
     bucket_id                   uuid            NOT NULL,
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
     custom_property_id          uuid            NOT NULL,
-    repository_id               uuid            NOT NULL,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ),
-    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id )
+    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id ),
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
   );`
 	queries[idx] = "createTableBucketCustom"
 	idx++
