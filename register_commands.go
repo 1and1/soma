@@ -1332,7 +1332,35 @@ func registerCommands(app cli.App) *cli.App {
 					Action: cmdMonitoringShow,
 				},
 			},
-		}, // end modes
+		}, // end monitoring
+		// capability
+		{
+			Name:   "capabilities",
+			Usage:  "SUCOMMANDS for monitoring capability declarations",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "declare",
+					Usage:  "Declare a new monitoring system capability",
+					Action: cmdCapabilityDeclare,
+				},
+				{
+					Name:   "revoke",
+					Usage:  "Revoke a monitoring system capability",
+					Action: cmdCapabilityRevoke,
+				},
+				{
+					Name:   "list",
+					Usage:  "List monitoring system capabilities",
+					Action: cmdCapabilityList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a monitoring system capability",
+					Action: cmdCapabilityShow,
+				},
+			},
+		}, // end capability
 	}
 	return &app
 }
