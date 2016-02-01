@@ -29,6 +29,7 @@ type somaResult struct {
 	Systems        []somaMonitoringResult
 	Capabilities   []somaCapabilityResult
 	Properties     []somaPropertyResult
+	Attributes     []somaAttributeResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

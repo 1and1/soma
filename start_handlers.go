@@ -21,6 +21,7 @@ func startHandlers() {
 	spawnMonitoringReadHandler()
 	spawnCapabilityReadHandler()
 	spawnPropertyReadHandler()
+	spawnAttributeReadHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnViewWriteHandler()
@@ -43,6 +44,7 @@ func startHandlers() {
 		spawnMonitoringWriteHandler()
 		spawnCapabilityWriteHandler()
 		spawnPropertyWriteHandler()
+		spawnAttributeWriteHandler()
 	}
 }
 
@@ -404,6 +406,24 @@ func spawnPropertyWriteHandler() {
 	propertyWriteHandler.conn = conn
 	handlerMap["propertyWriteHandler"] = propertyWriteHandler
 	go propertyWriteHandler.run()
+}
+
+func spawnAttributeReadHandler() {
+	var attributeReadHandler somaAttributeReadHandler
+	attributeReadHandler.input = make(chan somaAttributeRequest, 64)
+	attributeReadHandler.shutdown = make(chan bool)
+	attributeReadHandler.conn = conn
+	handlerMap["attributeReadHandler"] = attributeReadHandler
+	go attributeReadHandler.run()
+}
+
+func spawnAttributeWriteHandler() {
+	var attributeWriteHandler somaAttributeWriteHandler
+	attributeWriteHandler.input = make(chan somaAttributeRequest, 64)
+	attributeWriteHandler.shutdown = make(chan bool)
+	attributeWriteHandler.conn = conn
+	handlerMap["attributeWriteHandler"] = attributeWriteHandler
+	go attributeWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

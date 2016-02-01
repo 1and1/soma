@@ -75,6 +75,9 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	case *somaproto.ProtoRequestProperty:
 		c := s.(*somaproto.ProtoRequestProperty)
 		err = decoder.Decode(c)
+	case *somaproto.ProtoRequestAttribute:
+		c := s.(*somaproto.ProtoRequestAttribute)
+		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)
 		//return fmt.Errorf("DecodeJsonBody: Unhandled request type: %s", rt)
@@ -122,6 +125,8 @@ func ResultLength(r *somaResult, t ErrorMarker) int {
 		return len(r.Capabilities)
 	case *somaproto.ProtoResultProperty:
 		return len(r.Properties)
+	case *somaproto.ProtoResultAttribute:
+		return len(r.Attributes)
 	}
 	return 0
 }
