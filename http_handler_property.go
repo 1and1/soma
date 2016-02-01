@@ -189,7 +189,7 @@ func DeleteProperty(w http.ResponseWriter, r *http.Request,
 		SendPropertyReply(&w, &somaResult{})
 	}
 
-	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
+	handler := handlerMap["propertyWriteHandler"].(somaPropertyWriteHandler)
 	handler.input <- req
 	result := <-returnChannel
 	SendPropertyReply(&w, &result)
@@ -215,7 +215,9 @@ func SendPropertyReply(w *http.ResponseWriter, r *somaResult) {
 			result.Native = append(result.Native, i.Native)
 		case "custom":
 			result.Custom = append(result.Custom, i.Custom)
-		default:
+		case "service":
+			result.Service = append(result.Service, i.Service)
+		case "template":
 			result.Service = append(result.Service, i.Service)
 		}
 		if i.ResultError != nil {

@@ -220,6 +220,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			case "system":
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
+					prType: q.prType,
 					System: somaproto.ProtoPropertySystem{
 						Property: property,
 					},
@@ -227,6 +228,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			case "service":
 				err := rows.Scan(&property, &team)
 				result.Append(err, &somaPropertyResult{
+					prType: q.prType,
 					Service: somaproto.ProtoPropertyService{
 						Property: property,
 						Team:     team,
@@ -235,6 +237,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			case "native":
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
+					prType: q.prType,
 					Native: somaproto.ProtoPropertyNative{
 						Property: property,
 					},
@@ -242,6 +245,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			case "template":
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
+					prType: q.prType,
 					Service: somaproto.ProtoPropertyService{
 						Property: property,
 					},
@@ -249,6 +253,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			case "custom":
 				err := rows.Scan(&property, &repository, &id)
 				result.Append(err, &somaPropertyResult{
+					prType: q.prType,
 					Custom: somaproto.ProtoPropertyCustom{
 						Id:         id,
 						Repository: repository,
@@ -310,18 +315,21 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 		switch q.prType {
 		case "system":
 			result.Append(err, &somaPropertyResult{
+				prType: q.prType,
 				System: somaproto.ProtoPropertySystem{
 					Property: property,
 				},
 			})
 		case "native":
 			result.Append(err, &somaPropertyResult{
+				prType: q.prType,
 				Native: somaproto.ProtoPropertyNative{
 					Property: property,
 				},
 			})
 		case "custom":
 			result.Append(err, &somaPropertyResult{
+				prType: q.prType,
 				Custom: somaproto.ProtoPropertyCustom{
 					Id:         id,
 					Repository: repository,
@@ -382,6 +390,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				}
 			}
 			result.Append(fErr, &somaPropertyResult{
+				prType:  q.prType,
 				Service: propTempl,
 			})
 		case "template":
@@ -436,6 +445,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				}
 			}
 			result.Append(fErr, &somaPropertyResult{
+				prType:  q.prType,
 				Service: propTempl,
 			})
 		}
@@ -581,7 +591,7 @@ WHERE  native_property = $1::varchar;`)
 	if err != nil {
 		log.Fatal("property/delete-native: ", err)
 	}
-	defer w.del_sys_stmt.Close()
+	defer w.del_nat_stmt.Close()
 
 	log.Println("Prepare: property/delete-custom")
 	w.del_cst_stmt, err = w.conn.Prepare(`
@@ -1046,13 +1056,13 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			rowCnt, _ = res.RowsAffected()
 		case "native":
 			log.Printf("R: property/delete-native for %s", q.Native.Property)
-			res, err = w.del_sys_stmt.Exec(
+			res, err = w.del_nat_stmt.Exec(
 				q.Native.Property,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
 			log.Printf("R: property/delete-custom for %s", q.Custom.Id)
-			res, err = w.del_sys_stmt.Exec(
+			res, err = w.del_cst_stmt.Exec(
 				q.Custom.Repository,
 				q.Custom.Id,
 			)
@@ -1131,22 +1141,27 @@ bailout:
 		switch q.prType {
 		case "system":
 			result.Append(nil, &somaPropertyResult{
+				prType: q.prType,
 				System: q.System,
 			})
 		case "native":
 			result.Append(nil, &somaPropertyResult{
+				prType: q.prType,
 				Native: q.Native,
 			})
 		case "custom":
 			result.Append(nil, &somaPropertyResult{
+				prType: q.prType,
 				Custom: q.Custom,
 			})
 		case "service":
 			result.Append(nil, &somaPropertyResult{
+				prType:  q.prType,
 				Service: q.Service,
 			})
 		case "template":
 			result.Append(nil, &somaPropertyResult{
+				prType:  q.prType,
 				Service: q.Service,
 			})
 		}
