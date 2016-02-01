@@ -146,7 +146,7 @@ func cmdPropertyTemplateCreate(c *cli.Context) {
 		"directory", "socket"}
 	unique := []string{"tls", "provider", "team", "comm", "args",
 		"uid"}
-	required := []string{"team"}
+	required := []string{}
 
 	opts := utl.ParseVariadicArguments(
 		multiple,
@@ -154,12 +154,9 @@ func cmdPropertyTemplateCreate(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
-	teamId := utl.TryGetTeamByUUIDOrName(opts["team"][0])
-
 	req := somaproto.ProtoRequestProperty{}
 	req.Service = &somaproto.ProtoPropertyService{}
 	req.Service.Property = c.Args().First()
-	req.Service.Team = teamId
 	for key, arr := range opts {
 		for _, val := range arr {
 			switch key {
