@@ -9,50 +9,50 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(s string, r string) uuid.UUID {
+func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(s string, r string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetPropertyIdByName("custom", s, r)
+		return u.GetPropertyIdByName("custom", s, r)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) TryGetServicePropertyByUUIDOrName(s string, t string) uuid.UUID {
+func (u SomaUtil) TryGetServicePropertyByUUIDOrName(s string, t string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetPropertyIdByName("service", s, t)
+		return u.GetPropertyIdByName("service", s, t)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) TryGetSystemPropertyByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetSystemPropertyByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetPropertyIdByName("system", s, "none")
+		return u.GetPropertyIdByName("system", s, "none")
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetPropertyIdByName("template", s, "none")
+		return u.GetPropertyIdByName("template", s, "none")
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) uuid.UUID {
+func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) string {
 	var (
 		req         somaproto.ProtoRequestProperty
 		ctxId       uuid.UUID
 		ctxIdString string
 		path        string
 	)
-	req.Filter.Name = prop
+	req.Filter.Property = prop
 
 	switch pType {
 	case "custom":
@@ -78,9 +78,9 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) uui
 	case propResult.Custom[0].Property:
 		return propResult.Custom[0].Id
 	case propResult.System[0].Property:
-		return propResult.System[0].Id
+		return propResult.System[0].Property
 	case propResult.Service[0].Property:
-		return propResult.Service[0].Id
+		return propResult.Service[0].Property
 	default:
 		u.Abort("Received result set for incorrect property")
 	}

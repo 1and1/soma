@@ -713,6 +713,11 @@ func registerCommands(app cli.App) *cli.App {
 							Action: cmdPropertySystemCreate,
 						},
 						{
+							Name:   "native",
+							Usage:  "Create a new global native property",
+							Action: cmdPropertyNativeCreate,
+						},
+						{
 							Name:   "custom",
 							Usage:  "Create a new per-repo custom property",
 							Action: cmdPropertyCustomCreate,
@@ -737,6 +742,11 @@ func registerCommands(app cli.App) *cli.App {
 							Name:   "system",
 							Usage:  "Delete a system property",
 							Action: cmdPropertySystemDelete,
+						},
+						{
+							Name:   "native",
+							Usage:  "Delete a native property",
+							Action: cmdPropertyNativeDelete,
 						},
 						{
 							Name:   "custom",
@@ -796,7 +806,6 @@ func registerCommands(app cli.App) *cli.App {
 					},
 				}, // end property rename
 				*/
-				/* XXX NOT IMPLEMENTED YET
 				{
 					Name:  "show",
 					Usage: "SUBCOMMANDS for property show",
@@ -817,14 +826,17 @@ func registerCommands(app cli.App) *cli.App {
 							Action: cmdPropertySystemShow,
 						},
 						{
+							Name:   "native",
+							Usage:  "Show a native property",
+							Action: cmdPropertyNativeList,
+						},
+						{
 							Name:   "template",
 							Usage:  "Show a service property template",
 							Action: cmdPropertyTemplateShow,
 						},
 					},
 				}, // end property show
-				*/
-				/* XXX NOT IMPLEMENTED YET
 				{
 					Name:  "list",
 					Usage: "SUBCOMMANDS for property list",
@@ -845,13 +857,17 @@ func registerCommands(app cli.App) *cli.App {
 							Action: cmdPropertySystemList,
 						},
 						{
+							Name:   "native",
+							Usage:  "List native properties",
+							Action: cmdPropertyNativeList,
+						},
+						{
 							Name:   "template",
 							Usage:  "List service property templates",
 							Action: cmdPropertyTemplateList,
 						},
 					},
 				}, // end property list
-				*/
 			},
 		}, // end property
 		// repository
