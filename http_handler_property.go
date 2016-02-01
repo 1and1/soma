@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -19,30 +19,22 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		action: "list",
 		reply:  returnChannel,
 	}
-	// strip surrounding / and skip first path element `property`
-	el := strings.Split(strings.Trim(r.URL.Path, "/"), "/")[1:]
-	switch el[0] {
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	switch prType {
 	case "native":
-		req.prType = "native"
+		req.prType = prType
 	case "system":
-		req.prType = "system"
+		req.prType = prType
 	case "custom":
-		req.prType = "custom"
+		req.prType = prType
 		req.Custom.Repository = params.ByName("repository")
 	case "service":
-		switch el[1] {
-		case "team":
-			req.prType = "service"
-			req.Service.Team = params.ByName("team")
-		case "global":
-			req.prType = "template"
-		default:
-			SendPropertyReply(&w, &somaResult{})
-			return
-		}
+		req.prType = prType
+		req.Service.Team = params.ByName("team")
+	case "template":
+		req.prType = prType
 	default:
 		SendPropertyReply(&w, &somaResult{})
-		return
 	}
 
 	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
@@ -51,7 +43,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 	SendPropertyReply(&w, &result)
 }
 
-func ShowMetric(w http.ResponseWriter, r *http.Request,
+func ShowProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -60,34 +52,27 @@ func ShowMetric(w http.ResponseWriter, r *http.Request,
 		action: "show",
 		reply:  returnChannel,
 	}
-	el := strings.Split(strings.Trim(r.URL.Path, "/"), "/")[1:]
-	switch el[0] {
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	switch prType {
 	case "native":
-		req.prType = "native"
+		req.prType = prType
 		req.Native.Property = params.ByName("native")
 	case "system":
-		req.prType = "system"
+		req.prType = prType
 		req.System.Property = params.ByName("system")
 	case "custom":
-		req.prType = "custom"
+		req.prType = prType
 		req.Custom.Id = params.ByName("custom")
 		req.Custom.Repository = params.ByName("repository")
 	case "service":
-		switch el[1] {
-		case "team":
-			req.prType = "service"
-			req.Service.Property = params.ByName("service")
-			req.Service.Team = params.ByName("team")
-		case "global":
-			req.prType = "template"
-			req.Service.Property = params.ByName("service")
-		default:
-			SendPropertyReply(&w, &somaResult{})
-			return
-		}
+		req.prType = prType
+		req.Service.Property = params.ByName("service")
+		req.Service.Team = params.ByName("team")
+	case "template":
+		req.prType = prType
+		req.Service.Property = params.ByName("service")
 	default:
 		SendPropertyReply(&w, &somaResult{})
-		return
 	}
 
 	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
@@ -98,56 +83,119 @@ func ShowMetric(w http.ResponseWriter, r *http.Request,
 
 /* Write functions
  */
-func AddMetric(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+func AddProperty(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestMetric{}
+	cReq := somaproto.ProtoRequestProperty{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
 		return
 	}
-
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["metricWriteHandler"].(somaMetricWriteHandler)
-	handler.input <- somaMetricRequest{
+	req := somaPropertyRequest{
 		action: "add",
 		reply:  returnChannel,
-		Metric: *cReq.Metric,
 	}
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	switch prType {
+	case "native":
+		req.prType = prType
+		req.Native = *cReq.Native
+	case "system":
+		req.prType = prType
+		req.System = *cReq.System
+	case "custom":
+		if params.ByName("repository") != cReq.Custom.Repository {
+			DispatchBadRequest(&w, errors.New("Body and URL repositories do not match"))
+			return
+		}
+		req.prType = prType
+		req.Custom = *cReq.Custom
+		req.Custom.Repository = params.ByName("repository")
+	case "service":
+		if params.ByName("team") != cReq.Service.Team {
+			DispatchBadRequest(&w, errors.New("Body and URL teams do not match"))
+			return
+		}
+		req.prType = prType
+		req.Service = *cReq.Service
+		req.Service.Team = params.ByName("team")
+	case "template":
+		req.prType = prType
+		req.Service = *cReq.Service
+	default:
+		SendPropertyReply(&w, &somaResult{})
+	}
+
+	handler := handlerMap["propertyWriteHandler"].(somaPropertyWriteHandler)
+	handler.input <- req
 	result := <-returnChannel
-	SendMetricReply(&w, &result)
+	SendPropertyReply(&w, &result)
 }
 
-func DeleteMetric(w http.ResponseWriter, r *http.Request,
+func DeleteProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["metricWriteHandler"].(somaMetricWriteHandler)
-	handler.input <- somaMetricRequest{
+	req := somaPropertyRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Metric: somaproto.ProtoMetric{
-			Metric: params.ByName("metric"),
-		},
 	}
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	switch prType {
+	case "native":
+		req.prType = prType
+		req.Native.Property = params.ByName("native")
+	case "system":
+		req.prType = prType
+		req.System.Property = params.ByName("system")
+	case "custom":
+		req.prType = prType
+		req.Custom.Id = params.ByName("custom")
+		req.Custom.Repository = params.ByName("repository")
+	case "service":
+		req.prType = prType
+		req.Service.Property = params.ByName("service")
+		req.Service.Team = params.ByName("team")
+	case "template":
+		req.prType = prType
+		req.Service.Property = params.ByName("service")
+	default:
+		SendPropertyReply(&w, &somaResult{})
+	}
+
+	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
+	handler.input <- req
 	result := <-returnChannel
-	SendMetricReply(&w, &result)
+	SendPropertyReply(&w, &result)
 }
 
 /* Utility
  */
-func SendMetricReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultMetric{}
+func SendPropertyReply(w *http.ResponseWriter, r *somaResult) {
+	result := somaproto.ProtoResultProperty{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
 	result.Text = make([]string, 0)
-	result.Metrics = make([]somaproto.ProtoMetric, 0)
-	for _, i := range (*r).Metrics {
-		result.Metrics = append(result.Metrics, i.Metric)
+	result.Custom = make([]somaproto.ProtoPropertyCustom, 0)
+	result.Native = make([]somaproto.ProtoPropertyNative, 0)
+	result.Service = make([]somaproto.ProtoPropertyService, 0)
+	result.System = make([]somaproto.ProtoPropertySystem, 0)
+	for _, i := range (*r).Properties {
+		switch i.prType {
+		case "system":
+			result.System = append(result.System, i.System)
+		case "native":
+			result.Native = append(result.Native, i.Native)
+		case "custom":
+			result.Custom = append(result.Custom, i.Custom)
+		default:
+			result.Service = append(result.Service, i.Service)
+		}
 		if i.ResultError != nil {
 			result.Text = append(result.Text, i.ResultError.Error())
 		}

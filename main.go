@@ -14,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.26"
+	version := "0.0.27"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -96,14 +96,19 @@ func main() {
 	router.POST("/filter/capability/", ListCapability)
 
 	router.GET("/property/native/", ListProperty)
-	router.GET("/property/system/", ListProperty)
-	router.GET("/property/custom/:repository/", ListProperty)
-	router.GET("/property/service/global/", ListProperty)
-	router.GET("/property/service/team/:team/", ListProperty)
 	router.GET("/property/native/:native", ShowProperty)
+
+	router.GET("/property/system/", ListProperty)
 	router.GET("/property/system/:system", ShowProperty)
+
+	router.GET("/property/custom/:repository/", ListProperty)
 	router.GET("/property/custom/:repository/:custom", ShowProperty)
+	router.POST("/filter/property/custom/", ListProperty)
+
+	router.GET("/property/service/global/", ListProperty)
 	router.GET("/property/service/global/:service", ShowProperty)
+
+	router.GET("/property/service/team/:team/", ListProperty)
 	router.GET("/property/service/team/:team/:service", ShowProperty)
 
 	if !SomaCfg.ReadOnly {
@@ -173,6 +178,21 @@ func main() {
 
 		router.POST("/capability/", AddCapability)
 		router.DELETE("/capability/:capability", DeleteCapability)
+
+		router.POST("/property/native/", AddProperty)
+		router.DELETE("/property/native/:native", DeleteProperty)
+
+		router.POST("/property/system/", AddProperty)
+		router.DELETE("/property/system/:system", DeleteProperty)
+
+		router.POST("/property/custom/:repository/", AddProperty)
+		router.DELETE("/property/custom/:repository/:custom", DeleteProperty)
+
+		router.POST("/property/service/global/", AddProperty)
+		router.DELETE("/property/service/global/:service", DeleteProperty)
+
+		router.POST("/property/service/team/:team/", AddProperty)
+		router.DELETE("/property/service/team/:team/:service", DeleteProperty)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))

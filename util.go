@@ -2,11 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"reflect"
 	"runtime/debug"
+	"strings"
 
 )
 
@@ -69,6 +72,9 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	case *somaproto.ProtoRequestCapability:
 		c := s.(*somaproto.ProtoRequestCapability)
 		err = decoder.Decode(c)
+	case *somaproto.ProtoRequestProperty:
+		c := s.(*somaproto.ProtoRequestProperty)
+		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)
 		//return fmt.Errorf("DecodeJsonBody: Unhandled request type: %s", rt)
@@ -114,6 +120,8 @@ func ResultLength(r *somaResult, t ErrorMarker) int {
 		return len(r.Systems)
 	case *somaproto.ProtoResultCapability:
 		return len(r.Capabilities)
+	case *somaproto.ProtoResultProperty:
+		return len(r.Properties)
 	}
 	return 0
 }
@@ -130,6 +138,24 @@ func DispatchJsonReply(w *http.ResponseWriter, b *[]byte) {
 	(*w).Header().Set("Content-Type", "application/json")
 	(*w).WriteHeader(http.StatusOK)
 	(*w).Write(*b)
+}
+
+func GetPropertyTypeFromUrl(u *url.URL) (string, error) {
+	// strip surrounding / and skip first path element `property`
+	el := strings.Split(strings.Trim(u.Path, "/"), "/")[1:]
+	switch el[0] {
+	case "service":
+		switch el[1] {
+		case "team":
+			return "service", nil
+		case "global":
+			return "template", nil
+		default:
+			return "", errors.New("Unknown service property type")
+		}
+	default:
+		return el[0], nil
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
