@@ -828,7 +828,7 @@ func registerCommands(app cli.App) *cli.App {
 						{
 							Name:   "native",
 							Usage:  "Show a native property",
-							Action: cmdPropertyNativeList,
+							Action: cmdPropertyNativeShow,
 						},
 						{
 							Name:   "template",
