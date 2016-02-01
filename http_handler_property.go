@@ -40,6 +40,28 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
 	handler.input <- req
 	result := <-returnChannel
+
+	// declare here since goto does not jump over declarations
+	cReq := somaproto.ProtoRequestProperty{}
+	cReq.Filter = &somaproto.ProtoPropertyFilter{}
+	if result.Failure() {
+		goto skip
+	}
+
+	_ = DecodeJsonBody(r, &cReq)
+	if (cReq.Filter.Type == "custom") && (cReq.Filter.Property != "") &&
+		(cReq.Filter.Repository != "") {
+		filtered := make([]somaPropertyResult, 0)
+		for _, i := range result.Properties {
+			if (i.Custom.Property == cReq.Filter.Property) &&
+				(i.Custom.Repository == cReq.Filter.Repository) {
+				filtered = append(filtered, i)
+			}
+		}
+		result.Properties = filtered
+	}
+
+skip:
 	SendPropertyReply(&w, &result)
 }
 

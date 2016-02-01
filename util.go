@@ -141,8 +141,12 @@ func DispatchJsonReply(w *http.ResponseWriter, b *[]byte) {
 }
 
 func GetPropertyTypeFromUrl(u *url.URL) (string, error) {
-	// strip surrounding / and skip first path element `property`
+	// strip surrounding / and skip first path element `property|filter`
 	el := strings.Split(strings.Trim(u.Path, "/"), "/")[1:]
+	if el[0] == "property" {
+		// looks like the path was /filter/property/...
+		el = el[1:]
+	}
 	switch el[0] {
 	case "service":
 		switch el[1] {
