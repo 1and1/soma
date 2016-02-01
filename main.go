@@ -95,6 +95,17 @@ func main() {
 	router.GET("/capability/:capability", ShowCapability)
 	router.POST("/filter/capability/", ListCapability)
 
+	router.GET("/property/native/", ListProperty)
+	router.GET("/property/system/", ListProperty)
+	router.GET("/property/custom/:repository/", ListProperty)
+	router.GET("/property/service/global/", ListProperty)
+	router.GET("/property/service/team/:team/", ListProperty)
+	router.GET("/property/native/:native", ShowProperty)
+	router.GET("/property/system/:system", ShowProperty)
+	router.GET("/property/custom/:repository/:custom", ShowProperty)
+	router.GET("/property/service/global/:service", ShowProperty)
+	router.GET("/property/service/team/:team/:service", ShowProperty)
+
 	if !SomaCfg.ReadOnly {
 		router.POST("/views/", AddView)
 		router.DELETE("/views/:view", DeleteView)
