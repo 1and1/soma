@@ -147,6 +147,12 @@ func (tec *SomaTreeElemCluster) Receive(r ReceiveRequest) {
 }
 
 //
+// Interface: SomaTreeBucketeer
+func (tec *SomaTreeElemCluster) GetBucket() *SomaTreeElemBucket {
+	return tec.Parent.(SomaTreeBucketeer).GetBucket()
+}
+
+//
 // Interface: SomaTreeUnlinker
 func (tec *SomaTreeElemCluster) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, tec) {

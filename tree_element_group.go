@@ -156,6 +156,12 @@ loop:
 }
 
 //
+// Interface: SomaTreeBucketeer
+func (teg *SomaTreeElemGroup) GetBucket() *SomaTreeElemBucket {
+	return teg.Parent.(SomaTreeBucketeer).GetBucket()
+}
+
+//
 // Interface: SomaTreeUnlinker
 func (teg *SomaTreeElemGroup) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teg) {

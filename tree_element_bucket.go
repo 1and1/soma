@@ -135,6 +135,12 @@ loop:
 }
 
 //
+// Interface: SomaTreeBucketeer
+func (teb *SomaTreeElemBucket) GetBucket() *SomaTreeElemBucket {
+	return teb
+}
+
+//
 // Interface: SomaTreeUnlinker
 func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
