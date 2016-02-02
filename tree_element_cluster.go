@@ -148,7 +148,7 @@ func (tec *SomaTreeElemCluster) Receive(r ReceiveRequest) {
 
 //
 // Interface: SomaTreeBucketeer
-func (tec *SomaTreeElemCluster) GetBucket() *SomaTreeElemBucket {
+func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 	return tec.Parent.(SomaTreeBucketeer).GetBucket()
 }
 

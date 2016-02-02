@@ -157,7 +157,7 @@ loop:
 
 //
 // Interface: SomaTreeBucketeer
-func (teg *SomaTreeElemGroup) GetBucket() *SomaTreeElemBucket {
+func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
 	return teg.Parent.(SomaTreeBucketeer).GetBucket()
 }
 

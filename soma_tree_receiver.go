@@ -32,6 +32,17 @@ type SomaTreeBucketUnlinker interface {
 	unlinkBucket(u UnlinkRequest)
 }
 
+type SomaTreeFaultReceiver interface {
+	SomaTreeReceiver
+	SomaTreeFaultUnlinker
+	receiveFault(r ReceiveRequest)
+}
+
+type SomaTreeFaultUnlinker interface {
+	SomaTreeUnlinker
+	unlinkFault(u UnlinkRequest)
+}
+
 // implemented by: buckets, groups
 type SomaTreeGroupReceiver interface {
 	SomaTreeReceiver
@@ -79,6 +90,7 @@ type ReceiveRequest struct {
 	Group      *SomaTreeElemGroup
 	Cluster    *SomaTreeElemCluster
 	Node       *SomaTreeElemNode
+	Fault      *SomaTreeElemFault
 }
 
 type UnlinkRequest struct {

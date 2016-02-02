@@ -136,7 +136,7 @@ loop:
 
 //
 // Interface: SomaTreeBucketeer
-func (teb *SomaTreeElemBucket) GetBucket() *SomaTreeElemBucket {
+func (teb *SomaTreeElemBucket) GetBucket() SomaTreeReceiver {
 	return teb
 }
 

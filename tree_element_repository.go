@@ -110,6 +110,8 @@ func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
 		switch r.ChildType {
 		case "bucket":
 			ter.receiveBucket(r)
+		case "fault":
+			ter.receiveFault(r)
 		default:
 			panic(`SomaTreeElemRepository.Receive`)
 		}
@@ -126,6 +128,8 @@ func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
 		switch u.ChildType {
 		case "bucket":
 			ter.unlinkBucket(u)
+		case "fault":
+			ter.unlinkFault(u)
 		default:
 			panic(`SomaTreeElemRepository.Unlink`)
 		}
@@ -165,6 +169,39 @@ func (ter *SomaTreeElemRepository) unlinkBucket(u UnlinkRequest) {
 		return
 	}
 	panic(`SomaTreeElemRepository.unlinkBucket`)
+}
+
+// Interface: SomaTreeFaultReceiver
+func (ter *SomaTreeElemRepository) receiveFault(r ReceiveRequest) {
+	if receiveRequestCheck(r, ter) {
+		switch r.ChildType {
+		case "fault":
+			ter.Children[r.Fault.GetID()] = r.Fault
+			r.Fault.setParent(ter)
+		default:
+			panic(`SomaTreeElemRepository.receiveFault`)
+		}
+		return
+	}
+	panic(`SomaTreeElemRepository.receiveFault`)
+}
+
+// Interface: SomaTreeFaultUnlinker
+func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
+	if unlinkRequestCheck(u, ter) {
+		switch u.ChildType {
+		case "fault":
+			if _, ok := ter.Children[u.ChildId]; ok {
+				if u.ChildName == ter.Children[u.ChildId].GetName() {
+					delete(ter.Children, u.ChildId)
+				}
+			}
+		default:
+			panic(`SomaTreeElemRepository.unlinkFault`)
+		}
+		return
+	}
+	panic(`SomaTreeElemRepository.unlinkFault`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
