@@ -7,17 +7,28 @@ import (
 )
 
 type SomaTreeElemRepository struct {
-	Id       uuid.UUID
-	Name     string
-	Type     string
-	Team     uuid.UUID
-	Parent   SomaTreeRepositoryReceiver `json:"-"`
+	Id      uuid.UUID
+	Name    string
+	Team    uuid.UUID
+	Deleted bool
+	Active  bool
+	Type    string
+	Parent  SomaTreeRepositoryReceiver `json:"-"`
+	//Fault    SomaTreeAttacher `json:"-"`
 	Children map[string]SomaTreeRepositoryAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
 	//PropertySystem  map[string]*SomaTreePropertySystem
 	//PropertyCustom  map[string]*SomaTreePropertyCustom
 	//Checks          map[string]*SomaTreeCheck
+}
+
+type RepositorySpec struct {
+	Id      uuid.UUID
+	Name    string
+	Team    uuid.UUID
+	Deleted bool
+	Active  bool
 }
 
 func NewRepository(name string) *SomaTreeElemRepository {
