@@ -113,7 +113,11 @@ func (teb *SomaTreeElemBucket) Receive(r ReceiveRequest) {
 		}
 		return
 	}
+loop:
 	for _, child := range teb.Children {
+		if child.(SomaTreeBuilder).GetType() == "node" {
+			continue loop
+		}
 		child.(SomaTreeReceiver).Receive(r)
 	}
 }
@@ -134,7 +138,11 @@ func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
 		}
 		return
 	}
+loop:
 	for _, child := range teb.Children {
+		if child.(SomaTreeBuilder).GetType() == "node" {
+			continue loop
+		}
 		child.(SomaTreeUnlinker).Unlink(u)
 	}
 }

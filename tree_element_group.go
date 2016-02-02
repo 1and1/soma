@@ -134,7 +134,11 @@ func (teg *SomaTreeElemGroup) Receive(r ReceiveRequest) {
 		}
 		return
 	}
+loop:
 	for _, child := range teg.Children {
+		if child.(SomaTreeBuilder).GetType() == "node" {
+			continue loop
+		}
 		child.(SomaTreeReceiver).Receive(r)
 	}
 }
@@ -155,7 +159,11 @@ func (teg *SomaTreeElemGroup) Unlink(u UnlinkRequest) {
 		}
 		return
 	}
+loop:
 	for _, child := range teg.Children {
+		if child.(SomaTreeBuilder).GetType() == "node" {
+			continue loop
+		}
 		child.(SomaTreeUnlinker).Unlink(u)
 	}
 }
