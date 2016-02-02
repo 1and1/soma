@@ -3,39 +3,42 @@ package somatree
 type SomaTreeAttacher interface {
 	Attach(a AttachRequest)
 	ReAttach(a AttachRequest)
-	SetParent(p SomaTreeReceiver)
+	setParent(p SomaTreeReceiver)
 }
 
 // implemented by: repository
 type SomaTreeRootAttacher interface {
 	SomaTreeAttacher
 	GetName() string
-	AttachToRoot(a AttachRequest)
+	attachToRoot(a AttachRequest)
 }
 
 // implemented by: buckets
 type SomaTreeRepositoryAttacher interface {
 	SomaTreeAttacher
 	GetName() string
-	AttachToRepository(a AttachRequest)
+	attachToRepository(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
 type SomaTreeBucketAttacher interface {
 	SomaTreeAttacher
-	AttachToBucket(a AttachRequest)
+	GetName() string
+	attachToBucket(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
 type SomaTreeGroupAttacher interface {
 	SomaTreeAttacher
-	AttachToGroup(a AttachRequest)
+	GetName() string
+	attachToGroup(a AttachRequest)
 }
 
 // implemented by: nodes
 type SomaTreeClusterAttacher interface {
 	SomaTreeAttacher
-	AttachToCluster(a AttachRequest)
+	GetName() string
+	attachToCluster(a AttachRequest)
 }
 
 type AttachRequest struct {

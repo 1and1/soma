@@ -5,6 +5,7 @@ import "github.com/satori/go.uuid"
 type SomaTree struct {
 	Id    uuid.UUID
 	Name  string
+	Type  string
 	Child *SomaTreeElemRepository
 }
 
@@ -24,11 +25,22 @@ func New(name string) *SomaTree {
 	st := new(SomaTree)
 	st.Id = uuid.NewV4()
 	st.Name = name
+	st.Type = "root"
 	return st
 }
 
+//
+// Interface: SomaTreeBuilder
 func (st *SomaTree) GetID() string {
 	return st.Id.String()
+}
+
+func (st *SomaTree) GetName() string {
+	return st.Name
+}
+
+func (st *SomaTree) GetType() string {
+	return st.Type
 }
 
 // Interface: SomaTreeReceiver
@@ -37,7 +49,7 @@ func (st *SomaTree) Receive(r ReceiveRequest) {
 	case r.ParentType == "root" &&
 		r.ParentId == st.Id.String() &&
 		r.ChildType == "repository":
-		st.ReceiveRepository(r)
+		st.receiveRepository(r)
 	default:
 		if st.Child != nil {
 			st.Child.Receive(r)
@@ -55,7 +67,7 @@ func (st *SomaTree) Unlink(u UnlinkRequest) {
 			u.ParentName == st.Name) &&
 		u.ChildType == "repository" &&
 		u.ChildName == st.Child.GetName():
-		st.UnlinkRepository(u)
+		st.unlinkRepository(u)
 	default:
 		if st.Child != nil {
 			st.Child.Unlink(u)
@@ -66,20 +78,20 @@ func (st *SomaTree) Unlink(u UnlinkRequest) {
 }
 
 // Interface: SomaTreeRepositoryReceiver
-func (st *SomaTree) ReceiveRepository(r ReceiveRequest) {
+func (st *SomaTree) receiveRepository(r ReceiveRequest) {
 	switch {
 	case r.ParentType == "root" &&
 		r.ParentId == st.Id.String() &&
 		r.ChildType == "repository":
 		st.Child = r.Repository
-		r.Repository.SetParent(st)
+		r.Repository.setParent(st)
 	default:
 		panic("not allowed")
 	}
 }
 
 // Interface: SomaTreeRepositoryUnlinker
-func (st *SomaTree) UnlinkRepository(u UnlinkRequest) {
+func (st *SomaTree) unlinkRepository(u UnlinkRequest) {
 	switch {
 	case u.ParentType == "root" &&
 		u.ParentId == st.Id.String() &&

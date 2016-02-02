@@ -1,7 +1,7 @@
 package somatree
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/satori/go.uuid"
 )
@@ -31,6 +31,8 @@ type RepositorySpec struct {
 	Active  bool
 }
 
+//
+// NEW
 func NewRepository(name string) *SomaTreeElemRepository {
 	ter := new(SomaTreeElemRepository)
 	ter.Id = uuid.NewV4()
@@ -46,6 +48,8 @@ func NewRepository(name string) *SomaTreeElemRepository {
 	return ter
 }
 
+//
+// Interface: SomaTreeBuilder
 func (ter *SomaTreeElemRepository) GetID() string {
 	return ter.Id.String()
 }
@@ -54,26 +58,31 @@ func (ter *SomaTreeElemRepository) GetName() string {
 	return ter.Name
 }
 
+func (ter *SomaTreeElemRepository) GetType() string {
+	return ter.Type
+}
+
+//
 // Interface: SomaTreeAttacher
 func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
 	switch {
 	case a.ParentType == "root" &&
 		a.ChildType == "repository" &&
 		a.ChildName == ter.Name:
-		ter.AttachToRoot(a)
+		ter.attachToRoot(a)
 	}
 }
 
 func (ter *SomaTreeElemRepository) ReAttach(a AttachRequest) {
-	fmt.Println("bl")
+	log.Fatal("Not implemented")
 }
 
-func (ter *SomaTreeElemRepository) SetParent(p SomaTreeRepositoryReceiver) {
+func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {
 	ter.Parent = p
 }
 
 // Interface: SomaTreeRootAttacher
-func (ter *SomaTreeElemRepository) AttachToRoot(a AttachRequest) {
+func (ter *SomaTreeElemRepository) attachToRoot(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
@@ -85,62 +94,65 @@ func (ter *SomaTreeElemRepository) AttachToRoot(a AttachRequest) {
 
 // Interface: SomaTreeReceiver
 func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
-	switch {
-	case r.ParentType == ter.Type &&
-		(r.ParentId == ter.Id.String() ||
-			r.ParentName == ter.Name) &&
-		r.ChildType == "bucket":
-		ter.ReceiveBucket(r)
-	default:
-		for _, child := range ter.Children {
-			child.(SomaTreeReceiver).Receive(r)
+	if receiveRequestCheck(r, ter) {
+		switch r.ChildType {
+		case "bucket":
+			ter.receiveBucket(r)
+		default:
+			panic(`SomaTreeElemRepository.Receive`)
 		}
+		return
+	}
+	for _, child := range ter.Children {
+		child.(SomaTreeReceiver).Receive(r)
 	}
 }
 
 // Interface: SomaTreeUnlinker
 func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
-	switch {
-	case u.ParentType == ter.Type &&
-		(u.ParentId == ter.Id.String() ||
-			u.ParentName == ter.Name) &&
-		u.ChildType == "bucket":
-		ter.UnlinkBucket(u)
-	default:
-		for _, child := range ter.Children {
-			child.(SomaTreeUnlinker).Unlink(u)
+	if unlinkRequestCheck(u, ter) {
+		switch u.ChildType {
+		case "bucket":
+			ter.unlinkBucket(u)
+		default:
+			panic(`SomaTreeElemRepository.Unlink`)
 		}
+		return
+	}
+	for _, child := range ter.Children {
+		child.(SomaTreeUnlinker).Unlink(u)
 	}
 }
 
 // Interface: SomaTreeBucketReceiver
-func (ter *SomaTreeElemRepository) ReceiveBucket(r ReceiveRequest) {
-	switch {
-	case r.ParentType == ter.Type &&
-		(r.ParentId == ter.Id.String() ||
-			r.ParentName == ter.Name) &&
-		r.ChildType == "bucket":
-		ter.Children[r.Bucket.GetID()] = r.Bucket
-		r.Bucket.SetParent(ter)
-	default:
-		panic("not allowed")
+func (ter *SomaTreeElemRepository) receiveBucket(r ReceiveRequest) {
+	if receiveRequestCheck(r, ter) {
+		switch r.ChildType {
+		case "bucket":
+			ter.Children[r.Bucket.GetID()] = r.Bucket
+			r.Bucket.setParent(ter)
+		default:
+			panic(`SomaTreeElemRepository.receiveBucket`)
+		}
 	}
 }
 
 // Interface: SomaTreeBucketUnlinker
-func (ter *SomaTreeElemRepository) UnlinkBucket(u UnlinkRequest) {
-	switch {
-	case u.ParentType == ter.Type &&
-		(u.ParentId == ter.Id.String() ||
-			u.ParentName == ter.Name):
-		if _, ok := ter.Children[u.ChildId]; ok {
-			if u.ChildName == ter.Children[u.ChildId].GetName() {
-				delete(ter.Children, u.ChildId)
+func (ter *SomaTreeElemRepository) unlinkBucket(u UnlinkRequest) {
+	if unlinkRequestCheck(u, ter) {
+		switch u.ChildType {
+		case "bucket":
+			if _, ok := ter.Children[u.ChildId]; ok {
+				if u.ChildName == ter.Children[u.ChildId].GetName() {
+					delete(ter.Children, u.ChildId)
+				}
 			}
+		default:
+			panic(`SomaTreeElemRepository.unlinkBucket`)
 		}
-	default:
-		panic("not allowed")
+		return
 	}
+	panic(`SomaTreeElemRepository.unlinkBucket`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

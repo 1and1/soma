@@ -12,50 +12,63 @@ type SomaTreeUnlinker interface {
 type SomaTreeRepositoryReceiver interface {
 	SomaTreeReceiver
 	SomaTreeRepositoryUnlinker
-	ReceiveRepository(r ReceiveRequest)
+	receiveRepository(r ReceiveRequest)
 }
 
 type SomaTreeRepositoryUnlinker interface {
 	SomaTreeUnlinker
-	UnlinkRepository(u UnlinkRequest)
+	unlinkRepository(u UnlinkRequest)
 }
 
 // implemented by: repositories
 type SomaTreeBucketReceiver interface {
 	SomaTreeReceiver
 	SomaTreeBucketUnlinker
-	ReceiveBucket(r ReceiveRequest)
+	receiveBucket(r ReceiveRequest)
 }
 
 type SomaTreeBucketUnlinker interface {
 	SomaTreeUnlinker
-	UnlinkBucket(u UnlinkRequest)
+	unlinkBucket(u UnlinkRequest)
 }
 
 // implemented by: buckets, groups
 type SomaTreeGroupReceiver interface {
 	SomaTreeReceiver
+	SomaTreeGroupUnlinker
+	receiveGroup(r ReceiveRequest)
+}
+
+type SomaTreeGroupUnlinker interface {
 	SomaTreeUnlinker
-	ReceiveGroup(r ReceiveRequest)
-	UnlinkGroup(u UnlinkRequest)
+	unlinkGroup(u UnlinkRequest)
 }
 
 // implemented by: buckets, groups
 type SomaTreeClusterReceiver interface {
 	SomaTreeReceiver
+	SomaTreeClusterUnlinker
+	receiveCluster(r ReceiveRequest)
+}
+
+type SomaTreeClusterUnlinker interface {
 	SomaTreeUnlinker
-	ReceiveCluster(r ReceiveRequest)
-	UnlinkCluster(u UnlinkRequest)
+	unlinkCluster(u UnlinkRequest)
 }
 
 // implemented by: buckets, groups, clusters
 type SomaTreeNodeReceiver interface {
 	SomaTreeReceiver
-	SomaTreeUnlinker
-	ReceiveNode(r ReceiveRequest)
-	UnlinkNode(u UnlinkRequest)
+	SomaTreeNodeUnlinker
+	receiveNode(r ReceiveRequest)
 }
 
+type SomaTreeNodeUnlinker interface {
+	SomaTreeUnlinker
+	unlinkNode(u UnlinkRequest)
+}
+
+//
 type ReceiveRequest struct {
 	ParentType string
 	ParentId   string

@@ -2,6 +2,8 @@ package somatree
 
 import (
 	"fmt"
+	"log"
+	"reflect"
 
 	"github.com/satori/go.uuid"
 )
@@ -10,8 +12,9 @@ type SomaTreeElemBucket struct {
 	Id          uuid.UUID
 	Name        string
 	Environment string
+	Type        string
 	Parent      SomaTreeBucketReceiver `json:"-"`
-	Children    map[string]*SomaTreeBucketAttacher
+	Children    map[string]SomaTreeBucketAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
 	//PropertySystem  map[string]*SomaTreePropertySystem
@@ -19,6 +22,8 @@ type SomaTreeElemBucket struct {
 	//Checks          map[string]*SomaTreeCheck
 }
 
+//
+// NEW
 func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	teb := new(SomaTreeElemBucket)
 	if id == "" {
@@ -28,7 +33,8 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	}
 	teb.Name = name
 	teb.Environment = environment
-	teb.Children = make(map[string]*SomaTreeBucketAttacher)
+	teb.Type = "bucket"
+	teb.Children = make(map[string]SomaTreeBucketAttacher)
 	//teb.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//teb.PropertyService = make(map[string]*SomaTreePropertyService)
 	//teb.PropertySystem = make(map[string]*SomaTreePropertySystem)
@@ -38,6 +44,8 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	return teb
 }
 
+//
+// Interface: SomaTreeBuilder
 func (teb *SomaTreeElemBucket) GetID() string {
 	return teb.Id.String()
 }
@@ -46,42 +54,193 @@ func (teb *SomaTreeElemBucket) GetName() string {
 	return teb.Name
 }
 
-func (teb *SomaTreeElemBucket) SetParent(p SomaTreeReceiver) {
-	switch p.(type) {
-	case SomaTreeBucketReceiver:
-		teb.SetBucketParent(p.(SomaTreeBucketReceiver))
-	default:
-		panic("not allowed")
-	}
+func (teb *SomaTreeElemBucket) GetType() string {
+	return teb.Type
 }
 
-func (teb *SomaTreeElemBucket) SetBucketParent(p SomaTreeBucketReceiver) {
-	teb.Parent = p
-}
-
+//
 // Interface: SomaTreeAttacher
 func (teb *SomaTreeElemBucket) Attach(a AttachRequest) {
 	switch {
-	case a.ParentType == "repository" &&
-		a.ChildType == "bucket" &&
-		a.ChildName == teb.Name:
-		teb.AttachToRepository(a)
+	case a.ParentType == "repository":
+		teb.attachToRepository(a)
 	}
 }
 
 func (teb *SomaTreeElemBucket) ReAttach(a AttachRequest) {
-	fmt.Println("bl")
+	log.Fatal("Not implemented")
 }
 
+func (teb *SomaTreeElemBucket) setParent(p SomaTreeReceiver) {
+	switch p.(type) {
+	case SomaTreeBucketReceiver:
+		teb.setBucketParent(p.(SomaTreeBucketReceiver))
+	default:
+		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
+		panic(`SomaTreeElemBucket.setParent`)
+	}
+}
+
+func (teb *SomaTreeElemBucket) setBucketParent(p SomaTreeBucketReceiver) {
+	teb.Parent = p
+}
+
+//
 // Interface: SomaTreeRepositoryAttacher
-func (teb *SomaTreeElemBucket) AttachToRepository(a AttachRequest) {
+func (teb *SomaTreeElemBucket) attachToRepository(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
 		ParentName: a.ParentName,
-		ChildType:  "bucket",
+		ChildType:  teb.Type,
 		Bucket:     teb,
 	})
+}
+
+//
+// Interface: SomaTreeReceiver
+func (teb *SomaTreeElemBucket) Receive(r ReceiveRequest) {
+	if receiveRequestCheck(r, teb) {
+		switch r.ChildType {
+		case "group":
+			teb.receiveGroup(r)
+		case "cluster":
+			teb.receiveCluster(r)
+		case "node":
+			teb.receiveNode(r)
+		default:
+			panic(`SomaTreeElemBucket.Receive`)
+		}
+		return
+	}
+	for _, child := range teb.Children {
+		child.(SomaTreeReceiver).Receive(r)
+	}
+}
+
+//
+// Interface: SomaTreeUnlinker
+func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
+	if unlinkRequestCheck(u, teb) {
+		switch u.ChildType {
+		case "group":
+			teb.unlinkGroup(u)
+		case "cluster":
+			teb.unlinkCluster(u)
+		case "node":
+			teb.unlinkNode(u)
+		default:
+			panic(`SomaTreeElemBucket.Unlink`)
+		}
+		return
+	}
+	for _, child := range teb.Children {
+		child.(SomaTreeUnlinker).Unlink(u)
+	}
+}
+
+//
+// Interface: SomaTreeGroupReceiver
+func (teb *SomaTreeElemBucket) receiveGroup(r ReceiveRequest) {
+	if receiveRequestCheck(r, teb) {
+		switch r.ChildType {
+		case "group":
+			teb.Children[r.Group.GetID()] = r.Group
+			r.Group.setParent(teb)
+		default:
+			panic(`SomaTreeElemBucket.receiveGroup`)
+		}
+		return
+	}
+	panic(`SomaTreeElemBucket.receiveGroup`)
+}
+
+//
+// Interface: SomaTreeGroupUnlinker
+func (teb *SomaTreeElemBucket) unlinkGroup(u UnlinkRequest) {
+	if unlinkRequestCheck(u, teb) {
+		switch u.ChildType {
+		case "group":
+			if _, ok := teb.Children[u.ChildId]; ok {
+				if u.ChildName == teb.Children[u.ChildId].GetName() {
+					delete(teb.Children, u.ChildId)
+				}
+			}
+		default:
+			panic(`SomaTreeElemBucket.unlinkGroup`)
+		}
+		return
+	}
+	panic(`SomaTreeElemBucket.unlinkGroup`)
+}
+
+//
+// Interface: SomaTreeClusterReceiver
+func (teb *SomaTreeElemBucket) receiveCluster(r ReceiveRequest) {
+	if receiveRequestCheck(r, teb) {
+		switch r.ChildType {
+		case "cluster":
+			teb.Children[r.Cluster.GetID()] = r.Cluster
+			r.Cluster.setParent(teb)
+		default:
+			panic(`SomaTreeElemBucket.receiveCluster`)
+		}
+		return
+	}
+	panic(`SomaTreeElemBucket.receiveCluster`)
+}
+
+//
+// Interface: SomaTreeClusterUnlinker
+func (teb *SomaTreeElemBucket) unlinkCluster(u UnlinkRequest) {
+	if unlinkRequestCheck(u, teb) {
+		switch u.ChildType {
+		case "cluster":
+			if _, ok := teb.Children[u.ChildId]; ok {
+				if u.ChildName == teb.Children[u.ChildId].GetName() {
+					delete(teb.Children, u.ChildId)
+				}
+			}
+		default:
+			panic(`SomaTreeElemBucket.unlinkCluster`)
+		}
+		return
+	}
+	panic(`SomaTreeElemBucket.unlinkCluster`)
+}
+
+//
+// Interface: SomaTreeNodeReceiver
+func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
+	if receiveRequestCheck(r, teb) {
+		switch r.ChildType {
+		case "node":
+			teb.Children[r.Node.GetID()] = r.Node
+			r.Node.setParent(teb)
+		default:
+			panic(`SomaTreeElemBucket.receiveNote`)
+		}
+	}
+	panic(`SomaTreeElemBucket.receiveNote`)
+}
+
+//
+// Interface: SomaTreeNodeUnlinker
+func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
+	if unlinkRequestCheck(u, teb) {
+		switch u.ChildType {
+		case "node":
+			if _, ok := teb.Children[u.ChildId]; ok {
+				if u.ChildName == teb.Children[u.ChildId].GetName() {
+					delete(teb.Children, u.ChildId)
+				}
+			}
+		default:
+			panic(`SomaTreeElemBucket.unlinkNode`)
+		}
+		return
+	}
+	panic(`SomaTreeElemBucket.unlinkNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
