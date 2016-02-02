@@ -81,6 +81,18 @@ func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {
 	ter.Parent = p
 }
 
+func (ter *SomaTreeElemRepository) Destroy() {
+	ter.Parent.Unlink(UnlinkRequest{
+		ParentType: ter.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   ter.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: ter.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  ter.GetType(),
+		ChildName:  ter.GetName(),
+		ChildId:    ter.GetID(),
+	},
+	)
+}
+
 // Interface: SomaTreeRootAttacher
 func (ter *SomaTreeElemRepository) attachToRoot(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{

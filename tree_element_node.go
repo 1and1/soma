@@ -84,6 +84,18 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 	log.Fatal("Not implemented")
 }
 
+func (ten *SomaTreeElemNode) Destroy() {
+	ten.Parent.Unlink(UnlinkRequest{
+		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: ten.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  ten.GetType(),
+		ChildName:  ten.GetName(),
+		ChildId:    ten.GetID(),
+	},
+	)
+}
+
 func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *SomaTreeElemBucket:

@@ -85,6 +85,18 @@ func (teb *SomaTreeElemBucket) setBucketParent(p SomaTreeBucketReceiver) {
 	teb.Parent = p
 }
 
+func (teb *SomaTreeElemBucket) Destroy() {
+	teb.Parent.Unlink(UnlinkRequest{
+		ParentType: teb.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   teb.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: teb.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  teb.GetType(),
+		ChildName:  teb.GetName(),
+		ChildId:    teb.GetID(),
+	},
+	)
+}
+
 //
 // Interface: SomaTreeRepositoryAttacher
 func (teb *SomaTreeElemBucket) attachToRepository(a AttachRequest) {

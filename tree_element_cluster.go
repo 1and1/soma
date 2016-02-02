@@ -94,6 +94,18 @@ func (tec *SomaTreeElemCluster) setClusterParent(p SomaTreeClusterReceiver) {
 	tec.Parent = p
 }
 
+func (tec *SomaTreeElemCluster) Destroy() {
+	tec.Parent.Unlink(UnlinkRequest{
+		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: tec.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  tec.GetType(),
+		ChildName:  tec.GetName(),
+		ChildId:    tec.GetID(),
+	},
+	)
+}
+
 //
 // Interface: SomaTreeBucketAttacher
 func (tec *SomaTreeElemCluster) attachToBucket(a AttachRequest) {

@@ -94,6 +94,18 @@ func (teg *SomaTreeElemGroup) setGroupParent(p SomaTreeGroupReceiver) {
 	teg.Parent = p
 }
 
+func (teg *SomaTreeElemGroup) Destroy() {
+	teg.Parent.Unlink(UnlinkRequest{
+		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: teg.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  teg.GetType(),
+		ChildName:  teg.GetName(),
+		ChildId:    teg.GetID(),
+	},
+	)
+}
+
 //
 // Interface: SomaTreeBucketAttacher
 func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {

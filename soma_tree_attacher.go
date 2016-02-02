@@ -3,6 +3,7 @@ package somatree
 type SomaTreeAttacher interface {
 	Attach(a AttachRequest)
 	ReAttach(a AttachRequest)
+	Destroy()
 	setParent(p SomaTreeReceiver)
 }
 
