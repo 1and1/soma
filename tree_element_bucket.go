@@ -44,6 +44,15 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	return teb
 }
 
+func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
+	f := make(map[string]SomaTreeBucketAttacher)
+	for k, child := range teb.Children {
+		f[k] = child.CloneBucket()
+	}
+	teb.Children = f
+	return &teb
+}
+
 //
 // Interface: SomaTreeBuilder
 func (teb *SomaTreeElemBucket) GetID() string {

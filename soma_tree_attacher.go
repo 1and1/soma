@@ -19,6 +19,7 @@ type SomaTreeRepositoryAttacher interface {
 	SomaTreeAttacher
 	GetName() string
 	attachToRepository(a AttachRequest)
+	CloneRepository() SomaTreeRepositoryAttacher
 }
 
 // implemented by: groups, clusters, nodes
@@ -26,6 +27,7 @@ type SomaTreeBucketAttacher interface {
 	SomaTreeAttacher
 	GetName() string
 	attachToBucket(a AttachRequest)
+	CloneBucket() SomaTreeBucketAttacher
 }
 
 // implemented by: groups, clusters, nodes
@@ -33,6 +35,7 @@ type SomaTreeGroupAttacher interface {
 	SomaTreeAttacher
 	GetName() string
 	attachToGroup(a AttachRequest)
+	CloneGroup() SomaTreeGroupAttacher
 }
 
 // implemented by: nodes
@@ -40,6 +43,7 @@ type SomaTreeClusterAttacher interface {
 	SomaTreeAttacher
 	GetName() string
 	attachToCluster(a AttachRequest)
+	CloneCluster() SomaTreeClusterAttacher
 }
 
 type AttachRequest struct {

@@ -48,6 +48,15 @@ func NewRepository(name string) *SomaTreeElemRepository {
 	return ter
 }
 
+func (ter SomaTreeElemRepository) Clone() SomaTreeElemRepository {
+	f := make(map[string]SomaTreeRepositoryAttacher)
+	for k, child := range ter.Children {
+		f[k] = child.CloneRepository()
+	}
+	ter.Children = f
+	return ter
+}
+
 //
 // Interface: SomaTreeBuilder
 func (ter *SomaTreeElemRepository) GetID() string {

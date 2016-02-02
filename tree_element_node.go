@@ -51,6 +51,18 @@ func NewNode(name string) *SomaTreeElemNode {
 	return ten
 }
 
+func (ten SomaTreeElemNode) CloneBucket() SomaTreeBucketAttacher {
+	return &ten
+}
+
+func (ten SomaTreeElemNode) CloneGroup() SomaTreeGroupAttacher {
+	return &ten
+}
+
+func (ten SomaTreeElemNode) CloneCluster() SomaTreeClusterAttacher {
+	return &ten
+}
+
 //
 // Interface:
 func (ten *SomaTreeElemNode) GetID() string {

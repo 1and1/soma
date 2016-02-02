@@ -46,6 +46,22 @@ func NewGroup(name string) *SomaTreeElemGroup {
 	return teg
 }
 
+func (teg SomaTreeElemGroup) CloneBucket() SomaTreeBucketAttacher {
+	for k, child := range teg.Children {
+		teg.Children[k] = child.CloneGroup()
+	}
+	return &teg
+}
+
+func (teg SomaTreeElemGroup) CloneGroup() SomaTreeGroupAttacher {
+	f := make(map[string]SomaTreeGroupAttacher)
+	for k, child := range teg.Children {
+		f[k] = child.CloneGroup()
+	}
+	teg.Children = f
+	return &teg
+}
+
 //
 // Interface: SomaTreeBuilder
 func (teg *SomaTreeElemGroup) GetID() string {

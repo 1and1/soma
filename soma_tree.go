@@ -7,6 +7,7 @@ type SomaTree struct {
 	Name  string
 	Type  string
 	Child *SomaTreeElemRepository
+	Snap  *SomaTreeElemRepository
 }
 
 type SomaTreeAction struct {
@@ -27,6 +28,11 @@ func New(name string) *SomaTree {
 	st.Name = name
 	st.Type = "root"
 	return st
+}
+
+func (st *SomaTree) Clone() {
+	t := st.Child.Clone()
+	st.Snap = &t
 }
 
 //

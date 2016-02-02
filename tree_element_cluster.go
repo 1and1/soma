@@ -46,6 +46,22 @@ func NewCluster(name string) *SomaTreeElemCluster {
 	return tec
 }
 
+func (tec SomaTreeElemCluster) CloneBucket() SomaTreeBucketAttacher {
+	for k, child := range tec.Children {
+		tec.Children[k] = child.CloneCluster()
+	}
+	return &tec
+}
+
+func (tec SomaTreeElemCluster) CloneGroup() SomaTreeGroupAttacher {
+	f := make(map[string]SomaTreeClusterAttacher)
+	for k, child := range tec.Children {
+		f[k] = child.CloneCluster()
+	}
+	tec.Children = f
+	return &tec
+}
+
 //
 // Interface: SomaTreeBuilder
 func (tec *SomaTreeElemCluster) GetID() string {

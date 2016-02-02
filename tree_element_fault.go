@@ -42,6 +42,10 @@ func (tef *SomaTreeElemFault) GetType() string {
 	return tef.Type
 }
 
+func (tef SomaTreeElemFault) CloneRepository() SomaTreeRepositoryAttacher {
+	return &tef
+}
+
 //
 // Interface: SomaTreeAttacher
 func (tef *SomaTreeElemFault) Attach(a AttachRequest) {
