@@ -220,6 +220,7 @@ func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
 		default:
 			panic(`SomaTreeElemBucket.receiveNote`)
 		}
+		return
 	}
 	panic(`SomaTreeElemBucket.receiveNote`)
 }
