@@ -2,7 +2,6 @@ package somatree
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
@@ -93,7 +92,27 @@ func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
 }
 
 func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
-	log.Fatal("Not implemented")
+	if tec.Parent == nil {
+		panic(`SomaTreeElemGroup.ReAttach: not attached`)
+	}
+	tec.Parent.Unlink(UnlinkRequest{
+		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
+		ParentName: tec.Parent.(SomaTreeBuilder).GetName(),
+		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
+		ChildType:  tec.GetType(),
+		ChildName:  tec.GetName(),
+		ChildId:    tec.GetID(),
+	},
+	)
+
+	a.Root.Receive(ReceiveRequest{
+		ParentType: a.ParentType,
+		ParentId:   a.ParentId,
+		ParentName: a.ParentName,
+		ChildType:  tec.GetType(),
+		Cluster:    tec,
+	},
+	)
 }
 
 func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {

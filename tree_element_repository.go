@@ -1,7 +1,6 @@
 package somatree
 
 import (
-	"log"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -41,6 +40,7 @@ func NewRepository(name string) *SomaTreeElemRepository {
 	ter.Name = name
 	ter.Type = "repository"
 	ter.State = "floating"
+	ter.Parent = nil
 	ter.Children = make(map[string]SomaTreeRepositoryAttacher)
 	//ter.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//ter.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -85,16 +85,15 @@ func (ter *SomaTreeElemRepository) GetType() string {
 //
 // Interface: SomaTreeAttacher
 func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
+	if ter.Parent != nil {
+		panic(`SomaTreeElemRepository.Attach: already attached`)
+	}
 	switch {
 	case a.ParentType == "root" &&
 		a.ChildType == "repository" &&
 		a.ChildName == ter.Name:
 		ter.attachToRoot(a)
 	}
-}
-
-func (ter *SomaTreeElemRepository) ReAttach(a AttachRequest) {
-	log.Fatal("Not implemented")
 }
 
 func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {

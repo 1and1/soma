@@ -4,7 +4,6 @@ type SomaTreeAttacher interface {
 	Attach(a AttachRequest)
 	Destroy()
 	Detach()
-	ReAttach(a AttachRequest)
 
 	clearParent()
 	setFault(f *SomaTreeElemFault)
@@ -34,6 +33,7 @@ type SomaTreeBucketAttacher interface {
 	GetName() string
 	attachToBucket(a AttachRequest)
 	CloneBucket() SomaTreeBucketAttacher
+	ReAttach(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
@@ -42,6 +42,7 @@ type SomaTreeGroupAttacher interface {
 	GetName() string
 	attachToGroup(a AttachRequest)
 	CloneGroup() SomaTreeGroupAttacher
+	ReAttach(a AttachRequest)
 }
 
 // implemented by: nodes
@@ -50,6 +51,7 @@ type SomaTreeClusterAttacher interface {
 	GetName() string
 	attachToCluster(a AttachRequest)
 	CloneCluster() SomaTreeClusterAttacher
+	ReAttach(a AttachRequest)
 }
 
 type AttachRequest struct {

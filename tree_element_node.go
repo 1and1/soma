@@ -2,7 +2,6 @@ package somatree
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/satori/go.uuid"
@@ -44,6 +43,7 @@ func NewNode(name string) *SomaTreeElemNode {
 	ten.Name = name
 	ten.Type = "node"
 	ten.State = "floating"
+	ten.Parent = nil
 	//ten.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//ten.PropertyService = make(map[string]*SomaTreePropertyService)
 	//ten.PropertySystem = make(map[string]*SomaTreePropertySystem)
@@ -82,6 +82,9 @@ func (ten *SomaTreeElemNode) GetType() string {
 //
 // Interface: SomaTreeAttacher
 func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
+	if ten.Parent != nil {
+		panic(`SomaTreeElemNode.Attach: already attached`)
+	}
 	switch {
 	case a.ParentType == "bucket":
 		ten.attachToBucket(a)
@@ -95,7 +98,27 @@ func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
 }
 
 func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
-	log.Fatal("Not implemented")
+	if ten.Parent == nil {
+		panic(`SomaTreeElemNode.ReAttach: not attached`)
+	}
+	ten.Parent.Unlink(UnlinkRequest{
+		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
+		ParentName: ten.Parent.(SomaTreeBuilder).GetName(),
+		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
+		ChildType:  ten.GetType(),
+		ChildName:  ten.GetName(),
+		ChildId:    ten.GetID(),
+	},
+	)
+
+	a.Root.Receive(ReceiveRequest{
+		ParentType: a.ParentType,
+		ParentId:   a.ParentId,
+		ParentName: a.ParentName,
+		ChildType:  ten.GetType(),
+		Node:       ten,
+	},
+	)
 }
 
 func (ten *SomaTreeElemNode) Destroy() {

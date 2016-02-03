@@ -2,7 +2,6 @@ package somatree
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/satori/go.uuid"
@@ -26,6 +25,7 @@ func newFault() *SomaTreeElemFault {
 	tef.Name = "McFaulty"
 	tef.Errors = make([]error, 0)
 	tef.State = "floating"
+	tef.Parent = nil
 
 	return tef
 }
@@ -51,14 +51,13 @@ func (tef SomaTreeElemFault) CloneRepository() SomaTreeRepositoryAttacher {
 //
 // Interface: SomaTreeAttacher
 func (tef *SomaTreeElemFault) Attach(a AttachRequest) {
+	if tef.Parent != nil {
+		panic(`SomaTreeElemFault.Attach: already attached`)
+	}
 	switch {
 	case a.ParentType == "repository":
 		tef.attachToRepository(a)
 	}
-}
-
-func (tef *SomaTreeElemFault) ReAttach(a AttachRequest) {
-	log.Fatal("Not implemented")
 }
 
 func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {

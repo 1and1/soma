@@ -2,7 +2,6 @@ package somatree
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
@@ -38,6 +37,7 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	teb.Environment = environment
 	teb.Type = "bucket"
 	teb.State = "floating"
+	teb.Parent = nil
 	teb.Children = make(map[string]SomaTreeBucketAttacher)
 	//teb.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//teb.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -74,14 +74,13 @@ func (teb *SomaTreeElemBucket) GetType() string {
 //
 // Interface: SomaTreeAttacher
 func (teb *SomaTreeElemBucket) Attach(a AttachRequest) {
+	if teb.Parent != nil {
+		panic(`SomaTreeElemBucket.Attach: already attached`)
+	}
 	switch {
 	case a.ParentType == "repository":
 		teb.attachToRepository(a)
 	}
-}
-
-func (teb *SomaTreeElemBucket) ReAttach(a AttachRequest) {
-	log.Fatal("Not implemented")
 }
 
 func (teb *SomaTreeElemBucket) setParent(p SomaTreeReceiver) {

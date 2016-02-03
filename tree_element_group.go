@@ -2,7 +2,6 @@ package somatree
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 
@@ -39,6 +38,7 @@ func NewGroup(name string) *SomaTreeElemGroup {
 	teg.Name = name
 	teg.Type = "group"
 	teg.State = "floating"
+	teg.Parent = nil
 	teg.Children = make(map[string]SomaTreeGroupAttacher)
 	//teg.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//teg.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -82,6 +82,9 @@ func (teg *SomaTreeElemGroup) GetType() string {
 //
 // Interface: SomaTreeAttacher
 func (teg *SomaTreeElemGroup) Attach(a AttachRequest) {
+	if teg.Parent != nil {
+		panic(`SomaTreeElemGroup.Attach: already attached`)
+	}
 	switch {
 	case a.ParentType == "bucket":
 		teg.attachToBucket(a)
@@ -93,7 +96,27 @@ func (teg *SomaTreeElemGroup) Attach(a AttachRequest) {
 }
 
 func (teg *SomaTreeElemGroup) ReAttach(a AttachRequest) {
-	log.Fatal("Not implemented")
+	if teg.Parent == nil {
+		panic(`SomaTreeElemGroup.ReAttach: not attached`)
+	}
+	teg.Parent.Unlink(UnlinkRequest{
+		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
+		ParentName: teg.Parent.(SomaTreeBuilder).GetName(),
+		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
+		ChildType:  teg.GetType(),
+		ChildName:  teg.GetName(),
+		ChildId:    teg.GetID(),
+	},
+	)
+
+	a.Root.Receive(ReceiveRequest{
+		ParentType: a.ParentType,
+		ParentId:   a.ParentId,
+		ParentName: a.ParentName,
+		ChildType:  teg.GetType(),
+		Group:      teg,
+	},
+	)
 }
 
 func (teg *SomaTreeElemGroup) setParent(p SomaTreeReceiver) {
