@@ -1,6 +1,8 @@
 package somatree
 
 import (
+	"fmt"
+	"reflect"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -96,9 +98,19 @@ func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
 	}
 }
 
-func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {
+func (ter *SomaTreeElemRepository) setParent(p SomaTreeReceiver) {
+	switch p.(type) {
+	case SomaTreeRepositoryReceiver:
+		ter.setRepositoryParent(p.(SomaTreeRepositoryReceiver))
+		ter.State = "attached"
+	default:
+		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
+		panic(`SomaTreeElemBucket.setParent`)
+	}
+}
+
+func (ter *SomaTreeElemRepository) setRepositoryParent(p SomaTreeRepositoryReceiver) {
 	ter.Parent = p
-	ter.State = "attached"
 }
 
 func (ter *SomaTreeElemRepository) updateParentRecursive(p SomaTreeReceiver) {
@@ -268,6 +280,43 @@ func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
 		return
 	}
 	panic(`SomaTreeElemRepository.unlinkFault`)
+}
+
+//
+// Interface: SomaTreeFinder
+func (ter *SomaTreeElemRepository) Find(f FindRequest, b bool) SomaTreeAttacher {
+	if findRequestCheck(f, ter) {
+		return ter
+	}
+	var wg sync.WaitGroup
+	rawResult := make(chan SomaTreeAttacher, len(ter.Children))
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		go func(fr FindRequest, bl bool) {
+			defer wg.Done()
+			rawResult <- ter.Children[child].(SomaTreeFinder).Find(fr, bl)
+		}(f, false)
+	}
+	wg.Wait()
+	close(rawResult)
+
+	res := make([]SomaTreeAttacher, 0)
+	for sta := range rawResult {
+		if sta != nil {
+			res = append(res, sta)
+		}
+	}
+	switch {
+	case len(res) == 0:
+		if b {
+			return ter.Fault
+		} else {
+			return nil
+		}
+	case len(res) > 1:
+		return ter.Fault
+	}
+	return res[0]
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

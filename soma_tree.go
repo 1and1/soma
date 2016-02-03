@@ -118,4 +118,17 @@ func (st *SomaTree) unlinkRepository(u UnlinkRequest) {
 	}
 }
 
+// Interface: SomaTreeFinder
+func (st *SomaTree) Find(f FindRequest, b bool) SomaTreeAttacher {
+	if !b {
+		panic(`SomaTree.Find: root element can never inherit a Find request`)
+	}
+
+	res := st.Child.Find(f, false)
+	if res != nil {
+		return res
+	}
+	return st.Child.Fault
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
