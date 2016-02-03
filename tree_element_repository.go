@@ -16,9 +16,9 @@ type SomaTreeElemRepository struct {
 	Active   bool
 	Type     string
 	State    string
-	Parent   SomaTreeRepositoryReceiver `json:"-"`
-	Fault    *SomaTreeElemFault         `json:"-"`
-	Children map[string]SomaTreeRepositoryAttacher
+	Parent   SomaTreeRepositoryReceiver            `json:"-"`
+	Fault    *SomaTreeElemFault                    `json:"-"`
+	Children map[string]SomaTreeRepositoryAttacher `json:"-"`
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
 	//PropertySystem  map[string]*SomaTreePropertySystem
@@ -118,9 +118,10 @@ func (ter *SomaTreeElemRepository) updateParentRecursive(p SomaTreeReceiver) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
+		c := child
 		go func(str SomaTreeReceiver) {
 			defer wg.Done()
-			ter.Children[child].updateParentRecursive(str)
+			ter.Children[c].updateParentRecursive(str)
 		}(ter)
 	}
 	wg.Wait()
@@ -140,9 +141,10 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
+		c := child
 		go func(ptr *SomaTreeElemFault) {
 			defer wg.Done()
-			ter.Children[child].updateFaultRecursive(ptr)
+			ter.Children[c].updateFaultRecursive(ptr)
 		}(f)
 	}
 	wg.Wait()
@@ -288,26 +290,36 @@ func (ter *SomaTreeElemRepository) Find(f FindRequest, b bool) SomaTreeAttacher 
 	if findRequestCheck(f, ter) {
 		return ter
 	}
-	var wg sync.WaitGroup
-	rawResult := make(chan SomaTreeAttacher, len(ter.Children))
+	var (
+		wg             sync.WaitGroup
+		rawResult, res chan SomaTreeAttacher
+	)
+	if len(ter.Children) == 0 {
+		goto skip
+	}
+	rawResult = make(chan SomaTreeAttacher, len(ter.Children))
 	for child, _ := range ter.Children {
 		wg.Add(1)
+		c := child
 		go func(fr FindRequest, bl bool) {
 			defer wg.Done()
-			rawResult <- ter.Children[child].(SomaTreeFinder).Find(fr, bl)
+			rawResult <- ter.Children[c].(SomaTreeFinder).Find(fr, bl)
 		}(f, false)
 	}
 	wg.Wait()
 	close(rawResult)
 
-	res := make([]SomaTreeAttacher, 0)
+	res = make(chan SomaTreeAttacher, len(rawResult))
 	for sta := range rawResult {
 		if sta != nil {
-			res = append(res, sta)
+			res <- sta
 		}
 	}
+	close(res)
+skip:
 	switch {
 	case len(res) == 0:
+		fmt.Println("no results")
 		if b {
 			return ter.Fault
 		} else {
@@ -316,7 +328,7 @@ func (ter *SomaTreeElemRepository) Find(f FindRequest, b bool) SomaTreeAttacher 
 	case len(res) > 1:
 		return ter.Fault
 	}
-	return res[0]
+	return <-res
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -14,9 +14,9 @@ type SomaTreeElemBucket struct {
 	Environment string
 	Type        string
 	State       string
-	Parent      SomaTreeBucketReceiver `json:"-"`
-	Fault       *SomaTreeElemFault     `json:"-"`
-	Children    map[string]SomaTreeBucketAttacher
+	Parent      SomaTreeBucketReceiver            `json:"-"`
+	Fault       *SomaTreeElemFault                `json:"-"`
+	Children    map[string]SomaTreeBucketAttacher `json:"-"`
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
 	//PropertySystem  map[string]*SomaTreePropertySystem
@@ -103,9 +103,10 @@ func (teb *SomaTreeElemBucket) updateParentRecursive(p SomaTreeReceiver) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
+		c := child
 		go func(str SomaTreeReceiver) {
 			defer wg.Done()
-			teb.Children[child].updateParentRecursive(str)
+			teb.Children[c].updateParentRecursive(str)
 		}(teb)
 	}
 	wg.Wait()
@@ -125,9 +126,10 @@ func (teb *SomaTreeElemBucket) updateFaultRecursive(f *SomaTreeElemFault) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
+		c := child
 		go func(ptr *SomaTreeElemFault) {
 			defer wg.Done()
-			teb.Children[child].updateFaultRecursive(ptr)
+			teb.Children[c].updateFaultRecursive(ptr)
 		}(f)
 	}
 	wg.Wait()
@@ -332,6 +334,52 @@ func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
 		return
 	}
 	panic(`SomaTreeElemBucket.unlinkNode`)
+}
+
+//
+// Interface: SomaTreeFinder
+func (teb *SomaTreeElemBucket) Find(f FindRequest, b bool) SomaTreeAttacher {
+	if findRequestCheck(f, teb) {
+		return teb
+	}
+	var (
+		wg             sync.WaitGroup
+		rawResult, res chan SomaTreeAttacher
+	)
+	if len(teb.Children) == 0 {
+		goto skip
+	}
+	rawResult = make(chan SomaTreeAttacher, len(teb.Children))
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		c := child
+		go func(fr FindRequest, bl bool) {
+			defer wg.Done()
+			rawResult <- teb.Children[c].(SomaTreeFinder).Find(fr, bl)
+		}(f, false)
+	}
+	wg.Wait()
+	close(rawResult)
+
+	res = make(chan SomaTreeAttacher, len(rawResult))
+	for sta := range rawResult {
+		if sta != nil {
+			res <- sta
+		}
+	}
+	close(res)
+skip:
+	switch {
+	case len(res) == 0:
+		if b {
+			return teb.Fault
+		} else {
+			return nil
+		}
+	case len(res) > 1:
+		return teb.Fault
+	}
+	return <-res
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

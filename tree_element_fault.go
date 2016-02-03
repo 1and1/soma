@@ -144,17 +144,20 @@ func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
 //
 // Interface: SomaTreeReceiver
 func (tef *SomaTreeElemFault) Receive(r ReceiveRequest) {
+	panic(`SomaTreeElemFault.Receive`)
 }
 
 //
 // Interface: SomaTreeBucketeer
 func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
+	panic(`SomaTreeElemFault.GetBucket`)
 	return tef
 }
 
 //
 // Interface: SomaTreeUnlinker
 func (tef *SomaTreeElemFault) Unlink(u UnlinkRequest) {
+	panic(`SomaTreeElemFault.Unlink`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
