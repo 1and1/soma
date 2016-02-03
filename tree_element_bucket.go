@@ -13,6 +13,7 @@ type SomaTreeElemBucket struct {
 	Name        string
 	Environment string
 	Type        string
+	State       string
 	Parent      SomaTreeBucketReceiver `json:"-"`
 	Children    map[string]SomaTreeBucketAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
@@ -34,6 +35,7 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	teb.Name = name
 	teb.Environment = environment
 	teb.Type = "bucket"
+	teb.State = "floating"
 	teb.Children = make(map[string]SomaTreeBucketAttacher)
 	//teb.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//teb.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -84,6 +86,7 @@ func (teb *SomaTreeElemBucket) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeBucketReceiver:
 		teb.setBucketParent(p.(SomaTreeBucketReceiver))
+		teb.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemBucket.setParent`)
@@ -94,7 +97,16 @@ func (teb *SomaTreeElemBucket) setBucketParent(p SomaTreeBucketReceiver) {
 	teb.Parent = p
 }
 
+func (teb *SomaTreeElemBucket) clearParent() {
+	teb.Parent = nil
+	teb.State = "floating"
+}
+
 func (teb *SomaTreeElemBucket) Destroy() {
+	if teb.Parent == nil {
+		panic(`SomaTreeElemBucket.Destroy called without Parent to unlink from`)
+	}
+
 	teb.Parent.Unlink(UnlinkRequest{
 		ParentType: teb.Parent.(SomaTreeBuilder).GetType(),
 		ParentId:   teb.Parent.(SomaTreeBuilder).GetID(),
@@ -202,6 +214,7 @@ func (teb *SomaTreeElemBucket) unlinkGroup(u UnlinkRequest) {
 		case "group":
 			if _, ok := teb.Children[u.ChildId]; ok {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
+					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
 				}
 			}
@@ -237,6 +250,7 @@ func (teb *SomaTreeElemBucket) unlinkCluster(u UnlinkRequest) {
 		case "cluster":
 			if _, ok := teb.Children[u.ChildId]; ok {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
+					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
 				}
 			}
@@ -272,6 +286,7 @@ func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
 		case "node":
 			if _, ok := teb.Children[u.ChildId]; ok {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
+					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
 				}
 			}

@@ -42,6 +42,7 @@ func NewNode(name string) *SomaTreeElemNode {
 	ten.Id = uuid.NewV4()
 	ten.Name = name
 	ten.Type = "node"
+	ten.State = "floating"
 	//ten.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//ten.PropertyService = make(map[string]*SomaTreePropertyService)
 	//ten.PropertySystem = make(map[string]*SomaTreePropertySystem)
@@ -97,6 +98,10 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 }
 
 func (ten *SomaTreeElemNode) Destroy() {
+	if ten.Parent == nil {
+		panic(`SomaTreeElemNode.Destroy called without Parent to unlink from`)
+	}
+
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
 		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
@@ -109,6 +114,10 @@ func (ten *SomaTreeElemNode) Destroy() {
 }
 
 func (ten *SomaTreeElemNode) Detach() {
+	if ten.Parent == nil {
+		panic(`SomaTreeElemNode.Detach called without Parent to detach from`)
+	}
+
 	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 
 	ten.Parent.Unlink(UnlinkRequest{
@@ -135,10 +144,13 @@ func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *SomaTreeElemBucket:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
+		ten.State = "standalone"
 	case *SomaTreeElemGroup:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
+		ten.State = "grouped"
 	case *SomaTreeElemCluster:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
+		ten.State = "clustered"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemNode.setParent`)
@@ -147,6 +159,11 @@ func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 
 func (ten *SomaTreeElemNode) setNodeParent(p SomaTreeNodeReceiver) {
 	ten.Parent = p
+}
+
+func (ten *SomaTreeElemNode) clearParent() {
+	ten.Parent = nil
+	ten.State = "floating"
 }
 
 //

@@ -36,6 +36,7 @@ func NewGroup(name string) *SomaTreeElemGroup {
 	teg.Id = uuid.NewV4()
 	teg.Name = name
 	teg.Type = "group"
+	teg.State = "floating"
 	teg.Children = make(map[string]SomaTreeGroupAttacher)
 	//teg.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//teg.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -97,8 +98,10 @@ func (teg *SomaTreeElemGroup) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *SomaTreeElemBucket:
 		teg.setGroupParent(p.(SomaTreeGroupReceiver))
+		teg.State = "standalone"
 	case *SomaTreeElemGroup:
 		teg.setGroupParent(p.(SomaTreeGroupReceiver))
+		teg.State = "grouped"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemGroup.setParent`)
@@ -110,7 +113,16 @@ func (teg *SomaTreeElemGroup) setGroupParent(p SomaTreeGroupReceiver) {
 	teg.Parent = p
 }
 
+func (teg *SomaTreeElemGroup) clearParent() {
+	teg.Parent = nil
+	teg.State = "floating"
+}
+
 func (teg *SomaTreeElemGroup) Destroy() {
+	if teg.Parent == nil {
+		panic(`SomaTreeElemGroup.Destroy called without Parent to unlink from`)
+	}
+
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
 		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
@@ -123,6 +135,10 @@ func (teg *SomaTreeElemGroup) Destroy() {
 }
 
 func (teg *SomaTreeElemGroup) Detach() {
+	if teg.Parent == nil {
+		panic(`SomaTreeElemGroup.Destroy called without Parent to detach from`)
+	}
+
 	bucket := teg.Parent.(SomaTreeBucketeer).GetBucket()
 
 	teg.Parent.Unlink(UnlinkRequest{
@@ -197,6 +213,9 @@ loop:
 //
 // Interface: SomaTreeBucketeer
 func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
+	if teg.Parent == nil {
+		panic(`SomaTreeElemGroup.GetBucket called without Parent`)
+	}
 	return teg.Parent.(SomaTreeBucketeer).GetBucket()
 }
 
@@ -249,6 +268,7 @@ func (teg *SomaTreeElemGroup) unlinkGroup(u UnlinkRequest) {
 		case "group":
 			if _, ok := teg.Children[u.ChildId]; ok {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
+					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
 				}
 			}
@@ -284,6 +304,7 @@ func (teg *SomaTreeElemGroup) unlinkCluster(u UnlinkRequest) {
 		case "cluster":
 			if _, ok := teg.Children[u.ChildId]; ok {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
+					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
 				}
 			}
@@ -319,6 +340,7 @@ func (teg *SomaTreeElemGroup) unlinkNode(u UnlinkRequest) {
 		case "node":
 			if _, ok := teg.Children[u.ChildId]; ok {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
+					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
 				}
 			}

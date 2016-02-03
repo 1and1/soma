@@ -13,6 +13,7 @@ type SomaTreeElemRepository struct {
 	Deleted bool
 	Active  bool
 	Type    string
+	State   string
 	Parent  SomaTreeRepositoryReceiver `json:"-"`
 	//Fault    SomaTreeAttacher `json:"-"`
 	Children map[string]SomaTreeRepositoryAttacher
@@ -38,6 +39,7 @@ func NewRepository(name string) *SomaTreeElemRepository {
 	ter.Id = uuid.NewV4()
 	ter.Name = name
 	ter.Type = "repository"
+	ter.State = "floating"
 	ter.Children = make(map[string]SomaTreeRepositoryAttacher)
 	//ter.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//ter.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -88,9 +90,19 @@ func (ter *SomaTreeElemRepository) ReAttach(a AttachRequest) {
 
 func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {
 	ter.Parent = p
+	ter.State = "attached"
+}
+
+func (ter *SomaTreeElemRepository) clearParent() {
+	ter.Parent = nil
+	ter.State = "floating"
 }
 
 func (ter *SomaTreeElemRepository) Destroy() {
+	if ter.Parent == nil {
+		panic(`SomaTreeElemRepository.Destroy called without Parent to unlink from`)
+	}
+
 	ter.Parent.Unlink(UnlinkRequest{
 		ParentType: ter.Parent.(SomaTreeBuilder).GetType(),
 		ParentId:   ter.Parent.(SomaTreeBuilder).GetID(),
@@ -173,6 +185,7 @@ func (ter *SomaTreeElemRepository) unlinkBucket(u UnlinkRequest) {
 		case "bucket":
 			if _, ok := ter.Children[u.ChildId]; ok {
 				if u.ChildName == ter.Children[u.ChildId].GetName() {
+					ter.Children[u.ChildId].clearParent()
 					delete(ter.Children, u.ChildId)
 				}
 			}
@@ -206,6 +219,7 @@ func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
 		case "fault":
 			if _, ok := ter.Children[u.ChildId]; ok {
 				if u.ChildName == ter.Children[u.ChildId].GetName() {
+					ter.Children[u.ChildId].clearParent()
 					delete(ter.Children, u.ChildId)
 				}
 			}

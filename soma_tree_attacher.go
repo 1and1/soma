@@ -2,10 +2,11 @@ package somatree
 
 type SomaTreeAttacher interface {
 	Attach(a AttachRequest)
-	ReAttach(a AttachRequest)
 	Destroy()
-	setParent(p SomaTreeReceiver)
 	Detach()
+	ReAttach(a AttachRequest)
+	setParent(p SomaTreeReceiver)
+	clearParent()
 }
 
 // implemented by: repository

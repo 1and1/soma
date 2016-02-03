@@ -12,6 +12,7 @@ type SomaTreeElemFault struct {
 	Id     uuid.UUID
 	Name   string
 	Type   string
+	State  string
 	Parent SomaTreeFaultReceiver `json:"-"`
 	Errors []error
 }
@@ -24,6 +25,7 @@ func NewFault() *SomaTreeElemFault {
 	tef.Type = "fault"
 	tef.Name = "McFaulty"
 	tef.Errors = make([]error, 0)
+	tef.State = "floating"
 
 	return tef
 }
@@ -63,6 +65,7 @@ func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeFaultReceiver:
 		tef.setFaultParent(p.(SomaTreeFaultReceiver))
+		tef.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemFault.setParent`)
@@ -73,7 +76,16 @@ func (tef *SomaTreeElemFault) setFaultParent(p SomaTreeFaultReceiver) {
 	tef.Parent = p
 }
 
+func (tef *SomaTreeElemFault) clearParent() {
+	tef.Parent = nil
+	tef.State = "floating"
+}
+
 func (tef *SomaTreeElemFault) Destroy() {
+	if tef.Parent == nil {
+		panic(`SomaTreeElemFault.Destroy called without Parent to unlink from`)
+	}
+
 	tef.Parent.Unlink(UnlinkRequest{
 		ParentType: tef.Parent.(SomaTreeBuilder).GetType(),
 		ParentId:   tef.Parent.(SomaTreeBuilder).GetID(),

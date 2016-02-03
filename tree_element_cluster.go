@@ -36,6 +36,7 @@ func NewCluster(name string) *SomaTreeElemCluster {
 	tec.Id = uuid.NewV4()
 	tec.Name = name
 	tec.Type = "cluster"
+	tec.State = "floating"
 	tec.Children = make(map[string]SomaTreeClusterAttacher)
 	//tec.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//tec.PropertyService = make(map[string]*SomaTreePropertyService)
@@ -97,8 +98,10 @@ func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *SomaTreeElemBucket:
 		tec.setClusterParent(p.(SomaTreeClusterReceiver))
+		tec.State = "standalone"
 	case *SomaTreeElemGroup:
 		tec.setClusterParent(p.(SomaTreeClusterReceiver))
+		tec.State = "grouped"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemCluster.setParent`)
@@ -110,7 +113,16 @@ func (tec *SomaTreeElemCluster) setClusterParent(p SomaTreeClusterReceiver) {
 	tec.Parent = p
 }
 
+func (tec *SomaTreeElemCluster) clearParent() {
+	tec.Parent = nil
+	tec.State = "floating"
+}
+
 func (tec *SomaTreeElemCluster) Destroy() {
+	if tec.Parent == nil {
+		panic(`SomaTreeElemCluster.Destroy called without Parent to unlink from`)
+	}
+
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
 		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
@@ -123,6 +135,9 @@ func (tec *SomaTreeElemCluster) Destroy() {
 }
 
 func (tec *SomaTreeElemCluster) Detach() {
+	if tec.Parent == nil {
+		panic(`SomaTreeElemCluster.Detach called without Parent to detach from`)
+	}
 	bucket := tec.Parent.(SomaTreeBucketeer).GetBucket()
 
 	tec.Parent.Unlink(UnlinkRequest{
@@ -188,6 +203,9 @@ func (tec *SomaTreeElemCluster) Receive(r ReceiveRequest) {
 //
 // Interface: SomaTreeBucketeer
 func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
+	if tec.Parent == nil {
+		panic(`SomaTreeElemCluster.GetBucket called without Parent`)
+	}
 	return tec.Parent.(SomaTreeBucketeer).GetBucket()
 }
 
@@ -231,6 +249,7 @@ func (tec *SomaTreeElemCluster) unlinkNode(u UnlinkRequest) {
 		case "node":
 			if _, ok := tec.Children[u.ChildId]; ok {
 				if u.ChildName == tec.Children[u.ChildId].GetName() {
+					tec.Children[u.ChildId].clearParent()
 					delete(tec.Children, u.ChildId)
 				}
 			}
