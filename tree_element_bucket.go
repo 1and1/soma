@@ -101,9 +101,15 @@ func (teb *SomaTreeElemBucket) setBucketParent(p SomaTreeBucketReceiver) {
 
 func (teb *SomaTreeElemBucket) updateParentRecursive(p SomaTreeReceiver) {
 	teb.setParent(p)
+	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
-		teb.Children[child].updateParentRecursive(teb)
+		wg.Add(1)
+		go func(str SomaTreeReceiver) {
+			defer wg.Done()
+			teb.Children[child].updateParentRecursive(str)
+		}(teb)
 	}
+	wg.Wait()
 }
 
 func (teb *SomaTreeElemBucket) clearParent() {

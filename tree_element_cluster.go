@@ -112,9 +112,15 @@ func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
 
 func (tec *SomaTreeElemCluster) updateParentRecursive(p SomaTreeReceiver) {
 	tec.setParent(p)
+	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
-		tec.Children[child].updateParentRecursive(tec)
+		wg.Add(1)
+		go func(str SomaTreeReceiver) {
+			defer wg.Done()
+			tec.Children[child].updateParentRecursive(str)
+		}(tec)
 	}
+	wg.Wait()
 }
 
 // SomaTreeClusterReceiver == can receive Clusters as children

@@ -104,9 +104,15 @@ func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {
 
 func (ter *SomaTreeElemRepository) updateParentRecursive(p SomaTreeReceiver) {
 	ter.setParent(p.(SomaTreeRepositoryReceiver))
+	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
-		ter.Children[child].updateParentRecursive(ter)
+		wg.Add(1)
+		go func(str SomaTreeReceiver) {
+			defer wg.Done()
+			ter.Children[child].updateParentRecursive(str)
+		}(ter)
 	}
+	wg.Wait()
 }
 
 func (ter *SomaTreeElemRepository) clearParent() {

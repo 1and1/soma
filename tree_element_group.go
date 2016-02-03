@@ -117,9 +117,15 @@ func (teg *SomaTreeElemGroup) setGroupParent(p SomaTreeGroupReceiver) {
 
 func (teg *SomaTreeElemGroup) updateParentRecursive(p SomaTreeReceiver) {
 	teg.setParent(p)
+	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
-		teg.Children[child].setParent(teg)
+		wg.Add(1)
+		go func(str SomaTreeReceiver) {
+			defer wg.Done()
+			teg.Children[child].updateParentRecursive(str)
+		}(teg)
 	}
+	wg.Wait()
 }
 
 func (teg *SomaTreeElemGroup) clearParent() {
