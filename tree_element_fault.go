@@ -113,20 +113,4 @@ func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
 	})
 }
 
-//
-// Interface: SomaTreeReceiver
-func (tef *SomaTreeElemFault) Receive(r ReceiveRequest) {
-}
-
-//
-// Interface: SomaTreeBucketeer
-func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
-	return tef
-}
-
-//
-// Interface: SomaTreeUnlinker
-func (tef *SomaTreeElemFault) Unlink(u UnlinkRequest) {
-}
-
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
