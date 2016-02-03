@@ -85,6 +85,10 @@ func (tef *SomaTreeElemFault) Destroy() {
 	)
 }
 
+func (tef *SomaTreeElemFault) Detach() {
+	tef.Destroy()
+}
+
 //
 // Interface: SomaTreeRepositoryAttacher
 func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {

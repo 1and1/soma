@@ -106,6 +106,10 @@ func (teb *SomaTreeElemBucket) Destroy() {
 	)
 }
 
+func (teb *SomaTreeElemBucket) Detach() {
+	teb.Destroy()
+}
+
 //
 // Interface: SomaTreeRepositoryAttacher
 func (teb *SomaTreeElemBucket) attachToRepository(a AttachRequest) {

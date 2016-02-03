@@ -102,6 +102,10 @@ func (ter *SomaTreeElemRepository) Destroy() {
 	)
 }
 
+func (ter *SomaTreeElemRepository) Detach() {
+	ter.Destroy()
+}
+
 // Interface: SomaTreeRootAttacher
 func (ter *SomaTreeElemRepository) attachToRoot(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{

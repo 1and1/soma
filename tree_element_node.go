@@ -108,6 +108,29 @@ func (ten *SomaTreeElemNode) Destroy() {
 	)
 }
 
+func (ten *SomaTreeElemNode) Detach() {
+	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
+
+	ten.Parent.Unlink(UnlinkRequest{
+		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: ten.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  ten.GetType(),
+		ChildName:  ten.GetName(),
+		ChildId:    ten.GetID(),
+	},
+	)
+
+	bucket.Receive(ReceiveRequest{
+		ParentType: bucket.(SomaTreeBuilder).GetType(),
+		ParentId:   bucket.(SomaTreeBuilder).GetID(),
+		ParentName: bucket.(SomaTreeBuilder).GetName(),
+		ChildType:  ten.Type,
+		Node:       ten,
+	},
+	)
+}
+
 func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *SomaTreeElemBucket:

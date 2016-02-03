@@ -122,6 +122,29 @@ func (tec *SomaTreeElemCluster) Destroy() {
 	)
 }
 
+func (tec *SomaTreeElemCluster) Detach() {
+	bucket := tec.Parent.(SomaTreeBucketeer).GetBucket()
+
+	tec.Parent.Unlink(UnlinkRequest{
+		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: tec.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  tec.GetType(),
+		ChildName:  tec.GetName(),
+		ChildId:    tec.GetID(),
+	},
+	)
+
+	bucket.Receive(ReceiveRequest{
+		ParentType: bucket.(SomaTreeBuilder).GetType(),
+		ParentId:   bucket.(SomaTreeBuilder).GetID(),
+		ParentName: bucket.(SomaTreeBuilder).GetName(),
+		ChildType:  tec.Type,
+		Cluster:    tec,
+	},
+	)
+}
+
 //
 // Interface: SomaTreeBucketAttacher
 func (tec *SomaTreeElemCluster) attachToBucket(a AttachRequest) {

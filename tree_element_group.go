@@ -122,6 +122,29 @@ func (teg *SomaTreeElemGroup) Destroy() {
 	)
 }
 
+func (teg *SomaTreeElemGroup) Detach() {
+	bucket := teg.Parent.(SomaTreeBucketeer).GetBucket()
+
+	teg.Parent.Unlink(UnlinkRequest{
+		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
+		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
+		ParentName: teg.Parent.(SomaTreeBuilder).GetName(),
+		ChildType:  teg.GetType(),
+		ChildName:  teg.GetName(),
+		ChildId:    teg.GetID(),
+	},
+	)
+
+	bucket.Receive(ReceiveRequest{
+		ParentType: bucket.(SomaTreeBuilder).GetType(),
+		ParentId:   bucket.(SomaTreeBuilder).GetID(),
+		ParentName: bucket.(SomaTreeBuilder).GetName(),
+		ChildType:  teg.Type,
+		Group:      teg,
+	},
+	)
+}
+
 //
 // Interface: SomaTreeBucketAttacher
 func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {

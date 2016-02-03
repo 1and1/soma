@@ -5,6 +5,7 @@ type SomaTreeAttacher interface {
 	ReAttach(a AttachRequest)
 	Destroy()
 	setParent(p SomaTreeReceiver)
+	Detach()
 }
 
 // implemented by: repository
