@@ -34,6 +34,14 @@ func (st *SomaTree) Clone() {
 	t := st.Child.Clone()
 	st.Snap = &t
 	st.Snap.updateParentRecursive(st)
+
+	newFault().Attach(
+		AttachRequest{
+			Root:       st.Snap,
+			ParentType: st.Snap.Type,
+			ParentName: st.Snap.Name,
+		},
+	)
 }
 
 //

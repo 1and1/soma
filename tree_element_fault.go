@@ -19,7 +19,7 @@ type SomaTreeElemFault struct {
 
 //
 // NEW
-func NewFault() *SomaTreeElemFault {
+func newFault() *SomaTreeElemFault {
 	tef := new(SomaTreeElemFault)
 	tef.Id = uuid.NewV4()
 	tef.Type = "fault"
@@ -85,10 +85,20 @@ func (tef *SomaTreeElemFault) clearParent() {
 	tef.State = "floating"
 }
 
+// noop, but satisfy the interface
+func (tef *SomaTreeElemFault) setFault(f *SomaTreeElemFault) {
+}
+
+// noop, but satisfy the interface
+func (tef *SomaTreeElemFault) updateFaultRecursive(f *SomaTreeElemFault) {
+}
+
 func (tef *SomaTreeElemFault) Destroy() {
 	if tef.Parent == nil {
 		panic(`SomaTreeElemFault.Destroy called without Parent to unlink from`)
 	}
+
+	tef.Parent.(SomaTreeAttacher).updateFaultRecursive(nil)
 
 	tef.Parent.Unlink(UnlinkRequest{
 		ParentType: tef.Parent.(SomaTreeBuilder).GetType(),
@@ -115,6 +125,37 @@ func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
 		ChildType:  tef.Type,
 		Fault:      tef,
 	})
+}
+
+/*
+ * Fault Handler Special Sauce
+ *
+ * Elemnts return pointers to the Fault Handler instead of nil pointers
+ * when asked for something they do not have.
+ *
+ * This makes these chains safe:
+ *		<foo>.Parent.(SomaTreeReceiver).GetBucket().Unlink()
+ *
+ * Instead of nil, the parent returns the Fault handler which implements
+ * SomaTreeReceiver and SomaTreeUnlinker. Due to the information in the
+ * Receive-/UnlinkRequest, it can log what went wrong.
+ *
+ */
+
+//
+// Interface: SomaTreeReceiver
+func (tef *SomaTreeElemFault) Receive(r ReceiveRequest) {
+}
+
+//
+// Interface: SomaTreeBucketeer
+func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
+	return tef
+}
+
+//
+// Interface: SomaTreeUnlinker
+func (tef *SomaTreeElemFault) Unlink(u UnlinkRequest) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

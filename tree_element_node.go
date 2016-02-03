@@ -19,6 +19,7 @@ type SomaTreeElemNode struct {
 	Deleted  bool
 	Type     string
 	Parent   SomaTreeNodeReceiver `json:"-"`
+	Fault    *SomaTreeElemFault   `json:"-"`
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
 	//PropertySystem  map[string]*SomaTreePropertySystem
@@ -111,6 +112,8 @@ func (ten *SomaTreeElemNode) Destroy() {
 		ChildId:    ten.GetID(),
 	},
 	)
+
+	ten.setFault(nil)
 }
 
 func (ten *SomaTreeElemNode) Detach() {
@@ -168,6 +171,14 @@ func (ten *SomaTreeElemNode) setNodeParent(p SomaTreeNodeReceiver) {
 func (ten *SomaTreeElemNode) clearParent() {
 	ten.Parent = nil
 	ten.State = "floating"
+}
+
+func (ten *SomaTreeElemNode) setFault(f *SomaTreeElemFault) {
+	ten.Fault = f
+}
+
+func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
+	ten.setFault(f)
 }
 
 //

@@ -2,20 +2,21 @@ package somatree
 
 import (
 	"log"
+	"sync"
 
 	"github.com/satori/go.uuid"
 )
 
 type SomaTreeElemRepository struct {
-	Id      uuid.UUID
-	Name    string
-	Team    uuid.UUID
-	Deleted bool
-	Active  bool
-	Type    string
-	State   string
-	Parent  SomaTreeRepositoryReceiver `json:"-"`
-	//Fault    SomaTreeAttacher `json:"-"`
+	Id       uuid.UUID
+	Name     string
+	Team     uuid.UUID
+	Deleted  bool
+	Active   bool
+	Type     string
+	State    string
+	Parent   SomaTreeRepositoryReceiver `json:"-"`
+	Fault    *SomaTreeElemFault         `json:"-"`
 	Children map[string]SomaTreeRepositoryAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
@@ -47,6 +48,14 @@ func NewRepository(name string) *SomaTreeElemRepository {
 	//ter.PropertyCustom = make(map[string]*SomaTreePropertyCustom)
 	//ter.Checks = make(map[string]*SomaTreeCheck)
 
+	// return new repository with attached fault handler
+	newFault().Attach(
+		AttachRequest{
+			Root:       ter,
+			ParentType: ter.Type,
+			ParentName: ter.Name,
+		},
+	)
 	return ter
 }
 
@@ -105,10 +114,31 @@ func (ter *SomaTreeElemRepository) clearParent() {
 	ter.State = "floating"
 }
 
+func (ter *SomaTreeElemRepository) setFault(f *SomaTreeElemFault) {
+	ter.Fault = f
+}
+
+func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
+	ter.setFault(f)
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		go func(ptr *SomaTreeElemFault) {
+			defer wg.Done()
+			ter.Children[child].updateFaultRecursive(ptr)
+		}(f)
+	}
+	wg.Wait()
+}
+
 func (ter *SomaTreeElemRepository) Destroy() {
 	if ter.Parent == nil {
 		panic(`SomaTreeElemRepository.Destroy called without Parent to unlink from`)
 	}
+
+	// the Destroy handler of SomaTreeElemFault calls
+	// updateFaultRecursive(nil) on us
+	ter.Fault.Destroy()
 
 	ter.Parent.Unlink(UnlinkRequest{
 		ParentType: ter.Parent.(SomaTreeBuilder).GetType(),
@@ -209,8 +239,9 @@ func (ter *SomaTreeElemRepository) receiveFault(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {
 		case "fault":
-			ter.Children[r.Fault.GetID()] = r.Fault
-			r.Fault.setParent(ter)
+			ter.setFault(r.Fault)
+			ter.Fault.setParent(ter)
+			ter.updateFaultRecursive(ter.Fault)
 		default:
 			panic(`SomaTreeElemRepository.receiveFault`)
 		}
@@ -224,12 +255,8 @@ func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {
 		case "fault":
-			if _, ok := ter.Children[u.ChildId]; ok {
-				if u.ChildName == ter.Children[u.ChildId].GetName() {
-					ter.Children[u.ChildId].clearParent()
-					delete(ter.Children, u.ChildId)
-				}
-			}
+			ter.Fault = nil
+			ter.updateFaultRecursive(ter.Fault)
 		default:
 			panic(`SomaTreeElemRepository.unlinkFault`)
 		}

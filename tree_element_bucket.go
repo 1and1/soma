@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 
 	"github.com/satori/go.uuid"
 )
@@ -15,6 +16,7 @@ type SomaTreeElemBucket struct {
 	Type        string
 	State       string
 	Parent      SomaTreeBucketReceiver `json:"-"`
+	Fault       *SomaTreeElemFault     `json:"-"`
 	Children    map[string]SomaTreeBucketAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
@@ -109,6 +111,23 @@ func (teb *SomaTreeElemBucket) clearParent() {
 	teb.State = "floating"
 }
 
+func (teb *SomaTreeElemBucket) setFault(f *SomaTreeElemFault) {
+	teb.Fault = f
+}
+
+func (teb *SomaTreeElemBucket) updateFaultRecursive(f *SomaTreeElemFault) {
+	teb.setFault(f)
+	var wg sync.WaitGroup
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		go func(ptr *SomaTreeElemFault) {
+			defer wg.Done()
+			teb.Children[child].updateFaultRecursive(ptr)
+		}(f)
+	}
+	wg.Wait()
+}
+
 func (teb *SomaTreeElemBucket) Destroy() {
 	if teb.Parent == nil {
 		panic(`SomaTreeElemBucket.Destroy called without Parent to unlink from`)
@@ -123,6 +142,8 @@ func (teb *SomaTreeElemBucket) Destroy() {
 		ChildId:    teb.GetID(),
 	},
 	)
+
+	teb.setFault(nil)
 }
 
 func (teb *SomaTreeElemBucket) Detach() {
@@ -205,6 +226,7 @@ func (teb *SomaTreeElemBucket) receiveGroup(r ReceiveRequest) {
 		case "group":
 			teb.Children[r.Group.GetID()] = r.Group
 			r.Group.setParent(teb)
+			r.Group.setFault(teb.Fault)
 		default:
 			panic(`SomaTreeElemBucket.receiveGroup`)
 		}
@@ -241,6 +263,7 @@ func (teb *SomaTreeElemBucket) receiveCluster(r ReceiveRequest) {
 		case "cluster":
 			teb.Children[r.Cluster.GetID()] = r.Cluster
 			r.Cluster.setParent(teb)
+			r.Cluster.setFault(teb.Fault)
 		default:
 			panic(`SomaTreeElemBucket.receiveCluster`)
 		}
@@ -277,6 +300,7 @@ func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
 		case "node":
 			teb.Children[r.Node.GetID()] = r.Node
 			r.Node.setParent(teb)
+			r.Node.setFault(teb.Fault)
 		default:
 			panic(`SomaTreeElemBucket.receiveNote`)
 		}

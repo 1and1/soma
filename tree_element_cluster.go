@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 
 	"github.com/satori/go.uuid"
 )
@@ -15,6 +16,7 @@ type SomaTreeElemCluster struct {
 	Team     uuid.UUID
 	Type     string
 	Parent   SomaTreeClusterReceiver `json:"-"`
+	Fault    *SomaTreeElemFault      `json:"-"`
 	Children map[string]SomaTreeClusterAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
@@ -125,6 +127,23 @@ func (tec *SomaTreeElemCluster) clearParent() {
 	tec.State = "floating"
 }
 
+func (tec *SomaTreeElemCluster) setFault(f *SomaTreeElemFault) {
+	tec.Fault = f
+}
+
+func (tec *SomaTreeElemCluster) updateFaultRecursive(f *SomaTreeElemFault) {
+	tec.setFault(f)
+	var wg sync.WaitGroup
+	for child, _ := range tec.Children {
+		wg.Add(1)
+		go func(ptr *SomaTreeElemFault) {
+			defer wg.Done()
+			tec.Children[child].updateFaultRecursive(ptr)
+		}(f)
+	}
+	wg.Wait()
+}
+
 func (tec *SomaTreeElemCluster) Destroy() {
 	if tec.Parent == nil {
 		panic(`SomaTreeElemCluster.Destroy called without Parent to unlink from`)
@@ -139,6 +158,8 @@ func (tec *SomaTreeElemCluster) Destroy() {
 		ChildId:    tec.GetID(),
 	},
 	)
+
+	tec.setFault(nil)
 }
 
 func (tec *SomaTreeElemCluster) Detach() {
@@ -211,7 +232,11 @@ func (tec *SomaTreeElemCluster) Receive(r ReceiveRequest) {
 // Interface: SomaTreeBucketeer
 func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 	if tec.Parent == nil {
-		panic(`SomaTreeElemCluster.GetBucket called without Parent`)
+		if tec.Fault == nil {
+			panic(`SomaTreeElemCluster.GetBucket called without Parent`)
+		} else {
+			return tec.Fault
+		}
 	}
 	return tec.Parent.(SomaTreeBucketeer).GetBucket()
 }
@@ -240,6 +265,7 @@ func (tec *SomaTreeElemCluster) receiveNode(r ReceiveRequest) {
 		case "node":
 			tec.Children[r.Node.GetID()] = r.Node
 			r.Node.setParent(tec)
+			r.Node.setFault(tec.Fault)
 		default:
 			panic(`SomaTreeElemCluster.receiveNode`)
 		}

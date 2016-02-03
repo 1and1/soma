@@ -5,8 +5,11 @@ type SomaTreeAttacher interface {
 	Destroy()
 	Detach()
 	ReAttach(a AttachRequest)
-	setParent(p SomaTreeReceiver)
+
 	clearParent()
+	setFault(f *SomaTreeElemFault)
+	setParent(p SomaTreeReceiver)
+	updateFaultRecursive(f *SomaTreeElemFault)
 	updateParentRecursive(p SomaTreeReceiver)
 }
 

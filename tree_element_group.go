@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"sync"
 
 	"github.com/satori/go.uuid"
 )
@@ -15,6 +16,7 @@ type SomaTreeElemGroup struct {
 	Team     uuid.UUID
 	Type     string
 	Parent   SomaTreeGroupReceiver `json:"-"`
+	Fault    *SomaTreeElemFault    `json:"-"`
 	Children map[string]SomaTreeGroupAttacher
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
@@ -125,6 +127,23 @@ func (teg *SomaTreeElemGroup) clearParent() {
 	teg.State = "floating"
 }
 
+func (teg *SomaTreeElemGroup) setFault(f *SomaTreeElemFault) {
+	teg.Fault = f
+}
+
+func (teg *SomaTreeElemGroup) updateFaultRecursive(f *SomaTreeElemFault) {
+	teg.setFault(f)
+	var wg sync.WaitGroup
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		go func(ptr *SomaTreeElemFault) {
+			defer wg.Done()
+			teg.Children[child].updateFaultRecursive(ptr)
+		}(f)
+	}
+	wg.Wait()
+}
+
 func (teg *SomaTreeElemGroup) Destroy() {
 	if teg.Parent == nil {
 		panic(`SomaTreeElemGroup.Destroy called without Parent to unlink from`)
@@ -139,6 +158,8 @@ func (teg *SomaTreeElemGroup) Destroy() {
 		ChildId:    teg.GetID(),
 	},
 	)
+
+	teg.setFault(nil)
 }
 
 func (teg *SomaTreeElemGroup) Detach() {
@@ -221,7 +242,11 @@ loop:
 // Interface: SomaTreeBucketeer
 func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
 	if teg.Parent == nil {
-		panic(`SomaTreeElemGroup.GetBucket called without Parent`)
+		if teg.Fault == nil {
+			panic(`SomaTreeElemGroup.GetBucket called without Parent`)
+		} else {
+			return teg.Fault
+		}
 	}
 	return teg.Parent.(SomaTreeBucketeer).GetBucket()
 }
@@ -259,6 +284,7 @@ func (teg *SomaTreeElemGroup) receiveGroup(r ReceiveRequest) {
 		case "group":
 			teg.Children[r.Group.GetID()] = r.Group
 			r.Group.setParent(teg)
+			r.Group.setFault(teg.Fault)
 		default:
 			panic(`SomaTreeElemGroup.receiveGroup`)
 		}
@@ -295,6 +321,7 @@ func (teg *SomaTreeElemGroup) receiveCluster(r ReceiveRequest) {
 		case "cluster":
 			teg.Children[r.Cluster.GetID()] = r.Cluster
 			r.Cluster.setParent(teg)
+			r.Cluster.setFault(teg.Fault)
 		default:
 			panic(`SomaTreeElemGroup.receiveCluster`)
 		}
@@ -331,6 +358,7 @@ func (teg *SomaTreeElemGroup) receiveNode(r ReceiveRequest) {
 		case "node":
 			teg.Children[r.Node.GetID()] = r.Node
 			r.Node.setParent(teg)
+			r.Node.setFault(teg.Fault)
 		default:
 			panic(`SomaTreeElemGroup.receiveNode`)
 		}
