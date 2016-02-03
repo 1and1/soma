@@ -108,6 +108,13 @@ func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
 	}
 }
 
+func (tec *SomaTreeElemCluster) updateParentRecursive(p SomaTreeReceiver) {
+	tec.setParent(p)
+	for child, _ := range tec.Children {
+		tec.Children[child].updateParentRecursive(tec)
+	}
+}
+
 // SomaTreeClusterReceiver == can receive Clusters as children
 func (tec *SomaTreeElemCluster) setClusterParent(p SomaTreeClusterReceiver) {
 	tec.Parent = p

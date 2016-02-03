@@ -93,6 +93,13 @@ func (ter *SomaTreeElemRepository) setParent(p SomaTreeRepositoryReceiver) {
 	ter.State = "attached"
 }
 
+func (ter *SomaTreeElemRepository) updateParentRecursive(p SomaTreeReceiver) {
+	ter.setParent(p.(SomaTreeRepositoryReceiver))
+	for child, _ := range ter.Children {
+		ter.Children[child].updateParentRecursive(ter)
+	}
+}
+
 func (ter *SomaTreeElemRepository) clearParent() {
 	ter.Parent = nil
 	ter.State = "floating"
@@ -142,8 +149,8 @@ func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
 		}
 		return
 	}
-	for _, child := range ter.Children {
-		child.(SomaTreeReceiver).Receive(r)
+	for child, _ := range ter.Children {
+		ter.Children[child].(SomaTreeReceiver).Receive(r)
 	}
 }
 
@@ -160,8 +167,8 @@ func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
 		}
 		return
 	}
-	for _, child := range ter.Children {
-		child.(SomaTreeUnlinker).Unlink(u)
+	for child, _ := range ter.Children {
+		ter.Children[child].(SomaTreeUnlinker).Unlink(u)
 	}
 }
 

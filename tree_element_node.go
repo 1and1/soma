@@ -157,6 +157,10 @@ func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 	}
 }
 
+func (ten *SomaTreeElemNode) updateParentRecursive(p SomaTreeReceiver) {
+	ten.setParent(p)
+}
+
 func (ten *SomaTreeElemNode) setNodeParent(p SomaTreeNodeReceiver) {
 	ten.Parent = p
 }

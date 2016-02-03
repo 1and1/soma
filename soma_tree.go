@@ -33,6 +33,7 @@ func New(name string) *SomaTree {
 func (st *SomaTree) Clone() {
 	t := st.Child.Clone()
 	st.Snap = &t
+	st.Snap.updateParentRecursive(st)
 }
 
 //

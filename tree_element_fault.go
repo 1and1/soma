@@ -72,6 +72,10 @@ func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {
 	}
 }
 
+func (tef *SomaTreeElemFault) updateParentRecursive(p SomaTreeReceiver) {
+	tef.setParent(p)
+}
+
 func (tef *SomaTreeElemFault) setFaultParent(p SomaTreeFaultReceiver) {
 	tef.Parent = p
 }

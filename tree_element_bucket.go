@@ -97,6 +97,13 @@ func (teb *SomaTreeElemBucket) setBucketParent(p SomaTreeBucketReceiver) {
 	teb.Parent = p
 }
 
+func (teb *SomaTreeElemBucket) updateParentRecursive(p SomaTreeReceiver) {
+	teb.setParent(p)
+	for child, _ := range teb.Children {
+		teb.Children[child].updateParentRecursive(teb)
+	}
+}
+
 func (teb *SomaTreeElemBucket) clearParent() {
 	teb.Parent = nil
 	teb.State = "floating"
@@ -151,11 +158,11 @@ func (teb *SomaTreeElemBucket) Receive(r ReceiveRequest) {
 		return
 	}
 loop:
-	for _, child := range teb.Children {
-		if child.(SomaTreeBuilder).GetType() == "node" {
+	for child, _ := range teb.Children {
+		if teb.Children[child].(SomaTreeBuilder).GetType() == "node" {
 			continue loop
 		}
-		child.(SomaTreeReceiver).Receive(r)
+		teb.Children[child].(SomaTreeReceiver).Receive(r)
 	}
 }
 
@@ -182,11 +189,11 @@ func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
 		return
 	}
 loop:
-	for _, child := range teb.Children {
-		if child.(SomaTreeBuilder).GetType() == "node" {
+	for child, _ := range teb.Children {
+		if teb.Children[child].(SomaTreeBuilder).GetType() == "node" {
 			continue loop
 		}
-		child.(SomaTreeUnlinker).Unlink(u)
+		teb.Children[child].(SomaTreeUnlinker).Unlink(u)
 	}
 }
 

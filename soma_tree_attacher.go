@@ -7,6 +7,7 @@ type SomaTreeAttacher interface {
 	ReAttach(a AttachRequest)
 	setParent(p SomaTreeReceiver)
 	clearParent()
+	updateParentRecursive(p SomaTreeReceiver)
 }
 
 // implemented by: repository

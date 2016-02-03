@@ -113,6 +113,13 @@ func (teg *SomaTreeElemGroup) setGroupParent(p SomaTreeGroupReceiver) {
 	teg.Parent = p
 }
 
+func (teg *SomaTreeElemGroup) updateParentRecursive(p SomaTreeReceiver) {
+	teg.setParent(p)
+	for child, _ := range teg.Children {
+		teg.Children[child].setParent(teg)
+	}
+}
+
 func (teg *SomaTreeElemGroup) clearParent() {
 	teg.Parent = nil
 	teg.State = "floating"
@@ -202,11 +209,11 @@ func (teg *SomaTreeElemGroup) Receive(r ReceiveRequest) {
 		return
 	}
 loop:
-	for _, child := range teg.Children {
-		if child.(SomaTreeBuilder).GetType() == "node" {
+	for child, _ := range teg.Children {
+		if teg.Children[child].(SomaTreeBuilder).GetType() == "node" {
 			continue loop
 		}
-		child.(SomaTreeReceiver).Receive(r)
+		teg.Children[child].(SomaTreeReceiver).Receive(r)
 	}
 }
 
@@ -236,11 +243,11 @@ func (teg *SomaTreeElemGroup) Unlink(u UnlinkRequest) {
 		return
 	}
 loop:
-	for _, child := range teg.Children {
-		if child.(SomaTreeBuilder).GetType() == "node" {
+	for child, _ := range teg.Children {
+		if teg.Children[child].(SomaTreeBuilder).GetType() == "node" {
 			continue loop
 		}
-		child.(SomaTreeUnlinker).Unlink(u)
+		teg.Children[child].(SomaTreeUnlinker).Unlink(u)
 	}
 }
 
