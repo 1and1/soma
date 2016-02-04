@@ -22,32 +22,39 @@ type SomaTreeElemRepository struct {
 	//PropertyOncall  map[string]*SomaTreePropertyOncall
 	//PropertyService map[string]*SomaTreePropertyService
 	//PropertySystem  map[string]*SomaTreePropertySystem
-	//PropertyCustom  map[string]*SomaTreePropertyCustom
+	PropertyCustom map[string]SomaTreeProperty
 	//Checks          map[string]*SomaTreeCheck
 }
 
 type RepositorySpec struct {
-	Id      uuid.UUID
+	Id      string
 	Name    string
-	Team    uuid.UUID
+	Team    string
 	Deleted bool
 	Active  bool
 }
 
 //
 // NEW
-func NewRepository(name string) *SomaTreeElemRepository {
+func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
+	if !specRepoCheck(spec) {
+		panic(`No`)
+	}
+
 	ter := new(SomaTreeElemRepository)
-	ter.Id = uuid.NewV4()
-	ter.Name = name
+	ter.Id, _ = uuid.FromString(spec.Id)
+	ter.Name = spec.Name
+	ter.Team, _ = uuid.FromString(spec.Team)
 	ter.Type = "repository"
 	ter.State = "floating"
 	ter.Parent = nil
+	ter.Deleted = spec.Deleted
+	ter.Active = spec.Active
 	ter.Children = make(map[string]SomaTreeRepositoryAttacher)
 	//ter.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
 	//ter.PropertyService = make(map[string]*SomaTreePropertyService)
 	//ter.PropertySystem = make(map[string]*SomaTreePropertySystem)
-	//ter.PropertyCustom = make(map[string]*SomaTreePropertyCustom)
+	ter.PropertyCustom = make(map[string]SomaTreeProperty)
 	//ter.Checks = make(map[string]*SomaTreeCheck)
 
 	// return new repository with attached fault handler
@@ -319,7 +326,6 @@ func (ter *SomaTreeElemRepository) Find(f FindRequest, b bool) SomaTreeAttacher 
 skip:
 	switch {
 	case len(res) == 0:
-		fmt.Println("no results")
 		if b {
 			return ter.Fault
 		} else {
@@ -329,6 +335,56 @@ skip:
 		return ter.Fault
 	}
 	return <-res
+}
+
+func (ter *SomaTreeElemRepository) SetProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		p.(*SomaTreePropertyCustom).InheritedFrom = ter.Id
+		p.(*SomaTreePropertyCustom).Inherited = false
+		ter.setCustomProperty(p)
+		f := new(SomaTreePropertyCustom)
+		*f = *p.(*SomaTreePropertyCustom)
+		f.Inherited = true
+		ter.inheritPropertyDeep(f)
+	case "service":
+		p.(*SomaTreePropertyService).InheritedFrom = ter.Id
+		p.(*SomaTreePropertyService).Inherited = false
+		ter.setServiceProperty(p)
+		f := new(SomaTreePropertyService)
+		*f = *p.(*SomaTreePropertyService)
+		f.Inherited = true
+		ter.inheritPropertyDeep(f)
+	}
+}
+
+func (ter *SomaTreeElemRepository) setCustomProperty(p SomaTreeProperty) {
+	ter.PropertyCustom[p.GetID()] = p
+}
+
+func (ter *SomaTreeElemRepository) setServiceProperty(p SomaTreeProperty) {
+	ter.PropertyService[p.GetID()] = p
+}
+
+func (ter *SomaTreeElemRepository) inheritProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		ter.setCustomProperty(p)
+		ter.inheritPropertyDeep(p)
+	}
+}
+
+func (ter *SomaTreeElemRepository) inheritPropertyDeep(p SomaTreeProperty) {
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		c := child
+		go func(stp SomaTreeProperty) {
+			defer wg.Done()
+			ter.Children[c].inheritProperty(stp)
+		}(p)
+	}
+	wg.Wait()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

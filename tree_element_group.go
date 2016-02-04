@@ -9,18 +9,18 @@ import (
 )
 
 type SomaTreeElemGroup struct {
-	Id       uuid.UUID
-	Name     string
-	State    string
-	Team     uuid.UUID
-	Type     string
-	Parent   SomaTreeGroupReceiver            `json:"-"`
-	Fault    *SomaTreeElemFault               `json:"-"`
-	Children map[string]SomaTreeGroupAttacher `json:"-"`
-	//PropertyOncall  map[string]*SomaTreePropertyOncall
-	//PropertyService map[string]*SomaTreePropertyService
-	//PropertySystem  map[string]*SomaTreePropertySystem
-	//PropertyCustom  map[string]*SomaTreePropertyCustom
+	Id              uuid.UUID
+	Name            string
+	State           string
+	Team            uuid.UUID
+	Type            string
+	Parent          SomaTreeGroupReceiver            `json:"-"`
+	Fault           *SomaTreeElemFault               `json:"-"`
+	Children        map[string]SomaTreeGroupAttacher `json:"-"`
+	PropertyOncall  map[string]SomaTreeProperty
+	PropertyService map[string]SomaTreeProperty
+	PropertySystem  map[string]SomaTreeProperty
+	PropertyCustom  map[string]SomaTreeProperty
 	//Checks          map[string]*SomaTreeCheck
 }
 
@@ -40,10 +40,10 @@ func NewGroup(name string) *SomaTreeElemGroup {
 	teg.State = "floating"
 	teg.Parent = nil
 	teg.Children = make(map[string]SomaTreeGroupAttacher)
-	//teg.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
-	//teg.PropertyService = make(map[string]*SomaTreePropertyService)
-	//teg.PropertySystem = make(map[string]*SomaTreePropertySystem)
-	//teg.PropertyCustom = make(map[string]*SomaTreePropertyCustom)
+	teg.PropertyOncall = make(map[string]SomaTreeProperty)
+	teg.PropertyService = make(map[string]SomaTreeProperty)
+	teg.PropertySystem = make(map[string]SomaTreeProperty)
+	teg.PropertyCustom = make(map[string]SomaTreeProperty)
 	//teg.Checks = make(map[string]*SomaTreeCheck)
 
 	return teg
@@ -462,6 +462,44 @@ skip:
 		return teg.Fault
 	}
 	return <-res
+}
+
+func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		p.(*SomaTreePropertyCustom).InheritedFrom = teg.Id
+		p.(*SomaTreePropertyCustom).Inherited = false
+		teg.setCustomProperty(p)
+		f := new(SomaTreePropertyCustom)
+		*f = *p.(*SomaTreePropertyCustom)
+		f.Inherited = true
+		teg.inheritPropertyDeep(f)
+	}
+}
+
+func (teg *SomaTreeElemGroup) setCustomProperty(p SomaTreeProperty) {
+	teg.PropertyCustom[p.GetID()] = p
+}
+
+func (teg *SomaTreeElemGroup) inheritProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		teg.setCustomProperty(p)
+		teg.inheritPropertyDeep(p)
+	}
+}
+
+func (teg *SomaTreeElemGroup) inheritPropertyDeep(p SomaTreeProperty) {
+	var wg sync.WaitGroup
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		c := child
+		go func(stp SomaTreeProperty) {
+			defer wg.Done()
+			teg.Children[c].inheritProperty(stp)
+		}(p)
+	}
+	wg.Wait()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

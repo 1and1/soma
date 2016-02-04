@@ -9,18 +9,18 @@ import (
 )
 
 type SomaTreeElemCluster struct {
-	Id       uuid.UUID
-	Name     string
-	State    string
-	Team     uuid.UUID
-	Type     string
-	Parent   SomaTreeClusterReceiver            `json:"-"`
-	Fault    *SomaTreeElemFault                 `json:"-"`
-	Children map[string]SomaTreeClusterAttacher `json:"-"`
-	//PropertyOncall  map[string]*SomaTreePropertyOncall
-	//PropertyService map[string]*SomaTreePropertyService
-	//PropertySystem  map[string]*SomaTreePropertySystem
-	//PropertyCustom  map[string]*SomaTreePropertyCustom
+	Id              uuid.UUID
+	Name            string
+	State           string
+	Team            uuid.UUID
+	Type            string
+	Parent          SomaTreeClusterReceiver            `json:"-"`
+	Fault           *SomaTreeElemFault                 `json:"-"`
+	Children        map[string]SomaTreeClusterAttacher `json:"-"`
+	PropertyOncall  map[string]SomaTreeProperty
+	PropertyService map[string]SomaTreeProperty
+	PropertySystem  map[string]SomaTreeProperty
+	PropertyCustom  map[string]SomaTreeProperty
 	//Checks          map[string]*SomaTreeCheck
 }
 
@@ -39,10 +39,10 @@ func NewCluster(name string) *SomaTreeElemCluster {
 	tec.Type = "cluster"
 	tec.State = "floating"
 	tec.Children = make(map[string]SomaTreeClusterAttacher)
-	//tec.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
-	//tec.PropertyService = make(map[string]*SomaTreePropertyService)
-	//tec.PropertySystem = make(map[string]*SomaTreePropertySystem)
-	//tec.PropertyCustom = make(map[string]*SomaTreePropertyCustom)
+	tec.PropertyOncall = make(map[string]SomaTreeProperty)
+	tec.PropertyService = make(map[string]SomaTreeProperty)
+	tec.PropertySystem = make(map[string]SomaTreeProperty)
+	tec.PropertyCustom = make(map[string]SomaTreeProperty)
 	//tec.Checks = make(map[string]*SomaTreeCheck)
 
 	return tec
@@ -373,6 +373,45 @@ skip:
 		return tec.Fault
 	}
 	return <-res
+}
+
+//--------------------------
+func (tec *SomaTreeElemCluster) SetProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		p.(*SomaTreePropertyCustom).InheritedFrom = tec.Id
+		p.(*SomaTreePropertyCustom).Inherited = false
+		tec.setCustomProperty(p)
+		f := new(SomaTreePropertyCustom)
+		*f = *p.(*SomaTreePropertyCustom)
+		f.Inherited = true
+		tec.inheritPropertyDeep(f)
+	}
+}
+
+func (tec *SomaTreeElemCluster) setCustomProperty(p SomaTreeProperty) {
+	tec.PropertyCustom[p.GetID()] = p
+}
+
+func (tec *SomaTreeElemCluster) inheritProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		tec.setCustomProperty(p)
+		tec.inheritPropertyDeep(p)
+	}
+}
+
+func (tec *SomaTreeElemCluster) inheritPropertyDeep(p SomaTreeProperty) {
+	var wg sync.WaitGroup
+	for child, _ := range tec.Children {
+		wg.Add(1)
+		c := child
+		go func(stp SomaTreeProperty) {
+			defer wg.Done()
+			tec.Children[c].inheritProperty(stp)
+		}(p)
+	}
+	wg.Wait()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

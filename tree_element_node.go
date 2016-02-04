@@ -8,21 +8,21 @@ import (
 )
 
 type SomaTreeElemNode struct {
-	Id       uuid.UUID
-	Name     string
-	AssetId  uuid.UUID
-	Team     uuid.UUID
-	ServerId uuid.UUID
-	State    string
-	Online   bool
-	Deleted  bool
-	Type     string
-	Parent   SomaTreeNodeReceiver `json:"-"`
-	Fault    *SomaTreeElemFault   `json:"-"`
-	//PropertyOncall  map[string]*SomaTreePropertyOncall
-	//PropertyService map[string]*SomaTreePropertyService
-	//PropertySystem  map[string]*SomaTreePropertySystem
-	//PropertyCustom  map[string]*SomaTreePropertyCustom
+	Id              uuid.UUID
+	Name            string
+	AssetId         uuid.UUID
+	Team            uuid.UUID
+	ServerId        uuid.UUID
+	State           string
+	Online          bool
+	Deleted         bool
+	Type            string
+	Parent          SomaTreeNodeReceiver `json:"-"`
+	Fault           *SomaTreeElemFault   `json:"-"`
+	PropertyOncall  map[string]SomaTreeProperty
+	PropertyService map[string]SomaTreeProperty
+	PropertySystem  map[string]SomaTreeProperty
+	PropertyCustom  map[string]SomaTreeProperty
 	//Checks          map[string]*SomaTreeCheck
 }
 
@@ -44,10 +44,10 @@ func NewNode(name string) *SomaTreeElemNode {
 	ten.Type = "node"
 	ten.State = "floating"
 	ten.Parent = nil
-	//ten.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
-	//ten.PropertyService = make(map[string]*SomaTreePropertyService)
-	//ten.PropertySystem = make(map[string]*SomaTreePropertySystem)
-	//ten.PropertyCustom = make(map[string]*SomaTreePropertyCustom)
+	ten.PropertyOncall = make(map[string]SomaTreeProperty)
+	ten.PropertyService = make(map[string]SomaTreeProperty)
+	ten.PropertySystem = make(map[string]SomaTreeProperty)
+	ten.PropertyCustom = make(map[string]SomaTreeProperty)
 	//ten.Checks = make(map[string]*SomaTreeCheck)
 
 	return ten
@@ -249,6 +249,30 @@ func (ten *SomaTreeElemNode) Find(f FindRequest, b bool) SomaTreeAttacher {
 		return ten.Fault
 	}
 	return nil
+}
+
+func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		p.(*SomaTreePropertyCustom).InheritedFrom = ten.Id
+		p.(*SomaTreePropertyCustom).Inherited = false
+		ten.setCustomProperty(p)
+	}
+}
+
+func (ten *SomaTreeElemNode) setCustomProperty(p SomaTreeProperty) {
+	ten.PropertyCustom[p.GetID()] = p
+}
+
+func (ten *SomaTreeElemNode) inheritProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		ten.setCustomProperty(p)
+	}
+}
+
+// noop, satisfy interface
+func (ten *SomaTreeElemNode) inheritPropertyDeep(p SomaTreeProperty) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

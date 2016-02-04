@@ -9,18 +9,18 @@ import (
 )
 
 type SomaTreeElemBucket struct {
-	Id          uuid.UUID
-	Name        string
-	Environment string
-	Type        string
-	State       string
-	Parent      SomaTreeBucketReceiver            `json:"-"`
-	Fault       *SomaTreeElemFault                `json:"-"`
-	Children    map[string]SomaTreeBucketAttacher `json:"-"`
-	//PropertyOncall  map[string]*SomaTreePropertyOncall
-	//PropertyService map[string]*SomaTreePropertyService
-	//PropertySystem  map[string]*SomaTreePropertySystem
-	//PropertyCustom  map[string]*SomaTreePropertyCustom
+	Id              uuid.UUID
+	Name            string
+	Environment     string
+	Type            string
+	State           string
+	Parent          SomaTreeBucketReceiver            `json:"-"`
+	Fault           *SomaTreeElemFault                `json:"-"`
+	Children        map[string]SomaTreeBucketAttacher `json:"-"`
+	PropertyOncall  map[string]SomaTreeProperty
+	PropertyService map[string]SomaTreeProperty
+	PropertySystem  map[string]SomaTreeProperty
+	PropertyCustom  map[string]SomaTreeProperty
 	//Checks          map[string]*SomaTreeCheck
 }
 
@@ -39,10 +39,10 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	teb.State = "floating"
 	teb.Parent = nil
 	teb.Children = make(map[string]SomaTreeBucketAttacher)
-	//teb.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
-	//teb.PropertyService = make(map[string]*SomaTreePropertyService)
-	//teb.PropertySystem = make(map[string]*SomaTreePropertySystem)
-	//teb.PropertyCustom = make(map[string]*SomaTreePropertyCustom)
+	teb.PropertyOncall = make(map[string]SomaTreeProperty)
+	teb.PropertyService = make(map[string]SomaTreeProperty)
+	teb.PropertySystem = make(map[string]SomaTreeProperty)
+	teb.PropertyCustom = make(map[string]SomaTreeProperty)
 	//teb.Checks = make(map[string]*SomaTreeCheck)
 
 	return teb
@@ -380,6 +380,45 @@ skip:
 		return teb.Fault
 	}
 	return <-res
+}
+
+//-----------------------
+func (teb *SomaTreeElemBucket) SetProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		p.(*SomaTreePropertyCustom).InheritedFrom = teb.Id
+		p.(*SomaTreePropertyCustom).Inherited = false
+		teb.setCustomProperty(p)
+		f := new(SomaTreePropertyCustom)
+		*f = *p.(*SomaTreePropertyCustom)
+		f.Inherited = true
+		teb.inheritPropertyDeep(f)
+	}
+}
+
+func (teb *SomaTreeElemBucket) setCustomProperty(p SomaTreeProperty) {
+	teb.PropertyCustom[p.GetID()] = p
+}
+
+func (teb *SomaTreeElemBucket) inheritProperty(p SomaTreeProperty) {
+	switch p.GetType() {
+	case "custom":
+		teb.setCustomProperty(p)
+		teb.inheritPropertyDeep(p)
+	}
+}
+
+func (teb *SomaTreeElemBucket) inheritPropertyDeep(p SomaTreeProperty) {
+	var wg sync.WaitGroup
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		c := child
+		go func(stp SomaTreeProperty) {
+			defer wg.Done()
+			teb.Children[c].inheritProperty(stp)
+		}(p)
+	}
+	wg.Wait()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
