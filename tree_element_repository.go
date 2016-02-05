@@ -23,7 +23,7 @@ type SomaTreeElemRepository struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	//Checks          map[string]*SomaTreeCheck
+	Checks          map[string]SomaTreeCheck
 }
 
 type RepositorySpec struct {
@@ -55,7 +55,7 @@ func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
 	ter.PropertyService = make(map[string]SomaTreeProperty)
 	ter.PropertySystem = make(map[string]SomaTreeProperty)
 	ter.PropertyCustom = make(map[string]SomaTreeProperty)
-	//ter.Checks = make(map[string]*SomaTreeCheck)
+	ter.Checks = make(map[string]SomaTreeCheck)
 
 	// return new repository with attached fault handler
 	newFault().Attach(

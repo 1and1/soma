@@ -23,7 +23,7 @@ type SomaTreeElemNode struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	//Checks          map[string]*SomaTreeCheck
+	Checks          map[string]SomaTreeCheck
 }
 
 type NodeSpec struct {
@@ -48,7 +48,7 @@ func NewNode(name string) *SomaTreeElemNode {
 	ten.PropertyService = make(map[string]SomaTreeProperty)
 	ten.PropertySystem = make(map[string]SomaTreeProperty)
 	ten.PropertyCustom = make(map[string]SomaTreeProperty)
-	//ten.Checks = make(map[string]*SomaTreeCheck)
+	ten.Checks = make(map[string]SomaTreeCheck)
 
 	return ten
 }

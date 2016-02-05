@@ -21,7 +21,7 @@ type SomaTreeElemCluster struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	//Checks          map[string]*SomaTreeCheck
+	Checks          map[string]SomaTreeCheck
 }
 
 type ClusterSpec struct {
@@ -43,7 +43,7 @@ func NewCluster(name string) *SomaTreeElemCluster {
 	tec.PropertyService = make(map[string]SomaTreeProperty)
 	tec.PropertySystem = make(map[string]SomaTreeProperty)
 	tec.PropertyCustom = make(map[string]SomaTreeProperty)
-	//tec.Checks = make(map[string]*SomaTreeCheck)
+	tec.Checks = make(map[string]SomaTreeCheck)
 
 	return tec
 }

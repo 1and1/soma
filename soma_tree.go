@@ -18,10 +18,6 @@ type SomaTreeAction struct {
 	SourceId string
 }
 
-type SomaTreeCheck struct {
-	Id uuid.UUID
-}
-
 func New(name string) *SomaTree {
 	st := new(SomaTree)
 	st.Id = uuid.NewV4()

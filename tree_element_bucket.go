@@ -21,7 +21,7 @@ type SomaTreeElemBucket struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	//Checks          map[string]*SomaTreeCheck
+	Checks          map[string]SomaTreeCheck
 }
 
 //
@@ -43,7 +43,7 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 	teb.PropertyService = make(map[string]SomaTreeProperty)
 	teb.PropertySystem = make(map[string]SomaTreeProperty)
 	teb.PropertyCustom = make(map[string]SomaTreeProperty)
-	//teb.Checks = make(map[string]*SomaTreeCheck)
+	teb.Checks = make(map[string]SomaTreeCheck)
 
 	return teb
 }

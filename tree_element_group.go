@@ -21,7 +21,7 @@ type SomaTreeElemGroup struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	//Checks          map[string]*SomaTreeCheck
+	Checks          map[string]SomaTreeCheck
 }
 
 type GroupSepc struct {
@@ -44,7 +44,7 @@ func NewGroup(name string) *SomaTreeElemGroup {
 	teg.PropertyService = make(map[string]SomaTreeProperty)
 	teg.PropertySystem = make(map[string]SomaTreeProperty)
 	teg.PropertyCustom = make(map[string]SomaTreeProperty)
-	//teg.Checks = make(map[string]*SomaTreeCheck)
+	teg.Checks = make(map[string]SomaTreeCheck)
 
 	return teg
 }
