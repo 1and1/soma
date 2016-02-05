@@ -17,6 +17,8 @@ type SomaTreePropertyCustom struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	Key           string
+	value         string
 }
 
 func (p *SomaTreePropertyCustom) GetType() string {
@@ -43,6 +45,13 @@ type SomaTreePropertyService struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	Service       string
+	Attributes    []SomaTreePropertyServiceAttribute
+}
+
+type SomaTreePropertyServiceAttribute struct {
+	Attribute string
+	Value     string
 }
 
 func (p *SomaTreePropertyService) GetType() string {
@@ -69,6 +78,8 @@ type SomaTreePropertySystem struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	Key           string
+	Value         string
 }
 
 func (p *SomaTreePropertySystem) GetType() string {
@@ -95,6 +106,7 @@ type SomaTreePropertyOncall struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	Oncall        string
 }
 
 func (p *SomaTreePropertyOncall) GetType() string {
