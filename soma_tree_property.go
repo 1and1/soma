@@ -17,6 +17,7 @@ type SomaTreePropertyCustom struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	View          string
 	Key           string
 	value         string
 }
@@ -45,6 +46,7 @@ type SomaTreePropertyService struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	View          string
 	Service       string
 	Attributes    []SomaTreePropertyServiceAttribute
 }
@@ -78,6 +80,7 @@ type SomaTreePropertySystem struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	View          string
 	Key           string
 	Value         string
 }
@@ -106,6 +109,7 @@ type SomaTreePropertyOncall struct {
 	InheritedFrom uuid.UUID
 	Inheritance   bool
 	ChildrenOnly  bool
+	View          string
 	Oncall        string
 }
 
