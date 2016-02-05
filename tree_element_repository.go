@@ -9,20 +9,20 @@ import (
 )
 
 type SomaTreeElemRepository struct {
-	Id       uuid.UUID
-	Name     string
-	Team     uuid.UUID
-	Deleted  bool
-	Active   bool
-	Type     string
-	State    string
-	Parent   SomaTreeRepositoryReceiver            `json:"-"`
-	Fault    *SomaTreeElemFault                    `json:"-"`
-	Children map[string]SomaTreeRepositoryAttacher `json:"-"`
-	//PropertyOncall  map[string]*SomaTreePropertyOncall
-	//PropertyService map[string]*SomaTreePropertyService
-	//PropertySystem  map[string]*SomaTreePropertySystem
-	PropertyCustom map[string]SomaTreeProperty
+	Id              uuid.UUID
+	Name            string
+	Team            uuid.UUID
+	Deleted         bool
+	Active          bool
+	Type            string
+	State           string
+	Parent          SomaTreeRepositoryReceiver            `json:"-"`
+	Fault           *SomaTreeElemFault                    `json:"-"`
+	Children        map[string]SomaTreeRepositoryAttacher `json:"-"`
+	PropertyOncall  map[string]SomaTreeProperty
+	PropertyService map[string]SomaTreeProperty
+	PropertySystem  map[string]SomaTreeProperty
+	PropertyCustom  map[string]SomaTreeProperty
 	//Checks          map[string]*SomaTreeCheck
 }
 
@@ -51,9 +51,9 @@ func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
 	ter.Deleted = spec.Deleted
 	ter.Active = spec.Active
 	ter.Children = make(map[string]SomaTreeRepositoryAttacher)
-	//ter.PropertyOncall = make(map[string]*SomaTreePropertyOncall)
-	//ter.PropertyService = make(map[string]*SomaTreePropertyService)
-	//ter.PropertySystem = make(map[string]*SomaTreePropertySystem)
+	ter.PropertyOncall = make(map[string]SomaTreeProperty)
+	ter.PropertyService = make(map[string]SomaTreeProperty)
+	ter.PropertySystem = make(map[string]SomaTreeProperty)
 	ter.PropertyCustom = make(map[string]SomaTreeProperty)
 	//ter.Checks = make(map[string]*SomaTreeCheck)
 
@@ -289,102 +289,6 @@ func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
 		return
 	}
 	panic(`SomaTreeElemRepository.unlinkFault`)
-}
-
-//
-// Interface: SomaTreeFinder
-func (ter *SomaTreeElemRepository) Find(f FindRequest, b bool) SomaTreeAttacher {
-	if findRequestCheck(f, ter) {
-		return ter
-	}
-	var (
-		wg             sync.WaitGroup
-		rawResult, res chan SomaTreeAttacher
-	)
-	if len(ter.Children) == 0 {
-		goto skip
-	}
-	rawResult = make(chan SomaTreeAttacher, len(ter.Children))
-	for child, _ := range ter.Children {
-		wg.Add(1)
-		c := child
-		go func(fr FindRequest, bl bool) {
-			defer wg.Done()
-			rawResult <- ter.Children[c].(SomaTreeFinder).Find(fr, bl)
-		}(f, false)
-	}
-	wg.Wait()
-	close(rawResult)
-
-	res = make(chan SomaTreeAttacher, len(rawResult))
-	for sta := range rawResult {
-		if sta != nil {
-			res <- sta
-		}
-	}
-	close(res)
-skip:
-	switch {
-	case len(res) == 0:
-		if b {
-			return ter.Fault
-		} else {
-			return nil
-		}
-	case len(res) > 1:
-		return ter.Fault
-	}
-	return <-res
-}
-
-func (ter *SomaTreeElemRepository) SetProperty(p SomaTreeProperty) {
-	switch p.GetType() {
-	case "custom":
-		p.(*SomaTreePropertyCustom).InheritedFrom = ter.Id
-		p.(*SomaTreePropertyCustom).Inherited = false
-		ter.setCustomProperty(p)
-		f := new(SomaTreePropertyCustom)
-		*f = *p.(*SomaTreePropertyCustom)
-		f.Inherited = true
-		ter.inheritPropertyDeep(f)
-	case "service":
-		p.(*SomaTreePropertyService).InheritedFrom = ter.Id
-		p.(*SomaTreePropertyService).Inherited = false
-		ter.setServiceProperty(p)
-		f := new(SomaTreePropertyService)
-		*f = *p.(*SomaTreePropertyService)
-		f.Inherited = true
-		ter.inheritPropertyDeep(f)
-	}
-}
-
-func (ter *SomaTreeElemRepository) setCustomProperty(p SomaTreeProperty) {
-	ter.PropertyCustom[p.GetID()] = p
-}
-
-func (ter *SomaTreeElemRepository) setServiceProperty(p SomaTreeProperty) {
-	ter.PropertyService[p.GetID()] = p
-}
-
-func (ter *SomaTreeElemRepository) inheritProperty(p SomaTreeProperty) {
-	switch p.GetType() {
-	case "custom":
-		ter.setCustomProperty(p)
-		ter.inheritPropertyDeep(p)
-	}
-}
-
-func (ter *SomaTreeElemRepository) inheritPropertyDeep(p SomaTreeProperty) {
-	var wg sync.WaitGroup
-	for child, _ := range ter.Children {
-		wg.Add(1)
-		c := child
-		go func(stp SomaTreeProperty) {
-			defer wg.Done()
-			ter.Children[c].inheritProperty(stp)
-		}(p)
-	}
-	wg.Wait()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

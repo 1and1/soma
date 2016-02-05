@@ -92,16 +92,6 @@ func (tef *SomaTreeElemFault) setFault(f *SomaTreeElemFault) {
 func (tef *SomaTreeElemFault) updateFaultRecursive(f *SomaTreeElemFault) {
 }
 
-// noop, but satisfy the interface
-func (tef *SomaTreeElemFault) SetProperty(p SomaTreeProperty) {
-}
-func (tef *SomaTreeElemFault) inheritProperty(p SomaTreeProperty) {
-}
-func (tef *SomaTreeElemFault) inheritPropertyDeep(p SomaTreeProperty) {
-}
-func (tef *SomaTreeElemFault) setCustomProperty(p SomaTreeProperty) {
-}
-
 func (tef *SomaTreeElemFault) Destroy() {
 	if tef.Parent == nil {
 		panic(`SomaTreeElemFault.Destroy called without Parent to unlink from`)
