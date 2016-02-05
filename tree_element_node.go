@@ -24,6 +24,8 @@ type SomaTreeElemNode struct {
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
 	Checks          map[string]SomaTreeCheck
+	CheckInstances  map[string][]string
+	Instances       map[string]SomaTreeCheckInstance
 }
 
 type NodeSpec struct {
@@ -37,9 +39,13 @@ type NodeSpec struct {
 
 //
 // NEW
-func NewNode(name string) *SomaTreeElemNode {
+func NewNode(name string, id string) *SomaTreeElemNode {
 	ten := new(SomaTreeElemNode)
-	ten.Id = uuid.NewV4()
+	if id != "" {
+		ten.Id, _ = uuid.FromString(id)
+	} else {
+		ten.Id = uuid.NewV4()
+	}
 	ten.Name = name
 	ten.Type = "node"
 	ten.State = "floating"
@@ -49,6 +55,8 @@ func NewNode(name string) *SomaTreeElemNode {
 	ten.PropertySystem = make(map[string]SomaTreeProperty)
 	ten.PropertyCustom = make(map[string]SomaTreeProperty)
 	ten.Checks = make(map[string]SomaTreeCheck)
+	ten.CheckInstances = make(map[string][]string)
+	ten.Instances = make(map[string]SomaTreeCheckInstance)
 
 	return ten
 }

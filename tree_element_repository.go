@@ -16,14 +16,14 @@ type SomaTreeElemRepository struct {
 	Active          bool
 	Type            string
 	State           string
-	Parent          SomaTreeRepositoryReceiver            `json:"-"`
-	Fault           *SomaTreeElemFault                    `json:"-"`
-	Children        map[string]SomaTreeRepositoryAttacher `json:"-"`
+	Parent          SomaTreeRepositoryReceiver `json:"-"`
+	Fault           *SomaTreeElemFault         `json:"-"`
 	PropertyOncall  map[string]SomaTreeProperty
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
 	Checks          map[string]SomaTreeCheck
+	Children        map[string]SomaTreeRepositoryAttacher // `json:"-"`
 }
 
 type RepositorySpec struct {

@@ -14,14 +14,14 @@ type SomaTreeElemBucket struct {
 	Environment     string
 	Type            string
 	State           string
-	Parent          SomaTreeBucketReceiver            `json:"-"`
-	Fault           *SomaTreeElemFault                `json:"-"`
-	Children        map[string]SomaTreeBucketAttacher `json:"-"`
+	Parent          SomaTreeBucketReceiver `json:"-"`
+	Fault           *SomaTreeElemFault     `json:"-"`
 	PropertyOncall  map[string]SomaTreeProperty
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
 	Checks          map[string]SomaTreeCheck
+	Children        map[string]SomaTreeBucketAttacher //`json:"-"`
 }
 
 //
@@ -198,6 +198,10 @@ loop:
 // Interface: SomaTreeBucketeer
 func (teb *SomaTreeElemBucket) GetBucket() SomaTreeReceiver {
 	return teb
+}
+
+func (teb *SomaTreeElemBucket) GetEnvironment() string {
+	return teb.Environment
 }
 
 //

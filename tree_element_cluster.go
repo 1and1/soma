@@ -14,14 +14,14 @@ type SomaTreeElemCluster struct {
 	State           string
 	Team            uuid.UUID
 	Type            string
-	Parent          SomaTreeClusterReceiver            `json:"-"`
-	Fault           *SomaTreeElemFault                 `json:"-"`
-	Children        map[string]SomaTreeClusterAttacher `json:"-"`
+	Parent          SomaTreeClusterReceiver `json:"-"`
+	Fault           *SomaTreeElemFault      `json:"-"`
 	PropertyOncall  map[string]SomaTreeProperty
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
 	Checks          map[string]SomaTreeCheck
+	Children        map[string]SomaTreeClusterAttacher //`json:"-"`
 }
 
 type ClusterSpec struct {
@@ -32,9 +32,13 @@ type ClusterSpec struct {
 
 //
 // NEW
-func NewCluster(name string) *SomaTreeElemCluster {
+func NewCluster(name string, id string) *SomaTreeElemCluster {
 	tec := new(SomaTreeElemCluster)
-	tec.Id = uuid.NewV4()
+	if id != "" {
+		tec.Id, _ = uuid.FromString(id)
+	} else {
+		tec.Id = uuid.NewV4()
+	}
 	tec.Name = name
 	tec.Type = "cluster"
 	tec.State = "floating"
@@ -266,6 +270,10 @@ func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 		}
 	}
 	return tec.Parent.(SomaTreeBucketeer).GetBucket()
+}
+
+func (tec *SomaTreeElemCluster) GetEnvironment() string {
+	return tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetEnvironment()
 }
 
 //

@@ -154,6 +154,11 @@ func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
 	return tef
 }
 
+func (tef *SomaTreeElemFault) GetEnvironment() string {
+	panic(`SomaTreeElemFault.GetEnvironment`)
+	return "none"
+}
+
 //
 // Interface: SomaTreeUnlinker
 func (tef *SomaTreeElemFault) Unlink(u UnlinkRequest) {

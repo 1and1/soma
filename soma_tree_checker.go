@@ -19,6 +19,7 @@ type SomaTreeCheck struct {
 	Inheritance   bool
 	ChildrenOnly  bool
 	CapabilityId  uuid.UUID
+	View          string
 	Interval      uint64
 	Thresholds    []SomaTreeCheckThreshold
 	Constraints   []SomaTreeCheckConstraint
@@ -34,6 +35,18 @@ type SomaTreeCheckConstraint struct {
 	Type  string
 	Key   string
 	Value string
+}
+
+type SomaTreeCheckInstance struct {
+	InstanceId          uuid.UUID
+	CheckId             uuid.UUID
+	Version             uint32
+	ConstraintOncall    []string
+	ConstraintService   []string
+	ConstraintSystem    []string
+	ConstraintCustom    []string
+	ConstraintNative    map[string]string
+	ConstraintAttribute map[string][]string
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

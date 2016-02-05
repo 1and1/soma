@@ -14,14 +14,14 @@ type SomaTreeElemGroup struct {
 	State           string
 	Team            uuid.UUID
 	Type            string
-	Parent          SomaTreeGroupReceiver            `json:"-"`
-	Fault           *SomaTreeElemFault               `json:"-"`
-	Children        map[string]SomaTreeGroupAttacher `json:"-"`
+	Parent          SomaTreeGroupReceiver `json:"-"`
+	Fault           *SomaTreeElemFault    `json:"-"`
 	PropertyOncall  map[string]SomaTreeProperty
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
 	Checks          map[string]SomaTreeCheck
+	Children        map[string]SomaTreeGroupAttacher //`json:"-"`
 }
 
 type GroupSepc struct {
@@ -32,9 +32,13 @@ type GroupSepc struct {
 
 //
 // NEW
-func NewGroup(name string) *SomaTreeElemGroup {
+func NewGroup(name string, id string) *SomaTreeElemGroup {
 	teg := new(SomaTreeElemGroup)
-	teg.Id = uuid.NewV4()
+	if id != "" {
+		teg.Id, _ = uuid.FromString(id)
+	} else {
+		teg.Id = uuid.NewV4()
+	}
 	teg.Name = name
 	teg.Type = "group"
 	teg.State = "floating"
@@ -280,6 +284,10 @@ func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
 		}
 	}
 	return teg.Parent.(SomaTreeBucketeer).GetBucket()
+}
+
+func (teg *SomaTreeElemGroup) GetEnvironment() string {
+	return teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetEnvironment()
 }
 
 //
