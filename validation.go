@@ -1,5 +1,7 @@
 package somatree
 
+import "github.com/satori/go.uuid"
+
 func specRepoCheck(spec RepositorySpec) bool {
 	switch {
 	case spec.Id == "":
