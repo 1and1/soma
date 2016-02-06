@@ -40,6 +40,15 @@ func (ter *SomaTreeElemRepository) SetProperty(
 		f.Inherited = true
 		ter.inheritPropertyDeep(f)
 	}
+	ter.Action <- &Action{
+		Action:         "property_new",
+		Type:           "repository",
+		Id:             ter.Id.String(),
+		Name:           ter.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
 }
 
 func (ter *SomaTreeElemRepository) inheritProperty(
@@ -53,6 +62,15 @@ func (ter *SomaTreeElemRepository) inheritProperty(
 		ter.setSystemProperty(p)
 	case "oncall":
 		ter.setOncallProperty(p)
+	}
+	ter.Action <- &Action{
+		Action:         "property_new",
+		Type:           "repository",
+		Id:             ter.Id.String(),
+		Name:           ter.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
 	}
 	ter.inheritPropertyDeep(p)
 }

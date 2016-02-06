@@ -14,6 +14,8 @@ type SomaTreeElemFault struct {
 	State  string
 	Parent SomaTreeFaultReceiver `json:"-"`
 	Errors []error
+	Action chan *Action `json:"-"`
+	Error  chan *Error  `json:"-"`
 }
 
 //
@@ -28,6 +30,13 @@ func newFault() *SomaTreeElemFault {
 	tef.Parent = nil
 
 	return tef
+}
+
+func (tef *SomaTreeElemFault) getErrors() []error {
+	err := make([]error, len(tef.Errors))
+	copy(err, tef.Errors)
+	tef.Errors = make([]error, 0)
+	return err
 }
 
 //
@@ -48,18 +57,6 @@ func (tef SomaTreeElemFault) CloneRepository() SomaTreeRepositoryAttacher {
 	return &tef
 }
 
-//
-// Interface: SomaTreeAttacher
-func (tef *SomaTreeElemFault) Attach(a AttachRequest) {
-	if tef.Parent != nil {
-		panic(`SomaTreeElemFault.Attach: already attached`)
-	}
-	switch {
-	case a.ParentType == "repository":
-		tef.attachToRepository(a)
-	}
-}
-
 func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeFaultReceiver:
@@ -68,6 +65,26 @@ func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemFault.setParent`)
+	}
+}
+
+func (tef *SomaTreeElemFault) setAction(c chan *Action) {
+	tef.Action = c
+
+	tef.Action <- &Action{
+		Action: "create",
+		Type:   "fault",
+		Id:     tef.Id.String(),
+		Name:   tef.Name,
+	}
+}
+
+func (tef *SomaTreeElemFault) setError(c chan *Error) {
+	tef.Error = c
+
+	tef.Action <- &Action{
+		Action: "attached",
+		Type:   "errorchannel",
 	}
 }
 
@@ -92,40 +109,6 @@ func (tef *SomaTreeElemFault) setFault(f *SomaTreeElemFault) {
 func (tef *SomaTreeElemFault) updateFaultRecursive(f *SomaTreeElemFault) {
 }
 
-func (tef *SomaTreeElemFault) Destroy() {
-	if tef.Parent == nil {
-		panic(`SomaTreeElemFault.Destroy called without Parent to unlink from`)
-	}
-
-	tef.Parent.(SomaTreeAttacher).updateFaultRecursive(nil)
-
-	tef.Parent.Unlink(UnlinkRequest{
-		ParentType: tef.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   tef.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: tef.Parent.(SomaTreeBuilder).GetName(),
-		ChildType:  tef.GetType(),
-		ChildName:  tef.GetName(),
-		ChildId:    tef.GetID(),
-	},
-	)
-}
-
-func (tef *SomaTreeElemFault) Detach() {
-	tef.Destroy()
-}
-
-//
-// Interface: SomaTreeRepositoryAttacher
-func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
-	a.Root.Receive(ReceiveRequest{
-		ParentType: a.ParentType,
-		ParentId:   a.ParentId,
-		ParentName: a.ParentName,
-		ChildType:  tef.Type,
-		Fault:      tef,
-	})
-}
-
 /*
  * Fault Handler Special Sauce
  *
@@ -142,12 +125,6 @@ func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
  */
 
 //
-// Interface: SomaTreeReceiver
-func (tef *SomaTreeElemFault) Receive(r ReceiveRequest) {
-	panic(`SomaTreeElemFault.Receive`)
-}
-
-//
 // Interface: SomaTreeBucketeer
 func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
 	panic(`SomaTreeElemFault.GetBucket`)
@@ -157,12 +134,6 @@ func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
 func (tef *SomaTreeElemFault) GetEnvironment() string {
 	panic(`SomaTreeElemFault.GetEnvironment`)
 	return "none"
-}
-
-//
-// Interface: SomaTreeUnlinker
-func (tef *SomaTreeElemFault) Unlink(u UnlinkRequest) {
-	panic(`SomaTreeElemFault.Unlink`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

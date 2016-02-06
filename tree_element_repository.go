@@ -24,6 +24,7 @@ type SomaTreeElemRepository struct {
 	PropertyCustom  map[string]SomaTreeProperty
 	Checks          map[string]SomaTreeCheck
 	Children        map[string]SomaTreeRepositoryAttacher // `json:"-"`
+	Action          chan *Action                          `json:"-"`
 }
 
 type RepositorySpec struct {
@@ -91,20 +92,6 @@ func (ter *SomaTreeElemRepository) GetType() string {
 	return ter.Type
 }
 
-//
-// Interface: SomaTreeAttacher
-func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
-	if ter.Parent != nil {
-		panic(`SomaTreeElemRepository.Attach: already attached`)
-	}
-	switch {
-	case a.ParentType == "root" &&
-		a.ChildType == "repository" &&
-		a.ChildName == ter.Name:
-		ter.attachToRoot(a)
-	}
-}
-
 func (ter *SomaTreeElemRepository) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeRepositoryReceiver:
@@ -114,6 +101,23 @@ func (ter *SomaTreeElemRepository) setParent(p SomaTreeReceiver) {
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
 		panic(`SomaTreeElemBucket.setParent`)
 	}
+}
+
+func (ter *SomaTreeElemRepository) setAction(c chan *Action) {
+	ter.Action = c
+}
+
+func (ter *SomaTreeElemRepository) setError(c chan *Error) {
+	if ter.Fault != nil {
+		ter.Fault.setError(c)
+	}
+}
+
+func (ter *SomaTreeElemRepository) getErrors() []error {
+	if ter.Fault != nil {
+		return ter.Fault.getErrors()
+	}
+	return []error{}
 }
 
 func (ter *SomaTreeElemRepository) setRepositoryParent(p SomaTreeRepositoryReceiver) {
@@ -155,140 +159,6 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 		}(f)
 	}
 	wg.Wait()
-}
-
-func (ter *SomaTreeElemRepository) Destroy() {
-	if ter.Parent == nil {
-		panic(`SomaTreeElemRepository.Destroy called without Parent to unlink from`)
-	}
-
-	// the Destroy handler of SomaTreeElemFault calls
-	// updateFaultRecursive(nil) on us
-	ter.Fault.Destroy()
-
-	ter.Parent.Unlink(UnlinkRequest{
-		ParentType: ter.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   ter.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: ter.Parent.(SomaTreeBuilder).GetName(),
-		ChildType:  ter.GetType(),
-		ChildName:  ter.GetName(),
-		ChildId:    ter.GetID(),
-	},
-	)
-}
-
-func (ter *SomaTreeElemRepository) Detach() {
-	ter.Destroy()
-}
-
-// Interface: SomaTreeRootAttacher
-func (ter *SomaTreeElemRepository) attachToRoot(a AttachRequest) {
-	a.Root.Receive(ReceiveRequest{
-		ParentType: a.ParentType,
-		ParentId:   a.ParentId,
-		ParentName: a.ParentName,
-		ChildType:  "repository",
-		Repository: ter,
-	})
-}
-
-// Interface: SomaTreeReceiver
-func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
-	if receiveRequestCheck(r, ter) {
-		switch r.ChildType {
-		case "bucket":
-			ter.receiveBucket(r)
-		case "fault":
-			ter.receiveFault(r)
-		default:
-			panic(`SomaTreeElemRepository.Receive`)
-		}
-		return
-	}
-	for child, _ := range ter.Children {
-		ter.Children[child].(SomaTreeReceiver).Receive(r)
-	}
-}
-
-// Interface: SomaTreeUnlinker
-func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
-	if unlinkRequestCheck(u, ter) {
-		switch u.ChildType {
-		case "bucket":
-			ter.unlinkBucket(u)
-		case "fault":
-			ter.unlinkFault(u)
-		default:
-			panic(`SomaTreeElemRepository.Unlink`)
-		}
-		return
-	}
-	for child, _ := range ter.Children {
-		ter.Children[child].(SomaTreeUnlinker).Unlink(u)
-	}
-}
-
-// Interface: SomaTreeBucketReceiver
-func (ter *SomaTreeElemRepository) receiveBucket(r ReceiveRequest) {
-	if receiveRequestCheck(r, ter) {
-		switch r.ChildType {
-		case "bucket":
-			ter.Children[r.Bucket.GetID()] = r.Bucket
-			r.Bucket.setParent(ter)
-		default:
-			panic(`SomaTreeElemRepository.receiveBucket`)
-		}
-	}
-}
-
-// Interface: SomaTreeBucketUnlinker
-func (ter *SomaTreeElemRepository) unlinkBucket(u UnlinkRequest) {
-	if unlinkRequestCheck(u, ter) {
-		switch u.ChildType {
-		case "bucket":
-			if _, ok := ter.Children[u.ChildId]; ok {
-				if u.ChildName == ter.Children[u.ChildId].GetName() {
-					ter.Children[u.ChildId].clearParent()
-					delete(ter.Children, u.ChildId)
-				}
-			}
-		default:
-			panic(`SomaTreeElemRepository.unlinkBucket`)
-		}
-		return
-	}
-	panic(`SomaTreeElemRepository.unlinkBucket`)
-}
-
-// Interface: SomaTreeFaultReceiver
-func (ter *SomaTreeElemRepository) receiveFault(r ReceiveRequest) {
-	if receiveRequestCheck(r, ter) {
-		switch r.ChildType {
-		case "fault":
-			ter.setFault(r.Fault)
-			ter.Fault.setParent(ter)
-			ter.updateFaultRecursive(ter.Fault)
-		default:
-			panic(`SomaTreeElemRepository.receiveFault`)
-		}
-		return
-	}
-	panic(`SomaTreeElemRepository.receiveFault`)
-}
-
-// Interface: SomaTreeFaultUnlinker
-func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
-	if unlinkRequestCheck(u, ter) {
-		switch u.ChildType {
-		case "fault":
-			ter.Fault = nil
-			ter.updateFaultRecursive(ter.Fault)
-		default:
-			panic(`SomaTreeElemRepository.unlinkFault`)
-		}
-		return
-	}
-	panic(`SomaTreeElemRepository.unlinkFault`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

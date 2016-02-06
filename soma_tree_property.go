@@ -5,6 +5,7 @@ import "github.com/satori/go.uuid"
 type SomaTreeProperty interface {
 	GetType() string
 	GetID() string
+	GetSource() string
 	hasInheritance() bool
 	isChildrenOnly() bool
 }
@@ -28,6 +29,10 @@ func (p *SomaTreePropertyCustom) GetType() string {
 
 func (p *SomaTreePropertyCustom) GetID() string {
 	return p.Id.String()
+}
+
+func (p *SomaTreePropertyCustom) GetSource() string {
+	return p.InheritedFrom.String()
 }
 
 func (p *SomaTreePropertyCustom) hasInheritance() bool {
@@ -64,6 +69,10 @@ func (p *SomaTreePropertyService) GetID() string {
 	return p.Id.String()
 }
 
+func (p *SomaTreePropertyService) GetSource() string {
+	return p.InheritedFrom.String()
+}
+
 func (p *SomaTreePropertyService) hasInheritance() bool {
 	return p.Inheritance
 }
@@ -93,6 +102,10 @@ func (p *SomaTreePropertySystem) GetID() string {
 	return p.Id.String()
 }
 
+func (p *SomaTreePropertySystem) GetSource() string {
+	return p.InheritedFrom.String()
+}
+
 func (p *SomaTreePropertySystem) hasInheritance() bool {
 	return p.Inheritance
 }
@@ -119,6 +132,10 @@ func (p *SomaTreePropertyOncall) GetType() string {
 
 func (p *SomaTreePropertyOncall) GetID() string {
 	return p.Id.String()
+}
+
+func (p *SomaTreePropertyOncall) GetSource() string {
+	return p.InheritedFrom.String()
 }
 
 func (p *SomaTreePropertyOncall) hasInheritance() bool {

@@ -3,25 +3,25 @@ package somatree
 import "github.com/satori/go.uuid"
 
 type SomaTree struct {
-	Id    uuid.UUID
-	Name  string
-	Type  string
-	Child *SomaTreeElemRepository
-	Snap  *SomaTreeElemRepository
+	Id     uuid.UUID
+	Name   string
+	Type   string
+	Child  *SomaTreeElemRepository
+	Snap   *SomaTreeElemRepository
+	Action chan *Action `json:"-"`
 }
 
-type SomaTreeAction struct {
-	Action   string
-	Type     string
-	TypeId   string
-	Id       string
-	SourceId string
+type TreeSpec struct {
+	Id     string
+	Name   string
+	Action chan *Action
 }
 
-func New(name string) *SomaTree {
+func New(spec TreeSpec) *SomaTree {
 	st := new(SomaTree)
-	st.Id = uuid.NewV4()
-	st.Name = name
+	st.Id, _ = uuid.FromString(spec.Id)
+	st.Name = spec.Name
+	st.Action = spec.Action
 	st.Type = "root"
 	return st
 }
@@ -52,6 +52,20 @@ func (st *SomaTree) GetName() string {
 
 func (st *SomaTree) GetType() string {
 	return st.Type
+}
+
+//
+func (st *SomaTree) SetError(c chan *Error) {
+	if st.Child != nil {
+		st.Child.setError(c)
+	}
+}
+
+func (st *SomaTree) GetErrors() []error {
+	if st.Child != nil {
+		return st.Child.getErrors()
+	}
+	return []error{}
 }
 
 // Interface: SomaTreeReceiver
@@ -96,6 +110,7 @@ func (st *SomaTree) receiveRepository(r ReceiveRequest) {
 		r.ChildType == "repository":
 		st.Child = r.Repository
 		r.Repository.setParent(st)
+		r.Repository.setAction(st.Action)
 	default:
 		panic("not allowed")
 	}

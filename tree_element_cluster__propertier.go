@@ -40,6 +40,15 @@ func (tec *SomaTreeElemCluster) SetProperty(
 		f.Inherited = true
 		tec.inheritPropertyDeep(f)
 	}
+	tec.Action <- &Action{
+		Action:         "property_new",
+		Type:           "cluster",
+		Id:             tec.Id.String(),
+		Name:           tec.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
 }
 
 func (tec *SomaTreeElemCluster) inheritProperty(
@@ -53,6 +62,15 @@ func (tec *SomaTreeElemCluster) inheritProperty(
 		tec.setSystemProperty(p)
 	case "oncall":
 		tec.setOncallProperty(p)
+	}
+	tec.Action <- &Action{
+		Action:         "property_new",
+		Type:           "cluster",
+		Id:             tec.Id.String(),
+		Name:           tec.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
 	}
 	tec.inheritPropertyDeep(p)
 }

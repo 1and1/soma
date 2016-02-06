@@ -2,22 +2,25 @@ package somatree
 
 import "github.com/satori/go.uuid"
 
-func (ten *SomaTreeElemNode) updateCheckInstances() {
+func (tec *SomaTreeElemCluster) updateCheckInstances() {
 	// object has no checks
-	if len(ten.Checks) == 0 {
+	if len(tec.Checks) == 0 {
 		return
 	}
 
 	// process checks
 checksloop:
-	for i, _ := range ten.Checks {
-		if ten.Checks[i].Inherited == false && ten.Checks[i].ChildrenOnly == true {
+	for i, _ := range tec.Checks {
+		if tec.Checks[i].Inherited == false && tec.Checks[i].ChildrenOnly == true {
+			continue checksloop
+		}
+		if tec.Checks[i].View == "local" {
 			continue checksloop
 		}
 		hasBrokenConstraint := false
 		hasServiceConstraint := false
 		hasAttributeConstraint := false
-		view := ten.Checks[i].View
+		view := tec.Checks[i].View
 
 		attributes := []SomaTreeCheckConstraint{}
 		oncallC := ""                                  // Id
@@ -30,31 +33,31 @@ checksloop:
 		// these constaint types must always match for the instance to
 		// be valid. defer service and attribute
 	constraintcheck:
-		for _, c := range ten.Checks[i].Constraints {
+		for _, c := range tec.Checks[i].Constraints {
 			switch c.Type {
 			case "native":
-				if ten.evalNativeProp(c.Key, c.Value) {
+				if tec.evalNativeProp(c.Key, c.Value) {
 					nativeC[c.Key] = c.Value
 				} else {
 					hasBrokenConstraint = true
 					break constraintcheck
 				}
 			case "system":
-				if id, hit := ten.evalSystemProp(c.Key, c.Value, view); hit {
+				if id, hit := tec.evalSystemProp(c.Key, c.Value, view); hit {
 					systemC[id] = c.Value
 				} else {
 					hasBrokenConstraint = true
 					break constraintcheck
 				}
 			case "oncall":
-				if id, hit := ten.evalOncallProp(c.Key, c.Value, view); hit {
+				if id, hit := tec.evalOncallProp(c.Key, c.Value, view); hit {
 					oncallC = id
 				} else {
 					hasBrokenConstraint = true
 					break constraintcheck
 				}
 			case "custom":
-				if id, hit := ten.evalCustomProp(c.Key, c.Value, view); hit {
+				if id, hit := tec.evalCustomProp(c.Key, c.Value, view); hit {
 					customC[id] = c.Value
 				} else {
 					hasBrokenConstraint = true
@@ -62,7 +65,7 @@ checksloop:
 				}
 			case "service":
 				hasServiceConstraint = true
-				if id, hit := ten.evalServiceProp(c.Key, c.Value, view); hit {
+				if id, hit := tec.evalServiceProp(c.Key, c.Value, view); hit {
 					serviceC[id] = c.Value
 				} else {
 					hasBrokenConstraint = true
@@ -81,7 +84,7 @@ checksloop:
 		svcattrloop:
 			for id, _ := range serviceC {
 				for _, attr := range attributes {
-					hit := ten.evalAttributeOfService(id, view, attr.Key, attr.Value)
+					hit := tec.evalAttributeOfService(id, view, attr.Key, attr.Value)
 					if hit {
 						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], attr.Value)
 					} else {
@@ -93,7 +96,7 @@ checksloop:
 		} else if hasAttributeConstraint {
 			attrCount := len(attributes)
 			for _, attr := range attributes {
-				hit, svcIdMap := ten.evalAttributeProp(view, attr.Key, attr.Value)
+				hit, svcIdMap := tec.evalAttributeProp(view, attr.Key, attr.Value)
 				if hit {
 					for id, _ := range svcIdMap {
 						serviceC[id] = svcIdMap[id]
@@ -123,7 +126,7 @@ checksloop:
 		}
 
 		for svcId, _ := range serviceC {
-			svcCfg := ten.getServiceMap(svcId)
+			svcCfg := tec.getServiceMap(svcId)
 
 			// calculate how many instances this service spawns
 			combinations := 1
@@ -182,7 +185,7 @@ checksloop:
 				inst.calcConstraintHash()
 				inst.calcConstraintValHash()
 				inst.calcInstanceSvcCfgHash()
-				// TODO lookup existing instance ids for check in ten.CheckInstances
+				// TODO lookup existing instance ids for check in tec.CheckInstances
 				// TODO check existing for same ConstraintHash
 				// TODO ... same ConstraintValHash
 				// TODO ... ... same InstanceSvcCfgHash --> instance update
@@ -192,18 +195,18 @@ checksloop:
 				inst.Version = 0
 				inst.CheckId, _ = uuid.FromString(i)
 				inst.InstanceId = uuid.NewV4()
-				ten.Instances[inst.InstanceId.String()] = inst
-				ten.CheckInstances[i] = append(ten.CheckInstances[i], inst.InstanceId.String())
+				tec.Instances[inst.InstanceId.String()] = inst
+				tec.CheckInstances[i] = append(tec.CheckInstances[i], inst.InstanceId.String())
 			}
 		}
 	}
 }
 
-func (ten *SomaTreeElemNode) evalNativeProp(
+func (tec *SomaTreeElemCluster) evalNativeProp(
 	prop string, val string) bool {
 	switch prop {
 	case "environment":
-		env := ten.Parent.(SomaTreeBucketeer).GetEnvironment()
+		env := tec.Parent.(SomaTreeBucketeer).GetEnvironment()
 		if val == env {
 			return true
 		}
@@ -212,53 +215,53 @@ func (ten *SomaTreeElemNode) evalNativeProp(
 			return true
 		}
 	case "object_state":
-		if val == ten.State {
+		if val == tec.State {
 			return true
 		}
 	}
 	return false
 }
 
-func (ten *SomaTreeElemNode) evalSystemProp(
+func (tec *SomaTreeElemCluster) evalSystemProp(
 	prop string, val string, view string) (string, bool) {
 	// TODO
 	return "", false
 }
 
-func (ten *SomaTreeElemNode) evalOncallProp(
+func (tec *SomaTreeElemCluster) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
 	// TODO
 	return "", false
 }
 
-func (ten *SomaTreeElemNode) evalCustomProp(
+func (tec *SomaTreeElemCluster) evalCustomProp(
 	prop string, val string, view string) (string, bool) {
 	// TODO
 	return "", false
 }
 
-func (ten *SomaTreeElemNode) evalServiceProp(
+func (tec *SomaTreeElemCluster) evalServiceProp(
 	prop string, val string, view string) (string, bool) {
 	// TODO
 	return "", false
 }
 
-func (ten *SomaTreeElemNode) evalAttributeOfService(
+func (tec *SomaTreeElemCluster) evalAttributeOfService(
 	svcName string, view string, attribute string, value string) bool {
 	// TODO
 	return false
 }
 
-func (ten *SomaTreeElemNode) evalAttributeProp(
+func (tec *SomaTreeElemCluster) evalAttributeProp(
 	view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
 	// TODO
 	return false, f
 }
 
-func (ten *SomaTreeElemNode) getServiceMap(serviceId string) map[string][]string {
+func (tec *SomaTreeElemCluster) getServiceMap(serviceId string) map[string][]string {
 	svc := new(SomaTreePropertyService)
-	svc = ten.PropertyService[serviceId].(*SomaTreePropertyService)
+	svc = tec.PropertyService[serviceId].(*SomaTreePropertyService)
 
 	res := map[string][]string{}
 	for _, v := range svc.Attributes {

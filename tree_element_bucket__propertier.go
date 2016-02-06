@@ -40,6 +40,15 @@ func (teb *SomaTreeElemBucket) SetProperty(
 		f.Inherited = true
 		teb.inheritPropertyDeep(f)
 	}
+	teb.Action <- &Action{
+		Action:         "property_new",
+		Type:           "bucket",
+		Id:             teb.Id.String(),
+		Name:           teb.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
 }
 
 func (teb *SomaTreeElemBucket) inheritProperty(
@@ -54,6 +63,16 @@ func (teb *SomaTreeElemBucket) inheritProperty(
 	case "oncall":
 		teb.setOncallProperty(p)
 	}
+	teb.Action <- &Action{
+		Action:         "property_new",
+		Type:           "bucket",
+		Id:             teb.Id.String(),
+		Name:           teb.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
+
 	teb.inheritPropertyDeep(p)
 }
 

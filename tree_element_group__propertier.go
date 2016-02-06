@@ -40,6 +40,15 @@ func (teg *SomaTreeElemGroup) SetProperty(
 		f.Inherited = true
 		teg.inheritPropertyDeep(f)
 	}
+	teg.Action <- &Action{
+		Action:         "property_new",
+		Type:           "group",
+		Id:             teg.Id.String(),
+		Name:           teg.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
 }
 
 func (teg *SomaTreeElemGroup) inheritProperty(
@@ -54,6 +63,16 @@ func (teg *SomaTreeElemGroup) inheritProperty(
 	case "oncall":
 		teg.setOncallProperty(p)
 	}
+	teg.Action <- &Action{
+		Action:         "property_new",
+		Type:           "group",
+		Id:             teg.Id.String(),
+		Name:           teg.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
+
 	teg.inheritPropertyDeep(p)
 }
 

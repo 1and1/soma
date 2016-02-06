@@ -38,6 +38,15 @@ func (ten *SomaTreeElemNode) SetProperty(
 		f.Inherited = true
 		ten.inheritPropertyDeep(f)
 	}
+	ten.Action <- &Action{
+		Action:         "property_new",
+		Type:           "node",
+		Id:             ten.Id.String(),
+		Name:           ten.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
+	}
 }
 
 func (ten *SomaTreeElemNode) inheritProperty(
@@ -51,6 +60,15 @@ func (ten *SomaTreeElemNode) inheritProperty(
 		ten.setSystemProperty(p)
 	case "oncall":
 		ten.setOncallProperty(p)
+	}
+	ten.Action <- &Action{
+		Action:         "property_new",
+		Type:           "node",
+		Id:             ten.Id.String(),
+		Name:           ten.Name,
+		PropertyType:   p.GetType(),
+		PropertyId:     p.GetID(),
+		PropertySource: p.GetSource(),
 	}
 	// no inheritPropertyDeep(), nodes have no children
 }
