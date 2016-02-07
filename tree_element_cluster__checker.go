@@ -35,6 +35,15 @@ func (tec *SomaTreeElemCluster) inheritCheckDeep(c SomaTreeCheck) {
 
 func (tec *SomaTreeElemCluster) storeCheck(c SomaTreeCheck) {
 	tec.Checks[c.Id.String()] = c
+
+	tec.Action <- &Action{
+		Action:          "create_check",
+		Type:            "cluster",
+		Id:              tec.Id.String(),
+		CheckId:         c.Id.String(),
+		CheckSource:     c.InheritedFrom.String(),
+		CheckCapability: c.CapabilityId.String(),
+	}
 }
 
 func (tec *SomaTreeElemCluster) syncCheck(childId string) {

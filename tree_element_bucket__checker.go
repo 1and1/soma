@@ -35,6 +35,15 @@ func (teb *SomaTreeElemBucket) inheritCheckDeep(c SomaTreeCheck) {
 
 func (teb *SomaTreeElemBucket) storeCheck(c SomaTreeCheck) {
 	teb.Checks[c.Id.String()] = c
+
+	teb.Action <- &Action{
+		Action:          "create_check",
+		Type:            "bucket",
+		Id:              teb.Id.String(),
+		CheckId:         c.Id.String(),
+		CheckSource:     c.InheritedFrom.String(),
+		CheckCapability: c.CapabilityId.String(),
+	}
 }
 
 func (teb *SomaTreeElemBucket) syncCheck(childId string) {

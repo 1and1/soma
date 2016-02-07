@@ -18,6 +18,15 @@ func (ten *SomaTreeElemNode) inheritCheckDeep(c SomaTreeCheck) {
 
 func (ten *SomaTreeElemNode) storeCheck(c SomaTreeCheck) {
 	ten.Checks[c.Id.String()] = c
+
+	ten.Action <- &Action{
+		Action:          "create_check",
+		Type:            "node",
+		Id:              ten.Id.String(),
+		CheckId:         c.Id.String(),
+		CheckSource:     c.InheritedFrom.String(),
+		CheckCapability: c.CapabilityId.String(),
+	}
 }
 
 // noop, satisfy interface

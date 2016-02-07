@@ -35,6 +35,15 @@ func (ter *SomaTreeElemRepository) inheritCheckDeep(c SomaTreeCheck) {
 
 func (ter *SomaTreeElemRepository) storeCheck(c SomaTreeCheck) {
 	ter.Checks[c.Id.String()] = c
+
+	ter.Action <- &Action{
+		Action:          "create_check",
+		Type:            "repository",
+		Id:              ter.Id.String(),
+		CheckId:         c.Id.String(),
+		CheckSource:     c.InheritedFrom.String(),
+		CheckCapability: c.CapabilityId.String(),
+	}
 }
 
 func (ter *SomaTreeElemRepository) syncCheck(childId string) {

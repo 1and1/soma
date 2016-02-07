@@ -35,6 +35,15 @@ func (teg *SomaTreeElemGroup) inheritCheckDeep(c SomaTreeCheck) {
 
 func (teg *SomaTreeElemGroup) storeCheck(c SomaTreeCheck) {
 	teg.Checks[c.Id.String()] = c
+
+	teg.Action <- &Action{
+		Action:          "create_check",
+		Type:            "group",
+		Id:              teg.Id.String(),
+		CheckId:         c.Id.String(),
+		CheckSource:     c.InheritedFrom.String(),
+		CheckCapability: c.CapabilityId.String(),
+	}
 }
 
 func (teg *SomaTreeElemGroup) syncCheck(childId string) {
