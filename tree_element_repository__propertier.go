@@ -8,35 +8,35 @@ func (ter *SomaTreeElemRepository) SetProperty(
 	p SomaTreeProperty) {
 	switch p.GetType() {
 	case "custom":
-		p.(*SomaTreePropertyCustom).InheritedFrom = ter.Id
-		p.(*SomaTreePropertyCustom).Inherited = false
+		p.(*PropertyCustom).InheritedFrom = ter.Id
+		p.(*PropertyCustom).Inherited = false
 		ter.setCustomProperty(p)
-		f := new(SomaTreePropertyCustom)
-		*f = *p.(*SomaTreePropertyCustom)
+		f := new(PropertyCustom)
+		*f = *p.(*PropertyCustom)
 		f.Inherited = true
 		ter.inheritPropertyDeep(f)
 	case "service":
-		p.(*SomaTreePropertyService).InheritedFrom = ter.Id
-		p.(*SomaTreePropertyService).Inherited = false
+		p.(*PropertyService).InheritedFrom = ter.Id
+		p.(*PropertyService).Inherited = false
 		ter.setServiceProperty(p)
-		f := new(SomaTreePropertyService)
-		*f = *p.(*SomaTreePropertyService)
+		f := new(PropertyService)
+		*f = *p.(*PropertyService)
 		f.Inherited = true
 		ter.inheritPropertyDeep(f)
 	case "system":
-		p.(*SomaTreePropertySystem).InheritedFrom = ter.Id
-		p.(*SomaTreePropertySystem).Inherited = false
+		p.(*PropertySystem).InheritedFrom = ter.Id
+		p.(*PropertySystem).Inherited = false
 		ter.setSystemProperty(p)
-		f := new(SomaTreePropertySystem)
-		*f = *p.(*SomaTreePropertySystem)
+		f := new(PropertySystem)
+		*f = *p.(*PropertySystem)
 		f.Inherited = true
 		ter.inheritPropertyDeep(f)
 	case "oncall":
-		p.(*SomaTreePropertyOncall).InheritedFrom = ter.Id
-		p.(*SomaTreePropertyOncall).Inherited = false
+		p.(*PropertyOncall).InheritedFrom = ter.Id
+		p.(*PropertyOncall).Inherited = false
 		ter.setOncallProperty(p)
-		f := new(SomaTreePropertyOncall)
-		*f = *p.(*SomaTreePropertyOncall)
+		f := new(PropertyOncall)
+		*f = *p.(*PropertyOncall)
 		f.Inherited = true
 		ter.inheritPropertyDeep(f)
 	}
@@ -118,8 +118,8 @@ customloop:
 		if !ter.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := new(SomaTreePropertyCustom)
-		*f = *ter.PropertyCustom[prop].(*SomaTreePropertyCustom)
+		f := new(PropertyCustom)
+		*f = *ter.PropertyCustom[prop].(*PropertyCustom)
 		f.Inherited = true
 		ter.Children[childId].inheritProperty(f)
 	}
@@ -128,8 +128,8 @@ oncallloop:
 		if !ter.PropertyOncall[prop].hasInheritance() {
 			continue oncallloop
 		}
-		f := new(SomaTreePropertyOncall)
-		*f = *ter.PropertyOncall[prop].(*SomaTreePropertyOncall)
+		f := new(PropertyOncall)
+		*f = *ter.PropertyOncall[prop].(*PropertyOncall)
 		f.Inherited = true
 		ter.Children[childId].inheritProperty(f)
 	}
@@ -138,8 +138,8 @@ serviceloop:
 		if !ter.PropertyService[prop].hasInheritance() {
 			continue serviceloop
 		}
-		f := new(SomaTreePropertyService)
-		*f = *ter.PropertyService[prop].(*SomaTreePropertyService)
+		f := new(PropertyService)
+		*f = *ter.PropertyService[prop].(*PropertyService)
 		f.Inherited = true
 		ter.Children[childId].inheritProperty(f)
 	}
@@ -148,8 +148,8 @@ systemloop:
 		if !ter.PropertySystem[prop].hasInheritance() {
 			continue systemloop
 		}
-		f := new(SomaTreePropertySystem)
-		*f = *ter.PropertySystem[prop].(*SomaTreePropertySystem)
+		f := new(PropertySystem)
+		*f = *ter.PropertySystem[prop].(*PropertySystem)
 		f.Inherited = true
 		ter.Children[childId].inheritProperty(f)
 	}

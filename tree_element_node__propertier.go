@@ -6,35 +6,35 @@ func (ten *SomaTreeElemNode) SetProperty(
 	p SomaTreeProperty) {
 	switch p.GetType() {
 	case "custom":
-		p.(*SomaTreePropertyCustom).InheritedFrom = ten.Id
-		p.(*SomaTreePropertyCustom).Inherited = false
+		p.(*PropertyCustom).InheritedFrom = ten.Id
+		p.(*PropertyCustom).Inherited = false
 		ten.setCustomProperty(p)
-		f := new(SomaTreePropertyCustom)
-		*f = *p.(*SomaTreePropertyCustom)
+		f := new(PropertyCustom)
+		*f = *p.(*PropertyCustom)
 		f.Inherited = true
 		ten.inheritPropertyDeep(f)
 	case "service":
-		p.(*SomaTreePropertyService).InheritedFrom = ten.Id
-		p.(*SomaTreePropertyService).Inherited = false
+		p.(*PropertyService).InheritedFrom = ten.Id
+		p.(*PropertyService).Inherited = false
 		ten.setServiceProperty(p)
-		f := new(SomaTreePropertyService)
-		*f = *p.(*SomaTreePropertyService)
+		f := new(PropertyService)
+		*f = *p.(*PropertyService)
 		f.Inherited = true
 		ten.inheritPropertyDeep(f)
 	case "system":
-		p.(*SomaTreePropertySystem).InheritedFrom = ten.Id
-		p.(*SomaTreePropertySystem).Inherited = false
+		p.(*PropertySystem).InheritedFrom = ten.Id
+		p.(*PropertySystem).Inherited = false
 		ten.setSystemProperty(p)
-		f := new(SomaTreePropertySystem)
-		*f = *p.(*SomaTreePropertySystem)
+		f := new(PropertySystem)
+		*f = *p.(*PropertySystem)
 		f.Inherited = true
 		ten.inheritPropertyDeep(f)
 	case "oncall":
-		p.(*SomaTreePropertyOncall).InheritedFrom = ten.Id
-		p.(*SomaTreePropertyOncall).Inherited = false
+		p.(*PropertyOncall).InheritedFrom = ten.Id
+		p.(*PropertyOncall).Inherited = false
 		ten.setOncallProperty(p)
-		f := new(SomaTreePropertyOncall)
-		*f = *p.(*SomaTreePropertyOncall)
+		f := new(PropertyOncall)
+		*f = *p.(*PropertyOncall)
 		f.Inherited = true
 		ten.inheritPropertyDeep(f)
 	}

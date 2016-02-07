@@ -8,35 +8,35 @@ func (tec *SomaTreeElemCluster) SetProperty(
 	p SomaTreeProperty) {
 	switch p.GetType() {
 	case "custom":
-		p.(*SomaTreePropertyCustom).InheritedFrom = tec.Id
-		p.(*SomaTreePropertyCustom).Inherited = false
+		p.(*PropertyCustom).InheritedFrom = tec.Id
+		p.(*PropertyCustom).Inherited = false
 		tec.setCustomProperty(p)
-		f := new(SomaTreePropertyCustom)
-		*f = *p.(*SomaTreePropertyCustom)
+		f := new(PropertyCustom)
+		*f = *p.(*PropertyCustom)
 		f.Inherited = true
 		tec.inheritPropertyDeep(f)
 	case "service":
-		p.(*SomaTreePropertyService).InheritedFrom = tec.Id
-		p.(*SomaTreePropertyService).Inherited = false
+		p.(*PropertyService).InheritedFrom = tec.Id
+		p.(*PropertyService).Inherited = false
 		tec.setServiceProperty(p)
-		f := new(SomaTreePropertyService)
-		*f = *p.(*SomaTreePropertyService)
+		f := new(PropertyService)
+		*f = *p.(*PropertyService)
 		f.Inherited = true
 		tec.inheritPropertyDeep(f)
 	case "system":
-		p.(*SomaTreePropertySystem).InheritedFrom = tec.Id
-		p.(*SomaTreePropertySystem).Inherited = false
+		p.(*PropertySystem).InheritedFrom = tec.Id
+		p.(*PropertySystem).Inherited = false
 		tec.setSystemProperty(p)
-		f := new(SomaTreePropertySystem)
-		*f = *p.(*SomaTreePropertySystem)
+		f := new(PropertySystem)
+		*f = *p.(*PropertySystem)
 		f.Inherited = true
 		tec.inheritPropertyDeep(f)
 	case "oncall":
-		p.(*SomaTreePropertyOncall).InheritedFrom = tec.Id
-		p.(*SomaTreePropertyOncall).Inherited = false
+		p.(*PropertyOncall).InheritedFrom = tec.Id
+		p.(*PropertyOncall).Inherited = false
 		tec.setOncallProperty(p)
-		f := new(SomaTreePropertyOncall)
-		*f = *p.(*SomaTreePropertyOncall)
+		f := new(PropertyOncall)
+		*f = *p.(*PropertyOncall)
 		f.Inherited = true
 		tec.inheritPropertyDeep(f)
 	}
@@ -118,8 +118,8 @@ customloop:
 		if !tec.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := new(SomaTreePropertyCustom)
-		*f = *tec.PropertyCustom[prop].(*SomaTreePropertyCustom)
+		f := new(PropertyCustom)
+		*f = *tec.PropertyCustom[prop].(*PropertyCustom)
 		f.Inherited = true
 		tec.Children[childId].inheritProperty(f)
 	}
@@ -128,8 +128,8 @@ oncallloop:
 		if !tec.PropertyOncall[prop].hasInheritance() {
 			continue oncallloop
 		}
-		f := new(SomaTreePropertyOncall)
-		*f = *tec.PropertyOncall[prop].(*SomaTreePropertyOncall)
+		f := new(PropertyOncall)
+		*f = *tec.PropertyOncall[prop].(*PropertyOncall)
 		f.Inherited = true
 		tec.Children[childId].inheritProperty(f)
 	}
@@ -138,8 +138,8 @@ serviceloop:
 		if !tec.PropertyService[prop].hasInheritance() {
 			continue serviceloop
 		}
-		f := new(SomaTreePropertyService)
-		*f = *tec.PropertyService[prop].(*SomaTreePropertyService)
+		f := new(PropertyService)
+		*f = *tec.PropertyService[prop].(*PropertyService)
 		f.Inherited = true
 		tec.Children[childId].inheritProperty(f)
 	}
@@ -148,8 +148,8 @@ systemloop:
 		if !tec.PropertySystem[prop].hasInheritance() {
 			continue systemloop
 		}
-		f := new(SomaTreePropertySystem)
-		*f = *tec.PropertySystem[prop].(*SomaTreePropertySystem)
+		f := new(PropertySystem)
+		*f = *tec.PropertySystem[prop].(*PropertySystem)
 		f.Inherited = true
 		tec.Children[childId].inheritProperty(f)
 	}

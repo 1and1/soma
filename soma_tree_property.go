@@ -12,7 +12,7 @@ type SomaTreeProperty interface {
 
 //
 // Custom
-type SomaTreePropertyCustom struct {
+type PropertyCustom struct {
 	Id            uuid.UUID
 	Inherited     bool
 	InheritedFrom uuid.UUID
@@ -23,29 +23,29 @@ type SomaTreePropertyCustom struct {
 	value         string
 }
 
-func (p *SomaTreePropertyCustom) GetType() string {
+func (p *PropertyCustom) GetType() string {
 	return "custom"
 }
 
-func (p *SomaTreePropertyCustom) GetID() string {
+func (p *PropertyCustom) GetID() string {
 	return p.Id.String()
 }
 
-func (p *SomaTreePropertyCustom) GetSource() string {
+func (p *PropertyCustom) GetSource() string {
 	return p.InheritedFrom.String()
 }
 
-func (p *SomaTreePropertyCustom) hasInheritance() bool {
+func (p *PropertyCustom) hasInheritance() bool {
 	return p.Inheritance
 }
 
-func (p *SomaTreePropertyCustom) isChildrenOnly() bool {
+func (p *PropertyCustom) isChildrenOnly() bool {
 	return p.ChildrenOnly
 }
 
 //
 // Service
-type SomaTreePropertyService struct {
+type PropertyService struct {
 	Id            uuid.UUID
 	Inherited     bool
 	InheritedFrom uuid.UUID
@@ -53,37 +53,37 @@ type SomaTreePropertyService struct {
 	ChildrenOnly  bool
 	View          string
 	Service       string
-	Attributes    []SomaTreePropertyServiceAttribute
+	Attributes    []PropertyServiceAttribute
 }
 
-type SomaTreePropertyServiceAttribute struct {
+type PropertyServiceAttribute struct {
 	Attribute string
 	Value     string
 }
 
-func (p *SomaTreePropertyService) GetType() string {
+func (p *PropertyService) GetType() string {
 	return "service"
 }
 
-func (p *SomaTreePropertyService) GetID() string {
+func (p *PropertyService) GetID() string {
 	return p.Id.String()
 }
 
-func (p *SomaTreePropertyService) GetSource() string {
+func (p *PropertyService) GetSource() string {
 	return p.InheritedFrom.String()
 }
 
-func (p *SomaTreePropertyService) hasInheritance() bool {
+func (p *PropertyService) hasInheritance() bool {
 	return p.Inheritance
 }
 
-func (p *SomaTreePropertyService) isChildrenOnly() bool {
+func (p *PropertyService) isChildrenOnly() bool {
 	return p.ChildrenOnly
 }
 
 //
 // System
-type SomaTreePropertySystem struct {
+type PropertySystem struct {
 	Id            uuid.UUID
 	Inherited     bool
 	InheritedFrom uuid.UUID
@@ -94,29 +94,29 @@ type SomaTreePropertySystem struct {
 	Value         string
 }
 
-func (p *SomaTreePropertySystem) GetType() string {
+func (p *PropertySystem) GetType() string {
 	return "system"
 }
 
-func (p *SomaTreePropertySystem) GetID() string {
+func (p *PropertySystem) GetID() string {
 	return p.Id.String()
 }
 
-func (p *SomaTreePropertySystem) GetSource() string {
+func (p *PropertySystem) GetSource() string {
 	return p.InheritedFrom.String()
 }
 
-func (p *SomaTreePropertySystem) hasInheritance() bool {
+func (p *PropertySystem) hasInheritance() bool {
 	return p.Inheritance
 }
 
-func (p *SomaTreePropertySystem) isChildrenOnly() bool {
+func (p *PropertySystem) isChildrenOnly() bool {
 	return p.ChildrenOnly
 }
 
 //
 // Oncall
-type SomaTreePropertyOncall struct {
+type PropertyOncall struct {
 	Id            uuid.UUID
 	Inherited     bool
 	InheritedFrom uuid.UUID
@@ -126,23 +126,23 @@ type SomaTreePropertyOncall struct {
 	Oncall        string
 }
 
-func (p *SomaTreePropertyOncall) GetType() string {
+func (p *PropertyOncall) GetType() string {
 	return "return oncall"
 }
 
-func (p *SomaTreePropertyOncall) GetID() string {
+func (p *PropertyOncall) GetID() string {
 	return p.Id.String()
 }
 
-func (p *SomaTreePropertyOncall) GetSource() string {
+func (p *PropertyOncall) GetSource() string {
 	return p.InheritedFrom.String()
 }
 
-func (p *SomaTreePropertyOncall) hasInheritance() bool {
+func (p *PropertyOncall) hasInheritance() bool {
 	return p.Inheritance
 }
 
-func (p *SomaTreePropertyOncall) isChildrenOnly() bool {
+func (p *PropertyOncall) isChildrenOnly() bool {
 	return p.ChildrenOnly
 }
 

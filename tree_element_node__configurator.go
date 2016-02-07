@@ -257,8 +257,8 @@ func (ten *SomaTreeElemNode) evalAttributeProp(
 }
 
 func (ten *SomaTreeElemNode) getServiceMap(serviceId string) map[string][]string {
-	svc := new(SomaTreePropertyService)
-	svc = ten.PropertyService[serviceId].(*SomaTreePropertyService)
+	svc := new(PropertyService)
+	svc = ten.PropertyService[serviceId].(*PropertyService)
 
 	res := map[string][]string{}
 	for _, v := range svc.Attributes {
