@@ -23,6 +23,10 @@ func (tec *SomaTreeElemCluster) Find(f FindRequest, b bool) SomaTreeAttacher {
 			goto skip
 		}
 	}
+	if f.ElementType != "" && f.ElementType != "node" {
+		// searched element can't be a child of a cluster
+		goto skip
+	}
 	rawResult = make(chan SomaTreeAttacher, len(tec.Children))
 	for child, _ := range tec.Children {
 		wg.Add(1)
