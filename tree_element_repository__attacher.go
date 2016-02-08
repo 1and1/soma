@@ -1,5 +1,6 @@
 package somatree
 
+
 //
 // Interface: SomaTreeAttacher
 func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
@@ -57,9 +58,13 @@ func (ter *SomaTreeElemRepository) attachToRoot(a AttachRequest) {
 	ter.Action <- &Action{
 		Action: "create",
 		Type:   "repository",
-		Id:     ter.Id.String(),
-		Name:   ter.Name,
-		Team:   ter.Team.String(),
+		Repository: somaproto.ProtoRepository{
+			Id:        ter.Id.String(),
+			Name:      ter.Name,
+			Team:      ter.Team.String(),
+			IsDeleted: ter.Deleted,
+			IsActive:  ter.Active,
+		},
 	}
 	ter.Fault.setAction(ter.Action)
 }

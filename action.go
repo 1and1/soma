@@ -1,8 +1,10 @@
 package somatree
 
+
 type Action struct {
 	Action          string `json:",omitempty"`
 	Type            string `json:",omitempty"`
+	Repository      somaproto.ProtoRepository
 	Id              string `json:",omitempty"`
 	SourceId        string `json:",omitempty"`
 	Name            string `json:",omitempty"`
