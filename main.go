@@ -114,6 +114,10 @@ func main() {
 	router.GET("/attributes/", ListAttribute)
 	router.GET("/attributes/:attribute", ShowAttribute)
 
+	router.GET("/repository/", ListRepository)
+	router.GET("/repository/:repository", ShowRepository)
+	router.GET("/filter/repository/:repository", ListRepository)
+
 	if !SomaCfg.ReadOnly {
 		router.POST("/views/", AddView)
 		router.DELETE("/views/:view", DeleteView)
@@ -199,6 +203,8 @@ func main() {
 
 		router.POST("/attributes/", AddAttribute)
 		router.DELETE("/attributes/:attribute", DeleteAttribute)
+
+		router.POST("/repository/", AddRepository)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))

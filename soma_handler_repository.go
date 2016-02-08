@@ -97,7 +97,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		}
 
 		for rows.Next() {
-			rr := rows.Scan(&repoId, &repoName)
+			err := rows.Scan(&repoId, &repoName)
 			result.Append(err, &somaRepositoryResult{
 				Repository: somaproto.ProtoRepository{
 					Id:   repoId,
@@ -114,7 +114,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 			&teamId,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err.Error() == "sql: no rows in result set" {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

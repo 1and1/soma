@@ -44,6 +44,23 @@ skip:
 	SendRepositoryReply(&w, &result)
 }
 
+func ShowRepository(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["repositoryReadHandler"].(somaRepositoryReadHandler)
+	handler.input <- somaRepositoryRequest{
+		action: "show",
+		reply:  returnChannel,
+		Repository: somaproto.ProtoRepository{
+			Id: params.ByName("repository"),
+		},
+	}
+	result := <-returnChannel
+	SendRepositoryReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddRepository(w http.ResponseWriter, r *http.Request,

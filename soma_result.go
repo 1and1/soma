@@ -1,5 +1,7 @@
 package main
 
+import "github.com/satori/go.uuid"
+
 type ErrorMarker interface {
 	ErrorMark(err error, imp bool, found bool, length int) bool
 }
@@ -13,6 +15,8 @@ type somaResult struct {
 	RequestError   error
 	NotFound       bool
 	NotImplemented bool
+	Accepted       bool
+	JobId          uuid.UUID
 	Nodes          []somaNodeResult
 	Servers        []somaServerResult
 	Levels         []somaLevelResult
@@ -31,6 +35,7 @@ type somaResult struct {
 	Properties     []somaPropertyResult
 	Attributes     []somaAttributeResult
 	Repositories   []somaRepositoryResult
+	Buckets        []somaBucketResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {
