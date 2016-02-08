@@ -426,4 +426,13 @@ func spawnAttributeWriteHandler() {
 	go attributeWriteHandler.run()
 }
 
+func spawnRepositoryReadHandler() {
+	var repositoryReadHandler somaRepositoryReadHandler
+	repositoryReadHandler.input = make(chan somaRepositoryRequest, 64)
+	repositoryReadHandler.shutdown = make(chan bool)
+	repositoryReadHandler.conn = conn
+	handlerMap["repositoryReadHandler"] = repositoryReadHandler
+	go repositoryReadHandler.run()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
