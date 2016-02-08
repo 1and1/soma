@@ -18,6 +18,7 @@ create table if not exists soma.check_instance_status (
 	queryMap["createTableCheckInstances"] = `
 create table if not exists soma.check_instances (
   check_instance_id           uuid            PRIMARY KEY,
+  check_id                    uuid            NOT NULL REFERENCES soma.checks ( check_id ) DEFERRABLE,
   last_configuration_created  timestamptz(3)  NOT NULL DEFAULT NOW(),
   update_available            boolean         NOT NULL DEFAULT 'no',
   deleted                     boolean         NOT NULL DEFAULT 'no'
@@ -28,12 +29,13 @@ create table if not exists soma.check_instances (
 	queryMap["createTableCheckInstanceConfigurations"] = `
 create table if not exists soma.check_instance_configurations (
   check_instance_config_id    uuid            PRIMARY KEY,
-  check_id                    uuid            NOT NULL REFERENCES soma.check_instances ( check_instance_id ),
-  monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ),
+  version                     integer         NOT NULL,
+  check_instance_id           uuid            NOT NULL REFERENCES soma.check_instances ( check_instance_id ) DEFERRABLE,
+  monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
   created                     timestamptz(3)  NOT NULL DEFAULT NOW(),
   activated_at                timestamptz(3)  NOT NULL DEFAULT NOW(),
-  status                      varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ),
-  next_status                 varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ),
+  status                      varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
+  next_status                 varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
   awaiting_deletion           boolean         NOT NULL DEFAULT 'no',
   configuration               jsonb           NOT NULL,
   CHECK ( status != 'none' )
@@ -43,15 +45,15 @@ create table if not exists soma.check_instance_configurations (
 
 	queryMap["createUniqueIndexActiveConfigurations"] = `
 create unique index _unique_check_instance_configurations_active
-  on soma.check_instance_configurations ( check_id, status )
+  on soma.check_instance_configurations ( check_instance_id, status )
   where status = 'active';`
 	queries[idx] = "createUniqueIndexActiveConfigurations"
 	idx++
 
 	queryMap["createTableCheckInstanceConfigurationDependencies"] = `
 create table if not exists soma.check_instance_configuration_dependencies (
-  blocked_instance_config_id  uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ),
-  blocking_instance_config_id uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ),
+  blocked_instance_config_id  uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ) DEFERRABLE,
+  blocking_instance_config_id uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ) DEFERRABLE,
   unblocking_state            varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status )
 );`
 	queries[idx] = "createTableCheckInstanceConfigurationDependencies"

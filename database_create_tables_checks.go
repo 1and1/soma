@@ -6,7 +6,7 @@ func createTablesChecks(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 12)
+	queries := make([]string, 15)
 
 	queryMap["createTableConfigurationPredicates"] = `
 create table if not exists soma.configuration_predicates (
@@ -44,6 +44,22 @@ create table if not exists soma.check_configurations (
   CHECK ( external_id = 'none' OR configuration_object_type != 'template' )
 );`
 	queries[idx] = "createTableCheckConfigurations"
+	idx++
+
+	queryMap["createTableChecks"] = `
+create table if not exists soma.checks (
+  check_id                    uuid            PRIMARY KEY,
+  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+  bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
+  source_check_id             uuid            NOT NULL,
+  source_object_type          varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
+  source_object_id            uuid            NOT NULL,
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  UNIQUE( check_id, repository_id ),
+  FOREIGN KEY ( source_check_id, repository_id ) REFERENCES soma.checks ( check_id, repository_id ) DEFERRABLE,
+  FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE
+);`
+	queries[idx] = "createTableChecks"
 	idx++
 
 	queryMap["createTableCheckConfigurationThresholds"] = `
