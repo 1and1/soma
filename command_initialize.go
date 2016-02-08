@@ -46,6 +46,8 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
 	createTablesInstances(printOnly, verbose)
 
+	createTablesJobs(printOnly, verbose)
+
 	grantPermissions(printOnly, verbose)
 
 	done <- true
