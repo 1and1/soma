@@ -10,14 +10,14 @@ func createTablesGroups(printOnly bool, verbose bool) {
 
 	queryMap["createTableGroups"] = `create table if not exists soma.groups (
     group_id                    uuid            PRIMARY KEY,
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
+    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
     group_name                  varchar(256)    NOT NULL,
-    object_state                varchar(64)     NOT NULL DEFAULT 'standalone' REFERENCES soma.object_states ( object_state ),
-    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
+    object_state                varchar(64)     NOT NULL DEFAULT 'standalone' REFERENCES soma.object_states ( object_state ) DEFERRABLE,
+    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
     -- enforce unique group names per bucket
     UNIQUE ( bucket_id, group_name ),
     -- group must be configured like bucket it is in
-    FOREIGN KEY ( bucket_id, organizational_team_id ) REFERENCES soma.buckets ( bucket_id, organizational_team_id ),
+    FOREIGN KEY ( bucket_id, organizational_team_id ) REFERENCES soma.buckets ( bucket_id, organizational_team_id ) DEFERRABLE,
     -- required for FK relations
     UNIQUE ( bucket_id, group_id ),
     UNIQUE ( group_id, organizational_team_id )
@@ -26,91 +26,91 @@ func createTablesGroups(printOnly bool, verbose bool) {
 	idx++
 
 	queryMap["createTableGroupMembershipNodes"] = `create table if not exists soma.group_membership_nodes (
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    child_node_id               uuid            NOT NULL REFERENCES soma.nodes ( node_id ),
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    child_node_id               uuid            NOT NULL REFERENCES soma.nodes ( node_id ) DEFERRABLE,
+    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
     UNIQUE ( child_node_id ),
     -- node and group must belong to the same bucket
-    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
-    FOREIGN KEY ( child_node_id, bucket_id ) REFERENCES soma.node_bucket_assignment ( node_id, bucket_id )
+    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE,
+    FOREIGN KEY ( child_node_id, bucket_id ) REFERENCES soma.node_bucket_assignment ( node_id, bucket_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupMembershipNodes"
 	idx++
 
 	queryMap["createTableGroupMembershipClusters"] = `create table if not exists soma.group_membership_clusters (
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    child_cluster_id            uuid            NOT NULL REFERENCES clusters ( cluster_id ),
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    child_cluster_id            uuid            NOT NULL REFERENCES clusters ( cluster_id ) DEFERRABLE,
+    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
     UNIQUE ( child_cluster_id ),
     -- cluster and group must belong to the same bucket
-    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
-    FOREIGN KEY ( bucket_id, child_cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id )
+    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE,
+    FOREIGN KEY ( bucket_id, child_cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupMembershipClusters"
 	idx++
 
 	queryMap["createTableGroupMembershipGroups"] = `create table if not exists soma.group_membership_groups (
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    child_group_id              uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    child_group_id              uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
     UNIQUE ( child_group_id ),
     -- no fun for you, sir!
     CHECK ( group_id != child_group_id ),
     -- group and child_group must belong to the same bucket
-    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
-    FOREIGN KEY ( bucket_id, child_group_id ) REFERENCES soma.groups ( bucket_id, group_id )
+    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE,
+    FOREIGN KEY ( bucket_id, child_group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupMembershipGroups"
 	idx++
 
 	queryMap["createTableGroupOncallProperty"] = `create table if not exists soma.group_oncall_properties (
-	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ) DEFERRABLE,
 	source_instance_id          uuid            NOT NULL,
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
-    oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ),
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ) DEFERRABLE,
+    oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ) DEFERRABLE,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     UNIQUE ( group_id, view ),
-	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupOncallProperty"
 	idx++
 
 	queryMap["createTableGroupServiceProperties"] = `create table if not exists soma.group_service_properties (
-	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ) DEFERRABLE,
 	source_instance_id          uuid            NOT NULL,
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ) DEFERRABLE,
     service_property            varchar(64)     NOT NULL,
-    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
     UNIQUE( group_id, service_property, view ),
-    FOREIGN KEY ( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ),
-    FOREIGN KEY ( group_id, organizational_team_id ) REFERENCES soma.groups ( group_id, organizational_team_id ),
-	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
+    FOREIGN KEY ( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ) DEFERRABLE,
+    FOREIGN KEY ( group_id, organizational_team_id ) REFERENCES soma.groups ( group_id, organizational_team_id ) DEFERRABLE,
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupServiceProperties"
 	idx++
 
 	queryMap["createTableGroupSystemProperties"] = `create table if not exists soma.group_system_properties (
-	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ) DEFERRABLE,
 	source_instance_id          uuid            NOT NULL,
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
-    system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ),
-    object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ) DEFERRABLE,
+    system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ) DEFERRABLE,
+    object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
-    FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ),
+    FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ) DEFERRABLE,
     CHECK ( object_type = 'group' ),
-	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupSystemProperties"
 	idx++
@@ -125,23 +125,23 @@ func createTablesGroups(printOnly bool, verbose bool) {
 	idx++
 
 	queryMap["createTableGroupsCustomProperties"] = `create table if not exists soma.group_custom_properties (
-	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ),
+	instance_id                 uuid            NOT NULL REFERENCES soma.property_instances ( instance_id ) DEFERRABLE,
 	source_instance_id          uuid            NOT NULL,
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ),
-    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ),
-    custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ),
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ) DEFERRABLE,
+    custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ) DEFERRABLE,
+    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
     value                       text            NOT NULL,
     UNIQUE ( group_id, custom_property_id, view ),
     -- ensure group is in this bucket, bucket is in this repository and custom_property is defined for this repository.
     -- together these three foreign keys link group_id with valid custom_property_id target
-    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ),
-    FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ),
-    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id ),
-	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
+    FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE,
+    FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE,
+    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id ) DEFERRABLE,
+	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
   );`
 	queries[idx] = "createTableGroupsCustomProperties"
 	idx++

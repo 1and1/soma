@@ -24,8 +24,8 @@ create table if not exists soma.service_property_attributes (
 
 	queryMap["createTableServicePropertyValues"] = `
 create table if not exists soma.service_property_values (
-  service_property            varchar(64)     NOT NULL REFERENCES soma.service_properties ( service_property ),
-  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
+  service_property            varchar(64)     NOT NULL REFERENCES soma.service_properties ( service_property ) DEFERRABLE,
+  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ) DEFERRABLE,
   value                       varchar(64)     NOT NULL
 );`
 	queries[idx] = "createTableServicePropertyValues"
@@ -33,7 +33,7 @@ create table if not exists soma.service_property_values (
 
 	queryMap["createTableTeamServiceProperties"] = `
 create table if not exists soma.team_service_properties (
-  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
+  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
   service_property            varchar(64)     NOT NULL,
   UNIQUE( organizational_team_id, service_property )
 );`
@@ -44,9 +44,9 @@ create table if not exists soma.team_service_properties (
 create table if not exists soma.team_service_property_values (
   organizational_team_id      uuid            NOT NULL,
   service_property            varchar(64)     NOT NULL,
-  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
+  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ) DEFERRABLE,
   value                       varchar(64)     NOT NULL,
-  FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property )
+  FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ) DEFERRABLE
 );`
 	queries[idx] = "createTableTeamServicePropertyValues"
 	idx++
@@ -60,8 +60,8 @@ create table if not exists soma.system_properties (
 
 	queryMap["createTableSystemPropertyValidity"] = `
 create table if not exists soma.system_property_validity (
-  system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ),
-  object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
+  system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ) DEFERRABLE,
+  object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
   UNIQUE( system_property, object_type )
 );`
 	queries[idx] = "createTableSystemPropertyValidity"
@@ -88,7 +88,7 @@ func createTableCustomProperties(printOnly bool, verbose bool) {
 	queryMap["createTableCustomProperties"] = `
 create table if not exists soma.custom_properties (
   custom_property_id          uuid            PRIMARY KEY,
-  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
   custom_property             varchar(128)    NOT NULL,
   UNIQUE( repository_id, custom_property ),
   UNIQUE( repository_id, custom_property_id )

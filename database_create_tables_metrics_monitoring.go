@@ -19,7 +19,7 @@ create table if not exists soma.metric_units (
 	queryMap["createTableMetrics"] = `
 create table if not exists soma.metrics (
   metric                      varchar(512)    PRIMARY KEY,
-  metric_unit                 varchar(8)      NOT NULL REFERENCES soma.metric_units ( metric_unit ),
+  metric_unit                 varchar(8)      NOT NULL REFERENCES soma.metric_units ( metric_unit ) DEFERRABLE,
   description                 text            NOT NULL
 );`
 	queries[idx] = "createTableMetrics"
@@ -34,8 +34,8 @@ create table if not exists soma.metric_providers (
 
 	queryMap["createTableMetricPackages"] = `
 create table if not exists soma.metric_packages (
-  metric                      varchar(512)    NOT NULL REFERENCES soma.metrics ( metric ),
-  metric_provider             varchar(64)     NOT NULL REFERENCES soma.metric_providers ( metric_provider ),
+  metric                      varchar(512)    NOT NULL REFERENCES soma.metrics ( metric ) DEFERRABLE,
+  metric_provider             varchar(64)     NOT NULL REFERENCES soma.metric_providers ( metric_provider ) DEFERRABLE,
   package                     varchar(128)    NOT NULL,
   UNIQUE ( metric, metric_provider )
 );`
@@ -53,9 +53,9 @@ create table if not exists soma.monitoring_system_modes (
 create table if not exists soma.monitoring_systems (
   monitoring_id               uuid            PRIMARY KEY,
   monitoring_name             varchar(96)     UNIQUE NOT NULL,
-  monitoring_system_mode      varchar(32)     NOT NULL REFERENCES soma.monitoring_system_modes ( monitoring_system_mode ),
-  monitoring_contact          uuid            NOT NULL REFERENCES inventory.users ( user_id ),
-  monitoring_owner_team       uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
+  monitoring_system_mode      varchar(32)     NOT NULL REFERENCES soma.monitoring_system_modes ( monitoring_system_mode ) DEFERRABLE,
+  monitoring_contact          uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
+  monitoring_owner_team       uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
   monitoring_callback_uri     text,
   UNIQUE ( monitoring_id, monitoring_system_mode )
 );`
@@ -64,10 +64,10 @@ create table if not exists soma.monitoring_systems (
 
 	queryMap["createTableMonitoringSystemUsers"] = `
 create table if not exists soma.monitoring_system_users (
-  monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ),
-  monitoring_system_mode      varchar(32)     NOT NULL REFERENCES soma.monitoring_system_modes ( monitoring_system_mode ),
-  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
-  FOREIGN KEY ( monitoring_id, monitoring_system_mode ) REFERENCES soma.monitoring_systems ( monitoring_id, monitoring_system_mode ),
+  monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
+  monitoring_system_mode      varchar(32)     NOT NULL REFERENCES soma.monitoring_system_modes ( monitoring_system_mode ) DEFERRABLE,
+  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+  FOREIGN KEY ( monitoring_id, monitoring_system_mode ) REFERENCES soma.monitoring_systems ( monitoring_id, monitoring_system_mode ) DEFERRABLE,
   CHECK ( monitoring_system_mode = 'private' )
 );`
 	queries[idx] = "createTableMonitoringSystemUsers"
@@ -76,9 +76,9 @@ create table if not exists soma.monitoring_system_users (
 	queryMap["createTableMonitoringCapabilities"] = `
 create table if not exists soma.monitoring_capabilities (
   capability_id               uuid            PRIMARY KEY,
-  capability_monitoring       uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ),
-  capability_metric           varchar(512)    NOT NULL REFERENCES soma.metrics ( metric ),
-  capability_view             varchar(64)     NOT NULL REFERENCES soma.views ( view ),
+  capability_monitoring       uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
+  capability_metric           varchar(512)    NOT NULL REFERENCES soma.metrics ( metric ) DEFERRABLE,
+  capability_view             varchar(64)     NOT NULL REFERENCES soma.views ( view ) DEFERRABLE,
   threshold_amount            integer         NOT NULL,
   CHECK ( capability_view != 'any' ),
   CHECK ( threshold_amount >= 0 ),

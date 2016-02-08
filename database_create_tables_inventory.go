@@ -19,7 +19,7 @@ create table if not exists inventory.datacenters (
 create table if not exists inventory.servers (
   server_id                   uuid            PRIMARY KEY,
   server_asset_id             numeric(16,0)   UNIQUE NOT NULL,
-  server_datacenter_name      varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter ),
+  server_datacenter_name      varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter ) DEFERRABLE,
   server_datacenter_location  varchar(256)    NOT NULL,
   server_name                 varchar(256)    NOT NULL,
   server_online               boolean         NOT NULL DEFAULT 'yes',
@@ -78,7 +78,7 @@ create table if not exists inventory.users (
   user_is_active              boolean         NOT NULL DEFAULT 'yes',
   user_is_system              boolean         NOT NULL DEFAULT 'no',
   user_is_deleted             boolean         NOT NULL DEFAULT 'no',
-  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id )
+  organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableUsers"
 	idx++
@@ -103,8 +103,8 @@ create index _users_deactivated on inventory.users ( user_is_active, user_id )
 
 	queryMap["createTableOncallDutyMembership"] = `
 create table if not exists inventory.oncall_duty_membership (
-  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ),
-  oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id )
+  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
+  oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableOncallDutyMembership"
 	idx++

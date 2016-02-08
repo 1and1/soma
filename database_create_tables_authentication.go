@@ -10,7 +10,7 @@ func createTablesAuthentication(printOnly bool, verbose bool) {
 
 	queryMap["createTableUserAuthentication"] = `
 create table if not exists auth.user_authentication (
-  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE,
+  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
   algorithm                   varchar(16)     NOT NULL,
   rounds                      numeric(10,0)   NOT NULL,
   salt                        text            NOT NULL,
@@ -26,7 +26,7 @@ create table if not exists auth.user_authentication (
 
 	queryMap["createTableUserTokenAuthentication"] = `
 create table if not exists auth.user_token_authentication (
-  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE,
+  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
   token                       varchar(256)    UNIQUE NOT NULL,
   valid_from                  timestamptz(3)  NOT NULL,
   valid_until                 timestamptz(3)  NOT NULL,
@@ -38,7 +38,7 @@ create table if not exists auth.user_token_authentication (
 
 	queryMap["createTableUserKeys"] = `
 create table if not exists auth.user_keys (
-  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE,
+  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
   user_key_fingerprint        varchar(128)    NOT NULL,
   user_key_public             text            NOT NULL,
   user_key_active             boolean         NOT NULL DEFAULT 'yes'
@@ -55,7 +55,7 @@ create unique index _unique_active_user_key
 
 	queryMap["createTableUserClientCertificates"] = `
 create table if not exists auth.user_client_certificates (
-  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE,
+  user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
   user_cert_fingerprint       varchar(128)    NOT NULL,
   user_cert_active            boolean         NOT NULL DEFAULT 'yes'
 );`
@@ -73,7 +73,7 @@ create unique index _unique_active_user_cert
 create table if not exists auth.admins (
   admin_id                    uuid            PRIMARY KEY,
   admin_uid                   varchar(256)    UNIQUE NOT NULL,
-  admin_user_uid              varchar(256)    NOT NULL REFERENCES inventory.users ( user_uid ) ON DELETE CASCADE,
+  admin_user_uid              varchar(256)    NOT NULL REFERENCES inventory.users ( user_uid ) ON DELETE CASCADE DEFERRABLE,
   admin_is_active             boolean         NOT NULL DEFAULT 'yes',
   CHECK( left( admin_uid, 6 ) = 'admin_' ),
   CHECK( position( admin_user_uid in admin_uid ) != 0 )
@@ -83,7 +83,7 @@ create table if not exists auth.admins (
 
 	queryMap["createTableAdminAuthentication"] = `
 create table if not exists auth.admin_authentication (
-  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE,
+  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
   algorithm                   varchar(16)     NOT NULL,
   rounds                      numeric(10,0)   NOT NULL,
   salt                        text            NOT NULL,
@@ -99,7 +99,7 @@ create table if not exists auth.admin_authentication (
 
 	queryMap["createTableAdminTokenAuthentication"] = `
 create table if not exists auth.admin_token_authentication (
-  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE,
+  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
   token                       varchar(256)    UNIQUE NOT NULL,
   valid_from                  timestamptz(3)  NOT NULL,
   valid_until                 timestamptz(3)  NOT NULL,
@@ -111,7 +111,7 @@ create table if not exists auth.admin_token_authentication (
 
 	queryMap["createTableAdminKeys"] = `
 create table if not exists auth.admin_keys (
-  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE,
+  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
   admin_key_fingerprint       varchar(128)    NOT NULL,
   admin_key_public            text            NOT NULL,
   admin_key_active            boolean         NOT NULL DEFAULT 'yes' 
@@ -128,7 +128,7 @@ create index _unique_active_admin_key
 
 	queryMap["createTableAdminClientCertificates"] = `
 create table if not exists auth.admin_client_certificates (
-  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE,
+  admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
   admin_cert_fingerprint      varchar(128)    NOT NULL,
   admin_cert_active           boolean         NOT NULL DEFAULT 'yes'
 );`
@@ -146,7 +146,7 @@ create unique index _unique_active_admin_cert
 create table if not exists auth.tools (
   tool_id                     uuid            PRIMARY KEY,
   tool_name                   varchar(256)    UNIQUE NOT NULL,
-  tool_owner_id               uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE RESTRICT,
+  tool_owner_id               uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE RESTRICT DEFERRABLE,
   created                     timestamptz(3)  NOT NULL DEFAULT NOW(),
   CHECK( EXTRACT( TIMEZONE FROM created ) = '0' )
 );`
@@ -155,7 +155,7 @@ create table if not exists auth.tools (
 
 	queryMap["createTableToolAuthentication"] = `
 create table if not exists auth.tool_authentication (
-  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
+  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
   algorithm                   varchar(16)     NOT NULL,
   rounds                      numeric(10,0)   NOT NULL,
   salt                        text            NOT NULL,
@@ -171,7 +171,7 @@ create table if not exists auth.tool_authentication (
 
 	queryMap["createTableToolTokenAuthentication"] = `
 create table if not exists auth.tool_token_authentication (
-  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
+  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
   token                       varchar(256)    UNIQUE NOT NULL,
   valid_from                  timestamptz(3)  NOT NULL,
   valid_until                 timestamptz(3)  NOT NULL,
@@ -183,7 +183,7 @@ create table if not exists auth.tool_token_authentication (
 
 	queryMap["createTableToolKeys"] = `
 create table if not exists auth.tool_keys (
-  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
+  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
   tool_key_fingerprint        varchar(128)    NOT NULL,
   tool_key_public             text            NOT NULL,
   tool_key_active             boolean         NOT NULL DEFAULT 'yes'
@@ -200,7 +200,7 @@ create unique index _unique_active_tool_key
 
 	queryMap["createTableToolClientCertificates"] = `
 create table if not exists auth.tool_client_certificates (
-  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
+  tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
   tool_cert_fingerprint       varchar(128)    NOT NULL,
   tool_cert_active            boolean         NOT NULL DEFAULT 'yes'
 );`
@@ -216,9 +216,9 @@ create unique index _unique_active_tool_cert
 
 	queryMap["createTablePasswordReset"] = `
 create table if not exists auth.password_reset (
-  user_id                     uuid            NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE,
-  admin_id                    uuid            NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE,
-  tool_id                     uuid            NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE,
+  user_id                     uuid            NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
+  admin_id                    uuid            NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
+  tool_id                     uuid            NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
   token                       varchar(256)    UNIQUE NOT NULL,
   valid_from                  timestamptz(3)  NOT NULL,
   valid_until                 timestamptz(3)  NOT NULL,

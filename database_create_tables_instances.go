@@ -54,7 +54,7 @@ create unique index _unique_check_instance_configurations_active
 create table if not exists soma.check_instance_configuration_dependencies (
   blocked_instance_config_id  uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ) DEFERRABLE,
   blocking_instance_config_id uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ) DEFERRABLE,
-  unblocking_state            varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status )
+  unblocking_state            varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckInstanceConfigurationDependencies"
 	idx++

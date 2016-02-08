@@ -28,15 +28,15 @@ create table if not exists soma.notification_levels (
 	queryMap["createTableCheckConfigurations"] = `
 create table if not exists soma.check_configurations (
   configuration_id            uuid            PRIMARY KEY,
-  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
-  bucket_id                   uuid            REFERENCES soma.buckets ( bucket_id ),
+  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
+  bucket_id                   uuid            REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
   configuration_name          varchar(256)    NOT NULL,
   configuration_object        uuid            NOT NULL,
-  configuration_object_type   varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
+  configuration_object_type   varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
   configuration_active        boolean         NOT NULL DEFAULT 'yes',
   inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
   children_only               boolean         NOT NULL DEFAULT 'no',
-  capability_id               uuid            NOT NULL REFERENCES soma.monitoring_capabilities ( capability_id ),
+  capability_id               uuid            NOT NULL REFERENCES soma.monitoring_capabilities ( capability_id ) DEFERRABLE,
   interval                    integer         NOT NULL,
   enabled                     boolean         NOT NULL DEFAULT 'yes',
   external_id                 varchar(64)     NOT NULL DEFAULT 'none',
@@ -49,10 +49,10 @@ create table if not exists soma.check_configurations (
 	queryMap["createTableChecks"] = `
 create table if not exists soma.checks (
   check_id                    uuid            PRIMARY KEY,
-  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
-  bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ),
+  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
+  bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
   source_check_id             uuid            NOT NULL,
-  source_object_type          varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ),
+  source_object_type          varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
   source_object_id            uuid            NOT NULL,
   configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
   UNIQUE( check_id, repository_id ),
@@ -64,18 +64,18 @@ create table if not exists soma.checks (
 
 	queryMap["createTableCheckConfigurationThresholds"] = `
 create table if not exists soma.configuration_thresholds (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  predicate                   varchar(4)      NOT NULL REFERENCES soma.configuration_predicates ( predicate ),
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  predicate                   varchar(4)      NOT NULL REFERENCES soma.configuration_predicates ( predicate ) DEFERRABLE,
   threshold                   varchar(128)    NOT NULL,
-  notification_level          varchar(16)     NOT NULL REFERENCES soma.notification_levels ( level_name )
+  notification_level          varchar(16)     NOT NULL REFERENCES soma.notification_levels ( level_name ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConfigurationThresholds"
 	idx++
 
 	queryMap["createTableCheckConstraintsCustomProperty"] = `
 create table if not exists soma.constraints_custom_property (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ),
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ) DEFERRABLE,
   property_value              text            NOT NULL
 );`
 	queries[idx] = "createTableCheckConstraintsCustomProperty"
@@ -83,8 +83,8 @@ create table if not exists soma.constraints_custom_property (
 
 	queryMap["createTableCheckConstraintsSystemProperty"] = `
 create table if not exists soma.constraints_system_property (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ),
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ) DEFERRABLE,
   property_value              text            NOT NULL
 );`
 	queries[idx] = "createTableCheckConstraintsSystemProperty"
@@ -92,8 +92,8 @@ create table if not exists soma.constraints_system_property (
 
 	queryMap["createTableCheckConstraintsNativeProperty"] = `
 create table if not exists soma.constraints_native_property (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  native_property             varchar(128)    NOT NULL REFERENCES soma.native_properties ( native_property ),
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  native_property             varchar(128)    NOT NULL REFERENCES soma.native_properties ( native_property ) DEFERRABLE,
   property_value              text            NOT NULL
 );`
 	queries[idx] = "createTableCheckConstraintsNativeProperty"
@@ -101,18 +101,18 @@ create table if not exists soma.constraints_native_property (
 
 	queryMap["createTableCheckConstraintsServiceProperty"] = `
 create table if not exists soma.constraints_service_property (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
   organizational_team_id      uuid            NOT NULL,
   service_property            varchar(64)     NOT NULL,
-  FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property )
+  FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConstraintsServiceProperty"
 	idx++
 
 	queryMap["createTableCheckConstraintsServiceAttributes"] = `
 create table if not exists soma.constraints_service_attribute (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ),
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ) DEFERRABLE,
   attribute_value             varchar(64)
 );`
 	queries[idx] = "createTableCheckConstraintsServiceAttributes"
@@ -120,8 +120,8 @@ create table if not exists soma.constraints_service_attribute (
 
 	queryMap["createTableCheckConstraintsOncallProperty"] = `
 create table if not exists soma.constraints_oncall_property (
-  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ),
-  oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id )
+  configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+  oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConstraintsOncallProperty"
 	idx++

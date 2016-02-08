@@ -50,7 +50,7 @@ func createTablesDatacenterMetaData(printOnly bool, verbose bool) {
 	queryMap["createTableDatacenterGroups"] = `
 create table if not exists soma.datacenter_groups (
   datacenter_group            varchar(32)     NOT NULL,
-  datacenter                  varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter )
+  datacenter                  varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter ) DEFERRABLE
 );`
 	queries[idx] = "createTableDatacenterGroups"
 	idx++
