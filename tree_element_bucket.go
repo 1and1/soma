@@ -44,12 +44,50 @@ func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
 }
 
 func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
+	cl := SomaTreeElemBucket{
+		Name:        teb.Name,
+		Environment: teb.Environment,
+		Type:        teb.Type,
+		State:       teb.State,
+	}
+	cl.Id, _ = uuid.FromString(teb.Id.String())
 	f := make(map[string]SomaTreeBucketAttacher)
 	for k, child := range teb.Children {
 		f[k] = child.CloneBucket()
 	}
-	teb.Children = f
-	return &teb
+	cl.Children = f
+
+	pO := make(map[string]SomaTreeProperty)
+	for k, prop := range teb.PropertyOncall {
+		pO[k] = prop.Clone()
+	}
+	cl.PropertyOncall = pO
+
+	pSv := make(map[string]SomaTreeProperty)
+	for k, prop := range teb.PropertyService {
+		pSv[k] = prop.Clone()
+	}
+	cl.PropertyService = pSv
+
+	pSy := make(map[string]SomaTreeProperty)
+	for k, prop := range teb.PropertySystem {
+		pSy[k] = prop.Clone()
+	}
+	cl.PropertySystem = pSy
+
+	pC := make(map[string]SomaTreeProperty)
+	for k, prop := range teb.PropertyCustom {
+		pC[k] = prop.Clone()
+	}
+	cl.PropertyCustom = pC
+
+	cK := make(map[string]SomaTreeCheck)
+	for k, chk := range teb.Checks {
+		cK[k] = chk.Clone()
+	}
+	cl.Checks = cK
+
+	return &cl
 }
 
 //
@@ -68,6 +106,13 @@ func (teb *SomaTreeElemBucket) GetType() string {
 
 func (teb *SomaTreeElemBucket) setAction(c chan *Action) {
 	teb.Action = c
+}
+
+func (teb *SomaTreeElemBucket) setActionDeep(c chan *Action) {
+	teb.setAction(c)
+	for ch, _ := range teb.Children {
+		teb.Children[ch].setActionDeep(c)
+	}
 }
 
 //

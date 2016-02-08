@@ -62,16 +62,77 @@ func NewNode(name string, id string) *SomaTreeElemNode {
 	return ten
 }
 
+func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
+	cl := SomaTreeElemNode{
+		Name:    ten.Name,
+		State:   ten.State,
+		Online:  ten.Online,
+		Deleted: ten.Deleted,
+		Type:    ten.Type,
+	}
+	cl.Id, _ = uuid.FromString(ten.Id.String())
+	cl.AssetId, _ = uuid.FromString(ten.AssetId.String())
+	cl.Team, _ = uuid.FromString(ten.Team.String())
+	cl.ServerId, _ = uuid.FromString(ten.ServerId.String())
+
+	pO := make(map[string]SomaTreeProperty)
+	for k, prop := range ten.PropertyOncall {
+		pO[k] = prop.Clone()
+	}
+	cl.PropertyOncall = pO
+
+	pSv := make(map[string]SomaTreeProperty)
+	for k, prop := range ten.PropertyService {
+		pSv[k] = prop.Clone()
+	}
+	cl.PropertyService = pSv
+
+	pSy := make(map[string]SomaTreeProperty)
+	for k, prop := range ten.PropertySystem {
+		pSy[k] = prop.Clone()
+	}
+	cl.PropertySystem = pSy
+
+	pC := make(map[string]SomaTreeProperty)
+	for k, prop := range ten.PropertyCustom {
+		pC[k] = prop.Clone()
+	}
+	cl.PropertyCustom = pC
+
+	cK := make(map[string]SomaTreeCheck)
+	for k, chk := range ten.Checks {
+		cK[k] = chk.Clone()
+	}
+	cl.Checks = cK
+
+	cki := make(map[string]SomaTreeCheckInstance)
+	for k, chki := range ten.Instances {
+		cki[k] = chki.Clone()
+	}
+	cl.Instances = cki
+
+	ci := make(map[string][]string)
+	for k, _ := range ten.CheckInstances {
+		for _, str := range ten.CheckInstances[k] {
+			t := str
+			ci[k] = append(ci[k], t)
+		}
+	}
+	cl.CheckInstances = ci
+
+	return &cl
+}
+
 func (ten SomaTreeElemNode) CloneBucket() SomaTreeBucketAttacher {
-	return &ten
+	return ten.Clone()
 }
 
 func (ten SomaTreeElemNode) CloneGroup() SomaTreeGroupAttacher {
-	return &ten
+	return ten.Clone()
 }
 
 func (ten SomaTreeElemNode) CloneCluster() SomaTreeClusterAttacher {
-	return &ten
+	return ten.Clone()
 }
 
 //
@@ -107,6 +168,10 @@ func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 
 func (ten *SomaTreeElemNode) setAction(c chan *Action) {
 	ten.Action = c
+}
+
+func (ten *SomaTreeElemNode) setActionDeep(c chan *Action) {
+	ten.setAction(c)
 }
 
 func (ten *SomaTreeElemNode) updateParentRecursive(p SomaTreeReceiver) {

@@ -56,20 +56,74 @@ func NewGroup(name string, id string) *SomaTreeElemGroup {
 	return teg
 }
 
-func (teg SomaTreeElemGroup) CloneBucket() SomaTreeBucketAttacher {
-	for k, child := range teg.Children {
-		teg.Children[k] = child.CloneGroup()
+func (teg SomaTreeElemGroup) Clone() *SomaTreeElemGroup {
+	cl := SomaTreeElemGroup{
+		Name:  teg.Name,
+		State: teg.State,
+		Type:  teg.Type,
 	}
-	return &teg
-}
+	cl.Id, _ = uuid.FromString(teg.Id.String())
 
-func (teg SomaTreeElemGroup) CloneGroup() SomaTreeGroupAttacher {
-	f := make(map[string]SomaTreeGroupAttacher)
+	f := make(map[string]SomaTreeGroupAttacher, 0)
 	for k, child := range teg.Children {
 		f[k] = child.CloneGroup()
 	}
-	teg.Children = f
-	return &teg
+	cl.Children = f
+
+	pO := make(map[string]SomaTreeProperty)
+	for k, prop := range teg.PropertyOncall {
+		pO[k] = prop.Clone()
+	}
+	cl.PropertyOncall = pO
+
+	pSv := make(map[string]SomaTreeProperty)
+	for k, prop := range teg.PropertyService {
+		pSv[k] = prop.Clone()
+	}
+	cl.PropertyService = pSv
+
+	pSy := make(map[string]SomaTreeProperty)
+	for k, prop := range teg.PropertySystem {
+		pSy[k] = prop.Clone()
+	}
+	cl.PropertySystem = pSy
+
+	pC := make(map[string]SomaTreeProperty)
+	for k, prop := range teg.PropertyCustom {
+		pC[k] = prop.Clone()
+	}
+	cl.PropertyCustom = pC
+
+	cK := make(map[string]SomaTreeCheck)
+	for k, chk := range teg.Checks {
+		cK[k] = chk.Clone()
+	}
+	cl.Checks = cK
+
+	cki := make(map[string]SomaTreeCheckInstance)
+	for k, chki := range teg.Instances {
+		cki[k] = chki.Clone()
+	}
+	cl.Instances = cki
+
+	ci := make(map[string][]string)
+	for k, _ := range teg.CheckInstances {
+		for _, str := range teg.CheckInstances[k] {
+			t := str
+			ci[k] = append(ci[k], t)
+		}
+	}
+	cl.CheckInstances = ci
+
+	return &cl
+}
+
+func (teg SomaTreeElemGroup) CloneBucket() SomaTreeBucketAttacher {
+	return teg.Clone()
+}
+
+func (teg SomaTreeElemGroup) CloneGroup() SomaTreeGroupAttacher {
+	return teg.Clone()
 }
 
 //
@@ -102,6 +156,13 @@ func (teg *SomaTreeElemGroup) setParent(p SomaTreeReceiver) {
 
 func (teg *SomaTreeElemGroup) setAction(c chan *Action) {
 	teg.Action = c
+}
+
+func (teg *SomaTreeElemGroup) setActionDeep(c chan *Action) {
+	teg.setAction(c)
+	for ch, _ := range teg.Children {
+		teg.Children[ch].setActionDeep(c)
+	}
 }
 
 // SomaTreeGroupReceiver == can receive Groups as children

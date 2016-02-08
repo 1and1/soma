@@ -6,6 +6,7 @@ type SomaTreeProperty interface {
 	GetType() string
 	GetID() string
 	GetSource() string
+	Clone() SomaTreeProperty
 	hasInheritance() bool
 	isChildrenOnly() bool
 }
@@ -20,7 +21,7 @@ type PropertyCustom struct {
 	ChildrenOnly  bool
 	View          string
 	Key           string
-	value         string
+	Value         string
 }
 
 func (p *PropertyCustom) GetType() string {
@@ -41,6 +42,21 @@ func (p *PropertyCustom) hasInheritance() bool {
 
 func (p *PropertyCustom) isChildrenOnly() bool {
 	return p.ChildrenOnly
+}
+
+func (p PropertyCustom) Clone() SomaTreeProperty {
+	cl := PropertyCustom{
+		Inherited:    p.Inherited,
+		Inheritance:  p.Inheritance,
+		ChildrenOnly: p.ChildrenOnly,
+		View:         p.View,
+		Key:          p.Key,
+		Value:        p.Value,
+	}
+	cl.Id, _ = uuid.FromString(p.Id.String())
+	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
+
+	return &cl
 }
 
 //
@@ -81,6 +97,28 @@ func (p *PropertyService) isChildrenOnly() bool {
 	return p.ChildrenOnly
 }
 
+func (p PropertyService) Clone() SomaTreeProperty {
+	cl := PropertyService{
+		Inherited:    p.Inherited,
+		Inheritance:  p.Inheritance,
+		ChildrenOnly: p.ChildrenOnly,
+		View:         p.View,
+		Service:      p.Service,
+	}
+	cl.Id, _ = uuid.FromString(p.Id.String())
+	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
+	cl.Attributes = make([]PropertyServiceAttribute, 0)
+	for _, attr := range p.Attributes {
+		a := PropertyServiceAttribute{
+			Attribute: attr.Attribute,
+			Value:     attr.Value,
+		}
+		cl.Attributes = append(cl.Attributes, a)
+	}
+
+	return &cl
+}
+
 //
 // System
 type PropertySystem struct {
@@ -114,6 +152,21 @@ func (p *PropertySystem) isChildrenOnly() bool {
 	return p.ChildrenOnly
 }
 
+func (p PropertySystem) Clone() SomaTreeProperty {
+	cl := PropertySystem{
+		Inherited:    p.Inherited,
+		Inheritance:  p.Inheritance,
+		ChildrenOnly: p.ChildrenOnly,
+		View:         p.View,
+		Key:          p.Key,
+		Value:        p.Value,
+	}
+	cl.Id, _ = uuid.FromString(p.Id.String())
+	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
+
+	return &cl
+}
+
 //
 // Oncall
 type PropertyOncall struct {
@@ -144,6 +197,20 @@ func (p *PropertyOncall) hasInheritance() bool {
 
 func (p *PropertyOncall) isChildrenOnly() bool {
 	return p.ChildrenOnly
+}
+
+func (p PropertyOncall) Clone() SomaTreeProperty {
+	cl := PropertyOncall{
+		Inherited:    p.Inherited,
+		Inheritance:  p.Inheritance,
+		ChildrenOnly: p.ChildrenOnly,
+		View:         p.View,
+		Oncall:       p.Oncall,
+	}
+	cl.Id, _ = uuid.FromString(p.Id.String())
+	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
+
+	return &cl
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

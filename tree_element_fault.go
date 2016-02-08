@@ -79,6 +79,10 @@ func (tef *SomaTreeElemFault) setAction(c chan *Action) {
 	}
 }
 
+func (tef *SomaTreeElemFault) setActionDeep(c chan *Action) {
+	tef.Action = c
+}
+
 func (tef *SomaTreeElemFault) setError(c chan *Error) {
 	tef.Error = c
 

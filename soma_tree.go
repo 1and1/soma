@@ -26,7 +26,7 @@ func New(spec TreeSpec) *SomaTree {
 	return st
 }
 
-func (st *SomaTree) Clone() {
+func (st *SomaTree) Begin() {
 	t := st.Child.Clone()
 	st.Snap = &t
 	st.Snap.updateParentRecursive(st)
@@ -38,6 +38,20 @@ func (st *SomaTree) Clone() {
 			ParentName: st.Snap.Name,
 		},
 	)
+}
+
+func (st *SomaTree) Rollback() {
+	err := st.Child.Fault.Error
+	ac := st.Child.Action
+
+	st.Child = st.Snap
+	st.Snap = nil
+	st.Child.setActionDeep(ac)
+	st.Child.setError(err)
+}
+
+func (st *SomaTree) Commit() {
+	st.Snap = nil
 }
 
 //

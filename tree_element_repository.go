@@ -70,12 +70,52 @@ func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
 }
 
 func (ter SomaTreeElemRepository) Clone() SomaTreeElemRepository {
+	cl := SomaTreeElemRepository{
+		Name:    ter.Name,
+		Deleted: ter.Deleted,
+		Active:  ter.Active,
+		Type:    ter.Type,
+		State:   ter.State,
+	}
+	cl.Id, _ = uuid.FromString(ter.Id.String())
+	cl.Team, _ = uuid.FromString(ter.Id.String())
 	f := make(map[string]SomaTreeRepositoryAttacher)
 	for k, child := range ter.Children {
 		f[k] = child.CloneRepository()
 	}
-	ter.Children = f
-	return ter
+	cl.Children = f
+
+	pO := make(map[string]SomaTreeProperty)
+	for k, prop := range ter.PropertyOncall {
+		pO[k] = prop.Clone()
+	}
+	cl.PropertyOncall = pO
+
+	pSv := make(map[string]SomaTreeProperty)
+	for k, prop := range ter.PropertyService {
+		pSv[k] = prop.Clone()
+	}
+	cl.PropertyService = pSv
+
+	pSy := make(map[string]SomaTreeProperty)
+	for k, prop := range ter.PropertySystem {
+		pSy[k] = prop.Clone()
+	}
+	cl.PropertySystem = pSy
+
+	pC := make(map[string]SomaTreeProperty)
+	for k, prop := range ter.PropertyCustom {
+		pC[k] = prop.Clone()
+	}
+	cl.PropertyCustom = pC
+
+	cK := make(map[string]SomaTreeCheck)
+	for k, chk := range ter.Checks {
+		cK[k] = chk.Clone()
+	}
+	cl.Checks = cK
+
+	return cl
 }
 
 //
@@ -105,6 +145,14 @@ func (ter *SomaTreeElemRepository) setParent(p SomaTreeReceiver) {
 
 func (ter *SomaTreeElemRepository) setAction(c chan *Action) {
 	ter.Action = c
+}
+
+func (ter *SomaTreeElemRepository) setActionDeep(c chan *Action) {
+	ter.setAction(c)
+	ter.Fault.setActionDeep(c)
+	for ch, _ := range ter.Children {
+		ter.Children[ch].setActionDeep(c)
+	}
 }
 
 func (ter *SomaTreeElemRepository) setError(c chan *Error) {

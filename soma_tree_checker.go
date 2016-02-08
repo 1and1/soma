@@ -61,6 +61,82 @@ type SomaTreeCheckInstance struct {
 	InstanceSvcCfgHash    string
 }
 
+func (tc SomaTreeCheck) Clone() SomaTreeCheck {
+	cl := SomaTreeCheck{
+		Inherited:    tc.Inherited,
+		Inheritance:  tc.Inheritance,
+		ChildrenOnly: tc.ChildrenOnly,
+		View:         tc.View,
+		Interval:     tc.Interval,
+	}
+	cl.Id, _ = uuid.FromString(tc.Id.String())
+	cl.InheritedFrom, _ = uuid.FromString(tc.InheritedFrom.String())
+	cl.Thresholds = make([]SomaTreeCheckThreshold, 0)
+	for _, thr := range tc.Thresholds {
+		t := SomaTreeCheckThreshold{
+			Predicate: thr.Predicate,
+			Level:     thr.Level,
+			Value:     thr.Value,
+		}
+		cl.Thresholds = append(cl.Thresholds, t)
+	}
+	cl.Constraints = make([]SomaTreeCheckConstraint, 0)
+	for _, cstr := range tc.Constraints {
+		c := SomaTreeCheckConstraint{
+			Type:  cstr.Type,
+			Key:   cstr.Key,
+			Value: cstr.Value,
+		}
+		cl.Constraints = append(cl.Constraints, c)
+	}
+
+	return cl
+}
+
+func (tci *SomaTreeCheckInstance) Clone() SomaTreeCheckInstance {
+	cl := SomaTreeCheckInstance{
+		Version:            tci.Version,
+		ConstraintHash:     tci.ConstraintHash,
+		ConstraintValHash:  tci.ConstraintValHash,
+		ConstraintOncall:   tci.ConstraintOncall,
+		InstanceSvcCfgHash: tci.InstanceSvcCfgHash,
+	}
+	cl.InstanceId, _ = uuid.FromString(tci.InstanceId.String())
+	cl.CheckId, _ = uuid.FromString(tci.CheckId.String())
+	cl.InstanceService, _ = uuid.FromString(tci.InstanceService.String())
+	for k, v := range tci.ConstraintService {
+		t := v
+		cl.ConstraintService[k] = t
+	}
+	for k, v := range tci.ConstraintSystem {
+		t := v
+		cl.ConstraintSystem[k] = t
+	}
+	for k, v := range tci.ConstraintCustom {
+		t := v
+		cl.ConstraintCustom[k] = t
+	}
+	for k, v := range tci.ConstraintNative {
+		t := v
+		cl.ConstraintNative[k] = t
+	}
+	for k, v := range tci.InstanceServiceConfig {
+		t := v
+		cl.InstanceServiceConfig[k] = t
+	}
+	cl.ConstraintAttribute = make(map[string]map[string][]string, 0)
+	for k, _ := range tci.ConstraintAttribute {
+		for k2, aVal := range tci.ConstraintAttribute[k] {
+			for _, val := range aVal {
+				t := val
+				cl.ConstraintAttribute[k][k2] = append(cl.ConstraintAttribute[k][k2], t)
+			}
+		}
+	}
+
+	return cl
+}
+
 func (tci *SomaTreeCheckInstance) calcConstraintHash() {
 	h := sha512.New()
 	io.WriteString(h, tci.ConstraintOncall)

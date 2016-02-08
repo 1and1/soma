@@ -28,6 +28,7 @@ type SomaTreeRepositoryAttacher interface {
 	GetName() string
 	attachToRepository(a AttachRequest)
 	CloneRepository() SomaTreeRepositoryAttacher
+	setActionDeep(c chan *Action)
 }
 
 // implemented by: groups, clusters, nodes
@@ -37,6 +38,7 @@ type SomaTreeBucketAttacher interface {
 	attachToBucket(a AttachRequest)
 	CloneBucket() SomaTreeBucketAttacher
 	ReAttach(a AttachRequest)
+	setActionDeep(c chan *Action)
 }
 
 // implemented by: groups, clusters, nodes
@@ -46,6 +48,7 @@ type SomaTreeGroupAttacher interface {
 	attachToGroup(a AttachRequest)
 	CloneGroup() SomaTreeGroupAttacher
 	ReAttach(a AttachRequest)
+	setActionDeep(c chan *Action)
 }
 
 // implemented by: nodes
@@ -55,6 +58,7 @@ type SomaTreeClusterAttacher interface {
 	attachToCluster(a AttachRequest)
 	CloneCluster() SomaTreeClusterAttacher
 	ReAttach(a AttachRequest)
+	setActionDeep(c chan *Action)
 }
 
 type AttachRequest struct {

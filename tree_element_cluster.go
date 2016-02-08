@@ -55,20 +55,75 @@ func NewCluster(name string, id string) *SomaTreeElemCluster {
 	return tec
 }
 
-func (tec SomaTreeElemCluster) CloneBucket() SomaTreeBucketAttacher {
-	for k, child := range tec.Children {
-		tec.Children[k] = child.CloneCluster()
+func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
+	cl := SomaTreeElemCluster{
+		Name:  tec.Name,
+		State: tec.State,
+		Type:  tec.Type,
 	}
-	return &tec
-}
+	cl.Id, _ = uuid.FromString(tec.Id.String())
+	cl.Team, _ = uuid.FromString(tec.Team.String())
 
-func (tec SomaTreeElemCluster) CloneGroup() SomaTreeGroupAttacher {
-	f := make(map[string]SomaTreeClusterAttacher)
+	f := make(map[string]SomaTreeClusterAttacher, 0)
 	for k, child := range tec.Children {
 		f[k] = child.CloneCluster()
 	}
-	tec.Children = f
-	return &tec
+	cl.Children = f
+
+	pO := make(map[string]SomaTreeProperty)
+	for k, prop := range tec.PropertyOncall {
+		pO[k] = prop.Clone()
+	}
+	cl.PropertyOncall = pO
+
+	pSv := make(map[string]SomaTreeProperty)
+	for k, prop := range tec.PropertyService {
+		pSv[k] = prop.Clone()
+	}
+	cl.PropertyService = pSv
+
+	pSy := make(map[string]SomaTreeProperty)
+	for k, prop := range tec.PropertySystem {
+		pSy[k] = prop.Clone()
+	}
+	cl.PropertySystem = pSy
+
+	pC := make(map[string]SomaTreeProperty)
+	for k, prop := range tec.PropertyCustom {
+		pC[k] = prop.Clone()
+	}
+	cl.PropertyCustom = pC
+
+	cK := make(map[string]SomaTreeCheck)
+	for k, chk := range tec.Checks {
+		cK[k] = chk.Clone()
+	}
+	cl.Checks = cK
+
+	cki := make(map[string]SomaTreeCheckInstance)
+	for k, chki := range tec.Instances {
+		cki[k] = chki.Clone()
+	}
+	cl.Instances = cki
+
+	ci := make(map[string][]string)
+	for k, _ := range tec.CheckInstances {
+		for _, str := range tec.CheckInstances[k] {
+			t := str
+			ci[k] = append(ci[k], t)
+		}
+	}
+	cl.CheckInstances = ci
+
+	return &cl
+}
+
+func (tec SomaTreeElemCluster) CloneBucket() SomaTreeBucketAttacher {
+	return tec.Clone()
+}
+
+func (tec SomaTreeElemCluster) CloneGroup() SomaTreeGroupAttacher {
+	return tec.Clone()
 }
 
 //
@@ -101,6 +156,13 @@ func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
 
 func (tec *SomaTreeElemCluster) setAction(c chan *Action) {
 	tec.Action = c
+}
+
+func (tec *SomaTreeElemCluster) setActionDeep(c chan *Action) {
+	tec.setAction(c)
+	for ch, _ := range tec.Children {
+		tec.Children[ch].setActionDeep(c)
+	}
 }
 
 func (tec *SomaTreeElemCluster) updateParentRecursive(p SomaTreeReceiver) {
