@@ -47,7 +47,7 @@ create table if not exists auth.user_keys (
 	idx++
 
 	queryMap["createIndexUniqueActiveUserKey"] = `
-create index _unique_active_user_key
+create unique index _unique_active_user_key
   on auth.user_keys ( user_id, user_key_active )
   where user_key_active`
 	queries[idx] = "createIndexUniqueActiveUserKey"
@@ -63,7 +63,7 @@ create table if not exists auth.user_client_certificates (
 	idx++
 
 	queryMap["createIndexUniqueActiveUserCert"] = `
-create index _unique_active_user_cert
+create unique index _unique_active_user_cert
   on auth.user_client_certificates ( user_id, user_cert_active )
   where user_cert_active`
 	queries[idx] = "createIndexUniqueActiveUserCert"
@@ -136,7 +136,7 @@ create table if not exists auth.admin_client_certificates (
 	idx++
 
 	queryMap["createIndexUniqueActiveAdminCert"] = `
-create index _unique_active_admin_cert
+create unique index _unique_active_admin_cert
   on auth.admin_client_certificates ( admin_id, admin_cert_active )
   where admin_cert_active`
 	queries[idx] = "createIndexUniqueActiveAdminCert"
@@ -192,7 +192,7 @@ create table if not exists auth.tool_keys (
 	idx++
 
 	queryMap["createIndexUniqueActiveToolKey"] = `
-create index _unique_active_tool_key
+create unique index _unique_active_tool_key
   on auth.tool_keys ( tool_id, tool_key_active )
   where tool_key_active`
 	queries[idx] = "createIndexUniqueActiveToolKey"
@@ -208,7 +208,7 @@ create table if not exists auth.tool_client_certificates (
 	idx++
 
 	queryMap["createIndexUniqueActiveToolCert"] = `
-create index _unique_active_tool_cert
+create unique index _unique_active_tool_cert
   on auth.tool_client_certificates ( tool_id, tool_cert_active )
   where tool_cert_active`
 	queries[idx] = "createIndexUniqueActiveToolCert"
