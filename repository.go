@@ -1,16 +1,12 @@
 package somaproto
 
-import (
-	"github.com/satori/go.uuid"
-)
-
 type ProtoRequestRepository struct {
-	Repository ProtoRepository       `json:"repository,omitempty"`
-	Filter     ProtoRepositoryFilter `json:"filter,omitempty"`
-	Restore    bool                  `json:"restore,omitempty"`
-	Purge      bool                  `json:"purge,omitempty"`
-	Clear      bool                  `json:"clear,omitempty"`
-	Activate   bool                  `json:"activate,omitempty"`
+	Repository *ProtoRepository       `json:"repository,omitempty"`
+	Filter     *ProtoRepositoryFilter `json:"filter,omitempty"`
+	Restore    bool                   `json:"restore,omitempty"`
+	Purge      bool                   `json:"purge,omitempty"`
+	Clear      bool                   `json:"clear,omitempty"`
+	Activate   bool                   `json:"activate,omitempty"`
 }
 
 type ProtoResultRepository struct {
@@ -18,11 +14,11 @@ type ProtoResultRepository struct {
 	Status       string            `json:"status,omitempty"`
 	Text         []string          `json:"text,omitempty"`
 	Repositories []ProtoRepository `json:"repositories,omitempty"`
-	JobId        uuid.UUID         `json:"jobid,omitempty"`
+	JobId        string            `json:"jobid,omitempty"`
 }
 
 type ProtoRepository struct {
-	Id         uuid.UUID                 `json:"id,omitempty"`
+	Id         string                    `json:"id,omitempty"`
 	Name       string                    `json:"name,omitempty"`
 	Team       string                    `json:"team,omitempty"`
 	IsDeleted  bool                      `json:"deleted,omitempty"`
@@ -51,6 +47,55 @@ type ProtoRepositoryProperty struct {
 	Inheritance  bool   `json:"inheritance,omitempty"`
 	ChildrenOnly bool   `json:"children,omitempty"`
 	Source       string `json:"source,omitempty"`
+}
+
+//
+func (p *ProtoResultRepository) ErrorMark(err error, imp bool, found bool,
+	length int) bool {
+	if p.markError(err) {
+		return true
+	}
+	if p.markImplemented(imp) {
+		return true
+	}
+	if p.markFound(found, length) {
+		return true
+	}
+	return p.markOk()
+}
+
+func (p *ProtoResultRepository) markError(err error) bool {
+	if err != nil {
+		p.Code = 500
+		p.Status = "ERROR"
+		p.Text = []string{err.Error()}
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultRepository) markImplemented(f bool) bool {
+	if f {
+		p.Code = 501
+		p.Status = "NOT IMPLEMENTED"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultRepository) markFound(f bool, i int) bool {
+	if f || i == 0 {
+		p.Code = 404
+		p.Status = "NOT FOUND"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultRepository) markOk() bool {
+	p.Code = 200
+	p.Status = "OK"
+	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
