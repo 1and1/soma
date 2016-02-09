@@ -118,6 +118,10 @@ func main() {
 	router.GET("/repository/:repository", ShowRepository)
 	router.GET("/filter/repository/:repository", ListRepository)
 
+	router.GET("/buckets/", ListBucket)
+	router.GET("/buckets/:bucket", ShowBucket)
+	router.GET("/filter/bucket/:bucket", ListBucket)
+
 	if !SomaCfg.ReadOnly {
 		router.POST("/views/", AddView)
 		router.DELETE("/views/:view", DeleteView)
@@ -205,6 +209,8 @@ func main() {
 		router.DELETE("/attributes/:attribute", DeleteAttribute)
 
 		router.POST("/repository/", AddRepository)
+
+		router.POST("/bucket/", AddBucket)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))
