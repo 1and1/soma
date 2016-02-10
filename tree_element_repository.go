@@ -39,7 +39,8 @@ type RepositorySpec struct {
 // NEW
 func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
 	if !specRepoCheck(spec) {
-		panic(`No`)
+		fmt.Printf("%#v\n", spec) // XXX DEBUG
+		panic(`No.`)
 	}
 
 	ter := new(SomaTreeElemRepository)
