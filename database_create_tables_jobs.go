@@ -35,10 +35,13 @@ create table if not exists soma.jobs (
   job_status                  varchar(32)     NOT NULL REFERENCES soma.job_status ( job_status ) DEFERRABLE,
   job_result                  varchar(32)     NOT NULL REFERENCES soma.job_result ( job_result ) DEFERRABLE,
   job_type                    varchar(128)    NOT NULL REFERENCES soma.job_type ( job_type ) DEFERRABLE,
-  job_serial                  bigserial,
+  job_serial                  bigserial       NOT NULL,
   repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
   user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
   organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+  job_queued                  timestamptz(3)  NOT NULL DEFAULT NOW(),
+  job_started                 timestamptz(3),
+  job_finished                timestamptz(3),
   job                         jsonb           NOT NULL
 );`
 	queries[idx] = "createTableJobs"
