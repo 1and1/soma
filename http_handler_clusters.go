@@ -10,64 +10,64 @@ import (
 /*
  * Read functions
  */
-func ListBucket(w http.ResponseWriter, r *http.Request,
+func ListCluster(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["bucketReadHandler"].(somaBucketReadHandler)
-	handler.input <- somaBucketRequest{
+	handler := handlerMap["clusterReadHandler"].(somaClusterReadHandler)
+	handler.input <- somaClusterRequest{
 		action: "list",
 		reply:  returnChannel,
 	}
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestBucket{}
-	cReq.Filter = &somaproto.ProtoBucketFilter{}
+	cReq := somaproto.ProtoRequestCluster{}
+	cReq.Filter = &somaproto.ProtoClusterFilter{}
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Name != "" {
-		filtered := make([]somaBucketResult, 0)
-		for _, i := range result.Buckets {
-			if i.Bucket.Name == cReq.Filter.Name {
+		filtered := make([]somaClusterResult, 0)
+		for _, i := range result.Clusters {
+			if i.Cluster.Name == cReq.Filter.Name {
 				filtered = append(filtered, i)
 			}
 		}
-		result.Buckets = filtered
+		result.Clusters = filtered
 	}
 
 skip:
-	SendBucketReply(&w, &result)
+	SendClusterReply(&w, &result)
 }
 
-func ShowBucket(w http.ResponseWriter, r *http.Request,
+func ShowCluster(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["bucketReadHandler"].(somaBucketReadHandler)
-	handler.input <- somaBucketRequest{
+	handler := handlerMap["clusterReadHandler"].(somaClusterReadHandler)
+	handler.input <- somaClusterRequest{
 		action: "show",
 		reply:  returnChannel,
-		Bucket: somaproto.ProtoBucket{
-			Id: params.ByName("bucket"),
+		Cluster: somaproto.ProtoCluster{
+			Id: params.ByName("cluster"),
 		},
 	}
 	result := <-returnChannel
-	SendBucketReply(&w, &result)
+	SendClusterReply(&w, &result)
 }
 
 /* Write functions
  */
-func AddBucket(w http.ResponseWriter, r *http.Request,
+func AddCluster(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestBucket{}
+	cReq := somaproto.ProtoRequestCluster{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -77,30 +77,30 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(guidePost)
 	handler.input <- treeRequest{
-		RequestType: "bucket",
-		Action:      "create_bucket",
-		reply:       returnChannel,
-		Bucket: somaBucketRequest{
-			action: "add",
-			Bucket: *cReq.Bucket,
+		RequestType: "cluster",
+		Action:      "add",
+		Cluster: somaClusterRequest{
+			action:  "add",
+			Cluster: *cReq.Cluster,
+			reply:   returnChannel,
 		},
 	}
 	result := <-returnChannel
-	SendBucketReply(&w, &result)
+	SendClusterReply(&w, &result)
 }
 
 /*
  * Utility
  */
-func SendBucketReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultBucket{}
+func SendClusterReply(w *http.ResponseWriter, r *somaResult) {
+	result := somaproto.ProtoResultCluster{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
 	result.Text = make([]string, 0)
-	result.Buckets = make([]somaproto.ProtoBucket, 0)
-	for _, i := range (*r).Buckets {
-		result.Buckets = append(result.Buckets, i.Bucket)
+	result.Clusters = make([]somaproto.ProtoCluster, 0)
+	for _, i := range (*r).Clusters {
+		result.Clusters = append(result.Clusters, i.Cluster)
 		if i.ResultError != nil {
 			result.Text = append(result.Text, i.ResultError.Error())
 		}

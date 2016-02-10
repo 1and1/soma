@@ -1,9 +1,7 @@
 package main
 
-import "github.com/satori/go.uuid"
-
 type ErrorMarker interface {
-	ErrorMark(err error, imp bool, found bool, length int) bool
+	ErrorMark(err error, imp bool, found bool, length int, jobid string) bool
 }
 
 type SomaAppender interface {
@@ -16,7 +14,7 @@ type somaResult struct {
 	NotFound       bool
 	NotImplemented bool
 	Accepted       bool
-	JobId          uuid.UUID
+	JobId          string
 	Nodes          []somaNodeResult
 	Servers        []somaServerResult
 	Levels         []somaLevelResult
@@ -36,6 +34,8 @@ type somaResult struct {
 	Attributes     []somaAttributeResult
 	Repositories   []somaRepositoryResult
 	Buckets        []somaBucketResult
+	Groups         []somaGroupResult
+	Clusters       []somaClusterResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {
@@ -71,7 +71,7 @@ func (r *somaResult) Append(err error, res SomaAppender) {
 
 func (r *somaResult) MarkErrors(reply ErrorMarker) bool {
 	return reply.ErrorMark(r.RequestError, r.NotImplemented, r.NotFound,
-		ResultLength(r, reply))
+		ResultLength(r, reply), r.JobId)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

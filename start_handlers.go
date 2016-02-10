@@ -22,6 +22,10 @@ func startHandlers() {
 	spawnCapabilityReadHandler()
 	spawnPropertyReadHandler()
 	spawnAttributeReadHandler()
+	spawnRepositoryReadHandler()
+	spawnBucketReadHandler()
+	spawnGroupReadHandler()
+	spawnClusterReadHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnViewWriteHandler()
@@ -45,6 +49,8 @@ func startHandlers() {
 		spawnCapabilityWriteHandler()
 		spawnPropertyWriteHandler()
 		spawnAttributeWriteHandler()
+		spawnForestCustodian()
+		spawnGuidePost()
 	}
 }
 
@@ -433,6 +439,51 @@ func spawnRepositoryReadHandler() {
 	repositoryReadHandler.conn = conn
 	handlerMap["repositoryReadHandler"] = repositoryReadHandler
 	go repositoryReadHandler.run()
+}
+
+func spawnBucketReadHandler() {
+	var bucketReadHandler somaBucketReadHandler
+	bucketReadHandler.input = make(chan somaBucketRequest, 64)
+	bucketReadHandler.shutdown = make(chan bool)
+	bucketReadHandler.conn = conn
+	handlerMap["bucketReadHandler"] = bucketReadHandler
+	go bucketReadHandler.run()
+}
+
+func spawnGroupReadHandler() {
+	var groupReadHandler somaGroupReadHandler
+	groupReadHandler.input = make(chan somaGroupRequest, 64)
+	groupReadHandler.shutdown = make(chan bool)
+	groupReadHandler.conn = conn
+	handlerMap["groupReadHandler"] = groupReadHandler
+	go groupReadHandler.run()
+}
+
+func spawnClusterReadHandler() {
+	var clusterReadHandler somaClusterReadHandler
+	clusterReadHandler.input = make(chan somaClusterRequest, 64)
+	clusterReadHandler.shutdown = make(chan bool)
+	clusterReadHandler.conn = conn
+	handlerMap["clusterReadHandler"] = clusterReadHandler
+	go clusterReadHandler.run()
+}
+
+func spawnForestCustodian() {
+	var fC forestCustodian
+	fC.input = make(chan somaRepositoryRequest, 64)
+	fC.shutdown = make(chan bool)
+	fC.conn = conn
+	handlerMap["forestCustodian"] = fC
+	go fC.run()
+}
+
+func spawnGuidePost() {
+	var gP guidePost
+	gP.input = make(chan treeRequest, 4096)
+	gP.shutdown = make(chan bool)
+	gP.conn = conn
+	handlerMap["guidePost"] = gP
+	go gP.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
