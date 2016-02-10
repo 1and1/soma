@@ -6,18 +6,30 @@ func grantPermissions(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 4)
+	queries := make([]string, 7)
 
 	queryMap["grantServiceUserSchemaSoma"] = `grant select, insert, update, delete on all tables in schema soma to soma_svc;`
 	queries[idx] = "grantServiceUserSchemaSoma"
+	idx++
+
+	queryMap["grantServiceUserSequencesSoma"] = `grant usage, select on all sequences in schema soma to soma_svc;`
+	queries[idx] = "grantServiceUserSequencesSoma"
 	idx++
 
 	queryMap["grantServiceUserSchemaInventory"] = `grant select, insert, update, delete on all tables in schema inventory to soma_svc;`
 	queries[idx] = "grantServiceUserSchemaInventory"
 	idx++
 
+	queryMap["grantServiceUserSequencesInventory"] = `grant usage, select on all sequences in schema inventory to soma_svc;`
+	queries[idx] = "grantServiceUserSequencesInventory"
+	idx++
+
 	queryMap["grantServiceUserSchemaAuth"] = `grant select, insert, update, delete on all tables in schema auth to soma_svc;`
 	queries[idx] = "grantServiceUserSchemaAuth"
+	idx++
+
+	queryMap["grantServiceUserSequencesAuth"] = `grant usage, select on all sequences in schema auth to soma_svc;`
+	queries[idx] = "grantServiceUserSequencesAuth"
 	idx++
 
 	queryMap["grantInventoryUserSchemaInventory"] = `grant select, insert, update, delete on all tables in schema inventory to soma_inv;`

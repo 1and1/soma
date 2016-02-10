@@ -50,6 +50,8 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
 	grantPermissions(printOnly, verbose)
 
+	schemaInserts(printOnly, verbose)
+
 	done <- true
 }
 
