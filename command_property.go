@@ -24,8 +24,8 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 	req := somaproto.ProtoRequestProperty{}
 	req.Custom = &somaproto.ProtoPropertyCustom{}
 	req.Custom.Property = c.Args().First()
-	req.Custom.Repository = repoId.String()
-	path := fmt.Sprintf("/property/custom/%s/", repoId.String())
+	req.Custom.Repository = repoId
+	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
@@ -242,8 +242,8 @@ func cmdPropertyCustomDelete(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
 
 	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().First(),
-		repoId.String())
-	path := fmt.Sprintf("/property/custom/%s/%s", repoId.String(), propId)
+		repoId)
+	path := fmt.Sprintf("/property/custom/%s/%s", repoId, propId)
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
@@ -316,8 +316,8 @@ func cmdPropertyCustomShow(c *cli.Context) {
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/property/custom/%s/", repoId.String(),
+		repoId)
+	path := fmt.Sprintf("/property/custom/%s/", repoId,
 		propId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
@@ -362,7 +362,7 @@ func cmdPropertyCustomList(c *cli.Context) {
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 
-	path := fmt.Sprintf("/property/custom/%s/", repoId.String())
+	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)

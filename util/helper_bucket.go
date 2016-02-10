@@ -9,25 +9,25 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetBucketByUUIDOrName(b string, r string) uuid.UUID {
+func (u SomaUtil) TryGetBucketByUUIDOrName(b string, r string) string {
 	id, err := uuid.FromString(b)
 	if err != nil {
 		// aborts on failure
-		id = u.GetBucketIdByName(b, r)
+		return u.GetBucketIdByName(b, r)
 	}
-	return id
+	return id.String()
 }
 
 func (u SomaUtil) BucketByUUIDOrName(b string) string {
 	id, err := uuid.FromString(b)
 	if err != nil {
 		// aborts on failure
-		id = u.BucketIdByName(b)
+		return u.BucketIdByName(b)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) uuid.UUID {
+func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
 	var req somaproto.ProtoRequestBucket
 	req.Filter.Name = bucket
 	req.Filter.RepositoryId = repoId
@@ -41,7 +41,7 @@ func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) uuid.UUID {
 	return repoResult.Buckets[0].Id
 }
 
-func (u SomaUtil) BucketIdByName(bucket string) uuid.UUID {
+func (u SomaUtil) BucketIdByName(bucket string) string {
 	var req somaproto.ProtoRequestBucket
 	req.Filter.Name = bucket
 
@@ -70,7 +70,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if receivedUuidArgument {
-		if bucket != bucketResult.Buckets[0].Id.String() {
+		if bucket != bucketResult.Buckets[0].Id {
 			u.Abort("Received result set for incorrect bucket")
 		}
 	} else {
@@ -78,7 +78,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 			u.Abort("Received result set for incorrect bucket")
 		}
 	}
-	return bucketResult.Buckets[0].RepositoryId
+	return bucketResult.Buckets[0].Repository
 }
 
 func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *somaproto.ProtoResultBucket {

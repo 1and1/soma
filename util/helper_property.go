@@ -48,7 +48,6 @@ func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) string {
 func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) string {
 	var (
 		req         somaproto.ProtoRequestProperty
-		ctxId       uuid.UUID
 		ctxIdString string
 		path        string
 	)
@@ -57,8 +56,8 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	switch pType {
 	case "custom":
 		// context ctx is repository
-		ctxId = u.TryGetRepositoryByUUIDOrName(ctx)
-		path = fmt.Sprintf("/property/custom/%s/", ctxId.String())
+		ctxIdString = u.TryGetRepositoryByUUIDOrName(ctx)
+		path = fmt.Sprintf("/property/custom/%s/", ctxIdString)
 	case "system":
 		path = "/property/system/"
 	case "template":

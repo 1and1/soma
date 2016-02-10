@@ -10,19 +10,21 @@ func cmdRepositoryCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
 
-	_ = utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
+	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
 
 	var req somaproto.ProtoRequestRepository
+	req.Repository = &somaproto.ProtoRepository{}
 	req.Repository.Name = c.Args().Get(0)
-	req.Repository.Team = c.Args().Get(2)
+	req.Repository.Team = teamId
 
-	_ = utl.PostRequestWithBody(req, "/repository/")
+	resp := utl.PostRequestWithBody(req, "/repository/")
+	fmt.Println(resp)
 }
 
 func cmdRepositoryDelete(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	_ = utl.DeleteRequest(path)
 }
@@ -30,7 +32,7 @@ func cmdRepositoryDelete(c *cli.Context) {
 func cmdRepositoryRestore(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	var req somaproto.ProtoRequestRepository
 	req.Restore = true
@@ -41,7 +43,7 @@ func cmdRepositoryRestore(c *cli.Context) {
 func cmdRepositoryPurge(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	var req somaproto.ProtoRequestRepository
 	req.Purge = true
@@ -52,7 +54,7 @@ func cmdRepositoryPurge(c *cli.Context) {
 func cmdRepositoryClear(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	var req somaproto.ProtoRequestRepository
 	req.Clear = true
@@ -64,9 +66,10 @@ func cmdRepositoryRename(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	var req somaproto.ProtoRequestRepository
+	req.Repository = &somaproto.ProtoRepository{}
 	req.Repository.Name = c.Args().Get(2)
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -77,9 +80,10 @@ func cmdRepositoryRepossess(c *cli.Context) {
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	_ = utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	var req somaproto.ProtoRequestRepository
+	req.Repository = &somaproto.ProtoRepository{}
 	req.Repository.Team = c.Args().Get(2)
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -92,7 +96,7 @@ func cmdRepositoryClone(c *cli.Context) {
 func cmdRepositoryActivate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	var req somaproto.ProtoRequestRepository
 	req.Activate = true
@@ -112,7 +116,7 @@ func cmdRepositoryList(c *cli.Context) {
 func cmdRepositoryShow(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	path := fmt.Sprintf("/repository/%s", id.String())
+	path := fmt.Sprintf("/repository/%s", id)
 
 	_ = utl.GetRequest(path)
 }

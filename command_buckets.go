@@ -16,17 +16,19 @@ func cmdBucketCreate(c *cli.Context) {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	_ = utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
+	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
 	envs := []string{"live", "ac1", "prelive", "qa",
 		"test", "dev", "default"}
 	utl.ValidateStringInSlice(opts["environment"][0], envs)
 
 	var req somaproto.ProtoRequestBucket
+	req.Bucket = &somaproto.ProtoBucket{}
 	req.Bucket.Name = c.Args().First()
-	req.Bucket.Repository = opts["repository"][0]
+	req.Bucket.Repository = repoId
 	req.Bucket.Environment = opts["environment"][0]
 
-	_ = utl.PostRequestWithBody(req, "/buckets/")
+	resp := utl.PostRequestWithBody(req, "/buckets/")
+	fmt.Println(resp)
 }
 
 func cmdBucketDelete(c *cli.Context) {
@@ -35,8 +37,8 @@ func cmdBucketDelete(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 	buckId := utl.TryGetBucketByUUIDOrName(
 		c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/buckets/%s", buckId.String())
+		repoId)
+	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	_ = utl.DeleteRequest(path)
 }
@@ -47,8 +49,8 @@ func cmdBucketRestore(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 	buckId := utl.TryGetBucketByUUIDOrName(
 		c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/buckets/%s", buckId.String())
+		repoId)
+	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	var req somaproto.ProtoRequestBucket
 	req.Restore = true
@@ -62,8 +64,8 @@ func cmdBucketPurge(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 	buckId := utl.TryGetBucketByUUIDOrName(
 		c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/buckets/%s", buckId.String())
+		repoId)
+	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	var req somaproto.ProtoRequestBucket
 	req.Purge = true
@@ -77,8 +79,8 @@ func cmdBucketFreeze(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 	buckId := utl.TryGetBucketByUUIDOrName(
 		c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/buckets/%s", buckId.String())
+		repoId)
+	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	var req somaproto.ProtoRequestBucket
 	req.Freeze = true
@@ -92,8 +94,8 @@ func cmdBucketThaw(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
 	buckId := utl.TryGetBucketByUUIDOrName(
 		c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/buckets/%s", buckId.String())
+		repoId)
+	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	var req somaproto.ProtoRequestBucket
 	req.Thaw = true
@@ -108,10 +110,11 @@ func cmdBucketRename(c *cli.Context) {
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(4))
 	buckId := utl.TryGetBucketByUUIDOrName(
 		c.Args().Get(0),
-		repoId.String())
-	path := fmt.Sprintf("/buckets/%s", buckId.String())
+		repoId)
+	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	var req somaproto.ProtoRequestBucket
+	req.Bucket = &somaproto.ProtoBucket{}
 	req.Bucket.Name = c.Args().Get(2)
 
 	_ = utl.PatchRequestWithBody(req, path)

@@ -166,8 +166,11 @@ func cmdNodeAssign(c *cli.Context) {
 	var req somaproto.ProtoRequestJob
 	req.JobType = "node"
 	req.Node.Action = "assign"
-	req.Node.Node.Config.RepositoryName = options["repository"]
-	req.Node.Node.Config.BucketName = options["bucket"]
+	req.Node.Node.Config.RepositoryId = utl.TryGetRepositoryByUUIDOrName(options["repository"])
+	req.Node.Node.Config.BucketId = utl.TryGetBucketByUUIDOrName(
+		options["bucket"],
+		req.Node.Node.Config.RepositoryId,
+	)
 
 	_ = utl.PostRequestWithBody(req, "/jobs/")
 	// TODO save jobid locally as outstanding

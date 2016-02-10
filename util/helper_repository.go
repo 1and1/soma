@@ -9,17 +9,18 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetRepositoryByUUIDOrName(s string) uuid.UUID {
+func (u SomaUtil) TryGetRepositoryByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		id = u.GetRepositoryIdByName(s)
+		return u.GetRepositoryIdByName(s)
 	}
-	return id
+	return id.String()
 }
 
-func (u SomaUtil) GetRepositoryIdByName(repo string) uuid.UUID {
+func (u SomaUtil) GetRepositoryIdByName(repo string) string {
 	var req somaproto.ProtoRequestRepository
+	req.Filter = &somaproto.ProtoRepositoryFilter{}
 	req.Filter.Name = repo
 
 	resp := u.GetRequestWithBody(req, "/repository/")
