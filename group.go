@@ -1,8 +1,8 @@
 package somaproto
 
 type ProtoRequestGroup struct {
-	Group  ProtoGroup       `json:"group,omitempty"`
-	Filter ProtoGroupFilter `json:"filter,omitempty"`
+	Group  *ProtoGroup       `json:"group,omitempty"`
+	Filter *ProtoGroupFilter `json:"filter,omitempty"`
 }
 
 type ProtoResultGroup struct {
@@ -16,9 +16,9 @@ type ProtoResultGroup struct {
 type ProtoGroup struct {
 	Id             string               `json:"id,omitempty"`
 	Name           string               `json:"name,omitempty"`
-	Bucket         string               `json:"bucket,omitempty"`
 	BucketId       string               `json:"bucketid,omitempty"`
 	ObjectState    string               `json:"objectstate,omitempty"`
+	TeamId         string               `json:"teamid,omitempty"`
 	MemberGroups   []ProtoGroup         `json:"membergroups,omitempty"`
 	MemberClusters []ProtoCluster       `json:"memberclusters,omitempty"`
 	MemberNodes    []ProtoNode          `json:"membernodes,omitempty"`
@@ -28,7 +28,6 @@ type ProtoGroup struct {
 
 type ProtoGroupFilter struct {
 	Name     string `json:"name,omitempty"`
-	Bucket   string `json:"bucket,omitempty"`
 	BucketId string `json:"bucketid,omitempty"`
 }
 
@@ -45,6 +44,71 @@ type ProtoGroupProperty struct {
 	Inheritance  bool   `json:"inheritance,omitempty"`
 	ChildrenOnly bool   `json:"children,omitempty"`
 	Source       string `json:"source,omitempty"`
+}
+
+//
+func (p *ProtoResultGroup) ErrorMark(err error, imp bool, found bool,
+	length int, jobid string) bool {
+	if p.markError(err) {
+		return true
+	}
+	if p.markImplemented(imp) {
+		return true
+	}
+	if p.markFound(found, length) {
+		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
+	}
+	return p.markOk()
+}
+
+func (p *ProtoResultGroup) markError(err error) bool {
+	if err != nil {
+		p.Code = 500
+		p.Status = "ERROR"
+		p.Text = []string{err.Error()}
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultGroup) markImplemented(f bool) bool {
+	if f {
+		p.Code = 501
+		p.Status = "NOT IMPLEMENTED"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultGroup) markFound(f bool, i int) bool {
+	if f || i == 0 {
+		p.Code = 404
+		p.Status = "NOT FOUND"
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultGroup) markOk() bool {
+	p.Code = 200
+	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultGroup) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultGroup) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
+	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

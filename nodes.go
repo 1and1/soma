@@ -49,10 +49,8 @@ type ProtoNodeFilter struct {
 }
 
 type ProtoNodeConfig struct {
-	RepositoryId   string `json:"repositoryid,omitempty"`
-	RepositoryName string `json:"repositoryname,omitempty"`
-	BucketId       string `json:"bucketid,omitempty"`
-	BucketName     string `json:"bucketname,omitempty"`
+	RepositoryId string `json:"repositoryid,omitempty"`
+	BucketId     string `json:"bucketid,omitempty"`
 }
 
 type ProtoNodeProperty struct {
@@ -67,7 +65,7 @@ type ProtoNodeProperty struct {
 
 //
 func (p *ProtoResultNode) ErrorMark(err error, imp bool, found bool,
-	length int) bool {
+	length int, jobid string) bool {
 	if p.markError(err) {
 		return true
 	}
@@ -76,6 +74,9 @@ func (p *ProtoResultNode) ErrorMark(err error, imp bool, found bool,
 	}
 	if p.markFound(found, length) {
 		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
 	}
 	return p.markOk()
 }
@@ -111,6 +112,19 @@ func (p *ProtoResultNode) markFound(f bool, i int) bool {
 func (p *ProtoResultNode) markOk() bool {
 	p.Code = 200
 	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultNode) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultNode) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
 	return false
 }
 

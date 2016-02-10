@@ -29,7 +29,7 @@ type ProtoProviderDetails struct {
 
 //
 func (p *ProtoResultProvider) ErrorMark(err error, imp bool, found bool,
-	length int) bool {
+	length int, jobid string) bool {
 	if p.markError(err) {
 		return true
 	}
@@ -38,6 +38,9 @@ func (p *ProtoResultProvider) ErrorMark(err error, imp bool, found bool,
 	}
 	if p.markFound(found, length) {
 		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
 	}
 	return p.markOk()
 }
@@ -73,6 +76,19 @@ func (p *ProtoResultProvider) markFound(f bool, i int) bool {
 func (p *ProtoResultProvider) markOk() bool {
 	p.Code = 200
 	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultProvider) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultProvider) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
 	return false
 }
 

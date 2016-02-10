@@ -35,7 +35,7 @@ type ProtoTeamFilter struct {
 
 //
 func (p *ProtoResultTeam) ErrorMark(err error, imp bool, found bool,
-	length int) bool {
+	length int, jobid string) bool {
 	if p.markError(err) {
 		return true
 	}
@@ -44,6 +44,9 @@ func (p *ProtoResultTeam) ErrorMark(err error, imp bool, found bool,
 	}
 	if p.markFound(found, length) {
 		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
 	}
 	return p.markOk()
 }
@@ -79,6 +82,19 @@ func (p *ProtoResultTeam) markFound(f bool, i int) bool {
 func (p *ProtoResultTeam) markOk() bool {
 	p.Code = 200
 	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultTeam) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultTeam) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
 	return false
 }
 

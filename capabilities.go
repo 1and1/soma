@@ -36,7 +36,7 @@ type ProtoCapabilityDetails struct {
 
 //
 func (p *ProtoResultCapability) ErrorMark(err error, imp bool,
-	found bool, length int) bool {
+	found bool, length int, jobid string) bool {
 	if p.markError(err) {
 		return true
 	}
@@ -45,6 +45,9 @@ func (p *ProtoResultCapability) ErrorMark(err error, imp bool,
 	}
 	if p.markFound(found, length) {
 		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
 	}
 	return p.markOk()
 }
@@ -80,6 +83,19 @@ func (p *ProtoResultCapability) markFound(f bool, i int) bool {
 func (p *ProtoResultCapability) markOk() bool {
 	p.Code = 200
 	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultCapability) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultCapability) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
 	return false
 }
 

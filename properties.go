@@ -63,7 +63,7 @@ type ProtoPropertyFilter struct {
 
 //
 func (p *ProtoResultProperty) ErrorMark(err error, imp bool, found bool,
-	length int) bool {
+	length int, jobid string) bool {
 	if p.markError(err) {
 		return true
 	}
@@ -72,6 +72,9 @@ func (p *ProtoResultProperty) ErrorMark(err error, imp bool, found bool,
 	}
 	if p.markFound(found, length) {
 		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
 	}
 	return p.markOk()
 }
@@ -107,6 +110,19 @@ func (p *ProtoResultProperty) markFound(f bool, i int) bool {
 func (p *ProtoResultProperty) markOk() bool {
 	p.Code = 200
 	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultProperty) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultProperty) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
 	return false
 }
 

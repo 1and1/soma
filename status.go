@@ -24,7 +24,7 @@ type ProtoStatusDetails struct {
 
 //
 func (p *ProtoResultStatus) ErrorMark(err error, imp bool, found bool,
-	length int) bool {
+	length int, jobid string) bool {
 	if p.markError(err) {
 		return true
 	}
@@ -33,6 +33,9 @@ func (p *ProtoResultStatus) ErrorMark(err error, imp bool, found bool,
 	}
 	if p.markFound(found, length) {
 		return true
+	}
+	if p.hasJobId(jobid) {
+		return p.markAccepted()
 	}
 	return p.markOk()
 }
@@ -68,6 +71,19 @@ func (p *ProtoResultStatus) markFound(f bool, i int) bool {
 func (p *ProtoResultStatus) markOk() bool {
 	p.Code = 200
 	p.Status = "OK"
+	return false
+}
+
+func (p *ProtoResultStatus) hasJobId(s string) bool {
+	if s != "" {
+		return true
+	}
+	return false
+}
+
+func (p *ProtoResultStatus) markAccepted() bool {
+	p.Code = 202
+	p.Status = "ACCEPTED"
 	return false
 }
 
