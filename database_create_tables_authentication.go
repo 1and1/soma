@@ -147,7 +147,7 @@ create table if not exists auth.tools (
   tool_id                     uuid            PRIMARY KEY,
   tool_name                   varchar(256)    UNIQUE NOT NULL,
   tool_owner_id               uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE RESTRICT DEFERRABLE,
-  created                     timestamptz(3)  NOT NULL DEFAULT NOW(),
+  created                     timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
   CHECK( EXTRACT( TIMEZONE FROM created ) = '0' )
 );`
 	queries[idx] = "createTableTools"

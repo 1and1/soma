@@ -19,7 +19,7 @@ create table if not exists soma.check_instance_status (
 create table if not exists soma.check_instances (
   check_instance_id           uuid            PRIMARY KEY,
   check_id                    uuid            NOT NULL REFERENCES soma.checks ( check_id ) DEFERRABLE,
-  last_configuration_created  timestamptz(3)  NOT NULL DEFAULT NOW(),
+  last_configuration_created  timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
   update_available            boolean         NOT NULL DEFAULT 'no',
   deleted                     boolean         NOT NULL DEFAULT 'no'
 );`
@@ -32,8 +32,8 @@ create table if not exists soma.check_instance_configurations (
   version                     integer         NOT NULL,
   check_instance_id           uuid            NOT NULL REFERENCES soma.check_instances ( check_instance_id ) DEFERRABLE,
   monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
-  created                     timestamptz(3)  NOT NULL DEFAULT NOW(),
-  activated_at                timestamptz(3)  NOT NULL DEFAULT NOW(),
+  created                     timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
+  activated_at                timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
   status                      varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
   next_status                 varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
   awaiting_deletion           boolean         NOT NULL DEFAULT 'no',
