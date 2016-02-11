@@ -83,14 +83,13 @@ runloop:
 
 func (g *guidePost) process(q *treeRequest) {
 	var (
-		res              sql.Result
-		err              error
-		j                []byte
-		repoId, repoName string
+		res                      sql.Result
+		err                      error
+		j                        []byte
+		repoId, repoName, keeper string
 	)
 	result := somaResult{}
 
-	log.Printf("R: jobsave/%s", q.Action)
 	switch q.Action {
 	case "create_bucket":
 		repoId = q.Bucket.Bucket.Repository
@@ -101,6 +100,50 @@ func (g *guidePost) process(q *treeRequest) {
 		q.reply <- result
 		return
 	}
+
+	// lookup repository name
+	err = g.name_stmt.QueryRow(repoId).Scan(&repoName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			result.SetNotFound()
+		} else {
+			_ = result.SetRequestError(err)
+		}
+		q.reply <- result
+		return
+	}
+
+	// check we have a treekeeper for that repository
+	keeper = fmt.Sprintf("repository_%s", repoName)
+	if _, ok := handlerMap[keeper].(treeKeeper); !ok {
+		_ = result.SetRequestError(
+			fmt.Errorf("No handler for repository %s registered.\n", repoName),
+		)
+		q.reply <- result
+		return
+	}
+
+	// check the treekeeper has finished loading
+	handler := handlerMap[keeper].(treeKeeper)
+	if !handler.isReady() {
+		_ = result.SetRequestError( // TODO should be 503/ServiceUnavailable
+			fmt.Errorf("Repository %s not fully loaded yet.\n", repoName),
+		)
+		q.reply <- result
+		return
+	}
+
+	// check the treekeeper has not encountered a broken tree
+	if handler.isBroken() {
+		_ = result.SetRequestError(
+			fmt.Errorf("Repository %s is broken.\n", repoName),
+		)
+		q.reply <- result
+		return
+	}
+
+	// store job in database
+	log.Printf("R: jobsave/%s", q.Action)
 	q.JobId = uuid.NewV4()
 	j, _ = json.Marshal(q)
 	res, err = g.jbsv_stmt.Exec(
@@ -109,15 +152,14 @@ func (g *guidePost) process(q *treeRequest) {
 		"pending",
 		q.Action,
 		repoId,
-		"00000000-0000-0000-0000-000000000000",
-		"00000000-0000-0000-0000-000000000000",
+		"00000000-0000-0000-0000-000000000000", // XXX user uuid
+		"00000000-0000-0000-0000-000000000000", // XXX team uuid
 		string(j),
 	)
 	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
-
 	rowCnt, _ := res.RowsAffected()
 	switch {
 	case rowCnt == 0:
@@ -131,27 +173,15 @@ func (g *guidePost) process(q *treeRequest) {
 		return
 	}
 
+	handler.input <- *q
+	result.JobId = q.JobId.String()
+
 	switch q.Action {
 	case "create_bucket":
-		err = g.name_stmt.QueryRow(repoId).Scan(&repoName)
-		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
-				result.SetNotFound()
-			} else {
-				_ = result.SetRequestError(err)
-			}
-			q.reply <- result
-			return
-		}
-
-		keeper := fmt.Sprintf("repository_%s", repoName)
-		handler := handlerMap[keeper].(treeKeeper)
-		handler.input <- *q
+		result.Append(nil, &somaBucketResult{
+			Bucket: q.Bucket.Bucket,
+		})
 	}
-	result.Append(nil, &somaBucketResult{
-		Bucket: q.Bucket.Bucket,
-	})
-	result.JobId = q.JobId.String()
 	q.reply <- result
 }
 
