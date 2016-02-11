@@ -10,7 +10,7 @@ import (
 type SomaTreeElemNode struct {
 	Id              uuid.UUID
 	Name            string
-	AssetId         uuid.UUID
+	AssetId         uint64
 	Team            uuid.UUID
 	ServerId        uuid.UUID
 	State           string
@@ -30,24 +30,31 @@ type SomaTreeElemNode struct {
 }
 
 type NodeSpec struct {
-	Id       uuid.UUID
+	Id       string
+	AssetId  uint64
 	Name     string
-	AssetId  uuid.UUID
-	Team     uuid.UUID
-	ServerId uuid.UUID
-	State    string
+	Team     string
+	ServerId string
+	Online   bool
+	Deleted  bool
 }
 
 //
 // NEW
-func NewNode(name string, id string) *SomaTreeElemNode {
-	ten := new(SomaTreeElemNode)
-	if id != "" {
-		ten.Id, _ = uuid.FromString(id)
-	} else {
-		ten.Id = uuid.NewV4()
+func NewNode(spec NodeSpec) *SomaTreeElemNode {
+	if !specNodeCheck(spec) {
+		fmt.Printf("%#v\n", spec) // XXX DEBUG
+		panic(`No.`)
 	}
-	ten.Name = name
+
+	ten := new(SomaTreeElemNode)
+	ten.Id, _ = uuid.FromString(spec.Id)
+	ten.Name = spec.Name
+	ten.AssetId = spec.AssetId
+	ten.Team, _ = uuid.FromString(spec.Team)
+	ten.ServerId, _ = uuid.FromString(spec.ServerId)
+	ten.Online = spec.Online
+	ten.Deleted = spec.Deleted
 	ten.Type = "node"
 	ten.State = "floating"
 	ten.Parent = nil
@@ -71,7 +78,7 @@ func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
 		Type:    ten.Type,
 	}
 	cl.Id, _ = uuid.FromString(ten.Id.String())
-	cl.AssetId, _ = uuid.FromString(ten.AssetId.String())
+	cl.AssetId = ten.AssetId
 	cl.Team, _ = uuid.FromString(ten.Team.String())
 	cl.ServerId, _ = uuid.FromString(ten.ServerId.String())
 
