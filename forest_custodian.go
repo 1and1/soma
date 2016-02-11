@@ -216,6 +216,9 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 		// discard actions on initial load
 		<-actionChan
 	}
+	for i := 0; i < len(errChan); i++ {
+		<-errChan
+	}
 	f.spawnTreeKeeper(q, sTree, errChan, actionChan)
 }
 
