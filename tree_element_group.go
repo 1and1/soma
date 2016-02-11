@@ -27,22 +27,24 @@ type SomaTreeElemGroup struct {
 	Children        map[string]SomaTreeGroupAttacher //`json:"-"`
 }
 
-type GroupSepc struct {
-	Id   uuid.UUID
+type GroupSpec struct {
+	Id   string
 	Name string
-	Team uuid.UUID
+	Team string
 }
 
 //
 // NEW
-func NewGroup(name string, id string) *SomaTreeElemGroup {
-	teg := new(SomaTreeElemGroup)
-	if id != "" {
-		teg.Id, _ = uuid.FromString(id)
-	} else {
-		teg.Id = uuid.NewV4()
+func NewGroup(spec GroupSpec) *SomaTreeElemGroup {
+	if !specGroupCheck(spec) {
+		fmt.Printf("%#v\n", spec) // XXX DEBUG
+		panic(`No.`)
 	}
-	teg.Name = name
+
+	teg := new(SomaTreeElemGroup)
+	teg.Id, _ = uuid.FromString(spec.Id)
+	teg.Name = spec.Name
+	teg.Team, _ = uuid.FromString(spec.Team)
 	teg.Type = "group"
 	teg.State = "floating"
 	teg.Parent = nil

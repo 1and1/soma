@@ -28,23 +28,26 @@ type SomaTreeElemCluster struct {
 }
 
 type ClusterSpec struct {
-	Id   uuid.UUID
+	Id   string
 	Name string
-	Team uuid.UUID
+	Team string
 }
 
 //
 // NEW
-func NewCluster(name string, id string) *SomaTreeElemCluster {
-	tec := new(SomaTreeElemCluster)
-	if id != "" {
-		tec.Id, _ = uuid.FromString(id)
-	} else {
-		tec.Id = uuid.NewV4()
+func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
+	if !specClusterCheck(spec) {
+		fmt.Printf("%#v\n", spec) // XXX DEBUG
+		panic(`No.`)
 	}
-	tec.Name = name
+
+	tec := new(SomaTreeElemCluster)
+	tec.Id, _ = uuid.FromString(spec.Id)
+	tec.Name = spec.Name
+	tec.Team, _ = uuid.FromString(spec.Team)
 	tec.Type = "cluster"
 	tec.State = "floating"
+	tec.Parent = nil
 	tec.Children = make(map[string]SomaTreeClusterAttacher)
 	tec.PropertyOncall = make(map[string]SomaTreeProperty)
 	tec.PropertyService = make(map[string]SomaTreeProperty)

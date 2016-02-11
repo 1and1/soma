@@ -1,6 +1,10 @@
 package somatree
 
-import "github.com/satori/go.uuid"
+import (
+	"fmt"
+
+	"github.com/satori/go.uuid"
+)
 
 type SomaTreeElemBucket struct {
 	Id              uuid.UUID
@@ -8,6 +12,9 @@ type SomaTreeElemBucket struct {
 	Environment     string
 	Type            string
 	State           string
+	Frozen          bool
+	Deleted         bool
+	Team            uuid.UUID
 	Parent          SomaTreeBucketReceiver `json:"-"`
 	Fault           *SomaTreeElemFault     `json:"-"`
 	PropertyOncall  map[string]SomaTreeProperty
@@ -19,17 +26,30 @@ type SomaTreeElemBucket struct {
 	Action          chan *Action                      `json:"-"`
 }
 
+type BucketSpec struct {
+	Id          string
+	Name        string
+	Environment string
+	Team        string
+	Deleted     bool
+	Frozen      bool
+}
+
 //
 // NEW
-func NewBucket(name string, environment string, id string) *SomaTreeElemBucket {
-	teb := new(SomaTreeElemBucket)
-	if id == "" {
-		teb.Id = uuid.NewV4()
-	} else {
-		teb.Id, _ = uuid.FromString(id)
+func NewBucket(spec BucketSpec) *SomaTreeElemBucket {
+	if !specBucketCheck(spec) {
+		fmt.Printf("%#v\n", spec) // XXX DEBUG
+		panic(`No.`)
 	}
-	teb.Name = name
-	teb.Environment = environment
+
+	teb := new(SomaTreeElemBucket)
+	teb.Id, _ = uuid.FromString(spec.Id)
+	teb.Name = spec.Name
+	teb.Team, _ = uuid.FromString(spec.Team)
+	teb.Environment = spec.Environment
+	teb.Frozen = spec.Frozen
+	teb.Deleted = spec.Deleted
 	teb.Type = "bucket"
 	teb.State = "floating"
 	teb.Parent = nil
