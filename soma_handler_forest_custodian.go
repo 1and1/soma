@@ -231,6 +231,8 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.
 	tK.tree = s
 	tK.errChan = ec
 	tK.actionChan = ac
+	tK.broken = false
+	tK.ready = false
 	tK.repoId = q.Repository.Id
 	tK.repoName = q.Repository.Name
 	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
