@@ -63,6 +63,7 @@ func (tk *treeKeeper) run() {
 		}
 		return
 	}
+	log.Printf("TK[%s]: ready for service!\n", tk.repoName)
 	tk.ready = true
 
 runloop:
@@ -71,7 +72,7 @@ runloop:
 		case <-tk.shutdown:
 			break runloop
 		case <-tk.input:
-			fmt.Printf("TK %s received input request", tk.repoName)
+			fmt.Printf("TK %s received input request\n", tk.repoName)
 		}
 	}
 }

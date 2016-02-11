@@ -224,7 +224,7 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 
 func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.SomaTree,
 	ec chan *somatree.Error, ac chan *somatree.Action) {
-	var tK treeKeeper
+	tK := new(treeKeeper)
 	tK.input = make(chan treeRequest, 1024)
 	tK.shutdown = make(chan bool)
 	tK.conn = f.conn

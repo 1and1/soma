@@ -115,7 +115,7 @@ func (g *guidePost) process(q *treeRequest) {
 
 	// check we have a treekeeper for that repository
 	keeper = fmt.Sprintf("repository_%s", repoName)
-	if _, ok := handlerMap[keeper].(treeKeeper); !ok {
+	if _, ok := handlerMap[keeper].(*treeKeeper); !ok {
 		_ = result.SetRequestError(
 			fmt.Errorf("No handler for repository %s registered.\n", repoName),
 		)
@@ -124,7 +124,7 @@ func (g *guidePost) process(q *treeRequest) {
 	}
 
 	// check the treekeeper has finished loading
-	handler := handlerMap[keeper].(treeKeeper)
+	handler := handlerMap[keeper].(*treeKeeper)
 	if !handler.isReady() {
 		_ = result.SetRequestError( // TODO should be 503/ServiceUnavailable
 			fmt.Errorf("Repository %s not fully loaded yet.\n", repoName),
