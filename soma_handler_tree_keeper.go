@@ -135,6 +135,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupGroups()
 	tk.startupGroupMemberGroups()
 	tk.startupGroupedClusters()
+	tk.startupClusters()
 }
 
 func (tk *treeKeeper) startupBuckets() {
@@ -177,7 +178,8 @@ func (tk *treeKeeper) startupBuckets() {
 			ParentName: tk.repoName,
 		})
 		for i := 0; i < len(tk.actionChan); i++ {
-			<-tk.actionChan
+			a := <-tk.actionChan
+			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := 0; i < len(tk.errChan); i++ {
 			<-tk.errChan
@@ -218,7 +220,8 @@ func (tk *treeKeeper) startupGroups() {
 			ParentId:   bucketId,
 		})
 		for i := 0; i < len(tk.actionChan); i++ {
-			<-tk.actionChan
+			a := <-tk.actionChan
+			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := 0; i < len(tk.errChan); i++ {
 			<-tk.errChan
@@ -258,7 +261,8 @@ func (tk *treeKeeper) startupGroupMemberGroups() {
 		})
 	}
 	for i := 0; i < len(tk.actionChan); i++ {
-		<-tk.actionChan
+		a := <-tk.actionChan
+		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
 	for i := 0; i < len(tk.errChan); i++ {
 		<-tk.errChan
@@ -300,7 +304,70 @@ func (tk *treeKeeper) startupGroupedClusters() {
 		})
 	}
 	for i := 0; i < len(tk.actionChan); i++ {
-		<-tk.actionChan
+		a := <-tk.actionChan
+		log.Printf("%s -> %s\n", a.Action, a.Type)
+	}
+	for i := 0; i < len(tk.errChan); i++ {
+		<-tk.errChan
+	}
+}
+
+func (tk *treeKeeper) startupClusters() {
+	var (
+		err                                      error
+		rows                                     *sql.Rows
+		clusterId, clusterName, bucketId, teamId string
+		load_cluster                             *sql.Stmt
+	)
+	log.Println("Prepare: treekeeper/load-clusters")
+	load_cluster, err = tk.conn.Prepare(`
+SELECT sc.cluster_id,
+       sc.cluster_name,
+	   sc.bucket_id,
+	   sc.organizational_team_id
+FROM   soma.repositories sr
+JOIN   soma.buckets sb
+ON     sr.repository_id = sb.repository_id
+JOIN   soma.clusters sc
+ON     sb.bucket_id = sc.bucket_id
+WHERE  sr.repository_id = $1::uuid
+AND    sc.object_state != 'grouped';`)
+	if err != nil {
+		log.Fatal("treekeeper/load-clusters: ", err)
+	}
+	defer load_cluster.Close()
+
+	log.Printf("TK[%s]: loading clusters\n", tk.repoName)
+	rows, err = load_cluster.Query(tk.repoId)
+	if err != nil {
+		log.Fatal(fmt.Errorf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error()))
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(
+			&clusterId,
+			&clusterName,
+			&bucketId,
+			&teamId,
+		)
+		if err != nil {
+			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+		}
+
+		somatree.NewCluster(somatree.ClusterSpec{
+			Id:   clusterId,
+			Name: clusterName,
+			Team: teamId,
+		}).Attach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "bucket",
+			ParentId:   bucketId,
+		})
+	}
+	for i := 0; i < len(tk.actionChan); i++ {
+		a := <-tk.actionChan
+		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
 	for i := 0; i < len(tk.errChan); i++ {
 		<-tk.errChan
