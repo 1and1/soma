@@ -1,6 +1,9 @@
 package somatree
 
-import "sync"
+import (
+	"sync"
+
+)
 
 //
 // Interface: SomaTreeChecker
@@ -37,9 +40,17 @@ func (teb *SomaTreeElemBucket) storeCheck(c SomaTreeCheck) {
 	teb.Checks[c.Id.String()] = c
 
 	teb.Action <- &Action{
-		Action:          "create_check",
-		Type:            "bucket",
-		Id:              teb.Id.String(),
+		Action: "create_check",
+		Type:   teb.Type,
+		Bucket: somaproto.ProtoBucket{
+			Id:          teb.Id.String(),
+			Name:        teb.Name,
+			Repository:  teb.Repository.String(),
+			Team:        teb.Team.String(),
+			Environment: teb.Environment,
+			IsDeleted:   teb.Deleted,
+			IsFrozen:    teb.Frozen,
+		},
 		CheckId:         c.Id.String(),
 		CheckSource:     c.InheritedFrom.String(),
 		CheckCapability: c.CapabilityId.String(),

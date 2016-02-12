@@ -1,5 +1,6 @@
 package somatree
 
+
 //
 // Interface: SomaTreeAttacher
 func (teg *SomaTreeElemGroup) Attach(a AttachRequest) {
@@ -99,10 +100,14 @@ func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {
 
 	teg.Action <- &Action{
 		Action: "create",
-		Type:   "group",
-		Id:     teg.Id.String(),
-		Name:   teg.Name,
-		Team:   teg.Team.String(),
+		Type:   teg.Type,
+		Group: somaproto.ProtoGroup{
+			Id:          teg.Id.String(),
+			Name:        teg.Name,
+			BucketId:    teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+			ObjectState: teg.State,
+			TeamId:      teg.Team.String(),
+		},
 	}
 }
 
@@ -119,10 +124,14 @@ func (teg *SomaTreeElemGroup) attachToGroup(a AttachRequest) {
 
 	teg.Action <- &Action{
 		Action: "create",
-		Type:   "group",
-		Id:     teg.Id.String(),
-		Name:   teg.Name,
-		Team:   teg.Team.String(),
+		Type:   teg.Type,
+		Group: somaproto.ProtoGroup{
+			Id:          teg.Id.String(),
+			Name:        teg.Name,
+			BucketId:    teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+			ObjectState: teg.State,
+			TeamId:      teg.Team.String(),
+		},
 	}
 }
 

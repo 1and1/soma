@@ -1,5 +1,6 @@
 package somatree
 
+
 //
 // Interface: SomaTreeReceiver
 func (teb *SomaTreeElemBucket) Receive(r ReceiveRequest) {
@@ -35,15 +36,6 @@ func (teb *SomaTreeElemBucket) receiveGroup(r ReceiveRequest) {
 			r.Group.setParent(teb)
 			r.Group.setAction(teb.Action)
 			r.Group.setFault(teb.Fault)
-
-			teb.Action <- &Action{
-				Action:    "member_new",
-				Type:      "bucket",
-				Id:        teb.Id.String(),
-				Name:      teb.Name,
-				ChildType: "group",
-				ChildId:   r.Group.GetID(),
-			}
 		default:
 			panic(`SomaTreeElemBucket.receiveGroup`)
 		}
@@ -62,15 +54,6 @@ func (teb *SomaTreeElemBucket) receiveCluster(r ReceiveRequest) {
 			r.Cluster.setParent(teb)
 			r.Cluster.setAction(teb.Action)
 			r.Cluster.setFault(teb.Fault)
-
-			teb.Action <- &Action{
-				Action:    "member_new",
-				Type:      "bucket",
-				Id:        teb.Id.String(),
-				Name:      teb.Name,
-				ChildType: "cluster",
-				ChildId:   r.Cluster.GetID(),
-			}
 		default:
 			panic(`SomaTreeElemBucket.receiveCluster`)
 		}
@@ -91,12 +74,21 @@ func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
 			r.Node.setFault(teb.Fault)
 
 			teb.Action <- &Action{
-				Action:    "member_new",
+				Action:    "node_assignment",
 				Type:      "bucket",
-				Id:        teb.Id.String(),
-				Name:      teb.Name,
 				ChildType: "node",
-				ChildId:   r.Node.GetID(),
+				Bucket: somaproto.ProtoBucket{
+					Id:          teb.Id.String(),
+					Name:        teb.Name,
+					Repository:  teb.Repository.String(),
+					Team:        teb.Team.String(),
+					Environment: teb.Environment,
+					IsDeleted:   teb.Deleted,
+					IsFrozen:    teb.Frozen,
+				},
+				Node: somaproto.ProtoNode{
+					Id: r.Node.GetID(),
+				},
 			}
 		default:
 			panic(`SomaTreeElemBucket.receiveNote`)

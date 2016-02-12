@@ -1,5 +1,6 @@
 package somatree
 
+
 //
 // Interface: SomaTreeUnlinker
 func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
@@ -35,15 +36,6 @@ func (teb *SomaTreeElemBucket) unlinkGroup(u UnlinkRequest) {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
 					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
-
-					teb.Action <- &Action{
-						Action:    "member_removed",
-						Type:      "bucket",
-						Id:        teb.Id.String(),
-						Name:      teb.Name,
-						ChildType: "group",
-						ChildId:   u.ChildId,
-					}
 				}
 			}
 		default:
@@ -64,15 +56,6 @@ func (teb *SomaTreeElemBucket) unlinkCluster(u UnlinkRequest) {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
 					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
-
-					teb.Action <- &Action{
-						Action:    "member_removed",
-						Type:      "bucket",
-						Id:        teb.Id.String(),
-						Name:      teb.Name,
-						ChildType: "cluster",
-						ChildId:   u.ChildId,
-					}
 				}
 			}
 		default:
@@ -95,12 +78,21 @@ func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
 					delete(teb.Children, u.ChildId)
 
 					teb.Action <- &Action{
-						Action:    "member_removed",
+						Action:    "node_removal",
 						Type:      "bucket",
-						Id:        teb.Id.String(),
-						Name:      teb.Name,
 						ChildType: "node",
-						ChildId:   u.ChildId,
+						Bucket: somaproto.ProtoBucket{
+							Id:          teb.Id.String(),
+							Name:        teb.Name,
+							Repository:  teb.Repository.String(),
+							Team:        teb.Team.String(),
+							Environment: teb.Environment,
+							IsDeleted:   teb.Deleted,
+							IsFrozen:    teb.Frozen,
+						},
+						Node: somaproto.ProtoNode{
+							Id: u.ChildId,
+						},
 					}
 				}
 			}

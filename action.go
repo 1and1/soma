@@ -6,6 +6,9 @@ type Action struct {
 	Type            string `json:",omitempty"`
 	Repository      somaproto.ProtoRepository
 	Bucket          somaproto.ProtoBucket
+	Group           somaproto.ProtoGroup
+	Cluster         somaproto.ProtoCluster
+	Node            somaproto.ProtoNode
 	Id              string `json:",omitempty"`
 	SourceId        string `json:",omitempty"`
 	Name            string `json:",omitempty"`

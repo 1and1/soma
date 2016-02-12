@@ -1,6 +1,9 @@
 package somatree
 
-import "sync"
+import (
+	"sync"
+
+)
 
 //
 // Interface: SomaTreePropertier
@@ -41,10 +44,17 @@ func (teb *SomaTreeElemBucket) SetProperty(
 		teb.inheritPropertyDeep(f)
 	}
 	teb.Action <- &Action{
-		Action:         "property_new",
-		Type:           "bucket",
-		Id:             teb.Id.String(),
-		Name:           teb.Name,
+		Action: "set_property",
+		Type:   "bucket",
+		Bucket: somaproto.ProtoBucket{
+			Id:          teb.Id.String(),
+			Name:        teb.Name,
+			Repository:  teb.Repository.String(),
+			Team:        teb.Team.String(),
+			Environment: teb.Environment,
+			IsDeleted:   teb.Deleted,
+			IsFrozen:    teb.Frozen,
+		},
 		PropertyType:   p.GetType(),
 		PropertyId:     p.GetID(),
 		PropertySource: p.GetSource(),
@@ -64,10 +74,17 @@ func (teb *SomaTreeElemBucket) inheritProperty(
 		teb.setOncallProperty(p)
 	}
 	teb.Action <- &Action{
-		Action:         "property_new",
-		Type:           "bucket",
-		Id:             teb.Id.String(),
-		Name:           teb.Name,
+		Action: "set_property",
+		Type:   "bucket",
+		Bucket: somaproto.ProtoBucket{
+			Id:          teb.Id.String(),
+			Name:        teb.Name,
+			Repository:  teb.Repository.String(),
+			Team:        teb.Team.String(),
+			Environment: teb.Environment,
+			IsDeleted:   teb.Deleted,
+			IsFrozen:    teb.Frozen,
+		},
 		PropertyType:   p.GetType(),
 		PropertyId:     p.GetID(),
 		PropertySource: p.GetSource(),

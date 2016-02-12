@@ -39,8 +39,15 @@ func (teb *SomaTreeElemBucket) Destroy() {
 	teb.Action <- &Action{
 		Action: "delete",
 		Type:   "bucket",
-		Id:     teb.Id.String(),
-		Name:   teb.Name,
+		Bucket: somaproto.ProtoBucket{
+			Id:          teb.Id.String(),
+			Name:        teb.Name,
+			Repository:  teb.Repository.String(),
+			Team:        teb.Team.String(),
+			Environment: teb.Environment,
+			IsDeleted:   teb.Deleted,
+			IsFrozen:    teb.Frozen,
+		},
 	}
 	teb.setAction(nil)
 }
