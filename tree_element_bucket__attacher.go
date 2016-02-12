@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
+
 )
 
 //
@@ -113,8 +114,17 @@ func (teb *SomaTreeElemBucket) attachToRepository(a AttachRequest) {
 
 	teb.Action <- &Action{
 		Action: "create",
-		Type:   "bucket",
-		Id:     teb.Id.String(),
-		Name:   teb.Name,
+		Type:   teb.Type,
+		Bucket: somaproto.ProtoBucket{
+			Id:          teb.Id.String(),
+			Name:        teb.Name,
+			Repository:  teb.Repository.String(),
+			Team:        teb.Team.String(),
+			Environment: teb.Environment,
+			IsDeleted:   teb.Deleted,
+			IsFrozen:    teb.Frozen,
+		},
 	}
 }
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

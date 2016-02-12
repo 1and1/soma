@@ -14,6 +14,7 @@ type SomaTreeElemBucket struct {
 	State           string
 	Frozen          bool
 	Deleted         bool
+	Repository      uuid.UUID
 	Team            uuid.UUID
 	Parent          SomaTreeBucketReceiver `json:"-"`
 	Fault           *SomaTreeElemFault     `json:"-"`
@@ -31,6 +32,7 @@ type BucketSpec struct {
 	Name        string
 	Environment string
 	Team        string
+	Repository  string
 	Deleted     bool
 	Frozen      bool
 }
@@ -50,6 +52,7 @@ func NewBucket(spec BucketSpec) *SomaTreeElemBucket {
 	teb.Environment = spec.Environment
 	teb.Frozen = spec.Frozen
 	teb.Deleted = spec.Deleted
+	teb.Repository, _ = uuid.FromString(spec.Repository)
 	teb.Type = "bucket"
 	teb.State = "floating"
 	teb.Parent = nil
@@ -69,8 +72,13 @@ func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
 		Environment: teb.Environment,
 		Type:        teb.Type,
 		State:       teb.State,
+		Frozen:      teb.Frozen,
+		Deleted:     teb.Deleted,
 	}
 	cl.Id, _ = uuid.FromString(teb.Id.String())
+	cl.Team, _ = uuid.FromString(teb.Team.String())
+	cl.Repository, _ = uuid.FromString(teb.Repository.String())
+
 	f := make(map[string]SomaTreeBucketAttacher)
 	for k, child := range teb.Children {
 		f[k] = child.CloneBucket()

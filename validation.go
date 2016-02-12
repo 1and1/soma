@@ -30,11 +30,16 @@ func specBucketCheck(spec BucketSpec) bool {
 		return false
 	case spec.Team == "":
 		return false
+	case spec.Repository == "":
+		return false
 	}
 	if _, err := uuid.FromString(spec.Id); err != nil {
 		return false
 	}
 	if _, err := uuid.FromString(spec.Team); err != nil {
+		return false
+	}
+	if _, err := uuid.FromString(spec.Repository); err != nil {
 		return false
 	}
 	return true
