@@ -72,6 +72,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 		sTree      *somatree.SomaTree
 		actionChan chan *somatree.Action
 		errChan    chan *somatree.Error
+		team       string
 	)
 	result := somaResult{}
 
@@ -119,6 +120,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 						false,
 						action.Repository.Team,
 					)
+					team = action.Repository.Team
 				}
 			case "attached":
 			}
@@ -146,7 +148,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 			Repository: q.Repository,
 		})
 		if q.action == "add" {
-			f.spawnTreeKeeper(q, sTree, errChan, actionChan)
+			f.spawnTreeKeeper(q, sTree, errChan, actionChan, team)
 		}
 	}
 	q.reply <- result
@@ -219,11 +221,11 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 	for i := 0; i < len(errChan); i++ {
 		<-errChan
 	}
-	f.spawnTreeKeeper(q, sTree, errChan, actionChan)
+	f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.Team)
 }
 
 func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.SomaTree,
-	ec chan *somatree.Error, ac chan *somatree.Action) {
+	ec chan *somatree.Error, ac chan *somatree.Action, team string) {
 	tK := new(treeKeeper)
 	tK.input = make(chan treeRequest, 1024)
 	tK.shutdown = make(chan bool)
@@ -235,6 +237,7 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.
 	tK.ready = false
 	tK.repoId = q.Repository.Id
 	tK.repoName = q.Repository.Name
+	tK.team = team
 	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
 	handlerMap[keeperName] = tK
 	go tK.run()

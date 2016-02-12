@@ -77,6 +77,7 @@ WHERE  sr.repository_id = $1::uuid;`)
 			Team:        teamId,
 			Deleted:     deleted,
 			Frozen:      frozen,
+			Repository:  tk.repoId,
 		}).Attach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "repository",
@@ -492,6 +493,7 @@ func (tk *treeKeeper) startupJobs() {
 SELECT   job
 FROM     soma.jobs
 WHERE    repository_id = $1::uuid
+AND      job_status != 'processed'
 ORDER BY job_serial ASC;`)
 	if err != nil {
 		log.Fatal("treekeeper/load-jobs: ", err)
@@ -518,7 +520,7 @@ ORDER BY job_serial ASC;`)
 		}
 
 		tr := treeRequest{}
-		err = json.Unmarshal([]byte(job), tr)
+		err = json.Unmarshal([]byte(job), &tr)
 		if err != nil {
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
