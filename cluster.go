@@ -98,6 +98,7 @@ func (p *ProtoResultCluster) markOk() bool {
 
 func (p *ProtoResultCluster) hasJobId(s string) bool {
 	if s != "" {
+		p.JobId = s
 		return true
 	}
 	return false

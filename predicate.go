@@ -76,6 +76,7 @@ func (p *ProtoResultPredicate) markOk() bool {
 
 func (p *ProtoResultPredicate) hasJobId(s string) bool {
 	if s != "" {
+		p.JobId = s
 		return true
 	}
 	return false

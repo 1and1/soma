@@ -100,6 +100,7 @@ func (p *ProtoResultGroup) markOk() bool {
 
 func (p *ProtoResultGroup) hasJobId(s string) bool {
 	if s != "" {
+		p.JobId = s
 		return true
 	}
 	return false
