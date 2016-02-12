@@ -78,11 +78,11 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap["guidePost"].(guidePost)
 	handler.input <- treeRequest{
 		RequestType: "group",
-		Action:      "add",
+		Action:      "create_group",
+		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: "add",
 			Group:  *cReq.Group,
-			reply:  returnChannel,
 		},
 	}
 	result := <-returnChannel

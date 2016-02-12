@@ -219,6 +219,10 @@ func main() {
 		router.POST("/repository/", AddRepository)
 
 		router.POST("/buckets/", AddBucket)
+
+		router.POST("/groups/", AddGroup)
+
+		router.POST("/clusters/", AddCluster)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))

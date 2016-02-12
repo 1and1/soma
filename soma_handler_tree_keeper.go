@@ -145,8 +145,12 @@ func (tk *treeKeeper) isBroken() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err error
-		tx  *sql.Tx
+		err                    error
+		tx                     *sql.Tx
+		txStmtCreateGroup      *sql.Stmt
+		txStmtCreateCluster    *sql.Stmt
+		txStmtBucketAssignNode *sql.Stmt
+		txStmtBucketRemoveNode *sql.Stmt
 	)
 	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 	if err != nil {
@@ -172,17 +176,53 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentId:   tk.repoId,
 			ParentName: tk.repoName,
 		})
+	case "create_group":
+		somatree.NewGroup(somatree.GroupSpec{
+			Id:   uuid.NewV4().String(),
+			Name: q.Group.Group.Name,
+			Team: q.Group.Group.TeamId,
+		}).Attach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "bucket",
+			ParentId:   q.Group.Group.BucketId,
+		})
+	case "create_cluster":
+		somatree.NewCluster(somatree.ClusterSpec{
+			Id:   uuid.NewV4().String(),
+			Name: q.Cluster.Cluster.Name,
+			Team: q.Cluster.Cluster.TeamId,
+		}).Attach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "bucket",
+			ParentId:   q.Cluster.Cluster.BucketId,
+		})
 	}
 	// open multi-statement transaction
 	if tx, err = tk.conn.Begin(); err != nil {
-		log.Println(err)
 		goto bailout
 	}
 	defer tx.Rollback()
 
+	// prepare statements within tx context
+	if txStmtCreateGroup, err = tx.Prepare(tkStmtCreateGroup); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateGroup.Close()
+	if txStmtCreateCluster, err = tx.Prepare(tkStmtCreateCluster); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCluster.Close()
+	if txStmtBucketAssignNode, err = tx.Prepare(tkStmtBucketAssignNode); err != nil {
+		goto bailout
+	}
+	defer txStmtBucketAssignNode.Close()
+	if txStmtBucketRemoveNode, err = tx.Prepare(tkStmtBucketRemoveNode); err != nil {
+		goto bailout
+	}
+	defer txStmtBucketRemoveNode.Close()
+
 	// defer constraint checks
-	if _, err = tx.Stmt(tk.defer_constraints).Exec(); err != nil {
-		log.Println(err)
+	if _, err = tx.Exec(tkStmtDeferConstraints); err != nil {
 		goto bailout
 	}
 
@@ -202,12 +242,53 @@ actionloop:
 					a.Bucket.Environment,
 					a.Bucket.Team,
 				); err != nil {
-					log.Println(err)
+					break actionloop
+				}
+			case "node_assignment":
+				if _, err = txStmtBucketAssignNode.Exec(
+					a.Node.Id,
+					a.Bucket.Id,
+					a.Bucket.Team,
+				); err != nil {
+					break actionloop
+				}
+			case "node_removal":
+				if _, err = txStmtBucketRemoveNode.Exec(
+					a.Node.Id,
+					a.Bucket.Id,
+					a.Bucket.Team,
+				); err != nil {
 					break actionloop
 				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
+			}
+		case "group":
+			switch a.Action {
+			case "create":
+				if _, err = txStmtCreateGroup.Exec(
+					a.Group.Id,
+					a.Group.BucketId,
+					a.Group.Name,
+					a.Group.ObjectState,
+					a.Group.TeamId,
+				); err != nil {
+					break actionloop
+				}
+			}
+		case "cluster":
+			switch a.Action {
+			case "create":
+				if _, err = txStmtCreateCluster.Exec(
+					a.Cluster.Id,
+					a.Cluster.Name,
+					a.Cluster.BucketId,
+					a.Cluster.ObjectState,
+					a.Cluster.TeamId,
+				); err != nil {
+					break actionloop
+				}
 			}
 		case "errorchannel":
 			continue actionloop
@@ -226,13 +307,11 @@ actionloop:
 		time.Now().UTC(),
 		"success",
 	); err != nil {
-		log.Println(err)
 		goto bailout
 	}
 
 	// commit transaction
 	if err = tx.Commit(); err != nil {
-		log.Println(err)
 		goto bailout
 	}
 	log.Printf("SUCCESS - Finished job: %s\n", q.JobId.String())
@@ -243,6 +322,7 @@ actionloop:
 
 bailout:
 	log.Printf("FAILED - Finished job: %s\n", q.JobId.String())
+	log.Println(err)
 	tk.tree.Rollback()
 	tx.Rollback()
 	tk.finish_job.Exec(q.JobId.String(), time.Now().UTC(), "failed")

@@ -78,11 +78,11 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap["guidePost"].(guidePost)
 	handler.input <- treeRequest{
 		RequestType: "cluster",
-		Action:      "add",
+		Action:      "create_cluster",
+		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  "add",
 			Cluster: *cReq.Cluster,
-			reply:   returnChannel,
 		},
 	}
 	result := <-returnChannel

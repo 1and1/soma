@@ -48,8 +48,7 @@ SELECT	$1::uuid,
 
 	log.Println("Prepare: guide/repo-by-bucket")
 	g.repo_stmt, err = g.conn.Prepare(`
-SELECT	sb.bucket_id,
-		sb.repository_id,
+SELECT	sb.repository_id,
 		sr.repository_name
 FROM	soma.buckets sb
 JOIN    soma.repositories sr
@@ -83,10 +82,10 @@ runloop:
 
 func (g *guidePost) process(q *treeRequest) {
 	var (
-		res                      sql.Result
-		err                      error
-		j                        []byte
-		repoId, repoName, keeper string
+		res                                sql.Result
+		err                                error
+		j                                  []byte
+		repoId, repoName, keeper, bucketId string
 	)
 	result := somaResult{}
 
@@ -94,6 +93,9 @@ func (g *guidePost) process(q *treeRequest) {
 	case "create_bucket":
 		repoId = q.Bucket.Bucket.Repository
 	case "create_group":
+		bucketId = q.Group.Group.BucketId
+	case "create_cluster":
+		bucketId = q.Cluster.Cluster.BucketId
 	default:
 		log.Printf("R: unimplemented server/%s", q.Action)
 		result.SetNotImplemented()
@@ -101,16 +103,35 @@ func (g *guidePost) process(q *treeRequest) {
 		return
 	}
 
-	// lookup repository name
-	err = g.name_stmt.QueryRow(repoId).Scan(&repoName)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			result.SetNotFound()
-		} else {
-			_ = result.SetRequestError(err)
+	// lookup repository by bucket
+	if bucketId != "" {
+		if err = g.repo_stmt.QueryRow(bucketId).Scan(&repoId, &repoName); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
 		}
-		q.reply <- result
-		return
+	}
+
+	// lookup repository name
+	if repoName == "" && repoId != "" {
+		if err = g.name_stmt.QueryRow(repoId).Scan(&repoName); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+	}
+
+	// XXX
+	if repoName == "" {
+		panic(`Have no repository name`)
 	}
 
 	// check we have a treekeeper for that repository
