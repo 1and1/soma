@@ -1,5 +1,55 @@
 package main
 
+/*
+ * Statements for job state updates
+ */
+
+var tkStmtStartJob = `
+UPDATE soma.jobs
+SET    job_started = $2::timestamptz,
+       job_status = 'in_progress'
+WHERE  job_id = $1::uuid
+AND    job_started IS NULL;`
+
+var tkStmtFinishJob = `
+UPDATE soma.jobs
+SET    job_finished = $2::timestamptz,
+       job_status = 'processed',
+	   job_result = $3::varchar
+WHERE  job_id = $1::uuid;`
+
+/*
+ * Referential integrity hacking
+ */
+
+var tkStmtDeferAllConstraints = `
+SET CONSTRAINTS ALL DEFERRED;`
+
+/*
+ *
+ */
+
+var tkStmtCreateBucket = `
+INSERT INTO soma.buckets (
+	bucket_id,
+	bucket_name,
+	bucket_frozen,
+	bucket_deleted,
+	repository_id,
+	environment,
+	organizational_team_id)
+SELECT	$1::uuid,
+        $2::varchar,
+        $3::boolean,
+        $4::boolean,
+        $5::uuid,
+        $6::varchar,
+        $7::uuid;`
+
+/*
+ *
+ */
+
 var tkStmtCreateGroup = `
 INSERT INTO soma.groups (
             group_id,
@@ -26,8 +76,6 @@ SELECT $1::uuid,
        $4::varchar,
        $5::uuid;`
 
-var tkStmtDeferConstraints = `SET CONSTRAINTS ALL DEFERRED;`
-
 var tkStmtBucketAssignNode = `
 INSERT INTO soma.node_bucket_assignment (
             node_id,
@@ -39,6 +87,21 @@ SELECT $1::uuid,
 
 var tkStmtBucketRemoveNode = `
 DELETE FROM soma.node_bucket_assignment (
+WHERE       node_id = $1::uuid
+AND         bucket_id = $2::uuid
+AND         organizational_team_id = $3::uuid;`
+
+/*
+ * Statements for NODE actions
+ */
+
+var tkStmtUpdateNodeState = `
+UPDATE soma.nodes
+SET    object_state = $2::varchar
+WHERE  node_id = $1::uuid;`
+
+var tkStmtNodeUnassignFromBucket = `
+DELETE FROM soma.node_bucket_assignment
 WHERE       node_id = $1::uuid
 AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`

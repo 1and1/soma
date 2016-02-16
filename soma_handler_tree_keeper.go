@@ -43,7 +43,6 @@ type treeKeeper struct {
 	errChan           chan *somatree.Error
 	actionChan        chan *somatree.Action
 	start_job         *sql.Stmt
-	finish_job        *sql.Stmt
 	create_bucket     *sql.Stmt
 	defer_constraints *sql.Stmt
 }
@@ -71,58 +70,11 @@ func (tk *treeKeeper) run() {
 
 	var err error
 	log.Println("Prepare: treekeeper/start-job")
-	tk.start_job, err = tk.conn.Prepare(`
-UPDATE soma.jobs
-SET    job_started = $2::timestamptz,
-       job_status = 'in_progress'
-WHERE  job_id = $1::uuid
-AND    job_started IS NULL;`)
+	tk.start_job, err = tk.conn.Prepare(tkStmtStartJob)
 	if err != nil {
 		log.Fatal("treekeeper/start-job: ", err)
 	}
 	defer tk.start_job.Close()
-
-	log.Println("Prepare: treekeeper/finish-job")
-	tk.finish_job, err = tk.conn.Prepare(`
-UPDATE soma.jobs
-SET    job_finished = $2::timestamptz,
-       job_status = 'processed',
-	   job_result = $3::varchar
-WHERE  job_id = $1::uuid;`)
-	if err != nil {
-		log.Fatal("treekeeper/finish-jobs: ", err)
-	}
-	defer tk.finish_job.Close()
-
-	log.Println("Prepare: treekeeper/create-bucket")
-	tk.create_bucket, err = tk.conn.Prepare(`
-INSERT INTO soma.buckets (
-	bucket_id,
-	bucket_name,
-	bucket_frozen,
-	bucket_deleted,
-	repository_id,
-	environment,
-	organizational_team_id)
-SELECT	$1::uuid,
-        $2::varchar,
-        $3::boolean,
-        $4::boolean,
-        $5::uuid,
-        $6::varchar,
-        $7::uuid;`)
-	if err != nil {
-		log.Fatal("treekeeper/create-bucket: ", err)
-	}
-	defer tk.create_bucket.Close()
-
-	log.Println("Prepare: treekeeper/defer-constraints")
-	tk.defer_constraints, err = tk.conn.Prepare(`
-SET CONSTRAINTS ALL DEFERRED;`)
-	if err != nil {
-		log.Fatal("treekeeper/defer-constraints: ", err)
-	}
-	defer tk.defer_constraints.Close()
 
 runloop:
 	for {
@@ -145,12 +97,14 @@ func (tk *treeKeeper) isBroken() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err                    error
-		tx                     *sql.Tx
-		txStmtCreateGroup      *sql.Stmt
-		txStmtCreateCluster    *sql.Stmt
-		txStmtBucketAssignNode *sql.Stmt
-		txStmtBucketRemoveNode *sql.Stmt
+		err                          error
+		tx                           *sql.Tx
+		txStmtCreateBucket           *sql.Stmt
+		txStmtCreateGroup            *sql.Stmt
+		txStmtCreateCluster          *sql.Stmt
+		txStmtBucketAssignNode       *sql.Stmt
+		txStmtUpdateNodeState        *sql.Stmt
+		txStmtNodeUnassignFromBucket *sql.Stmt
 	)
 	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 	if err != nil {
@@ -196,6 +150,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentType: "bucket",
 			ParentId:   q.Cluster.Cluster.BucketId,
 		})
+	case "create_node":
+		somatree.NewNode(somatree.NodeSpec{
+			Id:       q.Node.Node.Id,
+			AssetId:  q.Node.Node.AssetId,
+			Name:     q.Node.Node.Name,
+			Team:     q.Node.Node.Team,
+			ServerId: q.Node.Node.Server,
+			Online:   q.Node.Node.IsOnline,
+			Deleted:  q.Node.Node.IsDeleted,
+		}).Attach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "bucket",
+			ParentId:   q.Node.Node.Config.BucketId,
+		})
 	}
 	// open multi-statement transaction
 	if tx, err = tk.conn.Begin(); err != nil {
@@ -204,6 +172,9 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	defer tx.Rollback()
 
 	// prepare statements within tx context
+	if txStmtCreateBucket, err = tx.Prepare(tkStmtCreateBucket); err != nil {
+		goto bailout
+	}
 	if txStmtCreateGroup, err = tx.Prepare(tkStmtCreateGroup); err != nil {
 		goto bailout
 	}
@@ -216,13 +187,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 	defer txStmtBucketAssignNode.Close()
-	if txStmtBucketRemoveNode, err = tx.Prepare(tkStmtBucketRemoveNode); err != nil {
+	if txStmtUpdateNodeState, err = tx.Prepare(tkStmtUpdateNodeState); err != nil {
 		goto bailout
 	}
-	defer txStmtBucketRemoveNode.Close()
+	defer txStmtUpdateNodeState.Close()
+	if txStmtNodeUnassignFromBucket, err = tx.Prepare(tkStmtNodeUnassignFromBucket); err != nil {
+		goto bailout
+	}
+	defer txStmtNodeUnassignFromBucket.Close()
 
 	// defer constraint checks
-	if _, err = tx.Exec(tkStmtDeferConstraints); err != nil {
+	if _, err = tx.Exec(tkStmtDeferAllConstraints); err != nil {
 		goto bailout
 	}
 
@@ -230,10 +205,11 @@ actionloop:
 	for i := 0; i < len(tk.actionChan); i++ {
 		a := <-tk.actionChan
 		switch a.Type {
+		// BUCKET
 		case "bucket":
 			switch a.Action {
 			case "create":
-				if _, err = tx.Stmt(tk.create_bucket).Exec(
+				if _, err = txStmtCreateBucket.Exec(
 					a.Bucket.Id,
 					a.Bucket.Name,
 					a.Bucket.IsFrozen,
@@ -252,18 +228,11 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-			case "node_removal":
-				if _, err = txStmtBucketRemoveNode.Exec(
-					a.Node.Id,
-					a.Bucket.Id,
-					a.Bucket.Team,
-				); err != nil {
-					break actionloop
-				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
 			}
+		// GROUP
 		case "group":
 			switch a.Action {
 			case "create":
@@ -277,6 +246,7 @@ actionloop:
 					break actionloop
 				}
 			}
+		// CLUSTER
 		case "cluster":
 			switch a.Action {
 			case "create":
@@ -286,6 +256,25 @@ actionloop:
 					a.Cluster.BucketId,
 					a.Cluster.ObjectState,
 					a.Cluster.TeamId,
+				); err != nil {
+					break actionloop
+				}
+			}
+		// NODE
+		case "node":
+			switch a.Action {
+			case "create":
+				if _, err = txStmtUpdateNodeState.Exec(
+					a.Node.Id,
+					a.Node.State,
+				); err != nil {
+					break actionloop
+				}
+			case "delete":
+				if _, err = txStmtNodeUnassignFromBucket.Exec(
+					a.Node.Id,
+					a.Node.Config.BucketId,
+					a.Node.Team,
 				); err != nil {
 					break actionloop
 				}
@@ -302,7 +291,8 @@ actionloop:
 	}
 
 	// mark job as finished
-	if _, err = tx.Stmt(tk.finish_job).Exec(
+	if _, err = tx.Exec(
+		tkStmtFinishJob,
 		q.JobId.String(),
 		time.Now().UTC(),
 		"success",
@@ -325,7 +315,12 @@ bailout:
 	log.Println(err)
 	tk.tree.Rollback()
 	tx.Rollback()
-	tk.finish_job.Exec(q.JobId.String(), time.Now().UTC(), "failed")
+	tk.conn.Exec(
+		tkStmtFinishJob,
+		q.JobId.String(),
+		time.Now().UTC(),
+		"failed",
+	)
 	for i := 0; i < len(tk.actionChan); i++ {
 		a := <-tk.actionChan
 		jB, _ := json.Marshal(a)
