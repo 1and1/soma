@@ -1,6 +1,5 @@
 package somatree
 
-
 //
 // Interface: SomaTreeUnlinker
 func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
@@ -77,23 +76,10 @@ func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
 					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
 
-					teb.Action <- &Action{
-						Action:    "node_removal",
-						Type:      "bucket",
-						ChildType: "node",
-						Bucket: somaproto.ProtoBucket{
-							Id:          teb.Id.String(),
-							Name:        teb.Name,
-							Repository:  teb.Repository.String(),
-							Team:        teb.Team.String(),
-							Environment: teb.Environment,
-							IsDeleted:   teb.Deleted,
-							IsFrozen:    teb.Frozen,
-						},
-						Node: somaproto.ProtoNode{
-							Id: u.ChildId,
-						},
-					}
+					// no action here, the node itself will either
+					// update its state from standalone->grouped|clustered
+					// or delete the bucket_assignment on Destroy(),
+					// which can not be differentiated here
 				}
 			}
 		default:
