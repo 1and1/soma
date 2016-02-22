@@ -36,15 +36,10 @@ func (teg *SomaTreeElemGroup) receiveGroup(r ReceiveRequest) {
 			r.Group.setAction(teg.Action)
 			r.Group.setFault(teg.Fault)
 
-			teg.Action <- &Action{
-				Action:    "member_new",
-				Type:      "group",
-				Id:        teg.Id.String(),
-				Name:      teg.Name,
-				Team:      teg.Team.String(),
-				ChildType: "group",
-				ChildId:   r.Group.GetID(),
-			}
+			teg.actionMemberNew(Action{
+				ChildType:  "group",
+				ChildGroup: r.Group.export(),
+			})
 		default:
 			panic(`SomaTreeElemGroup.receiveGroup`)
 		}
@@ -64,15 +59,10 @@ func (teg *SomaTreeElemGroup) receiveCluster(r ReceiveRequest) {
 			r.Cluster.setAction(teg.Action)
 			r.Cluster.setFault(teg.Fault)
 
-			teg.Action <- &Action{
-				Action:    "member_new",
-				Type:      "group",
-				Id:        teg.Id.String(),
-				Name:      teg.Name,
-				Team:      teg.Team.String(),
-				ChildType: "cluster",
-				ChildId:   r.Cluster.GetID(),
-			}
+			teg.actionMemberNew(Action{
+				ChildType:    "cluster",
+				ChildCluster: r.Cluster.export(),
+			})
 		default:
 			panic(`SomaTreeElemGroup.receiveCluster`)
 		}
@@ -92,15 +82,10 @@ func (teg *SomaTreeElemGroup) receiveNode(r ReceiveRequest) {
 			r.Node.setAction(teg.Action)
 			r.Node.setFault(teg.Fault)
 
-			teg.Action <- &Action{
-				Action:    "member_new",
-				Type:      "group",
-				Id:        teg.Id.String(),
-				Name:      teg.Name,
-				Team:      teg.Team.String(),
+			teg.actionMemberNew(Action{
 				ChildType: "node",
-				ChildId:   r.Node.GetID(),
-			}
+				ChildNode: r.Node.export(),
+			})
 		default:
 			panic(`SomaTreeElemGroup.receiveNode`)
 		}
