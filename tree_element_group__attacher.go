@@ -1,9 +1,6 @@
 package somatree
 
-import (
-	"sync"
-
-)
+import "sync"
 
 //
 // Interface: SomaTreeAttacher
@@ -43,6 +40,8 @@ func (teg *SomaTreeElemGroup) ReAttach(a AttachRequest) {
 		Group:      teg,
 	},
 	)
+
+	teg.actionUpdate()
 }
 
 func (teg *SomaTreeElemGroup) Destroy() {
@@ -60,6 +59,9 @@ func (teg *SomaTreeElemGroup) Destroy() {
 		}()
 	}
 	wg.Wait()
+
+	// call before unlink since it requires teg.Parent.*
+	teg.actionDelete()
 
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
@@ -79,7 +81,6 @@ func (teg *SomaTreeElemGroup) Detach() {
 	if teg.Parent == nil {
 		panic(`SomaTreeElemGroup.Destroy called without Parent to detach from`)
 	}
-
 	bucket := teg.Parent.(SomaTreeBucketeer).GetBucket()
 
 	teg.Parent.Unlink(UnlinkRequest{
@@ -100,6 +101,8 @@ func (teg *SomaTreeElemGroup) Detach() {
 		Group:      teg,
 	},
 	)
+
+	teg.actionUpdate()
 }
 
 //
@@ -113,17 +116,7 @@ func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {
 		Group:      teg,
 	})
 
-	teg.Action <- &Action{
-		Action: "create",
-		Type:   teg.Type,
-		Group: somaproto.ProtoGroup{
-			Id:          teg.Id.String(),
-			Name:        teg.Name,
-			BucketId:    teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
-			ObjectState: teg.State,
-			TeamId:      teg.Team.String(),
-		},
-	}
+	teg.actionCreate()
 }
 
 //
@@ -137,17 +130,7 @@ func (teg *SomaTreeElemGroup) attachToGroup(a AttachRequest) {
 		Group:      teg,
 	})
 
-	teg.Action <- &Action{
-		Action: "create",
-		Type:   teg.Type,
-		Group: somaproto.ProtoGroup{
-			Id:          teg.Id.String(),
-			Name:        teg.Name,
-			BucketId:    teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
-			ObjectState: teg.State,
-			TeamId:      teg.Team.String(),
-		},
-	}
+	teg.actionCreate()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
