@@ -97,11 +97,17 @@ func (tk *treeKeeper) isBroken() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err                          error
-		tx                           *sql.Tx
-		txStmtCreateBucket           *sql.Stmt
-		txStmtCreateGroup            *sql.Stmt
-		txStmtCreateCluster          *sql.Stmt
+		err                error
+		tx                 *sql.Tx
+		txStmtCreateBucket *sql.Stmt
+		txStmtCreateGroup  *sql.Stmt
+
+		txStmtClusterCreate       *sql.Stmt
+		txStmtClusterUpdate       *sql.Stmt
+		txStmtClusterDelete       *sql.Stmt
+		txStmtClusterMemberNew    *sql.Stmt
+		txStmtClusterMemberRemove *sql.Stmt
+
 		txStmtBucketAssignNode       *sql.Stmt
 		txStmtUpdateNodeState        *sql.Stmt
 		txStmtNodeUnassignFromBucket *sql.Stmt
@@ -130,6 +136,8 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentId:   tk.repoId,
 			ParentName: tk.repoName,
 		})
+
+	// GROUP MANIPULATION REQUESTS
 	case "create_group":
 		somatree.NewGroup(somatree.GroupSpec{
 			Id:   uuid.NewV4().String(),
@@ -140,6 +148,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentType: "bucket",
 			ParentId:   q.Group.Group.BucketId,
 		})
+	case "delete_group":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.Id,
+		}, true).(somatree.SomaTreeBucketAttacher).Destroy()
+	case "reset_group_to_bucket":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.Id,
+		}, true).(somatree.SomaTreeBucketAttacher).Detach()
+	case "add_group_to_group":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.MemberGroups[0].Id,
+		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "group",
+			ParentId:   q.Group.Group.Id,
+		})
+
+	// CLUSTER MANIPULATION REQUESTS
 	case "create_cluster":
 		somatree.NewCluster(somatree.ClusterSpec{
 			Id:   uuid.NewV4().String(),
@@ -150,6 +179,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentType: "bucket",
 			ParentId:   q.Cluster.Cluster.BucketId,
 		})
+	case "delete_cluster":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "cluster",
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(somatree.SomaTreeBucketAttacher).Destroy()
+	case "reset_cluster_to_bucket":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "cluster",
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(somatree.SomaTreeBucketAttacher).Detach()
+	case "add_cluster_to_group":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "cluster",
+			ElementId:   q.Group.Group.MemberClusters[0].Id,
+		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "group",
+			ParentId:   q.Group.Group.Id,
+		})
+
+	// NODE MANIPULATION REQUESTS
 	case "create_node":
 		somatree.NewNode(somatree.NodeSpec{
 			Id:       q.Node.Node.Id,
@@ -164,7 +214,36 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentType: "bucket",
 			ParentId:   q.Node.Node.Config.BucketId,
 		})
+	case "delete_node":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "node",
+			ElementId:   q.Node.Node.Id,
+		}, true).(somatree.SomaTreeBucketAttacher).Destroy()
+	case "reset_node_to_bucket":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "node",
+			ElementId:   q.Node.Node.Id,
+		}, true).(somatree.SomaTreeBucketAttacher).Detach()
+	case "add_node_to_group":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "node",
+			ElementId:   q.Group.Group.MemberNodes[0].Id,
+		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "group",
+			ParentId:   q.Group.Group.Id,
+		})
+	case "add_node_to_cluster":
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "node",
+			ElementId:   q.Cluster.Cluster.Members[0].Id,
+		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+			Root:       tk.tree,
+			ParentType: "cluster",
+			ParentId:   q.Cluster.Cluster.Id,
+		})
 	}
+
 	// open multi-statement transaction
 	if tx, err = tk.conn.Begin(); err != nil {
 		goto bailout
@@ -175,22 +254,49 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	if txStmtCreateBucket, err = tx.Prepare(tkStmtCreateBucket); err != nil {
 		goto bailout
 	}
+	defer txStmtCreateBucket.Close()
+
 	if txStmtCreateGroup, err = tx.Prepare(tkStmtCreateGroup); err != nil {
 		goto bailout
 	}
 	defer txStmtCreateGroup.Close()
-	if txStmtCreateCluster, err = tx.Prepare(tkStmtCreateCluster); err != nil {
+
+	// CLUSTER
+	if txStmtClusterCreate, err = tx.Prepare(tkStmtClusterCreate); err != nil {
 		goto bailout
 	}
-	defer txStmtCreateCluster.Close()
+	defer txStmtClusterCreate.Close()
+
+	if txStmtClusterUpdate, err = tx.Prepare(tkStmtClusterUpdate); err != nil {
+		goto bailout
+	}
+	defer txStmtClusterUpdate.Close()
+
+	if txStmtClusterDelete, err = tx.Prepare(tkStmtClusterDelete); err != nil {
+		goto bailout
+	}
+	defer txStmtClusterDelete.Close()
+
+	if txStmtClusterMemberNew, err = tx.Prepare(tkStmtClusterMemberNew); err != nil {
+		goto bailout
+	}
+	defer txStmtClusterMemberNew.Close()
+
+	if txStmtClusterMemberRemove, err = tx.Prepare(tkStmtClusterMemberRemove); err != nil {
+		goto bailout
+	}
+	defer txStmtClusterMemberRemove.Close()
+
 	if txStmtBucketAssignNode, err = tx.Prepare(tkStmtBucketAssignNode); err != nil {
 		goto bailout
 	}
 	defer txStmtBucketAssignNode.Close()
+
 	if txStmtUpdateNodeState, err = tx.Prepare(tkStmtUpdateNodeState); err != nil {
 		goto bailout
 	}
 	defer txStmtUpdateNodeState.Close()
+
 	if txStmtNodeUnassignFromBucket, err = tx.Prepare(tkStmtNodeUnassignFromBucket); err != nil {
 		goto bailout
 	}
@@ -250,7 +356,7 @@ actionloop:
 		case "cluster":
 			switch a.Action {
 			case "create":
-				if _, err = txStmtCreateCluster.Exec(
+				if _, err = txStmtClusterCreate.Exec(
 					a.Cluster.Id,
 					a.Cluster.Name,
 					a.Cluster.BucketId,
@@ -259,22 +365,51 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
+			case "update":
+				if _, err = txStmtClusterUpdate.Exec(
+					a.Cluster.Id,
+					a.Cluster.ObjectState,
+				); err != nil {
+					break actionloop
+				}
+			case "delete":
+				if _, err = txStmtClusterDelete.Exec(
+					a.Cluster.Id,
+				); err != nil {
+					break actionloop
+				}
+			case "member_new":
+				if _, err = txStmtClusterMemberNew.Exec(
+					a.Cluster.Id,
+					a.ChildNode.Id,
+					a.Cluster.BucketId,
+				); err != nil {
+					break actionloop
+				}
+			case "member_removed":
+				if _, err = txStmtClusterMemberRemove.Exec(
+					a.Cluster.Id,
+					a.ChildNode.Id,
+				); err != nil {
+					break actionloop
+				}
 			}
 		// NODE
 		case "node":
 			switch a.Action {
-			case "create":
-				if _, err = txStmtUpdateNodeState.Exec(
-					a.Node.Id,
-					a.Node.State,
-				); err != nil {
-					break actionloop
-				}
 			case "delete":
 				if _, err = txStmtNodeUnassignFromBucket.Exec(
 					a.Node.Id,
 					a.Node.Config.BucketId,
 					a.Node.Team,
+				); err != nil {
+					break actionloop
+				}
+				fallthrough // need to call txStmtUpdateNodeState for delete as well
+			case "update":
+				if _, err = txStmtUpdateNodeState.Exec(
+					a.Node.Id,
+					a.Node.State,
 				); err != nil {
 					break actionloop
 				}

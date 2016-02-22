@@ -63,7 +63,11 @@ SELECT $1::uuid,
        $4::varchar,
        $5::uuid;`
 
-var tkStmtCreateCluster = `
+/*
+ * Statements for CLUSTER actions
+ */
+
+var tkStmtClusterCreate = `
 INSERT INTO soma.clusters (
             cluster_id,
             cluster_name,
@@ -75,6 +79,33 @@ SELECT $1::uuid,
        $3::uuid,
        $4::varchar,
        $5::uuid;`
+
+var tkStmtClusterUpdate = `
+UPDATE soma.clusters
+SET    object_state = $2::varchar
+WHERE  cluster_id = $1::uuid;`
+
+var tkStmtClusterDelete = `
+DELETE FROM soma.clusters
+WHERE       cluster_id = $1::uuid;`
+
+var tkStmtClusterMemberNew = `
+INSERT INTO soma.cluster_membership (
+            cluster_id,
+            node_id,
+            bucket_id)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid;`
+
+var tkStmtClusterMemberRemove = `
+DELETE FROM soma.cluster_membership
+WHERE       cluster_id = $1::uuid
+AND         node_id = $2::uuid;`
+
+/*
+ *
+ */
 
 var tkStmtBucketAssignNode = `
 INSERT INTO soma.node_bucket_assignment (
