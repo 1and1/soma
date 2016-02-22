@@ -33,18 +33,15 @@ func (teg *SomaTreeElemGroup) unlinkGroup(u UnlinkRequest) {
 		case "group":
 			if _, ok := teg.Children[u.ChildId]; ok {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
+					a := Action{
+						ChildType:  "group",
+						ChildGroup: teg.Children[u.ChildId].(*SomaTreeElemGroup).export(),
+					}
+
 					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
 
-					teg.Action <- &Action{
-						Action:    "member_removed",
-						Type:      "group",
-						Id:        teg.Id.String(),
-						Name:      teg.Name,
-						Team:      teg.Team.String(),
-						ChildType: "group",
-						ChildId:   u.ChildId,
-					}
+					teg.actionMemberRemoved(a)
 				}
 			}
 		default:
@@ -63,18 +60,15 @@ func (teg *SomaTreeElemGroup) unlinkCluster(u UnlinkRequest) {
 		case "cluster":
 			if _, ok := teg.Children[u.ChildId]; ok {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
+					a := Action{
+						ChildType:    "cluster",
+						ChildCluster: teg.Children[u.ChildId].(*SomaTreeElemCluster).export(),
+					}
+
 					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
 
-					teg.Action <- &Action{
-						Action:    "member_removed",
-						Type:      "group",
-						Id:        teg.Id.String(),
-						Name:      teg.Name,
-						Team:      teg.Team.String(),
-						ChildType: "cluster",
-						ChildId:   u.ChildId,
-					}
+					teg.actionMemberRemoved(a)
 				}
 			}
 		default:
@@ -93,18 +87,15 @@ func (teg *SomaTreeElemGroup) unlinkNode(u UnlinkRequest) {
 		case "node":
 			if _, ok := teg.Children[u.ChildId]; ok {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
+					a := Action{
+						ChildType: "node",
+						ChildNode: teg.Children[u.ChildId].(*SomaTreeElemNode).export(),
+					}
+
 					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
 
-					teg.Action <- &Action{
-						Action:    "member_removed",
-						Type:      "group",
-						Id:        teg.Id.String(),
-						Name:      teg.Name,
-						Team:      teg.Team.String(),
-						ChildType: "node",
-						ChildId:   u.ChildId,
-					}
+					teg.actionMemberRemoved(a)
 				}
 			}
 		default:
