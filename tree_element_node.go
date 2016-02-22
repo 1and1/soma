@@ -204,7 +204,6 @@ func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
 }
 
 func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
-	//func (ten *SomaTreeElemNode) export() SomaTreeClusterAttacher {
 	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 	return somaproto.ProtoNode{
 		Id:        ten.Id.String(),
@@ -218,6 +217,22 @@ func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
 		Config: &somaproto.ProtoNodeConfig{
 			BucketId: bucket.(SomaTreeBuilder).GetID(),
 		},
+	}
+}
+
+func (ten *SomaTreeElemNode) actionUpdate() {
+	ten.Action <- &Action{
+		Action: "update",
+		Type:   ten.Type,
+		Node:   ten.export(),
+	}
+}
+
+func (ten *SomaTreeElemNode) actionDelete() {
+	ten.Action <- &Action{
+		Action: "delete",
+		Type:   ten.Type,
+		Node:   ten.export(),
 	}
 }
 

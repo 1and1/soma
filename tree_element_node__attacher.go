@@ -1,6 +1,5 @@
 package somatree
 
-
 //
 // Interface: SomaTreeAttacher
 func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
@@ -42,33 +41,13 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 	},
 	)
 
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
-
-	ten.Action <- &Action{
-		Action: "update",
-		Type:   ten.Type,
-		Node: somaproto.ProtoNode{
-			Id:        ten.Id.String(),
-			AssetId:   ten.AssetId,
-			Name:      ten.Name,
-			Team:      ten.Team.String(),
-			Server:    ten.ServerId.String(),
-			State:     ten.State,
-			IsOnline:  ten.Online,
-			IsDeleted: ten.Deleted,
-			Config: &somaproto.ProtoNodeConfig{
-				BucketId: bucket.(SomaTreeBuilder).GetID(),
-			},
-		},
-	}
+	ten.actionUpdate()
 }
 
 func (ten *SomaTreeElemNode) Destroy() {
 	if ten.Parent == nil {
 		panic(`SomaTreeElemNode.Destroy called without Parent to unlink from`)
 	}
-
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
@@ -83,23 +62,7 @@ func (ten *SomaTreeElemNode) Destroy() {
 	ten.setFault(nil)
 	ten.setAction(nil)
 
-	ten.Action <- &Action{
-		Action: "delete",
-		Type:   ten.Type,
-		Node: somaproto.ProtoNode{
-			Id:        ten.Id.String(),
-			AssetId:   ten.AssetId,
-			Name:      ten.Name,
-			Team:      ten.Team.String(),
-			Server:    ten.ServerId.String(),
-			State:     ten.State,
-			IsOnline:  ten.Online,
-			IsDeleted: ten.Deleted,
-			Config: &somaproto.ProtoNodeConfig{
-				BucketId: bucket.(SomaTreeBuilder).GetID(),
-			},
-		},
-	}
+	ten.actionDelete()
 }
 
 func (ten *SomaTreeElemNode) Detach() {
@@ -128,23 +91,7 @@ func (ten *SomaTreeElemNode) Detach() {
 	},
 	)
 
-	ten.Action <- &Action{
-		Action: "update",
-		Type:   ten.Type,
-		Node: somaproto.ProtoNode{
-			Id:        ten.Id.String(),
-			AssetId:   ten.AssetId,
-			Name:      ten.Name,
-			Team:      ten.Team.String(),
-			Server:    ten.ServerId.String(),
-			State:     ten.State,
-			IsOnline:  ten.Online,
-			IsDeleted: ten.Deleted,
-			Config: &somaproto.ProtoNodeConfig{
-				BucketId: bucket.(SomaTreeBuilder).GetID(),
-			},
-		},
-	}
+	ten.actionUpdate()
 }
 
 //
@@ -158,25 +105,7 @@ func (ten *SomaTreeElemNode) attachToBucket(a AttachRequest) {
 		Node:       ten,
 	})
 
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
-
-	ten.Action <- &Action{
-		Action: "update",
-		Type:   ten.Type,
-		Node: somaproto.ProtoNode{
-			Id:        ten.Id.String(),
-			AssetId:   ten.AssetId,
-			Name:      ten.Name,
-			Team:      ten.Team.String(),
-			Server:    ten.ServerId.String(),
-			State:     ten.State,
-			IsOnline:  ten.Online,
-			IsDeleted: ten.Deleted,
-			Config: &somaproto.ProtoNodeConfig{
-				BucketId: bucket.(SomaTreeBuilder).GetID(),
-			},
-		},
-	}
+	ten.actionUpdate()
 }
 
 //
@@ -190,25 +119,7 @@ func (ten *SomaTreeElemNode) attachToGroup(a AttachRequest) {
 		Node:       ten,
 	})
 
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
-
-	ten.Action <- &Action{
-		Action: "update",
-		Type:   ten.Type,
-		Node: somaproto.ProtoNode{
-			Id:        ten.Id.String(),
-			AssetId:   ten.AssetId,
-			Name:      ten.Name,
-			Team:      ten.Team.String(),
-			Server:    ten.ServerId.String(),
-			State:     ten.State,
-			IsOnline:  ten.Online,
-			IsDeleted: ten.Deleted,
-			Config: &somaproto.ProtoNodeConfig{
-				BucketId: bucket.(SomaTreeBuilder).GetID(),
-			},
-		},
-	}
+	ten.actionUpdate()
 }
 
 //
@@ -222,25 +133,7 @@ func (ten *SomaTreeElemNode) attachToCluster(a AttachRequest) {
 		Node:       ten,
 	})
 
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
-
-	ten.Action <- &Action{
-		Action: "update",
-		Type:   ten.Type,
-		Node: somaproto.ProtoNode{
-			Id:        ten.Id.String(),
-			AssetId:   ten.AssetId,
-			Name:      ten.Name,
-			Team:      ten.Team.String(),
-			Server:    ten.ServerId.String(),
-			State:     ten.State,
-			IsOnline:  ten.Online,
-			IsDeleted: ten.Deleted,
-			Config: &somaproto.ProtoNodeConfig{
-				BucketId: bucket.(SomaTreeBuilder).GetID(),
-			},
-		},
-	}
+	ten.actionUpdate()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
