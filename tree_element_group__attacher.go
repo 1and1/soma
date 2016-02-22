@@ -1,5 +1,9 @@
 package somatree
 
+import (
+	"sync"
+
+)
 
 //
 // Interface: SomaTreeAttacher
@@ -45,6 +49,17 @@ func (teg *SomaTreeElemGroup) Destroy() {
 	if teg.Parent == nil {
 		panic(`SomaTreeElemGroup.Destroy called without Parent to unlink from`)
 	}
+
+	wg := new(sync.WaitGroup)
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			teg.Children[c].Destroy()
+		}()
+	}
+	wg.Wait()
 
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),

@@ -222,6 +222,10 @@ func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
 	return teg.Parent.(SomaTreeBucketeer).GetBucket()
 }
 
+func (teg *SomaTreeElemGroup) GetRepository() string {
+	return teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository()
+}
+
 func (teg *SomaTreeElemGroup) GetEnvironment() string {
 	return teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetEnvironment()
 }

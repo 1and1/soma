@@ -24,18 +24,15 @@ func (tec *SomaTreeElemCluster) unlinkNode(u UnlinkRequest) {
 		case "node":
 			if _, ok := tec.Children[u.ChildId]; ok {
 				if u.ChildName == tec.Children[u.ChildId].GetName() {
+					a := Action{
+						ChildType: "node",
+						ChildNode: tec.Children[u.ChildId].(*SomaTreeElemNode).export(),
+					}
+
 					tec.Children[u.ChildId].clearParent()
 					delete(tec.Children, u.ChildId)
 
-					tec.Action <- &Action{
-						Action:    "member_removed",
-						Type:      "cluster",
-						Id:        tec.Id.String(),
-						Name:      tec.Name,
-						Team:      tec.Team.String(),
-						ChildType: "node",
-						ChildId:   u.ChildId,
-					}
+					tec.actionMemberRemoved(a)
 				}
 			}
 		default:

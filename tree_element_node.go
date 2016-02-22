@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+
 	"github.com/satori/go.uuid"
 )
 
@@ -200,6 +201,85 @@ func (ten *SomaTreeElemNode) setFault(f *SomaTreeElemFault) {
 
 func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
 	ten.setFault(f)
+}
+
+func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
+	//func (ten *SomaTreeElemNode) export() SomaTreeClusterAttacher {
+	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
+	return somaproto.ProtoNode{
+		Id:        ten.Id.String(),
+		AssetId:   ten.AssetId,
+		Name:      ten.Name,
+		Team:      ten.Team.String(),
+		Server:    ten.ServerId.String(),
+		State:     ten.State,
+		IsOnline:  ten.Online,
+		IsDeleted: ten.Deleted,
+		Config: &somaproto.ProtoNodeConfig{
+			BucketId: bucket.(SomaTreeBuilder).GetID(),
+		},
+	}
+}
+
+func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
+	a.Action = "property_new"
+	a.Type = ten.Type
+	a.Node = ten.export()
+
+	ten.Action <- &a
+}
+
+//
+func (ten *SomaTreeElemNode) setupPropertyAction(p SomaTreeProperty) Action {
+	a := Action{
+		Property: somaproto.TreeProperty{
+			InstanceId:       p.GetID(),
+			SourceInstanceId: p.GetSourceInstance(),
+			SourceType:       p.GetSourceType(),
+			IsInherited:      p.GetIsInherited(),
+			InheritedFrom:    p.GetSource(),
+			PropertyType:     p.GetType(),
+			Inheritance:      p.hasInheritance(),
+			ChildrenOnly:     p.isChildrenOnly(),
+			View:             p.GetView(),
+			RepositoryId:     ten.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository(),
+			BucketId:         ten.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+		},
+	}
+	switch a.Property.PropertyType {
+	case "custom":
+		a.Property.Custom = &somaproto.TreePropertyCustom{
+			CustomId:     p.(*PropertyCustom).CustomId.String(),
+			RepositoryId: a.Property.RepositoryId,
+			Name:         p.(*PropertyCustom).Key,
+			Value:        p.(*PropertyCustom).Value,
+		}
+	case "system":
+		a.Property.System = &somaproto.TreePropertySystem{
+			Name:  p.(*PropertySystem).Key,
+			Value: p.(*PropertySystem).Value,
+		}
+	case "service":
+		a.Property.Service = &somaproto.TreePropertyService{
+			Name:   p.(*PropertyService).Service,
+			TeamId: ten.Team.String(),
+		}
+		a.Property.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		for _, attr := range p.(*PropertyService).Attributes {
+			ta := somaproto.TreeServiceAttribute{
+				Attribute: attr.Attribute,
+				Value:     attr.Value,
+			}
+			a.Property.Service.Attributes = append(a.Property.Service.Attributes, ta)
+		}
+	case "oncall":
+		a.Property.Oncall = &somaproto.TreePropertyOncall{
+			OncallId: p.(*PropertyOncall).OncallId.String(),
+			Name:     p.(*PropertyOncall).Name,
+			Number:   p.(*PropertyOncall).Number,
+		}
+	}
+	return a
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

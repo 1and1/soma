@@ -1,6 +1,10 @@
 package somatree
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/satori/go.uuid"
+)
 
 //
 // Interface: SomaTreePropertier
@@ -8,71 +12,120 @@ func (tec *SomaTreeElemCluster) SetProperty(
 	p SomaTreeProperty) {
 	switch p.GetType() {
 	case "custom":
+		// generate uuid if none is set
+		if uuid.Equal(p.(*PropertyCustom).Id, uuid.Nil) {
+			p.(*PropertyCustom).Id = uuid.NewV4()
+		}
+		// this property is the source instance
 		p.(*PropertyCustom).InheritedFrom = tec.Id
 		p.(*PropertyCustom).Inherited = false
-		tec.setCustomProperty(p)
+		p.(*PropertyCustom).SourceId = p.(*PropertyCustom).Id
+		// send a scrubbed copy downward
 		f := new(PropertyCustom)
 		*f = *p.(*PropertyCustom)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.inheritPropertyDeep(f)
+		// scrub instance startup information prior to setting
+		p.(*PropertyCustom).Instances = nil
+		tec.setCustomProperty(p)
 	case "service":
+		// generate uuid if none is set
+		if uuid.Equal(p.(*PropertyService).Id, uuid.Nil) {
+			p.(*PropertyService).Id = uuid.NewV4()
+		}
+		// this property is the source instance
 		p.(*PropertyService).InheritedFrom = tec.Id
 		p.(*PropertyService).Inherited = false
-		tec.setServiceProperty(p)
+		p.(*PropertyService).SourceId = p.(*PropertyService).Id
+		// send a scrubbed copy downward
 		f := new(PropertyService)
 		*f = *p.(*PropertyService)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.inheritPropertyDeep(f)
+		// scrub instance startup information prior to setting
+		p.(*PropertyService).Instances = nil
+		tec.setServiceProperty(p)
 	case "system":
+		// generate uuid if none is set
+		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
+			p.(*PropertySystem).Id = uuid.NewV4()
+		}
+		// this property is the source instance
 		p.(*PropertySystem).InheritedFrom = tec.Id
 		p.(*PropertySystem).Inherited = false
-		tec.setSystemProperty(p)
+		p.(*PropertySystem).SourceId = p.(*PropertySystem).Id
+		// send a scrubbed copy downward
 		f := new(PropertySystem)
 		*f = *p.(*PropertySystem)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.inheritPropertyDeep(f)
+		// scrub instance startup information prior to setting
+		p.(*PropertySystem).Instances = nil
+		tec.setSystemProperty(p)
 	case "oncall":
+		// generate uuid if none is set
+		if uuid.Equal(p.(*PropertyOncall).Id, uuid.Nil) {
+			p.(*PropertyOncall).Id = uuid.NewV4()
+		}
+		// this property is the source instance
 		p.(*PropertyOncall).InheritedFrom = tec.Id
 		p.(*PropertyOncall).Inherited = false
-		tec.setOncallProperty(p)
+		p.(*PropertyOncall).SourceId = p.(*PropertyOncall).Id
+		// send a scrubbed copy downward
 		f := new(PropertyOncall)
 		*f = *p.(*PropertyOncall)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.inheritPropertyDeep(f)
+		// scrub instance startup information prior to setting
+		p.(*PropertyOncall).Instances = nil
+		tec.setOncallProperty(p)
 	}
-	tec.Action <- &Action{
-		Action:         "property_new",
-		Type:           "cluster",
-		Id:             tec.Id.String(),
-		Name:           tec.Name,
-		PropertyType:   p.GetType(),
-		PropertyId:     p.GetID(),
-		PropertySource: p.GetSource(),
-	}
+	tec.actionPropertyNew(tec.setupPropertyAction(p))
 }
 
 func (tec *SomaTreeElemCluster) inheritProperty(
 	p SomaTreeProperty) {
+	// make a copy of the scrubbed version we inherited
+	f := new(PropertyOncall)
+	*f = *p.(*PropertyOncall)
+
 	switch p.GetType() {
 	case "custom":
+		p.(*PropertyCustom).Id = p.GetInstanceId(tec.Type, tec.Id)
+		if uuid.Equal(p.(*PropertyCustom).Id, uuid.Nil) {
+			p.(*PropertyCustom).Id = uuid.NewV4()
+		}
+		p.(*PropertyCustom).Instances = nil
 		tec.setCustomProperty(p)
 	case "service":
+		p.(*PropertyService).Id = p.GetInstanceId(tec.Type, tec.Id)
+		if uuid.Equal(p.(*PropertyService).Id, uuid.Nil) {
+			p.(*PropertyService).Id = uuid.NewV4()
+		}
+		p.(*PropertyService).Instances = nil
 		tec.setServiceProperty(p)
 	case "system":
+		p.(*PropertySystem).Id = p.GetInstanceId(tec.Type, tec.Id)
+		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
+			p.(*PropertySystem).Id = uuid.NewV4()
+		}
+		p.(*PropertySystem).Instances = nil
 		tec.setSystemProperty(p)
 	case "oncall":
+		p.(*PropertyOncall).Id = p.GetInstanceId(tec.Type, tec.Id)
+		if uuid.Equal(p.(*PropertyOncall).Id, uuid.Nil) {
+			p.(*PropertyOncall).Id = uuid.NewV4()
+		}
+		p.(*PropertyOncall).Instances = nil
 		tec.setOncallProperty(p)
 	}
-	tec.Action <- &Action{
-		Action:         "property_new",
-		Type:           "cluster",
-		Id:             tec.Id.String(),
-		Name:           tec.Name,
-		PropertyType:   p.GetType(),
-		PropertyId:     p.GetID(),
-		PropertySource: p.GetSource(),
-	}
-	tec.inheritPropertyDeep(p)
+	tec.actionPropertyNew(tec.setupPropertyAction(p))
+	// inherit scrubbed version
+	tec.inheritPropertyDeep(f)
 }
 
 func (tec *SomaTreeElemCluster) inheritPropertyDeep(
@@ -121,6 +174,7 @@ customloop:
 		f := new(PropertyCustom)
 		*f = *tec.PropertyCustom[prop].(*PropertyCustom)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.Children[childId].inheritProperty(f)
 	}
 oncallloop:
@@ -131,6 +185,7 @@ oncallloop:
 		f := new(PropertyOncall)
 		*f = *tec.PropertyOncall[prop].(*PropertyOncall)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.Children[childId].inheritProperty(f)
 	}
 serviceloop:
@@ -141,6 +196,7 @@ serviceloop:
 		f := new(PropertyService)
 		*f = *tec.PropertyService[prop].(*PropertyService)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.Children[childId].inheritProperty(f)
 	}
 systemloop:
@@ -151,6 +207,7 @@ systemloop:
 		f := new(PropertySystem)
 		*f = *tec.PropertySystem[prop].(*PropertySystem)
 		f.Inherited = true
+		f.Id = uuid.Nil
 		tec.Children[childId].inheritProperty(f)
 	}
 }

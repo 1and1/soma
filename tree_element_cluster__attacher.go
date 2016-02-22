@@ -1,5 +1,7 @@
 package somatree
 
+import "sync"
+
 //
 // Interface: SomaTreeAttacher
 func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
@@ -35,12 +37,28 @@ func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
 		Cluster:    tec,
 	},
 	)
+
+	tec.actionUpdate()
 }
 
 func (tec *SomaTreeElemCluster) Destroy() {
 	if tec.Parent == nil {
 		panic(`SomaTreeElemCluster.Destroy called without Parent to unlink from`)
 	}
+
+	wg := new(sync.WaitGroup)
+	for child, _ := range tec.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			tec.Children[c].Destroy()
+		}()
+	}
+	wg.Wait()
+
+	// call before unlink since it requires tec.Parent.*
+	tec.actionDelete()
 
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
@@ -80,6 +98,8 @@ func (tec *SomaTreeElemCluster) Detach() {
 		Cluster:    tec,
 	},
 	)
+
+	tec.actionUpdate()
 }
 
 //
@@ -93,13 +113,7 @@ func (tec *SomaTreeElemCluster) attachToBucket(a AttachRequest) {
 		Cluster:    tec,
 	})
 
-	tec.Action <- &Action{
-		Action: "create",
-		Type:   "cluster",
-		Id:     tec.Id.String(),
-		Name:   tec.Name,
-		Team:   tec.Team.String(),
-	}
+	tec.actionCreate()
 }
 
 //
@@ -113,13 +127,7 @@ func (tec *SomaTreeElemCluster) attachToGroup(a AttachRequest) {
 		Cluster:    tec,
 	})
 
-	tec.Action <- &Action{
-		Action: "create",
-		Type:   "cluster",
-		Id:     tec.Id.String(),
-		Name:   tec.Name,
-		Team:   tec.Team.String(),
-	}
+	tec.actionCreate()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -153,4 +153,8 @@ func (teb *SomaTreeElemBucket) GetEnvironment() string {
 	return teb.Environment
 }
 
+func (teb *SomaTreeElemBucket) GetRepository() string {
+	return teb.Repository.String()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

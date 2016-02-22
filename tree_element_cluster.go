@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"sync"
 
+
 	"github.com/satori/go.uuid"
 )
 
@@ -223,8 +224,126 @@ func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 	return tec.Parent.(SomaTreeBucketeer).GetBucket()
 }
 
+func (tec *SomaTreeElemCluster) GetRepository() string {
+	return tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository()
+}
+
 func (tec *SomaTreeElemCluster) GetEnvironment() string {
 	return tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetEnvironment()
+}
+
+//
+//
+func (tec *SomaTreeElemCluster) export() somaproto.ProtoCluster {
+	bucket := tec.Parent.(SomaTreeBucketeer).GetBucket()
+	return somaproto.ProtoCluster{
+		Id:          tec.Id.String(),
+		Name:        tec.Name,
+		BucketId:    bucket.(SomaTreeBuilder).GetID(),
+		ObjectState: tec.State,
+		TeamId:      tec.Team.String(),
+	}
+}
+
+func (tec *SomaTreeElemCluster) actionCreate() {
+	tec.Action <- &Action{
+		Action:  "create",
+		Type:    tec.Type,
+		Cluster: tec.export(),
+	}
+}
+
+func (tec *SomaTreeElemCluster) actionUpdate() {
+	tec.Action <- &Action{
+		Action:  "update",
+		Type:    tec.Type,
+		Cluster: tec.export(),
+	}
+}
+
+func (tec *SomaTreeElemCluster) actionDelete() {
+	tec.Action <- &Action{
+		Action:  "delete",
+		Type:    tec.Type,
+		Cluster: tec.export(),
+	}
+}
+
+func (tec *SomaTreeElemCluster) actionMemberNew(a Action) {
+	a.Action = "member_new"
+	a.Type = tec.Type
+	a.Cluster = tec.export()
+
+	tec.Action <- &a
+}
+
+func (tec *SomaTreeElemCluster) actionMemberRemoved(a Action) {
+	a.Action = "member_removed"
+	a.Type = tec.Type
+	a.Cluster = tec.export()
+
+	tec.Action <- &a
+}
+
+func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
+	a.Action = "property_new"
+	a.Type = tec.Type
+	a.Cluster = tec.export()
+
+	tec.Action <- &a
+}
+
+//
+func (tec *SomaTreeElemCluster) setupPropertyAction(p SomaTreeProperty) Action {
+	a := Action{
+		Property: somaproto.TreeProperty{
+			InstanceId:       p.GetID(),
+			SourceInstanceId: p.GetSourceInstance(),
+			SourceType:       p.GetSourceType(),
+			IsInherited:      p.GetIsInherited(),
+			InheritedFrom:    p.GetSource(),
+			PropertyType:     p.GetType(),
+			Inheritance:      p.hasInheritance(),
+			ChildrenOnly:     p.isChildrenOnly(),
+			View:             p.GetView(),
+			RepositoryId:     tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository(),
+			BucketId:         tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+		},
+	}
+	switch a.Property.PropertyType {
+	case "custom":
+		a.Property.Custom = &somaproto.TreePropertyCustom{
+			CustomId:     p.(*PropertyCustom).CustomId.String(),
+			RepositoryId: a.Property.RepositoryId,
+			Name:         p.(*PropertyCustom).Key,
+			Value:        p.(*PropertyCustom).Value,
+		}
+	case "system":
+		a.Property.System = &somaproto.TreePropertySystem{
+			Name:  p.(*PropertySystem).Key,
+			Value: p.(*PropertySystem).Value,
+		}
+	case "service":
+		a.Property.Service = &somaproto.TreePropertyService{
+			Name:   p.(*PropertyService).Service,
+			TeamId: tec.Team.String(),
+		}
+		a.Property.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		for _, attr := range p.(*PropertyService).Attributes {
+			ta := somaproto.TreeServiceAttribute{
+				Attribute: attr.Attribute,
+				Value:     attr.Value,
+			}
+			a.Property.Service.Attributes = append(a.Property.Service.Attributes, ta)
+		}
+	case "oncall":
+		a.Property.Oncall = &somaproto.TreePropertyOncall{
+			OncallId: p.(*PropertyOncall).OncallId.String(),
+			Name:     p.(*PropertyOncall).Name,
+			Number:   p.(*PropertyOncall).Number,
+		}
+	}
+	return a
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -45,7 +45,7 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 
 	ten.Action <- &Action{
-		Action: "delete",
+		Action: "update",
 		Type:   ten.Type,
 		Node: somaproto.ProtoNode{
 			Id:        ten.Id.String(),
@@ -84,7 +84,7 @@ func (ten *SomaTreeElemNode) Destroy() {
 	ten.setAction(nil)
 
 	ten.Action <- &Action{
-		Action: "destroy",
+		Action: "delete",
 		Type:   ten.Type,
 		Node: somaproto.ProtoNode{
 			Id:        ten.Id.String(),
@@ -129,7 +129,7 @@ func (ten *SomaTreeElemNode) Detach() {
 	)
 
 	ten.Action <- &Action{
-		Action: "create",
+		Action: "update",
 		Type:   ten.Type,
 		Node: somaproto.ProtoNode{
 			Id:        ten.Id.String(),
@@ -161,7 +161,7 @@ func (ten *SomaTreeElemNode) attachToBucket(a AttachRequest) {
 	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 
 	ten.Action <- &Action{
-		Action: "create",
+		Action: "update",
 		Type:   ten.Type,
 		Node: somaproto.ProtoNode{
 			Id:        ten.Id.String(),
@@ -193,7 +193,7 @@ func (ten *SomaTreeElemNode) attachToGroup(a AttachRequest) {
 	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 
 	ten.Action <- &Action{
-		Action: "create",
+		Action: "update",
 		Type:   ten.Type,
 		Node: somaproto.ProtoNode{
 			Id:        ten.Id.String(),
@@ -225,7 +225,7 @@ func (ten *SomaTreeElemNode) attachToCluster(a AttachRequest) {
 	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
 
 	ten.Action <- &Action{
-		Action: "create",
+		Action: "update",
 		Type:   ten.Type,
 		Node: somaproto.ProtoNode{
 			Id:        ten.Id.String(),

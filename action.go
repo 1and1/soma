@@ -2,18 +2,23 @@ package somatree
 
 
 type Action struct {
-	Action          string `json:",omitempty"`
-	Type            string `json:",omitempty"`
-	Repository      somaproto.ProtoRepository
-	Bucket          somaproto.ProtoBucket
-	Group           somaproto.ProtoGroup
-	Cluster         somaproto.ProtoCluster
-	Node            somaproto.ProtoNode
+	Action     string `json:",omitempty"`
+	Type       string `json:",omitempty"`
+	Repository somaproto.ProtoRepository
+	Bucket     somaproto.ProtoBucket
+	Group      somaproto.ProtoGroup
+	Cluster    somaproto.ProtoCluster
+	Node       somaproto.ProtoNode
+
+	ChildType string `json:",omitempty"`
+	ChildNode somaproto.ProtoNode
+
+	Property somaproto.TreeProperty
+
 	Id              string `json:",omitempty"`
 	SourceId        string `json:",omitempty"`
 	Name            string `json:",omitempty"`
 	Team            string `json:",omitempty"`
-	ChildType       string `json:",omitempty"`
 	ChildId         string `json:",omitempty"`
 	PropertyType    string `json:",omitempty"`
 	PropertyId      string `json:",omitempty"`

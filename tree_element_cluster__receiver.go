@@ -27,15 +27,10 @@ func (tec *SomaTreeElemCluster) receiveNode(r ReceiveRequest) {
 			r.Node.setAction(tec.Action)
 			r.Node.setFault(tec.Fault)
 
-			tec.Action <- &Action{
-				Action:    "member_new",
-				Type:      "cluster",
-				Id:        tec.Id.String(),
-				Name:      tec.Name,
-				Team:      tec.Team.String(),
+			tec.actionMemberNew(Action{
 				ChildType: "node",
-				ChildId:   r.Node.GetID(),
-			}
+				ChildNode: r.Node.export(),
+			})
 		default:
 			panic(`SomaTreeElemCluster.receiveNode`)
 		}
