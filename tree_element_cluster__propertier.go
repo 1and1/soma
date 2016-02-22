@@ -89,43 +89,50 @@ func (tec *SomaTreeElemCluster) SetProperty(
 
 func (tec *SomaTreeElemCluster) inheritProperty(
 	p SomaTreeProperty) {
-	// make a copy of the scrubbed version we inherited
-	f := new(PropertyOncall)
-	*f = *p.(*PropertyOncall)
 
 	switch p.GetType() {
 	case "custom":
+		f := new(PropertyCustom)
+		*f = *p.(*PropertyCustom)
 		p.(*PropertyCustom).Id = p.GetInstanceId(tec.Type, tec.Id)
 		if uuid.Equal(p.(*PropertyCustom).Id, uuid.Nil) {
 			p.(*PropertyCustom).Id = uuid.NewV4()
 		}
 		p.(*PropertyCustom).Instances = nil
 		tec.setCustomProperty(p)
+		tec.inheritPropertyDeep(f)
 	case "service":
+		f := new(PropertyService)
+		*f = *p.(*PropertyService)
 		p.(*PropertyService).Id = p.GetInstanceId(tec.Type, tec.Id)
 		if uuid.Equal(p.(*PropertyService).Id, uuid.Nil) {
 			p.(*PropertyService).Id = uuid.NewV4()
 		}
 		p.(*PropertyService).Instances = nil
 		tec.setServiceProperty(p)
+		tec.inheritPropertyDeep(f)
 	case "system":
+		f := new(PropertySystem)
+		*f = *p.(*PropertySystem)
 		p.(*PropertySystem).Id = p.GetInstanceId(tec.Type, tec.Id)
 		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
 			p.(*PropertySystem).Id = uuid.NewV4()
 		}
 		p.(*PropertySystem).Instances = nil
 		tec.setSystemProperty(p)
+		tec.inheritPropertyDeep(f)
 	case "oncall":
+		f := new(PropertyOncall)
+		*f = *p.(*PropertyOncall)
 		p.(*PropertyOncall).Id = p.GetInstanceId(tec.Type, tec.Id)
 		if uuid.Equal(p.(*PropertyOncall).Id, uuid.Nil) {
 			p.(*PropertyOncall).Id = uuid.NewV4()
 		}
 		p.(*PropertyOncall).Instances = nil
 		tec.setOncallProperty(p)
+		tec.inheritPropertyDeep(f)
 	}
 	tec.actionPropertyNew(tec.setupPropertyAction(p))
-	// inherit scrubbed version
-	tec.inheritPropertyDeep(f)
 }
 
 func (tec *SomaTreeElemCluster) inheritPropertyDeep(
