@@ -10,8 +10,10 @@ type Action struct {
 	Cluster    somaproto.ProtoCluster
 	Node       somaproto.ProtoNode
 
-	ChildType string `json:",omitempty"`
-	ChildNode somaproto.ProtoNode
+	ChildType    string `json:",omitempty"`
+	ChildGroup   somaproto.ProtoGroup
+	ChildCluster somaproto.ProtoCluster
+	ChildNode    somaproto.ProtoNode
 
 	Property somaproto.TreeProperty
 
