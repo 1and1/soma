@@ -100,7 +100,16 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		err                error
 		tx                 *sql.Tx
 		txStmtCreateBucket *sql.Stmt
-		txStmtCreateGroup  *sql.Stmt
+
+		txStmtGroupCreate              *sql.Stmt
+		txStmtGroupUpdate              *sql.Stmt
+		txStmtGroupDelete              *sql.Stmt
+		txStmtGroupMemberNewNode       *sql.Stmt
+		txStmtGroupMemberNewCluster    *sql.Stmt
+		txStmtGroupMemberNewGroup      *sql.Stmt
+		txStmtGroupMemberRemoveNode    *sql.Stmt
+		txStmtGroupMemberRemoveCluster *sql.Stmt
+		txStmtGroupMemberRemoveGroup   *sql.Stmt
 
 		txStmtClusterCreate       *sql.Stmt
 		txStmtClusterUpdate       *sql.Stmt
@@ -256,10 +265,50 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	}
 	defer txStmtCreateBucket.Close()
 
-	if txStmtCreateGroup, err = tx.Prepare(tkStmtCreateGroup); err != nil {
+	if txStmtGroupCreate, err = tx.Prepare(tkStmtGroupCreate); err != nil {
 		goto bailout
 	}
-	defer txStmtCreateGroup.Close()
+	defer txStmtGroupCreate.Close()
+
+	if txStmtGroupUpdate, err = tx.Prepare(tkStmtGroupUpdate); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupUpdate.Close()
+
+	if txStmtGroupDelete, err = tx.Prepare(tkStmtGroupDelete); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupDelete.Close()
+
+	if txStmtGroupMemberNewNode, err = tx.Prepare(tkStmtGroupMemberNewNode); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupMemberNewNode.Close()
+
+	if txStmtGroupMemberNewCluster, err = tx.Prepare(tkStmtGroupMemberNewCluster); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupMemberNewCluster.Close()
+
+	if txStmtGroupMemberNewGroup, err = tx.Prepare(tkStmtGroupMemberNewGroup); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupMemberNewGroup.Close()
+
+	if txStmtGroupMemberRemoveNode, err = tx.Prepare(tkStmtGroupMemberRemoveNode); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupMemberRemoveNode.Close()
+
+	if txStmtGroupMemberRemoveCluster, err = tx.Prepare(tkStmtGroupMemberRemoveCluster); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupMemberRemoveCluster.Close()
+
+	if txStmtGroupMemberRemoveGroup, err = tx.Prepare(tkStmtGroupMemberRemoveGroup); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupMemberRemoveGroup.Close()
 
 	// CLUSTER
 	if txStmtClusterCreate, err = tx.Prepare(tkStmtClusterCreate); err != nil {
@@ -287,6 +336,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	}
 	defer txStmtClusterMemberRemove.Close()
 
+	// NODE?
 	if txStmtBucketAssignNode, err = tx.Prepare(tkStmtBucketAssignNode); err != nil {
 		goto bailout
 	}
@@ -342,7 +392,7 @@ actionloop:
 		case "group":
 			switch a.Action {
 			case "create":
-				if _, err = txStmtCreateGroup.Exec(
+				if _, err = txStmtGroupCreate.Exec(
 					a.Group.Id,
 					a.Group.BucketId,
 					a.Group.Name,
@@ -350,6 +400,70 @@ actionloop:
 					a.Group.TeamId,
 				); err != nil {
 					break actionloop
+				}
+			case "update":
+				if _, err = txStmtGroupUpdate.Exec(
+					a.Group.Id,
+					a.Group.ObjectState,
+				); err != nil {
+					break actionloop
+				}
+			case "delete":
+				if _, err = txStmtGroupDelete.Exec(
+					a.Group.Id,
+				); err != nil {
+					break actionloop
+				}
+			case "member_new":
+				switch a.ChildType {
+				case "group":
+					if _, err = txStmtGroupMemberNewGroup.Exec(
+						a.Group.Id,
+						a.ChildGroup.Id,
+						a.Group.BucketId,
+					); err != nil {
+						break actionloop
+					}
+				case "cluster":
+					if _, err = txStmtGroupMemberNewCluster.Exec(
+						a.Group.Id,
+						a.ChildCluster.Id,
+						a.Group.BucketId,
+					); err != nil {
+						break actionloop
+					}
+				case "node":
+					if _, err = txStmtGroupMemberNewNode.Exec(
+						a.Group.Id,
+						a.ChildNode.Id,
+						a.Group.BucketId,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case "member_removed":
+				switch a.ChildType {
+				case "group":
+					if _, err = txStmtGroupMemberRemoveGroup.Exec(
+						a.Group.Id,
+						a.ChildGroup.Id,
+					); err != nil {
+						break actionloop
+					}
+				case "cluster":
+					if _, err = txStmtGroupMemberRemoveCluster.Exec(
+						a.Group.Id,
+						a.ChildCluster.Id,
+					); err != nil {
+						break actionloop
+					}
+				case "node":
+					if _, err = txStmtGroupMemberRemoveNode.Exec(
+						a.Group.Id,
+						a.ChildNode.Id,
+					); err != nil {
+						break actionloop
+					}
 				}
 			}
 		// CLUSTER

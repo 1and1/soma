@@ -47,10 +47,10 @@ SELECT	$1::uuid,
         $7::uuid;`
 
 /*
- *
+ * Statements for GROUP actions
  */
 
-var tkStmtCreateGroup = `
+var tkStmtGroupCreate = `
 INSERT INTO soma.groups (
             group_id,
             bucket_id,
@@ -62,6 +62,57 @@ SELECT $1::uuid,
        $3::varchar,
        $4::varchar,
        $5::uuid;`
+
+var tkStmtGroupUpdate = `
+UPDATE soma.groups
+SET    object_state = $2::varchar
+WHERE  group_id = $1::uuid;`
+
+var tkStmtGroupDelete = `
+DELETE FROM soma.groups
+WHERE       group_id = $1::uuid;`
+
+var tkStmtGroupMemberNewNode = `
+INSERT INTO soma.group_membership_nodes (
+            group_id,
+            child_node_id,
+            bucket_id)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid;`
+
+var tkStmtGroupMemberNewCluster = `
+INSERT INTO soma.group_membership_clusters (
+            group_id,
+            child_cluster_id,
+            bucket_id)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid;`
+
+var tkStmtGroupMemberNewGroup = `
+INSERT INTO soma.group_membership_groups (
+            group_id,
+            child_group_id,
+            bucket_id)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid;`
+
+var tkStmtGroupMemberRemoveNode = `
+DELETE FROM soma.group_membership_nodes
+WHERE       group_id = $1::uuid
+AND         child_node_id = $2::uuid;`
+
+var tkStmtGroupMemberRemoveCluster = `
+DELETE FROM soma.group_membership_clusters
+WHERE       group_id = $1::uuid
+AND         child_cluster_id = $2::uuid;`
+
+var tkStmtGroupMemberRemoveGroup = `
+DELETE FROM soma.group_membership_groups
+WHERE       group_id = $1::uuid
+AND         child_group_id = $2::uuid;`
 
 /*
  * Statements for CLUSTER actions
