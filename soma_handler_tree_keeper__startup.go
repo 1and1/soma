@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/satori/go.uuid"
+
 )
 
 func (tk *treeKeeper) startupLoad() {
@@ -14,6 +16,11 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupGroupedClusters()
 	tk.startupClusters()
 	tk.startupNodes()
+
+	tk.startupGroupSystemProperties()
+	tk.startupGroupCustomProperties()
+	tk.startupGroupOncallProperties()
+	tk.startupGroupServiceProperties()
 
 	tk.startupJobs()
 }
@@ -56,6 +63,7 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer rows.Close()
 
+bucketloop:
 	for rows.Next() {
 		err = rows.Scan(
 			&bucketId,
@@ -66,6 +74,9 @@ WHERE  sr.repository_id = $1::uuid;`)
 			&teamId,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break bucketloop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -131,6 +142,7 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer rows.Close()
 
+grouploop:
 	for rows.Next() {
 		err = rows.Scan(
 			&groupId,
@@ -139,6 +151,9 @@ WHERE  sr.repository_id = $1::uuid;`)
 			&teamId,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break grouploop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -197,12 +212,16 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer rows.Close()
 
+memberloop:
 	for rows.Next() {
 		err = rows.Scan(
 			&groupId,
 			&childGroupId,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break memberloop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -266,6 +285,7 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer rows.Close()
 
+clusterloop:
 	for rows.Next() {
 		err = rows.Scan(
 			&clusterId,
@@ -274,6 +294,9 @@ WHERE  sr.repository_id = $1::uuid;`)
 			&groupId,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break clusterloop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -336,6 +359,7 @@ AND    sc.object_state != 'grouped';`)
 	}
 	defer rows.Close()
 
+clusterloop:
 	for rows.Next() {
 		err = rows.Scan(
 			&clusterId,
@@ -344,6 +368,9 @@ AND    sc.object_state != 'grouped';`)
 			&teamId,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break clusterloop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -411,7 +438,7 @@ WHERE     sr.repository_id = $1::uuid`)
 	}
 	defer load_nodes.Close()
 
-	log.Printf("TK[%s]: loading clusters\n", tk.repoName)
+	log.Printf("TK[%s]: loading nodes\n", tk.repoName)
 	rows, err = load_nodes.Query(tk.repoId)
 	if err != nil {
 		log.Printf("TK[%s] Error loading nodes: %s", tk.repoName, err.Error())
@@ -420,6 +447,7 @@ WHERE     sr.repository_id = $1::uuid`)
 	}
 	defer rows.Close()
 
+nodeloop:
 	for rows.Next() {
 		err = rows.Scan(
 			&nodeId,
@@ -434,6 +462,9 @@ WHERE     sr.repository_id = $1::uuid`)
 			&groupId,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break nodeloop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -509,11 +540,15 @@ ORDER BY job_serial ASC;`)
 	}
 	defer rows.Close()
 
+jobloop:
 	for rows.Next() {
 		err = rows.Scan(
 			&job,
 		)
 		if err != nil {
+			if err == sql.ErrNoRows {
+				break jobloop
+			}
 			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
@@ -528,6 +563,676 @@ ORDER BY job_serial ASC;`)
 		}
 		tk.input <- tr
 		log.Printf("TK[%s] Loaded job %s (%s)\n", tk.repoName, tr.JobId, tr.Action)
+	}
+}
+
+func (tk *treeKeeper) startupGroupSystemProperties() {
+	if tk.broken {
+		return
+	}
+
+	var (
+		err                                                                         error
+		instanceId, srcInstanceId, groupId, view, systemProperty, objectType, value string
+		inInstanceId, inObjectType, inObjId                                         string
+		inheritance, childrenOnly                                                   bool
+		rows, instance_rows                                                         *sql.Rows
+		load_properties, load_instances                                             *sql.Stmt
+	)
+	log.Println("Prepare: treekeeper/load-group-system-properties")
+	load_properties, err = tk.conn.Prepare(`
+SELECT instance_id,
+       source_instance_id,
+	   group_id,
+	   view,
+	   system_property,
+	   object_type,
+	   inheritance_enabled,
+	   children_only,
+	   value
+FROM   soma.group_system_properties
+WHERE  instance_id = source_instance_id
+AND    repository_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-system-properties: ", err)
+	}
+	defer load_properties.Close()
+
+	log.Println("Prepare: treekeeper/load-group-system-property-instances")
+	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-system-property-instances: ", err)
+	}
+	defer load_instances.Close()
+
+	log.Printf("TK[%s]: loading group system properties\n", tk.repoName)
+	rows, err = load_properties.Query(tk.repoId)
+	if err != nil {
+		log.Printf("TK[%s] Error loading group system properties: %s", tk.repoName, err.Error())
+		tk.broken = true
+		return
+	}
+	defer rows.Close()
+
+systemloop:
+	// load all system properties defined directly on group objects
+	for rows.Next() {
+		err = rows.Scan(
+			&instanceId,
+			&srcInstanceId,
+			&groupId,
+			&view,
+			&systemProperty,
+			&objectType,
+			&inheritance,
+			&childrenOnly,
+			&value,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				break systemloop
+			}
+			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+
+		// build the property
+		prop := somatree.PropertySystem{
+			Inheritance:  inheritance,
+			ChildrenOnly: childrenOnly,
+			View:         view,
+			Key:          systemProperty,
+			Value:        value,
+		}
+		prop.Id, _ = uuid.FromString(instanceId)
+		prop.Instances = make([]somatree.PropertyInstance, 0)
+
+		instance_rows, err = load_instances.Query(
+			tk.repoId,
+			srcInstanceId,
+		)
+		if err != nil {
+			log.Printf("TK[%s] Error loading group system properties: %s", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+		defer instance_rows.Close()
+
+	inproploop:
+		// load all all ids for properties that were inherited from the
+		// current group system property so the IDs can be set correctly
+		for instance_rows.Next() {
+			err = instance_rows.Scan(
+				&inInstanceId,
+				&inObjectType,
+				&inObjId,
+			)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					break inproploop
+				}
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+
+			var propObjectId, propInstanceId uuid.UUID
+			if propObjectId, err = uuid.FromString(inObjId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
+				continue inproploop
+			}
+			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
+				continue inproploop
+			}
+
+			pi := somatree.PropertyInstance{
+				ObjectId:   propObjectId,
+				ObjectType: inObjectType,
+				InstanceId: propInstanceId,
+			}
+			prop.Instances = append(prop.Instances, pi)
+		}
+
+		// lookup the group and set the prepared property
+		tk.tree.Find(somatree.FindRequest{
+			ElementId: groupId,
+		}, true).SetProperty(&prop)
+
+		// throw away all generated actions, we do this for every
+		// property since with inheritance this can create a lot of
+		// actions
+		for i := 0; i < len(tk.actionChan); i++ {
+			a := <-tk.actionChan
+			log.Printf("%s -> %s\n", a.Action, a.Type)
+		}
+		for i := 0; i < len(tk.errChan); i++ {
+			<-tk.errChan
+		}
+	}
+}
+
+func (tk *treeKeeper) startupGroupCustomProperties() {
+	if tk.broken {
+		return
+	}
+
+	var (
+		err                                                                       error
+		instanceId, srcInstanceId, groupId, view, customId, customProperty, value string
+		inInstanceId, inObjectType, inObjId                                       string
+		inheritance, childrenOnly                                                 bool
+		rows, instance_rows                                                       *sql.Rows
+		load_properties, load_instances                                           *sql.Stmt
+	)
+	log.Println("Prepare: treekeeper/load-group-custom-properties")
+	load_properties, err = tk.conn.Prepare(`
+SELECT sgcp.instance_id,
+       sgcp.source_instance_id,
+	   sgcp.group_id,
+	   sgcp.view,
+	   sgcp.custom_property_id,
+	   sgcp.inheritance_enabled,
+	   sgcp.children_only,
+	   sgcp.value,
+	   scp.custom_property
+FROM   soma.group_custom_properties sgcp
+JOIN   soma.custom_properties scp
+ON     sgcp.custom_property_id = scp.custom_property_id
+WHERE  sgcp.instance_id = sgcp.source_instance_id
+AND    sgcp.repository_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-custom-properties: ", err)
+	}
+	defer load_properties.Close()
+
+	log.Println("Prepare: treekeeper/load-group-custom-property-instances")
+	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-custom-property-instances: ", err)
+	}
+	defer load_instances.Close()
+
+	log.Printf("TK[%s]: loading group custom properties\n", tk.repoName)
+	rows, err = load_properties.Query(tk.repoId)
+	if err != nil {
+		log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
+		tk.broken = true
+		return
+	}
+	defer rows.Close()
+
+customloop:
+	// load all system properties defined directly on group objects
+	for rows.Next() {
+		err = rows.Scan(
+			&instanceId,
+			&srcInstanceId,
+			&groupId,
+			&view,
+			&customId,
+			&inheritance,
+			&childrenOnly,
+			&value,
+			&customProperty,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				break customloop
+			}
+			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+
+		// build the property
+		prop := somatree.PropertyCustom{
+			Inheritance:  inheritance,
+			ChildrenOnly: childrenOnly,
+			View:         view,
+			Key:          customProperty,
+			Value:        value,
+		}
+		prop.Id, _ = uuid.FromString(instanceId)
+		prop.CustomId, _ = uuid.FromString(customId)
+		prop.Instances = make([]somatree.PropertyInstance, 0)
+
+		instance_rows, err = load_instances.Query(
+			tk.repoId,
+			srcInstanceId,
+		)
+		if err != nil {
+			log.Printf("TK[%s] Error loading group system properties: %s", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+		defer instance_rows.Close()
+
+	inproploop:
+		// load all all ids for properties that were inherited from the
+		// current group system property so the IDs can be set correctly
+		for instance_rows.Next() {
+			err = instance_rows.Scan(
+				&inInstanceId,
+				&inObjectType,
+				&inObjId,
+			)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					break inproploop
+				}
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+
+			var propObjectId, propInstanceId uuid.UUID
+			if propObjectId, err = uuid.FromString(inObjId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
+				continue inproploop
+			}
+			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
+				continue inproploop
+			}
+
+			pi := somatree.PropertyInstance{
+				ObjectId:   propObjectId,
+				ObjectType: inObjectType,
+				InstanceId: propInstanceId,
+			}
+			prop.Instances = append(prop.Instances, pi)
+		}
+
+		// lookup the group and set the prepared property
+		tk.tree.Find(somatree.FindRequest{
+			ElementId: groupId,
+		}, true).SetProperty(&prop)
+
+		// throw away all generated actions, we do this for every
+		// property since with inheritance this can create a lot of
+		// actions
+		for i := 0; i < len(tk.actionChan); i++ {
+			a := <-tk.actionChan
+			log.Printf("%s -> %s\n", a.Action, a.Type)
+		}
+		for i := 0; i < len(tk.errChan); i++ {
+			<-tk.errChan
+		}
+	}
+}
+
+func (tk *treeKeeper) startupGroupServiceProperties() {
+	if tk.broken {
+		return
+	}
+
+	var (
+		err                                                               error
+		instanceId, srcInstanceId, groupId, view, serviceProperty, teamId string
+		inInstanceId, inObjectType, inObjId, attrKey, attrValue           string
+		inheritance, childrenOnly                                         bool
+		rows, attribute_rows, instance_rows                               *sql.Rows
+		load_properties, load_attributes, load_instances                  *sql.Stmt
+	)
+	log.Println("Prepare: treekeeper/load-group-service-properties")
+	load_properties, err = tk.conn.Prepare(`
+SELECT instance_id,
+       source_instance_id,
+	   group_id,
+	   view,
+	   service_property,
+	   organizational_team_id,
+	   inheritance_enabled,
+	   children_only
+FROM   soma.group_service_properties
+WHERE  instance_id = source_instance_id
+AND    repository_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-service-properties: ", err)
+	}
+	defer load_properties.Close()
+
+	log.Println("Prepare: treekeeper/load-group-service-property-attributes")
+	load_attributes, err = tk.conn.Prepare(`
+SELECT service_property_attribute,
+       value
+FROM   soma.team_service_property_values
+WHERE  organizational_team_id = $1::uuid
+AND    service_property = $2::varchar;`)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-service-property-attributes: ", err)
+	}
+	defer load_attributes.Close()
+
+	log.Println("Prepare: treekeeper/load-group-service-property-instances")
+	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-service-property-instances: ", err)
+	}
+	defer load_instances.Close()
+
+	log.Printf("TK[%s]: loading group service properties\n", tk.repoName)
+	rows, err = load_properties.Query(tk.repoId)
+	if err != nil {
+		log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
+		tk.broken = true
+		return
+	}
+	defer rows.Close()
+
+serviceloop:
+	// load all system properties defined directly on group objects
+	for rows.Next() {
+		err = rows.Scan(
+			&instanceId,
+			&srcInstanceId,
+			&groupId,
+			&view,
+			&serviceProperty,
+			&teamId,
+			&inheritance,
+			&childrenOnly,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				break serviceloop
+			}
+			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+
+		// build the property
+		prop := somatree.PropertyService{
+			Inheritance:  inheritance,
+			ChildrenOnly: childrenOnly,
+			View:         view,
+			Service:      serviceProperty,
+		}
+		prop.Id, _ = uuid.FromString(instanceId)
+		prop.Attributes = make([]somatree.PropertyServiceAttribute, 0)
+		prop.Instances = make([]somatree.PropertyInstance, 0)
+
+		attribute_rows, err = load_attributes.Query(
+			teamId,
+			serviceProperty,
+		)
+		if err != nil {
+			log.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+		defer attribute_rows.Close()
+
+	attributeloop:
+		// load service attributes
+		for attribute_rows.Next() {
+			err = attribute_rows.Scan(
+				&attrKey,
+				&attrValue,
+			)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					break attributeloop
+				}
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+
+			pa := somatree.PropertyServiceAttribute{
+				Attribute: attrKey,
+				Value:     attrValue,
+			}
+			prop.Attributes = append(prop.Attributes, pa)
+		}
+
+		instance_rows, err = load_instances.Query(
+			tk.repoId,
+			srcInstanceId,
+		)
+		if err != nil {
+			log.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+		defer instance_rows.Close()
+
+	inproploop:
+		// load all all ids for properties that were inherited from the
+		// current group system property so the IDs can be set correctly
+		for instance_rows.Next() {
+			err = instance_rows.Scan(
+				&inInstanceId,
+				&inObjectType,
+				&inObjId,
+			)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					break inproploop
+				}
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+
+			var propObjectId, propInstanceId uuid.UUID
+			if propObjectId, err = uuid.FromString(inObjId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
+				continue inproploop
+			}
+			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
+				continue inproploop
+			}
+
+			pi := somatree.PropertyInstance{
+				ObjectId:   propObjectId,
+				ObjectType: inObjectType,
+				InstanceId: propInstanceId,
+			}
+			prop.Instances = append(prop.Instances, pi)
+		}
+
+		// lookup the group and set the prepared property
+		tk.tree.Find(somatree.FindRequest{
+			ElementId: groupId,
+		}, true).SetProperty(&prop)
+
+		// throw away all generated actions, we do this for every
+		// property since with inheritance this can create a lot of
+		// actions
+		for i := 0; i < len(tk.actionChan); i++ {
+			a := <-tk.actionChan
+			log.Printf("%s -> %s\n", a.Action, a.Type)
+		}
+		for i := 0; i < len(tk.errChan); i++ {
+			<-tk.errChan
+		}
+	}
+}
+
+func (tk *treeKeeper) startupGroupOncallProperties() {
+	if tk.broken {
+		return
+	}
+
+	var (
+		err                                                                          error
+		instanceId, srcInstanceId, groupId, view, oncallId, oncallName, oncallNumber string
+		inInstanceId, inObjectType, inObjId                                          string
+		inheritance, childrenOnly                                                    bool
+		rows, instance_rows                                                          *sql.Rows
+		load_properties, load_instances                                              *sql.Stmt
+	)
+	log.Println("Prepare: treekeeper/load-group-oncall-properties")
+	load_properties, err = tk.conn.Prepare(`
+SELECT  sgop.instance_id,
+        sgop.source_instance_id,
+        sgop.group_id,
+        sgop.view,
+        sgop.oncall_duty_id,
+        sgop.inheritance_enabled,
+        sgop.children_only,
+        iodt.oncall_duty_name,
+        iodt.oncall_duty_phone_number
+FROM    soma.group_oncall_properties sgop
+JOIN    inventory.oncall_duty_teams iodt
+  ON    sgop.oncall_duty_id = iodt.oncall_duty_id
+WHERE   sgop.instance_id = sgop.source_instance_id
+  AND   sgop.repository_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-oncall-properties: ", err)
+	}
+	defer load_properties.Close()
+
+	log.Println("Prepare: treekeeper/load-group-oncall-property-instances")
+	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
+	if err != nil {
+		log.Fatal("treekeeper/load-group-oncall-property-instances: ", err)
+	}
+	defer load_instances.Close()
+
+	log.Printf("TK[%s]: loading group oncall properties\n", tk.repoName)
+	rows, err = load_properties.Query(tk.repoId)
+	if err != nil {
+		log.Printf("TK[%s] Error loading group oncall properties: %s", tk.repoName, err.Error())
+		tk.broken = true
+		return
+	}
+	defer rows.Close()
+
+oncallloop:
+	// load all system properties defined directly on group objects
+	for rows.Next() {
+		err = rows.Scan(
+			&instanceId,
+			&srcInstanceId,
+			&groupId,
+			&view,
+			&oncallId,
+			&inheritance,
+			&childrenOnly,
+			&oncallName,
+			&oncallNumber,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				break oncallloop
+			}
+			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+
+		// build the property
+		prop := somatree.PropertyOncall{
+			Inheritance:  inheritance,
+			ChildrenOnly: childrenOnly,
+			View:         view,
+			Name:         oncallName,
+			Number:       oncallNumber,
+		}
+		prop.Id, _ = uuid.FromString(instanceId)
+		prop.OncallId, _ = uuid.FromString(oncallId)
+		prop.Instances = make([]somatree.PropertyInstance, 0)
+
+		instance_rows, err = load_instances.Query(
+			tk.repoId,
+			srcInstanceId,
+		)
+		if err != nil {
+			log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
+			tk.broken = true
+			return
+		}
+		defer instance_rows.Close()
+
+	inproploop:
+		// load all all ids for properties that were inherited from the
+		// current group system property so the IDs can be set correctly
+		for instance_rows.Next() {
+			err = instance_rows.Scan(
+				&inInstanceId,
+				&inObjectType,
+				&inObjId,
+			)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					break inproploop
+				}
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+
+			var propObjectId, propInstanceId uuid.UUID
+			if propObjectId, err = uuid.FromString(inObjId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
+				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.broken = true
+				return
+			}
+			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
+				continue inproploop
+			}
+			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
+				continue inproploop
+			}
+
+			pi := somatree.PropertyInstance{
+				ObjectId:   propObjectId,
+				ObjectType: inObjectType,
+				InstanceId: propInstanceId,
+			}
+			prop.Instances = append(prop.Instances, pi)
+		}
+
+		// lookup the group and set the prepared property
+		tk.tree.Find(somatree.FindRequest{
+			ElementId: groupId,
+		}, true).SetProperty(&prop)
+
+		// throw away all generated actions, we do this for every
+		// property since with inheritance this can create a lot of
+		// actions
+		for i := 0; i < len(tk.actionChan); i++ {
+			a := <-tk.actionChan
+			log.Printf("%s -> %s\n", a.Action, a.Type)
+		}
+		for i := 0; i < len(tk.errChan); i++ {
+			<-tk.errChan
+		}
 	}
 }
 
