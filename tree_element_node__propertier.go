@@ -16,6 +16,7 @@ func (ten *SomaTreeElemNode) SetProperty(
 		p.(*PropertyCustom).InheritedFrom = ten.Id
 		p.(*PropertyCustom).Inherited = false
 		p.(*PropertyCustom).SourceId = p.(*PropertyCustom).Id
+		p.(*PropertyCustom).SourceType = ten.Type
 		// send a scrubbed copy downward
 		f := new(PropertyCustom)
 		*f = *p.(*PropertyCustom)
@@ -34,6 +35,7 @@ func (ten *SomaTreeElemNode) SetProperty(
 		p.(*PropertyService).InheritedFrom = ten.Id
 		p.(*PropertyService).Inherited = false
 		p.(*PropertyService).SourceId = p.(*PropertyService).Id
+		p.(*PropertyService).SourceType = ten.Type
 		// send a scrubbed copy downward
 		f := new(PropertyService)
 		*f = *p.(*PropertyService)
@@ -52,6 +54,7 @@ func (ten *SomaTreeElemNode) SetProperty(
 		p.(*PropertySystem).InheritedFrom = ten.Id
 		p.(*PropertySystem).Inherited = false
 		p.(*PropertySystem).SourceId = p.(*PropertySystem).Id
+		p.(*PropertySystem).SourceType = ten.Type
 		// send a scrubbed copy downward
 		f := new(PropertySystem)
 		*f = *p.(*PropertySystem)
@@ -70,6 +73,7 @@ func (ten *SomaTreeElemNode) SetProperty(
 		p.(*PropertyOncall).InheritedFrom = ten.Id
 		p.(*PropertyOncall).Inherited = false
 		p.(*PropertyOncall).SourceId = p.(*PropertyOncall).Id
+		p.(*PropertyOncall).SourceType = ten.Type
 		// send a scrubbed copy downward
 		f := new(PropertyOncall)
 		*f = *p.(*PropertyOncall)

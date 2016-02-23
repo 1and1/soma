@@ -20,6 +20,7 @@ func (tec *SomaTreeElemCluster) SetProperty(
 		p.(*PropertyCustom).InheritedFrom = tec.Id
 		p.(*PropertyCustom).Inherited = false
 		p.(*PropertyCustom).SourceId = p.(*PropertyCustom).Id
+		p.(*PropertyCustom).SourceType = tec.Type
 		// send a scrubbed copy downward
 		f := new(PropertyCustom)
 		*f = *p.(*PropertyCustom)
@@ -38,6 +39,7 @@ func (tec *SomaTreeElemCluster) SetProperty(
 		p.(*PropertyService).InheritedFrom = tec.Id
 		p.(*PropertyService).Inherited = false
 		p.(*PropertyService).SourceId = p.(*PropertyService).Id
+		p.(*PropertyService).SourceType = tec.Type
 		// send a scrubbed copy downward
 		f := new(PropertyService)
 		*f = *p.(*PropertyService)
@@ -56,6 +58,7 @@ func (tec *SomaTreeElemCluster) SetProperty(
 		p.(*PropertySystem).InheritedFrom = tec.Id
 		p.(*PropertySystem).Inherited = false
 		p.(*PropertySystem).SourceId = p.(*PropertySystem).Id
+		p.(*PropertySystem).SourceType = tec.Type
 		// send a scrubbed copy downward
 		f := new(PropertySystem)
 		*f = *p.(*PropertySystem)
@@ -74,6 +77,7 @@ func (tec *SomaTreeElemCluster) SetProperty(
 		p.(*PropertyOncall).InheritedFrom = tec.Id
 		p.(*PropertyOncall).Inherited = false
 		p.(*PropertyOncall).SourceId = p.(*PropertyOncall).Id
+		p.(*PropertyOncall).SourceType = tec.Type
 		// send a scrubbed copy downward
 		f := new(PropertyOncall)
 		*f = *p.(*PropertyOncall)
