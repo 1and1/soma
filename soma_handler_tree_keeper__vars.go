@@ -180,7 +180,8 @@ INSERT INTO soma.group_system_properties (
 	repository_id,
 	inheritance_enabled,
 	children_only,
-	value)
+	value,
+    inherited)
 SELECT $1::uuid,
 	   $2::uuid,
 	   $3::uuid,
@@ -190,7 +191,8 @@ SELECT $1::uuid,
 	   $7::uuid,
 	   $8::boolean,
 	   $9::boolean,
-	   $10::text;`
+	   $10::text,
+	   $11::boolean;`
 
 var tkStmtGroupPropertyCustomCreate = `
 INSERT INTO soma.group_custom_properties (
