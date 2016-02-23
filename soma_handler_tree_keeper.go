@@ -533,7 +533,6 @@ actionloop:
 				if _, err = txStmtPropertyInstanceCreate.Exec(
 					a.Property.InstanceId,
 					a.Property.RepositoryId,
-					a.Property.BucketId,
 					a.Property.SourceInstanceId,
 					a.Property.SourceType,
 					a.Property.InheritedFrom,
@@ -568,6 +567,7 @@ actionloop:
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
 						a.Property.System.Value,
+						a.Property.IsInherited,
 					); err != nil {
 						break actionloop
 					}

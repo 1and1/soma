@@ -4,7 +4,6 @@ var tkStmtPropertyInstanceCreate = `
 INSERT INTO soma.property_instances (
             instance_id,
             repository_id,
-            bucket_id,
             source_instance_id,
             source_object_type,
             source_object_id)
