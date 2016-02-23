@@ -106,8 +106,9 @@ func createTablesGroups(printOnly bool, verbose bool) {
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
+	inherited                   boolean         NOT NULL DEFAULT 'yes',
     value                       text            NOT NULL,
-    FOREIGN KEY ( system_property, object_type ) REFERENCES soma.system_property_validity ( system_property, object_type ) DEFERRABLE,
+    FOREIGN KEY ( system_property, object_type, inherited ) REFERENCES soma.system_property_validity ( system_property, object_type, inherited ) DEFERRABLE,
     CHECK ( object_type = 'group' ),
 	FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
   );`

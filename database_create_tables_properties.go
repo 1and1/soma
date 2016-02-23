@@ -62,7 +62,8 @@ create table if not exists soma.system_properties (
 create table if not exists soma.system_property_validity (
   system_property             varchar(128)    NOT NULL REFERENCES soma.system_properties ( system_property ) DEFERRABLE,
   object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
-  UNIQUE( system_property, object_type )
+  inherited                   boolean         NOT NULL DEFAULT 'yes',
+  UNIQUE( system_property, object_type, inherited )
 );`
 	queries[idx] = "createTableSystemPropertyValidity"
 	idx++
