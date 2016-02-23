@@ -97,19 +97,24 @@ func (tk *treeKeeper) isBroken() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err                error
-		tx                 *sql.Tx
-		txStmtCreateBucket *sql.Stmt
+		err                          error
+		tx                           *sql.Tx
+		txStmtPropertyInstanceCreate *sql.Stmt
+		txStmtCreateBucket           *sql.Stmt
 
-		txStmtGroupCreate              *sql.Stmt
-		txStmtGroupUpdate              *sql.Stmt
-		txStmtGroupDelete              *sql.Stmt
-		txStmtGroupMemberNewNode       *sql.Stmt
-		txStmtGroupMemberNewCluster    *sql.Stmt
-		txStmtGroupMemberNewGroup      *sql.Stmt
-		txStmtGroupMemberRemoveNode    *sql.Stmt
-		txStmtGroupMemberRemoveCluster *sql.Stmt
-		txStmtGroupMemberRemoveGroup   *sql.Stmt
+		txStmtGroupCreate                *sql.Stmt
+		txStmtGroupUpdate                *sql.Stmt
+		txStmtGroupDelete                *sql.Stmt
+		txStmtGroupMemberNewNode         *sql.Stmt
+		txStmtGroupMemberNewCluster      *sql.Stmt
+		txStmtGroupMemberNewGroup        *sql.Stmt
+		txStmtGroupMemberRemoveNode      *sql.Stmt
+		txStmtGroupMemberRemoveCluster   *sql.Stmt
+		txStmtGroupMemberRemoveGroup     *sql.Stmt
+		txStmtGroupPropertyServiceCreate *sql.Stmt
+		txStmtGroupPropertySystemCreate  *sql.Stmt
+		txStmtGroupPropertyOncallCreate  *sql.Stmt
+		txStmtGroupPropertyCustomCreate  *sql.Stmt
 
 		txStmtClusterCreate       *sql.Stmt
 		txStmtClusterUpdate       *sql.Stmt
@@ -176,6 +181,45 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentType: "group",
 			ParentId:   q.Group.Group.Id,
 		})
+	case "add_system_property_to_group": // XXX MOCKUP DATA
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.Id,
+		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
+			Id:           uuid.NewV4(),
+			Inheritance:  true,
+			ChildrenOnly: false,
+			View:         "internal",
+			Key:          "dns_zone",
+			Value:        "mw.server.lan",
+		})
+	case "add_service_property_to_group": // XXX MOCKUP DATA
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.Id,
+		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
+			Id:           uuid.NewV4(),
+			Inheritance:  true,
+			ChildrenOnly: false,
+			View:         "internal",
+			Service:      "pmrmw",
+			Attributes: []somatree.PropertyServiceAttribute{
+				{
+					Attribute: "proto_transport",
+					Value:     "tcp",
+				},
+				{
+					Attribute: "port",
+					Value:     "9192",
+				},
+				{
+					Attribute: "port",
+					Value:     "9193",
+				},
+			},
+		})
+	case "add_oncall_property_to_group":
+	case "add_custom_property_to_group":
 
 	// CLUSTER MANIPULATION REQUESTS
 	case "create_cluster":
@@ -309,6 +353,26 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 	defer txStmtGroupMemberRemoveGroup.Close()
+
+	if txStmtGroupPropertyOncallCreate, err = tx.Prepare(tkStmtGroupPropertyOncallCreate); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupPropertyOncallCreate.Close()
+
+	if txStmtGroupPropertyServiceCreate, err = tx.Prepare(tkStmtGroupPropertyServiceCreate); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupPropertyServiceCreate.Close()
+
+	if txStmtGroupPropertySystemCreate, err = tx.Prepare(tkStmtGroupPropertySystemCreate); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupPropertySystemCreate.Close()
+
+	if txStmtGroupPropertyCustomCreate, err = tx.Prepare(tkStmtGroupPropertyCustomCreate); err != nil {
+		goto bailout
+	}
+	defer txStmtGroupPropertyCustomCreate.Close()
 
 	// CLUSTER
 	if txStmtClusterCreate, err = tx.Prepare(tkStmtClusterCreate); err != nil {
@@ -461,6 +525,76 @@ actionloop:
 					if _, err = txStmtGroupMemberRemoveNode.Exec(
 						a.Group.Id,
 						a.ChildNode.Id,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case "property_new":
+				if _, err = txStmtPropertyInstanceCreate.Exec(
+					a.Property.InstanceId,
+					a.Property.RepositoryId,
+					a.Property.BucketId,
+					a.Property.SourceInstanceId,
+					a.Property.SourceType,
+					a.Property.InheritedFrom,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.PropertyType {
+				case "custom":
+					if _, err = txStmtGroupPropertyCustomCreate.Exec(
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Group.Id,
+						a.Property.View,
+						a.Property.Custom.CustomId,
+						a.Property.BucketId,
+						a.Property.Custom.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly,
+						a.Property.Custom.Value,
+					); err != nil {
+						break actionloop
+					}
+				case "system":
+					if _, err = txStmtGroupPropertySystemCreate.Exec(
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Group.Id,
+						a.Property.View,
+						a.Property.System.Name,
+						a.Property.SourceType,
+						a.Property.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly,
+						a.Property.System.Value,
+					); err != nil {
+						break actionloop
+					}
+				case "service":
+					if _, err = txStmtGroupPropertyServiceCreate.Exec(
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Group.Id,
+						a.Property.View,
+						a.Property.Service.Name,
+						a.Property.Service.TeamId,
+						a.Property.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				case "oncall":
+					if _, err = txStmtGroupPropertyOncallCreate.Exec(
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Group.Id,
+						a.Property.View,
+						a.Property.Oncall.OncallId,
+						a.Property.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly,
 					); err != nil {
 						break actionloop
 					}
