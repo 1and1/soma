@@ -24,10 +24,11 @@ func (u SomaUtil) TryGetGroupByUUIDOrName(g string, b string) string {
 
 func (u SomaUtil) GetGroupIdByName(g string, bId string) string {
 	var req somaproto.ProtoRequestGroup
+	req.Filter = &somaproto.ProtoGroupFilter{}
 	req.Filter.Name = g
 	req.Filter.BucketId = bId
 
-	resp := u.GetRequestWithBody(req, "/groups/")
+	resp := u.PostRequestWithBody(req, "/filter/groups/")
 	groupResult := u.DecodeProtoResultGroupFromResponse(resp)
 
 	return groupResult.Groups[0].Id

@@ -18,10 +18,12 @@ func cmdGroupCreate(c *cli.Context) {
 	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
 
 	var req somaproto.ProtoRequestGroup
+	req.Group = &somaproto.ProtoGroup{}
 	req.Group.Name = c.Args().First()
 	req.Group.BucketId = bucketId
 
-	_ = utl.PostRequestWithBody(req, "/groups/")
+	resp := utl.PostRequestWithBody(req, "/groups/")
+	fmt.Println(resp)
 }
 
 func cmdGroupDelete(c *cli.Context) {
@@ -58,6 +60,7 @@ func cmdGroupRename(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s", groupId)
 
 	var req somaproto.ProtoRequestGroup
+	req.Group = &somaproto.ProtoGroup{}
 	req.Group.Name = opts["to"][0]
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -73,6 +76,7 @@ func cmdGroupList(c *cli.Context) {
 		c.Args().Tail())
 
 	var req somaproto.ProtoRequestGroup
+	req.Group = &somaproto.ProtoGroup{}
 	req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
 	_ = utl.GetRequestWithBody(req, "/groups/")
 }
@@ -115,11 +119,15 @@ func cmdGroupMemberAddGroup(c *cli.Context) {
 	var req somaproto.ProtoRequestGroup
 	var group somaproto.ProtoGroup
 	group.Id = mGroupId
+	req.Group = &somaproto.ProtoGroup{}
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
 	req.Group.MemberGroups = append(req.Group.MemberGroups, group)
 
-	path := fmt.Sprintf("/groups/%s/members", groupId)
+	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	_ = utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdGroupMemberAddCluster(c *cli.Context) {
@@ -142,11 +150,15 @@ func cmdGroupMemberAddCluster(c *cli.Context) {
 	var req somaproto.ProtoRequestGroup
 	var cluster somaproto.ProtoCluster
 	cluster.Id = mClusterId
+	req.Group = &somaproto.ProtoGroup{}
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
 	req.Group.MemberClusters = append(req.Group.MemberClusters, cluster)
 
-	path := fmt.Sprintf("/groups/%s/members", groupId)
+	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	_ = utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdGroupMemberAddNode(c *cli.Context) {
@@ -167,11 +179,15 @@ func cmdGroupMemberAddNode(c *cli.Context) {
 	var req somaproto.ProtoRequestGroup
 	var node somaproto.ProtoNode
 	node.Id = mNodeId
+	req.Group = &somaproto.ProtoGroup{}
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
 	req.Group.MemberNodes = append(req.Group.MemberNodes, node)
 
-	path := fmt.Sprintf("/groups/%s/members", groupId)
+	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	_ = utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) {

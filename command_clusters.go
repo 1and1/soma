@@ -18,10 +18,12 @@ func cmdClusterCreate(c *cli.Context) {
 	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
 
 	var req somaproto.ProtoRequestCluster
+	req.Cluster = &somaproto.ProtoCluster{}
 	req.Cluster.Name = c.Args().First()
 	req.Cluster.BucketId = bucketId
 
-	_ = utl.PostRequestWithBody(req, "/clusters/")
+	resp := utl.PostRequestWithBody(req, "/clusters/")
+	fmt.Println(resp)
 }
 
 func cmdClusterDelete(c *cli.Context) {
@@ -58,6 +60,7 @@ func cmdClusterRename(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
 	var req somaproto.ProtoRequestCluster
+	req.Cluster = &somaproto.ProtoCluster{}
 	req.Cluster.Name = opts["to"][0]
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -73,6 +76,7 @@ func cmdClusterList(c *cli.Context) {
 		c.Args().Tail())
 
 	var req somaproto.ProtoRequestCluster
+	req.Filter = &somaproto.ProtoClusterFilter{}
 	req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
 	_ = utl.GetRequestWithBody(req, "/clusters/")
 }
@@ -113,6 +117,7 @@ func cmdClusterMemberAdd(c *cli.Context) {
 	var req somaproto.ProtoRequestCluster
 	var node somaproto.ProtoNode
 	node.Id = nodeId
+	req.Cluster = &somaproto.ProtoCluster{}
 	req.Cluster.Members = append(req.Cluster.Members, node)
 
 	path := fmt.Sprintf("/clusters/%s/members", clusterId)

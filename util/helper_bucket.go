@@ -29,10 +29,11 @@ func (u SomaUtil) BucketByUUIDOrName(b string) string {
 
 func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
 	var req somaproto.ProtoRequestBucket
+	req.Filter = &somaproto.ProtoBucketFilter{}
 	req.Filter.Name = bucket
 	req.Filter.RepositoryId = repoId
 
-	resp := u.GetRequestWithBody(req, "/buckets/")
+	resp := u.PostRequestWithBody(req, "/filter/buckets/")
 	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if bucket != repoResult.Buckets[0].Name {
@@ -43,9 +44,10 @@ func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
 
 func (u SomaUtil) BucketIdByName(bucket string) string {
 	var req somaproto.ProtoRequestBucket
+	req.Filter = &somaproto.ProtoBucketFilter{}
 	req.Filter.Name = bucket
 
-	resp := u.GetRequestWithBody(req, "/buckets/")
+	resp := u.PostRequestWithBody(req, "/filter/buckets/")
 	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if bucket != repoResult.Buckets[0].Name {
@@ -56,6 +58,7 @@ func (u SomaUtil) BucketIdByName(bucket string) string {
 
 func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 	var req somaproto.ProtoRequestBucket
+	req.Filter = &somaproto.ProtoBucketFilter{}
 	receivedUuidArgument := false
 
 	id, err := uuid.FromString(bucket)
@@ -66,7 +69,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 		req.Filter.Id = id.String()
 	}
 
-	resp := u.GetRequestWithBody(req, "/buckets/")
+	resp := u.PostRequestWithBody(req, "/filter/buckets/")
 	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if receivedUuidArgument {
