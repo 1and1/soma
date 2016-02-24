@@ -96,8 +96,10 @@ func (g *guidePost) process(q *treeRequest) {
 		bucketId = q.Group.Group.BucketId
 	case "create_cluster":
 		bucketId = q.Cluster.Cluster.BucketId
+	case "add_cluster_to_group":
+		bucketId = q.Group.Group.BucketId
 	default:
-		log.Printf("R: unimplemented server/%s", q.Action)
+		log.Printf("R: unimplemented guidepost/%s", q.Action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return
@@ -201,6 +203,18 @@ func (g *guidePost) process(q *treeRequest) {
 	case "create_bucket":
 		result.Append(nil, &somaBucketResult{
 			Bucket: q.Bucket.Bucket,
+		})
+	case "create_group":
+		result.Append(nil, &somaGroupResult{
+			Group: q.Group.Group,
+		})
+	case "create_cluster":
+		result.Append(nil, &somaClusterResult{
+			Cluster: q.Cluster.Cluster,
+		})
+	case "add_cluster_to_group":
+		result.Append(nil, &somaGroupResult{
+			Group: q.Group.Group,
 		})
 	}
 	q.reply <- result
