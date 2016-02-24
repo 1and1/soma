@@ -77,7 +77,10 @@ VALUES
   ( 'create_bucket' ),
   ( 'create_group' ),
   ( 'create_cluster' ),
-  ( 'assign_node' );`
+  ( 'assign_node' ),
+  ( 'add_cluster_to_group' ),
+  ( 'add_group_to_group' ),
+  ( 'add_node_to_group' );`
 	queries[idx] = "insertJobType"
 	idx++
 
