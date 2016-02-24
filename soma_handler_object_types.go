@@ -34,16 +34,16 @@ func (r *somaObjectTypeReadHandler) run() {
 	var err error
 
 	r.list_stmt, err = r.conn.Prepare(`
-	SELECT object_state
-	FROM soma.object_states;
+	SELECT object_type
+	FROM soma.object_types;
 	`)
 	if err != nil {
 		log.Fatal(err)
 	}
 	r.show_stmt, err = r.conn.Prepare(`
-	SELECT object_state
-	FROM soma.object_states
-	WHERE object_state = $1;
+	SELECT object_type
+	FROM soma.object_types
+	WHERE object_type = $1;
 	`)
 	if err != nil {
 		log.Fatal(err)
@@ -135,11 +135,11 @@ func (w *somaObjectTypeWriteHandler) run() {
 	var err error
 
 	w.add_stmt, err = w.conn.Prepare(`
-  INSERT INTO soma.object_states (object_state)
+  INSERT INTO soma.object_types (object_type)
   SELECT $1 WHERE NOT EXISTS (
-    SELECT object_state
-	FROM soma.object_states
-	WHERE object_state = $2
+    SELECT object_type
+	FROM soma.object_types
+	WHERE object_type = $2
   );
   `)
 	if err != nil {
@@ -148,8 +148,8 @@ func (w *somaObjectTypeWriteHandler) run() {
 	defer w.add_stmt.Close()
 
 	w.del_stmt, err = w.conn.Prepare(`
-  DELETE FROM soma.object_states
-  WHERE object_state = $1;
+  DELETE FROM soma.object_types
+  WHERE object_type = $1;
   `)
 	if err != nil {
 		log.Fatal(err)
@@ -157,9 +157,9 @@ func (w *somaObjectTypeWriteHandler) run() {
 	defer w.del_stmt.Close()
 
 	w.ren_stmt, err = w.conn.Prepare(`
-  UPDATE soma.object_states
-  SET object_state = $1
-  WHERE object_state = $2;
+  UPDATE soma.object_types
+  SET object_type = $1
+  WHERE object_type = $2;
   `)
 	if err != nil {
 		log.Fatal(err)
