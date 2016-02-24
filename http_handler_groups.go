@@ -89,6 +89,41 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
+func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestGroup{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	var rAct string
+	switch {
+	case len(cReq.Group.MemberGroups) > 0:
+		rAct = "add_group_to_group"
+	case len(cReq.Group.MemberClusters) > 0:
+		rAct = "add_cluster_to_group"
+	case len(cReq.Group.MemberNodes) > 0:
+		rAct = "add_node_to_group"
+	}
+	handler.input <- treeRequest{
+		RequestType: "group",
+		Action:      rAct,
+		reply:       returnChannel,
+		Group: somaGroupRequest{
+			action: "member",
+			Group:  *cReq.Group,
+		},
+	}
+	result := <-returnChannel
+	SendGroupReply(&w, &result)
+}
+
 /*
  * Utility
  */
