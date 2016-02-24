@@ -14,16 +14,16 @@ type ProtoResultGroup struct {
 }
 
 type ProtoGroup struct {
-	Id             string               `json:"id,omitempty"`
-	Name           string               `json:"name,omitempty"`
-	BucketId       string               `json:"bucketid,omitempty"`
-	ObjectState    string               `json:"objectstate,omitempty"`
-	TeamId         string               `json:"teamid,omitempty"`
-	MemberGroups   []ProtoGroup         `json:"membergroups,omitempty"`
-	MemberClusters []ProtoCluster       `json:"memberclusters,omitempty"`
-	MemberNodes    []ProtoNode          `json:"membernodes,omitempty"`
-	Details        *ProtoGroupDetails   `json:"details,omitempty"`
-	Properties     []ProtoGroupProperty `json:"properties,omitempty"`
+	Id             string             `json:"id,omitempty"`
+	Name           string             `json:"name,omitempty"`
+	BucketId       string             `json:"bucketid,omitempty"`
+	ObjectState    string             `json:"objectstate,omitempty"`
+	TeamId         string             `json:"teamid,omitempty"`
+	MemberGroups   []ProtoGroup       `json:"membergroups,omitempty"`
+	MemberClusters []ProtoCluster     `json:"memberclusters,omitempty"`
+	MemberNodes    []ProtoNode        `json:"membernodes,omitempty"`
+	Details        *ProtoGroupDetails `json:"details,omitempty"`
+	Properties     *[]TreeProperty    `json:"properties,omitempty"`
 }
 
 type ProtoGroupFilter struct {
@@ -34,16 +34,6 @@ type ProtoGroupFilter struct {
 type ProtoGroupDetails struct {
 	CreatedAt string `json:"createdat,omitempty"`
 	CreatedBy string `json:"createdby,omitempty"`
-}
-
-type ProtoGroupProperty struct {
-	Type         string `json:"type,omitempty"`
-	View         string `json:"view,omitempty"`
-	Property     string `json:"property,omitempty"`
-	Value        string `json:"value,omitempty"`
-	Inheritance  bool   `json:"inheritance,omitempty"`
-	ChildrenOnly bool   `json:"children,omitempty"`
-	Source       string `json:"source,omitempty"`
 }
 
 //
