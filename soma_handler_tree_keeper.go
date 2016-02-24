@@ -156,7 +156,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		somatree.NewGroup(somatree.GroupSpec{
 			Id:   uuid.NewV4().String(),
 			Name: q.Group.Group.Name,
-			Team: q.Group.Group.TeamId,
+			Team: tk.team,
 		}).Attach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
@@ -226,7 +226,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		somatree.NewCluster(somatree.ClusterSpec{
 			Id:   uuid.NewV4().String(),
 			Name: q.Cluster.Cluster.Name,
-			Team: q.Cluster.Cluster.TeamId,
+			Team: tk.team,
 		}).Attach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
@@ -422,7 +422,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	}
 
 actionloop:
-	for i := 0; i < len(tk.actionChan); i++ {
+	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 		switch a.Type {
 		// BUCKET

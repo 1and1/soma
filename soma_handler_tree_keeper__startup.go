@@ -17,12 +17,33 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupClusters()
 	tk.startupNodes()
 
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
 	tk.startupGroupSystemProperties()
 	tk.startupGroupCustomProperties()
 	tk.startupGroupOncallProperties()
 	tk.startupGroupServiceProperties()
 
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
 	tk.startupJobs()
+
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
+	b, _ := json.Marshal(tk.tree)
+	log.Println(string(b))
 }
 
 func (tk *treeKeeper) startupBuckets() {
@@ -95,7 +116,7 @@ bucketloop:
 			ParentId:   tk.repoId,
 			ParentName: tk.repoName,
 		})
-		for i := 0; i < len(tk.actionChan); i++ {
+		for i := len(tk.actionChan); i > 0; i-- {
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
@@ -126,7 +147,7 @@ FROM   soma.repositories sr
 JOIN   soma.buckets sb
 ON     sr.repository_id = sb.repository_id
 JOIN   soma.groups sg
-ON     sg.bucket_id = sg.bucket_id
+ON     sb.bucket_id = sg.bucket_id
 WHERE  sr.repository_id = $1::uuid;`)
 	if err != nil {
 		log.Fatal("treekeeper/load-groups: ", err)
@@ -167,7 +188,7 @@ grouploop:
 			ParentType: "bucket",
 			ParentId:   bucketId,
 		})
-		for i := 0; i < len(tk.actionChan); i++ {
+		for i := len(tk.actionChan); i > 0; i-- {
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
@@ -236,7 +257,7 @@ memberloop:
 			ParentId:   groupId,
 		})
 	}
-	for i := 0; i < len(tk.actionChan); i++ {
+	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
@@ -312,7 +333,7 @@ clusterloop:
 			ParentId:   groupId,
 		})
 	}
-	for i := 0; i < len(tk.actionChan); i++ {
+	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
@@ -386,9 +407,9 @@ clusterloop:
 			ParentId:   bucketId,
 		})
 	}
-	for i := 0; i < len(tk.actionChan); i++ {
+	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
-		log.Printf("%s -> %s\n", a.Action, a.Type)
+		log.Printf("%s -> %s [%s(%s)]\n", a.Action, a.Type, a.Cluster.Id, a.Cluster.Name)
 	}
 	for i := 0; i < len(tk.errChan); i++ {
 		<-tk.errChan
@@ -499,7 +520,7 @@ nodeloop:
 			})
 		}
 	}
-	for i := 0; i < len(tk.actionChan); i++ {
+	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
@@ -711,7 +732,7 @@ systemloop:
 		// throw away all generated actions, we do this for every
 		// property since with inheritance this can create a lot of
 		// actions
-		for i := 0; i < len(tk.actionChan); i++ {
+		for i := len(tk.actionChan); i > 0; i-- {
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
@@ -869,7 +890,7 @@ customloop:
 		// throw away all generated actions, we do this for every
 		// property since with inheritance this can create a lot of
 		// actions
-		for i := 0; i < len(tk.actionChan); i++ {
+		for i := len(tk.actionChan); i > 0; i-- {
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
@@ -1068,7 +1089,7 @@ serviceloop:
 		// throw away all generated actions, we do this for every
 		// property since with inheritance this can create a lot of
 		// actions
-		for i := 0; i < len(tk.actionChan); i++ {
+		for i := len(tk.actionChan); i > 0; i-- {
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
@@ -1226,7 +1247,7 @@ oncallloop:
 		// throw away all generated actions, we do this for every
 		// property since with inheritance this can create a lot of
 		// actions
-		for i := 0; i < len(tk.actionChan); i++ {
+		for i := len(tk.actionChan); i > 0; i-- {
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
