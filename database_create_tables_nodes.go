@@ -15,7 +15,7 @@ create table if not exists soma.nodes (
   node_name                   varchar(256)    NOT NULL,
   organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
   server_id                   uuid            NOT NULL REFERENCES inventory.servers ( server_id ) DEFERRABLE,
-  object_state                varchar(64)     NOT NULL DEFAULT 'standalone' REFERENCES soma.object_states ( object_state ) DEFERRABLE,
+  object_state                varchar(64)     NOT NULL DEFAULT 'unassigned' REFERENCES soma.object_states ( object_state ) DEFERRABLE,
   node_online                 boolean         NOT NULL DEFAULT 'yes',
   node_deleted                boolean         NOT NULL DEFAULT 'no',
   UNIQUE ( node_id, organizational_team_id )
