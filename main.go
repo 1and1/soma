@@ -14,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.0.32"
+	version := "0.0.33"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -120,15 +120,15 @@ func main() {
 
 	router.GET("/buckets/", ListBucket)
 	router.GET("/buckets/:bucket", ShowBucket)
-	router.GET("/filter/bucket/", ListBucket)
+	router.POST("/filter/buckets/", ListBucket)
 
 	router.GET("/groups/", ListGroup)
 	router.GET("/groups/:group", ShowGroup)
-	router.GET("/filter/groups/", ListGroup)
+	router.POST("/filter/groups/", ListGroup)
 
 	router.GET("/clusters/", ListCluster)
 	router.GET("/clusters/:cluster", ShowCluster)
-	router.GET("/filter/clusters/", ListCluster)
+	router.POST("/filter/clusters/", ListCluster)
 
 	if !SomaCfg.ReadOnly {
 		router.POST("/views/", AddView)
@@ -221,6 +221,7 @@ func main() {
 		router.POST("/buckets/", AddBucket)
 
 		router.POST("/groups/", AddGroup)
+		router.POST("/groups/:group/members/", AddMemberToGroup)
 
 		router.POST("/clusters/", AddCluster)
 	}
