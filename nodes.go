@@ -49,8 +49,8 @@ type ProtoNodeFilter struct {
 }
 
 type ProtoNodeConfig struct {
-	RepositoryId string `json:"repositoryid,omitempty"`
-	BucketId     string `json:"bucketid,omitempty"`
+	RepositoryId string `json:"repository_id,omitempty"`
+	BucketId     string `json:"bucket_id,omitempty"`
 }
 
 type ProtoNodeProperty struct {
