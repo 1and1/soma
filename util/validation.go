@@ -16,6 +16,12 @@ func (u *SomaUtil) ValidateStringAsBool(s string) {
 	u.AbortOnError(err)
 }
 
+func (u *SomaUtil) GetValidatedBool(s string) bool {
+	b, err := strconv.ParseBool(s)
+	u.AbortOnError(err)
+	return b
+}
+
 func (u *SomaUtil) ValidateStringAsEmployeeNumber(s string) {
 	employeeNumber, err := strconv.Atoi(s)
 	u.AbortOnError(err, "Syntax error, employeenr argument not a number")

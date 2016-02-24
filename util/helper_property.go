@@ -90,6 +90,18 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	panic("unreachable")
 }
 
+func (u SomaUtil) CheckStringIsSystemProperty(s string) {
+	resp := u.GetRequest("/property/system/")
+	res := u.DecodeProtoResultPropertyFromResponse(resp)
+
+	for _, prop := range res.System {
+		if prop.Property == s {
+			return
+		}
+	}
+	u.Abort("Invalid system property requested")
+}
+
 func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *somaproto.ProtoResultProperty {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultProperty
