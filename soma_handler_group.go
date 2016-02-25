@@ -35,6 +35,9 @@ type somaGroupReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	mbgl_stmt *sql.Stmt
+	mbcl_stmt *sql.Stmt
+	mbnl_stmt *sql.Stmt
 }
 
 func (r *somaGroupReadHandler) run() {
@@ -64,6 +67,54 @@ WHERE  group_id = $1::uuid;`)
 	}
 	defer r.show_stmt.Close()
 
+	log.Println("Prepare: group/memberlist-group")
+	r.mbgl_stmt, err = r.conn.Prepare(`
+SELECT sg.group_id,
+       sg.group_name,
+	   osg.group_name
+FROM   soma.group_membership_groups sgmg
+JOIN   soma.groups sg
+ON     sgmg.child_group_id = sg.group_id
+JOIN   soma.groups osg
+ON     sgmg.group_id = osg.group_id
+WHERE  sgmg.group_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("group/memberlist-group: ", err)
+	}
+	defer r.mbgl_stmt.Close()
+
+	log.Println("Prepare: group/memberlist-cluster")
+	r.mbcl_stmt, err = r.conn.Prepare(`
+SELECT sc.cluster_id,
+       sc.cluster_name,
+	   sg.group_name
+FROM   soma.group_membership_clusters sgmc
+JOIN   soma.clusters sc
+ON     sgmc.child_cluster_id = sc.cluster_id
+JOIN   soma.groups sg
+ON     sgmc.group_id = sg.group_id
+WHERE  sgmc.group_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("group/memberlist-cluster: ", err)
+	}
+	defer r.mbcl_stmt.Close()
+
+	log.Println("Prepare: group/memberlist-node")
+	r.mbnl_stmt, err = r.conn.Prepare(`
+SELECT sn.node_id,
+       sn.node_name,
+	   sg.group_name
+FROM   soma.group_membership_nodes sgmn
+JOIN   soma.nodes sn
+ON     sgmn.child_node_id = sn.node_id
+JOIN   soma.groups sg
+ON     sgmn.group_id = sg.group_id
+WHERE  sgmn.group_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("group/memberlist-node: ", err)
+	}
+	defer r.mbnl_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -80,10 +131,13 @@ runloop:
 func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 	var (
 		groupId, groupName, bucketId, groupState, teamId string
+		mGroupId, mGroupName, mClusterId, mClusterName   string
+		mNodeId, mNodeName                               string
 		rows                                             *sql.Rows
 		err                                              error
 	)
 	result := somaResult{}
+	resG := somaproto.ProtoGroup{}
 
 	switch q.action {
 	case "list":
@@ -131,6 +185,65 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 				ObjectState: groupState,
 				TeamId:      teamId,
 			},
+		})
+	case "member_list":
+		log.Printf("R: group/memberlist for %s", q.Group.Id)
+		rows, err = r.mbgl_stmt.Query(q.Group.Id)
+		defer rows.Close()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+
+		resG = somaproto.ProtoGroup{
+			Id: q.Group.Id,
+		}
+		for rows.Next() {
+			err := rows.Scan(&mGroupId, &mGroupName, &groupName)
+			if err == nil {
+				resG.Name = groupName
+				resG.MemberGroups = append(resG.MemberGroups, somaproto.ProtoGroup{
+					Id:   mGroupId,
+					Name: mGroupName,
+				})
+			}
+		}
+
+		rows, err = r.mbcl_stmt.Query(q.Group.Id)
+		defer rows.Close()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+
+		for rows.Next() {
+			err := rows.Scan(&mClusterId, &mClusterName, &groupName)
+			if err == nil {
+				resG.MemberClusters = append(resG.MemberClusters, somaproto.ProtoCluster{
+					Id:   mClusterId,
+					Name: mClusterName,
+				})
+			}
+		}
+
+		rows, err = r.mbnl_stmt.Query(q.Group.Id)
+		defer rows.Close()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+
+		for rows.Next() {
+			err = rows.Scan(&mNodeId, &mNodeName, &groupName)
+			if err == nil {
+				resG.MemberNodes = append(resG.MemberNodes, somaproto.ProtoNode{
+					Id:   mNodeId,
+					Name: mNodeName,
+				})
+			}
+		}
+		result.Append(err, &somaGroupResult{
+			Group: resG,
 		})
 	default:
 		result.SetNotImplemented()

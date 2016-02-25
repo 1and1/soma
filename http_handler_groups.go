@@ -61,6 +61,23 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
+func ListGroupMembers(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["groupReadHandler"].(somaGroupReadHandler)
+	handler.input <- somaGroupRequest{
+		action: "member_list",
+		reply:  returnChannel,
+		Group: somaproto.ProtoGroup{
+			Id: params.ByName("group"),
+		},
+	}
+	result := <-returnChannel
+	SendGroupReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddGroup(w http.ResponseWriter, r *http.Request,

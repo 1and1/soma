@@ -120,8 +120,17 @@ func (g *guidePost) process(q *treeRequest) {
 		bucketId = q.Group.Group.BucketId
 	case "create_cluster":
 		bucketId = q.Cluster.Cluster.BucketId
+	case "add_group_to_group":
+		bucketId = q.Group.Group.BucketId
 	case "add_cluster_to_group":
 		bucketId = q.Group.Group.BucketId
+	case "add_node_to_group":
+		bucketId = q.Group.Group.BucketId
+	case "add_node_to_cluster":
+		bucketId = q.Cluster.Cluster.BucketId
+		if q.Cluster.Cluster.BucketId != q.Cluster.Cluster.Members[0].Config.BucketId {
+			panic("This should not happen.")
+		}
 	case "assign_node":
 		repoId = q.Node.Node.Config.RepositoryId
 		bucketId = q.Node.Node.Config.BucketId
@@ -256,16 +265,20 @@ func (g *guidePost) process(q *treeRequest) {
 			Bucket: q.Bucket.Bucket,
 		})
 	case "create_group":
+		fallthrough
+	case "add_group_to_group":
+		fallthrough
+	case "add_cluster_to_group":
+		fallthrough
+	case "add_node_to_group":
 		result.Append(nil, &somaGroupResult{
 			Group: q.Group.Group,
 		})
 	case "create_cluster":
+		fallthrough
+	case "add_node_to_cluster":
 		result.Append(nil, &somaClusterResult{
 			Cluster: q.Cluster.Cluster,
-		})
-	case "add_cluster_to_group":
-		result.Append(nil, &somaGroupResult{
-			Group: q.Group.Group,
 		})
 	case "assign_node":
 		result.Append(nil, &somaNodeResult{

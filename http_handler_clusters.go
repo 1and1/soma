@@ -61,6 +61,23 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
+func ListClusterMembers(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["clusterReadHandler"].(somaClusterReadHandler)
+	handler.input <- somaClusterRequest{
+		action: "member_list",
+		reply:  returnChannel,
+		Cluster: somaproto.ProtoCluster{
+			Id: params.ByName("cluster"),
+		},
+	}
+	result := <-returnChannel
+	SendClusterReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddCluster(w http.ResponseWriter, r *http.Request,
@@ -82,6 +99,32 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  "add",
+			Cluster: *cReq.Cluster,
+		},
+	}
+	result := <-returnChannel
+	SendClusterReply(&w, &result)
+}
+
+func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestCluster{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "cluster",
+		Action:      "add_node_to_cluster",
+		reply:       returnChannel,
+		Cluster: somaClusterRequest{
+			action:  "member",
 			Cluster: *cReq.Cluster,
 		},
 	}

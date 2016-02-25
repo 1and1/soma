@@ -35,6 +35,7 @@ type somaClusterReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	mbnl_stmt *sql.Stmt
 }
 
 func (r *somaClusterReadHandler) run() {
@@ -64,6 +65,22 @@ WHERE  cluster_id = $1::uuid;`)
 	}
 	defer r.show_stmt.Close()
 
+	log.Println("Prepare: cluster/memberlist-node")
+	r.mbnl_stmt, err = r.conn.Prepare(`
+SELECT sn.node_id,
+       sn.node_name,
+	   sc.cluster_name
+FROM   soma.cluster_membership scm
+JOIN   soma.nodes sn
+ON     scm.node_id = sn.node_id
+JOIN   soma.clusters sc
+ON     scm.cluster_id = sc.cluster_id
+WHERE  scm.cluster_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("cluster/memberlist-node: ", err)
+	}
+	defer r.mbnl_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -80,10 +97,12 @@ runloop:
 func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 	var (
 		clusterId, clusterName, bucketId, clusterState, teamId string
+		mNodeId, mNodeName                                     string
 		rows                                                   *sql.Rows
 		err                                                    error
 	)
 	result := somaResult{}
+	resC := somaproto.ProtoCluster{}
 
 	switch q.action {
 	case "list":
@@ -131,6 +150,30 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 				ObjectState: clusterState,
 				TeamId:      teamId,
 			},
+		})
+	case "member_list":
+		log.Printf("R: cluster/memberlist for %s", q.Cluster.Id)
+		rows, err = r.mbnl_stmt.Query(q.Cluster.Id)
+		defer rows.Close()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+
+		resC.Id = q.Cluster.Id
+		for rows.Next() {
+			err := rows.Scan(&mNodeId, &mNodeName, &clusterName)
+			if err == nil {
+				resC.Name = clusterName
+				resC.Members = append(resC.Members, somaproto.ProtoNode{
+					Id:   mNodeId,
+					Name: mNodeName,
+				})
+			}
+		}
+
+		result.Append(err, &somaClusterResult{
+			Cluster: resC,
 		})
 	default:
 		result.SetNotImplemented()

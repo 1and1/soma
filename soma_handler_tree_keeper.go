@@ -98,6 +98,7 @@ func (tk *treeKeeper) isBroken() bool {
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
 		err                          error
+		hasErrors                    bool
 		tx                           *sql.Tx
 		txStmtPropertyInstanceCreate *sql.Stmt
 		txStmtCreateBucket           *sql.Stmt
@@ -481,6 +482,7 @@ actionloop:
 			case "member_new":
 				switch a.ChildType {
 				case "group":
+					log.Println("==> group/new membergroup")
 					if _, err = txStmtGroupMemberNewGroup.Exec(
 						a.Group.Id,
 						a.ChildGroup.Id,
@@ -489,6 +491,7 @@ actionloop:
 						break actionloop
 					}
 				case "cluster":
+					log.Println("==> group/new membercluster")
 					if _, err = txStmtGroupMemberNewCluster.Exec(
 						a.Group.Id,
 						a.ChildCluster.Id,
@@ -497,6 +500,7 @@ actionloop:
 						break actionloop
 					}
 				case "node":
+					log.Println("==> group/new membernode")
 					if _, err = txStmtGroupMemberNewNode.Exec(
 						a.Group.Id,
 						a.ChildNode.Id,
@@ -627,6 +631,7 @@ actionloop:
 					break actionloop
 				}
 			case "member_new":
+				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberNew.Exec(
 					a.Cluster.Id,
 					a.ChildNode.Id,
@@ -635,6 +640,7 @@ actionloop:
 					break actionloop
 				}
 			case "member_removed":
+				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberRemove.Exec(
 					a.Cluster.Id,
 					a.ChildNode.Id,
@@ -655,6 +661,7 @@ actionloop:
 				}
 				fallthrough // need to call txStmtUpdateNodeState for delete as well
 			case "update":
+				log.Println("==> node/update")
 				if _, err = txStmtUpdateNodeState.Exec(
 					a.Node.Id,
 					a.Node.State,
@@ -670,6 +677,16 @@ actionloop:
 		}
 	}
 	if err != nil {
+		goto bailout
+	}
+
+	for i := len(tk.errChan); i > 0; i-- {
+		e := <-tk.errChan
+		b, _ := json.Marshal(e)
+		log.Println(string(b))
+		hasErrors = true
+	}
+	if hasErrors {
 		goto bailout
 	}
 

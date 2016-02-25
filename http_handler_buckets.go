@@ -30,10 +30,10 @@ func ListBucket(w http.ResponseWriter, r *http.Request,
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if (cReq.Filter.Name != "") || (cReq.Filter.Id != "") {
 		filtered := make([]somaBucketResult, 0)
 		for _, i := range result.Buckets {
-			if i.Bucket.Name == cReq.Filter.Name {
+			if (i.Bucket.Name == cReq.Filter.Name) || (i.Bucket.Id == cReq.Filter.Id) {
 				filtered = append(filtered, i)
 			}
 		}
