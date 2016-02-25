@@ -120,4 +120,20 @@ func cmdBucketRename(c *cli.Context) {
 	_ = utl.PatchRequestWithBody(req, path)
 }
 
+func cmdBucketList(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 0)
+
+	resp := utl.GetRequest("/buckets/")
+	fmt.Println(resp)
+}
+
+func cmdBucketShow(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 1)
+	bucketId := utl.BucketByUUIDOrName(c.Args().First())
+
+	path := fmt.Sprintf("/buckets/%s", bucketId)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

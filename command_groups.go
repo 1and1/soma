@@ -67,18 +67,26 @@ func cmdGroupRename(c *cli.Context) {
 }
 
 func cmdGroupList(c *cli.Context) {
-	multKeys := []string{"bucket"}
-	uniqKeys := []string{}
+	utl.ValidateCliArgumentCount(c, 0)
+	/*
+		multiple := []string{}
+		unique := []string{"bucket"}
+		required := []string{"bucket"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
-		uniqKeys,
-		uniqKeys,
-		c.Args().Tail())
+		opts := utl.ParseVariadicArguments(
+			multiple,
+			unique,
+			required,
+			c.Args())
 
-	var req somaproto.ProtoRequestGroup
-	req.Group = &somaproto.ProtoGroup{}
-	req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
-	_ = utl.GetRequestWithBody(req, "/groups/")
+		req := somaproto.ProtoRequestGroup{}
+		req.Group = &somaproto.ProtoGroup{}
+		req.Filter = &somaproto.ProtoGroupFilter{}
+		req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
+		resp := utl.GetRequestWithBody(req, "/groups/")
+	*/
+	resp := utl.GetRequest("/groups/")
+	fmt.Println(resp)
 }
 
 func cmdGroupShow(c *cli.Context) {
@@ -96,7 +104,8 @@ func cmdGroupShow(c *cli.Context) {
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdGroupMemberAddGroup(c *cli.Context) {
@@ -273,7 +282,8 @@ func cmdGroupMemberList(c *cli.Context) {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdGroupSystemPropertyAdd(c *cli.Context) {

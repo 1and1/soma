@@ -175,7 +175,7 @@ func cmdNodeAssign(c *cli.Context) {
 	req.Node.Config.BucketId = bucketId
 
 	path := fmt.Sprintf("/nodes/%s/config", nodeId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PutRequestWithBody(req, path)
 	fmt.Println(resp)
 }
 

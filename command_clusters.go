@@ -67,18 +67,23 @@ func cmdClusterRename(c *cli.Context) {
 }
 
 func cmdClusterList(c *cli.Context) {
-	multKeys := []string{"bucket"}
-	uniqKeys := []string{}
+	utl.ValidateCliArgumentCount(c, 0)
+	/*
+			multKeys := []string{"bucket"}
+			uniqKeys := []string{}
 
-	opts := utl.ParseVariadicArguments(multKeys,
-		uniqKeys,
-		uniqKeys,
-		c.Args().Tail())
+			opts := utl.ParseVariadicArguments(multKeys,
+				uniqKeys,
+				uniqKeys,
+				c.Args())
 
-	var req somaproto.ProtoRequestCluster
-	req.Filter = &somaproto.ProtoClusterFilter{}
-	req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
-	_ = utl.GetRequestWithBody(req, "/clusters/")
+			req := somaproto.ProtoRequestCluster{}
+			req.Filter = &somaproto.ProtoClusterFilter{}
+			req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
+		resp := utl.GetRequestWithBody(req, "/clusters/")
+	*/
+	resp := utl.GetRequest("/clusters/")
+	fmt.Println(resp)
 }
 
 func cmdClusterShow(c *cli.Context) {
@@ -96,7 +101,8 @@ func cmdClusterShow(c *cli.Context) {
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdClusterMemberAdd(c *cli.Context) {
@@ -114,15 +120,24 @@ func cmdClusterMemberAdd(c *cli.Context) {
 	clusterId := utl.TryGetClusterByUUIDOrName(
 		opts["to"][0], bucketId)
 
-	var req somaproto.ProtoRequestCluster
-	var node somaproto.ProtoNode
-	node.Id = nodeId
-	req.Cluster = &somaproto.ProtoCluster{}
+	req := somaproto.ProtoRequestCluster{}
+	conf := somaproto.ProtoNodeConfig{
+		BucketId: bucketId,
+	}
+	node := somaproto.ProtoNode{
+		Id:     nodeId,
+		Config: &conf,
+	}
+	req.Cluster = &somaproto.ProtoCluster{
+		Id:       clusterId,
+		BucketId: bucketId,
+	}
 	req.Cluster.Members = append(req.Cluster.Members, node)
 
-	path := fmt.Sprintf("/clusters/%s/members", clusterId)
+	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
-	_ = utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdClusterMemberDelete(c *cli.Context) {
@@ -161,7 +176,8 @@ func cmdClusterMemberList(c *cli.Context) {
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

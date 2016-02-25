@@ -110,7 +110,8 @@ func cmdRepositoryWipe(c *cli.Context) {
 
 func cmdRepositoryList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
-	_ = utl.GetRequest("/repository/")
+	resp := utl.GetRequest("/repository/")
+	fmt.Println(resp)
 }
 
 func cmdRepositoryShow(c *cli.Context) {
@@ -118,7 +119,8 @@ func cmdRepositoryShow(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	_ = utl.GetRequest(path)
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

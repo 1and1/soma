@@ -983,6 +983,16 @@ func registerCommands(app cli.App) *cli.App {
 					Usage:  "Rename an existing bucket",
 					Action: cmdBucketRename,
 				},
+				{
+					Name:   "list",
+					Usage:  "List existing buckets",
+					Action: cmdBucketList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show information about a specific bucket",
+					Action: cmdBucketShow,
+				},
 			},
 		}, // end buckets
 		// clusters
