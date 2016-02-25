@@ -37,6 +37,9 @@ func (tef *SomaTreeElemFault) Detach() {
 	tef.Destroy()
 }
 
+func (tef *SomaTreeElemFault) ReAttach(a AttachRequest) {
+}
+
 //
 // Interface: SomaTreeRepositoryAttacher
 func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
@@ -47,6 +50,11 @@ func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
 		ChildType:  tef.Type,
 		Fault:      tef,
 	})
+}
+
+//
+// Interface: SomaTreeBucketAttacher
+func (tef *SomaTreeElemFault) attachToBucket(a AttachRequest) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

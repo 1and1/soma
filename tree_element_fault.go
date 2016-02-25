@@ -57,6 +57,10 @@ func (tef SomaTreeElemFault) CloneRepository() SomaTreeRepositoryAttacher {
 	return &tef
 }
 
+func (tef SomaTreeElemFault) CloneBucket() SomaTreeBucketAttacher {
+	return &tef
+}
+
 func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeFaultReceiver:
