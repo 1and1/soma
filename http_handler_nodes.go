@@ -84,9 +84,34 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 			Name:      cReq.Node.Name,
 			Team:      cReq.Node.Team,
 			Server:    cReq.Node.Server,
-			State:     "standalone",
+			State:     "unassigned",
 			IsOnline:  true,
 			IsDeleted: false,
+		},
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
+func AssignNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestNode{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "node",
+		Action:      "assign_node",
+		reply:       returnChannel,
+		Node: somaNodeRequest{
+			action: "assign",
+			Node:   *cReq.Node,
 		},
 	}
 	result := <-returnChannel

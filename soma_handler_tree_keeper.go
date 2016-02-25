@@ -253,7 +253,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		})
 
 	// NODE MANIPULATION REQUESTS
-	case "create_node":
+	case "assign_node":
 		somatree.NewNode(somatree.NodeSpec{
 			Id:       q.Node.Node.Id,
 			AssetId:  q.Node.Node.AssetId,

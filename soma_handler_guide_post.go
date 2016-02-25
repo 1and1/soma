@@ -17,6 +17,7 @@ type guidePost struct {
 	jbsv_stmt *sql.Stmt
 	repo_stmt *sql.Stmt
 	name_stmt *sql.Stmt
+	node_stmt *sql.Stmt
 }
 
 func (g *guidePost) run() {
@@ -59,6 +60,26 @@ WHERE	sb.bucket_id = $1::uuid;`)
 	}
 	defer g.repo_stmt.Close()
 
+	log.Println("Prepare: guide/load-node-details")
+	g.node_stmt, err = g.conn.Prepare(`
+SELECT    sn.node_asset_id,
+	      sn.node_name,
+	      sn.organizational_team_id,
+	      sn.server_id,
+	      sn.node_online,
+	      sn.node_deleted
+FROM      soma.nodes sn
+LEFT JOIN soma.node_bucket_assignment snba
+ON        sn.node_id = snba.node_id
+WHERE     sn.node_online = 'yes'
+AND       sn.node_deleted = 'false'
+AND       snba.node_id IS NULL
+AND       sn.node_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("guide/load-node-details: ", err)
+	}
+	defer g.node_stmt.Close()
+
 	log.Println("Prepare: guide/repo-by-id")
 	g.name_stmt, err = g.conn.Prepare(`
 SELECT repository_name
@@ -86,6 +107,9 @@ func (g *guidePost) process(q *treeRequest) {
 		err                                error
 		j                                  []byte
 		repoId, repoName, keeper, bucketId string
+		ndName, ndTeam, ndServer           string
+		ndAsset                            int64
+		ndOnline, ndDeleted                bool
 	)
 	result := somaResult{}
 
@@ -98,6 +122,33 @@ func (g *guidePost) process(q *treeRequest) {
 		bucketId = q.Cluster.Cluster.BucketId
 	case "add_cluster_to_group":
 		bucketId = q.Group.Group.BucketId
+	case "assign_node":
+		repoId = q.Node.Node.Config.RepositoryId
+		bucketId = q.Node.Node.Config.BucketId
+
+		if err = g.node_stmt.QueryRow(q.Node.Node.Id).Scan(
+			&ndAsset,
+			&ndName,
+			&ndTeam,
+			&ndServer,
+			&ndOnline,
+			&ndDeleted,
+		); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+
+		q.Node.Node.AssetId = uint64(ndAsset)
+		q.Node.Node.Name = ndName
+		q.Node.Node.Team = ndTeam
+		q.Node.Node.Server = ndServer
+		q.Node.Node.IsOnline = ndOnline
+		q.Node.Node.IsDeleted = ndDeleted
 	default:
 		log.Printf("R: unimplemented guidepost/%s", q.Action)
 		result.SetNotImplemented()
@@ -215,6 +266,10 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_cluster_to_group":
 		result.Append(nil, &somaGroupResult{
 			Group: q.Group.Group,
+		})
+	case "assign_node":
+		result.Append(nil, &somaNodeResult{
+			Node: q.Node.Node,
 		})
 	}
 	q.reply <- result
