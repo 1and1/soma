@@ -157,23 +157,26 @@ func cmdNodeOffline(c *cli.Context) {
 }
 
 func cmdNodeAssign(c *cli.Context) {
-	utl.ValidateCliArgumentCount(c, 6)
-	utl.ValidateCliArgument(c, 2, "to")
-	keySlice := []string{"repository", "bucket"}
-	argSlice := utl.GetFullArgumentSlice(c)[2:]
+	utl.ValidateCliArgumentCount(c, 3)
+	multiple := []string{}
+	unique := []string{"to"}
+	required := []string{"to"}
 
-	options, _ := utl.ParseVariableArguments(keySlice, keySlice, argSlice)
-	var req somaproto.ProtoRequestJob
-	req.JobType = "node"
-	req.Node.Action = "assign"
-	req.Node.Node.Config.RepositoryId = utl.TryGetRepositoryByUUIDOrName(options["repository"])
-	req.Node.Node.Config.BucketId = utl.TryGetBucketByUUIDOrName(
-		options["bucket"],
-		req.Node.Node.Config.RepositoryId,
-	)
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
+	repoId := utl.GetRepositoryIdForBucket(bucketId)
+	nodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
 
-	_ = utl.PostRequestWithBody(req, "/jobs/")
-	// TODO save jobid locally as outstanding
+	req := somaproto.ProtoRequestNode{}
+	req.Node = &somaproto.ProtoNode{}
+	req.Node.Id = nodeId
+	req.Node.Config = &somaproto.ProtoNodeConfig{}
+	req.Node.Config.RepositoryId = repoId
+	req.Node.Config.BucketId = bucketId
+
+	path := fmt.Sprintf("/nodes/%s/config", nodeId)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdNodeList(c *cli.Context) {
