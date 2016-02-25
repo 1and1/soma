@@ -15,26 +15,26 @@ create table if not exists soma.job_status (
 	queries[idx] = "createTableJobStatus"
 	idx++
 
-	queryMap["createTableJobResult"] = `
-create table if not exists soma.job_result (
+	queryMap["createTableJobResults"] = `
+create table if not exists soma.job_results (
   job_result                  varchar(32)     PRIMARY KEY
 );`
-	queries[idx] = "createTableJobResult"
+	queries[idx] = "createTableJobResults"
 	idx++
 
-	queryMap["createTableJobType"] = `
-create table if not exists soma.job_type (
+	queryMap["createTableJobTypes"] = `
+create table if not exists soma.job_types (
   job_type                    varchar(128)    PRIMARY KEY
 );`
-	queries[idx] = "createTableJobType"
+	queries[idx] = "createTableJobTypes"
 	idx++
 
 	queryMap["createTableJobs"] = `
 create table if not exists soma.jobs (
   job_id                      uuid            PRIMARY KEY,
   job_status                  varchar(32)     NOT NULL REFERENCES soma.job_status ( job_status ) DEFERRABLE,
-  job_result                  varchar(32)     NOT NULL REFERENCES soma.job_result ( job_result ) DEFERRABLE,
-  job_type                    varchar(128)    NOT NULL REFERENCES soma.job_type ( job_type ) DEFERRABLE,
+  job_result                  varchar(32)     NOT NULL REFERENCES soma.job_results ( job_result ) DEFERRABLE,
+  job_type                    varchar(128)    NOT NULL REFERENCES soma.job_types ( job_type ) DEFERRABLE,
   job_serial                  bigserial       NOT NULL,
   repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
   user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,

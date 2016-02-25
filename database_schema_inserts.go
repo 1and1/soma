@@ -60,28 +60,29 @@ VALUES
 	queries[idx] = "insertJobStatus"
 	idx++
 
-	queryMap["insertJobResult"] = `
-INSERT INTO soma.job_result (
+	queryMap["insertJobResults"] = `
+INSERT INTO soma.job_results (
   job_result )
 VALUES
   ( 'pending' ),
   ( 'success' ),
   ( 'failed' );`
-	queries[idx] = "insertJobResult"
+	queries[idx] = "insertJobResults"
 	idx++
 
-	queryMap["insertJobType"] = `
-INSERT INTO soma.job_type (
+	queryMap["insertJobTypes"] = `
+INSERT INTO soma.job_types (
   job_type )
 VALUES
   ( 'create_bucket' ),
   ( 'create_group' ),
   ( 'create_cluster' ),
   ( 'assign_node' ),
-  ( 'add_cluster_to_group' ),
   ( 'add_group_to_group' ),
-  ( 'add_node_to_group' );`
-	queries[idx] = "insertJobType"
+  ( 'add_cluster_to_group' ),
+  ( 'add_node_to_group' ),
+  ( 'add_node_to_cluster' );`
+	queries[idx] = "insertJobTypes"
 	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
