@@ -81,7 +81,12 @@ VALUES
   ( 'add_group_to_group' ),
   ( 'add_cluster_to_group' ),
   ( 'add_node_to_group' ),
-  ( 'add_node_to_cluster' );`
+  ( 'add_node_to_cluster' ),
+  ( 'add_system_property_to_group' ),
+  ( 'add_custom_property_to_group' ),
+  ( 'add_oncall_property_to_group' ),
+  ( 'add_service_property_to_group' )
+  ;`
 	queries[idx] = "insertJobTypes"
 	idx++
 
