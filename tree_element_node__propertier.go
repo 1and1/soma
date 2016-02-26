@@ -1,6 +1,10 @@
 package somatree
 
-import "github.com/satori/go.uuid"
+import (
+	"log"
+
+	"github.com/satori/go.uuid"
+)
 
 //
 // Interface: SomaTreePropertier
@@ -40,7 +44,7 @@ func (ten *SomaTreeElemNode) SetProperty(
 		f := new(PropertyService)
 		*f = *p.(*PropertyService)
 		f.Inherited = true
-		f.Id = uuid.Nil
+		f.Id = uuid.UUID{}
 		ten.inheritPropertyDeep(f)
 		// scrub instance startup information prior to setting
 		p.(*PropertyService).Instances = nil
@@ -89,6 +93,7 @@ func (ten *SomaTreeElemNode) SetProperty(
 
 func (ten *SomaTreeElemNode) inheritProperty(
 	p SomaTreeProperty) {
+	f := new(PropertySystem)
 	switch p.GetType() {
 	case "custom":
 		p.(*PropertyCustom).Id = p.GetInstanceId(ten.Type, ten.Id)
@@ -103,11 +108,21 @@ func (ten *SomaTreeElemNode) inheritProperty(
 		}
 		ten.setServiceProperty(p)
 	case "system":
-		p.(*PropertySystem).Id = p.GetInstanceId(ten.Type, ten.Id)
-		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
-			p.(*PropertySystem).Id = uuid.NewV4()
+		/*
+			p.(*PropertySystem).Id = p.GetInstanceId(ten.Type, ten.Id)
+			if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
+				p.(*PropertySystem).Id = uuid.NewV4()
+			}
+			ten.setSystemProperty(p)
+		*/
+		*f = *p.(*PropertySystem)
+		f.Id = f.GetInstanceId(ten.Type, ten.Id)
+		if uuid.Equal(f.Id, uuid.Nil) {
+			f.Id = uuid.NewV4()
+			log.Printf("Inherit (Node) Generated: %s", f.Id.String())
 		}
-		ten.setSystemProperty(p)
+		f.Instances = nil
+		ten.setSystemProperty(f)
 	case "oncall":
 		p.(*PropertyOncall).Id = p.GetInstanceId(ten.Type, ten.Id)
 		if uuid.Equal(p.(*PropertyOncall).Id, uuid.Nil) {
@@ -115,7 +130,7 @@ func (ten *SomaTreeElemNode) inheritProperty(
 		}
 		ten.setOncallProperty(p)
 	}
-	ten.actionPropertyNew(ten.setupPropertyAction(p))
+	ten.actionPropertyNew(ten.setupPropertyAction(f))
 	// no inheritPropertyDeep(), nodes have no children
 }
 

@@ -1,6 +1,7 @@
 package somatree
 
 import (
+	"log"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -63,7 +64,7 @@ func (teg *SomaTreeElemGroup) SetProperty(
 		f := new(PropertySystem)
 		*f = *p.(*PropertySystem)
 		f.Inherited = true
-		f.Id = uuid.Nil
+		f.Id = uuid.UUID{}
 		teg.inheritPropertyDeep(f)
 		// scrub instance startup information prior to setting
 		p.(*PropertySystem).Instances = nil
@@ -94,6 +95,7 @@ func (teg *SomaTreeElemGroup) SetProperty(
 func (teg *SomaTreeElemGroup) inheritProperty(
 	p SomaTreeProperty) {
 
+	f := new(PropertySystem)
 	switch p.GetType() {
 	case "custom":
 		f := new(PropertyCustom)
@@ -116,15 +118,31 @@ func (teg *SomaTreeElemGroup) inheritProperty(
 		teg.setServiceProperty(p)
 		teg.inheritPropertyDeep(f)
 	case "system":
-		f := new(PropertySystem)
+		/*
+			f := new(PropertySystem)
+			*f = *p.(*PropertySystem)
+			p.(*PropertySystem).Id = p.GetInstanceId(teg.Type, teg.Id)
+			if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
+				p.(*PropertySystem).Id = uuid.NewV4()
+				log.Printf("Inherit Generated: %s", p.(*PropertySystem).Id.String())
+			}
+			p.(*PropertySystem).Instances = nil
+			teg.setSystemProperty(p)
+			f.Id = uuid.UUID{}
+			log.Printf("Inherit Sending down: %s", f.Id.String())
+			teg.inheritPropertyDeep(f)
+		*/
 		*f = *p.(*PropertySystem)
-		p.(*PropertySystem).Id = p.GetInstanceId(teg.Type, teg.Id)
-		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
-			p.(*PropertySystem).Id = uuid.NewV4()
+		f.Id = f.GetInstanceId(teg.Type, teg.Id)
+		if uuid.Equal(f.Id, uuid.Nil) {
+			f.Id = uuid.NewV4()
+			log.Printf("Inherit (Group) Generated: %s", f.Id.String())
 		}
-		p.(*PropertySystem).Instances = nil
-		teg.setSystemProperty(p)
-		teg.inheritPropertyDeep(f)
+		f.Instances = nil
+		teg.setSystemProperty(f)
+		p.(*PropertySystem).Id = uuid.UUID{}
+		log.Printf("Inherit Sending down: %s", p.(*PropertySystem).Id.String())
+		teg.inheritPropertyDeep(p)
 	case "oncall":
 		f := new(PropertyOncall)
 		*f = *p.(*PropertyOncall)
@@ -136,7 +154,7 @@ func (teg *SomaTreeElemGroup) inheritProperty(
 		teg.setOncallProperty(p)
 		teg.inheritPropertyDeep(f)
 	}
-	teg.actionPropertyNew(teg.setupPropertyAction(p))
+	teg.actionPropertyNew(teg.setupPropertyAction(f))
 }
 
 func (teg *SomaTreeElemGroup) inheritPropertyDeep(

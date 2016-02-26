@@ -1,6 +1,8 @@
 package somatree
 
-import "github.com/satori/go.uuid"
+import (
+	"github.com/satori/go.uuid"
+)
 
 type SomaTreeProperty interface {
 	GetType() string
@@ -117,13 +119,8 @@ type PropertyService struct {
 	ChildrenOnly  bool
 	View          string
 	Service       string
-	Attributes    []PropertyServiceAttribute
+	Attributes    []somaproto.TreeServiceAttribute
 	Instances     []PropertyInstance
-}
-
-type PropertyServiceAttribute struct {
-	Attribute string
-	Value     string
 }
 
 func (p *PropertyService) GetType() string {
@@ -186,9 +183,9 @@ func (p PropertyService) Clone() SomaTreeProperty {
 	cl.Id, _ = uuid.FromString(p.Id.String())
 	cl.SourceId, _ = uuid.FromString(p.SourceId.String())
 	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
-	cl.Attributes = make([]PropertyServiceAttribute, 0)
+	cl.Attributes = make([]somaproto.TreeServiceAttribute, 0)
 	for _, attr := range p.Attributes {
-		a := PropertyServiceAttribute{
+		a := somaproto.TreeServiceAttribute{
 			Attribute: attr.Attribute,
 			Value:     attr.Value,
 		}

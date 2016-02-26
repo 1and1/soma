@@ -1,6 +1,7 @@
 package somatree
 
 import (
+	"log"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -63,7 +64,7 @@ func (tec *SomaTreeElemCluster) SetProperty(
 		f := new(PropertySystem)
 		*f = *p.(*PropertySystem)
 		f.Inherited = true
-		f.Id = uuid.Nil
+		f.Id = uuid.UUID{}
 		tec.inheritPropertyDeep(f)
 		// scrub instance startup information prior to setting
 		p.(*PropertySystem).Instances = nil
@@ -94,6 +95,7 @@ func (tec *SomaTreeElemCluster) SetProperty(
 func (tec *SomaTreeElemCluster) inheritProperty(
 	p SomaTreeProperty) {
 
+	f := new(PropertySystem)
 	switch p.GetType() {
 	case "custom":
 		f := new(PropertyCustom)
@@ -116,15 +118,28 @@ func (tec *SomaTreeElemCluster) inheritProperty(
 		tec.setServiceProperty(p)
 		tec.inheritPropertyDeep(f)
 	case "system":
-		f := new(PropertySystem)
+		/*
+			f := new(PropertySystem)
+			*f = *p.(*PropertySystem)
+			p.(*PropertySystem).Id = p.GetInstanceId(tec.Type, tec.Id)
+			if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
+				p.(*PropertySystem).Id = uuid.NewV4()
+			}
+			p.(*PropertySystem).Instances = nil
+			tec.setSystemProperty(p)
+			tec.inheritPropertyDeep(f)
+		*/
 		*f = *p.(*PropertySystem)
-		p.(*PropertySystem).Id = p.GetInstanceId(tec.Type, tec.Id)
-		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
-			p.(*PropertySystem).Id = uuid.NewV4()
+		f.Id = f.GetInstanceId(tec.Type, tec.Id)
+		if uuid.Equal(f.Id, uuid.Nil) {
+			f.Id = uuid.NewV4()
+			log.Printf("Inherit (Cluster) Generated: %s", f.Id.String())
 		}
-		p.(*PropertySystem).Instances = nil
-		tec.setSystemProperty(p)
-		tec.inheritPropertyDeep(f)
+		f.Instances = nil
+		tec.setSystemProperty(f)
+		p.(*PropertySystem).Id = uuid.UUID{}
+		log.Printf("Inherit Sending down: %s", p.(*PropertySystem).Id.String())
+		tec.inheritPropertyDeep(p)
 	case "oncall":
 		f := new(PropertyOncall)
 		*f = *p.(*PropertyOncall)
@@ -136,7 +151,7 @@ func (tec *SomaTreeElemCluster) inheritProperty(
 		tec.setOncallProperty(p)
 		tec.inheritPropertyDeep(f)
 	}
-	tec.actionPropertyNew(tec.setupPropertyAction(p))
+	tec.actionPropertyNew(tec.setupPropertyAction(f))
 }
 
 func (tec *SomaTreeElemCluster) inheritPropertyDeep(
