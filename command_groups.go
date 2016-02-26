@@ -292,7 +292,7 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 	required := []string{"to", "in", "value", "view"}
 	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
 
-	opts := utl.ParseVariadicArguments(multiple, required, unique, c.Args().Tail())
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
 	groupId := utl.TryGetGroupByUUIDOrName(opts["to"][0], bucketId)
 	utl.CheckStringIsSystemProperty(c.Args().First())
