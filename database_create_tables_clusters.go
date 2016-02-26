@@ -64,7 +64,6 @@ func createTablesClusters(printOnly bool, verbose bool) {
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
-    value                       text            NOT NULL,
     UNIQUE( cluster_id, service_property, view ),
     FOREIGN KEY ( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ) DEFERRABLE,
     FOREIGN KEY ( cluster_id, organizational_team_id ) REFERENCES soma.clusters ( cluster_id, organizational_team_id ) DEFERRABLE,
