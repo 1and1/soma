@@ -82,10 +82,26 @@ VALUES
   ( 'add_cluster_to_group' ),
   ( 'add_node_to_group' ),
   ( 'add_node_to_cluster' ),
+  ( 'add_system_property_to_repository' ),
+  ( 'add_custom_property_to_repository' ),
+  ( 'add_oncall_property_to_repository' ),
+  ( 'add_service_property_to_repository' ),
+  ( 'add_system_property_to_bucket' ),
+  ( 'add_custom_property_to_bucket' ),
+  ( 'add_oncall_property_to_bucket' ),
+  ( 'add_service_property_to_bucket' ),
   ( 'add_system_property_to_group' ),
   ( 'add_custom_property_to_group' ),
   ( 'add_oncall_property_to_group' ),
-  ( 'add_service_property_to_group' )
+  ( 'add_service_property_to_group' ),
+  ( 'add_system_property_to_cluster' ),
+  ( 'add_custom_property_to_cluster' ),
+  ( 'add_oncall_property_to_cluster' ),
+  ( 'add_service_property_to_cluster' ),
+  ( 'add_system_property_to_node' ),
+  ( 'add_custom_property_to_node' ),
+  ( 'add_oncall_property_to_node' ),
+  ( 'add_service_property_to_node' )
   ;`
 	queries[idx] = "insertJobTypes"
 	idx++
