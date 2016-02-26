@@ -182,17 +182,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ParentType: "group",
 			ParentId:   q.Group.Group.Id,
 		})
-	case "add_system_property_to_group": // XXX MOCKUP DATA
+	case "add_system_property_to_group":
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
 		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
 			Id:           uuid.NewV4(),
-			Inheritance:  true,
-			ChildrenOnly: false,
-			View:         "internal",
-			Key:          "dns_zone",
-			Value:        "mw.server.lan",
+			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
+			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
+			View:         (*q.Group.Group.Properties)[0].View,
+			Key:          (*q.Group.Group.Properties)[0].System.Name,
+			Value:        (*q.Group.Group.Properties)[0].System.Value,
 		})
 	case "add_service_property_to_group": // XXX MOCKUP DATA
 		tk.tree.Find(somatree.FindRequest{
@@ -200,27 +200,42 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ElementId:   q.Group.Group.Id,
 		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
 			Id:           uuid.NewV4(),
-			Inheritance:  true,
-			ChildrenOnly: false,
-			View:         "internal",
-			Service:      "pmrmw",
-			Attributes: []somatree.PropertyServiceAttribute{
-				{
-					Attribute: "proto_transport",
-					Value:     "tcp",
-				},
-				{
-					Attribute: "port",
-					Value:     "9192",
-				},
-				{
-					Attribute: "port",
-					Value:     "9193",
-				},
-			},
+			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
+			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
+			View:         (*q.Group.Group.Properties)[0].View,
+			Service:      (*q.Group.Group.Properties)[0].Service.Name,
+			Attributes:   (*q.Group.Group.Properties)[0].Service.Attributes,
 		})
 	case "add_oncall_property_to_group":
+		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.OncallId)
+
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.Id,
+		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyOncall{
+			Id:           uuid.NewV4(),
+			OncallId:     oncallId,
+			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
+			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
+			View:         (*q.Group.Group.Properties)[0].View,
+			Name:         (*q.Group.Group.Properties)[0].Oncall.Name,
+			Number:       (*q.Group.Group.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_group":
+		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.CustomId)
+
+		tk.tree.Find(somatree.FindRequest{
+			ElementType: "group",
+			ElementId:   q.Group.Group.Id,
+		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyCustom{
+			Id:           uuid.NewV4(),
+			CustomId:     customId,
+			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
+			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
+			View:         (*q.Group.Group.Properties)[0].View,
+			Key:          (*q.Group.Group.Properties)[0].Custom.Name,
+			Value:        (*q.Group.Group.Properties)[0].Custom.Value,
+		})
 
 	// CLUSTER MANIPULATION REQUESTS
 	case "create_cluster":
@@ -309,6 +324,11 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 	defer txStmtCreateBucket.Close()
+
+	if txStmtPropertyInstanceCreate, err = tx.Prepare(tkStmtPropertyInstanceCreate); err != nil {
+		goto bailout
+	}
+	defer txStmtPropertyInstanceCreate.Close()
 
 	if txStmtGroupCreate, err = tx.Prepare(tkStmtGroupCreate); err != nil {
 		goto bailout
@@ -541,8 +561,24 @@ actionloop:
 					a.Property.SourceType,
 					a.Property.InheritedFrom,
 				); err != nil {
+					log.Printf("ERROR-Instance: %s / %s / %s / %s / %s (%s)",
+						a.Property.InstanceId,
+						a.Property.RepositoryId,
+						a.Property.SourceInstanceId,
+						a.Property.SourceType,
+						a.Property.InheritedFrom,
+						a.Group.Name,
+					)
 					break actionloop
 				}
+				log.Printf("Instance: %s / %s / %s / %s / %s (%s)",
+					a.Property.InstanceId,
+					a.Property.RepositoryId,
+					a.Property.SourceInstanceId,
+					a.Property.SourceType,
+					a.Property.InheritedFrom,
+					a.Group.Name,
+				)
 				switch a.Property.PropertyType {
 				case "custom":
 					if _, err = txStmtGroupPropertyCustomCreate.Exec(
@@ -557,6 +593,7 @@ actionloop:
 						a.Property.ChildrenOnly,
 						a.Property.Custom.Value,
 					); err != nil {
+						log.Printf("ErrorAction: %+v\n", a)
 						break actionloop
 					}
 				case "system":
@@ -573,6 +610,7 @@ actionloop:
 						a.Property.System.Value,
 						a.Property.IsInherited,
 					); err != nil {
+						log.Printf("System_ErrorAction: %+v\n", a)
 						break actionloop
 					}
 				case "service":

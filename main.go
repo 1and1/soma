@@ -225,6 +225,7 @@ func main() {
 
 		router.POST("/groups/", AddGroup)
 		router.POST("/groups/:group/members/", AddMemberToGroup)
+		router.POST("/groups/:group/property/:type/", AddPropertyToGroup)
 
 		router.POST("/clusters/", AddCluster)
 		router.POST("/clusters/:cluster/members/", AddMemberToCluster)

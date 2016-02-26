@@ -989,7 +989,7 @@ serviceloop:
 			Service:      serviceProperty,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]somatree.PropertyServiceAttribute, 0)
+		prop.Attributes = make([]somaproto.TreeServiceAttribute, 0)
 		prop.Instances = make([]somatree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
@@ -1019,7 +1019,7 @@ serviceloop:
 				return
 			}
 
-			pa := somatree.PropertyServiceAttribute{
+			pa := somaproto.TreeServiceAttribute{
 				Attribute: attrKey,
 				Value:     attrValue,
 			}

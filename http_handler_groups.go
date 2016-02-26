@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -134,6 +135,54 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: "member",
+			Group:  *cReq.Group,
+		},
+	}
+	result := <-returnChannel
+	SendGroupReply(&w, &result)
+}
+
+func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestGroup{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName("group") != cReq.Group.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched group ids: %s, %s",
+				params.ByName("group"),
+				cReq.Group.Id))
+		return
+	case len(*cReq.Group.Properties) != 1:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Expected property count 1, actual count: %d",
+				len(*cReq.Group.Properties)))
+		return
+	case params.ByName("type") != (*cReq.Group.Properties)[0].PropertyType:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched property types: %s, %s",
+				params.ByName("type"),
+				(*cReq.Group.Properties)[0].PropertyType))
+		return
+	case (params.ByName("type") == "service") && (*cReq.Group.Properties)[0].Service.Name == "":
+		DispatchBadRequest(&w,
+			fmt.Errorf("Empty service name is invalid"))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "group",
+		Action:      fmt.Sprintf("add_%s_property_to_group", params.ByName("type")),
+		reply:       returnChannel,
+		Group: somaGroupRequest{
+			action: fmt.Sprintf("%s_property_new", params.ByName("type")),
 			Group:  *cReq.Group,
 		},
 	}

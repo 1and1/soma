@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 
+
 	"github.com/satori/go.uuid"
 )
 
@@ -18,6 +19,8 @@ type guidePost struct {
 	repo_stmt *sql.Stmt
 	name_stmt *sql.Stmt
 	node_stmt *sql.Stmt
+	serv_stmt *sql.Stmt
+	attr_stmt *sql.Stmt
 }
 
 func (g *guidePost) run() {
@@ -90,6 +93,38 @@ WHERE  repository_id = $1::uuid;`)
 	}
 	defer g.name_stmt.Close()
 
+	log.Println("Prepare: guide/service-lookup")
+	g.serv_stmt, err = g.conn.Prepare(`
+SELECT stsp.service_property
+FROM   soma.repositories sr
+JOIN   soma.team_service_properties stsp
+ON     sr.organizational_team_id = stsp.organizational_team_id
+WHERE  sr.repository_id = $1::uuid
+AND    stsp.service_property = $2::varchar
+AND    sr.organizational_team_id = $3::uuid;`)
+	if err != nil {
+		log.Fatal("guide/service-lookup: ", err)
+	}
+	defer g.serv_stmt.Close()
+
+	log.Println("Prepare: guide/populate-service-attributes")
+	g.attr_stmt, err = g.conn.Prepare(`
+SELECT stspv.service_property_attribute,
+       stspv.value
+FROM   soma.repositories sr
+JOIN   soma.team_service_properties stsp
+ON     sr.organizational_team_id = stsp.organizational_team_id
+JOIN   soma.team_service_property_values stspv
+ON     stsp.organizational_team_id = stspv.organizational_team_id
+AND    stsp.service_property = stspv.service_property
+WHERE  sr.repository_id = $1::uuid
+AND    stsp.service_property = $2::varchar
+AND    sr.organizational_team_id = $3::uuid;`)
+	if err != nil {
+		log.Fatal("guide/populate-service-attributes: ", err)
+	}
+	defer g.attr_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -116,21 +151,32 @@ func (g *guidePost) process(q *treeRequest) {
 	switch q.Action {
 	case "create_bucket":
 		repoId = q.Bucket.Bucket.Repository
+
 	case "create_group":
-		bucketId = q.Group.Group.BucketId
-	case "create_cluster":
-		bucketId = q.Cluster.Cluster.BucketId
+		fallthrough
 	case "add_group_to_group":
-		bucketId = q.Group.Group.BucketId
+		fallthrough
 	case "add_cluster_to_group":
-		bucketId = q.Group.Group.BucketId
+		fallthrough
 	case "add_node_to_group":
+		fallthrough
+	case "add_system_property_to_group":
+		fallthrough
+	case "add_custom_property_to_group":
+		fallthrough
+	case "add_oncall_property_to_group":
+		fallthrough
+	case "add_service_property_to_group":
 		bucketId = q.Group.Group.BucketId
+
 	case "add_node_to_cluster":
-		bucketId = q.Cluster.Cluster.BucketId
 		if q.Cluster.Cluster.BucketId != q.Cluster.Cluster.Members[0].Config.BucketId {
 			panic("This should not happen.")
 		}
+		fallthrough
+	case "create_cluster":
+		bucketId = q.Cluster.Cluster.BucketId
+
 	case "assign_node":
 		repoId = q.Node.Node.Config.RepositoryId
 		bucketId = q.Node.Node.Config.BucketId
@@ -225,6 +271,55 @@ func (g *guidePost) process(q *treeRequest) {
 		return
 	}
 
+	// load authoritative copy of the service attributes from the
+	// database. Replaces whatever the client sent in.
+	if q.Action == "add_service_property_to_group" {
+		var service, attr, val string
+		var rows *sql.Rows
+		attrs := []somaproto.TreeServiceAttribute{}
+
+		if err = g.serv_stmt.QueryRow(
+			repoId,
+			(*q.Group.Group.Properties)[0].Service.Name,
+			(*q.Group.Group.Properties)[0].Service.TeamId,
+		).Scan(&service); err != nil {
+			goto inputabort
+		}
+
+		if rows, err = g.attr_stmt.Query(
+			repoId,
+			(*q.Group.Group.Properties)[0].Service.Name,
+			(*q.Group.Group.Properties)[0].Service.TeamId,
+		); err != nil {
+			goto inputabort
+		}
+		defer rows.Close()
+
+	attrloop:
+		for rows.Next() {
+			if err = rows.Scan(&attr, &val); err != nil {
+				break attrloop
+			}
+			attrs = append(attrs, somaproto.TreeServiceAttribute{
+				Attribute: attr,
+				Value:     val,
+			})
+		}
+
+	inputabort:
+		if err != nil {
+			if err == sql.ErrNoRows {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+		// not aborted: set the loaded attributes
+		(*q.Group.Group.Properties)[0].Service.Attributes = attrs
+	}
+
 	// store job in database
 	log.Printf("R: jobsave/%s", q.Action)
 	q.JobId = uuid.NewV4()
@@ -264,6 +359,7 @@ func (g *guidePost) process(q *treeRequest) {
 		result.Append(nil, &somaBucketResult{
 			Bucket: q.Bucket.Bucket,
 		})
+
 	case "create_group":
 		fallthrough
 	case "add_group_to_group":
@@ -271,15 +367,25 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_cluster_to_group":
 		fallthrough
 	case "add_node_to_group":
+		fallthrough
+	case "add_system_property_to_group":
+		fallthrough
+	case "add_custom_property_to_group":
+		fallthrough
+	case "add_oncall_property_to_group":
+		fallthrough
+	case "add_service_property_to_group":
 		result.Append(nil, &somaGroupResult{
 			Group: q.Group.Group,
 		})
+
 	case "create_cluster":
 		fallthrough
 	case "add_node_to_cluster":
 		result.Append(nil, &somaClusterResult{
 			Cluster: q.Cluster.Cluster,
 		})
+
 	case "assign_node":
 		result.Append(nil, &somaNodeResult{
 			Node: q.Node.Node,

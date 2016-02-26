@@ -10,9 +10,8 @@ INSERT INTO soma.property_instances (
 SELECT $1::uuid,
        $2::uuid,
        $3::uuid,
-       $4::uuid,
-       $5::varchar,
-       $6::uuid;`
+       $4::varchar,
+       $5::uuid;`
 
 /*
  * Statements for job state updates
