@@ -14,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.2.1"
+	version := "0.2.2"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -133,6 +133,10 @@ func main() {
 	router.GET("/clusters/:cluster/members/", ListClusterMembers)
 	router.POST("/filter/clusters/", ListCluster)
 
+	router.GET("/checks/:repository/", ListCheckConfiguration)
+	router.GET("/checks/:repository/:check", ShowCheckConfiguration)
+	router.POST("/filter/checks/:repository/", ListCheckConfiguration)
+
 	if !SomaCfg.ReadOnly {
 		router.POST("/views/", AddView)
 		router.DELETE("/views/:view", DeleteView)
@@ -234,6 +238,8 @@ func main() {
 		router.DELETE("/nodes/:node", DeleteNode)
 		router.PUT("/nodes/:node/config", AssignNode)
 		router.POST("/nodes/:node/property/:type/", AddPropertyToNode)
+
+		router.POST("/checks/:repository/", AddCheckConfiguration)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))
