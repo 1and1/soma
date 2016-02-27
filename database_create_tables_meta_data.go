@@ -10,28 +10,28 @@ func createTablesMetaData(printOnly bool, verbose bool) {
 
 	queryMap["createTableViews"] = `
 create table if not exists soma.views (
-  view                        varchar(64)     PRIMARY KEY
+    view                        varchar(64)     PRIMARY KEY
 );`
 	queries[idx] = "createTableViews"
 	idx++
 
 	queryMap["createTableEnvironments"] = `
 create table if not exists soma.environments (
-  environment                 varchar(32)     PRIMARY KEY
+    environment                 varchar(32)     PRIMARY KEY
 );`
 	queries[idx] = "createTableEnvironments"
 	idx++
 
 	queryMap["createTableObjectStates"] = `
 create table if not exists soma.object_states (
-  object_state                varchar(64)     PRIMARY KEY
+    object_state                varchar(64)     PRIMARY KEY
 );`
 	queries[idx] = "createTableObjectStates"
 	idx++
 
 	queryMap["createTableObjectTypes"] = `
 create table if not exists soma.object_types (
-  object_type                 varchar(64)     PRIMARY KEY
+    object_type                 varchar(64)     PRIMARY KEY
 );`
 	queries[idx] = "createTableObjectTypes"
 	idx++
@@ -49,15 +49,16 @@ func createTablesDatacenterMetaData(printOnly bool, verbose bool) {
 
 	queryMap["createTableDatacenterGroups"] = `
 create table if not exists soma.datacenter_groups (
-  datacenter_group            varchar(32)     NOT NULL,
-  datacenter                  varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter ) DEFERRABLE
+    datacenter_group            varchar(32)     NOT NULL,
+    datacenter                  varchar(32)     NOT NULL REFERENCES inventory.datacenters ( datacenter ) DEFERRABLE
 );`
 	queries[idx] = "createTableDatacenterGroups"
 	idx++
 
 	queryMap["createIndexDatacenterGroups"] = `
 create index _datacenter_groups
-  on soma.datacenter_groups ( datacenter_group );`
+    on soma.datacenter_groups ( datacenter_group )
+;`
 	queries[idx] = "createIndexDatacenterGroups"
 	idx++
 

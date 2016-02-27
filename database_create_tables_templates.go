@@ -10,24 +10,24 @@ func createTablesTemplates(printOnly bool, verbose bool) {
 
 	queryMap["createTableTemplates"] = `
 create table if not exists soma.templates (
-  template_id                 uuid            PRIMARY KEY,
-  repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
-  template_name               varchar(128)    NOT NULL,
-  UNIQUE( repository_id, template_name )
+    template_id                 uuid            PRIMARY KEY,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
+    template_name               varchar(128)    NOT NULL,
+    UNIQUE( repository_id, template_name )
 );`
 	queries[idx] = "createTableTemplates"
 	idx++
 
 	queryMap["createTableTemplateAssignments"] = `
 create table if not exists soma.template_assignments (
-  template_id                 uuid            NOT NULL REFERENCES soma.templates ( template_id ) DEFERRABLE,
-  configuration_object        uuid            NOT NULL,
-  configuration_object_type   varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
-  inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
-  children_on                 boolean         NOT NULL DEFAULT 'no',
-  UNIQUE ( template_id, configuration_object ),
-  CHECK ( configuration_object_type != 'server' ),
-  CHECK ( configuration_object_type != 'template' )
+    template_id                 uuid            NOT NULL REFERENCES soma.templates ( template_id ) DEFERRABLE,
+    configuration_object        uuid            NOT NULL,
+    configuration_object_type   varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
+    inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
+    children_on                 boolean         NOT NULL DEFAULT 'no',
+    UNIQUE ( template_id, configuration_object ),
+    CHECK ( configuration_object_type != 'server' ),
+    CHECK ( configuration_object_type != 'template' )
 );`
 	queries[idx] = "createTableTemplateAssignments"
 	idx++
