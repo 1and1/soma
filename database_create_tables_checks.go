@@ -40,8 +40,11 @@ create table if not exists soma.check_configurations (
     interval                    integer         NOT NULL,
     enabled                     boolean         NOT NULL DEFAULT 'yes',
     external_id                 varchar(64)     NOT NULL DEFAULT 'none',
+    -- required for custom property constraint foreign key
+    UNIQUE ( configuration_id, repository_id ),
     CHECK ( configuration_object_type != 'server' ),
-    CHECK ( external_id = 'none' OR configuration_object_type != 'template' )
+    CHECK ( external_id = 'none' OR configuration_object_type != 'template' ),
+    CHECK ( interval > 0 )
 );`
 	queries[idx] = "createTableCheckConfigurations"
 	idx++
@@ -76,7 +79,12 @@ create table if not exists soma.configuration_thresholds (
 create table if not exists soma.constraints_custom_property (
     configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
     custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ) DEFERRABLE,
-    property_value              text            NOT NULL
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
+    property_value              text            NOT NULL,
+	-- ensure this custom property is defined for this repository
+    FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id ) DEFERRABLE,
+	-- ensure the configuration_id is for the repository the custom property is defined in
+    FOREIGN KEY ( configuration_id, repository_id ) REFERENCES soma.check_configurations ( configuration_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConstraintsCustomProperty"
 	idx++
