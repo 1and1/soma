@@ -2,6 +2,8 @@ package util
 
 import (
 	"fmt"
+	"strconv"
+
 
 	"github.com/codegangsta/cli"
 )
@@ -150,21 +152,176 @@ func (u *SomaUtil) ParseVariadicArguments(
 
 	// check if we managed to collect all required keywords
 	for _, key := range reqKeys {
-		_, ok := result[key] // ok is false if slice is nil
-		if !ok {
+		// ok is false if slice is nil
+		if _, ok := result[key]; !ok {
 			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
 		}
 	}
 
 	// check if unique keywords were only specified once
 	for _, key := range uniqKeys {
-		sl, ok := result[key]
-		if ok && (len(sl) > 1) {
+		if sl, ok := result[key]; ok && (len(sl) > 1) {
 			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
 		}
 	}
 
 	return result
+}
+
+func (u *SomaUtil) ParseVariadicCheckArguments(args []string) (
+	map[string][]string,
+	[]somaproto.CheckConfigurationConstraint,
+	[]somaproto.CheckConfigurationThreshold,
+) {
+	// create return objects
+	result := make(map[string][]string)
+	constraints := []somaproto.CheckConfigurationConstraint{}
+	thresholds := []somaproto.CheckConfigurationThreshold{}
+	var err error
+
+	multiple := []string{"threshold", "constraint"}
+	unique := []string{"in", "on", "with", "interval", "inheritance", "childrenonly", "extern"}
+	required := []string{"in", "on", "with", "interval"}
+
+	constraintTypes := []string{"service", "attribute", "system", "custom", "oncall", "native"}
+	// merge key slices
+	keys := append(multiple, unique...)
+
+	// iteration helper
+	skip := false
+	skipcount := 0
+
+argloop:
+	for pos, val := range args {
+		// skip current arg if it was already consumed
+		if skip {
+			skipcount--
+			if skipcount == 0 {
+				skip = false
+			}
+			continue
+		}
+
+		if u.SliceContainsString(val, keys) {
+			// check for back-to-back keyswords
+			u.CheckStringNotAKeyword(args[pos+1], keys)
+
+			switch val {
+			case "threshold":
+				if len(args[pos+1:]) < 6 {
+					u.Abort("Syntax error, incomplete threshold specification")
+				}
+				t := u.ParseVariadicArguments(
+					[]string{},
+					[]string{"predicate", "level", "value"},
+					[]string{"predicate", "level", "value"},
+					args[pos+1:pos+7])
+				thr := somaproto.CheckConfigurationThreshold{}
+				thr.Predicate.Predicate = t["predicate"][0]
+				thr.Level.Name = t["level"][0]
+				if thr.Value, err = strconv.ParseInt(t["value"][0], 10, 64); err != nil {
+					u.Abort(fmt.Sprintf("Syntax error, value argument not numeric: %s",
+						t["value"][0]))
+				}
+				thresholds = append(thresholds, thr)
+				skip = true
+				skipcount = 6
+				continue argloop
+			case "constraint":
+				// argument is the start of a constraint specification.
+				// check we have enough arguments left
+				if len(args[pos+1:]) < 3 {
+					u.Abort("Syntax error, incomplete constraint specification")
+				}
+				// check constraint type specification
+				if !u.SliceContainsString(args[pos+2], constraintTypes) {
+					u.Abort(fmt.Sprintf("Syntax error, unknown contraint type: %s",
+						args[pos+1]))
+				}
+				constr := somaproto.CheckConfigurationConstraint{}
+				constr.ConstraintType = args[pos+1]
+				switch constr.ConstraintType {
+				case "service":
+					constr.Service = &somaproto.TreePropertyService{}
+					switch args[pos+2] {
+					case "name":
+						constr.Service.Name = args[pos+3]
+					default:
+						u.Abort(fmt.Sprintf("Syntax error, can not constraint service to %s",
+							args[pos+2]))
+					}
+				case "attribute":
+					constr.Attribute = &somaproto.TreeServiceAttribute{
+						Attribute: args[pos+2],
+						Value:     args[pos+3],
+					}
+				case "system":
+					constr.System = &somaproto.TreePropertySystem{
+						Name:  args[pos+2],
+						Value: args[pos+3],
+					}
+				case "custom":
+					constr.Custom = &somaproto.TreePropertyCustom{
+						Name:  args[pos+2],
+						Value: args[pos+3],
+					}
+				case "oncall":
+					constr.Oncall = &somaproto.TreePropertyOncall{}
+					switch args[pos+2] {
+					case "id":
+						constr.Oncall.OncallId = args[pos+3]
+					case "name":
+						constr.Oncall.Name = args[pos+3]
+					default:
+						u.Abort(fmt.Sprintf("Syntax error, can not constraint oncall to %s",
+							args[pos+2]))
+					}
+				case "native":
+					constr.Native = &somaproto.TreePropertyNative{
+						Name:  args[pos+2],
+						Value: args[pos+3],
+					}
+				}
+				constraints = append(constraints, constr)
+				skip = true
+				skipcount = 3
+				continue argloop
+			case "on":
+				result["on/type"] = append(result["on/type"], args[pos+1])
+				result["on/object"] = append(result["on/object"], args[pos+2])
+				result[val] = append(result[val], fmt.Sprintf("%s::%s", args[pos+1], args[pos+2]))
+				skip = true
+				skipcount = 2
+				continue argloop
+			default:
+				// regular key/value keyword
+				result[val] = append(result[val], args[pos+1])
+				skip = true
+				skipcount = 1
+				continue argloop
+			}
+		}
+		// error is reached if argument was not skipped and not a
+		// recognized keyword
+		u.Abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
+	}
+
+	// check if all required keywords were collected
+	for _, key := range required {
+		if _, ok := result[key]; !ok {
+			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
+		}
+	}
+
+	// check if unique keywords were only specuified once
+	for _, key := range unique {
+		// check ok since unique may still be optional
+		if sl, ok := result[key]; ok && (len(sl) > 1) {
+			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
+		}
+	}
+
+	return result, constraints, thresholds
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

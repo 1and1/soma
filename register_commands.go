@@ -1432,6 +1432,28 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end attributes
+		{
+			Name:   "checks",
+			Usage:  "SUBCOMMANDS for check configurations",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new check configuration",
+					Action: cmdCheckAdd,
+				},
+				{
+					Name:   "list",
+					Usage:  "List check configurations",
+					Action: cmdCheckList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a check configuration",
+					Action: cmdCheckShow,
+				},
+			},
+		}, // end checks
 	}
 	return &app
 }
