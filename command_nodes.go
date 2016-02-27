@@ -206,6 +206,10 @@ func cmdNodePropertyAdd(c *cli.Context) {
 	utl.ValidateCliArgument(c, 3, "to")
 	argSlice := utl.GetFullArgumentSlice(c)
 
+	// XXX THIS WHOLE THING IS BROKEN, NEEDS ADAPTION
+	// XXX TO WORK WITH somaproto.TreeProperty
+	// XXX IS JUST FIXED UP ENOUGH TO COMPILE
+
 	// get property types
 	typSlice := utl.PropertyTypes
 
@@ -214,11 +218,11 @@ func cmdNodePropertyAdd(c *cli.Context) {
 
 	// TODO: validate property of that type and name exists
 	propertyType := argSlice[0]
-	property := argSlice[1]
+	//property := argSlice[1]
 
 	// get which node is being modified
 	id := utl.TryGetNodeByUUIDOrName(argSlice[3])
-	path := fmt.Sprintf("/nodes/%s/property/", id)
+	path := fmt.Sprintf("/nodes/%s/property/%s/", id, argSlice[0])
 
 	// variable key/value part of argv
 	argSlice = argSlice[4:]
@@ -234,13 +238,13 @@ func cmdNodePropertyAdd(c *cli.Context) {
 	options, optional := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
 
 	// build node property JSON
-	var prop somaproto.ProtoNodeProperty
-	prop.Type = propertyType
+	var prop somaproto.TreeProperty
+	prop.PropertyType = propertyType
 	prop.View = options["view"] //required
-	prop.Property = property
+	//prop.Property = property XXX BROKEN
 	// add value if it was required
 	if utl.SliceContainsString("value", reqSlice) {
-		prop.Value = options["value"]
+		//prop.Value = options["value"]
 	}
 
 	// optional inheritance, default true
@@ -262,7 +266,7 @@ func cmdNodePropertyAdd(c *cli.Context) {
 	// build request JSON
 	req := somaproto.ProtoRequestNode{}
 	req.Node = &somaproto.ProtoNode{}
-	req.Node.Properties = append(req.Node.Properties, prop)
+	*req.Node.Properties = append(*req.Node.Properties, prop)
 
 	_ = utl.PostRequestWithBody(req, path)
 	// TODO save jobid locally as outstanding
