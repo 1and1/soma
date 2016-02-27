@@ -41,27 +41,13 @@ func (r *somaBucketReadHandler) run() {
 	var err error
 
 	log.Println("Prepare: bucket/list")
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT bucket_id,
-       bucket_name
-FROM   soma.buckets;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmtBucketList); err != nil {
 		log.Fatal("bucket/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	log.Println("Prepare: bucket/show")
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT bucket_id,
-       bucket_name,
-	   bucket_frozen,
-	   bucket_deleted,
-	   repository_id,
-	   environment,
-	   organizational_team_id
-FROM   soma.buckets
-WHERE  bucket_id = $1::uuid;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmtBucketShow); err != nil {
 		log.Fatal("bucket/show: ", err)
 	}
 	defer r.show_stmt.Close()
