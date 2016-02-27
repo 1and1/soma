@@ -26,7 +26,7 @@ type ProtoBucket struct {
 	IsDeleted   bool                `json:"deleted,omitempty"`
 	IsFrozen    bool                `json:"frozen,omitempty"`
 	Details     *ProtoBucketDetails `json:"details,omitempty"`
-	//	Properties []ProtoBucketProperty `json:"properties,omitempty"`
+	Properties  *[]TreeProperty     `json:"properties,omitempty"`
 }
 
 type ProtoBucketFilter struct {

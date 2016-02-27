@@ -16,17 +16,17 @@ type ProtoResultNode struct {
 }
 
 type ProtoNode struct {
-	Id         string              `json:"id,omitempty"`
-	AssetId    uint64              `json:"assetid,omitempty"`
-	Name       string              `json:"name,omitempty"`
-	Team       string              `json:"team,omitempty"`
-	Server     string              `json:"server,omitempty"`
-	State      string              `json:"state,omitempty"`
-	IsOnline   bool                `json:"online,omitempty"`
-	IsDeleted  bool                `json:"deleted,omitempty"`
-	Details    *ProtoNodeDetails   `json:"details,omitempty"`
-	Config     *ProtoNodeConfig    `json:"config,omitempty"`
-	Properties []ProtoNodeProperty `json:"properties,omitempty"`
+	Id         string            `json:"id,omitempty"`
+	AssetId    uint64            `json:"assetid,omitempty"`
+	Name       string            `json:"name,omitempty"`
+	Team       string            `json:"team,omitempty"`
+	Server     string            `json:"server,omitempty"`
+	State      string            `json:"state,omitempty"`
+	IsOnline   bool              `json:"online,omitempty"`
+	IsDeleted  bool              `json:"deleted,omitempty"`
+	Details    *ProtoNodeDetails `json:"details,omitempty"`
+	Config     *ProtoNodeConfig  `json:"config,omitempty"`
+	Properties *[]TreeProperty   `json:"properties,omitempty"`
 }
 
 type ProtoNodeDetails struct {
@@ -51,16 +51,6 @@ type ProtoNodeFilter struct {
 type ProtoNodeConfig struct {
 	RepositoryId string `json:"repository_id,omitempty"`
 	BucketId     string `json:"bucket_id,omitempty"`
-}
-
-type ProtoNodeProperty struct {
-	Type         string `json:"type,omitempty"`
-	View         string `json:"view,omitempty"`
-	Property     string `json:"property,omitempty"`
-	Value        string `json:"value,omitempty"`
-	Inheritance  bool   `json:"inheritance,omitempty"`
-	ChildrenOnly bool   `json:"children,omitempty"`
-	Source       string `json:"source,omitempty"`
 }
 
 //

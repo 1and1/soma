@@ -18,13 +18,13 @@ type ProtoResultRepository struct {
 }
 
 type ProtoRepository struct {
-	Id         string                    `json:"id,omitempty"`
-	Name       string                    `json:"name,omitempty"`
-	Team       string                    `json:"team,omitempty"`
-	IsDeleted  bool                      `json:"deleted,omitempty"`
-	IsActive   bool                      `json:"active,omitempty"`
-	Details    *ProtoRepositoryDetails   `json:"details,omitempty"`
-	Properties []ProtoRepositoryProperty `json:"properties,omitempty"`
+	Id         string                  `json:"id,omitempty"`
+	Name       string                  `json:"name,omitempty"`
+	Team       string                  `json:"team,omitempty"`
+	IsDeleted  bool                    `json:"deleted,omitempty"`
+	IsActive   bool                    `json:"active,omitempty"`
+	Details    *ProtoRepositoryDetails `json:"details,omitempty"`
+	Properties *[]TreeProperty         `json:"properties,omitempty"`
 }
 
 type ProtoRepositoryFilter struct {
@@ -37,16 +37,6 @@ type ProtoRepositoryFilter struct {
 type ProtoRepositoryDetails struct {
 	CreatedAt string `json:"createdat,omitempty"`
 	CreatedBy string `json:"createdby,omitempty"`
-}
-
-type ProtoRepositoryProperty struct {
-	Type         string `json:"type,omitempty"`
-	View         string `json:"view,omitempty"`
-	Property     string `json:"property,omitempty"`
-	Value        string `json:"value,omitempty"`
-	Inheritance  bool   `json:"inheritance,omitempty"`
-	ChildrenOnly bool   `json:"children,omitempty"`
-	Source       string `json:"source,omitempty"`
 }
 
 //

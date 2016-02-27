@@ -14,14 +14,14 @@ type ProtoResultCluster struct {
 }
 
 type ProtoCluster struct {
-	Id          string                 `json:"id,omitempty"`
-	Name        string                 `json:"name,omitempty"`
-	BucketId    string                 `json:"bucketid,omitempty"`
-	ObjectState string                 `json:"objectstate,omitempty"`
-	TeamId      string                 `json:"teamid,omitempty"`
-	Members     []ProtoNode            `json:"members,omitempty"`
-	Details     *ProtoClusterDetails   `json:"details,omitempty"`
-	Properties  []ProtoClusterProperty `json:"properties,omitempty"`
+	Id          string               `json:"id,omitempty"`
+	Name        string               `json:"name,omitempty"`
+	BucketId    string               `json:"bucketid,omitempty"`
+	ObjectState string               `json:"objectstate,omitempty"`
+	TeamId      string               `json:"teamid,omitempty"`
+	Members     []ProtoNode          `json:"members,omitempty"`
+	Details     *ProtoClusterDetails `json:"details,omitempty"`
+	Properties  *[]TreeProperty      `json:"properties,omitempty"`
 }
 
 type ProtoClusterFilter struct {
@@ -32,16 +32,6 @@ type ProtoClusterFilter struct {
 type ProtoClusterDetails struct {
 	CreatedAt string `json:"createdat,omitempty"`
 	CreatedBy string `json:"createdby,omitempty"`
-}
-
-type ProtoClusterProperty struct {
-	Type         string `json:"type,omitempty"`
-	View         string `json:"view,omitempty"`
-	Property     string `json:"property,omitempty"`
-	Value        string `json:"value,omitempty"`
-	Inheritance  bool   `json:"inheritance,omitempty"`
-	ChildrenOnly bool   `json:"children,omitempty"`
-	Source       string `json:"source,omitempty"`
 }
 
 //
