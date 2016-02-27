@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -136,6 +137,54 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 		reply:  returnChannel,
 		Node: somaproto.ProtoNode{
 			Id: params.ByName("node"),
+		},
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
+func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestNode{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName("node") != cReq.Node.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched node ids: %s, %s",
+				params.ByName("node"),
+				cReq.Node.Id))
+		return
+	case len(*cReq.Node.Properties) != 1:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Expected property count 1, actual count: %d",
+				len(*cReq.Node.Properties)))
+		return
+	case params.ByName("type") != (*cReq.Node.Properties)[0].PropertyType:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched property types: %s, %s",
+				params.ByName("type"),
+				(*cReq.Node.Properties)[0].PropertyType))
+		return
+	case (params.ByName("type") == "service") && (*cReq.Node.Properties)[0].Service.Name == "":
+		DispatchBadRequest(&w,
+			fmt.Errorf("Empty service name is invalid"))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "node",
+		Action:      fmt.Sprintf("add_%s_property_to_node", params.ByName("type")),
+		reply:       returnChannel,
+		Node: somaNodeRequest{
+			action: fmt.Sprintf("%s_property_new", params.ByName("type")),
+			Node:   *cReq.Node,
 		},
 	}
 	result := <-returnChannel

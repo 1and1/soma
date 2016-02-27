@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -82,6 +83,54 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 		reply:       returnChannel,
 		Bucket: somaBucketRequest{
 			action: "add",
+			Bucket: *cReq.Bucket,
+		},
+	}
+	result := <-returnChannel
+	SendBucketReply(&w, &result)
+}
+
+func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestBucket{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName("bucket") != cReq.Bucket.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched bucket ids: %s, %s",
+				params.ByName("bucket"),
+				cReq.Bucket.Id))
+		return
+	case len(*cReq.Bucket.Properties) != 1:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Expected property count 1, actual count: %d",
+				len(*cReq.Bucket.Properties)))
+		return
+	case params.ByName("type") != (*cReq.Bucket.Properties)[0].PropertyType:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched property types: %s, %s",
+				params.ByName("type"),
+				(*cReq.Bucket.Properties)[0].PropertyType))
+		return
+	case (params.ByName("type") == "service") && (*cReq.Bucket.Properties)[0].Service.Name == "":
+		DispatchBadRequest(&w,
+			fmt.Errorf("Empty service name is invalid"))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "bucket",
+		Action:      fmt.Sprintf("add_%s_property_to_bucket", params.ByName("type")),
+		reply:       returnChannel,
+		Bucket: somaBucketRequest{
+			action: fmt.Sprintf("%s_property_new", params.ByName("type")),
 			Bucket: *cReq.Bucket,
 		},
 	}

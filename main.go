@@ -14,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.1.2"
+	version := "0.2.0"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -172,10 +172,6 @@ func main() {
 		router.POST("/teams/", AddTeam)
 		router.DELETE("/teams/:team", DeleteTeam)
 
-		router.POST("/nodes/", AddNode)
-		router.DELETE("/nodes/:node", DeleteNode)
-		router.PUT("/nodes/:node/config", AssignNode)
-
 		router.POST("/servers/", AddServer)
 		router.DELETE("/servers/:server", DeleteServer)
 		router.PUT("/servers/:server", InsertNullServer)
@@ -220,8 +216,10 @@ func main() {
 		router.DELETE("/attributes/:attribute", DeleteAttribute)
 
 		router.POST("/repository/", AddRepository)
+		router.POST("/repository/:repository/property/:type/", AddPropertyToRepository)
 
 		router.POST("/buckets/", AddBucket)
+		router.POST("/buckets/:bucket/property/:type/", AddPropertyToBucket)
 
 		router.POST("/groups/", AddGroup)
 		router.POST("/groups/:group/members/", AddMemberToGroup)
@@ -229,6 +227,12 @@ func main() {
 
 		router.POST("/clusters/", AddCluster)
 		router.POST("/clusters/:cluster/members/", AddMemberToCluster)
+		router.POST("/clusters/:cluster/property/:type/", AddPropertyToCluster)
+
+		router.POST("/nodes/", AddNode)
+		router.DELETE("/nodes/:node", DeleteNode)
+		router.PUT("/nodes/:node/config", AssignNode)
+		router.POST("/nodes/:node/property/:type/", AddPropertyToNode)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))

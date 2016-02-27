@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -84,6 +85,54 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 			Team:      cReq.Repository.Team,
 			IsDeleted: cReq.Repository.IsDeleted,
 			IsActive:  cReq.Repository.IsActive,
+		},
+	}
+	result := <-returnChannel
+	SendRepositoryReply(&w, &result)
+}
+
+func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := somaproto.ProtoRequestRepository{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName("repository") != cReq.Repository.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched repository ids: %s, %s",
+				params.ByName("repository"),
+				cReq.Repository.Id))
+		return
+	case len(*cReq.Repository.Properties) != 1:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Expected property count 1, actual count: %d",
+				len(*cReq.Repository.Properties)))
+		return
+	case params.ByName("type") != (*cReq.Repository.Properties)[0].PropertyType:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched property types: %s, %s",
+				params.ByName("type"),
+				(*cReq.Repository.Properties)[0].PropertyType))
+		return
+	case (params.ByName("type") == "service") && (*cReq.Repository.Properties)[0].Service.Name == "":
+		DispatchBadRequest(&w,
+			fmt.Errorf("Empty service name is invalid"))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "repository",
+		Action:      fmt.Sprintf("add_%s_property_to_repository", params.ByName("type")),
+		reply:       returnChannel,
+		Repository: somaRepositoryRequest{
+			action:     fmt.Sprintf("%s_property_new", params.ByName("type")),
+			Repository: *cReq.Repository,
 		},
 	}
 	result := <-returnChannel
