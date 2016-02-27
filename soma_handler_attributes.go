@@ -44,20 +44,13 @@ func (r *somaAttributeReadHandler) run() {
 	var err error
 
 	log.Println("Prepare: attribute/list")
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT service_property_attribute
-FROM   soma.service_property_attributes; `)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmtAttributeList); err != nil {
 		log.Fatal("attribute/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	log.Println("Prepare: attribute/show")
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT service_property_attribute
-FROM   soma.service_property_attributes
-WHERE  service_property_attribute = $1::varchar;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmtAttributeShow); err != nil {
 		log.Fatal("attribute/show: ", err)
 	}
 	defer r.show_stmt.Close()
@@ -141,23 +134,13 @@ func (w *somaAttributeWriteHandler) run() {
 	var err error
 
 	log.Println("Prepare: attribute/add")
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.service_property_attributes (
-	service_property_attribute)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT service_property_attribute
-	FROM   soma.service_property_attributes
-	WHERE  service_property_attribute = $1::varchar);`)
-	if err != nil {
+	if w.add_stmt, err = w.conn.Prepare(stmtAttributeAdd); err != nil {
 		log.Fatal("attribute/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
 	log.Println("Prepare: attribute/delete")
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.service_property_attributes
-WHERE  service_property_attribute = $1::varchar;`)
-	if err != nil {
+	if w.del_stmt, err = w.conn.Prepare(stmtAttributeDelete); err != nil {
 		log.Fatal("attribute/delete: ", err)
 	}
 	defer w.del_stmt.Close()
