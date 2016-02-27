@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/mail"
 	"strconv"
+	"unicode/utf8"
 )
 
 func (u *SomaUtil) ValidateStringAsNodeAssetId(s string) {
@@ -20,6 +21,23 @@ func (u *SomaUtil) GetValidatedBool(s string) bool {
 	b, err := strconv.ParseBool(s)
 	u.AbortOnError(err)
 	return b
+}
+
+func (u *SomaUtil) ValidateRuneCount(s string, l int) string {
+	if cnt := utf8.RuneCountInString(s); cnt > l {
+		u.Abort(fmt.Sprintf("Error, string above character limit %d: %s",
+			l, s))
+	}
+	return s
+}
+
+func (u *SomaUtil) GetValidatedUint64(s string, min uint64) uint64 {
+	i, err := strconv.ParseUint(s, 10, 64)
+	u.AbortOnError(err)
+	if i < min {
+		u.Abort(fmt.Sprintf("Error, value %s is less than the minimun %d", i, min))
+	}
+	return i
 }
 
 func (u *SomaUtil) ValidateStringAsEmployeeNumber(s string) {
