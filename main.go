@@ -14,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.2.0"
+	version := "0.2.1"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -48,6 +48,7 @@ func main() {
 
 	router.GET("/levels/", ListLevel)
 	router.GET("/levels/:level", ShowLevel)
+	router.POST("/filter/levels/", ListLevel)
 
 	router.GET("/predicates/", ListPredicate)
 	router.GET("/predicates/:predicate", ShowPredicate)

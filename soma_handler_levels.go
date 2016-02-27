@@ -44,7 +44,8 @@ func (r *somaLevelReadHandler) run() {
 
 	log.Println("Prepare: level/list")
 	r.list_stmt, err = r.conn.Prepare(`
-SELECT level_name
+SELECT level_name,
+       level_shortname,
 FROM   soma.notification_levels;`)
 	if err != nil {
 		log.Fatal("level/list: ", err)
@@ -96,10 +97,11 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&level)
+			err := rows.Scan(&level, &short)
 			result.Append(err, &somaLevelResult{
 				Level: somaproto.ProtoLevel{
-					Name: level,
+					Name:      level,
+					ShortName: short,
 				},
 			})
 		}

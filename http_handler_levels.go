@@ -20,6 +20,27 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 		reply:  returnChannel,
 	}
 	result := <-returnChannel
+
+	// declase here since goto does not jump over declarations
+	cReq := somaproto.ProtoRequestLevel{}
+	cReq.Filter = &somaproto.ProtoLevelFilter{}
+	if result.Failure() {
+		goto skip
+	}
+
+	_ = DecodeJsonBody(r, &cReq)
+	if (cReq.Filter.Name != "") || (cReq.Filter.ShortName != "") {
+		filtered := make([]somaLevelResult, 0)
+		for _, i := range result.Levels {
+			if ((cReq.Filter.Name != "") && (cReq.Filter.Name == i.Level.Name)) ||
+				((cReq.Filter.ShortName != "") && (cReq.Filter.ShortName == i.Level.ShortName)) {
+				filtered = append(filtered, i)
+			}
+		}
+		result.Levels = filtered
+	}
+
+skip:
 	SendLevelReply(&w, &result)
 }
 
