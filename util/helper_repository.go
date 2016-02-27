@@ -27,9 +27,17 @@ func (u SomaUtil) GetRepositoryIdByName(repo string) string {
 	repoResult := u.DecodeProtoResultRepositoryFromResponse(resp)
 
 	if repo != repoResult.Repositories[0].Name {
-		u.Abort("Received result set for incorrect rep[ository")
+		u.Abort("Received result set for incorrect repository")
 	}
 	return repoResult.Repositories[0].Id
+}
+
+func (u SomaUtil) GetTeamIdByRepositoryId(repo string) string {
+	repoId := u.TryGetRepositoryByUUIDOrName(repo)
+
+	resp := u.GetRequest(fmt.Sprintf("/repository/%s", repoId))
+	repoResult := u.DecodeProtoResultRepositoryFromResponse(resp)
+	return repoResult.Repositories[0].Team
 }
 
 func (u SomaUtil) DecodeProtoResultRepositoryFromResponse(resp *resty.Response) *somaproto.ProtoResultRepository {
