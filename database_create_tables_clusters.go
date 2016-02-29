@@ -90,7 +90,7 @@ create table if not exists soma.cluster_system_properties (
     inherited                   boolean         NOT NULL DEFAULT 'yes',
     value                       text            NOT NULL,
     FOREIGN KEY ( system_property, object_type, inherited ) REFERENCES soma.system_property_validity ( system_property, object_type, inherited ) DEFERRABLE,
-    CHECK ( object_type = 'cluster' ),
+    CHECK ( inherited OR object_type = 'cluster' ),
     FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableClusterSystemProperties"
