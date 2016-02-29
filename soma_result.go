@@ -36,6 +36,7 @@ type somaResult struct {
 	Buckets        []somaBucketResult
 	Groups         []somaGroupResult
 	Clusters       []somaClusterResult
+	CheckConfigs   []somaCheckConfigResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {
