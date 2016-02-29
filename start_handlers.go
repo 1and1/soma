@@ -26,6 +26,7 @@ func startHandlers() {
 	spawnBucketReadHandler()
 	spawnGroupReadHandler()
 	spawnClusterReadHandler()
+	spawnCheckConfigurationReadHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnViewWriteHandler()
@@ -484,6 +485,15 @@ func spawnGuidePost() {
 	gP.conn = conn
 	handlerMap["guidePost"] = gP
 	go gP.run()
+}
+
+func spawnCheckConfigurationReadHandler() {
+	var checkConfigurationReadHandler somaCheckConfigurationReadHandler
+	checkConfigurationReadHandler.input = make(chan somaCheckConfigRequest, 64)
+	checkConfigurationReadHandler.shutdown = make(chan bool)
+	checkConfigurationReadHandler.conn = conn
+	handlerMap["checkConfigurationReadHandler"] = checkConfigurationReadHandler
+	go checkConfigurationReadHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
