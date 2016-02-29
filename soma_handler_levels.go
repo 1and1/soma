@@ -45,7 +45,7 @@ func (r *somaLevelReadHandler) run() {
 	log.Println("Prepare: level/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT level_name,
-       level_shortname,
+       level_shortname
 FROM   soma.notification_levels;`)
 	if err != nil {
 		log.Fatal("level/list: ", err)
