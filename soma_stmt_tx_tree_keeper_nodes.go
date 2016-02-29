@@ -16,7 +16,7 @@ AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`
 
 var tkStmtNodePropertyOncallCreate = `
-INSERT INTO soma.node_oncall_properties (
+INSERT INTO soma.node_oncall_property (
             instance_id,
             source_instance_id,
             node_id,
