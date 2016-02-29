@@ -128,16 +128,15 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 		}
 	case "show":
 		log.Printf("R: capability/show for %s", q.Capability.Id)
-		err = r.show_stmt.QueryRow(q.Capability.Id).Scan(
+		if err = r.show_stmt.QueryRow(q.Capability.Id).Scan(
 			&id,
 			&monitoring,
 			&metric,
 			&view,
 			&thresholds,
 			&monName,
-		)
-		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+		); err != nil {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)
