@@ -3,7 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -32,20 +35,19 @@ type treeResult struct {
 }
 
 type treeKeeper struct {
-	repoId            string
-	repoName          string
-	team              string
-	broken            bool
-	ready             bool
-	input             chan treeRequest
-	shutdown          chan bool
-	conn              *sql.DB
-	tree              *somatree.SomaTree
-	errChan           chan *somatree.Error
-	actionChan        chan *somatree.Action
-	start_job         *sql.Stmt
-	create_bucket     *sql.Stmt
-	defer_constraints *sql.Stmt
+	repoId     string
+	repoName   string
+	team       string
+	broken     bool
+	ready      bool
+	input      chan treeRequest
+	shutdown   chan bool
+	conn       *sql.DB
+	tree       *somatree.SomaTree
+	errChan    chan *somatree.Error
+	actionChan chan *somatree.Action
+	start_job  *sql.Stmt
+	get_view   *sql.Stmt
 }
 
 func (tk *treeKeeper) run() {
@@ -71,11 +73,16 @@ func (tk *treeKeeper) run() {
 
 	var err error
 	log.Println("Prepare: treekeeper/start-job")
-	tk.start_job, err = tk.conn.Prepare(tkStmtStartJob)
-	if err != nil {
+	if tk.start_job, err = tk.conn.Prepare(tkStmtStartJob); err != nil {
 		log.Fatal("treekeeper/start-job: ", err)
 	}
 	defer tk.start_job.Close()
+
+	log.Println("Prepare: treekeeper/get-view-by-capability")
+	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
+		log.Fatal("treekeeper/get-view-by-capability: ", err)
+	}
+	defer tk.get_view.Close()
 
 runloop:
 	for {
@@ -98,9 +105,11 @@ func (tk *treeKeeper) isBroken() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err       error
-		hasErrors bool
-		tx        *sql.Tx
+		err        error
+		hasErrors  bool
+		tx         *sql.Tx
+		treeCheck  *somatree.SomaTreeCheck
+		nullBucket sql.NullString
 
 		txStmtPropertyInstanceCreate *sql.Stmt
 
@@ -146,6 +155,15 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		txStmtNodePropertySystemCreate  *sql.Stmt
 		txStmtNodePropertyOncallCreate  *sql.Stmt
 		txStmtNodePropertyCustomCreate  *sql.Stmt
+
+		txStmtCreateCheckConfigurationBase                *sql.Stmt
+		txStmtCreateCheckConfigurationThreshold           *sql.Stmt
+		txStmtCreateCheckConfigurationConstraintSystem    *sql.Stmt
+		txStmtCreateCheckConfigurationConstraintNative    *sql.Stmt
+		txStmtCreateCheckConfigurationConstraintOncall    *sql.Stmt
+		txStmtCreateCheckConfigurationConstraintCustom    *sql.Stmt
+		txStmtCreateCheckConfigurationConstraintService   *sql.Stmt
+		txStmtCreateCheckConfigurationConstraintAttribute *sql.Stmt
 	)
 	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 	if err != nil {
@@ -212,6 +230,13 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Repository.Repository.Properties)[0].Custom.Name,
 			Value:        (*q.Repository.Repository.Properties)[0].Custom.Value,
 		})
+	case "add_check_to_repository":
+		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: q.CheckConfig.CheckConfig.ObjectType,
+				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
+			}, true).SetCheck(*treeCheck)
+		}
 
 	//
 	// BUCKET MANIPULATION REQUESTS
@@ -284,6 +309,13 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Bucket.Bucket.Properties)[0].Custom.Name,
 			Value:        (*q.Bucket.Bucket.Properties)[0].Custom.Value,
 		})
+	case "add_check_to_bucket":
+		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: q.CheckConfig.CheckConfig.ObjectType,
+				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
+			}, true).SetCheck(*treeCheck)
+		}
 
 	//
 	// GROUP MANIPULATION REQUESTS
@@ -370,6 +402,13 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Group.Group.Properties)[0].Custom.Name,
 			Value:        (*q.Group.Group.Properties)[0].Custom.Value,
 		})
+	case "add_check_to_group":
+		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: q.CheckConfig.CheckConfig.ObjectType,
+				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
+			}, true).SetCheck(*treeCheck)
+		}
 
 	//
 	// CLUSTER MANIPULATION REQUESTS
@@ -456,6 +495,13 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Cluster.Cluster.Properties)[0].Custom.Name,
 			Value:        (*q.Cluster.Cluster.Properties)[0].Custom.Value,
 		})
+	case "add_check_to_cluster":
+		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: q.CheckConfig.CheckConfig.ObjectType,
+				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
+			}, true).SetCheck(*treeCheck)
+		}
 
 	//
 	// NODE MANIPULATION REQUESTS
@@ -555,7 +601,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Node.Node.Properties)[0].Custom.Name,
 			Value:        (*q.Node.Node.Properties)[0].Custom.Value,
 		})
-
+	case "add_check_to_node":
+		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: q.CheckConfig.CheckConfig.ObjectType,
+				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
+			}, true).SetCheck(*treeCheck)
+		}
+	}
+	// check if we accumulated an error in one of the switch cases
+	if err != nil {
+		goto bailout
 	}
 
 	// open multi-statement transaction
@@ -569,6 +625,46 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 	defer txStmtPropertyInstanceCreate.Close()
+
+	if txStmtCreateCheckConfigurationBase, err = tx.Prepare(tkStmtCreateCheckConfigurationBase); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationBase.Close()
+
+	if txStmtCreateCheckConfigurationThreshold, err = tx.Prepare(tkStmtCreateCheckConfigurationThreshold); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationThreshold.Close()
+
+	if txStmtCreateCheckConfigurationConstraintSystem, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintSystem); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationConstraintSystem.Close()
+
+	if txStmtCreateCheckConfigurationConstraintNative, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintNative); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationConstraintNative.Close()
+
+	if txStmtCreateCheckConfigurationConstraintOncall, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintOncall); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationConstraintOncall.Close()
+
+	if txStmtCreateCheckConfigurationConstraintCustom, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintCustom); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationConstraintCustom.Close()
+
+	if txStmtCreateCheckConfigurationConstraintService, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintService); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationConstraintService.Close()
+
+	if txStmtCreateCheckConfigurationConstraintAttribute, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintAttribute); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckConfigurationConstraintAttribute.Close()
 
 	//
 	// REPOSITORY
@@ -773,6 +869,114 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	// defer constraint checks
 	if _, err = tx.Exec(tkStmtDeferAllConstraints); err != nil {
 		goto bailout
+	}
+
+	// save the check configuration as part of the transaction before
+	// processing the action channel
+	if strings.Contains(q.Action, "add_check_to_") {
+		if q.CheckConfig.CheckConfig.BucketId != "" {
+			nullBucket = sql.NullString{
+				String: q.CheckConfig.CheckConfig.BucketId,
+				Valid:  true,
+			}
+		} else {
+			nullBucket = sql.NullString{String: "", Valid: false}
+		}
+
+		if _, err = txStmtCreateCheckConfigurationBase.Exec(
+			q.CheckConfig.CheckConfig.Id,
+			q.CheckConfig.CheckConfig.Name,
+			int64(q.CheckConfig.CheckConfig.Interval),
+			q.CheckConfig.CheckConfig.RepositoryId,
+			nullBucket,
+			q.CheckConfig.CheckConfig.CapabilityId,
+			q.CheckConfig.CheckConfig.ObjectId,
+			q.CheckConfig.CheckConfig.ObjectType,
+			q.CheckConfig.CheckConfig.IsActive,
+			q.CheckConfig.CheckConfig.IsEnabled,
+			q.CheckConfig.CheckConfig.Inheritance,
+			q.CheckConfig.CheckConfig.ChildrenOnly,
+			q.CheckConfig.CheckConfig.ExternalId,
+		); err != nil {
+			goto bailout
+		}
+
+	threshloop:
+		for _, thr := range q.CheckConfig.CheckConfig.Thresholds {
+			if _, err = txStmtCreateCheckConfigurationThreshold.Exec(
+				q.CheckConfig.CheckConfig.Id,
+				thr.Predicate.Predicate,
+				strconv.FormatInt(thr.Value, 10),
+				thr.Level.Name,
+			); err != nil {
+				break threshloop
+			}
+		}
+		if err != nil {
+			goto bailout
+		}
+
+	constrloop:
+		for _, constr := range q.CheckConfig.CheckConfig.Constraints {
+			switch constr.ConstraintType {
+			case "native":
+				if _, err = txStmtCreateCheckConfigurationConstraintNative.Exec(
+					q.CheckConfig.CheckConfig.Id,
+					constr.Native.Name,
+					constr.Native.Value,
+				); err != nil {
+					break constrloop
+				}
+			case "oncall":
+				if _, err = txStmtCreateCheckConfigurationConstraintOncall.Exec(
+					q.CheckConfig.CheckConfig.Id,
+					constr.Oncall.OncallId,
+				); err != nil {
+					break constrloop
+				}
+			case "custom":
+				if _, err = txStmtCreateCheckConfigurationConstraintCustom.Exec(
+					q.CheckConfig.CheckConfig.Id,
+					constr.Custom.CustomId,
+					constr.Custom.RepositoryId,
+					constr.Custom.Value,
+				); err != nil {
+					break constrloop
+				}
+			case "system":
+				if _, err = txStmtCreateCheckConfigurationConstraintSystem.Exec(
+					q.CheckConfig.CheckConfig.Id,
+					constr.System.Name,
+					constr.System.Value,
+				); err != nil {
+					break constrloop
+				}
+			case "service":
+				if constr.Service.TeamId != tk.team {
+					err = fmt.Errorf("Service constraint has mismatched TeamID values: %s/%s",
+						tk.team, constr.Service.TeamId)
+					break constrloop
+				}
+				if _, err = txStmtCreateCheckConfigurationConstraintService.Exec(
+					q.CheckConfig.CheckConfig.Id,
+					tk.team,
+					constr.Service.Name,
+				); err != nil {
+					break constrloop
+				}
+			case "attribute":
+				if _, err = txStmtCreateCheckConfigurationConstraintAttribute.Exec(
+					q.CheckConfig.CheckConfig.Id,
+					constr.Attribute.Attribute,
+					constr.Attribute.Value,
+				); err != nil {
+					break constrloop
+				}
+			}
+		}
+		if err != nil {
+			goto bailout
+		}
 	}
 
 actionloop:
@@ -1371,6 +1575,62 @@ bailout:
 		log.Printf("Cleaned message: %s\n", string(jB))
 	}
 	return
+}
+
+func (tk *treeKeeper) convertCheck(chk *somaproto.CheckConfiguration) (*somatree.SomaTreeCheck, error) {
+	treechk := &somatree.SomaTreeCheck{
+		Inheritance:  chk.Inheritance,
+		ChildrenOnly: chk.ChildrenOnly,
+		Interval:     chk.Interval,
+	}
+	treechk.Id = uuid.NewV4()
+	treechk.ConfigId, _ = uuid.FromString(chk.Id)
+	treechk.CapabilityId, _ = uuid.FromString(chk.CapabilityId)
+	treechk.Thresholds = make([]somatree.SomaTreeCheckThreshold, len(chk.Thresholds))
+	treechk.Constraints = make([]somatree.SomaTreeCheckConstraint, len(chk.Constraints))
+
+	if err := tk.get_view.QueryRow(chk.CapabilityId).Scan(&treechk.View); err != nil {
+		return &somatree.SomaTreeCheck{}, err
+	}
+
+	for i, thr := range chk.Thresholds {
+		nthr := somatree.SomaTreeCheckThreshold{
+			Predicate: thr.Predicate.Predicate,
+			Level:     uint8(thr.Level.Numeric),
+			Value:     thr.Value,
+		}
+		treechk.Thresholds[i] = nthr
+	}
+
+	for i, constr := range chk.Constraints {
+		ncon := somatree.SomaTreeCheckConstraint{
+			Type: constr.ConstraintType,
+		}
+
+		switch constr.ConstraintType {
+		case "native":
+			ncon.Key = constr.Native.Name
+			ncon.Value = constr.Native.Value
+		case "oncall":
+			ncon.Key = "OncallId"
+			ncon.Value = constr.Oncall.OncallId
+		case "custom":
+			ncon.Key = constr.Custom.CustomId
+			ncon.Value = constr.Custom.Value
+		case "system":
+			ncon.Key = constr.System.Name
+			ncon.Value = constr.System.Value
+		case "service":
+			ncon.Key = "Name"
+			ncon.Value = constr.System.Name
+		case "attribute":
+			ncon.Key = constr.Attribute.Attribute
+			ncon.Value = constr.Attribute.Value
+		}
+
+		treechk.Constraints[i] = ncon
+	}
+	return treechk, nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
