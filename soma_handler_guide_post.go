@@ -203,6 +203,17 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_service_property_to_cluster":
 		bucketId = q.Cluster.Cluster.BucketId
 
+	case "add_check_to_repository":
+		fallthrough
+	case "add_check_to_bucket":
+		fallthrough
+	case "add_check_to_group":
+		fallthrough
+	case "add_check_to_cluster":
+		fallthrough
+	case "add_check_to_node":
+		repoId = q.CheckConfig.CheckConfig.RepositoryId
+
 	case "assign_node":
 		if err = g.node_stmt.QueryRow(q.Node.Node.Id).Scan(
 			&ndAsset,
@@ -414,6 +425,8 @@ func (g *guidePost) process(q *treeRequest) {
 			result.Append(err, &somaClusterResult{})
 		case "node":
 			result.Append(err, &somaNodeResult{})
+		case "check":
+			result.Append(err, &somaCheckConfigResult{})
 		}
 		q.reply <- result
 		return
@@ -442,6 +455,10 @@ func (g *guidePost) process(q *treeRequest) {
 	case "node":
 		result.Append(nil, &somaNodeResult{
 			Node: q.Node.Node,
+		})
+	case "check":
+		result.Append(nil, &somaCheckConfigResult{
+			CheckConfig: q.CheckConfig.CheckConfig,
 		})
 	}
 	q.reply <- result
