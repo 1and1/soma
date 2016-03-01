@@ -22,6 +22,7 @@ type guidePost struct {
 	node_stmt *sql.Stmt
 	serv_stmt *sql.Stmt
 	attr_stmt *sql.Stmt
+	cthr_stmt *sql.Stmt
 }
 
 func (g *guidePost) run() {
@@ -125,6 +126,16 @@ AND    sr.organizational_team_id = $3::uuid;`)
 		log.Fatal("guide/populate-service-attributes: ", err)
 	}
 	defer g.attr_stmt.Close()
+
+	log.Println("Prepare: guide/capability-threshold-lookup")
+	g.cthr_stmt, err = g.conn.Prepare(`
+SELECT threshold_amount
+FROM   soma.monitoring_capabilities
+WHERE  capability_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("guide/capability-threshold-lookup: ", err)
+	}
+	defer g.cthr_stmt.Close()
 
 runloop:
 	for {
@@ -384,6 +395,39 @@ func (g *guidePost) process(q *treeRequest) {
 		case "node":
 			(*q.Node.Node.Properties)[0].Service.Attributes = attrs
 		}
+	}
+
+	// check the check configuration to contain fewer thresholds than
+	// the limit for the capability
+	if strings.Contains(q.Action, "add_check_to_") {
+		var (
+			thrLimit int
+			err      error
+		)
+
+		if err = g.cthr_stmt.QueryRow(q.CheckConfig.CheckConfig.CapabilityId).Scan(&thrLimit); err != nil {
+			goto inputabort
+		}
+		if len(q.CheckConfig.CheckConfig.Thresholds) > thrLimit {
+			err = fmt.Errorf(
+				"Specified %d thresholds exceed limit of %d for capability",
+				len(q.CheckConfig.CheckConfig.Thresholds),
+				thrLimit)
+		}
+
+	inputabort:
+		if err != nil {
+			if err == sql.ErrNoRows {
+				_ = result.SetRequestError(fmt.Errorf(
+					"Capability %s not found",
+					q.CheckConfig.CheckConfig.CapabilityId))
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+
 	}
 
 	// store job in database
