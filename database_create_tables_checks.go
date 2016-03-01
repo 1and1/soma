@@ -53,7 +53,7 @@ create table if not exists soma.check_configurations (
 create table if not exists soma.checks (
     check_id                    uuid            PRIMARY KEY,
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
+    bucket_id                   uuid            REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
     source_check_id             uuid            NOT NULL,
     source_object_type          varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
     source_object_id            uuid            NOT NULL,
