@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 
@@ -72,9 +73,24 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	returnChannel := make(chan somaResult)
-	result := <-returnChannel
+	cReq := somaproto.CheckConfigurationRequest{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
 
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "check",
+		Action:      fmt.Sprintf("add_check_to_%s", cReq.CheckConfiguration.ObjectType),
+		reply:       returnChannel,
+		CheckConfig: somaCheckConfigRequest{
+			action:      "check_configuration_new",
+			CheckConfig: *cReq.CheckConfiguration,
+		},
+	}
+	result := <-returnChannel
 	SendCheckConfigurationReply(&w, &result)
 }
 
