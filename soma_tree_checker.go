@@ -26,6 +26,7 @@ type SomaTreeCheck struct {
 	Inheritance   bool
 	ChildrenOnly  bool
 	CapabilityId  uuid.UUID
+	ConfigId      uuid.UUID
 	View          string
 	Interval      uint64
 	Thresholds    []SomaTreeCheckThreshold
@@ -47,6 +48,7 @@ type SomaTreeCheckConstraint struct {
 type SomaTreeCheckInstance struct {
 	InstanceId            uuid.UUID
 	CheckId               uuid.UUID
+	ConfigId              uuid.UUID
 	Version               uint32
 	ConstraintHash        string
 	ConstraintValHash     string
@@ -71,6 +73,7 @@ func (tc SomaTreeCheck) Clone() SomaTreeCheck {
 	}
 	cl.Id, _ = uuid.FromString(tc.Id.String())
 	cl.InheritedFrom, _ = uuid.FromString(tc.InheritedFrom.String())
+	cl.ConfigId, _ = uuid.FromString(tc.ConfigId.String())
 	cl.Thresholds = make([]SomaTreeCheckThreshold, 0)
 	for _, thr := range tc.Thresholds {
 		t := SomaTreeCheckThreshold{
@@ -103,6 +106,7 @@ func (tci *SomaTreeCheckInstance) Clone() SomaTreeCheckInstance {
 	}
 	cl.InstanceId, _ = uuid.FromString(tci.InstanceId.String())
 	cl.CheckId, _ = uuid.FromString(tci.CheckId.String())
+	cl.ConfigId, _ = uuid.FromString(tci.ConfigId.String())
 	cl.InstanceService, _ = uuid.FromString(tci.InstanceService.String())
 	for k, v := range tci.ConstraintService {
 		t := v
