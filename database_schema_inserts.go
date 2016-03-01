@@ -103,7 +103,12 @@ VALUES
     ( 'add_system_property_to_node' ),
     ( 'add_custom_property_to_node' ),
     ( 'add_oncall_property_to_node' ),
-    ( 'add_service_property_to_node' )
+    ( 'add_service_property_to_node' ),
+    ( 'add_check_to_repository' ),
+    ( 'add_check_to_bucket' ),
+    ( 'add_check_to_group' ),
+    ( 'add_check_to_cluster' ),
+    ( 'add_check_to_node' )
 ;`
 	queries[idx] = "insertJobTypes"
 	idx++
