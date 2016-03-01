@@ -7,6 +7,7 @@ import (
 
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/satori/go.uuid"
 )
 
 /* Read functions
@@ -78,6 +79,7 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 		DispatchBadRequest(&w, err)
 		return
 	}
+	cReq.CheckConfiguration.Id = uuid.Nil.String()
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(guidePost)
