@@ -1,11 +1,11 @@
 package main
 
-var stmtBucketList = `
+const stmtBucketList = `
 SELECT bucket_id,
        bucket_name
 FROM   soma.buckets;`
 
-var stmtBucketShow = `
+const stmtBucketShow = `
 SELECT bucket_id,
        bucket_name,
        bucket_frozen,

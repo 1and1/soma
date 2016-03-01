@@ -4,18 +4,18 @@ package main
  * Statements for NODE actions
  */
 
-var tkStmtUpdateNodeState = `
+const tkStmtUpdateNodeState = `
 UPDATE soma.nodes
 SET    object_state = $2::varchar
 WHERE  node_id = $1::uuid;`
 
-var tkStmtNodeUnassignFromBucket = `
+const tkStmtNodeUnassignFromBucket = `
 DELETE FROM soma.node_bucket_assignment
 WHERE       node_id = $1::uuid
 AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`
 
-var tkStmtNodePropertyOncallCreate = `
+const tkStmtNodePropertyOncallCreate = `
 INSERT INTO soma.node_oncall_property (
             instance_id,
             source_instance_id,
@@ -34,7 +34,7 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-var tkStmtNodePropertyServiceCreate = `
+const tkStmtNodePropertyServiceCreate = `
 INSERT INTO soma.node_service_properties (
             instance_id,
             source_instance_id,
@@ -55,7 +55,7 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-var tkStmtNodePropertySystemCreate = `
+const tkStmtNodePropertySystemCreate = `
 INSERT INTO soma.node_system_properties (
             instance_id,
             source_instance_id,
@@ -80,7 +80,7 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-var tkStmtNodePropertyCustomCreate = `
+const tkStmtNodePropertyCustomCreate = `
 INSERT INTO soma.node_custom_properties (
             instance_id,
             source_instance_id,

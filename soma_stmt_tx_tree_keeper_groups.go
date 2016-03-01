@@ -4,7 +4,7 @@ package main
  * Statements for GROUP actions
  */
 
-var tkStmtGroupCreate = `
+const tkStmtGroupCreate = `
 INSERT INTO soma.groups (
             group_id,
             bucket_id,
@@ -17,16 +17,16 @@ SELECT $1::uuid,
        $4::varchar,
        $5::uuid;`
 
-var tkStmtGroupUpdate = `
+const tkStmtGroupUpdate = `
 UPDATE soma.groups
 SET    object_state = $2::varchar
 WHERE  group_id = $1::uuid;`
 
-var tkStmtGroupDelete = `
+const tkStmtGroupDelete = `
 DELETE FROM soma.groups
 WHERE       group_id = $1::uuid;`
 
-var tkStmtGroupMemberNewNode = `
+const tkStmtGroupMemberNewNode = `
 INSERT INTO soma.group_membership_nodes (
             group_id,
             child_node_id,
@@ -35,7 +35,7 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-var tkStmtGroupMemberNewCluster = `
+const tkStmtGroupMemberNewCluster = `
 INSERT INTO soma.group_membership_clusters (
             group_id,
             child_cluster_id,
@@ -44,7 +44,7 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-var tkStmtGroupMemberNewGroup = `
+const tkStmtGroupMemberNewGroup = `
 INSERT INTO soma.group_membership_groups (
             group_id,
             child_group_id,
@@ -53,22 +53,22 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-var tkStmtGroupMemberRemoveNode = `
+const tkStmtGroupMemberRemoveNode = `
 DELETE FROM soma.group_membership_nodes
 WHERE       group_id = $1::uuid
 AND         child_node_id = $2::uuid;`
 
-var tkStmtGroupMemberRemoveCluster = `
+const tkStmtGroupMemberRemoveCluster = `
 DELETE FROM soma.group_membership_clusters
 WHERE       group_id = $1::uuid
 AND         child_cluster_id = $2::uuid;`
 
-var tkStmtGroupMemberRemoveGroup = `
+const tkStmtGroupMemberRemoveGroup = `
 DELETE FROM soma.group_membership_groups
 WHERE       group_id = $1::uuid
 AND         child_group_id = $2::uuid;`
 
-var tkStmtGroupPropertyOncallCreate = `
+const tkStmtGroupPropertyOncallCreate = `
 INSERT INTO soma.group_oncall_properties (
             instance_id,
             source_instance_id,
@@ -87,7 +87,7 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-var tkStmtGroupPropertyServiceCreate = `
+const tkStmtGroupPropertyServiceCreate = `
 INSERT INTO soma.group_service_properties (
             instance_id,
             source_instance_id,
@@ -108,7 +108,7 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-var tkStmtGroupPropertySystemCreate = `
+const tkStmtGroupPropertySystemCreate = `
 INSERT INTO soma.group_system_properties (
             instance_id,
             source_instance_id,
@@ -133,7 +133,7 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-var tkStmtGroupPropertyCustomCreate = `
+const tkStmtGroupPropertyCustomCreate = `
 INSERT INTO soma.group_custom_properties (
             instance_id,
             source_instance_id,

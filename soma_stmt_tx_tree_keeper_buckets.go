@@ -4,7 +4,7 @@ package main
  * Statements for BUCKET actions
  */
 
-var tkStmtCreateBucket = `
+const tkStmtCreateBucket = `
 INSERT INTO soma.buckets (
             bucket_id,
             bucket_name,
@@ -21,7 +21,7 @@ SELECT $1::uuid,
        $6::varchar,
        $7::uuid;`
 
-var tkStmtBucketAssignNode = `
+const tkStmtBucketAssignNode = `
 INSERT INTO soma.node_bucket_assignment (
             node_id,
             bucket_id,
@@ -30,13 +30,13 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-var tkStmtBucketRemoveNode = `
+const tkStmtBucketRemoveNode = `
 DELETE FROM soma.node_bucket_assignment (
 WHERE       node_id = $1::uuid
 AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`
 
-var tkStmtBucketPropertyOncallCreate = `
+const tkStmtBucketPropertyOncallCreate = `
 INSERT INTO soma.bucket_oncall_properties (
             instance_id,
             source_instance_id,
@@ -55,7 +55,7 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-var tkStmtBucketPropertyServiceCreate = `
+const tkStmtBucketPropertyServiceCreate = `
 INSERT INTO soma.bucket_service_properties (
             instance_id,
             source_instance_id,
@@ -76,7 +76,7 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-var tkStmtBucketPropertySystemCreate = `
+const tkStmtBucketPropertySystemCreate = `
 INSERT INTO soma.bucket_system_properties (
             instance_id,
             source_instance_id,
@@ -101,7 +101,7 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-var tkStmtBucketPropertyCustomCreate = `
+const tkStmtBucketPropertyCustomCreate = `
 INSERT INTO soma.bucket_custom_properties (
             instance_id,
             source_instance_id,

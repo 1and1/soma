@@ -4,7 +4,7 @@ package main
  * Statements for REPOSITORY actions
  */
 
-var tkStmtRepositoryPropertyOncallCreate = `
+const tkStmtRepositoryPropertyOncallCreate = `
 INSERT INTO soma.repository_oncall_properties (
             instance_id,
             source_instance_id,
@@ -21,7 +21,7 @@ SELECT $1::uuid,
        $6::boolean,
        $7::boolean;`
 
-var tkStmtRepositoryPropertyServiceCreate = `
+const tkStmtRepositoryPropertyServiceCreate = `
 INSERT INTO soma.repository_service_properties (
             instance_id,
             source_instance_id,
@@ -40,7 +40,7 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-var tkStmtRepositoryPropertySystemCreate = `
+const tkStmtRepositoryPropertySystemCreate = `
 INSERT INTO soma.repository_system_properties (
             instance_id,
             source_instance_id,
@@ -63,7 +63,7 @@ SELECT $1::uuid,
        $9::text,
        $10::boolean;`
 
-var tkStmtRepositoryPropertyCustomCreate = `
+const tkStmtRepositoryPropertyCustomCreate = `
 INSERT INTO soma.repository_custom_properties (
             instance_id,
             source_instance_id,

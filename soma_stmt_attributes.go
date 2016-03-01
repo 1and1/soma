@@ -1,15 +1,15 @@
 package main
 
-var stmtAttributeList = `
+const stmtAttributeList = `
 SELECT service_property_attribute
 FROM   soma.service_property_attributes;`
 
-var stmtAttributeShow = `
+const stmtAttributeShow = `
 SELECT service_property_attribute
 FROM   soma.service_property_attributes
 WHERE  service_property_attribute = $1::varchar;`
 
-var stmtAttributeAdd = `
+const stmtAttributeAdd = `
 INSERT INTO soma.service_property_attributes (
             service_property_attribute)
 SELECT $1::varchar WHERE NOT EXISTS (
@@ -17,7 +17,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
        FROM   soma.service_property_attributes
        WHERE  service_property_attribute = $1::varchar);`
 
-var stmtAttributeDelete = `
+const stmtAttributeDelete = `
 DELETE FROM soma.service_property_attributes
 WHERE       service_property_attribute = $1::varchar;`
 

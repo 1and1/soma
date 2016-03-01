@@ -1,6 +1,6 @@
 package main
 
-var tkStmtPropertyInstanceCreate = `
+const tkStmtPropertyInstanceCreate = `
 INSERT INTO soma.property_instances (
             instance_id,
             repository_id,
@@ -17,7 +17,7 @@ SELECT $1::uuid,
  * Statements for job state updates
  */
 
-var tkStmtFinishJob = `
+const tkStmtFinishJob = `
 UPDATE soma.jobs
 SET    job_finished = $2::timestamptz,
        job_status = 'processed',
@@ -28,7 +28,7 @@ WHERE  job_id = $1::uuid;`
  * Referential integrity hacking
  */
 
-var tkStmtDeferAllConstraints = `
+const tkStmtDeferAllConstraints = `
 SET CONSTRAINTS ALL DEFERRED;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

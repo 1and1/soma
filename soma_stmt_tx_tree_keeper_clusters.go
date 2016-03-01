@@ -4,7 +4,7 @@ package main
  * Statements for CLUSTER actions
  */
 
-var tkStmtClusterCreate = `
+const tkStmtClusterCreate = `
 INSERT INTO soma.clusters (
             cluster_id,
             cluster_name,
@@ -17,16 +17,16 @@ SELECT $1::uuid,
        $4::varchar,
        $5::uuid;`
 
-var tkStmtClusterUpdate = `
+const tkStmtClusterUpdate = `
 UPDATE soma.clusters
 SET    object_state = $2::varchar
 WHERE  cluster_id = $1::uuid;`
 
-var tkStmtClusterDelete = `
+const tkStmtClusterDelete = `
 DELETE FROM soma.clusters
 WHERE       cluster_id = $1::uuid;`
 
-var tkStmtClusterMemberNew = `
+const tkStmtClusterMemberNew = `
 INSERT INTO soma.cluster_membership (
             cluster_id,
             node_id,
@@ -35,12 +35,12 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-var tkStmtClusterMemberRemove = `
+const tkStmtClusterMemberRemove = `
 DELETE FROM soma.cluster_membership
 WHERE       cluster_id = $1::uuid
 AND         node_id = $2::uuid;`
 
-var tkStmtClusterPropertyOncallCreate = `
+const tkStmtClusterPropertyOncallCreate = `
 INSERT INTO soma.cluster_oncall_properties (
             instance_id,
             source_instance_id,
@@ -59,7 +59,7 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-var tkStmtClusterPropertyServiceCreate = `
+const tkStmtClusterPropertyServiceCreate = `
 INSERT INTO soma.cluster_service_properties (
             instance_id,
             source_instance_id,
@@ -80,7 +80,7 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-var tkStmtClusterPropertySystemCreate = `
+const tkStmtClusterPropertySystemCreate = `
 INSERT INTO soma.cluster_system_properties (
             instance_id,
             source_instance_id,
@@ -105,7 +105,7 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-var tkStmtClusterPropertyCustomCreate = `
+const tkStmtClusterPropertyCustomCreate = `
 INSERT INTO soma.cluster_custom_properties (
             instance_id,
             source_instance_id,

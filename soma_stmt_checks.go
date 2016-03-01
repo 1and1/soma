@@ -1,6 +1,6 @@
 package main
 
-var stmtCheckConfigList = `
+const stmtCheckConfigList = `
 SELECT configuration_id,
        repository_id,
        bucket_id,
@@ -8,7 +8,7 @@ SELECT configuration_id,
 FROM   soma.check_configurations
 WHERE  repository_id = $1::uuid;`
 
-var stmtCheckConfigShowBase = `
+const stmtCheckConfigShowBase = `
 SELECT configuration_id,
        repository_id,
        bucket_id,
@@ -25,7 +25,7 @@ SELECT configuration_id,
 FROM   soma.check_configurations
 WHERE  configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowThreshold = `
+const stmtCheckConfigShowThreshold = `
 SELECT scc.configuration_id,
        sct.predicate,
 	   sct.threshold,
@@ -39,7 +39,7 @@ JOIN   soma.notification_levels snl
 ON     sct.notification_level = snl.level_name
 WHERE  scc.configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowConstrCustom = `
+const stmtCheckConfigShowConstrCustom = `
 SELECT scc.configuration_id,
 	   sccp.custom_property_id,
 	   sccp.repository_id,
@@ -53,7 +53,7 @@ ON     sccp.custom_property_id = scp.custom_property_id
 AND    sccp.repository_id = scp.repository_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowConstrSystem = `
+const stmtCheckConfigShowConstrSystem = `
 SELECT scc.configuration_id,
        scsp.system_property,
 	   scsp.property_value
@@ -62,7 +62,7 @@ JOIN   soma.constraints_system_property scsp
 ON     scc.configuration_id = scsp.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowConstrNative = `
+const stmtCheckConfigShowConstrNative = `
 SELECT scc.configuration_id,
        scnp.native_property,
 	   scnp.property_value
@@ -71,7 +71,7 @@ JOIN   soma.constraints_native_property scnp
 ON     scc.configuration_id = scnp.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowConstrService = `
+const stmtCheckConfigShowConstrService = `
 SELECT scc.configuration_id,
        scsvp.organizational_team_id,
 	   scsvp.service_property
@@ -80,7 +80,7 @@ JOIN   soma.constraints_service_property scsvp
 ON     scc.configuration_id = scsvp.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowConstrAttribute = `
+const stmtCheckConfigShowConstrAttribute = `
 SELECT scc.configuration_id,
        scsa.service_property_attribute,
 	   scsa.attribute_value
@@ -89,7 +89,7 @@ JOIN   soma.constraints_service_attribute scsa
 ON     scc.configuration_id = scsa.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-var stmtCheckConfigShowConstrOncall = `
+const stmtCheckConfigShowConstrOncall = `
 SELECT scc.configuration_id,
        scop.oncall_duty_id,
 	   iodt.oncall_duty_name,
