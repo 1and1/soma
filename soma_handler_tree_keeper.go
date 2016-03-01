@@ -20,6 +20,7 @@ type treeRequest struct {
 	Group       somaGroupRequest
 	Cluster     somaClusterRequest
 	Node        somaNodeRequest
+	CheckConfig somaCheckConfigRequest
 }
 
 type treeResult struct {
