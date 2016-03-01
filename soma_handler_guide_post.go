@@ -406,7 +406,7 @@ func (g *guidePost) process(q *treeRequest) {
 		)
 
 		if err = g.cthr_stmt.QueryRow(q.CheckConfig.CheckConfig.CapabilityId).Scan(&thrLimit); err != nil {
-			goto inputabort
+			goto validateabort
 		}
 		if len(q.CheckConfig.CheckConfig.Thresholds) > thrLimit {
 			err = fmt.Errorf(
@@ -415,7 +415,7 @@ func (g *guidePost) process(q *treeRequest) {
 				thrLimit)
 		}
 
-	inputabort:
+	validateabort:
 		if err != nil {
 			if err == sql.ErrNoRows {
 				_ = result.SetRequestError(fmt.Errorf(
@@ -428,6 +428,8 @@ func (g *guidePost) process(q *treeRequest) {
 			return
 		}
 
+		// generate configuration_id
+		q.CheckConfig.CheckConfig.Id = uuid.NewV4().String()
 	}
 
 	// store job in database
