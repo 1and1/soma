@@ -98,4 +98,27 @@ SELECT $1::uuid,
        $2::varchar,
        $3::varchar;`
 
+const tkStmtCreateCheck = `
+INSERT INTO soma.checks (
+            check_id,
+            repository_id,
+            bucket_id,
+            source_check_id,
+            source_object_type,
+            source_object_id,
+            configuration_id,
+            capability_id,
+            object_id,
+            object_type)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid,
+       $4::uuid,
+       $5::varchar,
+       $6::uuid,
+       $7::uuid,
+       $8::uuid,
+       $9::uuid,
+       $10::varchar;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

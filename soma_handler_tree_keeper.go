@@ -164,6 +164,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		txStmtCreateCheckConfigurationConstraintCustom    *sql.Stmt
 		txStmtCreateCheckConfigurationConstraintService   *sql.Stmt
 		txStmtCreateCheckConfigurationConstraintAttribute *sql.Stmt
+		txStmtCreateCheck                                 *sql.Stmt
 	)
 	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 	if err != nil {
@@ -666,6 +667,11 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	}
 	defer txStmtCreateCheckConfigurationConstraintAttribute.Close()
 
+	if txStmtCreateCheck, err = tx.Prepare(tkStmtCreateCheck); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheck.Close()
+
 	//
 	// REPOSITORY
 	if txStmtRepositoryPropertyOncallCreate, err = tx.Prepare(tkStmtRepositoryPropertyOncallCreate); err != nil {
@@ -1051,6 +1057,21 @@ actionloop:
 						break actionloop
 					}
 				}
+			case "check_new":
+				if _, err = txStmtCreateCheck.Exec(
+					a.Check.CheckId,
+					a.Check.RepositoryId,
+					sql.NullString{String: "", Valid: false},
+					a.Check.SourceCheckId,
+					a.Check.SourceType,
+					a.Check.InheritedFrom,
+					a.Check.CheckConfigId,
+					a.Check.CapabilityId,
+					a.Repository.Id,
+					"repository",
+				); err != nil {
+					break actionloop
+				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1147,6 +1168,21 @@ actionloop:
 					); err != nil {
 						break actionloop
 					}
+				}
+			case "check_new":
+				if _, err = txStmtCreateCheck.Exec(
+					a.Check.CheckId,
+					a.Check.RepositoryId,
+					a.Check.BucketId,
+					a.Check.SourceCheckId,
+					a.Check.SourceType,
+					a.Check.InheritedFrom,
+					a.Check.CheckConfigId,
+					a.Check.CapabilityId,
+					a.Bucket.Id,
+					"bucket",
+				); err != nil {
+					break actionloop
 				}
 			default:
 				jB, _ := json.Marshal(a)
@@ -1302,6 +1338,21 @@ actionloop:
 						break actionloop
 					}
 				}
+			case "check_new":
+				if _, err = txStmtCreateCheck.Exec(
+					a.Check.CheckId,
+					a.Check.RepositoryId,
+					a.Check.BucketId,
+					a.Check.SourceCheckId,
+					a.Check.SourceType,
+					a.Check.InheritedFrom,
+					a.Check.CheckConfigId,
+					a.Check.CapabilityId,
+					a.Group.Id,
+					"group",
+				); err != nil {
+					break actionloop
+				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1419,6 +1470,21 @@ actionloop:
 						break actionloop
 					}
 				}
+			case "check_new":
+				if _, err = txStmtCreateCheck.Exec(
+					a.Check.CheckId,
+					a.Check.RepositoryId,
+					a.Check.BucketId,
+					a.Check.SourceCheckId,
+					a.Check.SourceType,
+					a.Check.InheritedFrom,
+					a.Check.CheckConfigId,
+					a.Check.CapabilityId,
+					a.Cluster.Id,
+					"cluster",
+				); err != nil {
+					break actionloop
+				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1512,6 +1578,21 @@ actionloop:
 					); err != nil {
 						break actionloop
 					}
+				}
+			case "check_new":
+				if _, err = txStmtCreateCheck.Exec(
+					a.Check.CheckId,
+					a.Check.RepositoryId,
+					a.Check.BucketId,
+					a.Check.SourceCheckId,
+					a.Check.SourceType,
+					a.Check.InheritedFrom,
+					a.Check.CheckConfigId,
+					a.Check.CapabilityId,
+					a.Node.Id,
+					"node",
+				); err != nil {
+					break actionloop
 				}
 			default:
 				jB, _ := json.Marshal(a)
