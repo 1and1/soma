@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"sync"
 
+
 	"github.com/satori/go.uuid"
 )
 
@@ -210,11 +211,21 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 	wg.Wait()
 }
 
+func (ter *SomaTreeElemRepository) export() somaproto.ProtoRepository {
+	return somaproto.ProtoRepository{
+		Id:        ter.Id.String(),
+		Name:      ter.Name,
+		Team:      ter.Team.String(),
+		IsDeleted: ter.Deleted,
+		IsActive:  ter.Active,
+	}
+}
+
 //
 func (ter *SomaTreeElemRepository) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = ter.Type
-	a.Group = ter.export()
+	a.Repository = ter.export()
 
 	ter.Action <- &a
 }

@@ -3,6 +3,7 @@ package somatree
 import (
 	"fmt"
 
+
 	"github.com/satori/go.uuid"
 )
 
@@ -157,11 +158,23 @@ func (teb *SomaTreeElemBucket) GetRepository() string {
 	return teb.Repository.String()
 }
 
+func (teb *SomaTreeElemBucket) export() somaproto.ProtoBucket {
+	return somaproto.ProtoBucket{
+		Id:          teb.Id.String(),
+		Name:        teb.Name,
+		Repository:  teb.Repository.String(),
+		Team:        teb.Team.String(),
+		Environment: teb.Environment,
+		IsDeleted:   teb.Deleted,
+		IsFrozen:    teb.Frozen,
+	}
+}
+
 //
 func (teb *SomaTreeElemBucket) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = teb.Type
-	a.Group = teb.export()
+	a.Bucket = teb.export()
 
 	teb.Action <- &a
 }

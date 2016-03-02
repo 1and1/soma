@@ -349,10 +349,10 @@ func (tec *SomaTreeElemCluster) setupPropertyAction(p SomaTreeProperty) Action {
 //
 func (tec *SomaTreeElemCluster) actionCheckNew(a Action) {
 	a.Action = "check_new"
-	a.Type = teg.Type
-	a.Cluster = teg.export()
+	a.Type = tec.Type
+	a.Cluster = tec.export()
 
-	teg.Action <- &a
+	tec.Action <- &a
 }
 
 func (tec *SomaTreeElemCluster) setupCheckAction(c Check) Action {

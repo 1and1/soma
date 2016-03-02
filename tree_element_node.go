@@ -301,7 +301,7 @@ func (ten *SomaTreeElemNode) setupPropertyAction(p SomaTreeProperty) Action {
 func (ten *SomaTreeElemNode) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = ten.Type
-	a.Group = ten.export()
+	a.Node = ten.export()
 
 	ten.Action <- &a
 }
