@@ -23,9 +23,9 @@ func (teg *SomaTreeElemGroup) ReAttach(a AttachRequest) {
 		panic(`SomaTreeElemGroup.ReAttach: not attached`)
 	}
 	teg.Parent.Unlink(UnlinkRequest{
-		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
-		ParentName: teg.Parent.(SomaTreeBuilder).GetName(),
-		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
+		ParentType: teg.Parent.(Builder).GetType(),
+		ParentName: teg.Parent.(Builder).GetName(),
+		ParentId:   teg.Parent.(Builder).GetID(),
 		ChildType:  teg.GetType(),
 		ChildName:  teg.GetName(),
 		ChildId:    teg.GetID(),
@@ -64,9 +64,9 @@ func (teg *SomaTreeElemGroup) Destroy() {
 	teg.actionDelete()
 
 	teg.Parent.Unlink(UnlinkRequest{
-		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: teg.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: teg.Parent.(Builder).GetType(),
+		ParentId:   teg.Parent.(Builder).GetID(),
+		ParentName: teg.Parent.(Builder).GetName(),
 		ChildType:  teg.GetType(),
 		ChildName:  teg.GetName(),
 		ChildId:    teg.GetID(),
@@ -81,12 +81,12 @@ func (teg *SomaTreeElemGroup) Detach() {
 	if teg.Parent == nil {
 		panic(`SomaTreeElemGroup.Destroy called without Parent to detach from`)
 	}
-	bucket := teg.Parent.(SomaTreeBucketeer).GetBucket()
+	bucket := teg.Parent.(Bucketeer).GetBucket()
 
 	teg.Parent.Unlink(UnlinkRequest{
-		ParentType: teg.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   teg.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: teg.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: teg.Parent.(Builder).GetType(),
+		ParentId:   teg.Parent.(Builder).GetID(),
+		ParentName: teg.Parent.(Builder).GetName(),
 		ChildType:  teg.GetType(),
 		ChildName:  teg.GetName(),
 		ChildId:    teg.GetID(),
@@ -94,9 +94,9 @@ func (teg *SomaTreeElemGroup) Detach() {
 	)
 
 	bucket.Receive(ReceiveRequest{
-		ParentType: bucket.(SomaTreeBuilder).GetType(),
-		ParentId:   bucket.(SomaTreeBuilder).GetID(),
-		ParentName: bucket.(SomaTreeBuilder).GetName(),
+		ParentType: bucket.(Builder).GetType(),
+		ParentId:   bucket.(Builder).GetID(),
+		ParentName: bucket.(Builder).GetName(),
 		ChildType:  teg.Type,
 		Group:      teg,
 	},

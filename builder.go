@@ -1,6 +1,6 @@
 package somatree
 
-type SomaTreeBuilder interface {
+type Builder interface {
 	GetID() string
 	GetName() string
 	GetType() string

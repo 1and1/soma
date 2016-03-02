@@ -18,7 +18,7 @@ func (teg *SomaTreeElemGroup) Unlink(u UnlinkRequest) {
 	}
 loop:
 	for child, _ := range teg.Children {
-		if teg.Children[child].(SomaTreeBuilder).GetType() == "node" {
+		if teg.Children[child].(Builder).GetType() == "node" {
 			continue loop
 		}
 		teg.Children[child].(SomaTreeUnlinker).Unlink(u)

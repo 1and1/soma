@@ -25,9 +25,9 @@ func (teb *SomaTreeElemBucket) Destroy() {
 	}
 
 	teb.Parent.Unlink(UnlinkRequest{
-		ParentType: teb.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   teb.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: teb.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: teb.Parent.(Builder).GetType(),
+		ParentId:   teb.Parent.(Builder).GetID(),
+		ParentName: teb.Parent.(Builder).GetName(),
 		ChildType:  teb.GetType(),
 		ChildName:  teb.GetName(),
 		ChildId:    teb.GetID(),

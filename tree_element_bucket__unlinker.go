@@ -18,7 +18,7 @@ func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
 	}
 loop:
 	for child, _ := range teb.Children {
-		if teb.Children[child].(SomaTreeBuilder).GetType() == "node" {
+		if teb.Children[child].(Builder).GetType() == "node" {
 			continue loop
 		}
 		teb.Children[child].(SomaTreeUnlinker).Unlink(u)

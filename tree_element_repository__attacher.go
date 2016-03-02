@@ -25,9 +25,9 @@ func (ter *SomaTreeElemRepository) Destroy() {
 	ter.Fault.Destroy()
 
 	ter.Parent.Unlink(UnlinkRequest{
-		ParentType: ter.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   ter.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: ter.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: ter.Parent.(Builder).GetType(),
+		ParentId:   ter.Parent.(Builder).GetID(),
+		ParentName: ter.Parent.(Builder).GetName(),
 		ChildType:  ter.GetType(),
 		ChildName:  ter.GetName(),
 		ChildId:    ter.GetID(),

@@ -203,7 +203,7 @@ func (ten *SomaTreeElemNode) evalNativeProp(
 	prop string, val string) bool {
 	switch prop {
 	case "environment":
-		env := ten.Parent.(SomaTreeBucketeer).GetEnvironment()
+		env := ten.Parent.(Bucketeer).GetEnvironment()
 		if val == env {
 			return true
 		}

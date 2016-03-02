@@ -1,6 +1,6 @@
 package somatree
 
-type SomaTreeBucketeer interface {
+type Bucketeer interface {
 	GetBucket() SomaTreeReceiver
 	GetEnvironment() string
 	GetRepository() string

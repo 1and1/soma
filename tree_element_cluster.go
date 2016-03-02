@@ -131,7 +131,7 @@ func (tec SomaTreeElemCluster) CloneGroup() SomaTreeGroupAttacher {
 }
 
 //
-// Interface: SomaTreeBuilder
+// Interface: Builder
 func (tec *SomaTreeElemCluster) GetID() string {
 	return tec.Id.String()
 }
@@ -212,7 +212,7 @@ func (tec *SomaTreeElemCluster) updateFaultRecursive(f *SomaTreeElemFault) {
 }
 
 //
-// Interface: SomaTreeBucketeer
+// Interface: Bucketeer
 func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 	if tec.Parent == nil {
 		if tec.Fault == nil {
@@ -221,25 +221,25 @@ func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 			return tec.Fault
 		}
 	}
-	return tec.Parent.(SomaTreeBucketeer).GetBucket()
+	return tec.Parent.(Bucketeer).GetBucket()
 }
 
 func (tec *SomaTreeElemCluster) GetRepository() string {
-	return tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository()
+	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 }
 
 func (tec *SomaTreeElemCluster) GetEnvironment() string {
-	return tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetEnvironment()
+	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetEnvironment()
 }
 
 //
 //
 func (tec *SomaTreeElemCluster) export() somaproto.ProtoCluster {
-	bucket := tec.Parent.(SomaTreeBucketeer).GetBucket()
+	bucket := tec.Parent.(Bucketeer).GetBucket()
 	return somaproto.ProtoCluster{
 		Id:          tec.Id.String(),
 		Name:        tec.Name,
-		BucketId:    bucket.(SomaTreeBuilder).GetID(),
+		BucketId:    bucket.(Builder).GetID(),
 		ObjectState: tec.State,
 		TeamId:      tec.Team.String(),
 	}
@@ -306,8 +306,8 @@ func (tec *SomaTreeElemCluster) setupPropertyAction(p SomaTreeProperty) Action {
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			RepositoryId:     tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository(),
-			BucketId:         tec.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+			RepositoryId:     tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository(),
+			BucketId:         tec.Parent.(Bucketeer).GetBucket().(Builder).GetID(),
 		},
 	}
 	switch a.Property.PropertyType {

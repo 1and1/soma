@@ -204,7 +204,7 @@ func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
 }
 
 func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
+	bucket := ten.Parent.(Bucketeer).GetBucket()
 	return somaproto.ProtoNode{
 		Id:        ten.Id.String(),
 		AssetId:   ten.AssetId,
@@ -215,7 +215,7 @@ func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
 		IsOnline:  ten.Online,
 		IsDeleted: ten.Deleted,
 		Config: &somaproto.ProtoNodeConfig{
-			BucketId: bucket.(SomaTreeBuilder).GetID(),
+			BucketId: bucket.(Builder).GetID(),
 		},
 	}
 }
@@ -257,8 +257,8 @@ func (ten *SomaTreeElemNode) setupPropertyAction(p SomaTreeProperty) Action {
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			RepositoryId:     ten.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository(),
-			BucketId:         ten.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+			RepositoryId:     ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository(),
+			BucketId:         ten.Parent.(Bucketeer).GetBucket().(Builder).GetID(),
 		},
 	}
 	switch a.Property.PropertyType {

@@ -20,9 +20,9 @@ func (tef *SomaTreeElemFault) Destroy() {
 	tef.Parent.(SomaTreeAttacher).updateFaultRecursive(nil)
 
 	tef.Parent.Unlink(UnlinkRequest{
-		ParentType: tef.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   tef.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: tef.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: tef.Parent.(Builder).GetType(),
+		ParentId:   tef.Parent.(Builder).GetID(),
+		ParentName: tef.Parent.(Builder).GetName(),
 		ChildType:  tef.GetType(),
 		ChildName:  tef.GetName(),
 		ChildId:    tef.GetID(),

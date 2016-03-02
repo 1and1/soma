@@ -206,7 +206,7 @@ func (teg *SomaTreeElemGroup) evalNativeProp(
 	prop string, val string) bool {
 	switch prop {
 	case "environment":
-		env := teg.Parent.(SomaTreeBucketeer).GetEnvironment()
+		env := teg.Parent.(Bucketeer).GetEnvironment()
 		if val == env {
 			return true
 		}

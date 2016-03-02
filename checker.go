@@ -19,6 +19,20 @@ type Checker interface {
 	checkCheck(checkId string) bool
 }
 
+type CheckGetter interface {
+	GetCheckId() string
+	GetSourceCheckId() string
+	GetCheckConfigId() string
+	GetSourceType() string
+	GetIsInherited() bool
+	GetInheritedFrom() string
+	GetInheritance() bool
+	GetChildrenOnly() bool
+	GetView() string
+	GetCapabilityId() string
+	GetInterval() uint64
+}
+
 type Check struct {
 	Id            uuid.UUID
 	SourceId      uuid.UUID
@@ -63,6 +77,50 @@ type CheckInstance struct {
 	InstanceServiceConfig map[string]string              // attr->value
 	InstanceService       uuid.UUID
 	InstanceSvcCfgHash    string
+}
+
+func (c *Check) GetCheckId() string {
+	return c.Id.String()
+}
+
+func (c *Check) GetSourceCheckId() string {
+	return c.SourceId.String()
+}
+
+func (c *Check) GetCheckConfigId() string {
+	return c.ConfigId.String()
+}
+
+func (c *Check) GetSourceType() string {
+	return c.SourceType
+}
+
+func (c *Check) GetIsInherited() bool {
+	return c.Inherited
+}
+
+func (c *Check) GetInheritedFrom() string {
+	return c.InheritedFrom.String()
+}
+
+func (c *Check) GetInheritance() bool {
+	return c.Inheritance
+}
+
+func (c *Check) GetChildrenOnly() bool {
+	return c.ChildrenOnly
+}
+
+func (c *Check) GetView() string {
+	return c.View
+}
+
+func (c *Check) GetCapabilityId() string {
+	return c.CapabilityId.String()
+}
+
+func (c *Check) GetInterval() uint64 {
+	return c.Interval
 }
 
 func (tc Check) Clone() Check {

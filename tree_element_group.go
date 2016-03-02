@@ -130,7 +130,7 @@ func (teg SomaTreeElemGroup) CloneGroup() SomaTreeGroupAttacher {
 }
 
 //
-// Interface: SomaTreeBuilder
+// Interface: Builder
 func (teg *SomaTreeElemGroup) GetID() string {
 	return teg.Id.String()
 }
@@ -211,7 +211,7 @@ func (teg *SomaTreeElemGroup) updateFaultRecursive(f *SomaTreeElemFault) {
 }
 
 //
-// Interface: SomaTreeBucketeer
+// Interface: Bucketeer
 func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
 	if teg.Parent == nil {
 		if teg.Fault == nil {
@@ -220,25 +220,25 @@ func (teg *SomaTreeElemGroup) GetBucket() SomaTreeReceiver {
 			return teg.Fault
 		}
 	}
-	return teg.Parent.(SomaTreeBucketeer).GetBucket()
+	return teg.Parent.(Bucketeer).GetBucket()
 }
 
 func (teg *SomaTreeElemGroup) GetRepository() string {
-	return teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository()
+	return teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 }
 
 func (teg *SomaTreeElemGroup) GetEnvironment() string {
-	return teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetEnvironment()
+	return teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetEnvironment()
 }
 
 //
 //
 func (teg *SomaTreeElemGroup) export() somaproto.ProtoGroup {
-	bucket := teg.Parent.(SomaTreeBucketeer).GetBucket()
+	bucket := teg.Parent.(Bucketeer).GetBucket()
 	return somaproto.ProtoGroup{
 		Id:          teg.Id.String(),
 		Name:        teg.Name,
-		BucketId:    bucket.(SomaTreeBuilder).GetID(),
+		BucketId:    bucket.(Builder).GetID(),
 		ObjectState: teg.State,
 		TeamId:      teg.Team.String(),
 	}
@@ -305,8 +305,8 @@ func (teg *SomaTreeElemGroup) setupPropertyAction(p SomaTreeProperty) Action {
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			RepositoryId:     teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBucketeer).GetRepository(),
-			BucketId:         teg.Parent.(SomaTreeBucketeer).GetBucket().(SomaTreeBuilder).GetID(),
+			RepositoryId:     teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository(),
+			BucketId:         teg.Parent.(Bucketeer).GetBucket().(Builder).GetID(),
 		},
 	}
 	switch a.Property.PropertyType {
@@ -342,6 +342,34 @@ func (teg *SomaTreeElemGroup) setupPropertyAction(p SomaTreeProperty) Action {
 			Number:   p.(*PropertyOncall).Number,
 		}
 	}
+	return a
+}
+
+//
+func (teg *SomaTreeElemGroup) actionCheckNew(a Action) {
+	a.Action = "check_new"
+	a.Type = teg.Type
+	a.Group = teg.export()
+
+	teg.Action <- &a
+}
+
+func (teg *SomaTreeElemGroup) setupCheckAction(c Check) Action {
+	a := Action{
+		Check: somaproto.TreeCheck{
+			CheckId:       c.GetCheckId(),
+			SourceCheckId: c.GetSourceCheckId(),
+			CheckConfigId: c.GetCheckConfigId(),
+			SourceType:    c.GetSourceType(),
+			IsInherited:   c.GetIsInherited(),
+			InheritedFrom: c.GetInheritedFrom(),
+			Inheritance:   c.GetInheritance(),
+			ChildrenOnly:  c.GetChildrenOnly(),
+			CapabilityId:  c.GetCapabilityId(),
+		},
+	}
+	a.Check.RepositoryId = teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = teg.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 	return a
 }
 

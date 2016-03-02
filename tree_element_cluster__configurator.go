@@ -206,7 +206,7 @@ func (tec *SomaTreeElemCluster) evalNativeProp(
 	prop string, val string) bool {
 	switch prop {
 	case "environment":
-		env := tec.Parent.(SomaTreeBucketeer).GetEnvironment()
+		env := tec.Parent.(Bucketeer).GetEnvironment()
 		if val == env {
 			return true
 		}

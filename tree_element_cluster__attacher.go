@@ -20,9 +20,9 @@ func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
 		panic(`SomaTreeElemGroup.ReAttach: not attached`)
 	}
 	tec.Parent.Unlink(UnlinkRequest{
-		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
-		ParentName: tec.Parent.(SomaTreeBuilder).GetName(),
-		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
+		ParentType: tec.Parent.(Builder).GetType(),
+		ParentName: tec.Parent.(Builder).GetName(),
+		ParentId:   tec.Parent.(Builder).GetID(),
 		ChildType:  tec.GetType(),
 		ChildName:  tec.GetName(),
 		ChildId:    tec.GetID(),
@@ -61,9 +61,9 @@ func (tec *SomaTreeElemCluster) Destroy() {
 	tec.actionDelete()
 
 	tec.Parent.Unlink(UnlinkRequest{
-		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: tec.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: tec.Parent.(Builder).GetType(),
+		ParentId:   tec.Parent.(Builder).GetID(),
+		ParentName: tec.Parent.(Builder).GetName(),
 		ChildType:  tec.GetType(),
 		ChildName:  tec.GetName(),
 		ChildId:    tec.GetID(),
@@ -78,12 +78,12 @@ func (tec *SomaTreeElemCluster) Detach() {
 	if tec.Parent == nil {
 		panic(`SomaTreeElemCluster.Detach called without Parent to detach from`)
 	}
-	bucket := tec.Parent.(SomaTreeBucketeer).GetBucket()
+	bucket := tec.Parent.(Bucketeer).GetBucket()
 
 	tec.Parent.Unlink(UnlinkRequest{
-		ParentType: tec.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   tec.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: tec.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: tec.Parent.(Builder).GetType(),
+		ParentId:   tec.Parent.(Builder).GetID(),
+		ParentName: tec.Parent.(Builder).GetName(),
 		ChildType:  tec.GetType(),
 		ChildName:  tec.GetName(),
 		ChildId:    tec.GetID(),
@@ -91,9 +91,9 @@ func (tec *SomaTreeElemCluster) Detach() {
 	)
 
 	bucket.Receive(ReceiveRequest{
-		ParentType: bucket.(SomaTreeBuilder).GetType(),
-		ParentId:   bucket.(SomaTreeBuilder).GetID(),
-		ParentName: bucket.(SomaTreeBuilder).GetName(),
+		ParentType: bucket.(Builder).GetType(),
+		ParentId:   bucket.(Builder).GetID(),
+		ParentName: bucket.(Builder).GetName(),
 		ChildType:  tec.Type,
 		Cluster:    tec,
 	},

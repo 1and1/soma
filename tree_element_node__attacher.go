@@ -23,9 +23,9 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 		panic(`SomaTreeElemNode.ReAttach: not attached`)
 	}
 	ten.Parent.Unlink(UnlinkRequest{
-		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
-		ParentName: ten.Parent.(SomaTreeBuilder).GetName(),
-		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
+		ParentType: ten.Parent.(Builder).GetType(),
+		ParentName: ten.Parent.(Builder).GetName(),
+		ParentId:   ten.Parent.(Builder).GetID(),
 		ChildType:  ten.GetType(),
 		ChildName:  ten.GetName(),
 		ChildId:    ten.GetID(),
@@ -50,9 +50,9 @@ func (ten *SomaTreeElemNode) Destroy() {
 	}
 
 	ten.Parent.Unlink(UnlinkRequest{
-		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: ten.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: ten.Parent.(Builder).GetType(),
+		ParentId:   ten.Parent.(Builder).GetID(),
+		ParentName: ten.Parent.(Builder).GetName(),
 		ChildType:  ten.GetType(),
 		ChildName:  ten.GetName(),
 		ChildId:    ten.GetID(),
@@ -70,12 +70,12 @@ func (ten *SomaTreeElemNode) Detach() {
 		panic(`SomaTreeElemNode.Detach called without Parent to detach from`)
 	}
 
-	bucket := ten.Parent.(SomaTreeBucketeer).GetBucket()
+	bucket := ten.Parent.(Bucketeer).GetBucket()
 
 	ten.Parent.Unlink(UnlinkRequest{
-		ParentType: ten.Parent.(SomaTreeBuilder).GetType(),
-		ParentId:   ten.Parent.(SomaTreeBuilder).GetID(),
-		ParentName: ten.Parent.(SomaTreeBuilder).GetName(),
+		ParentType: ten.Parent.(Builder).GetType(),
+		ParentId:   ten.Parent.(Builder).GetID(),
+		ParentName: ten.Parent.(Builder).GetName(),
 		ChildType:  ten.GetType(),
 		ChildName:  ten.GetName(),
 		ChildId:    ten.GetID(),
@@ -83,9 +83,9 @@ func (ten *SomaTreeElemNode) Detach() {
 	)
 
 	bucket.Receive(ReceiveRequest{
-		ParentType: bucket.(SomaTreeBuilder).GetType(),
-		ParentId:   bucket.(SomaTreeBuilder).GetID(),
-		ParentName: bucket.(SomaTreeBuilder).GetName(),
+		ParentType: bucket.(Builder).GetType(),
+		ParentId:   bucket.(Builder).GetID(),
+		ParentName: bucket.(Builder).GetName(),
 		ChildType:  ten.Type,
 		Node:       ten,
 	},
