@@ -22,9 +22,9 @@ type SomaTreeElemCluster struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	Checks          map[string]SomaTreeCheck
+	Checks          map[string]Check
 	CheckInstances  map[string][]string
-	Instances       map[string]SomaTreeCheckInstance
+	Instances       map[string]CheckInstance
 	Children        map[string]SomaTreeClusterAttacher //`json:"-"`
 }
 
@@ -54,7 +54,7 @@ func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
 	tec.PropertyService = make(map[string]SomaTreeProperty)
 	tec.PropertySystem = make(map[string]SomaTreeProperty)
 	tec.PropertyCustom = make(map[string]SomaTreeProperty)
-	tec.Checks = make(map[string]SomaTreeCheck)
+	tec.Checks = make(map[string]Check)
 
 	return tec
 }
@@ -98,13 +98,13 @@ func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
 	}
 	cl.PropertyCustom = pC
 
-	cK := make(map[string]SomaTreeCheck)
+	cK := make(map[string]Check)
 	for k, chk := range tec.Checks {
 		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
 
-	cki := make(map[string]SomaTreeCheckInstance)
+	cki := make(map[string]CheckInstance)
 	for k, chki := range tec.Instances {
 		cki[k] = chki.Clone()
 	}

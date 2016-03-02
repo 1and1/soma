@@ -6,37 +6,37 @@ import (
 )
 
 //
-// Interface: SomaTreeChecker
-func (teb *SomaTreeElemBucket) SetCheck(c SomaTreeCheck) {
+// Interface: Checker
+func (teb *SomaTreeElemBucket) SetCheck(c Check) {
 	c.InheritedFrom = teb.Id
 	c.Inherited = false
 	teb.storeCheck(c)
 
-	f := SomaTreeCheck{}
+	f := Check{}
 	f = c
 	f.Inherited = true
 	teb.inheritCheckDeep(f)
 }
 
-func (teb *SomaTreeElemBucket) inheritCheck(c SomaTreeCheck) {
+func (teb *SomaTreeElemBucket) inheritCheck(c Check) {
 	teb.storeCheck(c)
 	teb.inheritCheckDeep(c)
 }
 
-func (teb *SomaTreeElemBucket) inheritCheckDeep(c SomaTreeCheck) {
+func (teb *SomaTreeElemBucket) inheritCheckDeep(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		ch := child
-		go func(stc SomaTreeCheck) {
+		go func(stc Check) {
 			defer wg.Done()
-			teb.Children[ch].(SomaTreeChecker).inheritCheck(stc)
+			teb.Children[ch].(Checker).inheritCheck(stc)
 		}(c)
 	}
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) storeCheck(c SomaTreeCheck) {
+func (teb *SomaTreeElemBucket) storeCheck(c Check) {
 	teb.Checks[c.Id.String()] = c
 
 	teb.Action <- &Action{
@@ -62,10 +62,10 @@ func (teb *SomaTreeElemBucket) syncCheck(childId string) {
 		if !teb.Checks[check].Inheritance {
 			continue
 		}
-		f := SomaTreeCheck{}
+		f := Check{}
 		f = teb.Checks[check]
 		f.Inherited = true
-		teb.Children[childId].(SomaTreeChecker).inheritCheck(f)
+		teb.Children[childId].(Checker).inheritCheck(f)
 	}
 }
 

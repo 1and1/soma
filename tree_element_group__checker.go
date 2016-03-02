@@ -3,37 +3,37 @@ package somatree
 import "sync"
 
 //
-// Interface: SomaTreeChecker
-func (teg *SomaTreeElemGroup) SetCheck(c SomaTreeCheck) {
+// Interface: Checker
+func (teg *SomaTreeElemGroup) SetCheck(c Check) {
 	c.InheritedFrom = teg.Id
 	c.Inherited = false
 	teg.storeCheck(c)
 
-	f := SomaTreeCheck{}
+	f := Check{}
 	f = c
 	f.Inherited = true
 	teg.inheritCheckDeep(f)
 }
 
-func (teg *SomaTreeElemGroup) inheritCheck(c SomaTreeCheck) {
+func (teg *SomaTreeElemGroup) inheritCheck(c Check) {
 	teg.storeCheck(c)
 	teg.inheritCheckDeep(c)
 }
 
-func (teg *SomaTreeElemGroup) inheritCheckDeep(c SomaTreeCheck) {
+func (teg *SomaTreeElemGroup) inheritCheckDeep(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		ch := child
-		go func(stc SomaTreeCheck) {
+		go func(stc Check) {
 			defer wg.Done()
-			teg.Children[ch].(SomaTreeChecker).inheritCheck(stc)
+			teg.Children[ch].(Checker).inheritCheck(stc)
 		}(c)
 	}
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) storeCheck(c SomaTreeCheck) {
+func (teg *SomaTreeElemGroup) storeCheck(c Check) {
 	teg.Checks[c.Id.String()] = c
 
 	teg.Action <- &Action{
@@ -51,10 +51,10 @@ func (teg *SomaTreeElemGroup) syncCheck(childId string) {
 		if !teg.Checks[check].Inheritance {
 			continue
 		}
-		f := SomaTreeCheck{}
+		f := Check{}
 		f = teg.Checks[check]
 		f.Inherited = true
-		teg.Children[childId].(SomaTreeChecker).inheritCheck(f)
+		teg.Children[childId].(Checker).inheritCheck(f)
 	}
 }
 

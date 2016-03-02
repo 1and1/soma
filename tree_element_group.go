@@ -22,9 +22,9 @@ type SomaTreeElemGroup struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	Checks          map[string]SomaTreeCheck
+	Checks          map[string]Check
 	CheckInstances  map[string][]string
-	Instances       map[string]SomaTreeCheckInstance
+	Instances       map[string]CheckInstance
 	Children        map[string]SomaTreeGroupAttacher //`json:"-"`
 }
 
@@ -54,7 +54,7 @@ func NewGroup(spec GroupSpec) *SomaTreeElemGroup {
 	teg.PropertyService = make(map[string]SomaTreeProperty)
 	teg.PropertySystem = make(map[string]SomaTreeProperty)
 	teg.PropertyCustom = make(map[string]SomaTreeProperty)
-	teg.Checks = make(map[string]SomaTreeCheck)
+	teg.Checks = make(map[string]Check)
 
 	return teg
 }
@@ -97,13 +97,13 @@ func (teg SomaTreeElemGroup) Clone() *SomaTreeElemGroup {
 	}
 	cl.PropertyCustom = pC
 
-	cK := make(map[string]SomaTreeCheck)
+	cK := make(map[string]Check)
 	for k, chk := range teg.Checks {
 		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
 
-	cki := make(map[string]SomaTreeCheckInstance)
+	cki := make(map[string]CheckInstance)
 	for k, chki := range teg.Instances {
 		cki[k] = chki.Clone()
 	}

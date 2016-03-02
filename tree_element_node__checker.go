@@ -1,22 +1,22 @@
 package somatree
 
 //
-// Interface: SomaTreeChecker
-func (ten *SomaTreeElemNode) SetCheck(c SomaTreeCheck) {
+// Interface: Checker
+func (ten *SomaTreeElemNode) SetCheck(c Check) {
 	c.InheritedFrom = ten.Id
 	c.Inherited = false
 	ten.storeCheck(c)
 }
 
-func (ten *SomaTreeElemNode) inheritCheck(c SomaTreeCheck) {
+func (ten *SomaTreeElemNode) inheritCheck(c Check) {
 	ten.storeCheck(c)
 }
 
 // noop, satisfy interface
-func (ten *SomaTreeElemNode) inheritCheckDeep(c SomaTreeCheck) {
+func (ten *SomaTreeElemNode) inheritCheckDeep(c Check) {
 }
 
-func (ten *SomaTreeElemNode) storeCheck(c SomaTreeCheck) {
+func (ten *SomaTreeElemNode) storeCheck(c Check) {
 	ten.Checks[c.Id.String()] = c
 
 	ten.Action <- &Action{

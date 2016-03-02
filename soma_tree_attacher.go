@@ -6,7 +6,7 @@ type SomaTreeAttacher interface {
 	Detach()
 
 	SomaTreePropertier
-	SomaTreeChecker
+	Checker
 
 	clearParent()
 	setFault(f *SomaTreeElemFault)

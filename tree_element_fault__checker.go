@@ -1,17 +1,17 @@
 package somatree
 
 //
-// Interface: SomaTreeChecker
-func (tef *SomaTreeElemFault) SetCheck(c SomaTreeCheck) {
+// Interface: Checker
+func (tef *SomaTreeElemFault) SetCheck(c Check) {
 }
 
-func (tef *SomaTreeElemFault) inheritCheck(c SomaTreeCheck) {
+func (tef *SomaTreeElemFault) inheritCheck(c Check) {
 }
 
-func (tef *SomaTreeElemFault) inheritCheckDeep(c SomaTreeCheck) {
+func (tef *SomaTreeElemFault) inheritCheckDeep(c Check) {
 }
 
-func (tef *SomaTreeElemFault) storeCheck(c SomaTreeCheck) {
+func (tef *SomaTreeElemFault) storeCheck(c Check) {
 }
 
 func (tef *SomaTreeElemFault) syncCheck(childId string) {

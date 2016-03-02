@@ -9,43 +9,45 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeChecker interface {
-	SetCheck(c SomaTreeCheck)
+type Checker interface {
+	SetCheck(c Check)
 
-	inheritCheck(c SomaTreeCheck)
-	inheritCheckDeep(c SomaTreeCheck)
-	storeCheck(c SomaTreeCheck)
+	inheritCheck(c Check)
+	inheritCheckDeep(c Check)
+	storeCheck(c Check)
 	syncCheck(childId string)
 	checkCheck(checkId string) bool
 }
 
-type SomaTreeCheck struct {
+type Check struct {
 	Id            uuid.UUID
+	SourceId      uuid.UUID
+	SourceType    string
 	Inherited     bool
 	InheritedFrom uuid.UUID
-	Inheritance   bool
-	ChildrenOnly  bool
 	CapabilityId  uuid.UUID
 	ConfigId      uuid.UUID
+	Inheritance   bool
+	ChildrenOnly  bool
 	View          string
 	Interval      uint64
-	Thresholds    []SomaTreeCheckThreshold
-	Constraints   []SomaTreeCheckConstraint
+	Thresholds    []CheckThreshold
+	Constraints   []CheckConstraint
 }
 
-type SomaTreeCheckThreshold struct {
+type CheckThreshold struct {
 	Predicate string
 	Level     uint8
 	Value     int64
 }
 
-type SomaTreeCheckConstraint struct {
+type CheckConstraint struct {
 	Type  string
 	Key   string
 	Value string
 }
 
-type SomaTreeCheckInstance struct {
+type CheckInstance struct {
 	InstanceId            uuid.UUID
 	CheckId               uuid.UUID
 	ConfigId              uuid.UUID
@@ -63,8 +65,9 @@ type SomaTreeCheckInstance struct {
 	InstanceSvcCfgHash    string
 }
 
-func (tc SomaTreeCheck) Clone() SomaTreeCheck {
-	cl := SomaTreeCheck{
+func (tc Check) Clone() Check {
+	cl := Check{
+		SourceType:   tc.SourceType,
 		Inherited:    tc.Inherited,
 		Inheritance:  tc.Inheritance,
 		ChildrenOnly: tc.ChildrenOnly,
@@ -72,20 +75,22 @@ func (tc SomaTreeCheck) Clone() SomaTreeCheck {
 		Interval:     tc.Interval,
 	}
 	cl.Id, _ = uuid.FromString(tc.Id.String())
+	cl.SourceId, _ = uuid.FromString(tc.SourceId.String())
 	cl.InheritedFrom, _ = uuid.FromString(tc.InheritedFrom.String())
+	cl.CapabilityId, _ = uuid.FromString(tc.CapabilityId.String())
 	cl.ConfigId, _ = uuid.FromString(tc.ConfigId.String())
-	cl.Thresholds = make([]SomaTreeCheckThreshold, 0)
+	cl.Thresholds = make([]CheckThreshold, 0)
 	for _, thr := range tc.Thresholds {
-		t := SomaTreeCheckThreshold{
+		t := CheckThreshold{
 			Predicate: thr.Predicate,
 			Level:     thr.Level,
 			Value:     thr.Value,
 		}
 		cl.Thresholds = append(cl.Thresholds, t)
 	}
-	cl.Constraints = make([]SomaTreeCheckConstraint, 0)
+	cl.Constraints = make([]CheckConstraint, 0)
 	for _, cstr := range tc.Constraints {
-		c := SomaTreeCheckConstraint{
+		c := CheckConstraint{
 			Type:  cstr.Type,
 			Key:   cstr.Key,
 			Value: cstr.Value,
@@ -96,8 +101,8 @@ func (tc SomaTreeCheck) Clone() SomaTreeCheck {
 	return cl
 }
 
-func (tci *SomaTreeCheckInstance) Clone() SomaTreeCheckInstance {
-	cl := SomaTreeCheckInstance{
+func (tci *CheckInstance) Clone() CheckInstance {
+	cl := CheckInstance{
 		Version:            tci.Version,
 		ConstraintHash:     tci.ConstraintHash,
 		ConstraintValHash:  tci.ConstraintValHash,
@@ -141,7 +146,7 @@ func (tci *SomaTreeCheckInstance) Clone() SomaTreeCheckInstance {
 	return cl
 }
 
-func (tci *SomaTreeCheckInstance) calcConstraintHash() {
+func (tci *CheckInstance) calcConstraintHash() {
 	h := sha512.New()
 	io.WriteString(h, tci.ConstraintOncall)
 
@@ -206,7 +211,7 @@ func (tci *SomaTreeCheckInstance) calcConstraintHash() {
 	tci.ConstraintHash = base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
-func (tci *SomaTreeCheckInstance) calcConstraintValHash() {
+func (tci *CheckInstance) calcConstraintValHash() {
 	h := sha512.New()
 	io.WriteString(h, tci.ConstraintOncall)
 
@@ -281,7 +286,7 @@ func (tci *SomaTreeCheckInstance) calcConstraintValHash() {
 	tci.ConstraintValHash = base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
-func (tci *SomaTreeCheckInstance) calcInstanceSvcCfgHash() {
+func (tci *CheckInstance) calcInstanceSvcCfgHash() {
 	h := sha512.New()
 
 	attributes := []string{}

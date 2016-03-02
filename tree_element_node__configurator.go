@@ -19,7 +19,7 @@ checksloop:
 		hasAttributeConstraint := false
 		view := ten.Checks[i].View
 
-		attributes := []SomaTreeCheckConstraint{}
+		attributes := []CheckConstraint{}
 		oncallC := ""                                  // Id
 		systemC := map[string]string{}                 // Id->Value
 		nativeC := map[string]string{}                 // Property->Value
@@ -155,14 +155,14 @@ checksloop:
 				}
 				results = ires
 			}
-			// build a SomaTreeCheckInstance for every result
+			// build a CheckInstance for every result
 			for _, y := range results {
 				// ensure we have a full copy and not a header copy
 				cfg := map[string]string{}
 				for k, v := range y {
 					cfg[k] = v
 				}
-				inst := SomaTreeCheckInstance{
+				inst := CheckInstance{
 					CheckId: func(id string) uuid.UUID {
 						f, _ := uuid.FromString(id)
 						return f

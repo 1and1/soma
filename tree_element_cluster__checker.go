@@ -3,37 +3,37 @@ package somatree
 import "sync"
 
 //
-// Interface: SomaTreeChecker
-func (tec *SomaTreeElemCluster) SetCheck(c SomaTreeCheck) {
+// Interface: Checker
+func (tec *SomaTreeElemCluster) SetCheck(c Check) {
 	c.InheritedFrom = tec.Id
 	c.Inherited = false
 	tec.storeCheck(c)
 
-	f := SomaTreeCheck{}
+	f := Check{}
 	f = c
 	f.Inherited = true
 	tec.inheritCheckDeep(f)
 }
 
-func (tec *SomaTreeElemCluster) inheritCheck(c SomaTreeCheck) {
+func (tec *SomaTreeElemCluster) inheritCheck(c Check) {
 	tec.storeCheck(c)
 	tec.inheritCheckDeep(c)
 }
 
-func (tec *SomaTreeElemCluster) inheritCheckDeep(c SomaTreeCheck) {
+func (tec *SomaTreeElemCluster) inheritCheckDeep(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
 		ch := child
-		go func(stc SomaTreeCheck) {
+		go func(stc Check) {
 			defer wg.Done()
-			tec.Children[ch].(SomaTreeChecker).inheritCheck(stc)
+			tec.Children[ch].(Checker).inheritCheck(stc)
 		}(c)
 	}
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) storeCheck(c SomaTreeCheck) {
+func (tec *SomaTreeElemCluster) storeCheck(c Check) {
 	tec.Checks[c.Id.String()] = c
 
 	tec.Action <- &Action{
@@ -51,10 +51,10 @@ func (tec *SomaTreeElemCluster) syncCheck(childId string) {
 		if !tec.Checks[check].Inheritance {
 			continue
 		}
-		f := SomaTreeCheck{}
+		f := Check{}
 		f = tec.Checks[check]
 		f.Inherited = true
-		tec.Children[childId].(SomaTreeChecker).inheritCheck(f)
+		tec.Children[childId].(Checker).inheritCheck(f)
 	}
 }
 

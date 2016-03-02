@@ -25,9 +25,9 @@ type SomaTreeElemNode struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	Checks          map[string]SomaTreeCheck
+	Checks          map[string]Check
 	CheckInstances  map[string][]string
-	Instances       map[string]SomaTreeCheckInstance
+	Instances       map[string]CheckInstance
 }
 
 type NodeSpec struct {
@@ -63,9 +63,9 @@ func NewNode(spec NodeSpec) *SomaTreeElemNode {
 	ten.PropertyService = make(map[string]SomaTreeProperty)
 	ten.PropertySystem = make(map[string]SomaTreeProperty)
 	ten.PropertyCustom = make(map[string]SomaTreeProperty)
-	ten.Checks = make(map[string]SomaTreeCheck)
+	ten.Checks = make(map[string]Check)
 	ten.CheckInstances = make(map[string][]string)
-	ten.Instances = make(map[string]SomaTreeCheckInstance)
+	ten.Instances = make(map[string]CheckInstance)
 
 	return ten
 }
@@ -107,13 +107,13 @@ func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
 	}
 	cl.PropertyCustom = pC
 
-	cK := make(map[string]SomaTreeCheck)
+	cK := make(map[string]Check)
 	for k, chk := range ten.Checks {
 		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
 
-	cki := make(map[string]SomaTreeCheckInstance)
+	cki := make(map[string]CheckInstance)
 	for k, chki := range ten.Instances {
 		cki[k] = chki.Clone()
 	}

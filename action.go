@@ -16,6 +16,7 @@ type Action struct {
 	ChildNode    somaproto.ProtoNode
 
 	Property somaproto.TreeProperty
+	Check    somaproto.TreeCheck
 
 	Id              string `json:",omitempty"`
 	SourceId        string `json:",omitempty"`

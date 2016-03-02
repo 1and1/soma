@@ -22,7 +22,7 @@ type SomaTreeElemBucket struct {
 	PropertyService map[string]SomaTreeProperty
 	PropertySystem  map[string]SomaTreeProperty
 	PropertyCustom  map[string]SomaTreeProperty
-	Checks          map[string]SomaTreeCheck
+	Checks          map[string]Check
 	Children        map[string]SomaTreeBucketAttacher //`json:"-"`
 	Action          chan *Action                      `json:"-"`
 }
@@ -61,7 +61,7 @@ func NewBucket(spec BucketSpec) *SomaTreeElemBucket {
 	teb.PropertyService = make(map[string]SomaTreeProperty)
 	teb.PropertySystem = make(map[string]SomaTreeProperty)
 	teb.PropertyCustom = make(map[string]SomaTreeProperty)
-	teb.Checks = make(map[string]SomaTreeCheck)
+	teb.Checks = make(map[string]Check)
 
 	return teb
 }
@@ -109,7 +109,7 @@ func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
 	}
 	cl.PropertyCustom = pC
 
-	cK := make(map[string]SomaTreeCheck)
+	cK := make(map[string]Check)
 	for k, chk := range teb.Checks {
 		cK[k] = chk.Clone()
 	}
