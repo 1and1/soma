@@ -108,7 +108,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		err        error
 		hasErrors  bool
 		tx         *sql.Tx
-		treeCheck  *somatree.SomaTreeCheck
+		treeCheck  *somatree.Check
 		nullBucket sql.NullString
 
 		txStmtPropertyInstanceCreate *sql.Stmt
@@ -1577,24 +1577,24 @@ bailout:
 	return
 }
 
-func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatree.SomaTreeCheck, error) {
-	treechk := &somatree.SomaTreeCheck{
-		Inheritance:  conf.Inheritance,
-		ChildrenOnly: conf.ChildrenOnly,
-		Interval:     conf.Interval,
+func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatree.Check, error) {
+	treechk := &somatree.Check{
+		Id:            uuid.Nil,
+		SourceId:      uuid.Nil,
+		InheritedFrom: uuid.Nil,
+		Inheritance:   conf.Inheritance,
+		ChildrenOnly:  conf.ChildrenOnly,
+		Interval:      conf.Interval,
 	}
-	treechk.Id = uuid.Nil
-	treechk.ConfigId, _ = uuid.FromString(conf.Id)
 	treechk.CapabilityId, _ = uuid.FromString(conf.CapabilityId)
-	treechk.Thresholds = make([]somatree.SomaTreeCheckThreshold, len(conf.Thresholds))
-	treechk.Constraints = make([]somatree.SomaTreeCheckConstraint, len(conf.Constraints))
-
+	treechk.ConfigId, _ = uuid.FromString(conf.Id)
 	if err := tk.get_view.QueryRow(conf.CapabilityId).Scan(&treechk.View); err != nil {
-		return &somatree.SomaTreeCheck{}, err
+		return &somatree.Check{}, err
 	}
 
+	treechk.Thresholds = make([]somatree.CheckThreshold, len(conf.Thresholds))
 	for i, thr := range conf.Thresholds {
-		nthr := somatree.SomaTreeCheckThreshold{
+		nthr := somatree.CheckThreshold{
 			Predicate: thr.Predicate.Predicate,
 			Level:     uint8(thr.Level.Numeric),
 			Value:     thr.Value,
@@ -1602,11 +1602,11 @@ func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatre
 		treechk.Thresholds[i] = nthr
 	}
 
+	treechk.Constraints = make([]somatree.CheckConstraint, len(conf.Constraints))
 	for i, constr := range conf.Constraints {
-		ncon := somatree.SomaTreeCheckConstraint{
+		ncon := somatree.CheckConstraint{
 			Type: constr.ConstraintType,
 		}
-
 		switch constr.ConstraintType {
 		case "native":
 			ncon.Key = constr.Native.Name
@@ -1627,7 +1627,6 @@ func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatre
 			ncon.Key = constr.Attribute.Attribute
 			ncon.Value = constr.Attribute.Value
 		}
-
 		treechk.Constraints[i] = ncon
 	}
 	return treechk, nil
