@@ -59,6 +59,9 @@ create table if not exists soma.checks (
     source_object_type          varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
     source_object_id            uuid            NOT NULL,
     configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+    capability_id               uuid            NOT NULL REFERENCES soma.monitoring_capabilities ( capability_id ) DEFERRABLE,
+    object_id                   uuid            NOT NULL,
+    object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
     UNIQUE( check_id, repository_id ),
     FOREIGN KEY ( source_check_id, repository_id ) REFERENCES soma.checks ( check_id, repository_id ) DEFERRABLE,
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE
@@ -82,9 +85,9 @@ create table if not exists soma.constraints_custom_property (
     custom_property_id          uuid            NOT NULL REFERENCES soma.custom_properties ( custom_property_id ) DEFERRABLE,
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     property_value              text            NOT NULL,
-	-- ensure this custom property is defined for this repository
+    -- ensure this custom property is defined for this repository
     FOREIGN KEY ( repository_id, custom_property_id ) REFERENCES soma.custom_properties ( repository_id, custom_property_id ) DEFERRABLE,
-	-- ensure the configuration_id is for the repository the custom property is defined in
+    -- ensure the configuration_id is for the repository the custom property is defined in
     FOREIGN KEY ( configuration_id, repository_id ) REFERENCES soma.check_configurations ( configuration_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConstraintsCustomProperty"
