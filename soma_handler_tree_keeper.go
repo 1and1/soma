@@ -40,6 +40,7 @@ type treeKeeper struct {
 	team       string
 	broken     bool
 	ready      bool
+	frozen     bool
 	input      chan treeRequest
 	shutdown   chan bool
 	conn       *sql.DB
@@ -91,6 +92,11 @@ runloop:
 			break runloop
 		case req := <-tk.input:
 			tk.process(&req)
+			/*
+				if !tk.frozen {
+				TODO tk.process(recalcCheckConfigRequest)
+				}
+			*/
 		}
 	}
 }

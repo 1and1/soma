@@ -235,6 +235,7 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.
 	tK.actionChan = ac
 	tK.broken = false
 	tK.ready = false
+	tK.frozen = false
 	tK.repoId = q.Repository.Id
 	tK.repoName = q.Repository.Name
 	tK.team = team
