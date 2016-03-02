@@ -1577,23 +1577,23 @@ bailout:
 	return
 }
 
-func (tk *treeKeeper) convertCheck(chk *somaproto.CheckConfiguration) (*somatree.SomaTreeCheck, error) {
+func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatree.SomaTreeCheck, error) {
 	treechk := &somatree.SomaTreeCheck{
-		Inheritance:  chk.Inheritance,
-		ChildrenOnly: chk.ChildrenOnly,
-		Interval:     chk.Interval,
+		Inheritance:  conf.Inheritance,
+		ChildrenOnly: conf.ChildrenOnly,
+		Interval:     conf.Interval,
 	}
-	treechk.Id = uuid.NewV4()
-	treechk.ConfigId, _ = uuid.FromString(chk.Id)
-	treechk.CapabilityId, _ = uuid.FromString(chk.CapabilityId)
-	treechk.Thresholds = make([]somatree.SomaTreeCheckThreshold, len(chk.Thresholds))
-	treechk.Constraints = make([]somatree.SomaTreeCheckConstraint, len(chk.Constraints))
+	treechk.Id = uuid.Nil
+	treechk.ConfigId, _ = uuid.FromString(conf.Id)
+	treechk.CapabilityId, _ = uuid.FromString(conf.CapabilityId)
+	treechk.Thresholds = make([]somatree.SomaTreeCheckThreshold, len(conf.Thresholds))
+	treechk.Constraints = make([]somatree.SomaTreeCheckConstraint, len(conf.Constraints))
 
-	if err := tk.get_view.QueryRow(chk.CapabilityId).Scan(&treechk.View); err != nil {
+	if err := tk.get_view.QueryRow(conf.CapabilityId).Scan(&treechk.View); err != nil {
 		return &somatree.SomaTreeCheck{}, err
 	}
 
-	for i, thr := range chk.Thresholds {
+	for i, thr := range conf.Thresholds {
 		nthr := somatree.SomaTreeCheckThreshold{
 			Predicate: thr.Predicate.Predicate,
 			Level:     uint8(thr.Level.Numeric),
@@ -1602,7 +1602,7 @@ func (tk *treeKeeper) convertCheck(chk *somaproto.CheckConfiguration) (*somatree
 		treechk.Thresholds[i] = nthr
 	}
 
-	for i, constr := range chk.Constraints {
+	for i, constr := range conf.Constraints {
 		ncon := somatree.SomaTreeCheckConstraint{
 			Type: constr.ConstraintType,
 		}
