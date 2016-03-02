@@ -210,4 +210,32 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 	wg.Wait()
 }
 
+//
+func (ter *SomaTreeElemRepository) actionCheckNew(a Action) {
+	a.Action = "check_new"
+	a.Type = ter.Type
+	a.Group = ter.export()
+
+	ter.Action <- &a
+}
+
+func (ter *SomaTreeElemRepository) setupCheckAction(c Check) Action {
+	a := Action{
+		Check: somaproto.TreeCheck{
+			CheckId:       c.GetCheckId(),
+			SourceCheckId: c.GetSourceCheckId(),
+			CheckConfigId: c.GetCheckConfigId(),
+			SourceType:    c.GetSourceType(),
+			IsInherited:   c.GetIsInherited(),
+			InheritedFrom: c.GetInheritedFrom(),
+			Inheritance:   c.GetInheritance(),
+			ChildrenOnly:  c.GetChildrenOnly(),
+			CapabilityId:  c.GetCapabilityId(),
+		},
+	}
+	a.Check.RepositoryId = ter.Id.String()
+	a.Check.BucketId = ""
+	return a
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

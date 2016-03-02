@@ -297,4 +297,32 @@ func (ten *SomaTreeElemNode) setupPropertyAction(p SomaTreeProperty) Action {
 	return a
 }
 
+//
+func (ten *SomaTreeElemNode) actionCheckNew(a Action) {
+	a.Action = "check_new"
+	a.Type = ten.Type
+	a.Group = ten.export()
+
+	ten.Action <- &a
+}
+
+func (ten *SomaTreeElemNode) setupCheckAction(c Check) Action {
+	a := Action{
+		Check: somaproto.TreeCheck{
+			CheckId:       c.GetCheckId(),
+			SourceCheckId: c.GetSourceCheckId(),
+			CheckConfigId: c.GetCheckConfigId(),
+			SourceType:    c.GetSourceType(),
+			IsInherited:   c.GetIsInherited(),
+			InheritedFrom: c.GetInheritedFrom(),
+			Inheritance:   c.GetInheritance(),
+			ChildrenOnly:  c.GetChildrenOnly(),
+			CapabilityId:  c.GetCapabilityId(),
+		},
+	}
+	a.Check.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	return a
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

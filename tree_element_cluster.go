@@ -346,4 +346,32 @@ func (tec *SomaTreeElemCluster) setupPropertyAction(p SomaTreeProperty) Action {
 	return a
 }
 
+//
+func (tec *SomaTreeElemCluster) actionCheckNew(a Action) {
+	a.Action = "check_new"
+	a.Type = teg.Type
+	a.Cluster = teg.export()
+
+	teg.Action <- &a
+}
+
+func (tec *SomaTreeElemCluster) setupCheckAction(c Check) Action {
+	a := Action{
+		Check: somaproto.TreeCheck{
+			CheckId:       c.GetCheckId(),
+			SourceCheckId: c.GetSourceCheckId(),
+			CheckConfigId: c.GetCheckConfigId(),
+			SourceType:    c.GetSourceType(),
+			IsInherited:   c.GetIsInherited(),
+			InheritedFrom: c.GetInheritedFrom(),
+			Inheritance:   c.GetInheritance(),
+			ChildrenOnly:  c.GetChildrenOnly(),
+			CapabilityId:  c.GetCapabilityId(),
+		},
+	}
+	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	return a
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -157,4 +157,32 @@ func (teb *SomaTreeElemBucket) GetRepository() string {
 	return teb.Repository.String()
 }
 
+//
+func (teb *SomaTreeElemBucket) actionCheckNew(a Action) {
+	a.Action = "check_new"
+	a.Type = teb.Type
+	a.Group = teb.export()
+
+	teb.Action <- &a
+}
+
+func (teb *SomaTreeElemBucket) setupCheckAction(c Check) Action {
+	a := Action{
+		Check: somaproto.TreeCheck{
+			CheckId:       c.GetCheckId(),
+			SourceCheckId: c.GetSourceCheckId(),
+			CheckConfigId: c.GetCheckConfigId(),
+			SourceType:    c.GetSourceType(),
+			IsInherited:   c.GetIsInherited(),
+			InheritedFrom: c.GetInheritedFrom(),
+			Inheritance:   c.GetInheritance(),
+			ChildrenOnly:  c.GetChildrenOnly(),
+			CapabilityId:  c.GetCapabilityId(),
+		},
+	}
+	a.Check.RepositoryId = teb.Repository.String()
+	a.Check.BucketId = teb.Id.String()
+	return a
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
