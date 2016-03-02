@@ -113,7 +113,7 @@ func (ter SomaTreeElemRepository) Clone() SomaTreeElemRepository {
 
 	cK := make(map[string]Check)
 	for k, chk := range ter.Checks {
-		cK[k] = chk.Clone()
+		cK[k] = chk.clone()
 	}
 	cl.Checks = cK
 

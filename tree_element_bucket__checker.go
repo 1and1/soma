@@ -3,24 +3,46 @@ package somatree
 import (
 	"sync"
 
+	"github.com/satori/go.uuid"
+
 )
 
 //
 // Interface: Checker
 func (teb *SomaTreeElemBucket) SetCheck(c Check) {
+	c.Id = c.GetItemId(teb.Type, teb.Id)
+	if uuid.Equal(c.Id, uuid.Nil) {
+		c.Id = uuid.NewV4()
+	}
+	// this check is the source check
 	c.InheritedFrom = teb.Id
 	c.Inherited = false
-	teb.storeCheck(c)
-
-	f := Check{}
-	f = c
+	c.SourceId, _ = uuid.FromString(c.Id.String())
+	c.SourceType = teb.Type
+	// send a scrubbed copy downward
+	f := c.clone()
 	f.Inherited = true
+	f.Id = uuid.Nil
 	teb.inheritCheckDeep(f)
+	// scrub checkitem startup information prior to storing
+	c.Items = nil
+	teb.storeCheck(c)
+	teb.actionCheckNew(teb.setupCheckAction(c))
 }
 
 func (teb *SomaTreeElemBucket) inheritCheck(c Check) {
-	teb.storeCheck(c)
+	// we keep a local copy, that way we know it is ours....
+	f := c.clone()
+	f.Id = f.GetItemId(teb.Type, teb.Id)
+	if uuid.Equal(f.Id, uuid.Nil) {
+		f.Id = uuid.NewV4()
+	}
+	f.Items = nil
+	teb.storeCheck(f)
+	// send original check downwards
+	c.Id = uuid.Nil
 	teb.inheritCheckDeep(c)
+	teb.actionCheckNew(teb.setupCheckAction(f))
 }
 
 func (teb *SomaTreeElemBucket) inheritCheckDeep(c Check) {

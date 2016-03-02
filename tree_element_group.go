@@ -99,7 +99,7 @@ func (teg SomaTreeElemGroup) Clone() *SomaTreeElemGroup {
 
 	cK := make(map[string]Check)
 	for k, chk := range teg.Checks {
-		cK[k] = chk.Clone()
+		cK[k] = chk.clone()
 	}
 	cl.Checks = cK
 

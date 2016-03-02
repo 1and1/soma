@@ -1,23 +1,47 @@
 package somatree
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/satori/go.uuid"
+)
 
 //
 // Interface: Checker
 func (tec *SomaTreeElemCluster) SetCheck(c Check) {
+	c.Id = c.GetItemId(tec.Type, tec.Id)
+	if uuid.Equal(c.Id, uuid.Nil) {
+		c.Id = uuid.NewV4()
+	}
+	// this check is the source check
 	c.InheritedFrom = tec.Id
 	c.Inherited = false
-	tec.storeCheck(c)
-
-	f := Check{}
-	f = c
+	c.SourceId, _ = uuid.FromString(c.Id.String())
+	c.SourceType = tec.Type
+	// send a scrubbed copy downward
+	f := c.clone()
 	f.Inherited = true
+	f.Id = uuid.Nil
 	tec.inheritCheckDeep(f)
+	// scrub checkitem startup information prior to storing
+	c.Items = nil
+	tec.storeCheck(c)
+	tec.actionCheckNew(tec.setupCheckAction(c))
 }
 
 func (tec *SomaTreeElemCluster) inheritCheck(c Check) {
-	tec.storeCheck(c)
+	// we keep a local copy, that way we know it is ours....
+	f := c.clone()
+	f.Id = f.GetItemId(tec.Type, tec.Id)
+	if uuid.Equal(f.Id, uuid.Nil) {
+		f.Id = uuid.NewV4()
+	}
+	f.Items = nil
+	tec.storeCheck(f)
+	// send original check downwards
+	c.Id = uuid.Nil
 	tec.inheritCheckDeep(c)
+	tec.actionCheckNew(tec.setupCheckAction(f))
 }
 
 func (tec *SomaTreeElemCluster) inheritCheckDeep(c Check) {

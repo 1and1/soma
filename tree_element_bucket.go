@@ -112,7 +112,7 @@ func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
 
 	cK := make(map[string]Check)
 	for k, chk := range teb.Checks {
-		cK[k] = chk.Clone()
+		cK[k] = chk.clone()
 	}
 	cl.Checks = cK
 

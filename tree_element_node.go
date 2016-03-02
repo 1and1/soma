@@ -109,7 +109,7 @@ func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
 
 	cK := make(map[string]Check)
 	for k, chk := range ten.Checks {
-		cK[k] = chk.Clone()
+		cK[k] = chk.clone()
 	}
 	cl.Checks = cK
 

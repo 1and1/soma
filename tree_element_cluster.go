@@ -100,7 +100,7 @@ func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
 
 	cK := make(map[string]Check)
 	for k, chk := range tec.Checks {
-		cK[k] = chk.Clone()
+		cK[k] = chk.clone()
 	}
 	cl.Checks = cK
 

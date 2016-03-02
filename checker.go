@@ -31,6 +31,7 @@ type CheckGetter interface {
 	GetView() string
 	GetCapabilityId() string
 	GetInterval() uint64
+	GetItemId(objType string, objId uuid.UUID) uuid.UUID
 }
 
 type Check struct {
@@ -47,6 +48,13 @@ type Check struct {
 	Interval      uint64
 	Thresholds    []CheckThreshold
 	Constraints   []CheckConstraint
+	Items         []CheckItem
+}
+
+type CheckItem struct {
+	ObjectId   uuid.UUID
+	ObjectType string
+	ItemId     uuid.UUID
 }
 
 type CheckThreshold struct {
@@ -77,6 +85,18 @@ type CheckInstance struct {
 	InstanceServiceConfig map[string]string              // attr->value
 	InstanceService       uuid.UUID
 	InstanceSvcCfgHash    string
+}
+
+func (c *Check) GetItemId(objType string, objId uuid.UUID) uuid.UUID {
+	if !uuid.Equal(c.Id, uuid.Nil) {
+		return c.Id
+	}
+	for _, item := range c.Items {
+		if objType == item.ObjectType && uuid.Equal(item.ObjectId, objId) {
+			return item.ItemId
+		}
+	}
+	return uuid.Nil
 }
 
 func (c *Check) GetCheckId() string {
@@ -123,6 +143,7 @@ func (c *Check) GetInterval() uint64 {
 	return c.Interval
 }
 
+/*
 func (tc Check) Clone() Check {
 	cl := Check{
 		SourceType:   tc.SourceType,
@@ -158,6 +179,7 @@ func (tc Check) Clone() Check {
 
 	return cl
 }
+*/
 
 func (tci *CheckInstance) Clone() CheckInstance {
 	cl := CheckInstance{
@@ -358,6 +380,50 @@ func (tci *CheckInstance) calcInstanceSvcCfgHash() {
 		io.WriteString(h, tci.InstanceServiceConfig[i])
 	}
 	tci.InstanceSvcCfgHash = base64.URLEncoding.EncodeToString(h.Sum(nil))
+}
+
+func (c *Check) clone() Check {
+	cl := Check{
+		SourceType:   c.SourceType,
+		Inherited:    c.Inherited,
+		Inheritance:  c.Inheritance,
+		ChildrenOnly: c.ChildrenOnly,
+		View:         c.View,
+		Interval:     c.Interval,
+	}
+	cl.Id, _ = uuid.FromString(c.Id.String())
+	cl.SourceId, _ = uuid.FromString(c.SourceId.String())
+	cl.InheritedFrom, _ = uuid.FromString(c.InheritedFrom.String())
+	cl.CapabilityId, _ = uuid.FromString(c.CapabilityId.String())
+	cl.ConfigId, _ = uuid.FromString(c.ConfigId.String())
+	cl.Thresholds = make([]CheckThreshold, len(c.Thresholds))
+	for i, thr := range c.Thresholds {
+		n := CheckThreshold{
+			Predicate: thr.Predicate,
+			Level:     thr.Level,
+			Value:     thr.Value,
+		}
+		cl.Thresholds[i] = n
+	}
+	cl.Constraints = make([]CheckConstraint, len(c.Constraints))
+	for i, ctr := range c.Constraints {
+		n := CheckConstraint{
+			Type:  ctr.Type,
+			Key:   ctr.Key,
+			Value: ctr.Value,
+		}
+		cl.Constraints[i] = n
+	}
+	cl.Items = make([]CheckItem, len(c.Items))
+	for i, item := range c.Items {
+		n := CheckItem{
+			ObjectType: item.ObjectType,
+		}
+		n.ItemId, _ = uuid.FromString(item.ItemId.String())
+		n.ObjectId, _ = uuid.FromString(item.ObjectId.String())
+		cl.Items[i] = n
+	}
+	return cl
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

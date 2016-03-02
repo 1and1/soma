@@ -83,7 +83,7 @@ func (p *PropertyCustom) GetInstanceId(objType string, objId uuid.UUID) uuid.UUI
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			return instance.ObjectId
+			return instance.InstanceId
 		}
 	}
 	return uuid.Nil
@@ -165,7 +165,7 @@ func (p *PropertyService) GetInstanceId(objType string, objId uuid.UUID) uuid.UU
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			return instance.ObjectId
+			return instance.InstanceId
 		}
 	}
 	return uuid.Nil
@@ -253,7 +253,7 @@ func (p *PropertySystem) GetInstanceId(objType string, objId uuid.UUID) uuid.UUI
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			return instance.ObjectId
+			return instance.InstanceId
 		}
 	}
 	return uuid.Nil
@@ -335,7 +335,7 @@ func (p *PropertyOncall) GetInstanceId(objType string, objId uuid.UUID) uuid.UUI
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			return instance.ObjectId
+			return instance.InstanceId
 		}
 	}
 	return uuid.Nil
