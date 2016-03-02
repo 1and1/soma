@@ -143,44 +143,6 @@ func (c *Check) GetInterval() uint64 {
 	return c.Interval
 }
 
-/*
-func (tc Check) Clone() Check {
-	cl := Check{
-		SourceType:   tc.SourceType,
-		Inherited:    tc.Inherited,
-		Inheritance:  tc.Inheritance,
-		ChildrenOnly: tc.ChildrenOnly,
-		View:         tc.View,
-		Interval:     tc.Interval,
-	}
-	cl.Id, _ = uuid.FromString(tc.Id.String())
-	cl.SourceId, _ = uuid.FromString(tc.SourceId.String())
-	cl.InheritedFrom, _ = uuid.FromString(tc.InheritedFrom.String())
-	cl.CapabilityId, _ = uuid.FromString(tc.CapabilityId.String())
-	cl.ConfigId, _ = uuid.FromString(tc.ConfigId.String())
-	cl.Thresholds = make([]CheckThreshold, 0)
-	for _, thr := range tc.Thresholds {
-		t := CheckThreshold{
-			Predicate: thr.Predicate,
-			Level:     thr.Level,
-			Value:     thr.Value,
-		}
-		cl.Thresholds = append(cl.Thresholds, t)
-	}
-	cl.Constraints = make([]CheckConstraint, 0)
-	for _, cstr := range tc.Constraints {
-		c := CheckConstraint{
-			Type:  cstr.Type,
-			Key:   cstr.Key,
-			Value: cstr.Value,
-		}
-		cl.Constraints = append(cl.Constraints, c)
-	}
-
-	return cl
-}
-*/
-
 func (tci *CheckInstance) Clone() CheckInstance {
 	cl := CheckInstance{
 		Version:            tci.Version,
