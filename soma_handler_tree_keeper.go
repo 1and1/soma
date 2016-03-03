@@ -1100,7 +1100,7 @@ actionloop:
 				}
 			case "node_assignment":
 				if _, err = txStmtBucketAssignNode.Exec(
-					a.Node.Id,
+					a.ChildNode.Id,
 					a.Bucket.Id,
 					a.Bucket.Team,
 				); err != nil {
