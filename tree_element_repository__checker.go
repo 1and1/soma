@@ -26,7 +26,6 @@ func (ter *SomaTreeElemRepository) SetCheck(c Check) {
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
 	ter.storeCheck(c)
-	ter.actionCheckNew(ter.setupCheckAction(c))
 }
 
 func (ter *SomaTreeElemRepository) inheritCheck(c Check) {
@@ -41,7 +40,6 @@ func (ter *SomaTreeElemRepository) inheritCheck(c Check) {
 	// send original check downwards
 	c.Id = uuid.Nil
 	ter.inheritCheckDeep(c)
-	ter.actionCheckNew(ter.setupCheckAction(f))
 }
 
 func (ter *SomaTreeElemRepository) inheritCheckDeep(c Check) {
@@ -59,15 +57,7 @@ func (ter *SomaTreeElemRepository) inheritCheckDeep(c Check) {
 
 func (ter *SomaTreeElemRepository) storeCheck(c Check) {
 	ter.Checks[c.Id.String()] = c
-
-	ter.Action <- &Action{
-		Action:          "create_check",
-		Type:            "repository",
-		Id:              ter.Id.String(),
-		CheckId:         c.Id.String(),
-		CheckSource:     c.InheritedFrom.String(),
-		CheckCapability: c.CapabilityId.String(),
-	}
+	ter.actionCheckNew(c.MakeAction())
 }
 
 func (ter *SomaTreeElemRepository) syncCheck(childId string) {

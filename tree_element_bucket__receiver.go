@@ -73,29 +73,18 @@ func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
 			r.Node.setAction(teb.Action)
 			r.Node.setFault(teb.Fault)
 
-			teb.Action <- &Action{
-				Action:    "node_assignment",
-				Type:      "bucket",
+			teb.actionAssignNode(Action{
 				ChildType: "node",
-				Bucket: somaproto.ProtoBucket{
-					Id:          teb.Id.String(),
-					Name:        teb.Name,
-					Repository:  teb.Repository.String(),
-					Team:        teb.Team.String(),
-					Environment: teb.Environment,
-					IsDeleted:   teb.Deleted,
-					IsFrozen:    teb.Frozen,
-				},
-				Node: somaproto.ProtoNode{
+				ChildNode: somaproto.ProtoNode{
 					Id: r.Node.GetID(),
 				},
-			}
+			})
 		default:
-			panic(`SomaTreeElemBucket.receiveNote`)
+			panic(`SomaTreeElemBucket.receiveNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.receiveNote`)
+	panic(`SomaTreeElemBucket.receiveNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

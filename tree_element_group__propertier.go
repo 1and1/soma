@@ -9,157 +9,66 @@ import (
 
 //
 // Interface: SomaTreePropertier
-func (teg *SomaTreeElemGroup) SetProperty(
-	p SomaTreeProperty) {
+func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
+	p.SetId(p.GetInstanceId(teg.Type, teg.Id))
+	if p.Equal(uuid.Nil) {
+		p.SetId(uuid.NewV4())
+	}
+	// this property is the source instance
+	p.SetInheritedFrom(teg.Id)
+	p.SetInherited(false)
+	p.SetSourceType(teg.Type)
+	if i, e := uuid.FromString(p.GetID()); e != nil {
+		p.SetSourceId(i)
+	}
+	// send a scrubbed copy down
+	f := p.Clone()
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	teg.inheritPropertyDeep(f)
+	// scrub instance startup information prior to storing
+	p.clearInstances()
 	switch p.GetType() {
 	case "custom":
-		// generate uuid if none is set
-		if uuid.Equal(p.(*PropertyCustom).Id, uuid.Nil) {
-			p.(*PropertyCustom).Id = uuid.NewV4()
-		}
-		// this property is the source instance
-		p.(*PropertyCustom).InheritedFrom = teg.Id
-		p.(*PropertyCustom).Inherited = false
-		p.(*PropertyCustom).SourceId = p.(*PropertyCustom).Id
-		p.(*PropertyCustom).SourceType = teg.Type
-		// send a scrubbed copy downward
-		f := new(PropertyCustom)
-		*f = *p.(*PropertyCustom)
-		f.Inherited = true
-		f.Id = uuid.Nil
-		teg.inheritPropertyDeep(f)
-		// scrub instance startup information prior to setting
-		p.(*PropertyCustom).Instances = nil
 		teg.setCustomProperty(p)
 	case "service":
-		// generate uuid if none is set
-		if uuid.Equal(p.(*PropertyService).Id, uuid.Nil) {
-			p.(*PropertyService).Id = uuid.NewV4()
-		}
-		// this property is the source instance
-		p.(*PropertyService).InheritedFrom = teg.Id
-		p.(*PropertyService).Inherited = false
-		p.(*PropertyService).SourceId = p.(*PropertyService).Id
-		p.(*PropertyService).SourceType = teg.Type
-		// send a scrubbed copy downward
-		f := new(PropertyService)
-		*f = *p.(*PropertyService)
-		f.Inherited = true
-		f.Id = uuid.Nil
-		teg.inheritPropertyDeep(f)
-		// scrub instance startup information prior to setting
-		p.(*PropertyService).Instances = nil
 		teg.setServiceProperty(p)
 	case "system":
-		// generate uuid if none is set
-		if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
-			p.(*PropertySystem).Id = uuid.NewV4()
-		}
-		// this property is the source instance
-		p.(*PropertySystem).InheritedFrom = teg.Id
-		p.(*PropertySystem).Inherited = false
-		p.(*PropertySystem).SourceId = p.(*PropertySystem).Id
-		p.(*PropertySystem).SourceType = teg.Type
-		// send a scrubbed copy downward
-		f := new(PropertySystem)
-		*f = *p.(*PropertySystem)
-		f.Inherited = true
-		f.Id = uuid.UUID{}
-		teg.inheritPropertyDeep(f)
-		// scrub instance startup information prior to setting
-		p.(*PropertySystem).Instances = nil
 		teg.setSystemProperty(p)
 	case "oncall":
-		// generate uuid if none is set
-		if uuid.Equal(p.(*PropertyOncall).Id, uuid.Nil) {
-			p.(*PropertyOncall).Id = uuid.NewV4()
-		}
-		// this property is the source instance
-		p.(*PropertyOncall).InheritedFrom = teg.Id
-		p.(*PropertyOncall).Inherited = false
-		p.(*PropertyOncall).SourceId = p.(*PropertyOncall).Id
-		p.(*PropertyOncall).SourceType = teg.Type
-		// send a scrubbed copy downward
-		f := new(PropertyOncall)
-		*f = *p.(*PropertyOncall)
-		f.Inherited = true
-		f.Id = uuid.Nil
-		teg.inheritPropertyDeep(f)
-		// scrub instance startup information prior to setting
-		p.(*PropertyOncall).Instances = nil
 		teg.setOncallProperty(p)
 	}
-	teg.actionPropertyNew(teg.setupPropertyAction(p))
+	teg.actionPropertyNew(p.MakeAction())
 }
 
-func (teg *SomaTreeElemGroup) inheritProperty(
-	p SomaTreeProperty) {
-
-	f := new(PropertySystem)
-	switch p.GetType() {
-	case "custom":
-		f := new(PropertyCustom)
-		*f = *p.(*PropertyCustom)
-		p.(*PropertyCustom).Id = p.GetInstanceId(teg.Type, teg.Id)
-		if uuid.Equal(p.(*PropertyCustom).Id, uuid.Nil) {
-			p.(*PropertyCustom).Id = uuid.NewV4()
-		}
-		p.(*PropertyCustom).Instances = nil
-		teg.setCustomProperty(p)
-		teg.inheritPropertyDeep(f)
-	case "service":
-		f := new(PropertyService)
-		*f = *p.(*PropertyService)
-		p.(*PropertyService).Id = p.GetInstanceId(teg.Type, teg.Id)
-		if uuid.Equal(p.(*PropertyService).Id, uuid.Nil) {
-			p.(*PropertyService).Id = uuid.NewV4()
-		}
-		p.(*PropertyService).Instances = nil
-		teg.setServiceProperty(p)
-		teg.inheritPropertyDeep(f)
-	case "system":
-		/*
-			f := new(PropertySystem)
-			*f = *p.(*PropertySystem)
-			p.(*PropertySystem).Id = p.GetInstanceId(teg.Type, teg.Id)
-			if uuid.Equal(p.(*PropertySystem).Id, uuid.Nil) {
-				p.(*PropertySystem).Id = uuid.NewV4()
-				log.Printf("Inherit Generated: %s", p.(*PropertySystem).Id.String())
-			}
-			p.(*PropertySystem).Instances = nil
-			teg.setSystemProperty(p)
-			f.Id = uuid.UUID{}
-			log.Printf("Inherit Sending down: %s", f.Id.String())
-			teg.inheritPropertyDeep(f)
-		*/
-		*f = *p.(*PropertySystem)
-		f.Id = f.GetInstanceId(teg.Type, teg.Id)
-		if uuid.Equal(f.Id, uuid.Nil) {
-			f.Id = uuid.NewV4()
-			log.Printf("Inherit (Group) Generated: %s", f.Id.String())
-		}
-		f.Instances = nil
-		teg.setSystemProperty(f)
-		p.(*PropertySystem).Id = uuid.UUID{}
-		log.Printf("Inherit Sending down: %s", p.(*PropertySystem).Id.String())
-		teg.inheritPropertyDeep(p)
-	case "oncall":
-		f := new(PropertyOncall)
-		*f = *p.(*PropertyOncall)
-		p.(*PropertyOncall).Id = p.GetInstanceId(teg.Type, teg.Id)
-		if uuid.Equal(p.(*PropertyOncall).Id, uuid.Nil) {
-			p.(*PropertyOncall).Id = uuid.NewV4()
-		}
-		p.(*PropertyOncall).Instances = nil
-		teg.setOncallProperty(p)
-		teg.inheritPropertyDeep(f)
+func (teg *SomaTreeElemGroup) inheritProperty(p SomaTreeProperty) {
+	f := p.Clone()
+	f.SetId(f.GetInstanceId(teg.Type, teg.Id))
+	if f.Equal(uuid.Nil) {
+		f.SetId(uuid.NewV4())
+		log.Printf("Inherit (Group) Generated: %s", f.GetID())
 	}
-	teg.actionPropertyNew(teg.setupPropertyAction(f))
+	f.clearInstances()
+
+	switch f.GetType() {
+	case "custom":
+		teg.setCustomProperty(f)
+	case "service":
+		teg.setServiceProperty(f)
+	case "system":
+		teg.setSystemProperty(f)
+	case "oncall":
+		teg.setOncallProperty(f)
+	}
+	p.SetId(uuid.UUID{})
+	teg.inheritPropertyDeep(p)
+	teg.actionPropertyNew(f.MakeAction())
 }
 
 func (teg *SomaTreeElemGroup) inheritPropertyDeep(
 	p SomaTreeProperty) {
 	var wg sync.WaitGroup
+	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		c := child

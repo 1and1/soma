@@ -1,101 +1,74 @@
 package somatree
 
 import (
+	"log"
 	"sync"
 
+	"github.com/satori/go.uuid"
 )
 
 //
 // Interface: SomaTreePropertier
-func (teb *SomaTreeElemBucket) SetProperty(
-	p SomaTreeProperty) {
+func (teb *SomaTreeElemBucket) SetProperty(p SomaTreeProperty) {
+	p.SetId(p.GetInstanceId(teb.Type, teb.Id))
+	if p.Equal(uuid.Nil) {
+		p.SetId(uuid.NewV4())
+	}
+	// this property is the source instance
+	p.SetInheritedFrom(teb.Id)
+	p.SetInherited(false)
+	p.SetSourceType(teb.Type)
+	if i, e := uuid.FromString(p.GetID()); e != nil {
+		p.SetSourceId(i)
+	}
+	// send a scrubbed copy down
+	f := p.Clone()
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	teb.inheritPropertyDeep(f)
+	// scrub instance startup information prior to storing
+	p.clearInstances()
 	switch p.GetType() {
 	case "custom":
-		p.(*PropertyCustom).InheritedFrom = teb.Id
-		p.(*PropertyCustom).Inherited = false
 		teb.setCustomProperty(p)
-		f := new(PropertyCustom)
-		*f = *p.(*PropertyCustom)
-		f.Inherited = true
-		teb.inheritPropertyDeep(f)
 	case "service":
-		p.(*PropertyService).InheritedFrom = teb.Id
-		p.(*PropertyService).Inherited = false
 		teb.setServiceProperty(p)
-		f := new(PropertyService)
-		*f = *p.(*PropertyService)
-		f.Inherited = true
-		teb.inheritPropertyDeep(f)
 	case "system":
-		p.(*PropertySystem).InheritedFrom = teb.Id
-		p.(*PropertySystem).Inherited = false
 		teb.setSystemProperty(p)
-		f := new(PropertySystem)
-		*f = *p.(*PropertySystem)
-		f.Inherited = true
-		teb.inheritPropertyDeep(f)
 	case "oncall":
-		p.(*PropertyOncall).InheritedFrom = teb.Id
-		p.(*PropertyOncall).Inherited = false
 		teb.setOncallProperty(p)
-		f := new(PropertyOncall)
-		*f = *p.(*PropertyOncall)
-		f.Inherited = true
-		teb.inheritPropertyDeep(f)
 	}
-	teb.Action <- &Action{
-		Action: "set_property",
-		Type:   "bucket",
-		Bucket: somaproto.ProtoBucket{
-			Id:          teb.Id.String(),
-			Name:        teb.Name,
-			Repository:  teb.Repository.String(),
-			Team:        teb.Team.String(),
-			Environment: teb.Environment,
-			IsDeleted:   teb.Deleted,
-			IsFrozen:    teb.Frozen,
-		},
-		PropertyType:   p.GetType(),
-		PropertyId:     p.GetID(),
-		PropertySource: p.GetSource(),
-	}
+	teb.actionPropertyNew(p.MakeAction())
 }
 
-func (teb *SomaTreeElemBucket) inheritProperty(
-	p SomaTreeProperty) {
-	switch p.GetType() {
-	case "custom":
-		teb.setCustomProperty(p)
-	case "service":
-		teb.setServiceProperty(p)
-	case "system":
-		teb.setSystemProperty(p)
-	case "oncall":
-		teb.setOncallProperty(p)
+func (teb *SomaTreeElemBucket) inheritProperty(p SomaTreeProperty) {
+	f := p.Clone()
+	f.SetId(f.GetInstanceId(teb.Type, teb.Id))
+	if f.Equal(uuid.Nil) {
+		f.SetId(uuid.NewV4())
+		log.Printf("Inherit (Bucket) Generated: %s", f.GetID())
 	}
-	teb.Action <- &Action{
-		Action: "set_property",
-		Type:   "bucket",
-		Bucket: somaproto.ProtoBucket{
-			Id:          teb.Id.String(),
-			Name:        teb.Name,
-			Repository:  teb.Repository.String(),
-			Team:        teb.Team.String(),
-			Environment: teb.Environment,
-			IsDeleted:   teb.Deleted,
-			IsFrozen:    teb.Frozen,
-		},
-		PropertyType:   p.GetType(),
-		PropertyId:     p.GetID(),
-		PropertySource: p.GetSource(),
-	}
+	f.clearInstances()
 
+	switch f.GetType() {
+	case "custom":
+		teb.setCustomProperty(f)
+	case "service":
+		teb.setServiceProperty(f)
+	case "system":
+		teb.setSystemProperty(f)
+	case "oncall":
+		teb.setOncallProperty(f)
+	}
+	p.SetId(uuid.UUID{})
 	teb.inheritPropertyDeep(p)
+	teb.actionPropertyNew(f.MakeAction())
 }
 
 func (teb *SomaTreeElemBucket) inheritPropertyDeep(
 	p SomaTreeProperty) {
 	var wg sync.WaitGroup
+	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		c := child

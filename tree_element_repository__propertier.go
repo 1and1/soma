@@ -1,83 +1,74 @@
 package somatree
 
-import "sync"
+import (
+	"log"
+	"sync"
+
+	"github.com/satori/go.uuid"
+)
 
 //
 // Interface: SomaTreePropertier
-func (ter *SomaTreeElemRepository) SetProperty(
-	p SomaTreeProperty) {
+func (ter *SomaTreeElemRepository) SetProperty(p SomaTreeProperty) {
+	p.SetId(p.GetInstanceId(ter.Type, ter.Id))
+	if p.Equal(uuid.Nil) {
+		p.SetId(uuid.NewV4())
+	}
+	// this property is the source instance
+	p.SetInheritedFrom(ter.Id)
+	p.SetInherited(false)
+	p.SetSourceType(ter.Type)
+	if i, e := uuid.FromString(p.GetID()); e != nil {
+		p.SetSourceId(i)
+	}
+	// send a scrubbed copy down
+	f := p.Clone()
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	ter.inheritPropertyDeep(f)
+	// scrub instance startup information prior to storing
+	p.clearInstances()
 	switch p.GetType() {
 	case "custom":
-		p.(*PropertyCustom).InheritedFrom = ter.Id
-		p.(*PropertyCustom).Inherited = false
 		ter.setCustomProperty(p)
-		f := new(PropertyCustom)
-		*f = *p.(*PropertyCustom)
-		f.Inherited = true
-		ter.inheritPropertyDeep(f)
 	case "service":
-		p.(*PropertyService).InheritedFrom = ter.Id
-		p.(*PropertyService).Inherited = false
 		ter.setServiceProperty(p)
-		f := new(PropertyService)
-		*f = *p.(*PropertyService)
-		f.Inherited = true
-		ter.inheritPropertyDeep(f)
 	case "system":
-		p.(*PropertySystem).InheritedFrom = ter.Id
-		p.(*PropertySystem).Inherited = false
 		ter.setSystemProperty(p)
-		f := new(PropertySystem)
-		*f = *p.(*PropertySystem)
-		f.Inherited = true
-		ter.inheritPropertyDeep(f)
 	case "oncall":
-		p.(*PropertyOncall).InheritedFrom = ter.Id
-		p.(*PropertyOncall).Inherited = false
 		ter.setOncallProperty(p)
-		f := new(PropertyOncall)
-		*f = *p.(*PropertyOncall)
-		f.Inherited = true
-		ter.inheritPropertyDeep(f)
 	}
-	ter.Action <- &Action{
-		Action:         "property_new",
-		Type:           "repository",
-		Id:             ter.Id.String(),
-		Name:           ter.Name,
-		PropertyType:   p.GetType(),
-		PropertyId:     p.GetID(),
-		PropertySource: p.GetSource(),
-	}
+	ter.actionPropertyNew(p.MakeAction())
 }
 
-func (ter *SomaTreeElemRepository) inheritProperty(
-	p SomaTreeProperty) {
-	switch p.GetType() {
+func (ter *SomaTreeElemRepository) inheritProperty(p SomaTreeProperty) {
+	f := p.Clone()
+	f.SetId(f.GetInstanceId(ter.Type, ter.Id))
+	if f.Equal(uuid.Nil) {
+		f.SetId(uuid.NewV4())
+		log.Printf("Inherit (Repository) Generated: %s", f.GetID())
+	}
+	f.clearInstances()
+
+	switch f.GetType() {
 	case "custom":
-		ter.setCustomProperty(p)
+		ter.setCustomProperty(f)
 	case "service":
-		ter.setServiceProperty(p)
+		ter.setServiceProperty(f)
 	case "system":
-		ter.setSystemProperty(p)
+		ter.setSystemProperty(f)
 	case "oncall":
-		ter.setOncallProperty(p)
+		ter.setOncallProperty(f)
 	}
-	ter.Action <- &Action{
-		Action:         "property_new",
-		Type:           "repository",
-		Id:             ter.Id.String(),
-		Name:           ter.Name,
-		PropertyType:   p.GetType(),
-		PropertyId:     p.GetID(),
-		PropertySource: p.GetSource(),
-	}
+	p.SetId(uuid.UUID{})
 	ter.inheritPropertyDeep(p)
+	ter.actionPropertyNew(f.MakeAction())
 }
 
 func (ter *SomaTreeElemRepository) inheritPropertyDeep(
 	p SomaTreeProperty) {
 	var wg sync.WaitGroup
+	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range ter.Children {
 		wg.Add(1)
 		c := child

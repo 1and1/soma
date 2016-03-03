@@ -6,6 +6,7 @@ import (
 	"io"
 	"sort"
 
+
 	"github.com/satori/go.uuid"
 )
 
@@ -141,6 +142,22 @@ func (c *Check) GetCapabilityId() string {
 
 func (c *Check) GetInterval() uint64 {
 	return c.Interval
+}
+
+func (c *Check) MakeAction() Action {
+	return Action{
+		Check: somaproto.TreeCheck{
+			CheckId:       c.GetCheckId(),
+			SourceCheckId: c.GetSourceCheckId(),
+			CheckConfigId: c.GetCheckConfigId(),
+			SourceType:    c.GetSourceType(),
+			IsInherited:   c.GetIsInherited(),
+			InheritedFrom: c.GetInheritedFrom(),
+			Inheritance:   c.GetInheritance(),
+			ChildrenOnly:  c.GetChildrenOnly(),
+			CapabilityId:  c.GetCapabilityId(),
+		},
+	}
 }
 
 func (tci *CheckInstance) Clone() CheckInstance {

@@ -26,7 +26,6 @@ func (teg *SomaTreeElemGroup) SetCheck(c Check) {
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
 	teg.storeCheck(c)
-	teg.actionCheckNew(teg.setupCheckAction(c))
 }
 
 func (teg *SomaTreeElemGroup) inheritCheck(c Check) {
@@ -41,7 +40,6 @@ func (teg *SomaTreeElemGroup) inheritCheck(c Check) {
 	// send original check downwards
 	c.Id = uuid.Nil
 	teg.inheritCheckDeep(c)
-	teg.actionCheckNew(teg.setupCheckAction(f))
 }
 
 func (teg *SomaTreeElemGroup) inheritCheckDeep(c Check) {
@@ -59,15 +57,7 @@ func (teg *SomaTreeElemGroup) inheritCheckDeep(c Check) {
 
 func (teg *SomaTreeElemGroup) storeCheck(c Check) {
 	teg.Checks[c.Id.String()] = c
-
-	teg.Action <- &Action{
-		Action:          "create_check",
-		Type:            "group",
-		Id:              teg.Id.String(),
-		CheckId:         c.Id.String(),
-		CheckSource:     c.InheritedFrom.String(),
-		CheckCapability: c.CapabilityId.String(),
-	}
+	teg.actionCheckNew(c.MakeAction())
 }
 
 func (teg *SomaTreeElemGroup) syncCheck(childId string) {

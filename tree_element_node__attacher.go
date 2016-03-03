@@ -48,6 +48,7 @@ func (ten *SomaTreeElemNode) Destroy() {
 	if ten.Parent == nil {
 		panic(`SomaTreeElemNode.Destroy called without Parent to unlink from`)
 	}
+	ten.actionDelete()
 
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(Builder).GetType(),
@@ -61,8 +62,6 @@ func (ten *SomaTreeElemNode) Destroy() {
 
 	ten.setFault(nil)
 	ten.setAction(nil)
-
-	ten.actionDelete()
 }
 
 func (ten *SomaTreeElemNode) Detach() {

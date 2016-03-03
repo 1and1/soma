@@ -26,7 +26,6 @@ func (tec *SomaTreeElemCluster) SetCheck(c Check) {
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
 	tec.storeCheck(c)
-	tec.actionCheckNew(tec.setupCheckAction(c))
 }
 
 func (tec *SomaTreeElemCluster) inheritCheck(c Check) {
@@ -41,7 +40,6 @@ func (tec *SomaTreeElemCluster) inheritCheck(c Check) {
 	// send original check downwards
 	c.Id = uuid.Nil
 	tec.inheritCheckDeep(c)
-	tec.actionCheckNew(tec.setupCheckAction(f))
 }
 
 func (tec *SomaTreeElemCluster) inheritCheckDeep(c Check) {
@@ -59,15 +57,7 @@ func (tec *SomaTreeElemCluster) inheritCheckDeep(c Check) {
 
 func (tec *SomaTreeElemCluster) storeCheck(c Check) {
 	tec.Checks[c.Id.String()] = c
-
-	tec.Action <- &Action{
-		Action:          "create_check",
-		Type:            "cluster",
-		Id:              tec.Id.String(),
-		CheckId:         c.Id.String(),
-		CheckSource:     c.InheritedFrom.String(),
-		CheckCapability: c.CapabilityId.String(),
-	}
+	tec.actionCheckNew(tec.setupCheckAction(c))
 }
 
 func (tec *SomaTreeElemCluster) syncCheck(childId string) {

@@ -21,7 +21,6 @@ func (ten *SomaTreeElemNode) SetCheck(c Check) {
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
 	ten.storeCheck(c)
-	ten.actionCheckNew(ten.setupCheckAction(c))
 }
 
 func (ten *SomaTreeElemNode) inheritCheck(c Check) {
@@ -33,7 +32,6 @@ func (ten *SomaTreeElemNode) inheritCheck(c Check) {
 	}
 	f.Items = nil
 	ten.storeCheck(f)
-	ten.actionCheckNew(ten.setupCheckAction(f))
 }
 
 // noop, satisfy interface
@@ -42,15 +40,7 @@ func (ten *SomaTreeElemNode) inheritCheckDeep(c Check) {
 
 func (ten *SomaTreeElemNode) storeCheck(c Check) {
 	ten.Checks[c.Id.String()] = c
-
-	ten.Action <- &Action{
-		Action:          "create_check",
-		Type:            "node",
-		Id:              ten.Id.String(),
-		CheckId:         c.Id.String(),
-		CheckSource:     c.InheritedFrom.String(),
-		CheckCapability: c.CapabilityId.String(),
-	}
+	ten.actionCheckNew(ten.setupCheckAction(c))
 }
 
 // noop, satisfy interface

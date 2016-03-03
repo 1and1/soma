@@ -211,6 +211,8 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 	wg.Wait()
 }
 
+//
+//
 func (ter *SomaTreeElemRepository) export() somaproto.ProtoRepository {
 	return somaproto.ProtoRepository{
 		Id:        ter.Id.String(),
@@ -221,32 +223,80 @@ func (ter *SomaTreeElemRepository) export() somaproto.ProtoRepository {
 	}
 }
 
+func (ter *SomaTreeElemRepository) actionCreate() {
+	ter.Action <- &Action{
+		Action:     "create",
+		Type:       ter.Type,
+		Repository: ter.export(),
+	}
+}
+
+func (ter *SomaTreeElemRepository) actionUpdate() {
+	ter.Action <- &Action{
+		Action:     "update",
+		Type:       ter.Type,
+		Repository: ter.export(),
+	}
+}
+
+func (ter *SomaTreeElemRepository) actionDelete() {
+	ter.Action <- &Action{
+		Action:     "delete",
+		Type:       ter.Type,
+		Repository: ter.export(),
+	}
+}
+
+func (ter *SomaTreeElemRepository) actionPropertyNew(a Action) {
+	a.Action = "property_new"
+	a.Type = ter.Type
+	a.Repository = ter.export()
+
+	a.Property.RepositoryId = ter.Id.String()
+	a.Property.BucketId = ""
+	switch a.Property.PropertyType {
+	case "custom":
+		a.Property.Custom.RepositoryId = a.Property.RepositoryId
+	case "service":
+		a.Property.Service.TeamId = ter.Team.String()
+	}
+
+	ter.Action <- &a
+}
+
+func (ter *SomaTreeElemRepository) setupPropertyAction(p SomaTreeProperty) Action {
+	return p.MakeAction()
+}
+
 //
 func (ter *SomaTreeElemRepository) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = ter.Type
 	a.Repository = ter.export()
+	a.Check.RepositoryId = ter.Id.String()
+	a.Check.BucketId = ""
 
 	ter.Action <- &a
 }
 
 func (ter *SomaTreeElemRepository) setupCheckAction(c Check) Action {
-	a := Action{
-		Check: somaproto.TreeCheck{
-			CheckId:       c.GetCheckId(),
-			SourceCheckId: c.GetSourceCheckId(),
-			CheckConfigId: c.GetCheckConfigId(),
-			SourceType:    c.GetSourceType(),
-			IsInherited:   c.GetIsInherited(),
-			InheritedFrom: c.GetInheritedFrom(),
-			Inheritance:   c.GetInheritance(),
-			ChildrenOnly:  c.GetChildrenOnly(),
-			CapabilityId:  c.GetCapabilityId(),
-		},
-	}
-	a.Check.RepositoryId = ter.Id.String()
-	a.Check.BucketId = ""
-	return a
+	return c.MakeAction()
+	/*
+			a := Action{
+				Check: somaproto.TreeCheck{
+					CheckId:       c.GetCheckId(),
+					SourceCheckId: c.GetSourceCheckId(),
+					CheckConfigId: c.GetCheckConfigId(),
+					SourceType:    c.GetSourceType(),
+					IsInherited:   c.GetIsInherited(),
+					InheritedFrom: c.GetInheritedFrom(),
+					Inheritance:   c.GetInheritance(),
+					ChildrenOnly:  c.GetChildrenOnly(),
+					CapabilityId:  c.GetCapabilityId(),
+				},
+			}
+		return a
+	*/
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/satori/go.uuid"
-
 )
 
 //
@@ -27,7 +26,6 @@ func (teb *SomaTreeElemBucket) SetCheck(c Check) {
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
 	teb.storeCheck(c)
-	teb.actionCheckNew(teb.setupCheckAction(c))
 }
 
 func (teb *SomaTreeElemBucket) inheritCheck(c Check) {
@@ -42,7 +40,6 @@ func (teb *SomaTreeElemBucket) inheritCheck(c Check) {
 	// send original check downwards
 	c.Id = uuid.Nil
 	teb.inheritCheckDeep(c)
-	teb.actionCheckNew(teb.setupCheckAction(f))
 }
 
 func (teb *SomaTreeElemBucket) inheritCheckDeep(c Check) {
@@ -60,23 +57,7 @@ func (teb *SomaTreeElemBucket) inheritCheckDeep(c Check) {
 
 func (teb *SomaTreeElemBucket) storeCheck(c Check) {
 	teb.Checks[c.Id.String()] = c
-
-	teb.Action <- &Action{
-		Action: "create_check",
-		Type:   teb.Type,
-		Bucket: somaproto.ProtoBucket{
-			Id:          teb.Id.String(),
-			Name:        teb.Name,
-			Repository:  teb.Repository.String(),
-			Team:        teb.Team.String(),
-			Environment: teb.Environment,
-			IsDeleted:   teb.Deleted,
-			IsFrozen:    teb.Frozen,
-		},
-		CheckId:         c.Id.String(),
-		CheckSource:     c.InheritedFrom.String(),
-		CheckCapability: c.CapabilityId.String(),
-	}
+	teb.actionCheckNew(teb.setupCheckAction(c))
 }
 
 func (teb *SomaTreeElemBucket) syncCheck(childId string) {

@@ -2,34 +2,19 @@ package somatree
 
 
 type Action struct {
-	Action     string `json:",omitempty"`
-	Type       string `json:",omitempty"`
-	Repository somaproto.ProtoRepository
-	Bucket     somaproto.ProtoBucket
-	Group      somaproto.ProtoGroup
-	Cluster    somaproto.ProtoCluster
-	Node       somaproto.ProtoNode
-
-	ChildType    string `json:",omitempty"`
-	ChildGroup   somaproto.ProtoGroup
-	ChildCluster somaproto.ProtoCluster
-	ChildNode    somaproto.ProtoNode
-
-	Property somaproto.TreeProperty
-	Check    somaproto.TreeCheck
-
-	Id              string `json:",omitempty"`
-	SourceId        string `json:",omitempty"`
-	Name            string `json:",omitempty"`
-	Team            string `json:",omitempty"`
-	ChildId         string `json:",omitempty"`
-	PropertyType    string `json:",omitempty"`
-	PropertyId      string `json:",omitempty"`
-	PropertySource  string `json:",omitempty"`
-	CheckId         string `json:",omitempty"`
-	CheckSource     string `json:",omitempty"`
-	CheckCapability string `json:",omitempty"`
-	InstanceId      string `json:",omitempty"`
+	Action       string                    `json:"action,omitempty"`
+	Type         string                    `json:"type,omitempty"`
+	Repository   somaproto.ProtoRepository `json:"repository,omitempty"`
+	Bucket       somaproto.ProtoBucket     `json:"bucket,omitempty"`
+	Group        somaproto.ProtoGroup      `json:"group,omitempty"`
+	Cluster      somaproto.ProtoCluster    `json:"cluster,omitempty"`
+	Node         somaproto.ProtoNode       `json:"node,omitempty"`
+	Property     somaproto.TreeProperty    `json:"property,omitempty"`
+	Check        somaproto.TreeCheck       `json:"check,omitempty"`
+	ChildType    string                    `json:"child_type,omitempty"`
+	ChildGroup   somaproto.ProtoGroup      `json:"child_group,omitempty"`
+	ChildCluster somaproto.ProtoCluster    `json:"child_cluster,omitempty"`
+	ChildNode    somaproto.ProtoNode       `json:"child_node,omitempty"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

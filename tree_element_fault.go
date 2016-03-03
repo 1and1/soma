@@ -78,8 +78,8 @@ func (tef *SomaTreeElemFault) setAction(c chan *Action) {
 	tef.Action <- &Action{
 		Action: "create",
 		Type:   "fault",
-		Id:     tef.Id.String(),
-		Name:   tef.Name,
+		//Id:     tef.Id.String(),
+		//Name:   tef.Name,
 	}
 }
 
