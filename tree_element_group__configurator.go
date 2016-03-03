@@ -186,12 +186,17 @@ checksloop:
 				inst.calcConstraintValHash()
 				inst.calcInstanceSvcCfgHash()
 				// TODO lookup existing instance ids for check in teg.CheckInstances
-				// TODO check existing for same ConstraintHash
-				// TODO ... same ConstraintValHash
-				// TODO ... ... same InstanceSvcCfgHash --> instance update
-				// TODO ... same InstanceSvcCfgHash     --> instance update (new constraints)
-				// TODO add new instances
-				// TODO remove old instances
+				for _, exInstId := range teg.CheckInstances[i] {
+					exInst := teg.Instances[exInstId]
+					// TODO check existing for same ConstraintHash
+					if exInst.ConstraintHash == inst.ConstraintHash {
+					}
+					// TODO ... same ConstraintValHash
+					// TODO ... ... same InstanceSvcCfgHash --> instance update
+					// TODO ... same InstanceSvcCfgHash     --> instance update (new constraints)
+					// TODO add new instances
+					// TODO remove old instances
+				}
 				inst.Version = 0
 				inst.CheckId, _ = uuid.FromString(i)
 				inst.InstanceId = uuid.NewV4()
