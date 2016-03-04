@@ -5,6 +5,9 @@ import "sync"
 //
 // Interface: SomaTreeAttacher
 func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
+	if tec.Parent != nil {
+		panic(`SomaTreeElemCluster.Attach: already attached`)
+	}
 	switch {
 	case a.ParentType == "bucket":
 		tec.attachToBucket(a)

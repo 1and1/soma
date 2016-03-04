@@ -15,6 +15,8 @@ func (teb *SomaTreeElemBucket) Attach(a AttachRequest) {
 	switch {
 	case a.ParentType == "repository":
 		teb.attachToRepository(a)
+	default:
+		panic(`SomaTreeElemBucket.Attach`)
 	}
 }
 
