@@ -12,11 +12,13 @@ type SomaTreeUnlinker interface {
 type SomaTreeRepositoryReceiver interface {
 	SomaTreeReceiver
 	SomaTreeRepositoryUnlinker
+
 	receiveRepository(r ReceiveRequest)
 }
 
 type SomaTreeRepositoryUnlinker interface {
 	SomaTreeUnlinker
+
 	unlinkRepository(u UnlinkRequest)
 }
 
@@ -24,22 +26,26 @@ type SomaTreeRepositoryUnlinker interface {
 type SomaTreeBucketReceiver interface {
 	SomaTreeReceiver
 	SomaTreeBucketUnlinker
+
 	receiveBucket(r ReceiveRequest)
 }
 
 type SomaTreeBucketUnlinker interface {
 	SomaTreeUnlinker
+
 	unlinkBucket(u UnlinkRequest)
 }
 
 type SomaTreeFaultReceiver interface {
 	SomaTreeReceiver
 	SomaTreeFaultUnlinker
+
 	receiveFault(r ReceiveRequest)
 }
 
 type SomaTreeFaultUnlinker interface {
 	SomaTreeUnlinker
+
 	unlinkFault(u UnlinkRequest)
 }
 
@@ -47,11 +53,13 @@ type SomaTreeFaultUnlinker interface {
 type SomaTreeGroupReceiver interface {
 	SomaTreeReceiver
 	SomaTreeGroupUnlinker
+
 	receiveGroup(r ReceiveRequest)
 }
 
 type SomaTreeGroupUnlinker interface {
 	SomaTreeUnlinker
+
 	unlinkGroup(u UnlinkRequest)
 }
 
@@ -59,11 +67,13 @@ type SomaTreeGroupUnlinker interface {
 type SomaTreeClusterReceiver interface {
 	SomaTreeReceiver
 	SomaTreeClusterUnlinker
+
 	receiveCluster(r ReceiveRequest)
 }
 
 type SomaTreeClusterUnlinker interface {
 	SomaTreeUnlinker
+
 	unlinkCluster(u UnlinkRequest)
 }
 
@@ -71,11 +81,13 @@ type SomaTreeClusterUnlinker interface {
 type SomaTreeNodeReceiver interface {
 	SomaTreeReceiver
 	SomaTreeNodeUnlinker
+
 	receiveNode(r ReceiveRequest)
 }
 
 type SomaTreeNodeUnlinker interface {
 	SomaTreeUnlinker
+
 	unlinkNode(u UnlinkRequest)
 }
 

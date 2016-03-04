@@ -1,14 +1,14 @@
 package somatree
 
 type SomaTreeAttacher interface {
-	Attach(a AttachRequest)
-	Destroy()
-	Detach()
-
 	SomaTreePropertier
 	Checker
 
+	Attach(a AttachRequest)
+	Destroy()
+	Detach()
 	GetName() string
+
 	setActionDeep(c chan *Action)
 
 	clearParent()
@@ -21,38 +21,47 @@ type SomaTreeAttacher interface {
 // implemented by: repository
 type SomaTreeRootAttacher interface {
 	SomaTreeAttacher
+
 	attachToRoot(a AttachRequest)
 }
 
 // implemented by: buckets
 type SomaTreeRepositoryAttacher interface {
 	SomaTreeAttacher
-	attachToRepository(a AttachRequest)
+
 	CloneRepository() SomaTreeRepositoryAttacher
+
+	attachToRepository(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
 type SomaTreeBucketAttacher interface {
 	SomaTreeAttacher
-	attachToBucket(a AttachRequest)
+
 	CloneBucket() SomaTreeBucketAttacher
 	ReAttach(a AttachRequest)
+
+	attachToBucket(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
 type SomaTreeGroupAttacher interface {
 	SomaTreeAttacher
-	attachToGroup(a AttachRequest)
+
 	CloneGroup() SomaTreeGroupAttacher
 	ReAttach(a AttachRequest)
+
+	attachToGroup(a AttachRequest)
 }
 
 // implemented by: nodes
 type SomaTreeClusterAttacher interface {
 	SomaTreeAttacher
-	attachToCluster(a AttachRequest)
+
 	CloneCluster() SomaTreeClusterAttacher
 	ReAttach(a AttachRequest)
+
+	attachToCluster(a AttachRequest)
 }
 
 type AttachRequest struct {
