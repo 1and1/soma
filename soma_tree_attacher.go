@@ -8,6 +8,9 @@ type SomaTreeAttacher interface {
 	SomaTreePropertier
 	Checker
 
+	GetName() string
+	setActionDeep(c chan *Action)
+
 	clearParent()
 	setFault(f *SomaTreeElemFault)
 	setParent(p SomaTreeReceiver)
@@ -18,47 +21,38 @@ type SomaTreeAttacher interface {
 // implemented by: repository
 type SomaTreeRootAttacher interface {
 	SomaTreeAttacher
-	GetName() string
 	attachToRoot(a AttachRequest)
 }
 
 // implemented by: buckets
 type SomaTreeRepositoryAttacher interface {
 	SomaTreeAttacher
-	GetName() string
 	attachToRepository(a AttachRequest)
 	CloneRepository() SomaTreeRepositoryAttacher
-	setActionDeep(c chan *Action)
 }
 
 // implemented by: groups, clusters, nodes
 type SomaTreeBucketAttacher interface {
 	SomaTreeAttacher
-	GetName() string
 	attachToBucket(a AttachRequest)
 	CloneBucket() SomaTreeBucketAttacher
 	ReAttach(a AttachRequest)
-	setActionDeep(c chan *Action)
 }
 
 // implemented by: groups, clusters, nodes
 type SomaTreeGroupAttacher interface {
 	SomaTreeAttacher
-	GetName() string
 	attachToGroup(a AttachRequest)
 	CloneGroup() SomaTreeGroupAttacher
 	ReAttach(a AttachRequest)
-	setActionDeep(c chan *Action)
 }
 
 // implemented by: nodes
 type SomaTreeClusterAttacher interface {
 	SomaTreeAttacher
-	GetName() string
 	attachToCluster(a AttachRequest)
 	CloneCluster() SomaTreeClusterAttacher
 	ReAttach(a AttachRequest)
-	setActionDeep(c chan *Action)
 }
 
 type AttachRequest struct {
