@@ -19,6 +19,7 @@ create table if not exists soma.check_instance_status (
 create table if not exists soma.check_instances (
     check_instance_id           uuid            PRIMARY KEY,
     check_id                    uuid            NOT NULL REFERENCES soma.checks ( check_id ) DEFERRABLE,
+    check_configuration_id      uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
     last_configuration_created  timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
     update_available            boolean         NOT NULL DEFAULT 'no',
     deleted                     boolean         NOT NULL DEFAULT 'no'
@@ -32,12 +33,17 @@ create table if not exists soma.check_instance_configurations (
     version                     integer         NOT NULL,
     check_instance_id           uuid            NOT NULL REFERENCES soma.check_instances ( check_instance_id ) DEFERRABLE,
     monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
+    constraint_hash             varchar(256)    NOT NULL,
+    constraint_val_hash         varchar(256)    NOT NULL,
+    instance_service            varchar(64)     NOT NULL REFERENCES soma.team_service_properties ( service_property ) DEFERRABLE,
+    instance_service_cfg_hash   varchar(256)    NOT NULL,
+    instance_service_cfg        jsonb           NOT NULL,
     created                     timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
-    activated_at                timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
+    activated_at                timestamptz(3),
     status                      varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
     next_status                 varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
     awaiting_deletion           boolean         NOT NULL DEFAULT 'no',
-    configuration               jsonb           NOT NULL,
+    deployment_details          jsonb           NOT NULL,
     CHECK ( status != 'none' )
 );`
 	queries[idx] = "createTableCheckInstanceConfigurations"
