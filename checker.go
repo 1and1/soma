@@ -3,6 +3,7 @@ package somatree
 import (
 	"crypto/sha512"
 	"encoding/base64"
+	"encoding/json"
 	"io"
 	"sort"
 
@@ -74,17 +75,18 @@ type CheckInstance struct {
 	InstanceId            uuid.UUID
 	CheckId               uuid.UUID
 	ConfigId              uuid.UUID
-	Version               uint32
+	InstanceConfigId      uuid.UUID
+	Version               uint64
 	ConstraintHash        string
 	ConstraintValHash     string
 	ConstraintOncall      string                         // Ids
-	ConstraintService     map[string]string              // Id->value
+	ConstraintService     map[string]string              // svcName->value
 	ConstraintSystem      map[string]string              // Id->value
 	ConstraintCustom      map[string]string              // Id->value
 	ConstraintNative      map[string]string              // prop->value
 	ConstraintAttribute   map[string]map[string][]string // svcId->attr->[ value, value, ... ]
 	InstanceServiceConfig map[string]string              // attr->value
-	InstanceService       uuid.UUID
+	InstanceService       string
 	InstanceSvcCfgHash    string
 }
 
@@ -167,11 +169,12 @@ func (tci *CheckInstance) Clone() CheckInstance {
 		ConstraintValHash:  tci.ConstraintValHash,
 		ConstraintOncall:   tci.ConstraintOncall,
 		InstanceSvcCfgHash: tci.InstanceSvcCfgHash,
+		InstanceService:    tci.InstanceService,
 	}
+	cl.InstanceConfigId, _ = uuid.FromString(tci.InstanceConfigId.String())
 	cl.InstanceId, _ = uuid.FromString(tci.InstanceId.String())
 	cl.CheckId, _ = uuid.FromString(tci.CheckId.String())
 	cl.ConfigId, _ = uuid.FromString(tci.ConfigId.String())
-	cl.InstanceService, _ = uuid.FromString(tci.InstanceService.String())
 	for k, v := range tci.ConstraintService {
 		t := v
 		cl.ConstraintService[k] = t
@@ -403,6 +406,28 @@ func (c *Check) clone() Check {
 		cl.Items[i] = n
 	}
 	return cl
+}
+
+func (ci CheckInstance) MakeAction() Action {
+	serviceCfg, err := json.Marshal(ci.InstanceServiceConfig)
+	if err != nil {
+		serviceCfg = []byte{}
+	}
+
+	return Action{
+		CheckInstance: somaproto.TreeCheckInstance{
+			InstanceId:            ci.InstanceId.String(),
+			CheckId:               ci.CheckId.String(),
+			ConfigId:              ci.ConfigId.String(),
+			InstanceConfigId:      ci.InstanceConfigId.String(),
+			Version:               ci.Version,
+			ConstraintHash:        ci.ConstraintHash,
+			ConstraintValHash:     ci.ConstraintValHash,
+			InstanceSvcCfgHash:    ci.InstanceSvcCfgHash,
+			InstanceService:       ci.InstanceService,
+			InstanceServiceConfig: string(serviceCfg),
+		},
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
