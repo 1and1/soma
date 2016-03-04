@@ -145,13 +145,14 @@ checksloop:
 					f, _ := uuid.FromString(id)
 					return f
 				}(i),
+				InstanceConfigId:      uuid.NewV4(),
 				ConstraintOncall:      oncallC,
 				ConstraintService:     serviceC,
 				ConstraintSystem:      systemC,
 				ConstraintCustom:      customC,
 				ConstraintNative:      nativeC,
 				ConstraintAttribute:   attributeC,
-				InstanceService:       uuid.Nil,
+				InstanceService:       "",
 				InstanceServiceConfig: nil,
 				InstanceSvcCfgHash:    "",
 			}
@@ -244,16 +245,14 @@ checksloop:
 						f, _ := uuid.FromString(id)
 						return f
 					}(i),
-					ConstraintOncall:    oncallC,
-					ConstraintService:   serviceC,
-					ConstraintSystem:    systemC,
-					ConstraintCustom:    customC,
-					ConstraintNative:    nativeC,
-					ConstraintAttribute: attributeC,
-					InstanceService: func(id string) uuid.UUID {
-						f, _ := uuid.FromString(id)
-						return f
-					}(svcId),
+					InstanceConfigId:      uuid.NewV4(),
+					ConstraintOncall:      oncallC,
+					ConstraintService:     serviceC,
+					ConstraintSystem:      systemC,
+					ConstraintCustom:      customC,
+					ConstraintNative:      nativeC,
+					ConstraintAttribute:   attributeC,
+					InstanceService:       svcId,
 					InstanceServiceConfig: cfg,
 				}
 				inst.calcConstraintHash()
@@ -289,19 +288,19 @@ checksloop:
 		for _, oldInstanceId := range teg.CheckInstances[i] {
 			if _, ok := newInstances[oldInstanceId]; !ok {
 				// there is no new version for this instance id
-				// TODO action/instance_delete
+				teg.actionCheckInstanceDelete(teg.Instances[oldInstanceId].MakeAction())
 				delete(teg.Instances, oldInstanceId)
 				continue
 			}
-			// TODO action/instance_update
 			delete(teg.Instances, oldInstanceId)
 			teg.Instances[oldInstanceId] = newInstances[oldInstanceId]
+			teg.actionCheckInstanceUpdate(teg.Instances[oldInstanceId].MakeAction())
 		}
 		for _, newInstanceId := range newCheckInstances {
 			if _, ok := teg.Instances[newInstanceId]; !ok {
 				// this instance is new, not an update
-				// TODO action/instance_create
 				teg.Instances[newInstanceId] = newInstances[newInstanceId]
+				teg.actionCheckInstanceCreate(teg.Instances[newInstanceId].MakeAction())
 			}
 		}
 		delete(teg.CheckInstances, i)
@@ -331,38 +330,78 @@ func (teg *SomaTreeElemGroup) evalNativeProp(
 
 func (teg *SomaTreeElemGroup) evalSystemProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range teg.PropertySystem {
+		t := v.(*PropertySystem)
+		if t.Key == prop && t.Value == val && t.View == view {
+			return t.Key, true
+		}
+	}
 	return "", false
 }
 
 func (teg *SomaTreeElemGroup) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range teg.PropertyOncall {
+		t := v.(*PropertyOncall)
+		if "name" == prop && t.Name == val && t.View == view {
+			return t.Name, true
+		}
+	}
 	return "", false
 }
 
 func (teg *SomaTreeElemGroup) evalCustomProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range teg.PropertyCustom {
+		t := v.(*PropertyCustom)
+		if t.Key == prop && t.Value == val && t.View == view {
+			return t.Key, true
+		}
+	}
 	return "", false
 }
 
 func (teg *SomaTreeElemGroup) evalServiceProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range teg.PropertyService {
+		t := v.(*PropertyService)
+		if prop == "name" && t.Service == val && t.View == view {
+			return t.View, true
+		}
+	}
 	return "", false
 }
 
 func (teg *SomaTreeElemGroup) evalAttributeOfService(
 	svcName string, view string, attribute string, value string) bool {
-	// TODO
+	for _, v := range teg.PropertyService {
+		t := v.(*PropertyService)
+		if t.Service != svcName {
+			continue
+		}
+		for _, a := range t.Attributes {
+			if a.Attribute == attribute && t.View == view && a.Value == value {
+				return true
+			}
+		}
+	}
 	return false
 }
 
 func (teg *SomaTreeElemGroup) evalAttributeProp(
 	view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
-	// TODO
+	for _, v := range teg.PropertyService {
+		t := v.(*PropertyService)
+		for _, a := range t.Attributes {
+			if a.Attribute == attr && a.Value == value && t.View == view {
+				f[t.Service] = a.Attribute
+			}
+		}
+	}
+	if len(f) > 0 {
+		return true, f
+	}
 	return false, f
 }
 
