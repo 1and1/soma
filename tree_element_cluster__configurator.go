@@ -170,16 +170,13 @@ checksloop:
 						f, _ := uuid.FromString(id)
 						return f
 					}(i),
-					ConstraintOncall:    oncallC,
-					ConstraintService:   serviceC,
-					ConstraintSystem:    systemC,
-					ConstraintCustom:    customC,
-					ConstraintNative:    nativeC,
-					ConstraintAttribute: attributeC,
-					InstanceService: func(id string) uuid.UUID {
-						f, _ := uuid.FromString(id)
-						return f
-					}(svcId),
+					ConstraintOncall:      oncallC,
+					ConstraintService:     serviceC,
+					ConstraintSystem:      systemC,
+					ConstraintCustom:      customC,
+					ConstraintNative:      nativeC,
+					ConstraintAttribute:   attributeC,
+					InstanceService:       svcId,
 					InstanceServiceConfig: cfg,
 				}
 				inst.calcConstraintHash()
