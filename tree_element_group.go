@@ -321,4 +321,28 @@ func (teg *SomaTreeElemGroup) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }
 
+func (teg *SomaTreeElemGroup) actionCheckInstanceCreate(a Action) {
+	a.Action = "check_instance_create"
+	a.Type = teg.Type
+	a.Group = teg.export()
+
+	teg.Action <- &a
+}
+
+func (teg *SomaTreeElemGroup) actionCheckInstanceUpdate(a Action) {
+	a.Action = "check_instance_update"
+	a.Type = teg.Type
+	a.Group = teg.export()
+
+	teg.Action <- &a
+}
+
+func (teg *SomaTreeElemGroup) actionCheckInstanceDelete(a Action) {
+	a.Action = "check_instance_delete"
+	a.Type = teg.Type
+	a.Group = teg.export()
+
+	teg.Action <- &a
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
