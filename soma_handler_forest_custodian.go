@@ -100,8 +100,6 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 			Root:       sTree,
 			ParentType: "root",
 			ParentId:   sTree.GetID(),
-			ChildType:  "repository",
-			ChildName:  q.Repository.Name,
 		})
 		sTree.SetError(errChan)
 
@@ -210,8 +208,6 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 		Root:       sTree,
 		ParentType: "root",
 		ParentId:   sTree.GetID(),
-		ChildType:  "repository",
-		ChildName:  q.Repository.Name,
 	})
 	sTree.SetError(errChan)
 	for i := 0; i < len(actionChan); i++ {
