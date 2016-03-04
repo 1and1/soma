@@ -7,10 +7,10 @@ func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
 		panic(`SomaTreeElemRepository.Attach: already attached`)
 	}
 	switch {
-	case a.ParentType == "root" &&
-		a.ChildType == "repository" &&
-		a.ChildName == ter.Name:
+	case a.ParentType == "root":
 		ter.attachToRoot(a)
+	default:
+		panic(`SomaTreeElemRepository.Attach`)
 	}
 }
 

@@ -66,8 +66,6 @@ type AttachRequest struct {
 	ParentType string
 	ParentId   string
 	ParentName string
-	ChildType  string
-	ChildName  string
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
