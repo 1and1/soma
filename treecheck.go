@@ -14,4 +14,17 @@ type TreeCheck struct {
 	CapabilityId  string `json:"capability_id,omitempty"`
 }
 
+type TreeCheckInstance struct {
+	InstanceId            string `json:"instance_id,omitempty"`
+	CheckId               string `json:"check_id,omitempty"`
+	ConfigId              string `json:"config_id,omitempty"`
+	InstanceConfigId      string `json:"instance_config_id,omitempty"`
+	Version               uint64 `json:"version,omitempty"`
+	ConstraintHash        string `json:"constraint_hash,omitempty"`
+	ConstraintValHash     string `json:"constraint_val_hash,omitempty"`
+	InstanceSvcCfgHash    string `json:"instance_svc_cfghash,omitempty"`
+	InstanceService       string `json:"instance_service,omitempty"`
+	InstanceServiceConfig string `json:"instance_service_cfg,omitempty"`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
