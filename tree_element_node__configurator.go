@@ -14,6 +14,9 @@ checksloop:
 		if ten.Checks[i].Inherited == false && ten.Checks[i].ChildrenOnly == true {
 			continue checksloop
 		}
+		if ten.Checks[i].View == "local" {
+			continue checksloop
+		}
 		hasBrokenConstraint := false
 		hasServiceConstraint := false
 		hasAttributeConstraint := false
@@ -26,6 +29,9 @@ checksloop:
 		serviceC := map[string]string{}                // Id->Value
 		customC := map[string]string{}                 // Id->Value
 		attributeC := map[string]map[string][]string{} // svcId->attr->[ value, ... ]
+
+		newInstances := map[string]CheckInstance{}
+		newCheckInstances := []string{}
 
 		// these constaint types must always match for the instance to
 		// be valid. defer service and attribute
@@ -77,6 +83,11 @@ checksloop:
 			continue checksloop
 		}
 
+		/* if the check has both service and attribute constraints,
+		* then for the check to hit, the tree element needs to have
+		* all the services, and each of them needs to match all
+		* attribute constraints
+		 */
 		if hasServiceConstraint && hasAttributeConstraint {
 		svcattrloop:
 			for id, _ := range serviceC {
@@ -90,6 +101,11 @@ checksloop:
 					}
 				}
 			}
+			/* if the check has only attribute constraints and no
+			* service constraint, then we pull in every service that
+			* matches all attribute constraints and generate a check
+			* instance for it
+			 */
 		} else if hasAttributeConstraint {
 			attrCount := len(attributes)
 			for _, attr := range attributes {
@@ -108,6 +124,8 @@ checksloop:
 					delete(attributeC, id)
 				}
 			}
+			// declare service constraints in effect if we found a
+			// service that bound all attribute constraints
 			if len(serviceC) > 0 {
 				hasServiceConstraint = true
 			}
@@ -117,12 +135,71 @@ checksloop:
 		}
 		// check triggered, create instances
 
+		/* if there are no service constraints, one check instance is
+		* created for this check
+		 */
 		if !hasServiceConstraint {
-			// TODO create 1x
-			continue checksloop
+			inst := CheckInstance{
+				InstanceId: uuid.UUID{},
+				CheckId: func(id string) uuid.UUID {
+					f, _ := uuid.FromString(id)
+					return f
+				}(i),
+				InstanceConfigId:      uuid.NewV4(),
+				ConstraintOncall:      oncallC,
+				ConstraintService:     serviceC,
+				ConstraintSystem:      systemC,
+				ConstraintCustom:      customC,
+				ConstraintNative:      nativeC,
+				ConstraintAttribute:   attributeC,
+				InstanceService:       "",
+				InstanceServiceConfig: nil,
+				InstanceSvcCfgHash:    "",
+			}
+			inst.calcConstraintHash()
+			inst.calcConstraintValHash()
+
+		nosvcinstanceloop:
+			for _, exInstId := range ten.CheckInstances[i] {
+				exInst := ten.Instances[exInstId]
+				// ignore instances with service constraints
+				if exInst.InstanceSvcCfgHash != "" {
+					continue nosvcinstanceloop
+				}
+				// check if an instance exists bound against the same
+				// constraints
+				if exInst.ConstraintHash == inst.ConstraintHash {
+					inst.InstanceId, _ = uuid.FromString(exInst.InstanceId.String())
+					inst.Version = exInst.Version + 1
+					break nosvcinstanceloop
+				}
+			}
+			if uuid.Equal(uuid.Nil, inst.InstanceId) {
+				// no match was found during nosvcinstanceloop, this
+				// is a new instance
+				inst.Version = 0
+				inst.InstanceId = uuid.NewV4()
+			}
+			newInstances[inst.InstanceId.String()] = inst
+			newCheckInstances = append(newCheckInstances, inst.InstanceId.String())
 		}
 
+		/* if service constraints are in effect, then we generate
+		* instances for every service that bound.
+		* Since service attributes can be specified more than once,
+		* but the semantics are unclear what the expected behaviour of
+		* for example a file age check is that is specified against
+		* more than one file path; all possible attribute value
+		* permutations for each service are built and then one check
+		* instance is built for each of these service config
+		* permutations.
+		 */
+	serviceconstraintloop:
 		for svcId, _ := range serviceC {
+			if !hasServiceConstraint {
+				break serviceconstraintloop
+			}
+
 			svcCfg := ten.getServiceMap(svcId)
 
 			// calculate how many instances this service spawns
@@ -163,10 +240,12 @@ checksloop:
 					cfg[k] = v
 				}
 				inst := CheckInstance{
+					InstanceId: uuid.UUID{},
 					CheckId: func(id string) uuid.UUID {
 						f, _ := uuid.FromString(id)
 						return f
 					}(i),
+					InstanceConfigId:      uuid.NewV4(),
 					ConstraintOncall:      oncallC,
 					ConstraintService:     serviceC,
 					ConstraintSystem:      systemC,
@@ -179,21 +258,54 @@ checksloop:
 				inst.calcConstraintHash()
 				inst.calcConstraintValHash()
 				inst.calcInstanceSvcCfgHash()
-				// TODO lookup existing instance ids for check in ten.CheckInstances
-				// TODO check existing for same ConstraintHash
-				// TODO ... same ConstraintValHash
-				// TODO ... ... same InstanceSvcCfgHash --> instance update
-				// TODO ... same InstanceSvcCfgHash     --> instance update (new constraints)
-				// TODO add new instances
-				// TODO remove old instances
-				inst.Version = 0
-				inst.CheckId, _ = uuid.FromString(i)
-				inst.InstanceId = uuid.NewV4()
-				ten.Instances[inst.InstanceId.String()] = inst
-				ten.CheckInstances[i] = append(ten.CheckInstances[i], inst.InstanceId.String())
+
+				// lookup existing instance ids for check in ten.CheckInstances
+				// to determine if this is an update
+			instanceloop:
+				for _, exInstId := range ten.CheckInstances[i] {
+					exInst := ten.Instances[exInstId]
+					// this existing instance is for the same service
+					// configuration -> this is an update
+					if exInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
+						inst.InstanceId, _ = uuid.FromString(exInst.InstanceId.String())
+						inst.Version = exInst.Version + 1
+						break instanceloop
+					}
+				}
+				if uuid.Equal(uuid.Nil, inst.InstanceId) {
+					// no match was found during instanceloop, this is
+					// a new instance
+					inst.Version = 0
+					inst.InstanceId = uuid.NewV4()
+				}
+				newInstances[inst.InstanceId.String()] = inst
+				newCheckInstances = append(newCheckInstances, inst.InstanceId.String())
+			}
+		} // LOOPEND: range serviceC
+		// all new check instances have been built, check which
+		// existing instances did not get an update and need to be
+		// deleted
+		for _, oldInstanceId := range ten.CheckInstances[i] {
+			if _, ok := newInstances[oldInstanceId]; !ok {
+				// there is no new version for this instance id
+				ten.actionCheckInstanceDelete(ten.Instances[oldInstanceId].MakeAction())
+				delete(ten.Instances, oldInstanceId)
+				continue
+			}
+			delete(ten.Instances, oldInstanceId)
+			ten.Instances[oldInstanceId] = newInstances[oldInstanceId]
+			ten.actionCheckInstanceUpdate(ten.Instances[oldInstanceId].MakeAction())
+		}
+		for _, newInstanceId := range newCheckInstances {
+			if _, ok := ten.Instances[newInstanceId]; !ok {
+				// this instance is new, not an update
+				ten.Instances[newInstanceId] = newInstances[newInstanceId]
+				ten.actionCheckInstanceCreate(ten.Instances[newInstanceId].MakeAction())
 			}
 		}
-	}
+		delete(ten.CheckInstances, i)
+		ten.CheckInstances[i] = newCheckInstances
+	} // LOOPEND: range ten.Checks
 }
 
 func (ten *SomaTreeElemNode) evalNativeProp(
@@ -218,38 +330,78 @@ func (ten *SomaTreeElemNode) evalNativeProp(
 
 func (ten *SomaTreeElemNode) evalSystemProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range ten.PropertySystem {
+		t := v.(*PropertySystem)
+		if t.Key == prop && t.Value == val && t.View == view {
+			return t.Key, true
+		}
+	}
 	return "", false
 }
 
 func (ten *SomaTreeElemNode) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range ten.PropertyOncall {
+		t := v.(*PropertyOncall)
+		if "name" == prop && t.Name == val && t.View == view {
+			return t.Name, true
+		}
+	}
 	return "", false
 }
 
 func (ten *SomaTreeElemNode) evalCustomProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range ten.PropertyCustom {
+		t := v.(*PropertyCustom)
+		if t.Key == prop && t.Value == val && t.View == view {
+			return t.Key, true
+		}
+	}
 	return "", false
 }
 
 func (ten *SomaTreeElemNode) evalServiceProp(
 	prop string, val string, view string) (string, bool) {
-	// TODO
+	for _, v := range ten.PropertyService {
+		t := v.(*PropertyService)
+		if prop == "name" && t.Service == val && t.View == view {
+			return t.View, true
+		}
+	}
 	return "", false
 }
 
 func (ten *SomaTreeElemNode) evalAttributeOfService(
 	svcName string, view string, attribute string, value string) bool {
-	// TODO
+	for _, v := range ten.PropertyService {
+		t := v.(*PropertyService)
+		if t.Service != svcName {
+			continue
+		}
+		for _, a := range t.Attributes {
+			if a.Attribute == attribute && t.View == view && a.Value == value {
+				return true
+			}
+		}
+	}
 	return false
 }
 
 func (ten *SomaTreeElemNode) evalAttributeProp(
 	view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
-	// TODO
+	for _, v := range ten.PropertyService {
+		t := v.(*PropertyService)
+		for _, a := range t.Attributes {
+			if a.Attribute == attr && a.Value == value && t.View == view {
+				f[t.Service] = a.Attribute
+			}
+		}
+	}
+	if len(f) > 0 {
+		return true, f
+	}
 	return false, f
 }
 
