@@ -156,4 +156,13 @@ func (st *SomaTree) Find(f FindRequest, b bool) SomaTreeAttacher {
 	return st.Child.Fault
 }
 
+//
+func (st *SomaTree) ComputeCheckInstances() {
+	if st.Child == nil {
+		panic(`SomaTree.ComputeCheckInstances: no repository registered`)
+	}
+
+	st.Child.ComputeCheckInstances()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

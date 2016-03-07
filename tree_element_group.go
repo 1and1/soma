@@ -233,6 +233,22 @@ func (teg *SomaTreeElemGroup) GetEnvironment() string {
 
 //
 //
+func (teg *SomaTreeElemGroup) ComputeCheckInstances() {
+	var wg sync.WaitGroup
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			teg.Children[c].ComputeCheckInstances()
+		}()
+	}
+	wg.Wait()
+	teg.updateCheckInstances()
+}
+
+//
+//
 func (teg *SomaTreeElemGroup) export() somaproto.ProtoGroup {
 	bucket := teg.Parent.(Bucketeer).GetBucket()
 	return somaproto.ProtoGroup{

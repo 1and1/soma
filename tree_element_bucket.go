@@ -2,6 +2,7 @@ package somatree
 
 import (
 	"fmt"
+	"sync"
 
 
 	"github.com/satori/go.uuid"
@@ -156,6 +157,21 @@ func (teb *SomaTreeElemBucket) GetEnvironment() string {
 
 func (teb *SomaTreeElemBucket) GetRepository() string {
 	return teb.Repository.String()
+}
+
+//
+//
+func (teb *SomaTreeElemBucket) ComputeCheckInstances() {
+	var wg sync.WaitGroup
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			teb.Children[c].ComputeCheckInstances()
+		}()
+	}
+	wg.Wait()
 }
 
 //

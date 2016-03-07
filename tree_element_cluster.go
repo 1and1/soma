@@ -234,6 +234,22 @@ func (tec *SomaTreeElemCluster) GetEnvironment() string {
 
 //
 //
+func (tec *SomaTreeElemCluster) ComputeCheckInstances() {
+	var wg sync.WaitGroup
+	for child, _ := range tec.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			tec.Children[c].ComputeCheckInstances()
+		}()
+	}
+	wg.Wait()
+	tec.updateCheckInstances()
+}
+
+//
+//
 func (tec *SomaTreeElemCluster) export() somaproto.ProtoCluster {
 	bucket := tec.Parent.(Bucketeer).GetBucket()
 	return somaproto.ProtoCluster{

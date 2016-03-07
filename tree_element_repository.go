@@ -213,6 +213,21 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 
 //
 //
+func (ter *SomaTreeElemRepository) ComputeCheckInstances() {
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			ter.Children[c].ComputeCheckInstances()
+		}()
+	}
+	wg.Wait()
+}
+
+//
+//
 func (ter *SomaTreeElemRepository) export() somaproto.ProtoRepository {
 	return somaproto.ProtoRepository{
 		Id:        ter.Id.String(),

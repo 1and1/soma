@@ -203,6 +203,14 @@ func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
 	ten.setFault(f)
 }
 
+//
+//
+func (ten *SomaTreeElemNode) ComputeCheckInstances() {
+	ten.updateCheckInstances()
+}
+
+//
+//
 func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
 	bucket := ten.Parent.(Bucketeer).GetBucket()
 	return somaproto.ProtoNode{
