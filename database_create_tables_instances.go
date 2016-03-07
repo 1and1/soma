@@ -32,7 +32,7 @@ create table if not exists soma.check_instance_configurations (
     check_instance_config_id    uuid            PRIMARY KEY,
     version                     integer         NOT NULL,
     check_instance_id           uuid            NOT NULL REFERENCES soma.check_instances ( check_instance_id ) DEFERRABLE,
-    monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
+    monitoring_id               uuid            REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
     constraint_hash             varchar(256)    NOT NULL,
     constraint_val_hash         varchar(256)    NOT NULL,
     instance_service            varchar(64)     NOT NULL REFERENCES soma.team_service_properties ( service_property ) DEFERRABLE,
@@ -44,7 +44,8 @@ create table if not exists soma.check_instance_configurations (
     next_status                 varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE,
     awaiting_deletion           boolean         NOT NULL DEFAULT 'no',
     deployment_details          jsonb           NOT NULL,
-    CHECK ( status != 'none' )
+    CHECK ( status != 'none' ),
+    CHECK ( status = 'awaiting_computation' OR monitoring_id IS NOT NULL )
 );`
 	queries[idx] = "createTableCheckInstanceConfigurations"
 	idx++
