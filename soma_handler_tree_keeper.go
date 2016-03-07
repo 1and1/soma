@@ -171,6 +171,8 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		txStmtCreateCheckConfigurationConstraintService   *sql.Stmt
 		txStmtCreateCheckConfigurationConstraintAttribute *sql.Stmt
 		txStmtCreateCheck                                 *sql.Stmt
+		txStmtCreateCheckInstance                         *sql.Stmt
+		txStmtCreateCheckInstanceConfiguration            *sql.Stmt
 	)
 	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 	if err != nil {
@@ -621,6 +623,9 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 
+	// recalculate check instances
+	tk.tree.ComputeCheckInstances()
+
 	// open multi-statement transaction
 	if tx, err = tk.conn.Begin(); err != nil {
 		goto bailout
@@ -677,6 +682,16 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 	defer txStmtCreateCheck.Close()
+
+	if txStmtCreateCheckInstance, err = tx.Prepare(tkStmtCreateCheckInstance); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckInstance.Close()
+
+	if txStmtCreateCheckInstanceConfiguration, err = tx.Prepare(tkStmtCreateCheckInstanceConfiguration); err != nil {
+		goto bailout
+	}
+	defer txStmtCreateCheckInstanceConfiguration.Close()
 
 	//
 	// REPOSITORY
@@ -1359,6 +1374,34 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
+			case "check_instance_create":
+				if _, err = txStmtCreateCheckInstance.Exec(
+					a.CheckInstance.InstanceId,
+					a.CheckInstance.CheckId,
+					a.CheckInstance.ConfigId,
+					time.Now().UTC(),
+				); err != nil {
+					break actionloop
+				}
+				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
+					a.CheckInstance.InstanceConfigId,
+					a.CheckInstance.Version,
+					a.CheckInstance.InstanceId,
+					a.CheckInstance.ConstraintHash,
+					a.CheckInstance.ConstraintValHash,
+					a.CheckInstance.InstanceService,
+					a.CheckInstance.InstanceSvcCfgHash,
+					a.CheckInstance.InstanceServiceConfig,
+					time.Now().UTC(),
+					"awaiting_computation",
+					"none",
+					false,
+					"{}",
+				); err != nil {
+					break actionloop
+				}
+			case "check_instance_update":
+			case "check_instance_delete":
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1491,6 +1534,34 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
+			case "check_instance_create":
+				if _, err = txStmtCreateCheckInstance.Exec(
+					a.CheckInstance.InstanceId,
+					a.CheckInstance.CheckId,
+					a.CheckInstance.ConfigId,
+					time.Now().UTC(),
+				); err != nil {
+					break actionloop
+				}
+				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
+					a.CheckInstance.InstanceConfigId,
+					a.CheckInstance.Version,
+					a.CheckInstance.InstanceId,
+					a.CheckInstance.ConstraintHash,
+					a.CheckInstance.ConstraintValHash,
+					a.CheckInstance.InstanceService,
+					a.CheckInstance.InstanceSvcCfgHash,
+					a.CheckInstance.InstanceServiceConfig,
+					time.Now().UTC(),
+					"awaiting_computation",
+					"none",
+					false,
+					"{}",
+				); err != nil {
+					break actionloop
+				}
+			case "check_instance_update":
+			case "check_instance_delete":
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1600,6 +1671,34 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
+			case "check_instance_create":
+				if _, err = txStmtCreateCheckInstance.Exec(
+					a.CheckInstance.InstanceId,
+					a.CheckInstance.CheckId,
+					a.CheckInstance.ConfigId,
+					time.Now().UTC(),
+				); err != nil {
+					break actionloop
+				}
+				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
+					a.CheckInstance.InstanceConfigId,
+					a.CheckInstance.Version,
+					a.CheckInstance.InstanceId,
+					a.CheckInstance.ConstraintHash,
+					a.CheckInstance.ConstraintValHash,
+					a.CheckInstance.InstanceService,
+					a.CheckInstance.InstanceSvcCfgHash,
+					a.CheckInstance.InstanceServiceConfig,
+					time.Now().UTC(),
+					"awaiting_computation",
+					"none",
+					false,
+					"{}",
+				); err != nil {
+					break actionloop
+				}
+			case "check_instance_update":
+			case "check_instance_delete":
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
