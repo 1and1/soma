@@ -11,6 +11,7 @@ type DeploymentDetails struct {
 	Capability         *ProtoCapability      `json:"capability"`
 	Monitoring         *ProtoMonitoring      `json:"monitoring_system"`
 	Metric             *ProtoMetric          `json:"metric"`
+	Unit               *ProtoUnit            `json:"unit"`
 	Team               *ProtoTeam            `json:"organizational_team"`
 	Oncall             *ProtoOncall          `json:"oncall,omitempty"`
 	Service            *TreePropertyService  `json:"service,omitempty"`
