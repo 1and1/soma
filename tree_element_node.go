@@ -237,92 +237,53 @@ func (ten *SomaTreeElemNode) actionDelete() {
 }
 
 func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
-	a.Action = "property_new"
-	a.Type = ten.Type
-	a.Node = ten.export()
+	a.Property.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Property.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
-	ten.Action <- &a
+	switch a.Property.PropertyType {
+	case "custom":
+		a.Property.Custom.RepositoryId = a.Property.RepositoryId
+	case "service":
+		a.Property.Service.TeamId = ten.Team.String()
+	}
+
+	ten.actionDispatch("property_new", a)
 }
 
 //
 func (ten *SomaTreeElemNode) setupPropertyAction(p SomaTreeProperty) Action {
-	a := Action{
-		Property: somaproto.TreeProperty{
-			InstanceId:       p.GetID(),
-			SourceInstanceId: p.GetSourceInstance(),
-			SourceType:       p.GetSourceType(),
-			IsInherited:      p.GetIsInherited(),
-			InheritedFrom:    p.GetSource(),
-			PropertyType:     p.GetType(),
-			Inheritance:      p.hasInheritance(),
-			ChildrenOnly:     p.isChildrenOnly(),
-			View:             p.GetView(),
-			RepositoryId:     ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository(),
-			BucketId:         ten.Parent.(Bucketeer).GetBucket().(Builder).GetID(),
-		},
-	}
-	switch a.Property.PropertyType {
-	case "custom":
-		a.Property.Custom = &somaproto.TreePropertyCustom{
-			CustomId:     p.(*PropertyCustom).CustomId.String(),
-			RepositoryId: a.Property.RepositoryId,
-			Name:         p.(*PropertyCustom).Key,
-			Value:        p.(*PropertyCustom).Value,
-		}
-	case "system":
-		a.Property.System = &somaproto.TreePropertySystem{
-			Name:  p.(*PropertySystem).Key,
-			Value: p.(*PropertySystem).Value,
-		}
-	case "service":
-		a.Property.Service = &somaproto.TreePropertyService{
-			Name:   p.(*PropertyService).Service,
-			TeamId: ten.Team.String(),
-		}
-		a.Property.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0)
-		for _, attr := range p.(*PropertyService).Attributes {
-			ta := somaproto.TreeServiceAttribute{
-				Attribute: attr.Attribute,
-				Value:     attr.Value,
-			}
-			a.Property.Service.Attributes = append(a.Property.Service.Attributes, ta)
-		}
-	case "oncall":
-		a.Property.Oncall = &somaproto.TreePropertyOncall{
-			OncallId: p.(*PropertyOncall).OncallId.String(),
-			Name:     p.(*PropertyOncall).Name,
-			Number:   p.(*PropertyOncall).Number,
-		}
-	}
-	return a
+	return p.MakeAction()
 }
 
 //
 func (ten *SomaTreeElemNode) actionCheckNew(a Action) {
-	a.Action = "check_new"
+	a.Check.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	ten.actionDispatch("check_new", a)
+}
+
+func (ten *SomaTreeElemNode) setupCheckAction(c Check) Action {
+	return c.MakeAction()
+}
+
+func (ten *SomaTreeElemNode) actionCheckInstanceCreate(a Action) {
+	ten.actionDispatch("check_instance_create", a)
+}
+
+func (ten *SomaTreeElemNode) actionCheckInstanceUpdate(a Action) {
+	ten.actionDispatch("check_instance_update", a)
+}
+
+func (ten *SomaTreeElemNode) actionCheckInstanceDelete(a Action) {
+	ten.actionDispatch("check_instance_delete", a)
+}
+
+func (ten *SomaTreeElemNode) actionDispatch(action string, a Action) {
+	a.Action = action
 	a.Type = ten.Type
 	a.Node = ten.export()
 
 	ten.Action <- &a
-}
-
-func (ten *SomaTreeElemNode) setupCheckAction(c Check) Action {
-	a := Action{
-		Check: somaproto.TreeCheck{
-			CheckId:       c.GetCheckId(),
-			SourceCheckId: c.GetSourceCheckId(),
-			CheckConfigId: c.GetCheckConfigId(),
-			SourceType:    c.GetSourceType(),
-			IsInherited:   c.GetIsInherited(),
-			InheritedFrom: c.GetInheritedFrom(),
-			Inheritance:   c.GetInheritance(),
-			ChildrenOnly:  c.GetChildrenOnly(),
-			CapabilityId:  c.GetCapabilityId(),
-		},
-	}
-	a.Check.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
-	a.Check.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
-	return a
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

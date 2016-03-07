@@ -285,12 +285,9 @@ func (teg *SomaTreeElemGroup) actionMemberRemoved(a Action) {
 }
 
 func (teg *SomaTreeElemGroup) actionPropertyNew(a Action) {
-	a.Action = "property_new"
-	a.Type = teg.Type
-	a.Group = teg.export()
-
 	a.Property.RepositoryId = teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = teg.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+
 	switch a.Property.PropertyType {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
@@ -298,7 +295,7 @@ func (teg *SomaTreeElemGroup) actionPropertyNew(a Action) {
 		a.Property.Service.TeamId = teg.Team.String()
 	}
 
-	teg.Action <- &a
+	teg.actionDispatch("property_new", a)
 }
 
 //
@@ -308,13 +305,9 @@ func (teg *SomaTreeElemGroup) setupPropertyAction(p SomaTreeProperty) Action {
 
 //
 func (teg *SomaTreeElemGroup) actionCheckNew(a Action) {
-	a.Action = "check_new"
-	a.Type = teg.Type
-	a.Group = teg.export()
 	a.Check.RepositoryId = teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Check.BucketId = teg.Parent.(Bucketeer).GetBucket().(Builder).GetID()
-
-	teg.Action <- &a
+	teg.actionDispatch("check_new", a)
 }
 
 func (teg *SomaTreeElemGroup) setupCheckAction(c Check) Action {
@@ -322,23 +315,19 @@ func (teg *SomaTreeElemGroup) setupCheckAction(c Check) Action {
 }
 
 func (teg *SomaTreeElemGroup) actionCheckInstanceCreate(a Action) {
-	a.Action = "check_instance_create"
-	a.Type = teg.Type
-	a.Group = teg.export()
-
-	teg.Action <- &a
+	teg.actionDispatch("check_instance_create", a)
 }
 
 func (teg *SomaTreeElemGroup) actionCheckInstanceUpdate(a Action) {
-	a.Action = "check_instance_update"
-	a.Type = teg.Type
-	a.Group = teg.export()
-
-	teg.Action <- &a
+	teg.actionDispatch("check_instance_update", a)
 }
 
 func (teg *SomaTreeElemGroup) actionCheckInstanceDelete(a Action) {
-	a.Action = "check_instance_delete"
+	teg.actionDispatch("check_instance_delete", a)
+}
+
+func (teg *SomaTreeElemGroup) actionDispatch(action string, a Action) {
+	a.Action = action
 	a.Type = teg.Type
 	a.Group = teg.export()
 

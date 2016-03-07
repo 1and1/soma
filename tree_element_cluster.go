@@ -286,92 +286,53 @@ func (tec *SomaTreeElemCluster) actionMemberRemoved(a Action) {
 }
 
 func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
-	a.Action = "property_new"
-	a.Type = tec.Type
-	a.Cluster = tec.export()
+	a.Property.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Property.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
-	tec.Action <- &a
+	switch a.Property.PropertyType {
+	case "custom":
+		a.Property.Custom.RepositoryId = a.Property.RepositoryId
+	case "service":
+		a.Property.Service.TeamId = tec.Team.String()
+	}
+
+	tec.actionDispatch("property_new", a)
 }
 
 //
 func (tec *SomaTreeElemCluster) setupPropertyAction(p SomaTreeProperty) Action {
-	a := Action{
-		Property: somaproto.TreeProperty{
-			InstanceId:       p.GetID(),
-			SourceInstanceId: p.GetSourceInstance(),
-			SourceType:       p.GetSourceType(),
-			IsInherited:      p.GetIsInherited(),
-			InheritedFrom:    p.GetSource(),
-			PropertyType:     p.GetType(),
-			Inheritance:      p.hasInheritance(),
-			ChildrenOnly:     p.isChildrenOnly(),
-			View:             p.GetView(),
-			RepositoryId:     tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository(),
-			BucketId:         tec.Parent.(Bucketeer).GetBucket().(Builder).GetID(),
-		},
-	}
-	switch a.Property.PropertyType {
-	case "custom":
-		a.Property.Custom = &somaproto.TreePropertyCustom{
-			CustomId:     p.(*PropertyCustom).CustomId.String(),
-			RepositoryId: a.Property.RepositoryId,
-			Name:         p.(*PropertyCustom).Key,
-			Value:        p.(*PropertyCustom).Value,
-		}
-	case "system":
-		a.Property.System = &somaproto.TreePropertySystem{
-			Name:  p.(*PropertySystem).Key,
-			Value: p.(*PropertySystem).Value,
-		}
-	case "service":
-		a.Property.Service = &somaproto.TreePropertyService{
-			Name:   p.(*PropertyService).Service,
-			TeamId: tec.Team.String(),
-		}
-		a.Property.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0)
-		for _, attr := range p.(*PropertyService).Attributes {
-			ta := somaproto.TreeServiceAttribute{
-				Attribute: attr.Attribute,
-				Value:     attr.Value,
-			}
-			a.Property.Service.Attributes = append(a.Property.Service.Attributes, ta)
-		}
-	case "oncall":
-		a.Property.Oncall = &somaproto.TreePropertyOncall{
-			OncallId: p.(*PropertyOncall).OncallId.String(),
-			Name:     p.(*PropertyOncall).Name,
-			Number:   p.(*PropertyOncall).Number,
-		}
-	}
-	return a
+	return p.MakeAction()
 }
 
 //
 func (tec *SomaTreeElemCluster) actionCheckNew(a Action) {
-	a.Action = "check_new"
+	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	tec.actionDispatch("check_new", a)
+}
+
+func (tec *SomaTreeElemCluster) setupCheckAction(c Check) Action {
+	return c.MakeAction()
+}
+
+func (tec *SomaTreeElemCluster) actionCheckInstanceCreate(a Action) {
+	tec.actionDispatch("check_instance_create", a)
+}
+
+func (tec *SomaTreeElemCluster) actionCheckInstanceUpdate(a Action) {
+	tec.actionDispatch("check_instance_update", a)
+}
+
+func (tec *SomaTreeElemCluster) actionCheckInstanceDelete(a Action) {
+	tec.actionDispatch("check_instance_delete", a)
+}
+
+func (tec *SomaTreeElemCluster) actionDispatch(action string, a Action) {
+	a.Action = action
 	a.Type = tec.Type
 	a.Cluster = tec.export()
 
 	tec.Action <- &a
-}
-
-func (tec *SomaTreeElemCluster) setupCheckAction(c Check) Action {
-	a := Action{
-		Check: somaproto.TreeCheck{
-			CheckId:       c.GetCheckId(),
-			SourceCheckId: c.GetSourceCheckId(),
-			CheckConfigId: c.GetCheckConfigId(),
-			SourceType:    c.GetSourceType(),
-			IsInherited:   c.GetIsInherited(),
-			InheritedFrom: c.GetInheritedFrom(),
-			Inheritance:   c.GetInheritance(),
-			ChildrenOnly:  c.GetChildrenOnly(),
-			CapabilityId:  c.GetCapabilityId(),
-		},
-	}
-	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
-	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
-	return a
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
