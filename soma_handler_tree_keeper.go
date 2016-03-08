@@ -92,11 +92,9 @@ runloop:
 			break runloop
 		case req := <-tk.input:
 			tk.process(&req)
-			/*
-				if !tk.frozen {
-				TODO tk.process(recalcCheckConfigRequest)
-				}
-			*/
+			if !tk.frozen {
+				tk.buildDeploymentDetails()
+			}
 		}
 	}
 }
