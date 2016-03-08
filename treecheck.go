@@ -14,6 +14,18 @@ type TreeCheck struct {
 	CapabilityId  string `json:"capability_id,omitempty"`
 }
 
+func (t *TreeCheck) DeepCompare(a *TreeCheck) bool {
+	if t.CheckId != a.CheckId || t.SourceCheckId != a.SourceCheckId ||
+		t.CheckConfigId != a.CheckConfigId || t.SourceType != a.SourceType ||
+		t.IsInherited != a.IsInherited || t.InheritedFrom != a.InheritedFrom ||
+		t.Inheritance != a.Inheritance || t.ChildrenOnly != a.ChildrenOnly ||
+		t.RepositoryId != a.RepositoryId || t.BucketId != a.BucketId ||
+		t.CapabilityId != a.CapabilityId {
+		return false
+	}
+	return true
+}
+
 type TreeCheckInstance struct {
 	InstanceId            string `json:"instance_id,omitempty"`
 	CheckId               string `json:"check_id,omitempty"`
@@ -25,6 +37,18 @@ type TreeCheckInstance struct {
 	InstanceSvcCfgHash    string `json:"instance_svc_cfghash,omitempty"`
 	InstanceService       string `json:"instance_service,omitempty"`
 	InstanceServiceConfig string `json:"instance_service_cfg,omitempty"`
+}
+
+func (t *TreeCheckInstance) DeepCompare(a *TreeCheckInstance) bool {
+	if t.InstanceId != a.InstanceId || t.CheckId != a.CheckId || t.ConfigId != a.ConfigId ||
+		t.ConstraintHash != a.ConstraintHash || t.ConstraintValHash != a.ConstraintValHash ||
+		t.InstanceSvcCfgHash != a.InstanceSvcCfgHash || t.InstanceService != a.InstanceService {
+		// - InstanceConfigId is a randomly generated uuid on every instance calculation
+		// - Version is incremented on every instance calculation
+		// - InstanceServiceConfig is compared as deploymentdetails.Service
+		return false
+	}
+	return true
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

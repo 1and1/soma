@@ -38,6 +38,37 @@ type ProtoMetricProviderPackage struct {
 }
 
 //
+func (p *ProtoMetric) DeepCompare(a *ProtoMetric) bool {
+	if p.Metric != a.Metric || p.Unit != a.Unit || p.Description != a.Description {
+		return false
+	}
+packageloop:
+	for _, pkg := range *p.Packages {
+		if pkg.DeepCompareSlice(a.Packages) {
+			continue packageloop
+		}
+		return false
+	}
+	return true
+}
+
+func (p *ProtoMetricProviderPackage) DeepCompare(a *ProtoMetricProviderPackage) bool {
+	if p.Provider != a.Provider || p.Package != a.Package {
+		return false
+	}
+	return true
+}
+
+func (p *ProtoMetricProviderPackage) DeepCompareSlice(a *[]ProtoMetricProviderPackage) bool {
+	for _, pkg := range *a {
+		if p.DeepCompare(&pkg) {
+			return true
+		}
+	}
+	return false
+}
+
+//
 func (p *ProtoResultMetric) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

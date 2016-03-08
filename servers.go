@@ -42,6 +42,16 @@ type ProtoServerFilter struct {
 }
 
 //
+func (p *ProtoServer) DeepCompare(a *ProtoServer) bool {
+	if p.Id != a.Id || p.AssetId != a.AssetId || p.Datacenter != a.Datacenter ||
+		p.Location != a.Location || p.Name != a.Name || p.IsOnline != a.IsOnline ||
+		p.IsDeleted != a.IsDeleted {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultServer) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

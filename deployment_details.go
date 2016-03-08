@@ -48,9 +48,59 @@ func (dd *DeploymentDetails) DeepCompare(alternate *DeploymentDetails) bool {
 	if dd.Datacenter != alternate.Datacenter {
 		return false
 	}
-	//if !dd.Capability.DeepCompare(alternate.Capability) {
-	//	return false
-	//}
+	//
+	if !dd.Capability.DeepCompare(alternate.Capability) {
+		return false
+	}
+	if !dd.Monitoring.DeepCompare(alternate.Monitoring) {
+		return false
+	}
+	if !dd.Metric.DeepCompare(alternate.Metric) {
+		return false
+	}
+	if !dd.Unit.DeepCompare(alternate.Unit) {
+		return false
+	}
+	if !dd.Team.DeepCompare(alternate.Team) {
+		return false
+	}
+	if !dd.Oncall.DeepCompare(alternate.Oncall) {
+		return false
+	}
+	if !dd.Service.DeepCompare(alternate.Service) {
+		return false
+	}
+	// TODO: Properties
+	// TODO: CustomProperties
+	if dd.Group != nil && !dd.Group.DeepCompare(alternate.Group) {
+		return false
+	} else if dd.Group == nil && alternate.Group != nil {
+		return false
+	}
+	if dd.Cluster != nil && !dd.Cluster.DeepCompare(alternate.Cluster) {
+		return false
+	} else if dd.Cluster == nil && alternate.Cluster != nil {
+		return false
+	}
+	if dd.Node != nil && !dd.Node.DeepCompare(alternate.Node) {
+		return false
+	} else if dd.Node == nil && alternate.Node != nil {
+		return false
+	}
+	if dd.Server != nil && !dd.Server.DeepCompare(alternate.Server) {
+		return false
+	} else if dd.Server == nil && alternate.Server != nil {
+		return false
+	}
+	if !dd.CheckConfiguration.DeepCompare(alternate.CheckConfiguration) {
+		return false
+	}
+	if !dd.Check.DeepCompare(alternate.Check) {
+		return false
+	}
+	if !dd.CheckInstance.DeepCompare(alternate.CheckInstance) {
+		return false
+	}
 	return true
 }
 

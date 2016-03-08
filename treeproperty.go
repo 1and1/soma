@@ -37,6 +37,20 @@ type TreePropertyService struct {
 	Attributes []TreeServiceAttribute `json:"attributes"`
 }
 
+func (t *TreePropertyService) DeepCompare(a *TreePropertyService) bool {
+	if t.Name != a.Name || t.TeamId != a.TeamId {
+		return false
+	}
+attrloop:
+	for _, attr := range t.Attributes {
+		if attr.DeepCompareSlice(&a.Attributes) {
+			continue attrloop
+		}
+		return false
+	}
+	return true
+}
+
 type TreePropertyNative struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
@@ -51,6 +65,22 @@ type TreePropertyOncall struct {
 type TreeServiceAttribute struct {
 	Attribute string `json:"attribute,omitempty"`
 	Value     string `json:"value,omitempty"`
+}
+
+func (t *TreeServiceAttribute) DeepCompare(a *TreeServiceAttribute) bool {
+	if t.Attribute != a.Attribute || t.Value != a.Value {
+		return false
+	}
+	return true
+}
+
+func (t *TreeServiceAttribute) DeepCompareSlice(a *[]TreeServiceAttribute) bool {
+	for _, attr := range *a {
+		if t.DeepCompare(&attr) {
+			return true
+		}
+	}
+	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -30,6 +30,14 @@ type ProtoUnitDetails struct {
 }
 
 //
+func (p *ProtoUnit) DeepCompare(a *ProtoUnit) bool {
+	if p.Unit != a.Unit || p.Name != a.Name {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultUnit) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

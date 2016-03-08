@@ -38,6 +38,15 @@ type ProtoMonitoringDetails struct {
 }
 
 //
+func (p *ProtoMonitoring) DeepCompare(a *ProtoMonitoring) bool {
+	if p.Id != a.Id || p.Name != a.Name || p.Mode != a.Mode ||
+		p.Contact != a.Contact || p.Team != a.Team || p.Callback != a.Callback {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultMonitoring) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

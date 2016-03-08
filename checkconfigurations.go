@@ -48,6 +48,23 @@ type CheckConfigurationThreshold struct {
 	Value     int64
 }
 
+func (c *CheckConfigurationThreshold) DeepCompareSlice(a []CheckConfigurationThreshold) bool {
+	for _, thr := range a {
+		if c.DeepCompare(&thr) {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *CheckConfigurationThreshold) DeepCompare(a *CheckConfigurationThreshold) bool {
+	if c.Value != a.Value || c.Level.Name != a.Level.Name ||
+		c.Predicate.Predicate != a.Predicate.Predicate {
+		return false
+	}
+	return true
+}
+
 type CheckConfigurationDetails struct {
 	CreatedAt string `json:"created_at,omitempty"`
 	CreatedBy string `json:"created_by,omitempty"`
@@ -57,6 +74,30 @@ type CheckConfigurationFilter struct {
 	Id           string `json:"id,omitempty"`
 	Name         string `json:"name,omitempty"`
 	CapabilityId string `json:"capability_id,omitempty"`
+}
+
+//
+func (c *CheckConfiguration) DeepCompare(a *CheckConfiguration) bool {
+	if a == nil {
+		return false
+	}
+	if c.Id != a.Id || c.Name != a.Name || c.Interval != a.Interval ||
+		c.RepositoryId != a.RepositoryId || c.BucketId != a.BucketId ||
+		c.CapabilityId != a.CapabilityId || c.ObjectId != a.ObjectId ||
+		c.ObjectType != a.ObjectType || c.IsActive != a.IsActive ||
+		c.IsEnabled != a.IsEnabled || c.Inheritance != a.Inheritance ||
+		c.ChildrenOnly != a.ChildrenOnly || c.ExternalId != a.ExternalId {
+		return false
+	}
+threshloop:
+	for _, thr := range c.Thresholds {
+		if thr.DeepCompareSlice(a.Thresholds) {
+			continue threshloop
+		}
+		return false
+	}
+	// TODO: constraints
+	return true
 }
 
 //

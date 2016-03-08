@@ -35,6 +35,29 @@ type ProtoCapabilityDetails struct {
 }
 
 //
+func (p *ProtoCapability) DeepCompare(alternate *ProtoCapability) bool {
+	if p.Id != alternate.Id {
+		return false
+	}
+	if p.Monitoring != alternate.Monitoring {
+		return false
+	}
+	if p.Metric != alternate.Metric {
+		return false
+	}
+	if p.View != alternate.View {
+		return false
+	}
+	if p.Thresholds != alternate.Thresholds {
+		return false
+	}
+	if p.Name != alternate.Name {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultCapability) ErrorMark(err error, imp bool,
 	found bool, length int, jobid string) bool {
 	if p.markError(err) {

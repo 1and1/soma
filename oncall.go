@@ -38,6 +38,14 @@ type ProtoOncallFilter struct {
 }
 
 //
+func (p *ProtoOncall) DeepCompare(a *ProtoOncall) bool {
+	if p.Id != a.Id || p.Name != a.Name || p.Number != a.Number {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultOncall) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

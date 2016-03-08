@@ -35,6 +35,18 @@ type ProtoClusterDetails struct {
 }
 
 //
+func (p *ProtoCluster) DeepCompare(a *ProtoCluster) bool {
+	if a == nil {
+		return false
+	}
+	if p.Id != a.Id || p.Name != a.Name || p.BucketId != a.BucketId ||
+		p.ObjectState != a.ObjectState || p.TeamId != a.TeamId {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultCluster) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

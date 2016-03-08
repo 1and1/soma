@@ -34,6 +34,14 @@ type ProtoTeamFilter struct {
 }
 
 //
+func (p *ProtoTeam) DeepCompare(a *ProtoTeam) bool {
+	if p.Id != a.Id || p.Name != a.Name || p.Ldap != a.Ldap || p.System != a.System {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultTeam) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {

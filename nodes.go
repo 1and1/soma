@@ -54,6 +54,16 @@ type ProtoNodeConfig struct {
 }
 
 //
+func (p *ProtoNode) DeepCompare(a *ProtoNode) bool {
+	if p.Id != a.Id || p.AssetId != a.AssetId || p.Name != a.Name ||
+		p.Team != a.Team || p.Server != a.Server || p.State != a.State ||
+		p.IsOnline != a.IsOnline || p.IsDeleted != a.IsDeleted {
+		return false
+	}
+	return true
+}
+
+//
 func (p *ProtoResultNode) ErrorMark(err error, imp bool, found bool,
 	length int, jobid string) bool {
 	if p.markError(err) {
