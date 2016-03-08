@@ -167,6 +167,13 @@ SELECT check_instance_config_id
 FROM   soma.check_instance_configurations
 WHERE  status = 'awaiting_computation';`
 
+const tkStmtDeployDetailsUpdate = `
+UPDATE soma.check_instance_configurations
+SET    status = 'computed',
+       deployment_details = $1::jsonb,
+	   monitoring_id = $2::uuid
+WHERE  check_instance_config_id = $3::uuid;`
+
 const tkStmtDeployDetailsCheckInstance = `
 SELECT scic.version,
 	   scic.check_instance_id,
@@ -301,5 +308,127 @@ ON    sb.repository_id = sr.repository_id
 JOIN  inventory.servers ins
 ON    sn.server_id = ins.server_id
 WHERE sn.node_id = $1::uuid;`
+
+const tkStmtDeployDetailsTeam = `
+SELECT organizational_team_name,
+       organizational_team_ldap_id
+FROM   inventory.organizational_teams
+WHERE  organizational_team_id = $1::uuid;`
+
+const tkStmtDeployDetailsNodeOncall = `
+SELECT iodt.oncall_duty_id,
+       iodt.oncall_duty_name,
+       iodt.oncall_duty_phone_number,
+FROM   soma.node_oncall_property snop
+JOIN   inventory.oncall_duty_teams iodt
+ON     snop.oncall_duty_id = iodt.oncall_duty_id
+WHERE  snop.node_id = $1::uuid
+AND    snop.view = $2::varchar;`
+
+const tkStmtDeployDetailsClusterOncall = `
+SELECT iodt.oncall_duty_id,
+       iodt.oncall_duty_name,
+	   iodt.oncall_duty_phone_number,
+FROM   soma.cluster_oncall_properties scop
+JOIN   inventory.oncall_duty_teams iodt
+ON     scop.oncall_duty_id = iodt.oncall_duty_id
+WHERE  scop.cluster_id = $1::uuid
+AND    (scop.view = $2::varchar OR scop.view = 'any');`
+
+const tkStmtDeployDetailsGroupOncall = `
+SELECT iodt.oncall_duty_id,
+       iodt.oncall_duty_name,
+	   iodt.oncall_duty_phone_number,
+FROM   soma.group_oncall_properties sgop
+JOIN   inventory.oncall_duty_teams iodt
+ON     sgop.oncall_duty_id = iodt.oncall_duty_id
+WHERE  sgop.group_id = $1::uuid
+AND    (sgop.view = $2::varchar OR sgop.view = 'any');`
+
+const tkStmtDeployDetailsGroupService = `
+SELECT service_property,
+       organizational_team_id
+FROM   soma.group_service_properties
+WHERE  instance_id = $1::uuid
+AND    (view = $2::varchar OR view = 'any');`
+
+const tkStmtDeployDetailsClusterService = `
+SELECT service_property,
+       organizational_team_id
+FROM   soma.cluster_service_properties
+WHERE  instance_id = $1::uuid
+AND    (view = $2::varchar OR view = 'any');`
+
+const tkStmtDeployDetailsNodeService = `
+SELECT service_property,
+       organizational_team_id
+FROM   soma.node_service_properties
+WHERE  instance_id = $1::uuid
+AND    (view = $2::varchar OR view = 'any');`
+
+//
+//// PROPERTIES: SYSTEM + CUSTOM
+const tkStmtDeployDetailsGroupSysProp = `
+SELECT system_property,
+       value
+FROM   soma.group_system_properties
+WHERE  group_id = $1::uuid
+AND    (view = $2::varchar OR view = 'any');`
+
+const tkStmtDeployDetailsGroupCustProp = `
+SELECT sgcp.custom_property_id,
+       scp.custom_property,
+       sgcp.value
+FROM   soma.group_custom_properties sgcp
+JOIN   soma.custom_properties scp
+ON     sgcp.custom_property_id = scp.custom_property_id
+AND    sgcp.repository_id = scp.repository_id
+WHERE  sgcp.group_id = $1::uuid
+AND    (sgcp.view = $2::varchar OR sgcp.view = 'any');`
+
+const tkStmtDeployDetailClusterSysProp = `
+SELECT system_property,
+       value
+FROM   soma.cluster_system_properties
+WHERE  cluster_id = $1::uuid
+AND    (view = $2::varchar OR view = 'any');`
+
+const tkStmtDeployDetailClusterCustProp = `
+SELECT sccp.custom_property_id,
+       scp.custom_property,
+	   sccp.value
+FROM   soma.cluster_custom_properties sccp
+JOIN   soma.custom_properties scp
+ON     sccp.custom_property_id = scp.custom_property_id
+AND    sccp.repository_id = scp.repository_id
+WHERE  sccp.cluster_id = $1::uuid
+AND    (sccp.view = $2::varchar OR sccp.view = 'any');`
+
+const tkStmtDeployDetailNodeSysProp = `
+SELECT system_property,
+       value
+FROM   soma.node_system_properties
+WHERE  node_id = $1::uuid
+AND    (view = $2::varchar OR view = 'any');`
+
+const tkStmtDeployDetailNodeCustProp = `
+SELECT sncp.custom_property_id,
+       scp.custom_property,
+	   sncp.value
+FROM   soma.node_custom_properties sncp
+JOIN   soma.custom_properties scp
+ON     sncp.custom_property_id = scp.custom_property_id
+AND    sncp.repository_id = scp.repository_id
+WHERE  sncp.node_id = $1::uuid
+AND    (sncp.view = $2::varchar OR sncp.view = 'any');`
+
+//
+// DEFAULT DATACENTER
+const tkStmtDeployDetailDefaultDatacenter = `
+SELECT server_datacenter_name
+FROM   inventory.servers
+WHERE  server_asset_id = 0
+AND    server_datacenter_location = 'none'
+AND    server_name = 'soma-null-server';`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
