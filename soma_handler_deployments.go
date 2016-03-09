@@ -17,6 +17,7 @@ type somaDeploymentRequest struct {
 
 type somaDeploymentResult struct {
 	ResultError error
+	ListEntry   string
 	Deployment  somaproto.DeploymentDetails
 }
 
@@ -38,6 +39,9 @@ type somaDeploymentHandler struct {
 	upd_stmt *sql.Stmt
 	sta_stmt *sql.Stmt
 	act_stmt *sql.Stmt
+	lst_stmt *sql.Stmt
+	all_stmt *sql.Stmt
+	clr_stmt *sql.Stmt
 }
 
 func (self *somaDeploymentHandler) run() {
@@ -67,6 +71,24 @@ func (self *somaDeploymentHandler) run() {
 	}
 	defer self.act_stmt.Close()
 
+	log.Println("Prepare: deployment/list")
+	if self.lst_stmt, err = self.conn.Prepare(stmtGetDeploymentList); err != nil {
+		log.Fatal("deployment/list: ", err)
+	}
+	defer self.lst_stmt.Close()
+
+	log.Println("Prepare: deployment/listall")
+	if self.all_stmt, err = self.conn.Prepare(stmtGetAllDeploymentList); err != nil {
+		log.Fatal("deployment/listall: ", err)
+	}
+	defer self.all_stmt.Close()
+
+	log.Println("Prepare: deployment/clearflag")
+	if self.clr_stmt, err = self.conn.Prepare(stmtDeployClearFlag); err != nil {
+		log.Fatal("deployment/clearflag: ", err)
+	}
+	defer self.clr_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -82,8 +104,9 @@ runloop:
 
 func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 	var (
-		instanceConfigID, status, next, details, nextNG string
-		err                                             error
+		instanceConfigID, instanceID, status, next, details, nextNG string
+		err                                                         error
+		list                                                        *sql.Rows
 	)
 	result := somaResult{}
 
@@ -233,7 +256,60 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 		default:
 			result.SetRequestError(fmt.Errorf("Illegal current state for state update"))
 		}
+	case "list":
+		log.Printf("R: deployment/list for %s", q.Deployment)
+		if list, err = self.lst_stmt.Query(q.Deployment); err != nil {
+			result.SetRequestError(err)
+			q.reply <- result
+			return
+		}
 
+		for list.Next() {
+			if err = list.Scan(
+				&instanceID,
+			); err != nil {
+				if err == sql.ErrNoRows {
+					result.SetNotFound()
+					q.reply <- result
+					return
+				}
+				result.SetRequestError(err)
+				q.reply <- result
+				return
+			}
+
+			result.Append(nil, &somaDeploymentResult{
+				ListEntry: instanceID,
+			})
+			self.clr_stmt.Exec(instanceID)
+		}
+	case "listall":
+		log.Printf("R: deployment/listall for %s", q.Deployment)
+		if list, err = self.all_stmt.Query(q.Deployment); err != nil {
+			result.SetRequestError(err)
+			q.reply <- result
+			return
+		}
+
+		for list.Next() {
+			if err = list.Scan(
+				&instanceID,
+			); err != nil {
+				if err == sql.ErrNoRows {
+					result.SetNotFound()
+					q.reply <- result
+					return
+				}
+				result.SetRequestError(err)
+				q.reply <- result
+				return
+			}
+
+			result.Append(nil, &somaDeploymentResult{
+				ListEntry: instanceID,
+			})
+			self.clr_stmt.Exec(instanceID)
+		}
 	default:
 		result.SetNotImplemented()
 	}

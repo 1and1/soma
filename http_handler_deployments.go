@@ -34,8 +34,28 @@ func DeliverDeploymentDetails(w http.ResponseWriter, r *http.Request,
 func DeliverMonitoringDeployments(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	var action string
 
-	// XXX TODO
+	if _, err := uuid.FromString(params.ByName("uuid")); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if params.ByName("all") == "" {
+		action = "listall"
+	} else {
+		action = "list"
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["deploymentHandler"].(somaDeploymentHandler)
+	handler.input <- somaDeploymentRequest{
+		action:     action,
+		reply:      returnChannel,
+		Deployment: params.ByName("uuid"),
+	}
+	result := <-returnChannel
+	SendDeploymentReply(&w, &result)
 }
 
 func UpdateDeploymentDetails(w http.ResponseWriter, r *http.Request,
@@ -75,6 +95,10 @@ func SendDeploymentReply(w *http.ResponseWriter, r *somaResult) {
 	}
 	result.Deployments = make([]somaproto.DeploymentDetails, 0)
 	for _, i := range (*r).Deployments {
+		if i.ListEntry != "" {
+			result.List = append(result.List, i.ListEntry)
+			continue
+		}
 		result.Deployments = append(result.Deployments, i.Deployment)
 	}
 
