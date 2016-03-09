@@ -4,6 +4,7 @@ type DeploymentDetailsResult struct {
 	Code        uint16              `json:"code,omitempty"`
 	Status      string              `json:"status,omitempty"`
 	Deployments []DeploymentDetails `json:"deployments,omitempty"`
+	List        []string            `json:"list,omitempty"`
 	JobId       string              `json:"jobid,omitempty"`
 }
 
