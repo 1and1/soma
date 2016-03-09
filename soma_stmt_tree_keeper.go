@@ -44,8 +44,9 @@ WHERE  check_instance_config_id = $3::uuid;`
 const tkStmtUpdateCheckInstance = `
 UPDATE soma.check_instances
 SET    last_configuration_created = $1::timestamptz,
-       update_available = $2::boolean
-WHERE  check_instance_id = $3::uuid;`
+       update_available = $2::boolean,
+	   current_instance_config_id = $3::uuid
+WHERE  check_instance_id = $4::uuid;`
 
 const tkStmtDeleteDuplicateDetails = `
 DELETE FROM soma.check_instance_configurations

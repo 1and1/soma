@@ -110,6 +110,7 @@ deployments:
 			if _, err = txUpdateInstance.Exec(
 				time.Now().UTC(),
 				true,
+				currentChkInstanceConfigId,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_noprev
@@ -195,7 +196,8 @@ deployments:
 			}
 			if _, err = txUpdateInstance.Exec(
 				time.Now().UTC(),
-				true,
+				false,
+				previousChkInstanceConfigId,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
@@ -225,6 +227,7 @@ deployments:
 			if _, err = txUpdateInstance.Exec(
 				time.Now().UTC(),
 				true,
+				previousChkInstanceConfigId,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
@@ -252,7 +255,8 @@ deployments:
 			}
 			if _, err = txUpdateInstance.Exec(
 				time.Now().UTC(),
-				true,
+				false,
+				previousChkInstanceConfigId,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
@@ -277,6 +281,7 @@ deployments:
 			if _, err = txUpdateInstance.Exec(
 				time.Now().UTC(),
 				true,
+				currentChkInstanceConfigId,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
