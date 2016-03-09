@@ -9,7 +9,7 @@ type ProtoResultCapability struct {
 	Code         uint16            `json:"code,omitempty"`
 	Status       string            `json:"status,omitempty"`
 	Text         []string          `json:"text,omitempty"`
-	Capabilities []ProtoCapability `json:"metrics,omitempty"`
+	Capabilities []ProtoCapability `json:"capabilities,omitempty"`
 	JobId        string            `json:"jobid,omitempty"`
 }
 
