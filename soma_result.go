@@ -10,34 +10,35 @@ type SomaAppender interface {
 }
 
 type somaResult struct {
-	RequestError   error
-	NotFound       bool
-	NotImplemented bool
-	Accepted       bool
-	JobId          string
-	Nodes          []somaNodeResult
-	Servers        []somaServerResult
-	Levels         []somaLevelResult
-	Predicates     []somaPredicateResult
-	Status         []somaStatusResult
-	Teams          []somaTeamResult
-	Oncall         []somaOncallResult
-	Views          []somaViewResult
-	Units          []somaUnitResult
-	Providers      []somaProviderResult
-	Metrics        []somaMetricResult
-	Modes          []somaModeResult
-	Users          []somaUserResult
-	Systems        []somaMonitoringResult
-	Capabilities   []somaCapabilityResult
-	Properties     []somaPropertyResult
-	Attributes     []somaAttributeResult
-	Repositories   []somaRepositoryResult
-	Buckets        []somaBucketResult
-	Groups         []somaGroupResult
-	Clusters       []somaClusterResult
-	CheckConfigs   []somaCheckConfigResult
-	Deployments    []somaDeploymentResult
+	RequestError    error
+	NotFound        bool
+	NotImplemented  bool
+	Accepted        bool
+	JobId           string
+	Nodes           []somaNodeResult
+	Servers         []somaServerResult
+	Levels          []somaLevelResult
+	Predicates      []somaPredicateResult
+	Status          []somaStatusResult
+	Teams           []somaTeamResult
+	Oncall          []somaOncallResult
+	Views           []somaViewResult
+	Units           []somaUnitResult
+	Providers       []somaProviderResult
+	Metrics         []somaMetricResult
+	Modes           []somaModeResult
+	Users           []somaUserResult
+	Systems         []somaMonitoringResult
+	Capabilities    []somaCapabilityResult
+	Properties      []somaPropertyResult
+	Attributes      []somaAttributeResult
+	Repositories    []somaRepositoryResult
+	Buckets         []somaBucketResult
+	Groups          []somaGroupResult
+	Clusters        []somaClusterResult
+	CheckConfigs    []somaCheckConfigResult
+	Deployments     []somaDeploymentResult
+	HostDeployments []somaHostDeploymentResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

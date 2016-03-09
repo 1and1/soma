@@ -27,6 +27,7 @@ func startHandlers() {
 	spawnGroupReadHandler()
 	spawnClusterReadHandler()
 	spawnCheckConfigurationReadHandler()
+	spawnHostDeploymentHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnViewWriteHandler()
@@ -513,6 +514,15 @@ func spawnDeploymentHandler() {
 	deploymentHandler.conn = conn
 	handlerMap["deploymentHandler"] = deploymentHandler
 	go deploymentHandler.run()
+}
+
+func spawnHostDeploymentHandler() {
+	var hostDeploymentHandler somaHostDeploymentHandler
+	hostDeploymentHandler.input = make(chan somaHostDeploymentRequest, 64)
+	hostDeploymentHandler.shutdown = make(chan bool)
+	hostDeploymentHandler.conn = conn
+	handlerMap["hostDeploymentHandler"] = hostDeploymentHandler
+	go hostDeploymentHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
