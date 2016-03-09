@@ -94,6 +94,7 @@ runloop:
 			tk.process(&req)
 			if !tk.frozen {
 				tk.buildDeploymentDetails()
+				tk.orderDeploymentDetails()
 			}
 		}
 	}
