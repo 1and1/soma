@@ -1,5 +1,76 @@
 package somaproto
 
+type DeploymentDetailsResult struct {
+	Code        uint16              `json:"code,omitempty"`
+	Status      string              `json:"status,omitempty"`
+	Deployments []DeploymentDetails `json:"deployments,omitempty"`
+	JobId       string              `json:"jobid,omitempty"`
+}
+
+func (dd *DeploymentDetailsResult) ErrorMark(err error, imp bool,
+	found bool, length int, jobid string) bool {
+	if dd.markError(err) {
+		return true
+	}
+	if dd.markImplemented(imp) {
+		return true
+	}
+	if dd.markFound(found, length) {
+		return true
+	}
+	if dd.hasJobId(jobid) {
+		return dd.markAccepted()
+	}
+	return dd.markOk()
+}
+
+func (dd *DeploymentDetailsResult) markError(err error) bool {
+	if err != nil {
+		dd.Code = 500
+		dd.Status = "ERROR"
+		return true
+	}
+	return false
+}
+
+func (dd *DeploymentDetailsResult) markImplemented(f bool) bool {
+	if f {
+		dd.Code = 501
+		dd.Status = "NOT IMPLEMENTED"
+		return true
+	}
+	return false
+}
+
+func (dd *DeploymentDetailsResult) markFound(f bool, i int) bool {
+	if f || i == 0 {
+		dd.Code = 404
+		dd.Status = "NOT FOUND"
+		return true
+	}
+	return false
+}
+
+func (dd *DeploymentDetailsResult) markOk() bool {
+	dd.Code = 200
+	dd.Status = "OK"
+	return false
+}
+
+func (dd *DeploymentDetailsResult) hasJobId(s string) bool {
+	if s != "" {
+		dd.JobId = s
+		return true
+	}
+	return false
+}
+
+func (dd *DeploymentDetailsResult) markAccepted() bool {
+	dd.Code = 202
+	dd.Status = "ACCEPTED"
+	return false
+}
+
 type DeploymentDetails struct {
 	Repository         string                `json:"repository"`
 	Environment        string                `json:"environment"`
