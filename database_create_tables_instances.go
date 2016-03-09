@@ -20,6 +20,7 @@ create table if not exists soma.check_instances (
     check_instance_id           uuid            PRIMARY KEY,
     check_id                    uuid            NOT NULL REFERENCES soma.checks ( check_id ) DEFERRABLE,
     check_configuration_id      uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
+    current_instance_config_id  uuid            NOT NULL,
     last_configuration_created  timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
     update_available            boolean         NOT NULL DEFAULT 'no',
     deleted                     boolean         NOT NULL DEFAULT 'no'
@@ -53,7 +54,9 @@ create table if not exists soma.check_instance_configurations (
 	queryMap["createUniqueIndexActiveConfigurations"] = `
 create unique index _unique_check_instance_configurations_active
     on soma.check_instance_configurations ( check_instance_id, status )
-    where status = 'active';`
+    where status = 'active' or status = 'awaiting_deprovision'
+       or status = 'deprovision_in_progress' or status = 'deprovision_failed'
+       or status = 'rollout_in_progress';`
 	queries[idx] = "createUniqueIndexActiveConfigurations"
 	idx++
 
