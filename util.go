@@ -152,6 +152,8 @@ func ResultLength(r *somaResult, t ErrorMarker) int {
 		return len(r.Clusters)
 	case *somaproto.CheckConfigurationResult:
 		return len(r.CheckConfigs)
+	case *somaproto.DeploymentDetailsResult:
+		return len(r.Deployments)
 	}
 	return 0
 }

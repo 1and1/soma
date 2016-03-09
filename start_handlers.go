@@ -52,6 +52,8 @@ func startHandlers() {
 		spawnAttributeWriteHandler()
 		spawnForestCustodian()
 		spawnGuidePost()
+		spawnLifeCycle()
+		spawnDeploymentHandler()
 	}
 }
 
@@ -494,6 +496,23 @@ func spawnCheckConfigurationReadHandler() {
 	checkConfigurationReadHandler.conn = conn
 	handlerMap["checkConfigurationReadHandler"] = checkConfigurationReadHandler
 	go checkConfigurationReadHandler.run()
+}
+
+func spawnLifeCycle() {
+	var lifeCycleHandler lifeCycle
+	lifeCycleHandler.shutdown = make(chan bool)
+	lifeCycleHandler.conn = conn
+	handlerMap["lifeCycle"] = lifeCycleHandler
+	go lifeCycleHandler.run()
+}
+
+func spawnDeploymentHandler() {
+	var deploymentHandler somaDeploymentHandler
+	deploymentHandler.input = make(chan somaDeploymentRequest, 64)
+	deploymentHandler.shutdown = make(chan bool)
+	deploymentHandler.conn = conn
+	handlerMap["deploymentHandler"] = deploymentHandler
+	go deploymentHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

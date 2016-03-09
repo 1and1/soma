@@ -14,7 +14,7 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.3.0"
+	version := "0.3.1"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	err := SomaCfg.readConfigFile("soma.conf")
 	if err != nil {
@@ -240,6 +240,10 @@ func main() {
 		router.POST("/nodes/:node/property/:type/", AddPropertyToNode)
 
 		router.POST("/checks/:repository/", AddCheckConfiguration)
+
+		router.GET("/deployments/id/:uuid", DeliverDeploymentDetails)
+		router.GET("/deployments/monitoring/:uuid", DeliverMonitoringDeployments)
+		router.PATCH("/deployments/id/:uuid/:result", UpdateDeploymentDetails)
 	}
 
 	log.Fatal(http.ListenAndServe(":8888", router))
