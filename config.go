@@ -2,30 +2,40 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"net/url"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/nahanni/go-ucl"
 )
 
-type MonsoonConfig struct {
-	Environment string          `json:"environment"`
-	Timeout     string          `json:"timeout"`
-	TlsMode     string          `json:"tlsmode"`
-	ReadOnly    bool            `json:"readonly,string"`
-	Database    MonsoonDbConfig `json:"database"`
+type EyeConfig struct {
+	Environment string     `json:"environment" valid:"alpha"`
+	Timeout     string     `json:"timeout" valid:"numeric"`
+	TlsMode     string     `json:"tlsmode" valid:"alpha"`
+	ReadOnly    bool       `json:"readonly,string" valid:"-"`
+	Database    DbConfig   `json:"database" valid:"required"`
+	Soma        SomaConfig `json:"soma" valid:"required"`
+	conn        *sql.DB    `json:"-" valid:"-"`
 }
 
-type MonsoonDbConfig struct {
-	Host string `json:"host"`
-	User string `json:"user"`
-	Name string `json:"name"`
-	Port string `json:"port"`
-	Pass string `json:"password"`
+type DbConfig struct {
+	Host string `json:"host" valid:"dns"`
+	User string `json:"user" valid:"alphanum"`
+	Name string `json:"name" valid:"alphanum"`
+	Port string `json:"port" valid:"port"`
+	Pass string `json:"password" valid:"-"`
 }
 
-func (c *MonsoonConfig) readConfigFile(fname string) error {
+type SomaConfig struct {
+	url     *url.URL `json:"-"`
+	Address string   `json:"address" valid:"requrl"`
+}
+
+func (c *EyeConfig) readConfigFile(fname string) error {
 	file, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return err
@@ -48,6 +58,11 @@ func (c *MonsoonConfig) readConfigFile(fname string) error {
 	}
 	json.Unmarshal([]byte(uclJson), &c)
 
+	govalidator.SetFieldsRequiredByDefault(true)
+	if ok, err := govalidator.ValidateStruct(c); !ok {
+		return err
+	}
+	c.Soma.url, _ = url.Parse(c.Soma.Address)
 	return nil
 }
 

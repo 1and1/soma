@@ -5,45 +5,42 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"time"
-
-	"gopkg.in/resty.v0"
 
 	"github.com/julienschmidt/httprouter"
 )
 
 // global variables
 var conn *sql.DB
-var MonsoonCfg MonsoonConfig
+var Eye EyeConfig
 
 type notifyMessage struct {
-	uuid string `json:"uuid"`
+	Uuid string `json:"uuid" valid:"uuidv4"`
+	Path string `json:"path" valid:"abspath"`
 }
 
 func main() {
-	version := "0.0.1"
-	log.Printf("Starting runtime config initialization, MonsoonCfg v%s", version)
-	err := MonsoonCfg.readConfigFile("monsoon.conf")
+	version := "0.0.2"
+	log.Printf("Starting runtime config initialization, Eye v%s", version)
+	err := Eye.readConfigFile("eye.conf")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	connectToDatabase()
+	go pingDatabase()
+
 	router := httprouter.New()
 
-	router.POST("/deployment/", AddConfiguration)
-}
+	//router.GET("/api/v1/configuration/:lookup", RetrieveConfigurationItems)
+	//router.GET("/api/v1/item/", ListConfigurationItems)
+	router.POST("/api/v1/item/", AddConfigurationItem)
+	//router.GET("/api/v1/item/:item", GetConfigurationItem)
+	//router.PATCH("/api/v1/item/:item", UpdateConfigurationItem)
+	//router.DELETE("/api/v1/item/:item", DeleteConfigurationItem)
+	router.POST("/api/v1/notify/", FetchConfigurationItems)
 
-func AddConfiguration(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	decoder := json.NewDecoder(r.Body)
-	msg := notifyMessage{}
-	if err := decoder.Decode(msg); err != nil {
-		log.Fatal(err)
-	}
-	api := "http://127.0.0.1"
-
-	client := resty.New().SetTimeout(500 * time.Millisecond)
-	resp, err := client.R().Get(fmt.Sprintf("%s/deployments/id/%s", api, msg.uuid))
+	j, _ := json.Marshal(Eye)
+	fmt.Println(string(j))
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
