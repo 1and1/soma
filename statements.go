@@ -31,6 +31,16 @@ INSERT INTO monsoon.configuration_items (
 	configuration
 SELECT $1::uuid,
        $2::char,
-	   $3::jsonb;`
+	   $3::jsonb
+WHERE NOT EXISTS (
+	SELECT configuration_item_id
+	FROM   monsoon.configuration_items
+	WHERE  configuration_item_id = $1::uuid;`
+
+const stmtUpdateConfigurationItem = `
+UPDATE monsoon.configuration_items
+SET    lookup_id = $2::char,
+       configuration = $3::jsonb
+WHERE  configuration_item_id = $1::uuid;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
