@@ -7,27 +7,27 @@ type ConfigurationData struct {
 }
 
 type ConfigurationItem struct {
-	ConfigurationItemId uuid.UUID                `json:"configuration_item_id"`
-	Metric              string                   `json:"metric"`
-	HostId              string                   `json:"host_id"`
-	Tags                []string                 `json:"tags,omitempty"`
-	Oncall              string                   `json:"oncall"`
-	Interval            uint64                   `json:"interval"`
-	Metadata            ConfigurationMetaData    `json:"metadata"`
-	Thresholds          []ConfigurationThreshold `json:"thresholds"`
+	ConfigurationItemId uuid.UUID                `json:"configuration_item_id" valid:"-"`
+	Metric              string                   `json:"metric" valid:"printableascii"`
+	HostId              string                   `json:"host_id" valid:"numeric"`
+	Tags                []string                 `json:"tags,omitempty" valid:"-"`
+	Oncall              string                   `json:"oncall" valid:"required"`
+	Interval            uint64                   `json:"interval" valid:"numeric"`
+	Metadata            ConfigurationMetaData    `json:"metadata" valid:"required"`
+	Thresholds          []ConfigurationThreshold `json:"thresholds" valid:"required"`
 }
 
 type ConfigurationMetaData struct {
-	Monitoring string `json:"monitoring"`
-	Team       string `json:"string"`
-	Source     string `json:"source"`
-	Targethost string `json:"targethost"`
+	Monitoring string `json:"monitoring" valid:"required"`
+	Team       string `json:"string" valid:"required"`
+	Source     string `json:"source" valid:"required"`
+	Targethost string `json:"targethost" valid:"required"`
 }
 
 type ConfigurationThreshold struct {
-	Predicate string `json:"predicate"`
-	Level     int    `json:"level"`
-	Value     int    `json:"value"`
+	Predicate string `json:"predicate" valid:"required"`
+	Level     int    `json:"level" valid:"required"`
+	Value     int    `json:"value" valid:"required"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
