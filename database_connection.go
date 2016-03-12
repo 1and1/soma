@@ -26,8 +26,13 @@ func connectToDatabase() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err = conn.Ping(); err != nil {
+		log.Fatal(err)
+	}
 	log.Print("Connected to database")
-	conn.Exec(`SET TIME ZONE 'UTC';`)
+	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func pingDatabase() {
