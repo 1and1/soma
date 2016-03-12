@@ -63,9 +63,12 @@ func updateItem(item *ConfigurationItem, lookupID string) error {
 	if check, err = Eye.conn.Prepare(stmtCheckItemExists); err != nil {
 		return err
 	}
+	defer check.Close()
+
 	if update_item, err = Eye.conn.Prepare(stmtUpdateConfigurationItem); err != nil {
 		return err
 	}
+	defer update_item.Close()
 
 	if jsonb, err = json.Marshal(item); err != nil {
 		return err

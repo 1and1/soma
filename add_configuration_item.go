@@ -54,12 +54,17 @@ func addItem(item *ConfigurationItem, lookupID string) error {
 	if check, err = Eye.conn.Prepare(stmtCheckLookupExists); err != nil {
 		return err
 	}
+	defer check.Close()
+
 	if insert_lookup, err = Eye.conn.Prepare(stmtInsertLookupInformation); err != nil {
 		return err
 	}
+	defer insert_lookup.Close()
+
 	if insert_item, err = Eye.conn.Prepare(stmtInsertConfigurationItem); err != nil {
 		return err
 	}
+	defer insert_item.Close()
 
 	// string was generated from uint64, we need int now
 	if hostid, err = strconv.ParseInt(item.HostId, 10, 64); err != nil {

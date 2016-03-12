@@ -40,15 +40,22 @@ func deleteItem(itemID string) error {
 	if delete_item, err = Eye.conn.Prepare(stmtDeleteConfigurationItem); err != nil {
 		return err
 	}
+	defer delete_item.Close()
+
 	if delete_lookup, err = Eye.conn.Prepare(stmtDeleteLookupId); err != nil {
 		return err
 	}
+	defer delete_lookup.Close()
+
 	if get_lookup, err = Eye.conn.Prepare(stmtGetLookupIdForItem); err != nil {
 		return err
 	}
+	defer get_lookup.Close()
+
 	if item_count, err = Eye.conn.Prepare(stmtGetItemCountForLookupId); err != nil {
 		return err
 	}
+	defer item_count.Close()
 
 	if err = get_lookup.QueryRow(itemID).Scan(&lookupID); err != nil {
 		// either a real error, or what is to be deleted does not exist

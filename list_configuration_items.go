@@ -24,12 +24,14 @@ func ListConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer get_items.Close()
 
 	if items, err = get_items.Query(); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer items.Close()
 
 	for items.Next() {
 		if err = items.Scan(&item); err != nil {
