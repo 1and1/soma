@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -29,7 +28,9 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 	)
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(msg); err != nil {
-		os.Exit(1)
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	govalidator.SetFieldsRequiredByDefault(true)
 	govalidator.TagMap["abspath"] = govalidator.Validator(func(str string) bool {
