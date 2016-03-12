@@ -67,7 +67,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		http.Error(w, err.Error(), http.StatusPreconditionFailed)
 		return
 	}
-	if err = CheckUpdateOrInsert(&res.Deployments[0]); err != nil {
+	if err = CheckUpdateOrInsertOrDelete(&res.Deployments[0]); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

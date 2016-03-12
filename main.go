@@ -19,7 +19,7 @@ type notifyMessage struct {
 }
 
 func main() {
-	version := "0.0.3"
+	version := "0.0.4"
 	log.Printf("Starting runtime config initialization, Eye v%s", version)
 	err := Eye.readConfigFile("eye.conf")
 	if err != nil {
@@ -36,7 +36,7 @@ func main() {
 	router.POST("/api/v1/item/", AddConfigurationItem)
 	//router.GET("/api/v1/item/:item", GetConfigurationItem)
 	router.PUT("/api/v1/item/:item", UpdateConfigurationItem)
-	//router.DELETE("/api/v1/item/:item", DeleteConfigurationItem)
+	router.DELETE("/api/v1/item/:item", DeleteConfigurationItem)
 	router.POST("/api/v1/notify/", FetchConfigurationItems)
 
 	j, _ := json.Marshal(Eye)

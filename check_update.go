@@ -6,7 +6,7 @@ import (
 
 )
 
-func CheckUpdateOrInsert(details *somaproto.DeploymentDetails) error {
+func CheckUpdateOrInsertOrDelete(details *somaproto.DeploymentDetails) error {
 	var (
 		stmt             *sql.Stmt
 		err              error
@@ -25,17 +25,31 @@ func CheckUpdateOrInsert(details *somaproto.DeploymentDetails) error {
 	fmt.Println(item)
 
 	err = stmt.QueryRow(item.ConfigurationItemId).Scan(&itemID)
-	if err == sql.ErrNoRows {
-		return addItem(item, lookupID)
-	} else if err != nil {
-		return err
+	switch details.Task {
+	case "rollout":
+		if err == sql.ErrNoRows {
+			return addItem(item, lookupID)
+		} else if err != nil {
+			return err
+		}
+	case "deprovision":
+		if err != nil {
+			return err
+		}
 	}
-	// UPDATE
+
 	if item.ConfigurationItemId.String() != itemID {
 		panic(`Database corrupted`)
 	}
-
-	return updateItem(item, lookupID)
+	switch details.Task {
+	case "rollout":
+		return updateItem(item, lookupID)
+	case "deprovision":
+		return deleteItem(itemID)
+	default:
+		return fmt.Errorf(`Unknown Task requested`)
+	}
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
