@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -19,8 +18,7 @@ func ListConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter
 	)
 
 	if items, err = Eye.run.get_items.Query(); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		dispatchInternalServerError(&w, err.Error())
 		return
 	}
 	defer items.Close()
@@ -28,33 +26,26 @@ func ListConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter
 	for items.Next() {
 		if err = items.Scan(&item); err != nil {
 			if err == sql.ErrNoRows {
-				log.Println(err)
-				http.Error(w, "No items found", http.StatusNotFound)
-				return
+				dispatchNotFound(&w)
 			} else {
-				log.Println(err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
+				dispatchInternalServerError(&w, err.Error())
 			}
+			return
 		}
 		i := item
 		list.ConfigurationItemIdList = append(list.ConfigurationItemIdList, i)
 	}
 	if len(list.ConfigurationItemIdList) == 0 {
-		log.Println(err)
-		http.Error(w, "No items found", http.StatusNotFound)
+		dispatchNotFound(&w)
 		return
 	}
 
 	if jsonb, err = json.Marshal(list); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		dispatchInternalServerError(&w, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonb)
+	dispatchJsonOK(&w, &jsonb)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

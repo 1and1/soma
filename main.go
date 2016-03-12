@@ -14,7 +14,7 @@ var conn *sql.DB
 var Eye EyeConfig
 
 func main() {
-	version := "0.1.3"
+	version := "0.1.4"
 	log.Printf("Starting runtime config initialization, Eye v%s", version)
 	err := Eye.readConfigFile("eye.conf")
 	if err != nil {

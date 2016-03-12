@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -19,36 +18,31 @@ func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 	)
 
 	if _, err = uuid.FromString(params.ByName("item")); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		dispatchBadRequest(&w, err.Error())
 		return
 	}
 
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(details); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), 422)
+		dispatchUnprocessable(&w, err.Error())
 		return
 	}
 
 	if lookupID, item, err = Itemize(details); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), 422)
+		dispatchUnprocessable(&w, err.Error())
 		return
 	}
 
 	if item.ConfigurationItemId.String() != params.ByName("item") {
-		http.Error(w, "Mismatching ConfigurationItemID", http.StatusBadRequest)
+		dispatchBadRequest(&w, "Mismatching ConfigurationItemID")
 		return
 	}
 
 	if err = updateItem(item, lookupID); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		dispatchInternalServerError(&w, err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
-	w.Write(nil)
+	dispatchNoContent(&w)
 }
 
 func updateItem(item *ConfigurationItem, lookupID string) error {

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -33,8 +32,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 	)
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(msg); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		dispatchBadRequest(&w, err.Error())
 		return
 	}
 	govalidator.SetFieldsRequiredByDefault(true)
@@ -42,8 +40,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		return filepath.IsAbs(str)
 	})
 	if ok, err := govalidator.ValidateStruct(msg); !ok {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		dispatchBadRequest(&w, err.Error())
 		return
 	}
 
@@ -54,31 +51,26 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		if err == nil {
 			err = fmt.Errorf(resp.Status())
 		}
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusPreconditionFailed)
+		dispatchPrecondition(&w, err.Error())
 		return
 	}
 	if err = json.Unmarshal(resp.Body(), res); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), 422)
+		dispatchUnprocessable(&w, err.Error())
 		return
 	}
 	if res.Code != 200 {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusGone)
+		dispatchGone(&w, err.Error())
 		return
 	}
 	if len(res.Deployments) != 1 {
-		http.Error(w, err.Error(), http.StatusPreconditionFailed)
+		dispatchPrecondition(&w, err.Error())
 		return
 	}
 	if err = CheckUpdateOrInsertOrDelete(&res.Deployments[0]); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		dispatchInternalServerError(&w, err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
-	w.Write(nil)
+	dispatchNoContent(&w)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

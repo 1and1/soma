@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -22,24 +21,20 @@ func AddConfigurationItem(w http.ResponseWriter, r *http.Request, _ httprouter.P
 
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(details); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), 422)
+		dispatchUnprocessable(&w, err.Error())
 		return
 	}
 
 	if lookupID, item, err = Itemize(details); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), 422)
+		dispatchUnprocessable(&w, err.Error())
 		return
 	}
 
 	if err = addItem(item, lookupID); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		dispatchInternalServerError(&w, err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
-	w.Write(nil)
+	dispatchNoContent(&w)
 }
 
 func addItem(item *ConfigurationItem, lookupID string) error {

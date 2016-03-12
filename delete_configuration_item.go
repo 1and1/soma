@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -15,17 +14,14 @@ func DeleteConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 	)
 	itemID = params.ByName("item")
 	if _, err = uuid.FromString(itemID); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		dispatchBadRequest(&w, err.Error())
 		return
 	}
 	if err = deleteItem(itemID); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		dispatchInternalServerError(&w, err.Error())
 		return
 	}
-	w.WriteHeader(http.StatusNoContent)
-	w.Write(nil)
+	dispatchNoContent(&w)
 }
 
 func deleteItem(itemID string) error {
