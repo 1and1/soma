@@ -44,27 +44,11 @@ func AddConfigurationItem(w http.ResponseWriter, r *http.Request, _ httprouter.P
 
 func addItem(item *ConfigurationItem, lookupID string) error {
 	var (
-		check, insert_lookup, insert_item *sql.Stmt
-		hostid                            int64
-		err                               error
-		look                              string
-		jsonb                             []byte
+		hostid int64
+		err    error
+		look   string
+		jsonb  []byte
 	)
-
-	if check, err = Eye.run.conn.Prepare(stmtCheckLookupExists); err != nil {
-		return err
-	}
-	defer check.Close()
-
-	if insert_lookup, err = Eye.run.conn.Prepare(stmtInsertLookupInformation); err != nil {
-		return err
-	}
-	defer insert_lookup.Close()
-
-	if insert_item, err = Eye.run.conn.Prepare(stmtInsertConfigurationItem); err != nil {
-		return err
-	}
-	defer insert_item.Close()
 
 	// string was generated from uint64, we need int now
 	if hostid, err = strconv.ParseInt(item.HostId, 10, 64); err != nil {
@@ -74,9 +58,9 @@ func addItem(item *ConfigurationItem, lookupID string) error {
 		return err
 	}
 
-	err = check.QueryRow(lookupID).Scan(&look)
+	err = Eye.run.check_lookup.QueryRow(lookupID).Scan(&look)
 	if err == sql.ErrNoRows {
-		if _, err = insert_lookup.Exec(
+		if _, err = Eye.run.insert_lookup.Exec(
 			lookupID,
 			int(hostid),
 			item.Metric,
@@ -90,7 +74,7 @@ func addItem(item *ConfigurationItem, lookupID string) error {
 		panic(`Database corrupted`)
 	}
 
-	_, err = insert_item.Exec(
+	_, err = Eye.run.insert_item.Exec(
 		item.ConfigurationItemId.String(),
 		lookupID,
 		jsonb,

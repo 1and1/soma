@@ -8,15 +8,10 @@ import (
 
 func CheckUpdateOrInsertOrDelete(details *somaproto.DeploymentDetails) error {
 	var (
-		stmt             *sql.Stmt
 		err              error
 		itemID, lookupID string
 		item             *ConfigurationItem
 	)
-	if stmt, err = Eye.run.conn.Prepare(stmtCheckItemExists); err != nil {
-		return err
-	}
-	defer stmt.Close()
 
 	if lookupID, item, err = Itemize(details); err != nil {
 		return err
@@ -25,7 +20,7 @@ func CheckUpdateOrInsertOrDelete(details *somaproto.DeploymentDetails) error {
 	fmt.Println(lookupID)
 	fmt.Println(item)
 
-	err = stmt.QueryRow(item.ConfigurationItemId).Scan(&itemID)
+	err = Eye.run.check_item.QueryRow(item.ConfigurationItemId).Scan(&itemID)
 	switch details.Task {
 	case "rollout":
 		if err == sql.ErrNoRows {

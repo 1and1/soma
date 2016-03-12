@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -54,21 +53,10 @@ func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 
 func updateItem(item *ConfigurationItem, lookupID string) error {
 	var (
-		check, update_item *sql.Stmt
-		itemID             string
-		err                error
-		jsonb              []byte
+		itemID string
+		err    error
+		jsonb  []byte
 	)
-
-	if check, err = Eye.run.conn.Prepare(stmtCheckItemExists); err != nil {
-		return err
-	}
-	defer check.Close()
-
-	if update_item, err = Eye.run.conn.Prepare(stmtUpdateConfigurationItem); err != nil {
-		return err
-	}
-	defer update_item.Close()
 
 	if jsonb, err = json.Marshal(item); err != nil {
 		return err
@@ -76,14 +64,14 @@ func updateItem(item *ConfigurationItem, lookupID string) error {
 
 	// since this was an explicit update request, non-existance is a
 	// hard error
-	if err = check.QueryRow(item.ConfigurationItemId.String()).Scan(&itemID); err != nil {
+	if err = Eye.run.check_item.QueryRow(item.ConfigurationItemId.String()).Scan(&itemID); err != nil {
 		return err
 	}
 	if itemID != item.ConfigurationItemId.String() {
 		panic(`Database corrupted`)
 	}
 
-	_, err = update_item.Exec(
+	_, err = Eye.run.update_item.Exec(
 		item.ConfigurationItemId.String(),
 		lookupID,
 		jsonb,

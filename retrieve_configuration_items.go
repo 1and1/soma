@@ -15,7 +15,6 @@ func RetrieveConfigurationItems(w http.ResponseWriter, r *http.Request, params h
 		reply          ConfigurationData
 		jsonb          []byte
 		lookup, config string
-		retrieve       *sql.Stmt
 		rows           *sql.Rows
 	)
 
@@ -28,14 +27,7 @@ func RetrieveConfigurationItems(w http.ResponseWriter, r *http.Request, params h
 
 	reply.Configurations = []ConfigurationItem{}
 
-	if retrieve, err = Eye.run.conn.Prepare(stmtRetrieveConfigurationsByLookup); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer retrieve.Close()
-
-	if rows, err = retrieve.Query(lookup); err != nil {
+	if rows, err = Eye.run.retrieve.Query(lookup); err != nil {
 		if err == sql.ErrNoRows {
 			log.Println(err)
 			http.Error(w, "No items found", http.StatusNotFound)

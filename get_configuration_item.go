@@ -12,12 +12,11 @@ import (
 
 func GetConfigurationItem(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var (
-		err        error
-		get_config *sql.Stmt
-		jConfig    string
-		reply      ConfigurationData
-		config     ConfigurationItem
-		jsonb      []byte
+		err     error
+		jConfig string
+		reply   ConfigurationData
+		config  ConfigurationItem
+		jsonb   []byte
 	)
 
 	if _, err = uuid.FromString(params.ByName("item")); err != nil {
@@ -26,14 +25,7 @@ func GetConfigurationItem(w http.ResponseWriter, r *http.Request, params httprou
 		return
 	}
 
-	if get_config, err = Eye.run.conn.Prepare(stmtGetSingleConfiguration); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer get_config.Close()
-
-	if err = get_config.QueryRow(params.ByName("item")).Scan(&jConfig); err != nil {
+	if err = Eye.run.get_config.QueryRow(params.ByName("item")).Scan(&jConfig); err != nil {
 		if err == sql.ErrNoRows {
 			log.Println(err)
 			http.Error(w, "No items found", http.StatusNotFound)

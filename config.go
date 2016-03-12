@@ -36,7 +36,19 @@ type SomaConfig struct {
 }
 
 type EyeRuntime struct {
-	conn *sql.DB `json:"-" valid:"-"`
+	conn          *sql.DB   `json:"-" valid:"-"`
+	check_item    *sql.Stmt `json:"-" valid:"-"`
+	update_item   *sql.Stmt `json:"-" valid:"-"`
+	check_lookup  *sql.Stmt `json:"-" valid:"-"`
+	insert_lookup *sql.Stmt `json:"-" valid:"-"`
+	insert_item   *sql.Stmt `json:"-" valid:"-"`
+	delete_item   *sql.Stmt `json:"-" valid:"-"`
+	delete_lookup *sql.Stmt `json:"-" valid:"-"`
+	get_lookup    *sql.Stmt `json:"-" valid:"-"`
+	item_count    *sql.Stmt `json:"-" valid:"-"`
+	get_config    *sql.Stmt `json:"-" valid:"-"`
+	get_items     *sql.Stmt `json:"-" valid:"-"`
+	retrieve      *sql.Stmt `json:"-" valid:"-"`
 }
 
 func (c *EyeConfig) readConfigFile(fname string) error {

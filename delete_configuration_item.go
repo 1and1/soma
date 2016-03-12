@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
@@ -31,49 +30,28 @@ func DeleteConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 
 func deleteItem(itemID string) error {
 	var (
-		delete_item, get_lookup, item_count, delete_lookup *sql.Stmt
-		lookupID                                           string
-		count                                              int
-		err                                                error
+		lookupID string
+		count    int
+		err      error
 	)
 
-	if delete_item, err = Eye.run.conn.Prepare(stmtDeleteConfigurationItem); err != nil {
-		return err
-	}
-	defer delete_item.Close()
-
-	if delete_lookup, err = Eye.run.conn.Prepare(stmtDeleteLookupId); err != nil {
-		return err
-	}
-	defer delete_lookup.Close()
-
-	if get_lookup, err = Eye.run.conn.Prepare(stmtGetLookupIdForItem); err != nil {
-		return err
-	}
-	defer get_lookup.Close()
-
-	if item_count, err = Eye.run.conn.Prepare(stmtGetItemCountForLookupId); err != nil {
-		return err
-	}
-	defer item_count.Close()
-
-	if err = get_lookup.QueryRow(itemID).Scan(&lookupID); err != nil {
+	if err = Eye.run.get_lookup.QueryRow(itemID).Scan(&lookupID); err != nil {
 		// either a real error, or what is to be deleted does not exist
 		return err
 	}
 
-	if _, err = delete_item.Exec(itemID); err != nil {
+	if _, err = Eye.run.delete_item.Exec(itemID); err != nil {
 		return err
 	}
 
-	if err = item_count.QueryRow(lookupID).Scan(&count); err != nil {
+	if err = Eye.run.item_count.QueryRow(lookupID).Scan(&count); err != nil {
 		return err
 	}
 
 	if count != 0 {
 		return nil
 	}
-	_, err = delete_lookup.Exec(lookupID)
+	_, err = Eye.run.delete_lookup.Exec(lookupID)
 	return err
 }
 

@@ -11,22 +11,14 @@ import (
 
 func ListConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var (
-		get_items *sql.Stmt
-		items     *sql.Rows
-		list      ConfigurationList
-		item      string
-		err       error
-		jsonb     []byte
+		items *sql.Rows
+		list  ConfigurationList
+		item  string
+		err   error
+		jsonb []byte
 	)
 
-	if get_items, err = Eye.run.conn.Prepare(stmtGetConfigurationItemIds); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer get_items.Close()
-
-	if items, err = get_items.Query(); err != nil {
+	if items, err = Eye.run.get_items.Query(); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
