@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 
 )
 
@@ -12,38 +11,31 @@ func CheckUpdateOrInsert(details *somaproto.DeploymentDetails) error {
 		stmt             *sql.Stmt
 		err              error
 		itemID, lookupID string
-		item             ConfigurationItem
+		item             *ConfigurationItem
 	)
 	if stmt, err = Eye.conn.Prepare(stmtCheckItemExists); err != nil {
 		return err
 	}
 
-	lookupID = CalculateLookupId(details.Node.AssetId, details.Metric.Metric)
+	if lookupID, item, err = Itemize(details); err != nil {
+		return err
+	}
+
 	fmt.Println(lookupID)
+	fmt.Println(item)
 
-	item = ConfigurationItem{
-		Metric:   details.Metric.Metric,
-		Interval: details.CheckConfiguration.Interval,
-		HostId:   strconv.FormatUint(details.Node.AssetId, 10),
-		Metadata: ConfigurationMetaData{
-			Monitoring: details.Monitoring.Name,
-			Team:       details.Team.Name,
-		},
-	}
-	//Source:
-	//Targethost:
-	if details.Oncall.Id != "" {
-		item.Oncall = fmt.Sprintf("%s (%s)", details.Oncall.Name, details.Oncall.Number)
-	}
-
-	err = stmt.QueryRow(details.CheckInstance.InstanceId).Scan(&itemID)
+	err = stmt.QueryRow(item.ConfigurationItemId).Scan(&itemID)
 	if err == sql.ErrNoRows {
-		// INSERT
+		return addItem(item, lookupID)
 	} else if err != nil {
 		return err
 	}
 	// UPDATE
-	return nil
+	if item.ConfigurationItemId.String() != itemID {
+		panic(`Database corrupted`)
+	}
+
+	return updateItem(item, lookupID)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
