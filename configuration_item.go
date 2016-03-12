@@ -6,6 +6,10 @@ type ConfigurationData struct {
 	Configurations []ConfigurationItem `json:"configurations"`
 }
 
+type ConfigurationList struct {
+	ConfigurationItemIdList []string `json:"configuration_item_id_list"`
+}
+
 type ConfigurationItem struct {
 	ConfigurationItemId uuid.UUID                `json:"configuration_item_id" valid:"-"`
 	Metric              string                   `json:"metric" valid:"printableascii"`

@@ -61,4 +61,8 @@ const stmtDeleteLookupId = `
 DELETE FROM monsoon.configuration_lookup
 WHERE       lookup_id = $1::char;`
 
+const stmtGetConfigurationItemIds = `
+SELECT configuration_item_id
+FROM   monsoon.configuration_items;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
