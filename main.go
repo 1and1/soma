@@ -13,11 +13,6 @@ import (
 var conn *sql.DB
 var Eye EyeConfig
 
-type notifyMessage struct {
-	Uuid string `json:"uuid" valid:"uuidv4"`
-	Path string `json:"path" valid:"abspath"`
-}
-
 func main() {
 	version := "0.0.7"
 	log.Printf("Starting runtime config initialization, Eye v%s", version)

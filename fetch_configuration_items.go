@@ -16,6 +16,11 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+type notifyMessage struct {
+	Uuid string `json:"uuid" valid:"uuidv4"`
+	Path string `json:"path" valid:"abspath"`
+}
+
 func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var (
 		dec    *json.Decoder
