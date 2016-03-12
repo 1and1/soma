@@ -37,22 +37,22 @@ func deleteItem(itemID string) error {
 		err                                                error
 	)
 
-	if delete_item, err = Eye.conn.Prepare(stmtDeleteConfigurationItem); err != nil {
+	if delete_item, err = Eye.run.conn.Prepare(stmtDeleteConfigurationItem); err != nil {
 		return err
 	}
 	defer delete_item.Close()
 
-	if delete_lookup, err = Eye.conn.Prepare(stmtDeleteLookupId); err != nil {
+	if delete_lookup, err = Eye.run.conn.Prepare(stmtDeleteLookupId); err != nil {
 		return err
 	}
 	defer delete_lookup.Close()
 
-	if get_lookup, err = Eye.conn.Prepare(stmtGetLookupIdForItem); err != nil {
+	if get_lookup, err = Eye.run.conn.Prepare(stmtGetLookupIdForItem); err != nil {
 		return err
 	}
 	defer get_lookup.Close()
 
-	if item_count, err = Eye.conn.Prepare(stmtGetItemCountForLookupId); err != nil {
+	if item_count, err = Eye.run.conn.Prepare(stmtGetItemCountForLookupId); err != nil {
 		return err
 	}
 	defer item_count.Close()

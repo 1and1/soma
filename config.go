@@ -19,7 +19,7 @@ type EyeConfig struct {
 	ReadOnly    bool       `json:"readonly,string" valid:"-"`
 	Database    DbConfig   `json:"database" valid:"required"`
 	Soma        SomaConfig `json:"soma" valid:"required"`
-	conn        *sql.DB    `json:"-" valid:"-"`
+	run         EyeRuntime `json:"-" valid:"-"`
 }
 
 type DbConfig struct {
@@ -33,6 +33,10 @@ type DbConfig struct {
 type SomaConfig struct {
 	url     *url.URL `json:"-"`
 	Address string   `json:"address" valid:"requrl"`
+}
+
+type EyeRuntime struct {
+	conn *sql.DB `json:"-" valid:"-"`
 }
 
 func (c *EyeConfig) readConfigFile(fname string) error {

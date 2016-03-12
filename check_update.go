@@ -13,7 +13,7 @@ func CheckUpdateOrInsertOrDelete(details *somaproto.DeploymentDetails) error {
 		itemID, lookupID string
 		item             *ConfigurationItem
 	)
-	if stmt, err = Eye.conn.Prepare(stmtCheckItemExists); err != nil {
+	if stmt, err = Eye.run.conn.Prepare(stmtCheckItemExists); err != nil {
 		return err
 	}
 	defer stmt.Close()

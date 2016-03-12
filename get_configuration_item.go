@@ -26,7 +26,7 @@ func GetConfigurationItem(w http.ResponseWriter, r *http.Request, params httprou
 		return
 	}
 
-	if get_config, err = Eye.conn.Prepare(stmtGetSingleConfiguration); err != nil {
+	if get_config, err = Eye.run.conn.Prepare(stmtGetSingleConfiguration); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

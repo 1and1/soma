@@ -60,12 +60,12 @@ func updateItem(item *ConfigurationItem, lookupID string) error {
 		jsonb              []byte
 	)
 
-	if check, err = Eye.conn.Prepare(stmtCheckItemExists); err != nil {
+	if check, err = Eye.run.conn.Prepare(stmtCheckItemExists); err != nil {
 		return err
 	}
 	defer check.Close()
 
-	if update_item, err = Eye.conn.Prepare(stmtUpdateConfigurationItem); err != nil {
+	if update_item, err = Eye.run.conn.Prepare(stmtUpdateConfigurationItem); err != nil {
 		return err
 	}
 	defer update_item.Close()

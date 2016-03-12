@@ -51,17 +51,17 @@ func addItem(item *ConfigurationItem, lookupID string) error {
 		jsonb                             []byte
 	)
 
-	if check, err = Eye.conn.Prepare(stmtCheckLookupExists); err != nil {
+	if check, err = Eye.run.conn.Prepare(stmtCheckLookupExists); err != nil {
 		return err
 	}
 	defer check.Close()
 
-	if insert_lookup, err = Eye.conn.Prepare(stmtInsertLookupInformation); err != nil {
+	if insert_lookup, err = Eye.run.conn.Prepare(stmtInsertLookupInformation); err != nil {
 		return err
 	}
 	defer insert_lookup.Close()
 
-	if insert_item, err = Eye.conn.Prepare(stmtInsertConfigurationItem); err != nil {
+	if insert_item, err = Eye.run.conn.Prepare(stmtInsertConfigurationItem); err != nil {
 		return err
 	}
 	defer insert_item.Close()

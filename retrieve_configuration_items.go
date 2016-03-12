@@ -28,7 +28,7 @@ func RetrieveConfigurationItems(w http.ResponseWriter, r *http.Request, params h
 
 	reply.Configurations = []ConfigurationItem{}
 
-	if retrieve, err = Eye.conn.Prepare(stmtRetrieveConfigurationsByLookup); err != nil {
+	if retrieve, err = Eye.run.conn.Prepare(stmtRetrieveConfigurationsByLookup); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

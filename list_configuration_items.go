@@ -19,7 +19,7 @@ func ListConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter
 		jsonb     []byte
 	)
 
-	if get_items, err = Eye.conn.Prepare(stmtGetConfigurationItemIds); err != nil {
+	if get_items, err = Eye.run.conn.Prepare(stmtGetConfigurationItemIds); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
