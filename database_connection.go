@@ -26,8 +26,13 @@ func connectToDatabase() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if err = Eye.conn.Ping(); err != nil {
+		log.Fatal(err)
+	}
 	log.Print("Connected to database")
-	Eye.conn.Exec(`SET TIME ZONE 'UTC';`)
+	if _, err = Eye.conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func pingDatabase() {
