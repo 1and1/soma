@@ -14,8 +14,6 @@ import (
 
 type EyeConfig struct {
 	Environment string     `json:"environment" valid:"alpha"`
-	Timeout     string     `json:"timeout" valid:"numeric"`
-	TlsMode     string     `json:"tlsmode" valid:"alpha"`
 	ReadOnly    bool       `json:"readonly,string" valid:"-"`
 	Daemon      EyeDaemon  `json:"daemon" valid:"required"`
 	Database    DbConfig   `json:"database" valid:"required"`
@@ -24,11 +22,13 @@ type EyeConfig struct {
 }
 
 type DbConfig struct {
-	Host string `json:"host" valid:"dns"`
-	User string `json:"user" valid:"alphanum"`
-	Name string `json:"name" valid:"alphanum"`
-	Port string `json:"port" valid:"port"`
-	Pass string `json:"password" valid:"-"`
+	Host    string `json:"host" valid:"dns"`
+	User    string `json:"user" valid:"alphanum"`
+	Name    string `json:"name" valid:"alphanum"`
+	Port    string `json:"port" valid:"port"`
+	Pass    string `json:"password" valid:"-"`
+	Timeout string `json:"timeout" valid:"numeric"`
+	TlsMode string `json:"tlsmode" valid:"alpha"`
 }
 
 type SomaConfig struct {

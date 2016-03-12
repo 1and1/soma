@@ -13,14 +13,22 @@ func connectToDatabase() {
 	var err error
 	driver := "postgres"
 
-	connect := fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%s' sslmode='%s' connect_timeout='%s'",
+	connect := fmt.Sprintf(
+		"%s='%s' %s='%s' %s='%s' %s='%s' %s='%s' %s='%s' %s='%s'",
+		"dbname",
 		Eye.Database.Name,
+		"user",
 		Eye.Database.User,
+		"password",
 		Eye.Database.Pass,
+		"host",
 		Eye.Database.Host,
+		"port",
 		Eye.Database.Port,
-		Eye.TlsMode,
-		Eye.Timeout,
+		"sslmode",
+		Eye.Database.TlsMode,
+		"connect_timeout",
+		Eye.Database.Timeout,
 	)
 
 	Eye.run.conn, err = sql.Open(driver, connect)
