@@ -35,6 +35,7 @@ func Itemize(details *somaproto.DeploymentDetails) (string, *ConfigurationItem, 
 			Monitoring: details.Monitoring.Name,
 			Team:       details.Team.Name,
 		},
+		Thresholds: []ConfigurationThreshold{},
 	}
 	if item.ConfigurationItemId, err = uuid.FromString(details.CheckInstance.InstanceId); err != nil {
 		return "", nil, err
@@ -70,6 +71,16 @@ func Itemize(details *somaproto.DeploymentDetails) (string, *ConfigurationItem, 
 		item.Metadata.Source = details.Service.Name
 	} else {
 		item.Metadata.Source = fmt.Sprintf("System (%s)", details.Node.Name)
+	}
+
+	// slurp all thresholds
+	for _, thr := range details.CheckConfiguration.Thresholds {
+		t := ConfigurationThreshold{
+			Predicate: thr.Predicate.Predicate,
+			Level:     thr.Level.Numeric,
+			Value:     thr.Value,
+		}
+		item.Thresholds = append(item.Thresholds, t)
 	}
 
 	govalidator.SetFieldsRequiredByDefault(true)

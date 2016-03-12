@@ -19,7 +19,7 @@ type notifyMessage struct {
 }
 
 func main() {
-	version := "0.0.4"
+	version := "0.0.5"
 	log.Printf("Starting runtime config initialization, Eye v%s", version)
 	err := Eye.readConfigFile("eye.conf")
 	if err != nil {

@@ -26,8 +26,8 @@ type ConfigurationMetaData struct {
 
 type ConfigurationThreshold struct {
 	Predicate string `json:"predicate" valid:"required"`
-	Level     int    `json:"level" valid:"required"`
-	Value     int    `json:"value" valid:"required"`
+	Level     uint16 `json:"level" valid:"required"`
+	Value     int64  `json:"value" valid:"required"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
