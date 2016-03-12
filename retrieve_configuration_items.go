@@ -53,7 +53,11 @@ func RetrieveConfigurationItems(w http.ResponseWriter, r *http.Request, params h
 		reply.Configurations = append(reply.Configurations, c)
 	}
 	if err = rows.Err(); err != nil {
-		dispatchInternalServerError(&w, err.Error())
+		if err == sql.ErrNoRows {
+			dispatchNotFound(&w)
+		} else {
+			dispatchInternalServerError(&w, err.Error())
+		}
 		return
 	}
 

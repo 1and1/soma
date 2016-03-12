@@ -35,6 +35,14 @@ func ListConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter
 		i := item
 		list.ConfigurationItemIdList = append(list.ConfigurationItemIdList, i)
 	}
+	if err = items.Err(); err != nil {
+		if err == sql.ErrNoRows {
+			dispatchNotFound(&w)
+		} else {
+			dispatchInternalServerError(&w, err.Error())
+		}
+		return
+	}
 	if len(list.ConfigurationItemIdList) == 0 {
 		dispatchNotFound(&w)
 		return
