@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/satori/go.uuid"
 )
 
 func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -17,6 +18,12 @@ func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 		details  *somaproto.DeploymentDetails
 		err      error
 	)
+
+	if _, err = uuid.FromString(params.ByName("item")); err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(details); err != nil {
@@ -31,7 +38,7 @@ func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 		return
 	}
 
-	if lookupID != params.ByName("item") {
+	if item.ConfigurationItemId.String() != params.ByName("item") {
 		http.Error(w, "Mismatching ConfigurationItemID", http.StatusBadRequest)
 		return
 	}
