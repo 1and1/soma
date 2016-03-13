@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Written by Jörg Pernfuß <joerg.pernfuss@1und1.de>
+ * All rights reserved.
+ */
+
 package main
 
 import "github.com/satori/go.uuid"
