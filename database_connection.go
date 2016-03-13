@@ -60,39 +60,51 @@ func prepareStatements() {
 	var err error
 
 	Eye.run.check_item, err = Eye.run.conn.Prepare(stmtCheckItemExists)
+	log.Println("Preparing: check_item")
 	abortOnError(err)
 
 	Eye.run.check_lookup, err = Eye.run.conn.Prepare(stmtCheckLookupExists)
+	log.Println("Preparing: check_lookup")
 	abortOnError(err)
 
 	Eye.run.delete_item, err = Eye.run.conn.Prepare(stmtDeleteConfigurationItem)
+	log.Println("Preparing: delete_item")
 	abortOnError(err)
 
 	Eye.run.delete_lookup, err = Eye.run.conn.Prepare(stmtDeleteLookupId)
+	log.Println("Preparing: delete_lookup")
 	abortOnError(err)
 
 	Eye.run.get_config, err = Eye.run.conn.Prepare(stmtGetSingleConfiguration)
+	log.Println("Preparing: get_config")
 	abortOnError(err)
 
 	Eye.run.get_items, err = Eye.run.conn.Prepare(stmtGetConfigurationItemIds)
+	log.Println("Preparing: get_items")
 	abortOnError(err)
 
 	Eye.run.get_lookup, err = Eye.run.conn.Prepare(stmtGetLookupIdForItem)
+	log.Println("Preparing: get_lookup")
 	abortOnError(err)
 
 	Eye.run.insert_item, err = Eye.run.conn.Prepare(stmtInsertConfigurationItem)
+	log.Println("Preparing: insert_item")
 	abortOnError(err)
 
 	Eye.run.insert_lookup, err = Eye.run.conn.Prepare(stmtInsertLookupInformation)
+	log.Println("Preparing: insert_lookup")
 	abortOnError(err)
 
 	Eye.run.item_count, err = Eye.run.conn.Prepare(stmtGetItemCountForLookupId)
+	log.Println("Preparing: item_count")
 	abortOnError(err)
 
 	Eye.run.retrieve, err = Eye.run.conn.Prepare(stmtRetrieveConfigurationsByLookup)
+	log.Println("Preparing: retrieve")
 	abortOnError(err)
 
 	Eye.run.update_item, err = Eye.run.conn.Prepare(stmtUpdateConfigurationItem)
+	log.Println("Preparing: update_item")
 	abortOnError(err)
 }
 
