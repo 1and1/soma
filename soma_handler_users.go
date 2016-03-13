@@ -119,6 +119,10 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 				},
 			})
 		}
+		if err = rows.Err(); err != nil {
+			result.Append(err, &SomaUserResult{})
+			err = nil
+		}
 	case "show":
 		log.Printf("R: users/show for %s", q.User.Id)
 		err = r.show_stmt.QueryRow(q.User.Id).Scan(
