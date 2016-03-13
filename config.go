@@ -18,7 +18,7 @@ type EyeConfig struct {
 	Daemon      EyeDaemon  `json:"daemon" valid:"required"`
 	Database    DbConfig   `json:"database" valid:"required"`
 	Soma        SomaConfig `json:"soma" valid:"required"`
-	run         EyeRuntime `json:"-" valid:"-"`
+	run         EyeRuntime `json:"-"`
 }
 
 type DbConfig struct {
@@ -37,11 +37,12 @@ type SomaConfig struct {
 }
 
 type EyeDaemon struct {
-	Listen string `json:"listen" valid:"ip"`
-	Port   string `json:"port" valid:"port"`
-	Tls    bool   `json:"tls,string" valid:"-"`
-	Cert   string `json:"cert-file" valid:"optional"`
-	Key    string `json:"key-file" valid:"optional"`
+	url    *url.URL `json:"-"`
+	Listen string   `json:"listen" valid:"ip"`
+	Port   string   `json:"port" valid:"port"`
+	Tls    bool     `json:"tls,string" valid:"-"`
+	Cert   string   `json:"cert-file" valid:"optional"`
+	Key    string   `json:"key-file" valid:"optional"`
 }
 
 type EyeRuntime struct {

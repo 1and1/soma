@@ -16,7 +16,7 @@ var conn *sql.DB
 var Eye EyeConfig
 
 func main() {
-	version := "0.9.2"
+	version := "0.9.3"
 	/*
 	 * Read configuration file
 	 */
@@ -29,10 +29,10 @@ func main() {
 	/*
 	 * Construct listen address
 	 */
-	listen := url.URL{}
-	listen.Host = fmt.Sprintf("%s:%s", Eye.Daemon.Listen, Eye.Daemon.Port)
+	Eye.Daemon.url = &url.URL{}
+	Eye.Daemon.url.Host = fmt.Sprintf("%s:%s", Eye.Daemon.Listen, Eye.Daemon.Port)
 	if Eye.Daemon.Tls {
-		listen.Scheme = "https"
+		Eye.Daemon.url.Scheme = "https"
 		if ok, ptype := govalidator.IsFilePath(Eye.Daemon.Cert); !ok {
 			log.Fatal("Missing required certificate configuration config/daemon/cert-file")
 		} else {
@@ -48,7 +48,7 @@ func main() {
 			}
 		}
 	} else {
-		listen.Scheme = "http"
+		Eye.Daemon.url.Scheme = "http"
 	}
 
 	/*
@@ -85,12 +85,12 @@ func main() {
 
 	if Eye.Daemon.Tls {
 		log.Fatal(http.ListenAndServeTLS(
-			listen.String(),
+			Eye.Daemon.url.Host,
 			Eye.Daemon.Cert,
 			Eye.Daemon.Key,
 			router))
 	} else {
-		log.Fatal(http.ListenAndServe(listen.String(), router))
+		log.Fatal(http.ListenAndServe(Eye.Daemon.url.Host, router))
 	}
 }
 
