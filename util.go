@@ -144,6 +144,9 @@ func dispatchUnprocessable(w *http.ResponseWriter, err string) {
 // 500
 func dispatchInternalServerError(w *http.ResponseWriter, err string) {
 	http.Error(*w, err, http.StatusInternalServerError)
+	if Eye.Volatile {
+		log.Fatal(err)
+	}
 	log.Println(err)
 }
 

@@ -15,6 +15,7 @@ import (
 type EyeConfig struct {
 	Environment string     `json:"environment" valid:"alpha"`
 	ReadOnly    bool       `json:"readonly,string" valid:"-"`
+	Volatile    bool       `json:"volatile,string" valid:"-"`
 	Daemon      EyeDaemon  `json:"daemon" valid:"required"`
 	Database    DbConfig   `json:"database" valid:"required"`
 	Soma        SomaConfig `json:"soma" valid:"required"`
