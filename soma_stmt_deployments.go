@@ -10,13 +10,13 @@ JOIN   soma.check_instance_configurations scic
 ON     sci.check_instance_id = scic.check_instance_id
 AND    sci.current_instance_config_id = scic.check_instance_config_id
 WHERE  sci.check_instance_id = $1::uuid
-AND    (  sci.status = 'awaiting_rollout'
-       OR sci.status = 'rollout_in_progress'
-	   OR sci.status = 'active'
-	   OR sci.status = 'rollout_failed'
-	   OR sci.status = 'awaiting_deprovision'
-	   OR sci.status = 'deprovision_in_progress'
-       OR sci.status = 'deprovision_failed' );`
+AND    (  scic.status = 'awaiting_rollout'
+       OR scic.status = 'rollout_in_progress'
+	   OR scic.status = 'active'
+	   OR scic.status = 'rollout_failed'
+	   OR scic.status = 'awaiting_deprovision'
+	   OR scic.status = 'deprovision_in_progress'
+       OR scic.status = 'deprovision_failed' );`
 
 const stmtUpdateDeployment = `
 UPDATE soma.check_instance_configurations
@@ -38,11 +38,11 @@ const stmtActivateDeployment = `
 UPDATE soma.check_instance_configurations
 SET    status = $1::varchar,
        next_status = $2::varchar,
-	   activated_at = $3::timestamptz,
+	   activated_at = $3::timestamptz
 WHERE  check_instance_config_id = $4::uuid;`
 
 const stmtGetDeploymentList = `
-SELECT sci.instance_id
+SELECT sci.check_instance_id
 FROM   soma.monitoring_systems sms
 JOIN   soma.check_instance_configurations scic
 ON     sms.monitoring_id = scic.monitoring_id
@@ -55,7 +55,7 @@ AND    (  scic.status = 'awaiting_rollout'
        OR scic.status = 'awaiting_deprovision' );`
 
 const stmtGetAllDeploymentList = `
-SELECT sci.instance_id
+SELECT sci.check_instance_id
 FROM   soma.monitoring_systems sms
 JOIN   soma.check_instance_configurations scic
 ON     sms.monitoring_id = scic.monitoring_id
@@ -79,7 +79,7 @@ FROM   soma.nodes sn
 JOIN   soma.checks sc
 ON     sn.node_id = sc.object_id
 JOIN   soma.monitoring_capabilities smc
-ON     sc.capability_id = smc.monitoring_capability
+ON     sc.capability_id = smc.capability_id
 JOIN   soma.check_instances sci
 ON     sc.check_id = sci.check_id
 WHERE  sn.node_asset_id = $1::numeric
