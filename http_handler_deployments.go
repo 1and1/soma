@@ -42,9 +42,9 @@ func DeliverMonitoringDeployments(w http.ResponseWriter, r *http.Request,
 	}
 
 	if params.ByName("all") == "" {
-		action = "listall"
-	} else {
 		action = "list"
+	} else {
+		action = "listall"
 	}
 
 	returnChannel := make(chan somaResult)
