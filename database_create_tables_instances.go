@@ -36,7 +36,7 @@ create table if not exists soma.check_instance_configurations (
     monitoring_id               uuid            REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
     constraint_hash             varchar(256)    NOT NULL,
     constraint_val_hash         varchar(256)    NOT NULL,
-    instance_service            varchar(64)     NOT NULL REFERENCES soma.team_service_properties ( service_property ) DEFERRABLE,
+    instance_service            varchar(64)     NOT NULL,
     instance_service_cfg_hash   varchar(256)    NOT NULL,
     instance_service_cfg        jsonb           NOT NULL,
     created                     timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
