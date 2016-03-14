@@ -120,7 +120,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 			})
 		}
 		if err = rows.Err(); err != nil {
-			result.Append(err, &SomaUserResult{})
+			result.Append(err, &somaUserResult{})
 			err = nil
 		}
 	case "show":
