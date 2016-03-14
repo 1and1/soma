@@ -633,61 +633,73 @@ func (tk *treeKeeper) process(q *treeRequest) {
 
 	// prepare statements within tx context
 	if txStmtPropertyInstanceCreate, err = tx.Prepare(tkStmtPropertyInstanceCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtPropertyInstanceCreate")
 		goto bailout
 	}
 	defer txStmtPropertyInstanceCreate.Close()
 
 	if txStmtCreateCheckConfigurationBase, err = tx.Prepare(tkStmtCreateCheckConfigurationBase); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationBase")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationBase.Close()
 
 	if txStmtCreateCheckConfigurationThreshold, err = tx.Prepare(tkStmtCreateCheckConfigurationThreshold); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationThreshold")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationThreshold.Close()
 
 	if txStmtCreateCheckConfigurationConstraintSystem, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintSystem); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationConstraintSystem")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationConstraintSystem.Close()
 
 	if txStmtCreateCheckConfigurationConstraintNative, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintNative); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationConstraintNative")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationConstraintNative.Close()
 
 	if txStmtCreateCheckConfigurationConstraintOncall, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintOncall); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationConstraintOncall")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationConstraintOncall.Close()
 
 	if txStmtCreateCheckConfigurationConstraintCustom, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintCustom); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationConstraintCustom")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationConstraintCustom.Close()
 
 	if txStmtCreateCheckConfigurationConstraintService, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintService); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationConstraintService")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationConstraintService.Close()
 
 	if txStmtCreateCheckConfigurationConstraintAttribute, err = tx.Prepare(tkStmtCreateCheckConfigurationConstraintAttribute); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckConfigurationConstraintAttribute")
 		goto bailout
 	}
 	defer txStmtCreateCheckConfigurationConstraintAttribute.Close()
 
 	if txStmtCreateCheck, err = tx.Prepare(tkStmtCreateCheck); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheck")
 		goto bailout
 	}
 	defer txStmtCreateCheck.Close()
 
 	if txStmtCreateCheckInstance, err = tx.Prepare(tkStmtCreateCheckInstance); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckInstance")
 		goto bailout
 	}
 	defer txStmtCreateCheckInstance.Close()
 
 	if txStmtCreateCheckInstanceConfiguration, err = tx.Prepare(tkStmtCreateCheckInstanceConfiguration); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateCheckInstanceConfiguration")
 		goto bailout
 	}
 	defer txStmtCreateCheckInstanceConfiguration.Close()
@@ -695,21 +707,25 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	//
 	// REPOSITORY
 	if txStmtRepositoryPropertyOncallCreate, err = tx.Prepare(tkStmtRepositoryPropertyOncallCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtRepositoryPropertyOncallCreate")
 		goto bailout
 	}
 	defer txStmtRepositoryPropertyOncallCreate.Close()
 
 	if txStmtRepositoryPropertyServiceCreate, err = tx.Prepare(tkStmtRepositoryPropertyServiceCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtRepositoryPropertyServiceCreate")
 		goto bailout
 	}
 	defer txStmtRepositoryPropertyServiceCreate.Close()
 
 	if txStmtRepositoryPropertySystemCreate, err = tx.Prepare(tkStmtRepositoryPropertySystemCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtRepositoryPropertySystemCreate")
 		goto bailout
 	}
 	defer txStmtRepositoryPropertySystemCreate.Close()
 
 	if txStmtRepositoryPropertyCustomCreate, err = tx.Prepare(tkStmtRepositoryPropertyCustomCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtRepositoryPropertyCustomCreate")
 		goto bailout
 	}
 	defer txStmtRepositoryPropertyCustomCreate.Close()
@@ -717,26 +733,31 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	//
 	// BUCKET
 	if txStmtCreateBucket, err = tx.Prepare(tkStmtCreateBucket); err != nil {
+		log.Println("Failed to prepare: tkStmtCreateBucket")
 		goto bailout
 	}
 	defer txStmtCreateBucket.Close()
 
 	if txStmtBucketPropertyOncallCreate, err = tx.Prepare(tkStmtBucketPropertyOncallCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtBucketPropertyOncallCreate")
 		goto bailout
 	}
 	defer txStmtBucketPropertyOncallCreate.Close()
 
 	if txStmtBucketPropertyServiceCreate, err = tx.Prepare(tkStmtBucketPropertyServiceCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtBucketPropertyServiceCreate")
 		goto bailout
 	}
 	defer txStmtBucketPropertyServiceCreate.Close()
 
 	if txStmtBucketPropertySystemCreate, err = tx.Prepare(tkStmtBucketPropertySystemCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtBucketPropertySystemCreate")
 		goto bailout
 	}
 	defer txStmtBucketPropertySystemCreate.Close()
 
 	if txStmtBucketPropertyCustomCreate, err = tx.Prepare(tkStmtBucketPropertyCustomCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtBucketPropertyCustomCreate")
 		goto bailout
 	}
 	defer txStmtBucketPropertyCustomCreate.Close()
@@ -744,66 +765,79 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	//
 	// GROUP
 	if txStmtGroupCreate, err = tx.Prepare(tkStmtGroupCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupCreate")
 		goto bailout
 	}
 	defer txStmtGroupCreate.Close()
 
 	if txStmtGroupUpdate, err = tx.Prepare(tkStmtGroupUpdate); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupUpdate")
 		goto bailout
 	}
 	defer txStmtGroupUpdate.Close()
 
 	if txStmtGroupDelete, err = tx.Prepare(tkStmtGroupDelete); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupDelete")
 		goto bailout
 	}
 	defer txStmtGroupDelete.Close()
 
 	if txStmtGroupMemberNewNode, err = tx.Prepare(tkStmtGroupMemberNewNode); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupMemberNewNode")
 		goto bailout
 	}
 	defer txStmtGroupMemberNewNode.Close()
 
 	if txStmtGroupMemberNewCluster, err = tx.Prepare(tkStmtGroupMemberNewCluster); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupMemberNewCluster")
 		goto bailout
 	}
 	defer txStmtGroupMemberNewCluster.Close()
 
 	if txStmtGroupMemberNewGroup, err = tx.Prepare(tkStmtGroupMemberNewGroup); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupMemberNewGroup")
 		goto bailout
 	}
 	defer txStmtGroupMemberNewGroup.Close()
 
 	if txStmtGroupMemberRemoveNode, err = tx.Prepare(tkStmtGroupMemberRemoveNode); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupMemberRemoveNode")
 		goto bailout
 	}
 	defer txStmtGroupMemberRemoveNode.Close()
 
 	if txStmtGroupMemberRemoveCluster, err = tx.Prepare(tkStmtGroupMemberRemoveCluster); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupMemberRemoveCluster")
 		goto bailout
 	}
 	defer txStmtGroupMemberRemoveCluster.Close()
 
 	if txStmtGroupMemberRemoveGroup, err = tx.Prepare(tkStmtGroupMemberRemoveGroup); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupMemberRemoveGroup")
 		goto bailout
 	}
 	defer txStmtGroupMemberRemoveGroup.Close()
 
 	if txStmtGroupPropertyOncallCreate, err = tx.Prepare(tkStmtGroupPropertyOncallCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupPropertyOncallCreate")
 		goto bailout
 	}
 	defer txStmtGroupPropertyOncallCreate.Close()
 
 	if txStmtGroupPropertyServiceCreate, err = tx.Prepare(tkStmtGroupPropertyServiceCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupPropertyServiceCreate")
 		goto bailout
 	}
 	defer txStmtGroupPropertyServiceCreate.Close()
 
 	if txStmtGroupPropertySystemCreate, err = tx.Prepare(tkStmtGroupPropertySystemCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupPropertySystemCreate")
 		goto bailout
 	}
 	defer txStmtGroupPropertySystemCreate.Close()
 
 	if txStmtGroupPropertyCustomCreate, err = tx.Prepare(tkStmtGroupPropertyCustomCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtGroupPropertyCustomCreate")
 		goto bailout
 	}
 	defer txStmtGroupPropertyCustomCreate.Close()
@@ -811,46 +845,55 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	//
 	// CLUSTER
 	if txStmtClusterCreate, err = tx.Prepare(tkStmtClusterCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterCreate")
 		goto bailout
 	}
 	defer txStmtClusterCreate.Close()
 
 	if txStmtClusterUpdate, err = tx.Prepare(tkStmtClusterUpdate); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterUpdate")
 		goto bailout
 	}
 	defer txStmtClusterUpdate.Close()
 
 	if txStmtClusterDelete, err = tx.Prepare(tkStmtClusterDelete); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterDelete")
 		goto bailout
 	}
 	defer txStmtClusterDelete.Close()
 
 	if txStmtClusterMemberNew, err = tx.Prepare(tkStmtClusterMemberNew); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterMemberNew")
 		goto bailout
 	}
 	defer txStmtClusterMemberNew.Close()
 
 	if txStmtClusterMemberRemove, err = tx.Prepare(tkStmtClusterMemberRemove); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterMemberRemove")
 		goto bailout
 	}
 	defer txStmtClusterMemberRemove.Close()
 
 	if txStmtClusterPropertyOncallCreate, err = tx.Prepare(tkStmtClusterPropertyOncallCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterPropertyOncallCreate")
 		goto bailout
 	}
 	defer txStmtClusterPropertyOncallCreate.Close()
 
 	if txStmtClusterPropertyServiceCreate, err = tx.Prepare(tkStmtClusterPropertyServiceCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterPropertyServiceCreate")
 		goto bailout
 	}
 	defer txStmtClusterPropertyServiceCreate.Close()
 
 	if txStmtClusterPropertySystemCreate, err = tx.Prepare(tkStmtClusterPropertySystemCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterPropertySystemCreate")
 		goto bailout
 	}
 	defer txStmtClusterPropertySystemCreate.Close()
 
 	if txStmtClusterPropertyCustomCreate, err = tx.Prepare(tkStmtClusterPropertyCustomCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtClusterPropertyCustomCreate")
 		goto bailout
 	}
 	defer txStmtClusterPropertyCustomCreate.Close()
@@ -858,42 +901,50 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	//
 	// NODE
 	if txStmtBucketAssignNode, err = tx.Prepare(tkStmtBucketAssignNode); err != nil {
+		log.Println("Failed to prepare: tkStmtBucketAssignNode")
 		goto bailout
 	}
 	defer txStmtBucketAssignNode.Close()
 
 	if txStmtUpdateNodeState, err = tx.Prepare(tkStmtUpdateNodeState); err != nil {
+		log.Println("Failed to prepare: tkStmtUpdateNodeState")
 		goto bailout
 	}
 	defer txStmtUpdateNodeState.Close()
 
 	if txStmtNodeUnassignFromBucket, err = tx.Prepare(tkStmtNodeUnassignFromBucket); err != nil {
+		log.Println("Failed to prepare: tkStmtNodeUnassignFromBucket")
 		goto bailout
 	}
 	defer txStmtNodeUnassignFromBucket.Close()
 
 	if txStmtNodePropertyOncallCreate, err = tx.Prepare(tkStmtNodePropertyOncallCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtNodePropertyOncallCreate")
 		goto bailout
 	}
 	defer txStmtNodePropertyOncallCreate.Close()
 
 	if txStmtNodePropertyServiceCreate, err = tx.Prepare(tkStmtNodePropertyServiceCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtNodePropertyServiceCreate")
 		goto bailout
 	}
 	defer txStmtNodePropertyServiceCreate.Close()
 
 	if txStmtNodePropertySystemCreate, err = tx.Prepare(tkStmtNodePropertySystemCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtNodePropertySystemCreate")
 		goto bailout
 	}
 	defer txStmtNodePropertySystemCreate.Close()
 
 	if txStmtNodePropertyCustomCreate, err = tx.Prepare(tkStmtNodePropertyCustomCreate); err != nil {
+		log.Println("Failed to prepare: tkStmtNodePropertyCustomCreate")
 		goto bailout
 	}
 	defer txStmtNodePropertyCustomCreate.Close()
 
 	// defer constraint checks
 	if _, err = tx.Exec(tkStmtDeferAllConstraints); err != nil {
+		log.Println("Failed to exec: tkStmtDeferAllConstraints")
 		goto bailout
 	}
 

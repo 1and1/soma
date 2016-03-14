@@ -29,6 +29,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 	}
 	defer stmt_List.Close()
 	if stmt_Update, err = tk.conn.Prepare(tkStmtDeployDetailsUpdate); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsUpdate")
 		log.Fatal(err)
 	}
 	defer stmt_Update.Close()
@@ -38,91 +39,113 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 	defer stmt_CheckInstance.Close()
 
 	if stmt_Check, err = tk.conn.Prepare(tkStmtDeployDetailsCheck); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsCheck")
 		log.Fatal(err)
 	}
 	defer stmt_Check.Close()
 	if stmt_CheckConfig, err = tk.conn.Prepare(tkStmtDeployDetailsCheckConfig); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsCheckConfig")
 		log.Fatal(err)
 	}
 	defer stmt_CheckConfig.Close()
 	if stmt_Threshold, err = tk.conn.Prepare(tkStmtDeployDetailsCheckConfigThreshold); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsCheckConfigThreshold")
 		log.Fatal(err)
 	}
 	defer stmt_Threshold.Close()
 	if stmt_CapMonMetric, err = tk.conn.Prepare(tkStmtDeployDetailsCapabilityMonitoringMetric); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsCapabilityMonitoringMetric")
 		log.Fatal(err)
 	}
 	defer stmt_CapMonMetric.Close()
 	if stmt_Pkgs, err = tk.conn.Prepare(tkStmtDeployDetailsProviders); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsProviders")
 		log.Fatal(err)
 	}
 	defer stmt_Pkgs.Close()
 	if stmt_Group, err = tk.conn.Prepare(tkStmtDeployDetailsGroup); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsGroup")
 		log.Fatal(err)
 	}
 	defer stmt_Group.Close()
 	if stmt_Cluster, err = tk.conn.Prepare(tkStmtDeployDetailsCluster); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsCluster")
 		log.Fatal(err)
 	}
 	defer stmt_Cluster.Close()
 	if stmt_Node, err = tk.conn.Prepare(tkStmtDeployDetailsNode); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsNode")
 		log.Fatal(err)
 	}
 	defer stmt_Node.Close()
 	if stmt_Team, err = tk.conn.Prepare(tkStmtDeployDetailsTeam); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsTeam")
 		log.Fatal(err)
 	}
 	defer stmt_Team.Close()
 
 	if stmt_GroupOncall, err = tk.conn.Prepare(tkStmtDeployDetailsGroupOncall); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsGroupOncall")
 		log.Fatal(err)
 	}
 	defer stmt_GroupOncall.Close()
 	if stmt_GroupService, err = tk.conn.Prepare(tkStmtDeployDetailsGroupService); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsGroupService")
 		log.Fatal(err)
 	}
 	defer stmt_GroupService.Close()
 	if stmt_ClusterOncall, err = tk.conn.Prepare(tkStmtDeployDetailsClusterOncall); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsClusterOncall")
 		log.Fatal(err)
 	}
 	defer stmt_ClusterOncall.Close()
 	if stmt_ClusterService, err = tk.conn.Prepare(tkStmtDeployDetailsClusterService); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsClusterService")
 		log.Fatal(err)
 	}
 	defer stmt_ClusterService.Close()
 	if stmt_NodeOncall, err = tk.conn.Prepare(tkStmtDeployDetailsNodeOncall); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsNodeOncall")
 		log.Fatal(err)
 	}
 	defer stmt_NodeOncall.Close()
 	if stmt_NodeService, err = tk.conn.Prepare(tkStmtDeployDetailsNodeService); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsNodeService")
 		log.Fatal(err)
 	}
 	defer stmt_NodeService.Close()
 	if stmt_GroupSysProp, err = tk.conn.Prepare(tkStmtDeployDetailsGroupSysProp); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsGroupSysProp")
 		log.Fatal(err)
 	}
 	defer stmt_GroupSysProp.Close()
 	if stmt_GroupCustProp, err = tk.conn.Prepare(tkStmtDeployDetailsGroupCustProp); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailsGroupCustProp")
 		log.Fatal(err)
 	}
 	defer stmt_GroupCustProp.Close()
 	if stmt_ClusterSysProp, err = tk.conn.Prepare(tkStmtDeployDetailClusterSysProp); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailClusterSysProp")
 		log.Fatal(err)
 	}
 	defer stmt_ClusterSysProp.Close()
 	if stmt_ClusterCustProp, err = tk.conn.Prepare(tkStmtDeployDetailClusterCustProp); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailClusterCustProp")
 		log.Fatal(err)
 	}
 	defer stmt_ClusterCustProp.Close()
 	if stmt_NodeSysProp, err = tk.conn.Prepare(tkStmtDeployDetailNodeSysProp); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailNodeSysProp")
 		log.Fatal(err)
 	}
 	defer stmt_NodeSysProp.Close()
 	if stmt_NodeCustProp, err = tk.conn.Prepare(tkStmtDeployDetailNodeCustProp); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailNodeCustProp")
 		log.Fatal(err)
 	}
 	defer stmt_NodeCustProp.Close()
 	if stmt_DefaultDC, err = tk.conn.Prepare(tkStmtDeployDetailDefaultDatacenter); err != nil {
+		log.Println("Failed to prepare: tkStmtDeployDetailDefaultDatacenter")
 		log.Fatal(err)
 	}
 	defer stmt_DefaultDC.Close()

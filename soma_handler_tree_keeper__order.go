@@ -89,12 +89,14 @@ deployments:
 
 			// prepare statements within transaction
 			if txUpdateStatus, err = tx.Prepare(tkStmtUpdateConfigStatus); err != nil {
-				log.Fatal()
+				log.Println("Failed to prepare: tkStmtUpdateConfigStatus")
+				log.Fatal(err)
 			}
 			defer txUpdateStatus.Close()
 
 			if txUpdateInstance, err = tx.Prepare(tkStmtUpdateCheckInstance); err != nil {
-				log.Fatal()
+				log.Println("Failed to prepare: tkStmtUpdateCheckInstance")
+				log.Fatal(err)
 			}
 			defer txUpdateInstance.Close()
 
@@ -149,17 +151,20 @@ deployments:
 
 		// prepare statements within transaction
 		if txUpdateStatus, err = tx.Prepare(tkStmtUpdateConfigStatus); err != nil {
-			log.Fatal()
+			log.Println("Failed to prepare: tkStmtUpdateConfigStatus")
+			log.Fatal(err)
 		}
 		defer txUpdateStatus.Close()
 
 		if txUpdateInstance, err = tx.Prepare(tkStmtUpdateCheckInstance); err != nil {
-			log.Fatal()
+			log.Println("Failed to prepare: tkStmtUpdateCheckInstance")
+			log.Fatal(err)
 		}
 		defer txUpdateInstance.Close()
 
 		if txDependency, err = tx.Prepare(tkStmtSetDependency); err != nil {
-			log.Fatal()
+			log.Println("Failed to prepare: tkStmtSetDependency")
+			log.Fatal(err)
 		}
 		defer txDependency.Close()
 
