@@ -127,7 +127,7 @@ INSERT INTO soma.check_instances (
 	check_id,
 	check_configuration_id,
 	last_configuration_created)
-VALUES $1::uuid,
+SELECT $1::uuid,
        $2::uuid,
 	   $3::uuid,
 	   $4::timestamptz;`
@@ -147,7 +147,7 @@ INSERT INTO soma.check_instance_configurations (
 	next_status,
 	awaiting_deletion,
 	deployment_details)
-VALUES $1::uuid,
+SELECT $1::uuid,
        $2::integer,
 	   $3::uuid,
 	   $4::varchar,
@@ -198,7 +198,7 @@ SELECT sc.repository_id,
 	   sc.object_id,
 	   sc.object_type,
 	   scc.inheritance_enabled,
-	   scc.children_only,
+	   scc.children_only
 FROM   soma.checks sc
 JOIN   soma.check_configurations scc
 ON     sc.configuration_id = scc.configuration_id
@@ -221,6 +221,7 @@ SELECT sct.predicate,
 	   snl.level_numeric
 FROM   soma.configuration_thresholds sct
 JOIN   soma.notification_levels snl
+ON     sct.notification_level = snl.level_name
 WHERE  sct.configuration_id = $1::uuid;`
 
 const tkStmtDeployDetailsCapabilityMonitoringMetric = `
@@ -258,13 +259,13 @@ SELECT sg.bucket_id,
 	   sg.organizational_team_id,
 	   sb.bucket_name,
 	   sb.environment,
-	   sr.repository_name,
-FROM  soma.groups sg
-JOIN  soma.buckets sb
-ON    sg.bucket_id = sb.bucket_id
-JOIN  soma.repositories sr
-ON    sb.repository_id = sr.repository_id
-WHERE sg.group_id = $1::uuid;`
+	   sr.repository_name
+FROM   soma.groups sg
+JOIN   soma.buckets sb
+ON     sg.bucket_id = sb.bucket_id
+JOIN   soma.repositories sr
+ON     sb.repository_id = sr.repository_id
+WHERE  sg.group_id = $1::uuid;`
 
 const tkStmtDeployDetailsCluster = `
 SELECT sc.cluster_name,
@@ -273,13 +274,13 @@ SELECT sc.cluster_name,
 	   sc.organizational_team_id,
 	   sb.bucket_name,
 	   sb.environment,
-	   sr.repository_name,
+	   sr.repository_name
 FROM   soma.clusters sc
 JOIN   soma.buckets sb
 ON     sc.bucket_id = sb.bucket_id
-JOIN  soma.repositories sr
-ON    sb.repository_id = sr.repository_id
-WHERE sr.cluster_id = $1::uuid;`
+JOIN   soma.repositories sr
+ON     sb.repository_id = sr.repository_id
+WHERE  sc.cluster_id = $1::uuid;`
 
 const tkStmtDeployDetailsNode = `
 SELECT sn.node_asset_id,
@@ -318,7 +319,7 @@ WHERE  organizational_team_id = $1::uuid;`
 const tkStmtDeployDetailsNodeOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
-       iodt.oncall_duty_phone_number,
+       iodt.oncall_duty_phone_number
 FROM   soma.node_oncall_property snop
 JOIN   inventory.oncall_duty_teams iodt
 ON     snop.oncall_duty_id = iodt.oncall_duty_id
@@ -328,7 +329,7 @@ AND    snop.view = $2::varchar;`
 const tkStmtDeployDetailsClusterOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
-	   iodt.oncall_duty_phone_number,
+	   iodt.oncall_duty_phone_number
 FROM   soma.cluster_oncall_properties scop
 JOIN   inventory.oncall_duty_teams iodt
 ON     scop.oncall_duty_id = iodt.oncall_duty_id
@@ -338,7 +339,7 @@ AND    (scop.view = $2::varchar OR scop.view = 'any');`
 const tkStmtDeployDetailsGroupOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
-	   iodt.oncall_duty_phone_number,
+	   iodt.oncall_duty_phone_number
 FROM   soma.group_oncall_properties sgop
 JOIN   inventory.oncall_duty_teams iodt
 ON     sgop.oncall_duty_id = iodt.oncall_duty_id
