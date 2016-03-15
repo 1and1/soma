@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,9 +16,25 @@ var handlerMap = make(map[string]interface{})
 var SomaCfg SomaConfig
 
 func main() {
-	version := "0.4.3"
+	var (
+		configFlag, configFile string
+		err                    error
+	)
+	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
+	flag.Parse()
+
+	version := "0.4.4"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
-	err := SomaCfg.readConfigFile("soma.conf")
+	/*
+	 * Read configuration file
+	 */
+	if configFile, err = filepath.Abs(configFlag); err != nil {
+		log.Fatal(err)
+	}
+	if configFile, err = filepath.EvalSymlinks(configFile); err != nil {
+		log.Fatal(err)
+	}
+	err = SomaCfg.readConfigFile(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
