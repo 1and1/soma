@@ -21,7 +21,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-type notifyMessage struct {
+type NotifyMessage struct {
 	Uuid string `json:"uuid" valid:"uuidv4"`
 	Path string `json:"path" valid:"abspath"`
 }
@@ -29,7 +29,7 @@ type notifyMessage struct {
 func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var (
 		dec    *json.Decoder
-		msg    notifyMessage
+		msg    NotifyMessage
 		err    error
 		soma   *url.URL
 		client *resty.Client
