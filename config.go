@@ -3,25 +3,37 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/nahanni/go-ucl"
 	"io/ioutil"
 	"log"
+	"net/url"
+
+	"github.com/nahanni/go-ucl"
 )
 
 type SomaConfig struct {
 	Environment string       `json:"environment"`
-	Timeout     string       `json:"timeout"`
-	TlsMode     string       `json:"tlsmode"`
 	ReadOnly    bool         `json:"readonly,string"`
 	Database    SomaDbConfig `json:"database"`
+	Daemon      SomaDaemon   `json:"daemon"`
 }
 
 type SomaDbConfig struct {
-	Host string `json:"host"`
-	User string `json:"user"`
-	Name string `json:"name"`
-	Port string `json:"port"`
-	Pass string `json:"password"`
+	Host    string `json:"host"`
+	User    string `json:"user"`
+	Name    string `json:"name"`
+	Port    string `json:"port"`
+	Pass    string `json:"password"`
+	Timeout string `json:"timeout"`
+	TlsMode string `json:"tlsmode"`
+}
+
+type SomaDaemon struct {
+	url    *url.URL `json:"-"`
+	Listen string   `json:"listen"`
+	Port   string   `json:"port"`
+	Tls    bool     `json:"tls,string"`
+	Cert   string   `json:"cert-file"`
+	Key    string   `json:"key-file"`
 }
 
 func (c *SomaConfig) readConfigFile(fname string) error {

@@ -18,8 +18,8 @@ func connectToDatabase() {
 		SomaCfg.Database.Pass,
 		SomaCfg.Database.Host,
 		SomaCfg.Database.Port,
-		SomaCfg.TlsMode,
-		SomaCfg.Timeout,
+		SomaCfg.Database.TlsMode,
+		SomaCfg.Database.Timeout,
 	)
 
 	conn, err = sql.Open(driver, connect)

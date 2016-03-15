@@ -3,10 +3,13 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"path/filepath"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -23,7 +26,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.4.4"
+	version := "0.4.5"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	/*
 	 * Read configuration file
@@ -37,6 +40,31 @@ func main() {
 	err = SomaCfg.readConfigFile(configFile)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	/*
+	 * Construct listen address
+	 */
+	SomaCfg.Daemon.url = &url.URL{}
+	SomaCfg.Daemon.url.Host = fmt.Sprintf("%s:%s", SomaCfg.Daemon.Listen, SomaCfg.Daemon.Port)
+	if SomaCfg.Daemon.Tls {
+		SomaCfg.Daemon.url.Scheme = "https"
+		if ok, pt := govalidator.IsFilePath(SomaCfg.Daemon.Cert); !ok {
+			log.Fatal("Missing required certificate configuration config/daemon/cert-file")
+		} else {
+			if pt != govalidator.Unix {
+				log.Fatal("config/daemon/cert-File: valid Windows paths are not helpful")
+			}
+		}
+		if ok, pt := govalidator.IsFilePath(SomaCfg.Daemon.Key); !ok {
+			log.Fatal("Missing required key configuration config/daemon/key-file")
+		} else {
+			if pt != govalidator.Unix {
+				log.Fatal("config/daemon/key-file: valid Windows paths are not helpful")
+			}
+		}
+	} else {
+		SomaCfg.Daemon.url.Scheme = "http"
 	}
 
 	connectToDatabase()
@@ -274,7 +302,15 @@ func main() {
 		router.PATCH("/deployments/id/:uuid/:result", UpdateDeploymentDetails)
 	}
 
-	log.Fatal(http.ListenAndServe(":8888", router))
+	if SomaCfg.Daemon.Tls {
+		log.Fatal(http.ListenAndServeTLS(
+			SomaCfg.Daemon.url.Host,
+			SomaCfg.Daemon.Cert,
+			SomaCfg.Daemon.Key,
+			router))
+	} else {
+		log.Fatal(http.ListenAndServe(SomaCfg.Daemon.url.Host, router))
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
