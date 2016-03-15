@@ -42,7 +42,7 @@ var conn *sql.DB
 var Eye EyeConfig
 
 func main() {
-	version := "0.9.4"
+	version := "0.9.5"
 	/*
 	 * Read configuration file
 	 */
