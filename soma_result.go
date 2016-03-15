@@ -39,6 +39,7 @@ type somaResult struct {
 	CheckConfigs    []somaCheckConfigResult
 	Deployments     []somaDeploymentResult
 	HostDeployments []somaHostDeploymentResult
+	Validity        []somaValidityResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

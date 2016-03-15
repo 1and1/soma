@@ -21,6 +21,7 @@ func startHandlers() {
 	spawnMonitoringReadHandler()
 	spawnCapabilityReadHandler()
 	spawnPropertyReadHandler()
+	spawnValidityReadHandler()
 	spawnAttributeReadHandler()
 	spawnRepositoryReadHandler()
 	spawnBucketReadHandler()
@@ -50,6 +51,7 @@ func startHandlers() {
 		spawnMonitoringWriteHandler()
 		spawnCapabilityWriteHandler()
 		spawnPropertyWriteHandler()
+		spawnValidityWriteHandler()
 		spawnAttributeWriteHandler()
 		spawnForestCustodian()
 		spawnGuidePost()
@@ -523,6 +525,24 @@ func spawnHostDeploymentHandler() {
 	hostDeploymentHandler.conn = conn
 	handlerMap["hostDeploymentHandler"] = hostDeploymentHandler
 	go hostDeploymentHandler.run()
+}
+
+func spawnValidityReadHandler() {
+	var validityReadHandler somaValidityReadHandler
+	validityReadHandler.input = make(chan somaValidityRequest, 64)
+	validityReadHandler.shutdown = make(chan bool)
+	validityReadHandler.conn = conn
+	handlerMap["validityReadHandler"] = validityReadHandler
+	go validityReadHandler.run()
+}
+
+func spawnValidityWriteHandler() {
+	var validityWriteHandler somaValidityWriteHandler
+	validityWriteHandler.input = make(chan somaValidityRequest, 64)
+	validityWriteHandler.shutdown = make(chan bool)
+	validityWriteHandler.conn = conn
+	handlerMap["validityWriteHandler"] = validityWriteHandler
+	go validityWriteHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
