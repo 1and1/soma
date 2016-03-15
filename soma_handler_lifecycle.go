@@ -17,8 +17,13 @@ type lifeCycle struct {
 	stmt_clear   *sql.Stmt
 }
 
-type pokeMessage struct {
-	uuid string `json:"uuid"`
+type PokeMessage struct {
+	Uuid string `json:"uuid"`
+	// TODO path should be used to tell the client system the basepath
+	// where to get it so SOMA + path + item_id === complete_url
+	// It is currently hardcoded, should move to the configuration
+	// file
+	Path string `json:"path"`
 }
 
 func (lc *lifeCycle) run() {
@@ -176,11 +181,12 @@ func (lc *lifeCycle) poke() {
 	}
 
 	cl = resty.New().SetTimeout(500 * time.Millisecond)
+	// do not poke the bear
 bearloop:
 	for mon, idList := range pokeIDs {
 		for _, id := range idList {
 			if _, err = cl.R().
-				SetBody(pokeMessage{uuid: id}).
+				SetBody(PokeMessage{Uuid: id, Path: "/deployments/id/"}).
 				Post(callbacks[mon]); err != nil {
 				log.Println(err)
 				continue bearloop
