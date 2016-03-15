@@ -2,23 +2,26 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+
 	"github.com/codegangsta/cli"
 	"github.com/howeyc/gopass"
-	"log"
-	"strconv"
 )
 
 func configSetup(c *cli.Context) error {
 	log.Print("Starting runtime config initialization")
 
 	// try loading a configuration file
-	err := Cfg.populateFromFile(c.GlobalString("config"))
+	configFile := os.ExpandEnv(c.GlobalString("config"))
+	err := Cfg.populateFromFile(configFile)
 	if err != nil {
 		if c.GlobalIsSet("config") {
 			// missing cli argument file is fatal error
 			log.Fatal(err)
 		}
-		log.Print("No configuration file found")
+		log.Print(fmt.Sprintf("No configuration file found: %s", c.GlobalString("config")))
 	}
 
 	// finish setting up runtime configuration
