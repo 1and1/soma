@@ -28,10 +28,12 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/julienschmidt/httprouter"
@@ -42,12 +44,25 @@ var conn *sql.DB
 var Eye EyeConfig
 
 func main() {
-	version := "0.9.6"
+	var (
+		configFlag, configFile string
+		err                    error
+	)
+	flag.StringVar(&configFlag, "config", "/srv/eye/conf/eye.conf", "Configuration file location")
+	flag.Parse()
+
+	version := "0.9.7"
+	log.Printf("Starting runtime config initialization, Eye v%s", version)
 	/*
 	 * Read configuration file
 	 */
-	log.Printf("Starting runtime config initialization, Eye v%s", version)
-	err := Eye.readConfigFile("eye.conf")
+	if configFile, err = filepath.Abs(configFlag); err != nil {
+		log.Fatal(err)
+	}
+	if configFile, err = filepath.EvalSymlinks(configFile); err != nil {
+		log.Fatal(err)
+	}
+	err = Eye.readConfigFile(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
