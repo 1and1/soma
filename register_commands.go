@@ -1454,6 +1454,34 @@ func registerCommands(app cli.App) *cli.App {
 				},
 			},
 		}, // end checks
+		// validity
+		{
+			Name:   "validity",
+			Usage:  "SUCOMMANDS for system property validity",
+			Before: runtimePreCmd,
+			Subcommands: []cli.Command{
+				{
+					Name:   "create",
+					Usage:  "Create a new system property validity",
+					Action: cmdValidityCreate,
+				},
+				{
+					Name:   "delete",
+					Usage:  "Delete a system property validity",
+					Action: cmdValidityDelete,
+				},
+				{
+					Name:   "list",
+					Usage:  "List system property validity records",
+					Action: cmdValidityList,
+				},
+				{
+					Name:   "show",
+					Usage:  "Show details about a system property validity",
+					Action: cmdValidityShow,
+				},
+			},
+		}, // end validity
 	}
 	return &app
 }
