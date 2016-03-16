@@ -245,15 +245,17 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		}
 
 		// insert all provider package information
-	pkgloop:
-		for _, pkg = range *q.Metric.Packages {
-			res, err = tx.Stmt(w.pkg_add_stmt).Exec(
-				q.Metric.Metric,
-				pkg.Provider,
-				pkg.Package,
-			)
-			if err != nil {
-				break pkgloop
+		if *q.Metric.Packages != nil {
+		pkgloop:
+			for _, pkg = range *q.Metric.Packages {
+				res, err = tx.Stmt(w.pkg_add_stmt).Exec(
+					q.Metric.Metric,
+					pkg.Provider,
+					pkg.Package,
+				)
+				if err != nil {
+					break pkgloop
+				}
 			}
 		}
 		err = tx.Commit()
