@@ -85,7 +85,10 @@ func configSetup(c *cli.Context) error {
 	// prompt for password if the cli flag was set
 	if c.GlobalBool("password") {
 		fmt.Printf("Enter password: ")
-		pass := gopass.GetPasswd()
+		pass, err := gopass.GetPasswd()
+		if err != nil {
+			return err
+		}
 		Cfg.Database.Pass = string(pass)
 	}
 	// abort if we have no connection password at this point
