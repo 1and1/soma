@@ -13,8 +13,9 @@ type ProtoResultAttribute struct {
 }
 
 type ProtoAttribute struct {
-	Attribute string                 `json:"attribute,omitempty"`
-	Details   *ProtoAttributeDetails `json:"details,omitempty"`
+	Attribute   string                 `json:"attribute,omitempty"`
+	Cardinality string                 `json:"cardinality,omitempty"`
+	Details     *ProtoAttributeDetails `json:"details,omitempty"`
 }
 
 type ProtoAttributeDetails struct {
