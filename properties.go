@@ -20,7 +20,7 @@ type PropertyResult struct {
 	JobId   string                `json:"jobid,omitempty"`
 }
 
-type ProtoPropertyFilter struct {
+type PropertyFilter struct {
 	Property   string `json:"property,omitempty"`
 	Type       string `json:"type,omitempty"`
 	Repository string `json:"repository,omitempty"`
