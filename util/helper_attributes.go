@@ -8,9 +8,9 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) DecodeProtoResultAttributeFromResponse(resp *resty.Response) *somaproto.ProtoResultAttribute {
+func (u SomaUtil) DecodeProtoResultAttributeFromResponse(resp *resty.Response) *somaproto.AttributeResult {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultAttribute
+	var res somaproto.AttributeResult
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")
 	if res.Code > 299 {

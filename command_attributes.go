@@ -8,10 +8,27 @@ import (
 
 func cmdAttributeCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
+	multiple := []string{}
+	unique := []string{"cardinality"}
+	required := []string{"cardinality"}
 
-	req := somaproto.ProtoRequestAttribute{}
-	req.Attribute = &somaproto.ProtoAttribute{}
+	opts := utl.ParseVariadicArguments(
+		multiple,
+		unique,
+		required,
+		c.Args().Tail())
+
+	switch opts["cardinality"][0] {
+	case "once":
+	case "multi":
+	default:
+		utl.Abort("Illegal value for cardinality")
+	}
+
+	req := somaproto.AttributeRequest{}
+	req.Attribute = &somaproto.Attribute{}
 	req.Attribute.Attribute = c.Args().First()
+	req.Attribute.Cardinality = opts["cardinality"][0]
 
 	resp := utl.PostRequestWithBody(req, "/attributes/")
 	fmt.Println(resp)

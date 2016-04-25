@@ -725,7 +725,7 @@ func registerCommands(app cli.App) *cli.App {
 						{
 							Name:   "template",
 							Usage:  "Create a new global service template",
-							Action: cmdPropertyTemplateCreate,
+							Action: cmdPropertyServiceCreate,
 						},
 					},
 				}, // end property create

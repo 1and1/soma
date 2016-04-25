@@ -47,11 +47,13 @@ func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) string {
 
 func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) string {
 	var (
-		req         somaproto.ProtoRequestProperty
+		req         somaproto.PropertyRequest
 		ctxIdString string
 		path        string
 	)
-	req.Filter.Property = prop
+	req = somaproto.PropertyRequest{}
+	req.Filter = &somaproto.PropertyFilter{}
+	req.Filter.Name = prop
 
 	switch pType {
 	case "custom":
@@ -74,12 +76,12 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	propResult := u.DecodeProtoResultPropertyFromResponse(resp)
 
 	switch prop {
-	case propResult.Custom[0].Property:
-		return propResult.Custom[0].Id
-	case propResult.System[0].Property:
-		return propResult.System[0].Property
-	case propResult.Service[0].Property:
-		return propResult.Service[0].Property
+	case propResult.Custom[0].Name:
+		return propResult.Custom[0].CustomId
+	case propResult.System[0].Name:
+		return propResult.System[0].Name
+	case propResult.Service[0].Name:
+		return propResult.Service[0].Name
 	default:
 		u.Abort("Received result set for incorrect property")
 	}
@@ -95,16 +97,16 @@ func (u SomaUtil) CheckStringIsSystemProperty(s string) {
 	res := u.DecodeProtoResultPropertyFromResponse(resp)
 
 	for _, prop := range res.System {
-		if prop.Property == s {
+		if prop.Name == s {
 			return
 		}
 	}
 	u.Abort("Invalid system property requested")
 }
 
-func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *somaproto.ProtoResultProperty {
+func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *somaproto.PropertyResult {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultProperty
+	var res somaproto.PropertyResult
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")
 	if res.Code > 299 {

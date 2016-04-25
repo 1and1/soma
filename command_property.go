@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/codegangsta/cli"
@@ -40,7 +41,7 @@ func cmdPropertySystemCreate(c *cli.Context) {
 	req := somaproto.PropertyRequest{}
 	req.PropertyType = "system"
 
-	req.System = &somaproto.TreePropertSystem{}
+	req.System = &somaproto.TreePropertySystem{}
 	req.System.Name = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/property/system/")
@@ -65,13 +66,14 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 
 	// fetch list of possible service attributes from SOMA
 	attrResponse := utl.GetRequest("/attributes/")
-	attrs := somaproto.ProtoResultAttribute{}
-	err := json.Unmarshal(attrResponse, &attrs)
+	attrs := somaproto.AttributeResult{}
+	err := json.Unmarshal(attrResponse.Body(), &attrs)
 	if err != nil {
 		utl.Abort("Failed to unmarshal Service Attribute data")
 	}
 
-	// sort attributes so we can use them for command line parsing
+	// sort attributes based on their cardinality so we can use them
+	// for command line parsing
 	multiple := []string{}
 	unique := []string{}
 	for _, attr := range attrs.Attributes {
@@ -84,177 +86,52 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 			utl.Abort()
 		}
 	}
+	required := []string{}
 
-	// services are per team
-	required := []string{"team"}
-	unique = append(unique, "team")
+	switch c.Command.Name {
+	case "service":
+		// services are per team; add this as required as well
+		required = append(required, "team")
+		unique = append(unique, "team")
+	case "template":
+	default:
+		utl.Abort(
+			fmt.Sprintf("cmdPropertyServiceCreate called from unknown action %s",
+				c.Command.Name),
+		)
+	}
 
+	// parse command line
 	opts := utl.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
 		c.Args().Tail())
-
 	teamId := utl.TryGetTeamByUUIDOrName(opts["team"][0])
 
+	// construct request body
 	req := somaproto.PropertyRequest{}
 	req.PropertyType = "service"
-
 	req.Service = &somaproto.TreePropertyService{}
 	req.Service.Name = c.Args().First()
 	req.Service.TeamId = teamId
+	req.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0, 16)
 
-	for key, arr := range opts {
-		for _, val := range arr {
-			switch key {
-			case "transport":
-				req.Service.Attributes.ProtoTransport = append(
-					req.Service.Attributes.ProtoTransport,
-					val,
-				)
-			case "application":
-				req.Service.Attributes.ProtoApplication = append(
-					req.Service.Attributes.ProtoApplication,
-					val,
-				)
-			case "port":
-				req.Service.Attributes.Port = append(
-					req.Service.Attributes.Port,
-					val,
-				)
-			case "comm":
-				req.Service.Attributes.ProcessComm = append(
-					req.Service.Attributes.ProcessComm,
-					val,
-				)
-			case "args":
-				req.Service.Attributes.ProcessArgs = append(
-					req.Service.Attributes.ProcessArgs,
-					val,
-				)
-			case "file":
-				req.Service.Attributes.FilePath = append(
-					req.Service.Attributes.FilePath,
-					val,
-				)
-			case "directory":
-				req.Service.Attributes.DirectoryPath = append(
-					req.Service.Attributes.DirectoryPath,
-					val,
-				)
-			case "socket":
-				req.Service.Attributes.UnixSocketPath = append(
-					req.Service.Attributes.UnixSocketPath,
-					val,
-				)
-			case "uid":
-				req.Service.Attributes.Uid = append(
-					req.Service.Attributes.Uid,
-					val,
-				)
-			case "tls":
-				req.Service.Attributes.Tls = append(
-					req.Service.Attributes.Tls,
-					val,
-				)
-			case "provider":
-				req.Service.Attributes.SoftwareProvider = append(
-					req.Service.Attributes.SoftwareProvider,
-					val,
-				)
-			default:
-				utl.Abort("Error assigning service attributes")
-			}
+	// fill attributes into request body
+	for oName, _ := range opts {
+		for _, oVal := range opts[oName] {
+			req.Service.Attributes = append(req.Service.Attributes,
+				somaproto.TreeServiceAttribute{
+					Attribute: oName,
+					Value:     oVal,
+				},
+			)
 		}
 	}
+
+	// send request
 	path := fmt.Sprintf("/property/service/team/%s/", teamId)
-
 	resp := utl.PostRequestWithBody(req, path)
-	fmt.Println(resp)
-}
-
-func cmdPropertyTemplateCreate(c *cli.Context) {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{"transport", "application", "port", "file",
-		"directory", "socket"}
-	unique := []string{"tls", "provider", "team", "comm", "args",
-		"uid"}
-	required := []string{}
-
-	opts := utl.ParseVariadicArguments(
-		multiple,
-		unique,
-		required,
-		c.Args().Tail())
-
-	req := somaproto.PropertyRequest{}
-	req.Service = &somaproto.ProtoPropertyService{}
-	req.Service.Property = c.Args().First()
-	for key, arr := range opts {
-		for _, val := range arr {
-			switch key {
-			case "transport":
-				req.Service.Attributes.ProtoTransport = append(
-					req.Service.Attributes.ProtoTransport,
-					val,
-				)
-			case "application":
-				req.Service.Attributes.ProtoApplication = append(
-					req.Service.Attributes.ProtoApplication,
-					val,
-				)
-			case "port":
-				req.Service.Attributes.Port = append(
-					req.Service.Attributes.Port,
-					val,
-				)
-			case "comm":
-				req.Service.Attributes.ProcessComm = append(
-					req.Service.Attributes.ProcessComm,
-					val,
-				)
-			case "args":
-				req.Service.Attributes.ProcessArgs = append(
-					req.Service.Attributes.ProcessArgs,
-					val,
-				)
-			case "file":
-				req.Service.Attributes.FilePath = append(
-					req.Service.Attributes.FilePath,
-					val,
-				)
-			case "directory":
-				req.Service.Attributes.DirectoryPath = append(
-					req.Service.Attributes.DirectoryPath,
-					val,
-				)
-			case "socket":
-				req.Service.Attributes.UnixSocketPath = append(
-					req.Service.Attributes.UnixSocketPath,
-					val,
-				)
-			case "uid":
-				req.Service.Attributes.Uid = append(
-					req.Service.Attributes.Uid,
-					val,
-				)
-			case "tls":
-				req.Service.Attributes.Tls = append(
-					req.Service.Attributes.Tls,
-					val,
-				)
-			case "provider":
-				req.Service.Attributes.SoftwareProvider = append(
-					req.Service.Attributes.SoftwareProvider,
-					val,
-				)
-			default:
-				utl.Abort("Error assigning service attributes")
-			}
-		}
-	}
-
-	resp := utl.PostRequestWithBody(req, "/property/service/global/")
 	fmt.Println(resp)
 }
 
