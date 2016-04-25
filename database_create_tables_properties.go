@@ -17,7 +17,8 @@ create table if not exists soma.service_properties (
 
 	queryMap["createTableServicePropertyAttributes"] = `
 create table if not exists soma.service_property_attributes (
-    service_property_attribute  varchar(64)     PRIMARY KEY
+    service_property_attribute  varchar(64)     PRIMARY KEY,
+    cardinality                 varchar(8)      NOT NULL DEFAULT 'multi'
 );`
 	queries[idx] = "createTableServicePropertyAttributes"
 	idx++
