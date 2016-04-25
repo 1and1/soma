@@ -21,7 +21,7 @@ type PropertyResult struct {
 }
 
 type PropertyFilter struct {
-	Property   string `json:"property,omitempty"`
+	Name       string `json:"name,omitempty"`
 	Type       string `json:"type,omitempty"`
 	Repository string `json:"repository,omitempty"`
 }
