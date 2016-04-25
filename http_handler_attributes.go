@@ -32,7 +32,7 @@ func ShowAttribute(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaAttributeRequest{
 		action: "show",
 		reply:  returnChannel,
-		Attribute: somaproto.ProtoAttribute{
+		Attribute: somaproto.Attribute{
 			Attribute: params.ByName("attribute"),
 		},
 	}
@@ -46,7 +46,7 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestAttribute{}
+	cReq := somaproto.AttributeRequest{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,8 +58,9 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaAttributeRequest{
 		action: "add",
 		reply:  returnChannel,
-		Attribute: somaproto.ProtoAttribute{
-			Attribute: cReq.Attribute.Attribute,
+		Attribute: somaproto.Attribute{
+			Attribute:   cReq.Attribute.Attribute,
+			Cardinality: cReq.Attribute.Cardinality,
 		},
 	}
 	result := <-returnChannel
@@ -75,7 +76,7 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaAttributeRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Attribute: somaproto.ProtoAttribute{
+		Attribute: somaproto.Attribute{
 			Attribute: params.ByName("attribute"),
 		},
 	}
@@ -86,12 +87,12 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendAttributeReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultAttribute{}
+	result := somaproto.AttributeResult{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
 	result.Text = make([]string, 0)
-	result.Attributes = make([]somaproto.ProtoAttribute, 0)
+	result.Attributes = make([]somaproto.Attribute, 0)
 	for _, i := range (*r).Attributes {
 		result.Attributes = append(result.Attributes, i.Attribute)
 		if i.ResultError != nil {

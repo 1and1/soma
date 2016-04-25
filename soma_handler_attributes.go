@@ -10,13 +10,13 @@ import (
 
 type somaAttributeRequest struct {
 	action    string
-	Attribute somaproto.ProtoAttribute
+	Attribute somaproto.Attribute
 	reply     chan somaResult
 }
 
 type somaAttributeResult struct {
 	ResultError error
-	Attribute   somaproto.ProtoAttribute
+	Attribute   somaproto.Attribute
 }
 
 func (a *somaAttributeResult) SomaAppendError(r *somaResult, err error) {
@@ -70,9 +70,9 @@ runloop:
 
 func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 	var (
-		attribute string
-		rows      *sql.Rows
-		err       error
+		attribute, cardinality string
+		rows                   *sql.Rows
+		err                    error
 	)
 	result := somaResult{}
 
@@ -87,10 +87,11 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&attribute)
+			err := rows.Scan(&attribute, &cardinality)
 			result.Append(err, &somaAttributeResult{
-				Attribute: somaproto.ProtoAttribute{
-					Attribute: attribute,
+				Attribute: somaproto.Attribute{
+					Attribute:   attribute,
+					Cardinality: cardinality,
 				},
 			})
 		}
@@ -98,6 +99,7 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 		log.Printf("R: attribute/show for %s", q.Attribute.Attribute)
 		err = r.show_stmt.QueryRow(q.Attribute.Attribute).Scan(
 			&attribute,
+			&cardinality,
 		)
 		if err != nil {
 			if err.Error() != "sql: no rows in result set" {
@@ -110,8 +112,9 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 		}
 
 		result.Append(err, &somaAttributeResult{
-			Attribute: somaproto.ProtoAttribute{
-				Attribute: attribute,
+			Attribute: somaproto.Attribute{
+				Attribute:   attribute,
+				Cardinality: cardinality,
 			},
 		})
 	default:
@@ -168,6 +171,7 @@ func (w *somaAttributeWriteHandler) process(q *somaAttributeRequest) {
 		log.Printf("R: attributes/add for %s", q.Attribute.Attribute)
 		res, err = w.add_stmt.Exec(
 			q.Attribute.Attribute,
+			q.Attribute.Cardinality,
 		)
 	case "delete":
 		log.Printf("R: attributes/del for %s", q.Attribute.Attribute)

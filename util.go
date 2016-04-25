@@ -72,11 +72,11 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	case *somaproto.ProtoRequestCapability:
 		c := s.(*somaproto.ProtoRequestCapability)
 		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestProperty:
-		c := s.(*somaproto.ProtoRequestProperty)
+	case *somaproto.PropertyRequest:
+		c := s.(*somaproto.PropertyRequest)
 		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestAttribute:
-		c := s.(*somaproto.ProtoRequestAttribute)
+	case *somaproto.AttributeRequest:
+		c := s.(*somaproto.AttributeRequest)
 		err = decoder.Decode(c)
 	case *somaproto.ProtoRequestRepository:
 		c := s.(*somaproto.ProtoRequestRepository)
@@ -144,9 +144,9 @@ func ResultLength(r *somaResult, t ErrorMarker) int {
 		return len(r.Systems)
 	case *somaproto.ProtoResultCapability:
 		return len(r.Capabilities)
-	case *somaproto.ProtoResultProperty:
+	case *somaproto.PropertyResult:
 		return len(r.Properties)
-	case *somaproto.ProtoResultAttribute:
+	case *somaproto.AttributeResult:
 		return len(r.Attributes)
 	case *somaproto.ProtoResultRepository:
 		return len(r.Repositories)

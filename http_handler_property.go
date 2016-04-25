@@ -27,10 +27,10 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		req.prType = prType
 	case "custom":
 		req.prType = prType
-		req.Custom.Repository = params.ByName("repository")
+		req.Custom.Name = params.ByName("repository")
 	case "service":
 		req.prType = prType
-		req.Service.Team = params.ByName("team")
+		req.Service.TeamId = params.ByName("team")
 	case "template":
 		req.prType = prType
 	default:
@@ -42,19 +42,19 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestProperty{}
-	cReq.Filter = &somaproto.ProtoPropertyFilter{}
+	cReq := somaproto.PropertyRequest{}
+	cReq.Filter = &somaproto.PropertyFilter{}
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if (cReq.Filter.Type == "custom") && (cReq.Filter.Property != "") &&
+	if (cReq.Filter.Type == "custom") && (cReq.Filter.Name != "") &&
 		(cReq.Filter.Repository != "") {
 		filtered := make([]somaPropertyResult, 0)
 		for _, i := range result.Properties {
-			if (i.Custom.Property == cReq.Filter.Property) &&
-				(i.Custom.Repository == cReq.Filter.Repository) {
+			if (i.Custom.Name == cReq.Filter.Name) &&
+				(i.Custom.RepositoryId == cReq.Filter.Repository) {
 				filtered = append(filtered, i)
 			}
 		}
@@ -78,21 +78,21 @@ func ShowProperty(w http.ResponseWriter, r *http.Request,
 	switch prType {
 	case "native":
 		req.prType = prType
-		req.Native.Property = params.ByName("native")
+		req.Native.Name = params.ByName("native")
 	case "system":
 		req.prType = prType
-		req.System.Property = params.ByName("system")
+		req.System.Name = params.ByName("system")
 	case "custom":
 		req.prType = prType
-		req.Custom.Id = params.ByName("custom")
-		req.Custom.Repository = params.ByName("repository")
+		req.Custom.CustomId = params.ByName("custom")
+		req.Custom.RepositoryId = params.ByName("repository")
 	case "service":
 		req.prType = prType
-		req.Service.Property = params.ByName("service")
-		req.Service.Team = params.ByName("team")
+		req.Service.Name = params.ByName("service")
+		req.Service.TeamId = params.ByName("team")
 	case "template":
 		req.prType = prType
-		req.Service.Property = params.ByName("service")
+		req.Service.Name = params.ByName("service")
 	default:
 		SendPropertyReply(&w, &somaResult{})
 	}
@@ -109,7 +109,7 @@ func AddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestProperty{}
+	cReq := somaproto.PropertyRequest{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -129,21 +129,21 @@ func AddProperty(w http.ResponseWriter, r *http.Request,
 		req.prType = prType
 		req.System = *cReq.System
 	case "custom":
-		if params.ByName("repository") != cReq.Custom.Repository {
+		if params.ByName("repository") != cReq.Custom.RepositoryId {
 			DispatchBadRequest(&w, errors.New("Body and URL repositories do not match"))
 			return
 		}
 		req.prType = prType
 		req.Custom = *cReq.Custom
-		req.Custom.Repository = params.ByName("repository")
+		req.Custom.RepositoryId = params.ByName("repository")
 	case "service":
-		if params.ByName("team") != cReq.Service.Team {
+		if params.ByName("team") != cReq.Service.TeamId {
 			DispatchBadRequest(&w, errors.New("Body and URL teams do not match"))
 			return
 		}
 		req.prType = prType
 		req.Service = *cReq.Service
-		req.Service.Team = params.ByName("team")
+		req.Service.TeamId = params.ByName("team")
 	case "template":
 		req.prType = prType
 		req.Service = *cReq.Service
@@ -170,21 +170,21 @@ func DeleteProperty(w http.ResponseWriter, r *http.Request,
 	switch prType {
 	case "native":
 		req.prType = prType
-		req.Native.Property = params.ByName("native")
+		req.Native.Name = params.ByName("native")
 	case "system":
 		req.prType = prType
-		req.System.Property = params.ByName("system")
+		req.System.Name = params.ByName("system")
 	case "custom":
 		req.prType = prType
-		req.Custom.Id = params.ByName("custom")
-		req.Custom.Repository = params.ByName("repository")
+		req.Custom.CustomId = params.ByName("custom")
+		req.Custom.RepositoryId = params.ByName("repository")
 	case "service":
 		req.prType = prType
-		req.Service.Property = params.ByName("service")
-		req.Service.Team = params.ByName("team")
+		req.Service.Name = params.ByName("service")
+		req.Service.TeamId = params.ByName("team")
 	case "template":
 		req.prType = prType
-		req.Service.Property = params.ByName("service")
+		req.Service.Name = params.ByName("service")
 	default:
 		SendPropertyReply(&w, &somaResult{})
 	}
@@ -198,15 +198,15 @@ func DeleteProperty(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendPropertyReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultProperty{}
+	result := somaproto.PropertyResult{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
 	result.Text = make([]string, 0)
-	result.Custom = make([]somaproto.ProtoPropertyCustom, 0)
-	result.Native = make([]somaproto.ProtoPropertyNative, 0)
-	result.Service = make([]somaproto.ProtoPropertyService, 0)
-	result.System = make([]somaproto.ProtoPropertySystem, 0)
+	result.Custom = make([]somaproto.TreePropertyCustom, 0)
+	result.Native = make([]somaproto.TreePropertyNative, 0)
+	result.Service = make([]somaproto.TreePropertyService, 0)
+	result.System = make([]somaproto.TreePropertySystem, 0)
 	for _, i := range (*r).Properties {
 		switch i.prType {
 		case "system":

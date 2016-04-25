@@ -11,20 +11,20 @@ import (
 type somaPropertyRequest struct {
 	action  string
 	prType  string
-	System  somaproto.ProtoPropertySystem
-	Native  somaproto.ProtoPropertyNative
-	Service somaproto.ProtoPropertyService
-	Custom  somaproto.ProtoPropertyCustom
+	System  somaproto.TreePropertySystem
+	Native  somaproto.TreePropertyNative
+	Service somaproto.TreePropertyService
+	Custom  somaproto.TreePropertyCustom
 	reply   chan somaResult
 }
 
 type somaPropertyResult struct {
 	ResultError error
 	prType      string
-	System      somaproto.ProtoPropertySystem
-	Native      somaproto.ProtoPropertyNative
-	Service     somaproto.ProtoPropertyService
-	Custom      somaproto.ProtoPropertyCustom
+	System      somaproto.TreePropertySystem
+	Native      somaproto.TreePropertyNative
+	Service     somaproto.TreePropertyService
+	Custom      somaproto.TreePropertyCustom
 }
 
 func (a *somaPropertyResult) SomaAppendError(r *somaResult, err error) {
@@ -221,43 +221,43 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					System: somaproto.ProtoPropertySystem{
-						Property: property,
+					System: somaproto.TreePropertySystem{
+						Name: property,
 					},
 				})
 			case "service":
 				err := rows.Scan(&property, &team)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Service: somaproto.ProtoPropertyService{
-						Property: property,
-						Team:     team,
+					Service: somaproto.TreePropertyService{
+						Name:   property,
+						TeamId: team,
 					},
 				})
 			case "native":
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Native: somaproto.ProtoPropertyNative{
-						Property: property,
+					Native: somaproto.TreePropertyNative{
+						Name: property,
 					},
 				})
 			case "template":
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Service: somaproto.ProtoPropertyService{
-						Property: property,
+					Service: somaproto.TreePropertyService{
+						Name: property,
 					},
 				})
 			case "custom":
 				err := rows.Scan(&property, &repository, &id)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Custom: somaproto.ProtoPropertyCustom{
-						Id:         id,
-						Repository: repository,
-						Property:   property,
+					Custom: somaproto.TreePropertyCustom{
+						CustomId:     id,
+						RepositoryId: repository,
+						Name:         property,
 					},
 				})
 			}
@@ -265,36 +265,36 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 	case "show":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/show-system for %s", q.System.Property)
-			err = r.show_sys_stmt.QueryRow(q.System.Property).Scan(
+			log.Printf("R: property/show-system for %s", q.System.Name)
+			err = r.show_sys_stmt.QueryRow(q.System.Name).Scan(
 				&property,
 			)
 		case "native":
-			log.Printf("R: property/show-native for %s", q.Native.Property)
-			err = r.show_nat_stmt.QueryRow(q.Native.Property).Scan(
+			log.Printf("R: property/show-native for %s", q.Native.Name)
+			err = r.show_nat_stmt.QueryRow(q.Native.Name).Scan(
 				&property,
 			)
 		case "custom":
-			log.Printf("R: property/show-custom for %s", q.Custom.Id)
+			log.Printf("R: property/show-custom for %s", q.Custom.CustomId)
 			err = r.show_cst_stmt.QueryRow(
-				q.Custom.Id,
-				q.Custom.Repository,
+				q.Custom.CustomId,
+				q.Custom.RepositoryId,
 			).Scan(
 				&id,
 				&repository,
 				&property,
 			)
 		case "service":
-			log.Printf("R: property/list-service for %s/%s", q.Service.Team, q.Service.Property)
+			log.Printf("R: property/list-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			rows, err = r.show_srv_stmt.Query(
-				q.Service.Property,
-				q.Service.Team,
+				q.Service.Name,
+				q.Service.TeamId,
 			)
 			defer rows.Close()
 		case "template":
-			log.Printf("R: property/list-service-template for %s", q.Service.Property)
+			log.Printf("R: property/list-service-template for %s", q.Service.Name)
 			rows, err = r.show_tpl_stmt.Query(
-				q.Service.Property,
+				q.Service.Name,
 			)
 			defer rows.Close()
 		}
@@ -316,28 +316,28 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 		case "system":
 			result.Append(err, &somaPropertyResult{
 				prType: q.prType,
-				System: somaproto.ProtoPropertySystem{
-					Property: property,
+				System: somaproto.TreePropertySystem{
+					Name: property,
 				},
 			})
 		case "native":
 			result.Append(err, &somaPropertyResult{
 				prType: q.prType,
-				Native: somaproto.ProtoPropertyNative{
-					Property: property,
+				Native: somaproto.TreePropertyNative{
+					Name: property,
 				},
 			})
 		case "custom":
 			result.Append(err, &somaPropertyResult{
 				prType: q.prType,
-				Custom: somaproto.ProtoPropertyCustom{
-					Id:         id,
-					Repository: repository,
-					Property:   property,
+				Custom: somaproto.TreePropertyCustom{
+					CustomId:     id,
+					RepositoryId: repository,
+					Name:         property,
 				},
 			})
 		case "service":
-			propTempl := somaproto.ProtoPropertyService{}
+			propTempl := somaproto.TreePropertyService{}
 			var fErr error
 			for rows.Next() {
 				err := rows.Scan(
@@ -348,43 +348,12 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				)
 
 				if err != nil {
-					propTempl.Property = property
-					propTempl.Team = team
-					switch attribute {
-					case "proto_transport":
-						propTempl.Attributes.ProtoTransport = append(
-							propTempl.Attributes.ProtoTransport, value)
-					case "proto_application":
-						propTempl.Attributes.ProtoApplication = append(
-							propTempl.Attributes.ProtoApplication, value)
-					case "port":
-						propTempl.Attributes.Port = append(
-							propTempl.Attributes.Port, value)
-					case "process_comm":
-						propTempl.Attributes.ProcessComm = append(
-							propTempl.Attributes.ProcessComm, value)
-					case "process_args":
-						propTempl.Attributes.ProcessArgs = append(
-							propTempl.Attributes.ProcessArgs, value)
-					case "file_path":
-						propTempl.Attributes.FilePath = append(
-							propTempl.Attributes.FilePath, value)
-					case "directory_path":
-						propTempl.Attributes.DirectoryPath = append(
-							propTempl.Attributes.DirectoryPath, value)
-					case "unix_socket_path":
-						propTempl.Attributes.UnixSocketPath = append(
-							propTempl.Attributes.UnixSocketPath, value)
-					case "uid":
-						propTempl.Attributes.Uid = append(
-							propTempl.Attributes.Uid, value)
-					case "tls":
-						propTempl.Attributes.Tls = append(
-							propTempl.Attributes.Tls, value)
-					case "software_provider":
-						propTempl.Attributes.SoftwareProvider = append(
-							propTempl.Attributes.SoftwareProvider, value)
-					}
+					propTempl.Name = property
+					propTempl.TeamId = team
+					propTempl.Attributes = append(propTempl.Attributes, somaproto.TreeServiceAttribute{
+						Attribute: attribute,
+						Value:     value,
+					})
 				} else {
 					fErr = err
 				}
@@ -394,7 +363,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				Service: propTempl,
 			})
 		case "template":
-			propTempl := somaproto.ProtoPropertyService{}
+			propTempl := somaproto.TreePropertyService{}
 			var fErr error
 			for rows.Next() {
 				err := rows.Scan(
@@ -404,42 +373,11 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				)
 
 				if err != nil {
-					propTempl.Property = property
-					switch attribute {
-					case "proto_transport":
-						propTempl.Attributes.ProtoTransport = append(
-							propTempl.Attributes.ProtoTransport, value)
-					case "proto_application":
-						propTempl.Attributes.ProtoApplication = append(
-							propTempl.Attributes.ProtoApplication, value)
-					case "port":
-						propTempl.Attributes.Port = append(
-							propTempl.Attributes.Port, value)
-					case "process_comm":
-						propTempl.Attributes.ProcessComm = append(
-							propTempl.Attributes.ProcessComm, value)
-					case "process_args":
-						propTempl.Attributes.ProcessArgs = append(
-							propTempl.Attributes.ProcessArgs, value)
-					case "file_path":
-						propTempl.Attributes.FilePath = append(
-							propTempl.Attributes.FilePath, value)
-					case "directory_path":
-						propTempl.Attributes.DirectoryPath = append(
-							propTempl.Attributes.DirectoryPath, value)
-					case "unix_socket_path":
-						propTempl.Attributes.UnixSocketPath = append(
-							propTempl.Attributes.UnixSocketPath, value)
-					case "uid":
-						propTempl.Attributes.Uid = append(
-							propTempl.Attributes.Uid, value)
-					case "tls":
-						propTempl.Attributes.Tls = append(
-							propTempl.Attributes.Tls, value)
-					case "software_provider":
-						propTempl.Attributes.SoftwareProvider = append(
-							propTempl.Attributes.SoftwareProvider, value)
-					}
+					propTempl.Name = property
+					propTempl.Attributes = append(propTempl.Attributes, somaproto.TreeServiceAttribute{
+						Attribute: attribute,
+						Value:     value,
+					})
 				} else {
 					fErr = err
 				}
@@ -657,7 +595,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 		res    sql.Result
 		err    error
 		tx     *sql.Tx
-		attr   string
+		attr   somaproto.TreeServiceAttribute
 		rowCnt int64
 	)
 	result := somaResult{}
@@ -666,27 +604,27 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 	case "add":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/add-system for %s", q.System.Property)
+			log.Printf("R: property/add-system for %s", q.System.Name)
 			res, err = w.add_sys_stmt.Exec(
-				q.System.Property,
+				q.System.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "native":
-			log.Printf("R: property/add-native for %s", q.Native.Property)
+			log.Printf("R: property/add-native for %s", q.Native.Name)
 			res, err = w.add_nat_stmt.Exec(
-				q.Native.Property,
+				q.Native.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
-			log.Printf("R: property/add-custom for %s", q.Custom.Property)
+			log.Printf("R: property/add-custom for %s", q.Custom.Name)
 			res, err = w.add_cst_stmt.Exec(
-				q.Custom.Id,
-				q.Custom.Repository,
-				q.Custom.Property,
+				q.Custom.CustomId,
+				q.Custom.RepositoryId,
+				q.Custom.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "service":
-			log.Printf("R: property/add-service for %s/%s", q.Service.Team, q.Service.Property)
+			log.Printf("R: property/add-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -694,8 +632,8 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			defer tx.Rollback()
 
 			res, err = tx.Stmt(w.add_srv_stmt).Exec(
-				q.Service.Team,
-				q.Service.Property,
+				q.Service.TeamId,
+				q.Service.Name,
 			)
 			if err != nil {
 				goto bailout
@@ -705,162 +643,12 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 				goto bailout
 			}
 
-			for _, attr = range q.Service.Attributes.ProtoTransport {
+			for _, attr = range q.Service.Attributes {
 				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"proto_transport",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.ProtoApplication {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"proto_application",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.Port {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"port",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.ProcessComm {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"process_comm",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.ProcessArgs {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"process_args",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.FilePath {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"file_path",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.DirectoryPath {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"directory_path",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.UnixSocketPath {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"unix_socket_path",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.Uid {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"uid",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.Tls {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"tls",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.SoftwareProvider {
-				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
-					q.Service.Team,
-					q.Service.Property,
-					"software_provider",
-					attr,
+					q.Service.TeamId,
+					q.Service.Name,
+					attr.Attribute,
+					attr.Value,
 				)
 				if err != nil {
 					break
@@ -872,7 +660,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 
 			err = tx.Commit()
 		case "template":
-			log.Printf("R: property/add-service-template for %s", q.Service.Property)
+			log.Printf("R: property/add-service-template for %s", q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -880,7 +668,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			defer tx.Rollback()
 
 			res, err = tx.Stmt(w.add_tpl_stmt).Exec(
-				q.Service.Property,
+				q.Service.Name,
 			)
 			if err != nil {
 				goto bailout
@@ -890,151 +678,11 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 				goto bailout
 			}
 
-			for _, attr = range q.Service.Attributes.ProtoTransport {
+			for _, attr = range q.Service.Attributes {
 				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"proto_transport",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.ProtoApplication {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"proto_application",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.Port {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"port",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.ProcessComm {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"process_comm",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.ProcessArgs {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"process_args",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.FilePath {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"file_path",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.DirectoryPath {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"directory_path",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.UnixSocketPath {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"unix_socket_path",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.Uid {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"uid",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.Tls {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"tls",
-					attr,
-				)
-				if err != nil {
-					break
-				}
-			}
-			if err != nil {
-				goto bailout
-			}
-
-			for _, attr = range q.Service.Attributes.SoftwareProvider {
-				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.Property,
-					"software_provider",
-					attr,
+					q.Service.TeamId,
+					attr.Attribute,
+					attr.Value,
 				)
 				if err != nil {
 					break
@@ -1049,26 +697,26 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 	case "delete":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/delete-system for %s", q.System.Property)
+			log.Printf("R: property/delete-system for %s", q.System.Name)
 			res, err = w.del_sys_stmt.Exec(
-				q.System.Property,
+				q.System.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "native":
-			log.Printf("R: property/delete-native for %s", q.Native.Property)
+			log.Printf("R: property/delete-native for %s", q.Native.Name)
 			res, err = w.del_nat_stmt.Exec(
-				q.Native.Property,
+				q.Native.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
-			log.Printf("R: property/delete-custom for %s", q.Custom.Id)
+			log.Printf("R: property/delete-custom for %s", q.Custom.CustomId)
 			res, err = w.del_cst_stmt.Exec(
-				q.Custom.Repository,
-				q.Custom.Id,
+				q.Custom.RepositoryId,
+				q.Custom.CustomId,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "service":
-			log.Printf("R: property/delete-service for %s/%s", q.Service.Team, q.Service.Property)
+			log.Printf("R: property/delete-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -1076,16 +724,16 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			defer tx.Rollback()
 
 			res, err = tx.Stmt(w.del_srv_attr_stmt).Exec(
-				q.Service.Team,
-				q.Service.Property,
+				q.Service.TeamId,
+				q.Service.Name,
 			)
 			if err != nil {
 				goto bailout
 			}
 
 			res, err = tx.Stmt(w.del_srv_stmt).Exec(
-				q.Service.Team,
-				q.Service.Property,
+				q.Service.TeamId,
+				q.Service.Name,
 			)
 			if err != nil {
 				goto bailout
@@ -1094,7 +742,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			rowCnt, _ = res.RowsAffected()
 			err = tx.Commit()
 		case "template":
-			log.Printf("R: property/delete-service-template for %s", q.Service.Property)
+			log.Printf("R: property/delete-service-template for %s", q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -1102,14 +750,14 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			defer tx.Rollback()
 
 			res, err = tx.Stmt(w.del_tpl_attr_stmt).Exec(
-				q.Service.Property,
+				q.Service.Name,
 			)
 			if err != nil {
 				goto bailout
 			}
 
 			res, err = tx.Stmt(w.del_tpl_stmt).Exec(
-				q.Service.Property,
+				q.Service.Name,
 			)
 			if err != nil {
 				goto bailout
