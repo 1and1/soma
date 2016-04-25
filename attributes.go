@@ -1,21 +1,21 @@
 package somaproto
 
 type AttributeRequest struct {
-	Attribute *ProtoAttribute `json:"attribute,omitempty"`
+	Attribute *Attribute `json:"attribute,omitempty"`
 }
 
 type AttributeResult struct {
-	Code       uint16           `json:"code,omitempty"`
-	Status     string           `json:"status,omitempty"`
-	Text       []string         `json:"text,omitempty"`
-	Attributes []ProtoAttribute `json:"attributes,omitempty"`
-	JobId      string           `json:"jobid,omitempty"`
+	Code       uint16      `json:"code,omitempty"`
+	Status     string      `json:"status,omitempty"`
+	Text       []string    `json:"text,omitempty"`
+	Attributes []Attribute `json:"attributes,omitempty"`
+	JobId      string      `json:"jobid,omitempty"`
 }
 
 type Attribute struct {
-	Attribute   string                 `json:"attribute,omitempty"`
-	Cardinality string                 `json:"cardinality,omitempty"`
-	Details     *ProtoAttributeDetails `json:"details,omitempty"`
+	Attribute   string            `json:"attribute,omitempty"`
+	Cardinality string            `json:"cardinality,omitempty"`
+	Details     *AttributeDetails `json:"details,omitempty"`
 }
 
 type AttributeDetails struct {
