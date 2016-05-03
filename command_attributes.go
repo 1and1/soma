@@ -7,7 +7,7 @@ import (
 )
 
 func cmdAttributeCreate(c *cli.Context) {
-	utl.ValidateCliArgumentCount(c, 1)
+	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"cardinality"}
 	required := []string{"cardinality"}
