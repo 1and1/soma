@@ -14,6 +14,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
+	log.Printf("SetProperty (Group) created source: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(teg.Id)
 	p.SetInherited(false)
