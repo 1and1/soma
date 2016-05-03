@@ -14,7 +14,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
-	log.Printf("SetProperty (Group) created source: %s", p.GetID())
+	log.Printf("SetProperty(Group) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(teg.Id)
 	p.SetInherited(false)
@@ -39,7 +39,6 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	case "oncall":
 		teg.setOncallProperty(p)
 	}
-	log.Printf("DEBUG Group/Create: %#+v\n", p)
 	teg.actionPropertyNew(p.MakeAction())
 }
 

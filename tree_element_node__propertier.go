@@ -13,7 +13,7 @@ func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
-	log.Printf("SetProperty (Group) created source: %s", p.GetID())
+	log.Printf("SetProperty(Node) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(ten.Id)
 	p.SetInherited(false)
@@ -38,7 +38,6 @@ func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
 	case "oncall":
 		ten.setOncallProperty(p)
 	}
-	log.Printf("DEBUG Node/Create: %#+v\n", p)
 	ten.actionPropertyNew(p.MakeAction())
 }
 

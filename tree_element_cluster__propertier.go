@@ -14,11 +14,12 @@ func (tec *SomaTreeElemCluster) SetProperty(p SomaTreeProperty) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
+	log.Printf("SetProperty(Cluster) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(tec.Id)
 	p.SetInherited(false)
 	p.SetSourceType(tec.Type)
-	if i, e := uuid.FromString(p.GetID()); e != nil {
+	if i, e := uuid.FromString(p.GetID()); e == nil {
 		p.SetSourceId(i)
 	}
 	// send a scrubbed copy down
