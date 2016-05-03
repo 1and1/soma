@@ -110,7 +110,7 @@ func (p *PropertyCustom) clearInstances() {
 }
 
 func (p *PropertyCustom) SetInheritedFrom(id uuid.UUID) {
-	p.Id, _ = uuid.FromString(id.String())
+	p.InheritedFrom, _ = uuid.FromString(id.String())
 }
 
 func (p *PropertyCustom) SetInherited(inherited bool) {
@@ -241,7 +241,7 @@ func (p *PropertyService) clearInstances() {
 }
 
 func (p *PropertyService) SetInheritedFrom(id uuid.UUID) {
-	p.Id, _ = uuid.FromString(id.String())
+	p.InheritedFrom, _ = uuid.FromString(id.String())
 }
 
 func (p *PropertyService) SetInherited(inherited bool) {
@@ -385,7 +385,7 @@ func (p *PropertySystem) clearInstances() {
 }
 
 func (p *PropertySystem) SetInheritedFrom(id uuid.UUID) {
-	p.Id, _ = uuid.FromString(id.String())
+	p.InheritedFrom, _ = uuid.FromString(id.String())
 }
 
 func (p *PropertySystem) SetInherited(inherited bool) {
@@ -515,7 +515,7 @@ func (p *PropertyOncall) clearInstances() {
 }
 
 func (p *PropertyOncall) SetInheritedFrom(id uuid.UUID) {
-	p.Id, _ = uuid.FromString(id.String())
+	p.InheritedFrom, _ = uuid.FromString(id.String())
 }
 
 func (p *PropertyOncall) SetInherited(inherited bool) {
