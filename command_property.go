@@ -107,15 +107,23 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 		unique,
 		required,
 		c.Args().Tail())
-	teamId := utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	// team lookup only for service
+	var teamId string
+	if c.Command.Name == "service" {
+		teamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	}
 
 	// construct request body
 	req := somaproto.PropertyRequest{}
-	req.PropertyType = "service"
 	req.Service = &somaproto.TreePropertyService{}
 	req.Service.Name = c.Args().First()
-	req.Service.TeamId = teamId
 	req.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0, 16)
+	if c.Command.Name == "service" {
+		req.PropertyType = `service`
+		req.Service.TeamId = teamId
+	} else {
+		req.PropertyType = `template`
+	}
 
 	// fill attributes into request body
 	for oName, _ := range opts {
@@ -130,7 +138,13 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 	}
 
 	// send request
-	path := fmt.Sprintf("/property/service/team/%s/", teamId)
+	var path string
+	switch c.Command.Name {
+	case `service`:
+		path = fmt.Sprintf("/property/service/team/%s/", teamId)
+	case `template`:
+		path = `/property/service/global/`
+	}
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
 }
