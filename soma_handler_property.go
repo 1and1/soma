@@ -680,7 +680,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 
 			for _, attr = range q.Service.Attributes {
 				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
-					q.Service.TeamId,
+					q.Service.Name,
 					attr.Attribute,
 					attr.Value,
 				)
