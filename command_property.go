@@ -126,7 +126,13 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 	}
 
 	// fill attributes into request body
+attrConversionLoop:
 	for oName, _ := range opts {
+		// the team that registers this service is not a service
+		// attribute
+		if c.Command.Name == `service` && oName == `team` {
+			continue attrConversionLoop
+		}
 		for _, oVal := range opts[oName] {
 			req.Service.Attributes = append(req.Service.Attributes,
 				somaproto.TreeServiceAttribute{
