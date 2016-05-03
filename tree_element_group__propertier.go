@@ -19,7 +19,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	p.SetInheritedFrom(teg.Id)
 	p.SetInherited(false)
 	p.SetSourceType(teg.Type)
-	if i, e := uuid.FromString(p.GetID()); e != nil {
+	if i, e := uuid.FromString(p.GetID()); e == nil {
 		p.SetSourceId(i)
 	}
 	// send a scrubbed copy down
@@ -39,6 +39,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	case "oncall":
 		teg.setOncallProperty(p)
 	}
+	log.Printf("DEBUG Group/Create: %#+v\n", p)
 	teg.actionPropertyNew(p.MakeAction())
 }
 

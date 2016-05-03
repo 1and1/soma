@@ -18,7 +18,7 @@ func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
 	p.SetInheritedFrom(ten.Id)
 	p.SetInherited(false)
 	p.SetSourceType(ten.Type)
-	if i, e := uuid.FromString(p.GetID()); e != nil {
+	if i, e := uuid.FromString(p.GetID()); e == nil {
 		p.SetSourceId(i)
 	}
 	// send a scrubbed copy down
@@ -38,6 +38,7 @@ func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
 	case "oncall":
 		ten.setOncallProperty(p)
 	}
+	log.Printf("DEBUG Node/Create: %#+v\n", p)
 	ten.actionPropertyNew(p.MakeAction())
 }
 
