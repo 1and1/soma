@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/codegangsta/cli"
@@ -17,9 +18,15 @@ func cmdBucketCreate(c *cli.Context) {
 		c.Args().Tail())
 
 	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
-	envs := []string{"live", "ac1", "prelive", "qa",
-		"test", "dev", "default"}
-	utl.ValidateStringInSlice(opts["environment"][0], envs)
+
+	// fetch list of environments from SOMA to check if a valid
+	// environment was requested
+	envResponse := utl.GetRequest("/environments/")
+	envs := somaproto.ProtoResultEnvironmentList{}
+	if err := json.Unmarshal(envResponse.Body(), &envs); err != nil {
+		utl.Abort("Failed to unmarshal Environment data")
+	}
+	utl.ValidateStringInSlice(opts["environment"][0], envs.Environments)
 
 	var req somaproto.ProtoRequestBucket
 	req.Bucket = &somaproto.ProtoBucket{}
