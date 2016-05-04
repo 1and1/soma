@@ -81,6 +81,11 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 			u.Abort("Received result set for incorrect bucket")
 		}
 	}
+
+	path := fmt.Sprintf("/buckets/%s", bucketResult.Buckets[0].Id)
+	resp = u.GetRequest(path)
+	bucketResult = u.DecodeProtoResultBucketFromResponse(resp)
+
 	return bucketResult.Buckets[0].Repository
 }
 
