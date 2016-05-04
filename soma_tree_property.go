@@ -1,6 +1,8 @@
 package somatree
 
 import (
+	"log"
+
 	"github.com/satori/go.uuid"
 )
 
@@ -116,6 +118,7 @@ func (p *PropertyCustom) GetInstanceId(objType string, objId uuid.UUID) uuid.UUI
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
+			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -164,6 +167,8 @@ func (p PropertyCustom) Clone() SomaTreeProperty {
 	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
 	cl.SourceId, _ = uuid.FromString(p.SourceId.String())
 	cl.CustomId, _ = uuid.FromString(p.CustomId.String())
+	cl.Instances = make([]PropertyInstance, len(p.Instances))
+	copy(cl.Instances, p.Instances)
 
 	return &cl
 }
@@ -257,6 +262,7 @@ func (p *PropertyService) GetInstanceId(objType string, objId uuid.UUID) uuid.UU
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
+			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -311,6 +317,8 @@ func (p PropertyService) Clone() SomaTreeProperty {
 		}
 		cl.Attributes = append(cl.Attributes, a)
 	}
+	cl.Instances = make([]PropertyInstance, len(p.Instances))
+	copy(cl.Instances, p.Instances)
 
 	return &cl
 }
@@ -409,6 +417,7 @@ func (p *PropertySystem) GetInstanceId(objType string, objId uuid.UUID) uuid.UUI
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
+			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -456,6 +465,8 @@ func (p PropertySystem) Clone() SomaTreeProperty {
 	cl.Id, _ = uuid.FromString(p.Id.String())
 	cl.SourceId, _ = uuid.FromString(p.SourceId.String())
 	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
+	cl.Instances = make([]PropertyInstance, len(p.Instances))
+	copy(cl.Instances, p.Instances)
 
 	return &cl
 }
@@ -547,6 +558,7 @@ func (p *PropertyOncall) GetInstanceId(objType string, objId uuid.UUID) uuid.UUI
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
+			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -595,6 +607,8 @@ func (p PropertyOncall) Clone() SomaTreeProperty {
 	cl.SourceId, _ = uuid.FromString(p.SourceId.String())
 	cl.OncallId, _ = uuid.FromString(p.OncallId.String())
 	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
+	cl.Instances = make([]PropertyInstance, len(p.Instances))
+	copy(cl.Instances, p.Instances)
 
 	return &cl
 }
