@@ -654,6 +654,11 @@ func registerCommands(app cli.App) *cli.App {
 					Action: cmdNodeShow,
 				},
 				{
+					Name:   "config",
+					Usage:  "Show which bucket a node is assigned to",
+					Action: cmdNodeConfig,
+				},
+				{
 					Name:  "property",
 					Usage: "SUBCOMMANDS for node properties",
 					Subcommands: []cli.Command{

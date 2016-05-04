@@ -196,6 +196,15 @@ func cmdNodeShow(c *cli.Context) {
 	fmt.Println(resp)
 }
 
+func cmdNodeConfig(c *cli.Context) {
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/nodes/%s/config", id)
+
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
+}
+
 func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
