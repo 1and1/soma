@@ -143,4 +143,54 @@ func cmdBucketShow(c *cli.Context) {
 	fmt.Println(resp)
 }
 
+func cmdBucketSystemPropertyAdd(c *cli.Context) {
+	utl.ValidateCliMinArgumentCount(c, 9)
+	multiple := []string{}
+	required := []string{"to", "in", "value", "view"}
+	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
+
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	if opts["in"][0] != opts["to"][0] {
+		utl.Abort(fmt.Sprintf("Bucket %s can not be in bucket %s", opts["to"][0], opts["in"][0]))
+	}
+	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
+	utl.CheckStringIsSystemProperty(c.Args().First())
+
+	sprop := somaproto.TreePropertySystem{
+		Name:  c.Args().First(),
+		Value: opts["value"][0],
+	}
+
+	tprop := somaproto.TreeProperty{
+		PropertyType: "system",
+		View:         opts["view"][0],
+		System:       &sprop,
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	propList := []somaproto.TreeProperty{tprop}
+
+	bucket := somaproto.ProtoBucket{
+		Id:         bucketId,
+		Properties: &propList,
+	}
+
+	req := somaproto.ProtoRequestBucket{
+		Bucket: &bucket,
+	}
+
+	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

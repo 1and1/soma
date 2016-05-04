@@ -940,6 +940,23 @@ func registerCommands(app cli.App) *cli.App {
 					Usage:  "Show information about a specific repository",
 					Action: cmdRepositoryShow,
 				},
+				{
+					Name:  "property",
+					Usage: "SUBCOMMANDS for properties",
+					Subcommands: []cli.Command{
+						{
+							Name:  "add",
+							Usage: "SUBCOMMANDS for property add",
+							Subcommands: []cli.Command{
+								{
+									Name:   "system",
+									Usage:  "Add a system property to a repository",
+									Action: cmdRepositorySystemPropertyAdd,
+								},
+							},
+						},
+					},
+				},
 			},
 		}, // end repository
 		// buckets
@@ -992,6 +1009,23 @@ func registerCommands(app cli.App) *cli.App {
 					Name:   "show",
 					Usage:  "Show information about a specific bucket",
 					Action: cmdBucketShow,
+				},
+				{
+					Name:  "property",
+					Usage: "SUBCOMMANDS for properties",
+					Subcommands: []cli.Command{
+						{
+							Name:  "add",
+							Usage: "SUBCOMMANDS for property add",
+							Subcommands: []cli.Command{
+								{
+									Name:   "system",
+									Usage:  "Add a system property to a bucket",
+									Action: cmdBucketSystemPropertyAdd,
+								},
+							},
+						},
+					},
 				},
 			},
 		}, // end buckets
