@@ -1663,6 +1663,29 @@ actionloop:
 						break actionloop
 					}
 				case "system":
+					log.Printf(`SQL: tkStmtNodePropertySystemCreate:
+Instance ID:           %s
+Source Instance ID:    %s
+Node ID:               %s
+View:                  %s
+SystemProperty:        %s
+Object Type:           %s
+Repository ID:         %s
+Inheritance Enabled:   %t
+Children Only:         %t
+System Property Value: %s
+Is Inherited:          %t%s`,
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Node.Id,
+						a.Property.View,
+						a.Property.System.Name,
+						a.Property.SourceType,
+						a.Property.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly,
+						a.Property.System.Value,
+						a.Property.IsInherited, "\n")
 					if _, err = txStmtNodePropertySystemCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
