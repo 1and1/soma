@@ -115,7 +115,7 @@ INSERT INTO soma.group_system_properties (
             group_id,
             view,
             system_property,
-            object_type,
+            source_type,
             repository_id,
             inheritance_enabled,
             children_only,

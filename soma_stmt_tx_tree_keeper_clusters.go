@@ -87,7 +87,7 @@ INSERT INTO soma.cluster_system_properties (
             cluster_id,
             view,
             system_property,
-            object_type,
+            source_type,
             repository_id,
             inheritance_enabled,
             children_only,

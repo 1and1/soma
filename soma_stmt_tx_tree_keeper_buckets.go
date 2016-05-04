@@ -83,7 +83,7 @@ INSERT INTO soma.bucket_system_properties (
             bucket_id,
             view,
             system_property,
-            object_type,
+            source_type,
             repository_id,
             inheritance_enabled,
             children_only,

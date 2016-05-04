@@ -47,7 +47,7 @@ INSERT INTO soma.repository_system_properties (
             repository_id,
             view,
             system_property,
-            object_type,
+            source_type,
             inheritance_enabled,
             children_only,
             value,
