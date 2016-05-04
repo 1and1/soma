@@ -23,6 +23,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 		//    - same SourceType
 		//    - same InheritedFrom
 		// TODO braucht dupeSrcID?
+		return
 	}
 	p.SetId(p.GetInstanceId(teg.Type, teg.Id))
 	if p.Equal(uuid.Nil) {

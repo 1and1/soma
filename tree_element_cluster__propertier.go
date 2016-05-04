@@ -10,6 +10,15 @@ import (
 //
 // Interface: SomaTreePropertier
 func (tec *SomaTreeElemCluster) SetProperty(p SomaTreeProperty) {
+	// if deleteOK is true, then prop is the property that can be
+	// deleted
+	if dupe, deleteOK, _ := tec.checkDuplicate(p); dupe && !deleteOK {
+		return // TODO: error out via FaultElement
+	} else if dupe && deleteOK {
+		// TODO delete inherited value
+		// tec.DelProperty(prop)
+		return
+	}
 	p.SetId(p.GetInstanceId(tec.Type, tec.Id))
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
@@ -174,6 +183,62 @@ func (tec *SomaTreeElemCluster) checkProperty(
 		}
 	}
 	return false
+}
+
+// Checks if this property is already defined on this node, and
+// whether it was inherited, ie. can be deleted so it can be
+// overwritten
+func (tec *SomaTreeElemCluster) checkDuplicate(p SomaTreeProperty) (
+	bool, bool, SomaTreeProperty) {
+	var dupe, deleteOK bool
+	var prop SomaTreeProperty
+
+propswitch:
+	switch p.GetType() {
+	case "custom":
+		for _, pVal := range tec.PropertyCustom {
+			dupe, deleteOK, prop = isDupe(pVal, p)
+			if dupe {
+				break propswitch
+			}
+		}
+	case "service":
+		for _, pVal := range tec.PropertyService {
+			dupe, deleteOK, prop = isDupe(pVal, p)
+			if dupe {
+				break propswitch
+			}
+		}
+	case "oncall":
+		for _, pVal := range tec.PropertyOncall {
+			dupe, deleteOK, prop = isDupe(pVal, p)
+			if dupe {
+				break propswitch
+			}
+		}
+	case "system":
+		for _, pVal := range tec.PropertySystem {
+			// tags are only dupes if the value is the same as well
+			if p.GetKey() != `tag` {
+				dupe, deleteOK, prop = isDupe(pVal, p)
+				if dupe {
+					break propswitch
+				}
+			} else if p.GetValue() == pVal.GetValue() {
+				// tag and same value, can be a dupe
+				dupe, deleteOK, prop = isDupe(pVal, p)
+				if dupe {
+					break propswitch
+				}
+			}
+			// tag + different value => pass
+		}
+	default:
+		// trigger error path
+		dupe = true
+		deleteOK = false
+	}
+	return dupe, deleteOK, prop
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

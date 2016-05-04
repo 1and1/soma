@@ -37,4 +37,9 @@ func (tef *SomaTreeElemFault) checkProperty(
 	return false
 }
 
+func (tef *SomaTreeElemFault) checkDuplicate(p SomaTreeProperty) (
+	bool, bool, SomaTreeProperty) {
+	return true, false, nil
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

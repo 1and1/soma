@@ -18,7 +18,7 @@ type SomaTreePropertier interface {
 	//deleteOncallProperty(p SomaTreeProperty)
 	syncProperty(childId string)
 	checkProperty(propType string, propId string) bool
-	//checkDuplicate(p SomaTreeProperty) (bool, bool)
+	checkDuplicate(p SomaTreeProperty) (bool, bool, SomaTreeProperty)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
