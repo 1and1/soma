@@ -209,6 +209,8 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	nodeId := utl.TryGetNodeByUUIDOrName(opts["to"][0])
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
+	config := utl.GetNodeConfigById(nodeId)
+
 	sprop := somaproto.TreePropertySystem{
 		Name:  c.Args().First(),
 		Value: opts["value"][0],
@@ -235,6 +237,7 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	node := somaproto.ProtoNode{
 		Id:         nodeId,
 		Properties: &propList,
+		Config:     config,
 	}
 
 	req := somaproto.ProtoRequestNode{

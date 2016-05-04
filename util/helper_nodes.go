@@ -32,6 +32,16 @@ func (u SomaUtil) GetNodeIdByName(node string) string {
 	return nodeResult.Nodes[0].Id
 }
 
+func (u SomaUtil) GetNodeConfigById(node string) *somaproto.ProtoNodeConfig {
+	if _, err := uuid.FromString(node); err != nil {
+		node = u.GetNodeIdByName(node)
+	}
+	path := fmt.Sprintf("/nodes/%s/config", node)
+	resp := u.GetRequest(path)
+	nodeResult := u.DecodeProtoResultNodeFromResponse(resp)
+	return nodeResult.Nodes[0].Config
+}
+
 func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *somaproto.ProtoResultNode {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultNode
