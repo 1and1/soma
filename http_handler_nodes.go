@@ -61,6 +61,23 @@ func ShowNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
+	handler.input <- somaNodeRequest{
+		action: "get_config",
+		reply:  returnChannel,
+		Node: somaproto.ProtoNode{
+			Id: params.ByName("node"),
+		},
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddNode(w http.ResponseWriter, r *http.Request,

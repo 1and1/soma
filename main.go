@@ -112,6 +112,7 @@ func main() {
 
 	router.GET("/nodes/", ListNode)
 	router.GET("/nodes/:node", ShowNode)
+	router.GET("/nodes/:node/config", ShowNodeConfig)
 	router.POST("/filter/nodes/", ListNode)
 
 	router.GET("/servers/", ListServer)

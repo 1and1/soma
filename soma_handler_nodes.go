@@ -39,6 +39,7 @@ type somaNodeReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	conf_stmt *sql.Stmt
 }
 
 func (r *somaNodeReadHandler) run() {
@@ -70,6 +71,22 @@ WHERE  node_id = $1;`)
 		log.Fatal("node/show: ", err)
 	}
 
+	log.Println("Prepare: node/get-config")
+	r.conf_stmt, err = r.conn.Prepare(`
+SELECT nodes.node_id,
+       nodes.node_name,
+       buckets.bucket_id,
+       buckets.repository_id
+FROM   soma.nodes
+JOIN   soma.node_bucket_assignment
+  ON   nodes.node_id = node_bucket_assignment.node_id
+JOIN   soma.buckets
+  ON   node_bucket_assignment.bucket_id = buckets.bucket_id
+WHERE  nodes.node_id = $1;`)
+	if err != nil {
+		log.Fatal("node/get-config: ", err)
+	}
+
 runloop:
 	for {
 		select {
@@ -84,7 +101,7 @@ runloop:
 }
 
 func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
-	var nodeId, nodeName, nodeTeam, nodeServer, nodeState string
+	var nodeId, nodeName, nodeTeam, nodeServer, nodeState, bucketId, repositoryId string
 	var nodeAsset int
 	var nodeOnline, nodeDeleted bool
 	var rows *sql.Rows
@@ -142,6 +159,34 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 				State:     nodeState,
 				IsOnline:  nodeOnline,
 				IsDeleted: nodeDeleted,
+			},
+		})
+	case "get_config":
+		log.Printf("R: node/get_config")
+		err = r.conf_stmt.QueryRow(q.Node.Id).Scan(
+			&nodeId,
+			&nodeName,
+			&bucketId,
+			&repositoryId,
+		)
+		if err != nil {
+			if err.Error() != "sql: no rows in result set" {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+
+		result.Append(err, &somaNodeResult{
+			Node: somaproto.ProtoNode{
+				Id:   nodeId,
+				Name: nodeName,
+				Config: &somaproto.ProtoNodeConfig{
+					RepositoryId: repositoryId,
+					BucketId:     bucketId,
+				},
 			},
 		})
 	default:
