@@ -1,19 +1,19 @@
 package somaproto
 
 type ProtoRequestMode struct {
-	Mode *ProtoMode `json:"predicate,omitempty"`
+	Mode *ProtoMode `json:"mode,omitempty"`
 }
 
 type ProtoResultMode struct {
 	Code   uint16      `json:"code,omitempty"`
 	Status string      `json:"status,omitempty"`
 	Text   []string    `json:"text,omitempty"`
-	Modes  []ProtoMode `json:"predicates,omitempty"`
+	Modes  []ProtoMode `json:"modes,omitempty"`
 	JobId  string      `json:"jobid,omitempty"`
 }
 
 type ProtoMode struct {
-	Mode    string            `json:"predicate,omitempty"`
+	Mode    string            `json:"mode,omitempty"`
 	Details *ProtoModeDetails `json:"details,omitempty"`
 }
 
