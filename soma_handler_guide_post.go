@@ -257,6 +257,11 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_oncall_property_to_node":
 		fallthrough
 	case "add_service_property_to_node":
+		if q.Node.Node.Config == nil {
+			_ = result.SetRequestError(fmt.Errorf("NodeConfig subobject missing"))
+			q.reply <- result
+			return
+		}
 		repoId = q.Node.Node.Config.RepositoryId
 		bucketId = q.Node.Node.Config.BucketId
 
