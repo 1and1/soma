@@ -16,12 +16,20 @@ func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
 	default:
 		panic(`SomaTreeElemNode.Attach`)
 	}
+
+	if ten.Parent == nil {
+		panic(`SomaTreeElemNode.Attach: failed`)
+	}
+	ten.Parent.(SomaTreePropertier).syncProperty(ten.Id.String())
 }
 
 func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 	if ten.Parent == nil {
 		panic(`SomaTreeElemNode.ReAttach: not attached`)
 	}
+	// XXX: destroy all inherited properties before unlinking
+	// ten.(SomaTreePropertier).destroyInheritedProperties()
+
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(Builder).GetType(),
 		ParentName: ten.Parent.(Builder).GetName(),
@@ -41,7 +49,11 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 	},
 	)
 
+	if ten.Parent == nil {
+		panic(`SomaTreeElemNode.ReAttach: not reattached`)
+	}
 	ten.actionUpdate()
+	ten.Parent.(SomaTreePropertier).syncProperty(ten.Id.String())
 }
 
 func (ten *SomaTreeElemNode) Destroy() {

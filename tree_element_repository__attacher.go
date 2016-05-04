@@ -12,12 +12,20 @@ func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
 	default:
 		panic(`SomaTreeElemRepository.Attach`)
 	}
+
+	if ter.Parent == nil {
+		panic(`SomaTreeElemRepository.Attach: failed`)
+	}
+	// no need to sync properties, as top level element the repo can't
+	// inherit
 }
 
 func (ter *SomaTreeElemRepository) Destroy() {
 	if ter.Parent == nil {
 		panic(`SomaTreeElemRepository.Destroy called without Parent to unlink from`)
 	}
+	// XXX: destroy all properties before unlinking
+	// ter.(SomaTreePropertier).nukeAllProperties()
 
 	// the Destroy handler of SomaTreeElemFault calls
 	// updateFaultRecursive(nil) on us

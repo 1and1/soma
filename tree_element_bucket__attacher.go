@@ -18,12 +18,19 @@ func (teb *SomaTreeElemBucket) Attach(a AttachRequest) {
 	default:
 		panic(`SomaTreeElemBucket.Attach`)
 	}
+
+	if teb.Parent == nil {
+		panic(`SomaTreeElemBucket.Attach: failed`)
+	}
+	teb.Parent.(SomaTreePropertier).syncProperty(teb.Id.String())
 }
 
 func (teb *SomaTreeElemBucket) Destroy() {
 	if teb.Parent == nil {
 		panic(`SomaTreeElemBucket.Destroy called without Parent to unlink from`)
 	}
+	// XXX: destroy all inherited properties before unlinking
+	// teb.(SomaTreePropertier).destroyInheritedProperties()
 
 	teb.Parent.Unlink(UnlinkRequest{
 		ParentType: teb.Parent.(Builder).GetType(),
