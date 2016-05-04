@@ -1047,6 +1047,23 @@ func registerCommands(app cli.App) *cli.App {
 						},
 					},
 				},
+				{
+					Name:  "property",
+					Usage: "SUBCOMMANDS for properties",
+					Subcommands: []cli.Command{
+						{
+							Name:  "add",
+							Usage: "SUBCOMMANDS for property add",
+							Subcommands: []cli.Command{
+								{
+									Name:   "system",
+									Usage:  "Add a system property to a cluster",
+									Action: cmdClusterSystemPropertyAdd,
+								},
+							},
+						},
+					},
+				},
 			},
 		}, // end clusters
 		// groups
