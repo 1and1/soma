@@ -140,7 +140,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			&nodeDeleted,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)
@@ -170,7 +170,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			&repositoryId,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)
