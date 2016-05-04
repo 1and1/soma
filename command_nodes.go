@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/codegangsta/cli"
@@ -196,13 +197,15 @@ func cmdNodeShow(c *cli.Context) {
 }
 
 func cmdNodeSystemPropertyAdd(c *cli.Context) {
-	utl.ValidateCliMinArgumentCount(c, 9)
+	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
-	required := []string{"to", "in", "value", "view"}
+	required := []string{"to", "value", "view"}
 	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
+	if _, ok := opts["in"]; ok {
+		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
+	}
+
 	nodeId := utl.TryGetNodeByUUIDOrName(opts["to"][0])
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
@@ -232,9 +235,6 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	node := somaproto.ProtoNode{
 		Id:         nodeId,
 		Properties: &propList,
-		Config: &somaproto.ProtoNodeConfig{
-			BucketId: bucketId,
-		},
 	}
 
 	req := somaproto.ProtoRequestNode{

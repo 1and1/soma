@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/codegangsta/cli"
 )
@@ -124,22 +125,16 @@ func cmdRepositoryShow(c *cli.Context) {
 }
 
 func cmdRepositorySystemPropertyAdd(c *cli.Context) {
-	utl.ValidateCliMinArgumentCount(c, 9)
+	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
-	required := []string{"to", "in", "value", "view"}
+	required := []string{"to", "value", "view"}
 	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	repoBucketId := utl.GetRepositoryIdForBucket(opts["in"][0])
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(opts["to"][0])
-	if repoBucketId != repositoryId {
-		utl.Abort(fmt.Sprintf("Repository %s(%s) is not the parent of bucket %s(%s)",
-			opts["to"][0],
-			repositoryId,
-			opts["in"][0],
-			repoBucketId,
-		))
+	if _, ok := opts["in"]; ok {
+		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for repositories, since they are global objects. Ignoring.")
 	}
+
+	repositoryId := utl.TryGetRepositoryByUUIDOrName(opts["to"][0])
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
 	sprop := somaproto.TreePropertySystem{

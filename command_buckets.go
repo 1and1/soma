@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/codegangsta/cli"
 )
@@ -144,16 +145,16 @@ func cmdBucketShow(c *cli.Context) {
 }
 
 func cmdBucketSystemPropertyAdd(c *cli.Context) {
-	utl.ValidateCliMinArgumentCount(c, 9)
+	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
-	required := []string{"to", "in", "value", "view"}
+	required := []string{"to", "value", "view"}
 	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if opts["in"][0] != opts["to"][0] {
-		utl.Abort(fmt.Sprintf("Bucket %s can not be in bucket %s", opts["to"][0], opts["in"][0]))
+	if _, ok := opts["in"]; ok {
+		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for buckets, since they are global objects. Ignoring.")
 	}
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
+
+	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
 	sprop := somaproto.TreePropertySystem{
