@@ -658,36 +658,49 @@ func registerCommands(app cli.App) *cli.App {
 					Usage: "SUBCOMMANDS for node properties",
 					Subcommands: []cli.Command{
 						{
-							Name:   "add",
-							Usage:  "Assign a property to a node",
-							Action: cmdNodePropertyAdd,
-						},
-						{
-							Name:   "get",
-							Usage:  "Get the value of a node's specific property",
-							Action: cmdNodePropertyGet,
-						},
-						{
-							Name:   "delete",
-							Usage:  "Delete a property from a node",
-							Action: cmdNodePropertyDel,
-						},
-						{
-							Name:   "list",
-							Usage:  "List a nodes' local properties",
-							Action: cmdNodePropertyList,
-							Flags: []cli.Flag{
-								cli.BoolFlag{
-									Name:  "all, a",
-									Usage: "List a nodes full properties (incl. inherited)",
+							Name:  "add",
+							Usage: "SUBCOMMANDS for property add",
+							Subcommands: []cli.Command{
+								{
+									Name:   "system",
+									Usage:  "Add a system property to a node",
+									Action: cmdNodeSystemPropertyAdd,
 								},
 							},
 						},
-						{
-							Name:   "show",
-							Usage:  "Show details about a nodes properties",
-							Action: cmdNodePropertyShow,
-						},
+						/*
+							{
+								Name:   "add",
+								Usage:  "Assign a property to a node",
+								Action: cmdNodePropertyAdd,
+							},
+							{
+								Name:   "get",
+								Usage:  "Get the value of a node's specific property",
+								Action: cmdNodePropertyGet,
+							},
+							{
+								Name:   "delete",
+								Usage:  "Delete a property from a node",
+								Action: cmdNodePropertyDel,
+							},
+							{
+								Name:   "list",
+								Usage:  "List a nodes' local properties",
+								Action: cmdNodePropertyList,
+								Flags: []cli.Flag{
+									cli.BoolFlag{
+										Name:  "all, a",
+										Usage: "List a nodes full properties (incl. inherited)",
+									},
+								},
+							},
+							{
+								Name:   "show",
+								Usage:  "Show details about a nodes properties",
+								Action: cmdNodePropertyShow,
+							},
+						*/
 					},
 				}, // end nodes property
 			},

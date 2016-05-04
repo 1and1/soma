@@ -195,6 +195,58 @@ func cmdNodeShow(c *cli.Context) {
 	fmt.Println(resp)
 }
 
+func cmdNodeSystemPropertyAdd(c *cli.Context) {
+	utl.ValidateCliMinArgumentCount(c, 9)
+	multiple := []string{}
+	required := []string{"to", "in", "value", "view"}
+	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
+
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
+	nodeId := utl.TryGetNodeByUUIDOrName(opts["to"][0])
+	utl.CheckStringIsSystemProperty(c.Args().First())
+
+	sprop := somaproto.TreePropertySystem{
+		Name:  c.Args().First(),
+		Value: opts["value"][0],
+	}
+
+	tprop := somaproto.TreeProperty{
+		PropertyType: "system",
+		View:         opts["view"][0],
+		System:       &sprop,
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	propList := []somaproto.TreeProperty{tprop}
+
+	node := somaproto.ProtoNode{
+		Id:         nodeId,
+		Properties: &propList,
+		Config: &somaproto.ProtoNodeConfig{
+			BucketId: bucketId,
+		},
+	}
+
+	req := somaproto.ProtoRequestNode{
+		Node: &node,
+	}
+
+	path := fmt.Sprintf("/nodes/%s/property/system/", nodeId)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
+}
+
+/* XXX 0xDEADC0DE
 func cmdNodePropertyAdd(c *cli.Context) {
 	// preliminary argv validation
 	switch utl.GetCliArgumentCount(c) {
@@ -344,5 +396,6 @@ func cmdNodePropertyShow(c *cli.Context) {
 
 	_ = utl.GetRequest(path)
 }
+*/
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
