@@ -1,8 +1,6 @@
 package somatree
 
 import (
-	"fmt"
-
 	"github.com/satori/go.uuid"
 )
 
@@ -407,7 +405,6 @@ func (p *PropertySystem) GetValue() string {
 
 func (p *PropertySystem) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
-		fmt.Println("LOL returning early")
 		return p.Id
 	}
 	for _, instance := range p.Instances {
