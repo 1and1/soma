@@ -5,25 +5,30 @@ import (
 )
 
 type SomaTreeProperty interface {
-	GetType() string
 	GetID() string
-	GetSource() string
 	GetInstanceId(objType string, objId uuid.UUID) uuid.UUID
-	Clone() SomaTreeProperty
-	hasInheritance() bool
-	isChildrenOnly() bool
+	GetIsInherited() bool
+	GetKey() string
+	GetSource() string
 	GetSourceInstance() string
 	GetSourceType() string
-	GetIsInherited() bool
+	GetType() string
+	GetValue() string
 	GetView() string
-	MakeAction() Action
+
 	SetId(id uuid.UUID)
-	Equal(id uuid.UUID) bool
-	clearInstances()
-	SetInheritedFrom(id uuid.UUID)
 	SetInherited(inherited bool)
+	SetInheritedFrom(id uuid.UUID)
 	SetSourceId(id uuid.UUID)
 	SetSourceType(s string)
+
+	Clone() SomaTreeProperty
+	Equal(id uuid.UUID) bool
+	MakeAction() Action
+
+	hasInheritance() bool
+	isChildrenOnly() bool
+	clearInstances()
 }
 
 type PropertyInstance struct {
@@ -35,18 +40,30 @@ type PropertyInstance struct {
 //
 // Custom
 type PropertyCustom struct {
-	Id            uuid.UUID
-	SourceId      uuid.UUID
-	SourceType    string
-	CustomId      uuid.UUID
-	Inherited     bool
+	// Id of the custom property
+	Id uuid.UUID
+	// Id of the source custom property this was inherited from
+	SourceId uuid.UUID
+	// ObjectType the source property was attached to
+	SourceType string
+	// Id of the custom property type
+	CustomId uuid.UUID
+	// Indicator if this was inherited
+	Inherited bool
+	// Id of the object the SourceId property is on
 	InheritedFrom uuid.UUID
-	Inheritance   bool
-	ChildrenOnly  bool
-	View          string
-	Key           string
-	Value         string
-	Instances     []PropertyInstance
+	// Inheritance is enabled/disabled
+	Inheritance bool
+	// ChildrenOnly is enabled/disabled
+	ChildrenOnly bool
+	// View this property is attached in
+	View string
+	// Property Key
+	Key string
+	// Property Value
+	Value string
+	// Filled with IDs during from-DB load to restore with same IDs
+	Instances []PropertyInstance
 }
 
 func (p *PropertyCustom) GetType() string {
@@ -83,6 +100,14 @@ func (p *PropertyCustom) GetIsInherited() bool {
 
 func (p *PropertyCustom) GetView() string {
 	return p.View
+}
+
+func (p *PropertyCustom) GetKey() string {
+	return p.Key
+}
+
+func (p *PropertyCustom) GetValue() string {
+	return p.Value
 }
 
 func (p *PropertyCustom) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
@@ -214,6 +239,16 @@ func (p *PropertyService) GetIsInherited() bool {
 
 func (p *PropertyService) GetView() string {
 	return p.View
+}
+
+func (p *PropertyService) GetKey() string {
+	return p.Service
+}
+
+// service has no Value per se, so ensure comparing values never
+// succeeds, but Interface is fulfilled
+func (p *PropertyService) GetValue() string {
+	return p.Id.String()
 }
 
 func (p *PropertyService) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
@@ -360,6 +395,14 @@ func (p *PropertySystem) GetView() string {
 	return p.View
 }
 
+func (p *PropertySystem) GetKey() string {
+	return p.Key
+}
+
+func (p *PropertySystem) GetValue() string {
+	return p.Value
+}
+
 func (p *PropertySystem) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
 		return p.Id
@@ -490,6 +533,14 @@ func (p *PropertyOncall) GetView() string {
 	return p.View
 }
 
+func (p *PropertyOncall) GetKey() string {
+	return p.Name
+}
+
+func (p *PropertyOncall) GetValue() string {
+	return p.Id.String()
+}
+
 func (p *PropertyOncall) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
 		return p.Id
@@ -567,6 +618,33 @@ func (p *PropertyOncall) MakeAction() Action {
 			},
 		},
 	}
+}
+
+func isDupe(o, n SomaTreeProperty) (bool, bool, SomaTreeProperty) {
+	var dupe, deleteOK bool
+	var prop SomaTreeProperty
+
+	if o.GetKey() == n.GetKey() {
+		// not allowed to replace view any with a more
+		// specific view or vice versa. Replacing any with any
+		// is fine
+		if (o.GetView() == `any` && n.GetView() != `any`) ||
+			(o.GetView() != `any` && n.GetView() == `any`) {
+			// not actually a dupe, but trigger error path
+			dupe = true
+			deleteOK = false
+		}
+		// same view means we have a duplicate
+		if o.GetView() == n.GetView() {
+			dupe = true
+			// inherited properties can be deleted and replaced
+			if o.GetIsInherited() {
+				deleteOK = true
+				prop = o.Clone()
+			}
+		}
+	}
+	return dupe, deleteOK, prop
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

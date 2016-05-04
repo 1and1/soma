@@ -16,12 +16,20 @@ func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
 	default:
 		panic(`SomaTreeElemCluster.Attach`)
 	}
+
+	if tec.Parent == nil {
+		panic(`SomaTreeElemCluster.Attach: failed`)
+	}
+	tec.Parent.(SomaTreePropertier).syncProperty(tec.Id.String())
 }
 
 func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
 	if tec.Parent == nil {
 		panic(`SomaTreeElemGroup.ReAttach: not attached`)
 	}
+	// XXX: destroy all inherited properties before unlinking
+	// tec.(SomaTreePropertier).destroyInheritedProperties()
+
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(Builder).GetType(),
 		ParentName: tec.Parent.(Builder).GetName(),
@@ -41,7 +49,11 @@ func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
 	},
 	)
 
+	if tec.Parent == nil {
+		panic(`SomaTreeElemGroup.ReAttach: not reattached`)
+	}
 	tec.actionUpdate()
+	tec.Parent.(SomaTreePropertier).syncProperty(tec.Id.String())
 }
 
 func (tec *SomaTreeElemCluster) Destroy() {
