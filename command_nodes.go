@@ -258,6 +258,57 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	fmt.Println(resp)
 }
 
+func cmdNodeServicePropertyAdd(c *cli.Context) {
+	utl.ValidateCliMinArgumentCount(c, 5)
+	multiple := []string{}
+	required := []string{"to", "view"}
+	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	if _, ok := opts["in"]; ok {
+		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
+	}
+
+	nodeId := utl.TryGetNodeByUUIDOrName(opts["to"][0])
+	config := utl.GetNodeConfigById(nodeId)
+	teamId := utl.TeamIdForBucket(config.BucketId)
+
+	// no reason to fill out the attributes, client-provided
+	// attributes are discarded by the server
+	tprop := somaproto.TreeProperty{
+		PropertyType: "service",
+		View:         opts["view"][0],
+		Service: &somaproto.TreePropertyService{
+			Name:       c.Args().First(),
+			TeamId:     teamId,
+			Attributes: []somaproto.TreeServiceAttribute{},
+		},
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	req := somaproto.ProtoRequestNode{
+		Node: &somaproto.ProtoNode{
+			Id:     nodeId,
+			Config: config,
+			Properties: &[]somaproto.TreeProperty{
+				tprop,
+			},
+		},
+	}
+
+	path := fmt.Sprintf("/nodes/%s/property/service/", nodeId)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
+}
+
 /* XXX 0xDEADC0DE
 func cmdNodePropertyAdd(c *cli.Context) {
 	// preliminary argv validation
