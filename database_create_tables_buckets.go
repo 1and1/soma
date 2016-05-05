@@ -56,12 +56,12 @@ create table if not exists soma.bucket_service_properties (
     bucket_id                   uuid            NOT NULL REFERENCES buckets ( bucket_id ) DEFERRABLE,
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES views ( view ) DEFERRABLE,
     service_property            varchar(64)     NOT NULL,
-    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ),
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ),
+    organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
-    FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ),
-    FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id )
+    FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ) DEFERRABLE,
+    FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableBucketService"
 	idx++
