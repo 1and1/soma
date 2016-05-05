@@ -1,104 +1,32 @@
 package somaproto
 
-type DeploymentDetailsResult struct {
-	Code        uint16              `json:"code,omitempty"`
-	Status      string              `json:"status,omitempty"`
-	Deployments []DeploymentDetails `json:"deployments,omitempty"`
-	List        []string            `json:"list,omitempty"`
-	JobId       string              `json:"jobid,omitempty"`
+type Deployment struct {
+	Repository       string            `json:"repository"`
+	Environment      string            `json:"environment"`
+	Bucket           string            `json:"bucket"`
+	ObjectType       string            `json:"objectType"`
+	View             string            `json:"view"`
+	Task             string            `json:"task"`
+	Datacenter       string            `json:"datacenter"`
+	Capability       *Capability       `json:"capability"`
+	Monitoring       *Monitoring       `json:"monitoringSystem"`
+	Metric           *Metric           `json:"metric"`
+	Unit             *Unit             `json:"unit"`
+	Team             *Team             `json:"organizationalTeam"`
+	Oncall           *Oncall           `json:"oncallDuty, omitempty"`
+	Service          *PropertyService  `json:"service, omitempty"`
+	Properties       *[]PropertySystem `json:"properties, omitempty"`
+	CustomProperties *[]PropertyCustom `json:"customProperties, omitempty"`
+	Group            *Group            `json:"group, omitempty"`
+	Cluster          *Cluster          `json:"cluster, omitempty"`
+	Node             *Node             `json:"node, omitempty"`
+	Server           *Server           `json:"server, omitempty"`
+	CheckConfig      *CheckConfig      `json:"checkConfig"`
+	Check            *Check            `json:"check"`
+	CheckInstance    *CheckInstance    `json:"checkInstance"`
 }
 
-func (dd *DeploymentDetailsResult) ErrorMark(err error, imp bool,
-	found bool, length int, jobid string) bool {
-	if dd.markError(err) {
-		return true
-	}
-	if dd.markImplemented(imp) {
-		return true
-	}
-	if dd.markFound(found, length) {
-		return true
-	}
-	if dd.hasJobId(jobid) {
-		return dd.markAccepted()
-	}
-	return dd.markOk()
-}
-
-func (dd *DeploymentDetailsResult) markError(err error) bool {
-	if err != nil {
-		dd.Code = 500
-		dd.Status = "ERROR"
-		return true
-	}
-	return false
-}
-
-func (dd *DeploymentDetailsResult) markImplemented(f bool) bool {
-	if f {
-		dd.Code = 501
-		dd.Status = "NOT IMPLEMENTED"
-		return true
-	}
-	return false
-}
-
-func (dd *DeploymentDetailsResult) markFound(f bool, i int) bool {
-	if f || i == 0 {
-		dd.Code = 404
-		dd.Status = "NOT FOUND"
-		return true
-	}
-	return false
-}
-
-func (dd *DeploymentDetailsResult) markOk() bool {
-	dd.Code = 200
-	dd.Status = "OK"
-	return false
-}
-
-func (dd *DeploymentDetailsResult) hasJobId(s string) bool {
-	if s != "" {
-		dd.JobId = s
-		return true
-	}
-	return false
-}
-
-func (dd *DeploymentDetailsResult) markAccepted() bool {
-	dd.Code = 202
-	dd.Status = "ACCEPTED"
-	return false
-}
-
-type DeploymentDetails struct {
-	Repository         string                `json:"repository"`
-	Environment        string                `json:"environment"`
-	Bucket             string                `json:"bucket"`
-	ObjectType         string                `json:"object_type"`
-	View               string                `json:"view"`
-	Task               string                `json:"task"`
-	Datacenter         string                `json:"datacenter"`
-	Capability         *ProtoCapability      `json:"capability"`
-	Monitoring         *ProtoMonitoring      `json:"monitoring_system"`
-	Metric             *ProtoMetric          `json:"metric"`
-	Unit               *ProtoUnit            `json:"unit"`
-	Team               *ProtoTeam            `json:"organizational_team"`
-	Oncall             *ProtoOncall          `json:"oncall,omitempty"`
-	Service            *TreePropertyService  `json:"service,omitempty"`
-	Properties         *[]TreePropertySystem `json:"properties,omitempty"`
-	CustomProperties   *[]TreePropertyCustom `json:"custom_properties,omitempty"`
-	Group              *ProtoGroup           `json:"group,omitempty"`
-	Cluster            *ProtoCluster         `json:"cluster,omitempty"`
-	Node               *ProtoNode            `json:"node,omitempty"`
-	Server             *ProtoServer          `json:"server,omitempty"`
-	CheckConfiguration *CheckConfiguration   `json:"check_configuration"`
-	Check              *TreeCheck            `json:"check"`
-	CheckInstance      *TreeCheckInstance    `json:"check_instance"`
-}
-
-func (dd *DeploymentDetails) DeepCompare(alternate *DeploymentDetails) bool {
+func (dd *Deployment) DeepCompare(alternate *Deployment) bool {
 	if dd.Repository != alternate.Repository {
 		return false
 	}
@@ -164,7 +92,7 @@ func (dd *DeploymentDetails) DeepCompare(alternate *DeploymentDetails) bool {
 	} else if dd.Server == nil && alternate.Server != nil {
 		return false
 	}
-	if !dd.CheckConfiguration.DeepCompare(alternate.CheckConfiguration) {
+	if !dd.CheckConfig.DeepCompare(alternate.CheckConfig) {
 		return false
 	}
 	if !dd.Check.DeepCompare(alternate.Check) {
