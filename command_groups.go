@@ -368,13 +368,13 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	propList := []somaproto.TreeProperty{tprop}
-
 	req := somaproto.ProtoRequestGroup{
 		Group: &somaproto.ProtoGroup{
-			Id:         groupId,
-			BucketId:   bucketId,
-			Properties: &propList,
+			Id:       groupId,
+			BucketId: bucketId,
+			Properties: &[]somaproto.TreeProperty{
+				tprop,
+			},
 		},
 	}
 

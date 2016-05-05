@@ -199,11 +199,11 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	multiple := []string{}
 	required := []string{"to", "view"}
 	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	if _, ok := opts["in"]; ok {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for buckets, since they are global objects. Ignoring.")
 	}
-
 	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
 	teamId := utl.TeamIdForBucket(bucketId)
 	// no reason to fill out the attributes, client-provided
@@ -228,12 +228,12 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	propList := []somaproto.TreeProperty{tprop}
-
 	req := somaproto.ProtoRequestBucket{
 		Bucket: &somaproto.ProtoBucket{
-			Id:         bucketId,
-			Properties: &propList,
+			Id: bucketId,
+			Properties: &[]somaproto.TreeProperty{
+				tprop,
+			},
 		},
 	}
 
