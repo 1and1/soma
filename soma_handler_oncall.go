@@ -116,7 +116,7 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 			&oncallNumber,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

@@ -138,7 +138,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 			&team,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

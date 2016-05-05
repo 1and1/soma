@@ -112,7 +112,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 			&name,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

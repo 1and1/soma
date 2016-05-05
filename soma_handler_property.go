@@ -298,12 +298,8 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			)
 			defer rows.Close()
 		}
-		if result.SetRequestError(err) {
-			q.reply <- result
-			return
-		}
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

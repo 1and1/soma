@@ -208,6 +208,8 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 				}
 			}
 		}
+		// err can be nil or sql.ErrNoRows, everything else already
+		// error'ed out
 		if err != sql.ErrNoRows {
 			// rows is *sql.Rows, so if err != nil then rows == nilptr.
 			// this makes rows.Close() a nilptr dereference if we

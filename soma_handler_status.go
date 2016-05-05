@@ -105,7 +105,7 @@ func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
 			&status,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

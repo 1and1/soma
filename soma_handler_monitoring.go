@@ -125,7 +125,7 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 			&callback,
 		)
 		if err != nil {
-			if err.Error() != "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)

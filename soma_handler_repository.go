@@ -114,7 +114,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 			&teamId,
 		)
 		if err != nil {
-			if err.Error() == "sql: no rows in result set" {
+			if err == sql.ErrNoRows {
 				result.SetNotFound()
 			} else {
 				_ = result.SetRequestError(err)
