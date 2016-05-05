@@ -1213,6 +1213,25 @@ actionloop:
 						break actionloop
 					}
 				case "service":
+					log.Printf(`SQL: tkStmtBucketPropertyServiceCreate:
+Instance ID:           %s
+Source Instance ID:    %s
+Bucket ID:             %s
+View:                  %s
+Service Name:          %s
+Service TeamId:        %s
+Repository ID:         %s
+Inheritance Enabled:   %t
+Children Only:         %t%s`,
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Bucket.Id,
+						a.Property.View,
+						a.Property.Service.Name,
+						a.Property.Service.TeamId,
+						a.Property.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly, "\n")
 					if _, err = txStmtBucketPropertyServiceCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
