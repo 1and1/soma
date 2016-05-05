@@ -26,7 +26,11 @@ func (u *SomaUtil) ValidateCliArgument(c *cli.Context, pos uint8, s string) {
 func (u *SomaUtil) ValidateCliMinArgumentCount(c *cli.Context, i uint8) {
 	ct := u.GetCliArgumentCount(c)
 	if ct < int(i) {
-		u.Abort("Syntax error, incorrect argument count")
+		u.Abort(fmt.Sprintf(
+			"Syntax error, incorrect argument count (%d < %d+ expected)",
+			ct,
+			i,
+		))
 	}
 }
 
@@ -38,7 +42,11 @@ func (u *SomaUtil) ValidateCliArgumentCount(c *cli.Context, i uint8) {
 		}
 	} else {
 		if !a.Present() || len(a.Tail()) != (int(i)-1) {
-			u.Abort("Syntax error, incorrect argument count")
+			u.Abort(fmt.Sprintf(
+				"Syntax error, incorrect argument count (expected: %d, received %d)",
+				i,
+				len(a.Tail()),
+			))
 		}
 	}
 }
