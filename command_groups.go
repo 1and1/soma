@@ -378,7 +378,7 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 		},
 	}
 
-	path := fmt.Sprintf("/groups/%s/property/system/", groupId)
+	path := fmt.Sprintf("/groups/%s/property/service/", groupId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
 }
