@@ -1215,6 +1215,11 @@ func registerCommands(app cli.App) *cli.App {
 									Usage:  "Add a system property to a group",
 									Action: cmdGroupSystemPropertyAdd,
 								},
+								{
+									Name:   "service",
+									Usage:  "Add a service property to a group",
+									Action: cmdGroupServicePropertyAdd,
+								},
 							},
 						},
 					},

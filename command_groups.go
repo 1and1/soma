@@ -335,4 +335,52 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 	fmt.Println(resp)
 }
 
+func cmdGroupServicePropertyAdd(c *cli.Context) {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	required := []string{"to", "in", "view"}
+	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(opts["to"][0], bucketId)
+	teamId := utl.TeamIdForBucket(bucketId)
+
+	// no reason to fill out the attributes, client-provided
+	// attributes are discarded by the server
+	tprop := somaproto.TreeProperty{
+		PropertyType: "service",
+		View:         opts["view"][0],
+		Service: &somaproto.TreePropertyService{
+			Name:       c.Args().First(),
+			TeamId:     teamId,
+			Attributes: []somaproto.TreeServiceAttribute{},
+		},
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	propList := []somaproto.TreeProperty{tprop}
+
+	req := somaproto.ProtoRequestGroup{
+		Group: &somaproto.ProtoGroup{
+			Id:         groupId,
+			BucketId:   bucketId,
+			Properties: &propList,
+		},
+	}
+
+	path := fmt.Sprintf("/groups/%s/property/system/", groupId)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
