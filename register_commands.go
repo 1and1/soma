@@ -1117,6 +1117,11 @@ func registerCommands(app cli.App) *cli.App {
 									Usage:  "Add a system property to a cluster",
 									Action: cmdClusterSystemPropertyAdd,
 								},
+								{
+									Name:   "service",
+									Usage:  "Add a service property to a cluster",
+									Action: cmdClusterServicePropertyAdd,
+								},
 							},
 						},
 					},
