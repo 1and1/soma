@@ -357,10 +357,12 @@ func (g *guidePost) process(q *treeRequest) {
 			svTeam = (*q.Node.Node.Properties)[0].Service.TeamId
 		}
 
+		// validate the tuple (repo, team, service) is valid
 		if err = g.serv_stmt.QueryRow(repoId, svName, svTeam).Scan(&service); err != nil {
 			goto inputabort
 		}
 
+		// load attributes
 		if rows, err = g.attr_stmt.Query(repoId, svName, svTeam); err != nil {
 			goto inputabort
 		}
