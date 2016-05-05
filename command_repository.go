@@ -218,7 +218,7 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 		},
 	}
 
-	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
+	path := fmt.Sprintf("/repository/%s/property/service/", repositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
 }
