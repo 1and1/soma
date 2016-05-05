@@ -20,13 +20,13 @@ type CheckConfig struct {
 }
 
 type CheckConfigConstraint struct {
-	ConstraintType string                `json:"constraintType, omitempty"`
-	Native         *TreePropertyNative   `json:"native, omitempty"`
-	Oncall         *TreePropertyOncall   `json:"oncall, omitempty"`
-	Custom         *TreePropertyCustom   `json:"custom, omitempty"`
-	System         *TreePropertySystem   `json:"system, omitempty"`
-	Service        *TreePropertyService  `json:"service, omitempty"`
-	Attribute      *TreeServiceAttribute `json:"attribute, omitempty"`
+	ConstraintType string            `json:"constraintType, omitempty"`
+	Native         *PropertyNative   `json:"native, omitempty"`
+	Oncall         *PropertyOncall   `json:"oncall, omitempty"`
+	Custom         *PropertyCustom   `json:"custom, omitempty"`
+	System         *PropertySystem   `json:"system, omitempty"`
+	Service        *PropertyService  `json:"service, omitempty"`
+	Attribute      *ServiceAttribute `json:"attribute, omitempty"`
 }
 
 type CheckConfigThreshold struct {

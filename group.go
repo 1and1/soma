@@ -1,16 +1,16 @@
 package somaproto
 
 type Group struct {
-	Id             string          `json:"id, omitempty"`
-	Name           string          `json:"name, omitempty"`
-	BucketId       string          `json:"bucketId, omitempty"`
-	ObjectState    string          `json:"objectState, omitempty"`
-	TeamId         string          `json:"teamId, omitempty"`
-	MemberGroups   []Group         `json:"memberGroups, omitempty"`
-	MemberClusters []Cluster       `json:"memberClusters, omitempty"`
-	MemberNodes    []Node          `json:"memberNodes, omitempty"`
-	Details        *GroupDetails   `json:"details, omitempty"`
-	Properties     *[]TreeProperty `json:"properties, omitempty"`
+	Id             string        `json:"id, omitempty"`
+	Name           string        `json:"name, omitempty"`
+	BucketId       string        `json:"bucketId, omitempty"`
+	ObjectState    string        `json:"objectState, omitempty"`
+	TeamId         string        `json:"teamId, omitempty"`
+	MemberGroups   []Group       `json:"memberGroups, omitempty"`
+	MemberClusters []Cluster     `json:"memberClusters, omitempty"`
+	MemberNodes    []Node        `json:"memberNodes, omitempty"`
+	Details        *GroupDetails `json:"details, omitempty"`
+	Properties     *[]Property   `json:"properties, omitempty"`
 }
 
 type GroupFilter struct {

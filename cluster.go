@@ -8,7 +8,7 @@ type Cluster struct {
 	TeamId      string          `json:"teamId, omitempty"`
 	Members     []Node          `json:"members, omitempty"`
 	Details     *ClusterDetails `json:"details, omitempty"`
-	Properties  *[]TreeProperty `json:"properties, omitempty"`
+	Properties  *[]Property     `json:"properties, omitempty"`
 }
 
 type ClusterFilter struct {

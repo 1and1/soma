@@ -1,17 +1,17 @@
 package somaproto
 
 type Node struct {
-	Id         string          `json:"id, omitempty"`
-	AssetId    uint64          `json:"assetId, omitempty"`
-	Name       string          `json:"name, omitempty"`
-	TeamId     string          `json:"teamId, omitempty"`
-	ServerId   string          `json:"serverId, omitempty"`
-	State      string          `json:"state, omitempty"`
-	IsOnline   bool            `json:"isOnline, omitempty"`
-	IsDeleted  bool            `json:"isDeleted, omitempty"`
-	Details    *NodeDetails    `json:"details, omitempty"`
-	Config     *NodeConfig     `json:"config, omitempty"`
-	Properties *[]TreeProperty `json:"properties, omitempty"`
+	Id         string       `json:"id, omitempty"`
+	AssetId    uint64       `json:"assetId, omitempty"`
+	Name       string       `json:"name, omitempty"`
+	TeamId     string       `json:"teamId, omitempty"`
+	ServerId   string       `json:"serverId, omitempty"`
+	State      string       `json:"state, omitempty"`
+	IsOnline   bool         `json:"isOnline, omitempty"`
+	IsDeleted  bool         `json:"isDeleted, omitempty"`
+	Details    *NodeDetails `json:"details, omitempty"`
+	Config     *NodeConfig  `json:"config, omitempty"`
+	Properties *[]Property  `json:"properties, omitempty"`
 }
 
 type NodeDetails struct {

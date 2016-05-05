@@ -1,15 +1,15 @@
 package somaproto
 
 type Bucket struct {
-	Id           string          `json:"id, omitempty"`
-	Name         string          `json:"name, omitempty"`
-	RepositoryId string          `json:"repositoryId, omitempty"`
-	TeamId       string          `json:"teamId, omitempty"`
-	Environment  string          `json:"environment, omitempty"`
-	IsDeleted    bool            `json:"isDeleted, omitempty"`
-	IsFrozen     bool            `json:"isFrozen, omitempty"`
-	Details      *BucketDetails  `json:"details, omitempty"`
-	Properties   *[]TreeProperty `json:"properties, omitempty"`
+	Id           string         `json:"id, omitempty"`
+	Name         string         `json:"name, omitempty"`
+	RepositoryId string         `json:"repositoryId, omitempty"`
+	TeamId       string         `json:"teamId, omitempty"`
+	Environment  string         `json:"environment, omitempty"`
+	IsDeleted    bool           `json:"isDeleted, omitempty"`
+	IsFrozen     bool           `json:"isFrozen, omitempty"`
+	Details      *BucketDetails `json:"details, omitempty"`
+	Properties   *[]Property    `json:"properties, omitempty"`
 }
 
 type BucketFilter struct {

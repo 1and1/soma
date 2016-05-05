@@ -1,94 +1,96 @@
 package somaproto
 
-type PropertyRequest struct {
-	PropertyType string               `json:"propertytype,omitempty"`
-	Custom       *TreePropertyCustom  `json:"custom,omitempty"`
-	System       *TreePropertySystem  `json:"system,omitempty"`
-	Service      *TreePropertyService `json:"service,omitempty"`
-	Native       *TreePropertyNative  `json:"native,omitempty"`
-	Filter       *PropertyFilter      `json:"filter,omitempty"`
-}
-
-type PropertyResult struct {
-	Code    uint16                `json:"code,omitempty"`
-	Status  string                `json:"status,omitempty"`
-	Text    []string              `json:"text,omitempty"`
-	Custom  []TreePropertyCustom  `json:"custom,omitempty"`
-	System  []TreePropertySystem  `json:"system,omitempty"`
-	Service []TreePropertyService `json:"service,omitempty"`
-	Native  []TreePropertyNative  `json:"native,omitempty"`
-	JobId   string                `json:"jobid,omitempty"`
+type Property struct {
+	PropertyType     string           `json:"propertyType"`
+	RepositoryId     string           `json:"repositoryId, omitempty"`
+	BucketId         string           `json:"bucketId, omitempty"`
+	InstanceId       string           `json:"instanceId, omitempty"`
+	View             string           `json:"view, omitempty"`
+	Inheritance      bool             `json:"inheritance"`
+	ChildrenOnly     bool             `json:"childrenOnly"`
+	IsInherited      bool             `json:"isInherited, omitempty"`
+	SourceInstanceId string           `json:"sourceInstanceId, omitempty"`
+	SourceType       string           `json:"sourceType, omitempty"`
+	InheritedFrom    string           `json:"inheritedFrom, omitempty"`
+	Custom           *PropertyCustom  `json:"custom, omitempty"`
+	System           *PropertySystem  `json:"system, omitempty"`
+	Service          *PropertyService `json:"service, omitempty"`
+	Native           *PropertyNative  `json:"native, omitempty"`
+	Oncall           *PropertyOncall  `json:"oncall, omitempty"`
+	Details          *PropertyDetails `json:"details, omitempty"`
 }
 
 type PropertyFilter struct {
-	Name       string `json:"name,omitempty"`
-	Type       string `json:"type,omitempty"`
-	Repository string `json:"repository,omitempty"`
+	Name         string `json:"name, omitempty"`
+	Type         string `json:"type, omitempty"`
+	RepositoryId string `json:"repositoryId, omitempty"`
 }
 
-//
-func (p *PropertyResult) ErrorMark(err error, imp bool, found bool,
-	length int, jobid string) bool {
-	if p.markError(err) {
-		return true
-	}
-	if p.markImplemented(imp) {
-		return true
-	}
-	if p.markFound(found, length) {
-		return true
-	}
-	if p.hasJobId(jobid) {
-		return p.markAccepted()
-	}
-	return p.markOk()
+type PropertyDetails struct {
+	DetailsCreation
 }
 
-func (p *PropertyResult) markError(err error) bool {
-	if err != nil {
-		p.Code = 500
-		p.Status = "ERROR"
-		p.Text = []string{err.Error()}
-		return true
+type PropertyCustom struct {
+	CustomId     string `json:"customId, omitempty"`
+	RepositoryId string `json:"repositoryId, omitempty"`
+	Name         string `json:"name, omitempty"`
+	Value        string `json:"value, omitempty"`
+}
+
+type PropertySystem struct {
+	Name  string `json:"name, omitempty"`
+	Value string `json:"value, omitempty"`
+}
+
+type PropertyService struct {
+	Name       string             `json:"name, omitempty"`
+	TeamId     string             `json:"teamId, omitempty"`
+	Attributes []ServiceAttribute `json:"attributes"`
+}
+
+type PropertyNative struct {
+	Name  string `json:"name, omitempty"`
+	Value string `json:"value, omitempty"`
+}
+
+type PropertyOncall struct {
+	OncallId string `json:"oncallId, omitempty"`
+	Name     string `json:"name, omitempty"`
+	Number   string `json:"number, omitempty"`
+}
+
+type ServiceAttribute struct {
+	Name  string `json:"name, omitempty"`
+	Value string `json:"value, omitempty"`
+}
+
+func (t *PropertyService) DeepCompare(a *PropertyService) bool {
+	if t.Name != a.Name || t.TeamId != a.TeamId {
+		return false
 	}
-	return false
-}
-
-func (p *PropertyResult) markImplemented(f bool) bool {
-	if f {
-		p.Code = 501
-		p.Status = "NOT IMPLEMENTED"
-		return true
+attrloop:
+	for _, attr := range t.Attributes {
+		if attr.DeepCompareSlice(&a.Attributes) {
+			continue attrloop
+		}
+		return false
 	}
-	return false
+	return true
 }
 
-func (p *PropertyResult) markFound(f bool, i int) bool {
-	if f || i == 0 {
-		p.Code = 404
-		p.Status = "NOT FOUND"
-		return true
+func (t *ServiceAttribute) DeepCompare(a *ServiceAttribute) bool {
+	if t.Name != a.Name || t.Value != a.Value {
+		return false
 	}
-	return false
+	return true
 }
 
-func (p *PropertyResult) markOk() bool {
-	p.Code = 200
-	p.Status = "OK"
-	return false
-}
-
-func (p *PropertyResult) hasJobId(s string) bool {
-	if s != "" {
-		p.JobId = s
-		return true
+func (t *ServiceAttribute) DeepCompareSlice(a *[]ServiceAttribute) bool {
+	for _, attr := range *a {
+		if t.DeepCompare(&attr) {
+			return true
+		}
 	}
-	return false
-}
-
-func (p *PropertyResult) markAccepted() bool {
-	p.Code = 202
-	p.Status = "ACCEPTED"
 	return false
 }
 
