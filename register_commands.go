@@ -1054,7 +1054,7 @@ func registerCommands(app cli.App) *cli.App {
 								{
 									Name:   "service",
 									Usage:  "Add a service property to a bucket",
-									Action: cmdBucketSystemPropertyAdd,
+									Action: cmdBucketServicePropertyAdd,
 								},
 							},
 						},
