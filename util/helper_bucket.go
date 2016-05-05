@@ -89,6 +89,39 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 	return bucketResult.Buckets[0].Repository
 }
 
+func (u SomaUtil) TeamIdForBucket(bucket string) string {
+	var req somaproto.ProtoRequestBucket
+	req.Filter = &somaproto.ProtoBucketFilter{}
+	receivedUuidArgument := false
+
+	id, err := uuid.FromString(bucket)
+	if err != nil {
+		req.Filter.Name = bucket
+	} else {
+		receivedUuidArgument = true
+		req.Filter.Id = id.String()
+	}
+
+	resp := u.PostRequestWithBody(req, "/filter/buckets/")
+	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
+
+	if receivedUuidArgument {
+		if bucket != bucketResult.Buckets[0].Id {
+			u.Abort("Received result set for incorrect bucket")
+		}
+	} else {
+		if bucket != bucketResult.Buckets[0].Name {
+			u.Abort("Received result set for incorrect bucket")
+		}
+	}
+
+	path := fmt.Sprintf("/buckets/%s", bucketResult.Buckets[0].Id)
+	resp = u.GetRequest(path)
+	bucketResult = u.DecodeProtoResultBucketFromResponse(resp)
+
+	return bucketResult.Buckets[0].Team
+}
+
 func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *somaproto.ProtoResultBucket {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	var res somaproto.ProtoResultBucket
