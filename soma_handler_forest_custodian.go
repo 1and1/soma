@@ -103,7 +103,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 		})
 		sTree.SetError(errChan)
 
-		for i := 0; i < len(actionChan); i++ {
+		for i := len(actionChan); i > 0; i-- {
 			action := <-actionChan
 			switch action.Action {
 			case "create":
@@ -210,11 +210,12 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 		ParentId:   sTree.GetID(),
 	})
 	sTree.SetError(errChan)
-	for i := 0; i < len(actionChan); i++ {
+	for i := len(actionChan); i > 0; i-- {
 		// discard actions on initial load
 		<-actionChan
 	}
-	for i := 0; i < len(errChan); i++ {
+	for i := len(errChan); i > 0; i-- {
+		// discard actions on initial load
 		<-errChan
 	}
 	f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.Team)

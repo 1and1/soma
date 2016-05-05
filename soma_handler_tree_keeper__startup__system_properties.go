@@ -156,7 +156,7 @@ systemloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -311,7 +311,7 @@ systemloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -466,7 +466,7 @@ systemloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -621,7 +621,7 @@ systemloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -776,7 +776,7 @@ systemloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}

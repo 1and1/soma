@@ -1847,7 +1847,7 @@ bailout:
 		time.Now().UTC(),
 		"failed",
 	)
-	for i := 0; i < len(tk.actionChan); i++ {
+	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 		jB, _ := json.Marshal(a)
 		log.Printf("Cleaned message: %s\n", string(jB))

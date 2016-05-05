@@ -127,7 +127,7 @@ bucketloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -199,7 +199,7 @@ grouploop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -268,7 +268,7 @@ memberloop:
 		a := <-tk.actionChan
 		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
-	for i := 0; i < len(tk.errChan); i++ {
+	for i := len(tk.errChan); i > 0; i-- {
 		<-tk.errChan
 	}
 }
@@ -344,7 +344,7 @@ clusterloop:
 		a := <-tk.actionChan
 		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
-	for i := 0; i < len(tk.errChan); i++ {
+	for i := len(tk.errChan); i > 0; i-- {
 		<-tk.errChan
 	}
 }
@@ -418,7 +418,7 @@ clusterloop:
 		a := <-tk.actionChan
 		log.Printf("%s -> %s [%s(%s)]\n", a.Action, a.Type, a.Cluster.Id, a.Cluster.Name)
 	}
-	for i := 0; i < len(tk.errChan); i++ {
+	for i := len(tk.errChan); i > 0; i-- {
 		<-tk.errChan
 	}
 }
@@ -531,7 +531,7 @@ nodeloop:
 		a := <-tk.actionChan
 		log.Printf("%s -> %s\n", a.Action, a.Type)
 	}
-	for i := 0; i < len(tk.errChan); i++ {
+	for i := len(tk.errChan); i > 0; i-- {
 		<-tk.errChan
 	}
 }
@@ -746,7 +746,7 @@ customloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -945,7 +945,7 @@ serviceloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
@@ -1103,7 +1103,7 @@ oncallloop:
 			a := <-tk.actionChan
 			log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
-		for i := 0; i < len(tk.errChan); i++ {
+		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
 		}
 	}
