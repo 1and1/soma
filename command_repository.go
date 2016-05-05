@@ -174,4 +174,53 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 	fmt.Println(resp)
 }
 
+func cmdRepositoryServicePropertyAdd(c *cli.Context) {
+	utl.ValidateCliMinArgumentCount(c, 5)
+	multiple := []string{}
+	required := []string{"to", "view"}
+	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	if _, ok := opts["in"]; ok {
+		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for repositories, since they are global objects. Ignoring.")
+	}
+
+	repositoryId := utl.TryGetRepositoryByUUIDOrName(opts["to"][0])
+	teamId := utl.GetTeamIdByRepositoryId(repositoryId)
+
+	// no reason to fill out the attributes, client-provided
+	// attributes are discarded by the server
+	tprop := somaproto.TreeProperty{
+		PropertyType: "service",
+		View:         opts["view"][0],
+		Service: &somaproto.TreePropertyService{
+			Name:       c.Args().First(),
+			TeamId:     teamId,
+			Attributes: []somaproto.TreeServiceAttribute{},
+		},
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	req := somaproto.ProtoRequestRepository{
+		Repository: &somaproto.ProtoRepository{
+			Id: repositoryId,
+			Properties: &[]somaproto.TreeProperty{
+				tprop,
+			},
+		},
+	}
+
+	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
+	resp := utl.PostRequestWithBody(req, path)
+	fmt.Println(resp)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -976,6 +976,11 @@ func registerCommands(app cli.App) *cli.App {
 									Usage:  "Add a system property to a repository",
 									Action: cmdRepositorySystemPropertyAdd,
 								},
+								{
+									Name:   "service",
+									Usage:  "Add a service property to a repository",
+									Action: cmdRepositoryServicePropertyAdd,
+								},
 							},
 						},
 					},
