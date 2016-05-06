@@ -6,6 +6,42 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerAttributes(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// attributes
+			{
+				Name:   "attributes",
+				Usage:  "SUBCOMMANDS for service attributes",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new service attribute",
+						Action: cmdAttributeCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a service attribute",
+						Action: cmdAttributeDelete,
+					},
+					{
+						Name:   "list",
+						Usage:  "List service attributes",
+						Action: cmdAttributeList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a service attribute",
+						Action: cmdAttributeShow,
+					},
+				},
+			}, // end attributes
+		}...,
+	)
+	return &app
+}
+
 func cmdAttributeCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}

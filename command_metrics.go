@@ -7,6 +7,42 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerMetrics(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// metrics
+			{
+				Name:   "metrics",
+				Usage:  "SUBCOMMANDS for metrics",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new metric",
+						Action: cmdMetricCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a metric",
+						Action: cmdMetricDelete,
+					},
+					{
+						Name:   "list",
+						Usage:  "List metrics",
+						Action: cmdMetricList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a metric",
+						Action: cmdMetricShow,
+					},
+				},
+			}, // end metrics
+		}...,
+	)
+	return &app
+}
+
 func cmdMetricCreate(c *cli.Context) {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{"package"}

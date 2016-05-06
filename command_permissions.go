@@ -6,6 +6,125 @@ import (
 	"gopkg.in/resty.v0"
 )
 
+func registerPermissions(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// permissions
+			{
+				Name:   "permissions",
+				Usage:  "SUBCOMMANDS for permissions",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:  "type",
+						Usage: "SUBCOMMANDS for permission types",
+						Subcommands: []cli.Command{
+							{
+								Name:   "add",
+								Usage:  "Register a new permission type",
+								Action: cmdPermissionTypeAdd,
+							},
+							{
+								Name:   "remove",
+								Usage:  "Remove an existing permission type",
+								Action: cmdPermissionTypeDel,
+							},
+							{
+								Name:   "rename",
+								Usage:  "Rename an existing permission type",
+								Action: cmdPermissionTypeRename,
+							},
+							{
+								Name:   "list",
+								Usage:  "List all permission types",
+								Action: cmdPermissionTypeList,
+							},
+							{
+								Name:   "show",
+								Usage:  "Show details for a permission type",
+								Action: cmdPermissionTypeShow,
+							},
+						}, // end permissions type
+					},
+					{
+						Name:   "add",
+						Usage:  "Register a new permission",
+						Action: cmdPermissionAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Remove a permission",
+						Action: cmdPermissionDel,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all permissions",
+						Action: cmdPermissionList,
+					},
+					{
+						Name:  "show",
+						Usage: "SUBCOMMANDS for permission show",
+						Subcommands: []cli.Command{
+							{
+								Name:   "user",
+								Usage:  "Show permissions of a user",
+								Action: cmdPermissionShowUser,
+							},
+							{
+								Name:   "team",
+								Usage:  "Show permissions of a team",
+								Action: cmdPermissionShowTeam,
+							},
+							{
+								Name:   "tool",
+								Usage:  "Show permissions of a tool account",
+								Action: cmdPermissionShowTool,
+							},
+							{
+								Name:   "permission",
+								Usage:  "Show details about a permission",
+								Action: cmdPermissionShowPermission,
+							},
+						},
+					}, // end permissions show
+					{
+						Name:   "audit",
+						Usage:  "Show all limited permissions associated with a repository",
+						Action: cmdPermissionAudit,
+					},
+					{
+						Name:  "grant",
+						Usage: "SUBCOMMANDS for permission grant",
+						Subcommands: []cli.Command{
+							{
+								Name:   "enable",
+								Usage:  "Enable a useraccount to receive GRANT permissions",
+								Action: cmdPermissionGrantEnable,
+							},
+							{
+								Name:   "global",
+								Usage:  "Grant a global permission",
+								Action: cmdPermissionGrantGlobal,
+							},
+							{
+								Name:   "limited",
+								Usage:  "Grant a limited permission",
+								Action: cmdPermissionGrantLimited,
+							},
+							{
+								Name:   "system",
+								Usage:  "Grant a system permission",
+								Action: cmdPermissionGrantSystem,
+							},
+						},
+					}, // end permissions grant
+				},
+			}, // end permissions
+		}...,
+	)
+	return &app
+}
+
 func cmdPermissionTypeAdd(c *cli.Context) {
 	url := getApiUrl()
 	url.Path = "/permissions/types"

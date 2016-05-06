@@ -2,11 +2,95 @@ package main
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
 	"os"
 	"strconv"
+
+	"github.com/codegangsta/cli"
+	"gopkg.in/resty.v0"
 )
+
+func registerServers(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// servers
+			{
+				Name:   "servers",
+				Usage:  "SUBCOMMANDS for servers",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:        "create",
+						Usage:       "Create a new physical server",
+						Description: help.CmdServerCreate,
+						Action:      cmdServerCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Mark an existing physical server as deleted",
+						Action: cmdServerMarkAsDeleted,
+					},
+					{
+						Name:   "purge",
+						Usage:  "Remove all unreferenced servers marked as deleted",
+						Action: cmdServerPurgeDeleted,
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "all, a",
+								Usage: "Purge all deleted servers",
+							},
+						},
+					},
+					{
+						Name:   "update",
+						Usage:  "Full update of server attributes (replace, not merge)",
+						Action: cmdServerUpdate,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing server",
+						Action: cmdServerRename,
+					},
+					{
+						Name:   "online",
+						Usage:  "Set an existing server to online",
+						Action: cmdServerOnline,
+					},
+					{
+						Name:   "offline",
+						Usage:  "Set an existing server to offline",
+						Action: cmdServerOffline,
+					},
+					{
+						Name:   "move",
+						Usage:  "Change a server's registered location",
+						Action: cmdServerMove,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all servers, see full description for possible filters",
+						Action: cmdServerList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a specific server",
+						Action: cmdServerShow,
+					},
+					{
+						Name:   "sync",
+						Usage:  "Request a data sync for a server",
+						Action: cmdServerSyncRequest,
+					},
+					{
+						Name:   "null",
+						Usage:  "Bootstrap the null server",
+						Action: cmdServerNull,
+					},
+				},
+			}, // end servers
+		}...,
+	)
+	return &app
+}
 
 func cmdServerCreate(c *cli.Context) {
 	url := getApiUrl()

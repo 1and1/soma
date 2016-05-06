@@ -6,6 +6,42 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerMonitoring(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// monitoring
+			{
+				Name:   "monitoring",
+				Usage:  "SUBCOMMANDS for monitoring systems",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new monitoring system",
+						Action: cmdMonitoringCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a monitoring system",
+						Action: cmdMonitoringDelete,
+					},
+					{
+						Name:   "list",
+						Usage:  "List monitoring systems",
+						Action: cmdMonitoringList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a monitoring system",
+						Action: cmdMonitoringShow,
+					},
+				},
+			}, // end monitoring
+		}...,
+	)
+	return &app
+}
+
 func cmdMonitoringCreate(c *cli.Context) {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}

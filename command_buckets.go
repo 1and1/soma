@@ -8,6 +8,89 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerBuckets(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// buckets
+			{
+				Name:   "buckets",
+				Usage:  "SUBCOMMANDS for buckets",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new bucket inside a repository",
+						Action: cmdBucketCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Mark an existing bucket as deleted",
+						Action: cmdBucketDelete,
+					},
+					{
+						Name:   "restore",
+						Usage:  "Restore a bucket marked as deleted",
+						Action: cmdBucketRestore,
+					},
+					{
+						Name:   "purge",
+						Usage:  "Remove a deleted bucket",
+						Action: cmdBucketPurge,
+					},
+					{
+						Name:   "freeze",
+						Usage:  "Freeze a bucket",
+						Action: cmdBucketFreeze,
+					},
+					{
+						Name:   "thaw",
+						Usage:  "Thaw a frozen bucket",
+						Action: cmdBucketThaw,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing bucket",
+						Action: cmdBucketRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List existing buckets",
+						Action: cmdBucketList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about a specific bucket",
+						Action: cmdBucketShow,
+					},
+					{
+						Name:  "property",
+						Usage: "SUBCOMMANDS for properties",
+						Subcommands: []cli.Command{
+							{
+								Name:  "add",
+								Usage: "SUBCOMMANDS for property add",
+								Subcommands: []cli.Command{
+									{
+										Name:   "system",
+										Usage:  "Add a system property to a bucket",
+										Action: cmdBucketSystemPropertyAdd,
+									},
+									{
+										Name:   "service",
+										Usage:  "Add a service property to a bucket",
+										Action: cmdBucketServicePropertyAdd,
+									},
+								},
+							},
+						},
+					},
+				},
+			}, // end buckets
+		}...,
+	)
+	return &app
+}
+
 func cmdBucketCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"repository", "environment"}

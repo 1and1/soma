@@ -8,6 +8,154 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerNodes(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// nodes
+			{
+				Name:   "nodes",
+				Usage:  "SUBCOMMANDS for nodes",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Register a new node",
+						Action: cmdNodeAdd,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Mark a node as deleted",
+						Action: cmdNodeDel,
+					},
+					{
+						Name:   "purge",
+						Usage:  "Purge a node marked as deleted",
+						Action: cmdNodePurge,
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "all, a",
+								Usage: "Purge all deleted nodes",
+							},
+						},
+					},
+					{
+						Name:   "restore",
+						Usage:  "Restore a node marked as deleted",
+						Action: cmdNodeRestore,
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "all, a",
+								Usage: "Restore all deleted nodes",
+							},
+						},
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename a node",
+						Action: cmdNodeRename,
+					},
+					{
+						Name:   "repossess",
+						Usage:  "Repossess a node to a different team",
+						Action: cmdNodeRepo,
+					},
+					{
+						Name:   "relocate",
+						Usage:  "Relocate a node to a different server",
+						Action: cmdNodeMove,
+					},
+					{
+						Name:   "online",
+						Usage:  "Set a nodes to online",
+						Action: cmdNodeOnline,
+					},
+					{
+						Name:   "offline",
+						Usage:  "Set a node to offline",
+						Action: cmdNodeOffline,
+					},
+					{
+						Name:   "assign",
+						Usage:  "Assign a node to configuration bucket",
+						Action: cmdNodeAssign,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all nodes",
+						Action: cmdNodeList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a node",
+						Action: cmdNodeShow,
+					},
+					{
+						Name:   "config",
+						Usage:  "Show which bucket a node is assigned to",
+						Action: cmdNodeConfig,
+					},
+					{
+						Name:  "property",
+						Usage: "SUBCOMMANDS for node properties",
+						Subcommands: []cli.Command{
+							{
+								Name:  "add",
+								Usage: "SUBCOMMANDS for property add",
+								Subcommands: []cli.Command{
+									{
+										Name:   "system",
+										Usage:  "Add a system property to a node",
+										Action: cmdNodeSystemPropertyAdd,
+									},
+									{
+										Name:   "service",
+										Usage:  "Add a service property to a node",
+										Action: cmdNodeServicePropertyAdd,
+									},
+								},
+							},
+							/*
+								{
+									Name:   "add",
+									Usage:  "Assign a property to a node",
+									Action: cmdNodePropertyAdd,
+								},
+								{
+									Name:   "get",
+									Usage:  "Get the value of a node's specific property",
+									Action: cmdNodePropertyGet,
+								},
+								{
+									Name:   "delete",
+									Usage:  "Delete a property from a node",
+									Action: cmdNodePropertyDel,
+								},
+								{
+									Name:   "list",
+									Usage:  "List a nodes' local properties",
+									Action: cmdNodePropertyList,
+									Flags: []cli.Flag{
+										cli.BoolFlag{
+											Name:  "all, a",
+											Usage: "List a nodes full properties (incl. inherited)",
+										},
+									},
+								},
+								{
+									Name:   "show",
+									Usage:  "Show details about a nodes properties",
+									Action: cmdNodePropertyShow,
+								},
+							*/
+						},
+					}, // end nodes property
+				},
+			}, // end nodes
+		}...,
+	)
+	return &app
+}
+
 func cmdNodeAdd(c *cli.Context) {
 	keySlice := []string{"assetid", "name", "team", "server", "online"}
 	reqSlice := []string{"assetid", "name", "team"}

@@ -6,6 +6,47 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerViews(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// views
+			{
+				Name:   "views",
+				Usage:  "SUBCOMMANDS for views",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "add",
+						Usage:  "Register a new view",
+						Action: cmdViewsAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Remove an existing view",
+						Action: cmdViewsRemove,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing view",
+						Action: cmdViewsRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all registered views",
+						Action: cmdViewsList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about a specific view",
+						Action: cmdViewsShow,
+					},
+				},
+			}, // end views
+		}...,
+	)
+	return &app
+}
+
 func cmdViewsAdd(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 

@@ -8,6 +8,47 @@ import (
 	"net/url"
 )
 
+func registerEnvironments(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// environments
+			{
+				Name:   "environments",
+				Usage:  "SUBCOMMANDS for environments",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "add",
+						Usage:  "Register a new view",
+						Action: cmdEnvironmentsAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Remove an existing unused environment",
+						Action: cmdEnvironmentsRemove,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing environment",
+						Action: cmdEnvironmentsRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all available environments",
+						Action: cmdEnvironmentsList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about a specific environment",
+						Action: cmdEnvironmentsShow,
+					},
+				},
+			}, // end environments
+		}...,
+	)
+	return &app
+}
+
 func cmdEnvironmentsAdd(c *cli.Context) {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {

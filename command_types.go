@@ -8,6 +8,47 @@ import (
 	"net/url"
 )
 
+func registerTypes(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// types
+			{
+				Name:   "types",
+				Usage:  "SUBCOMMANDS for object types",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "add",
+						Usage:  "Add a new object type",
+						Action: cmdObjectTypesAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Remove an existing object type",
+						Action: cmdObjectTypesRemove,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing object type",
+						Action: cmdObjectTypesRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all object types",
+						Action: cmdObjectTypesList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about a specific object type",
+						Action: cmdObjectTypesShow,
+					},
+				},
+			}, // end types
+		}...,
+	)
+	return &app
+}
+
 func cmdObjectTypesAdd(c *cli.Context) {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {

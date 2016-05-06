@@ -10,6 +10,67 @@ import (
 	"net/url"
 )
 
+func registerDatacenters(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// datacenters
+			{
+				Name:   "datacenters",
+				Usage:  "SUBCOMMANDS for datacenters",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "add",
+						Usage:  "Register a new datacenter",
+						Action: cmdDatacentersAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Remove an existing datacenter",
+						Action: cmdDatacentersRemove,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing datacenter",
+						Action: cmdDatacentersRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all datacenters",
+						Action: cmdDatacentersList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about a specific datacenter",
+						Action: cmdDatacentersShow,
+					},
+					{
+						Name:   "groupadd",
+						Usage:  "Add a datacenter to a datacenter group",
+						Action: cmdDatacentersAddToGroup,
+					},
+					{
+						Name:   "groupdel",
+						Usage:  "Remove a datacenter from a datacenter group",
+						Action: cmdDatacentersRemoveFromGroup,
+					},
+					{
+						Name:   "grouplist",
+						Usage:  "List all datacenter groups",
+						Action: cmdDatacentersListGroups,
+					},
+					{
+						Name:   "groupshow",
+						Usage:  "Show information about a datacenter group",
+						Action: cmdDatacentersShowGroup,
+					},
+				},
+			}, // end datacenters
+		}...,
+	)
+	return &app
+}
+
 func cmdDatacentersAdd(c *cli.Context) {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {

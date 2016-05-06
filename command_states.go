@@ -8,6 +8,47 @@ import (
 	"net/url"
 )
 
+func registerStates(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// states
+			{
+				Name:   "states",
+				Usage:  "SUBCOMMANDS for states",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "add",
+						Usage:  "Add a new object state",
+						Action: cmdObjectStatesAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Remove an existing object state",
+						Action: cmdObjectStatesRemove,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing object state",
+						Action: cmdObjectStatesRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all object states",
+						Action: cmdObjectStatesList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about an object states",
+						Action: cmdObjectStatesShow,
+					},
+				},
+			}, // end states
+		}...,
+	)
+	return &app
+}
+
 func cmdObjectStatesAdd(c *cli.Context) {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {

@@ -7,6 +7,52 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerTeams(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// teams
+			{
+				Name:   "teams",
+				Usage:  "SUBCOMMANDS for teams",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "add",
+						Usage:  "Register a new team",
+						Action: cmdTeamAdd,
+					},
+					{
+						Name:   "remove",
+						Usage:  "Delete an existing team",
+						Action: cmdTeamDel,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename an existing team",
+						Action: cmdTeamRename,
+					},
+					{
+						Name:   "migrate",
+						Usage:  "Migrate users between teams",
+						Action: cmdTeamMigrate,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all teams",
+						Action: cmdTeamList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show information about a team",
+						Action: cmdTeamShow,
+					},
+				},
+			}, // end teams
+		}...,
+	)
+	return &app
+}
+
 func cmdTeamAdd(c *cli.Context) {
 	utl.ValidateCliMinArgumentCount(c, 3)
 	switch utl.GetCliArgumentCount(c) {

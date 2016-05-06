@@ -6,6 +6,41 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerUnits(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			{
+				Name:   "units",
+				Usage:  "SUBCOMMANDS for metric units",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new metric unit",
+						Action: cmdUnitCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a metric unit",
+						Action: cmdUnitDelete,
+					},
+					{
+						Name:   "list",
+						Usage:  "List metric units",
+						Action: cmdUnitList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a metric unit",
+						Action: cmdUnitShow,
+					},
+				},
+			},
+		}...,
+	)
+	return &app
+}
+
 func cmdUnitCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"name"}

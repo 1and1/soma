@@ -6,6 +6,42 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerModes(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// modes
+			{
+				Name:   "modes",
+				Usage:  "SUBCOMMANDS for monitoring system modes",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new monitoring system mode",
+						Action: cmdModeCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a monitoring system mode",
+						Action: cmdModeDelete,
+					},
+					{
+						Name:   "list",
+						Usage:  "List monitoring system modes",
+						Action: cmdModeList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a monitoring mode",
+						Action: cmdModeShow,
+					},
+				},
+			}, // end modes
+		}...,
+	)
+	return &app
+}
+
 func cmdModeCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 

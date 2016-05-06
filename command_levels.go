@@ -7,6 +7,42 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerLevels(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// levels
+			{
+				Name:   "levels",
+				Usage:  "SUBCOMMANDS for notification levels",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new notification level",
+						Action: cmdLevelCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a notification level",
+						Action: cmdLevelDelete,
+					},
+					{
+						Name:   "list",
+						Usage:  "List notification levels",
+						Action: cmdLevelList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a notification level",
+						Action: cmdLevelShow,
+					},
+				},
+			}, // end levels
+		}...,
+	)
+	return &app
+}
+
 func cmdLevelCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}

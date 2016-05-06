@@ -6,6 +6,36 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerChecks(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			{
+				Name:   "checks",
+				Usage:  "SUBCOMMANDS for check configurations",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new check configuration",
+						Action: cmdCheckAdd,
+					},
+					{
+						Name:   "list",
+						Usage:  "List check configurations",
+						Action: cmdCheckList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a check configuration",
+						Action: cmdCheckShow,
+					},
+				},
+			},
+		}...,
+	)
+	return &app
+}
+
 func cmdCheckAdd(c *cli.Context) {
 	utl.ValidateCliMinArgumentCount(c, 8)
 

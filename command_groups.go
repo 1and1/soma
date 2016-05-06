@@ -6,6 +6,122 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+func registerGroups(app cli.App) *cli.App {
+	app.Commands = append(app.Commands,
+		[]cli.Command{
+			// groups
+			{
+				Name:   "groups",
+				Usage:  "SUBCOMMANDS for groups",
+				Before: runtimePreCmd,
+				Subcommands: []cli.Command{
+					{
+						Name:   "create",
+						Usage:  "Create a new group",
+						Action: cmdGroupCreate,
+					},
+					{
+						Name:   "delete",
+						Usage:  "Delete a group",
+						Action: cmdGroupDelete,
+					},
+					{
+						Name:   "rename",
+						Usage:  "Rename a group",
+						Action: cmdGroupRename,
+					},
+					{
+						Name:   "list",
+						Usage:  "List all groups",
+						Action: cmdGroupList,
+					},
+					{
+						Name:   "show",
+						Usage:  "Show details about a group",
+						Action: cmdGroupShow,
+					},
+					{
+						Name:  "members",
+						Usage: "SUBCOMMANDS for members",
+						Subcommands: []cli.Command{
+							{
+								Name:  "add",
+								Usage: "SUBCOMMANDS for members add",
+								Subcommands: []cli.Command{
+									{
+										Name:   "group",
+										Usage:  "Add a group to a group",
+										Action: cmdGroupMemberAddGroup,
+									},
+									{
+										Name:   "cluster",
+										Usage:  "Add a cluster to a group",
+										Action: cmdGroupMemberAddCluster,
+									},
+									{
+										Name:   "node",
+										Usage:  "Add a node to a group",
+										Action: cmdGroupMemberAddNode,
+									},
+								},
+							},
+							{
+								Name:  "delete",
+								Usage: "SUBCOMMANDS for members delete",
+								Subcommands: []cli.Command{
+									{
+										Name:   "group",
+										Usage:  "Delete a group from a group",
+										Action: cmdGroupMemberDeleteGroup,
+									},
+									{
+										Name:   "cluster",
+										Usage:  "Delete a cluster from a group",
+										Action: cmdGroupMemberDeleteCluster,
+									},
+									{
+										Name:   "node",
+										Usage:  "Delete a node from a group",
+										Action: cmdGroupMemberDeleteNode,
+									},
+								},
+							},
+							{
+								Name:   "list",
+								Usage:  "List all members of a group",
+								Action: cmdGroupMemberList,
+							},
+						},
+					},
+					{
+						Name:  "property",
+						Usage: "SUBCOMMANDS for properties",
+						Subcommands: []cli.Command{
+							{
+								Name:  "add",
+								Usage: "SUBCOMMANDS for property add",
+								Subcommands: []cli.Command{
+									{
+										Name:   "system",
+										Usage:  "Add a system property to a group",
+										Action: cmdGroupSystemPropertyAdd,
+									},
+									{
+										Name:   "service",
+										Usage:  "Add a service property to a group",
+										Action: cmdGroupServicePropertyAdd,
+									},
+								},
+							},
+						},
+					},
+				},
+			}, // end groups
+		}...,
+	)
+	return &app
+}
+
 func cmdGroupCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
