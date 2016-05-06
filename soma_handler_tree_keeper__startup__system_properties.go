@@ -153,8 +153,9 @@ systemloop:
 		// property since with inheritance this can create a lot of
 		// actions
 		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
+			<-tk.actionChan
+			//a := <-tk.actionChan
+			//log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
@@ -308,8 +309,9 @@ systemloop:
 		// property since with inheritance this can create a lot of
 		// actions
 		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
+			<-tk.actionChan
+			//a := <-tk.actionChan
+			//log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
@@ -463,8 +465,9 @@ systemloop:
 		// property since with inheritance this can create a lot of
 		// actions
 		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
+			<-tk.actionChan
+			//a := <-tk.actionChan
+			//log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
@@ -618,8 +621,9 @@ systemloop:
 		// property since with inheritance this can create a lot of
 		// actions
 		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
+			<-tk.actionChan
+			//a := <-tk.actionChan
+			//log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
@@ -773,8 +777,9 @@ systemloop:
 		// property since with inheritance this can create a lot of
 		// actions
 		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
+			<-tk.actionChan
+			//a := <-tk.actionChan
+			//log.Printf("%s -> %s\n", a.Action, a.Type)
 		}
 		for i := len(tk.errChan); i > 0; i-- {
 			<-tk.errChan
