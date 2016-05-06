@@ -84,7 +84,7 @@ create table if not exists soma.cluster_system_properties (
     view                        varchar(64)     NOT NULL DEFAULT 'any' REFERENCES soma.views ( view ) DEFERRABLE,
     system_property             varchar(64)     NOT NULL REFERENCES soma.system_properties ( system_property ) DEFERRABLE,
     source_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
-    object_type                 varchar(64)     NOT NULL DEFAULT 'cluster'eREFERENCES soma.object_types ( object_type ) DEFERRABLE,
+    object_type                 varchar(64)     NOT NULL DEFAULT 'cluster' REFERENCES soma.object_types ( object_type ) DEFERRABLE,
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     inheritance_enabled         boolean         NOT NULL DEFAULT 'yes',
     children_only               boolean         NOT NULL DEFAULT 'no',
