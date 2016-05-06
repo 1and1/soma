@@ -126,11 +126,13 @@ INSERT INTO soma.check_instances (
 	check_instance_id,
 	check_id,
 	check_configuration_id,
+	current_instance_config_id,
 	last_configuration_created)
 SELECT $1::uuid,
        $2::uuid,
 	   $3::uuid,
-	   $4::timestamptz;`
+	   $4::uuid,
+	   $5::timestamptz;`
 
 const tkStmtCreateCheckInstanceConfiguration = `
 INSERT INTO soma.check_instance_configurations (

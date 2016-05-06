@@ -1448,6 +1448,7 @@ Children Only:         %t%s`,
 					a.CheckInstance.InstanceId,
 					a.CheckInstance.CheckId,
 					a.CheckInstance.ConfigId,
+					"00000000-0000-0000-0000-000000000000",
 					time.Now().UTC(),
 				); err != nil {
 					break actionloop
@@ -1608,6 +1609,7 @@ Children Only:         %t%s`,
 					a.CheckInstance.InstanceId,
 					a.CheckInstance.CheckId,
 					a.CheckInstance.ConfigId,
+					"00000000-0000-0000-0000-000000000000",
 					time.Now().UTC(),
 				); err != nil {
 					break actionloop
@@ -1768,6 +1770,7 @@ Is Inherited:          %t%s`,
 					a.CheckInstance.InstanceId,
 					a.CheckInstance.CheckId,
 					a.CheckInstance.ConfigId,
+					"00000000-0000-0000-0000-000000000000",
 					time.Now().UTC(),
 				); err != nil {
 					break actionloop
