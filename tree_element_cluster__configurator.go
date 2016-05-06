@@ -145,6 +145,10 @@ checksloop:
 					f, _ := uuid.FromString(id)
 					return f
 				}(i),
+				ConfigId: func(id string) uuid.UUID {
+					f, _ := uuid.FromString(tec.Checks[id].ConfigId.String())
+					return f
+				}(i),
 				InstanceConfigId:      uuid.NewV4(),
 				ConstraintOncall:      oncallC,
 				ConstraintService:     serviceC,
@@ -243,6 +247,10 @@ checksloop:
 					InstanceId: uuid.UUID{},
 					CheckId: func(id string) uuid.UUID {
 						f, _ := uuid.FromString(id)
+						return f
+					}(i),
+					ConfigId: func(id string) uuid.UUID {
+						f, _ := uuid.FromString(tec.Checks[id].ConfigId.String())
 						return f
 					}(i),
 					InstanceConfigId:      uuid.NewV4(),
