@@ -13,11 +13,11 @@ type ValidityResult struct {
 }
 
 type Validity struct {
-	SystemProperty string                `json:"system_property,omitempty"`
-	ObjectType     string                `json:"object_type,omitempty"`
-	Direct         bool                  `json:"direct,string"`
-	Inherited      bool                  `json:"inherited,string"`
-	Details        *ProtoValidityDetails `json:"details,omitempty"`
+	SystemProperty string           `json:"system_property,omitempty"`
+	ObjectType     string           `json:"object_type,omitempty"`
+	Direct         bool             `json:"direct,string"`
+	Inherited      bool             `json:"inherited,string"`
+	Details        *ValidityDetails `json:"details,omitempty"`
 }
 
 type ValidityDetails struct {
