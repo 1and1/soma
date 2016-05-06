@@ -472,6 +472,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 		case "node":
 			// fetch the node object
+			detail.Server = &somaproto.ProtoServer{}
 			detail.Node = &somaproto.ProtoNode{
 				Id: objId,
 			}
