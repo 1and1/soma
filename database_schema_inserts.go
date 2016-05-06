@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func schemaInserts(printOnly bool, verbose bool) {
 	idx := 0
 	// map for storing the SQL statements by name
@@ -111,6 +113,59 @@ VALUES
     ( 'add_check_to_node' )
 ;`
 	queries[idx] = "insertJobTypes"
+	idx++
+
+	performDatabaseTask(printOnly, verbose, queries, queryMap)
+}
+
+func schemaVersionInserts(printOnly bool, verbose bool, version string) {
+	idx := 0
+	// map for storing the SQL statements by name
+	queryMap := make(map[string]string)
+	// slice storing the required statement order so foreign keys can
+	// resolve successfully
+	queries := make([]string, 10)
+
+	invString := fmt.Sprintf(`
+INSERT INTO public.schema_versions (
+    schema,
+    version,
+    description )
+VALUES (
+    'inventory',
+    201605060001,
+    'Initial create - somadbctl %s'
+);`, version)
+	queryMap["insertInventorySchemaVersion"] = invString
+	queries[idx] = "insertInventorySchemaVersion"
+	idx++
+
+	authString := fmt.Sprintf(`
+INSERT INTO public.schema_versions (
+    schema,
+    version,
+    description )
+VALUES (
+    'auth',
+    201605060001,
+    'Initial create - somadbctl %s'
+);`, version)
+	queryMap["insertAuthSchemaVersion"] = authString
+	queries[idx] = "insertAuthSchemaVersion"
+	idx++
+
+	somaString := fmt.Sprintf(`
+INSERT INTO public.schema_versions (
+    schema,
+    version,
+    description )
+VALUES (
+    'soma',
+    201605060001,
+    'Initial create - somadbctl %s'
+);`, version)
+	queryMap["insertSomaSchemaVersion"] = somaString
+	queries[idx] = "insertSomaSchemaVersion"
 	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)

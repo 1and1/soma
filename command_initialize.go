@@ -1,6 +1,6 @@
 package main
 
-func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
+func commandInitialize(done chan<- bool, printOnly bool, verbose bool, version string) {
 	dbOpen()
 
 	createSqlSchema(printOnly, verbose)
@@ -48,9 +48,13 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool) {
 
 	createTablesJobs(printOnly, verbose)
 
-	grantPermissions(printOnly, verbose)
+	createTablesSchemaVersion(printOnly, verbose)
 
 	schemaInserts(printOnly, verbose)
+
+	schemaVersionInserts(printOnly, verbose, version)
+
+	grantPermissions(printOnly, verbose)
 
 	done <- true
 }

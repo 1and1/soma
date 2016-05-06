@@ -6,7 +6,7 @@ func grantPermissions(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 7)
+	queries := make([]string, 9)
 
 	queryMap["grantServiceUserSchemaSoma"] = `grant select, insert, update, delete on all tables in schema soma to soma_svc;`
 	queries[idx] = "grantServiceUserSchemaSoma"
@@ -34,6 +34,14 @@ func grantPermissions(printOnly bool, verbose bool) {
 
 	queryMap["grantInventoryUserSchemaInventory"] = `grant select, insert, update, delete on all tables in schema inventory to soma_inv;`
 	queries[idx] = "grantInventoryUserSchemaInventory"
+	idx++
+
+	queryMap["grantServiceUserSchemaPublic"] = `grant select on all tables in schema public to soma_svc;`
+	queries[idx] = "grantServiceUserSchemaPublic"
+	idx++
+
+	queryMap["grantServiceUserSequencesPublic"] = `grant usage, select on all sequences in schema public to soma_svc;`
+	queries[idx] = "grantServiceUserSequencesPublic"
 	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)

@@ -25,7 +25,7 @@ func registerCommands(app cli.App) *cli.App {
 				done := make(chan bool, 1)
 				printOnly := c.GlobalBool("no-execute")
 				verbose := c.Bool("verbose")
-				commandInitialize(done, printOnly, verbose)
+				commandInitialize(done, printOnly, verbose, app.Version)
 				<-done
 			},
 		},
