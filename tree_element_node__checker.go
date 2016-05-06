@@ -5,10 +5,6 @@ import "github.com/satori/go.uuid"
 //
 // Interface: Checker
 func (ten *SomaTreeElemNode) SetCheck(c Check) {
-	c.InheritedFrom = ten.Id
-	c.Inherited = false
-	ten.storeCheck(c)
-
 	c.Id = c.GetItemId(ten.Type, ten.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
 		c.Id = uuid.NewV4()
