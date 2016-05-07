@@ -211,18 +211,18 @@ func (ten *SomaTreeElemNode) ComputeCheckInstances() {
 
 //
 //
-func (ten *SomaTreeElemNode) export() somaproto.ProtoNode {
+func (ten *SomaTreeElemNode) export() proto.Node {
 	bucket := ten.Parent.(Bucketeer).GetBucket()
-	return somaproto.ProtoNode{
+	return proto.Node{
 		Id:        ten.Id.String(),
 		AssetId:   ten.AssetId,
 		Name:      ten.Name,
-		Team:      ten.Team.String(),
-		Server:    ten.ServerId.String(),
+		TeamId:    ten.Team.String(),
+		ServerId:  ten.ServerId.String(),
 		State:     ten.State,
 		IsOnline:  ten.Online,
 		IsDeleted: ten.Deleted,
-		Config: &somaproto.ProtoNodeConfig{
+		Config: &proto.NodeConfig{
 			BucketId: bucket.(Builder).GetID(),
 		},
 	}
@@ -248,7 +248,7 @@ func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
 	a.Property.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
-	switch a.Property.PropertyType {
+	switch a.Property.Type {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
 	case "service":

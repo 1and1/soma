@@ -249,9 +249,9 @@ func (teg *SomaTreeElemGroup) ComputeCheckInstances() {
 
 //
 //
-func (teg *SomaTreeElemGroup) export() somaproto.ProtoGroup {
+func (teg *SomaTreeElemGroup) export() proto.Group {
 	bucket := teg.Parent.(Bucketeer).GetBucket()
-	return somaproto.ProtoGroup{
+	return proto.Group{
 		Id:          teg.Id.String(),
 		Name:        teg.Name,
 		BucketId:    bucket.(Builder).GetID(),
@@ -304,7 +304,7 @@ func (teg *SomaTreeElemGroup) actionPropertyNew(a Action) {
 	a.Property.RepositoryId = teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = teg.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
-	switch a.Property.PropertyType {
+	switch a.Property.Type {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
 	case "service":

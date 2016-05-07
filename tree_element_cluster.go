@@ -250,9 +250,9 @@ func (tec *SomaTreeElemCluster) ComputeCheckInstances() {
 
 //
 //
-func (tec *SomaTreeElemCluster) export() somaproto.ProtoCluster {
+func (tec *SomaTreeElemCluster) export() proto.Cluster {
 	bucket := tec.Parent.(Bucketeer).GetBucket()
-	return somaproto.ProtoCluster{
+	return proto.Cluster{
 		Id:          tec.Id.String(),
 		Name:        tec.Name,
 		BucketId:    bucket.(Builder).GetID(),
@@ -305,7 +305,7 @@ func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
 	a.Property.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
-	switch a.Property.PropertyType {
+	switch a.Property.Type {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
 	case "service":

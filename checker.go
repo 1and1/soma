@@ -148,7 +148,7 @@ func (c *Check) GetInterval() uint64 {
 
 func (c *Check) MakeAction() Action {
 	return Action{
-		Check: somaproto.TreeCheck{
+		Check: proto.Check{
 			CheckId:       c.GetCheckId(),
 			SourceCheckId: c.GetSourceCheckId(),
 			CheckConfigId: c.GetCheckConfigId(),
@@ -415,7 +415,7 @@ func (ci CheckInstance) MakeAction() Action {
 	}
 
 	return Action{
-		CheckInstance: somaproto.TreeCheckInstance{
+		CheckInstance: proto.CheckInstance{
 			InstanceId:            ci.InstanceId.String(),
 			CheckId:               ci.CheckId.String(),
 			ConfigId:              ci.ConfigId.String(),

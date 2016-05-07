@@ -175,20 +175,20 @@ func (p PropertyCustom) Clone() SomaTreeProperty {
 
 func (p *PropertyCustom) MakeAction() Action {
 	return Action{
-		Property: somaproto.TreeProperty{
+		Property: proto.Property{
 			InstanceId:       p.GetID(),
 			SourceInstanceId: p.GetSourceInstance(),
 			SourceType:       p.GetSourceType(),
 			IsInherited:      p.GetIsInherited(),
 			InheritedFrom:    p.GetSource(),
-			PropertyType:     p.GetType(),
+			Type:             p.GetType(),
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			Custom: &somaproto.TreePropertyCustom{
-				CustomId: p.CustomId.String(),
-				Name:     p.Key,
-				Value:    p.Value,
+			Custom: &proto.PropertyCustom{
+				Id:    p.CustomId.String(),
+				Name:  p.Key,
+				Value: p.Value,
 			},
 		},
 	}
@@ -206,7 +206,7 @@ type PropertyService struct {
 	ChildrenOnly  bool
 	View          string
 	Service       string
-	Attributes    []somaproto.TreeServiceAttribute
+	Attributes    []proto.ServiceAttribute
 	Instances     []PropertyInstance
 }
 
@@ -309,11 +309,11 @@ func (p PropertyService) Clone() SomaTreeProperty {
 	cl.Id, _ = uuid.FromString(p.Id.String())
 	cl.SourceId, _ = uuid.FromString(p.SourceId.String())
 	cl.InheritedFrom, _ = uuid.FromString(p.InheritedFrom.String())
-	cl.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+	cl.Attributes = make([]proto.ServiceAttribute, 0)
 	for _, attr := range p.Attributes {
-		a := somaproto.TreeServiceAttribute{
-			Attribute: attr.Attribute,
-			Value:     attr.Value,
+		a := proto.ServiceAttribute{
+			Name:  attr.Name,
+			Value: attr.Value,
 		}
 		cl.Attributes = append(cl.Attributes, a)
 	}
@@ -325,26 +325,26 @@ func (p PropertyService) Clone() SomaTreeProperty {
 
 func (p *PropertyService) MakeAction() Action {
 	a := Action{
-		Property: somaproto.TreeProperty{
+		Property: proto.Property{
 			InstanceId:       p.GetID(),
 			SourceInstanceId: p.GetSourceInstance(),
 			SourceType:       p.GetSourceType(),
 			IsInherited:      p.GetIsInherited(),
 			InheritedFrom:    p.GetSource(),
-			PropertyType:     p.GetType(),
+			Type:             p.GetType(),
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			Service: &somaproto.TreePropertyService{
+			Service: &proto.PropertyService{
 				Name: p.Service,
 			},
 		},
 	}
-	a.Property.Service.Attributes = make([]somaproto.TreeServiceAttribute, len(p.Attributes))
+	a.Property.Service.Attributes = make([]proto.ServiceAttribute, len(p.Attributes))
 	for i, attr := range p.Attributes {
-		t := somaproto.TreeServiceAttribute{
-			Attribute: attr.Attribute,
-			Value:     attr.Value,
+		t := proto.ServiceAttribute{
+			Name:  attr.Name,
+			Value: attr.Value,
 		}
 		a.Property.Service.Attributes[i] = t
 	}
@@ -473,17 +473,17 @@ func (p PropertySystem) Clone() SomaTreeProperty {
 
 func (p *PropertySystem) MakeAction() Action {
 	return Action{
-		Property: somaproto.TreeProperty{
+		Property: proto.Property{
 			InstanceId:       p.GetID(),
 			SourceInstanceId: p.GetSourceInstance(),
 			SourceType:       p.GetSourceType(),
 			IsInherited:      p.GetIsInherited(),
 			InheritedFrom:    p.GetSource(),
-			PropertyType:     p.GetType(),
+			Type:             p.GetType(),
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			System: &somaproto.TreePropertySystem{
+			System: &proto.PropertySystem{
 				Name:  p.Key,
 				Value: p.Value,
 			},
@@ -615,20 +615,20 @@ func (p PropertyOncall) Clone() SomaTreeProperty {
 
 func (p *PropertyOncall) MakeAction() Action {
 	return Action{
-		Property: somaproto.TreeProperty{
+		Property: proto.Property{
 			InstanceId:       p.GetID(),
 			SourceInstanceId: p.GetSourceInstance(),
 			SourceType:       p.GetSourceType(),
 			IsInherited:      p.GetIsInherited(),
 			InheritedFrom:    p.GetSource(),
-			PropertyType:     p.GetType(),
+			Type:             p.GetType(),
 			Inheritance:      p.hasInheritance(),
 			ChildrenOnly:     p.isChildrenOnly(),
 			View:             p.GetView(),
-			Oncall: &somaproto.TreePropertyOncall{
-				OncallId: p.OncallId.String(),
-				Name:     p.Name,
-				Number:   p.Number,
+			Oncall: &proto.PropertyOncall{
+				Id:     p.OncallId.String(),
+				Name:   p.Name,
+				Number: p.Number,
 			},
 		},
 	}

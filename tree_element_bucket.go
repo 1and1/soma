@@ -176,15 +176,15 @@ func (teb *SomaTreeElemBucket) ComputeCheckInstances() {
 
 //
 //
-func (teb *SomaTreeElemBucket) export() somaproto.ProtoBucket {
-	return somaproto.ProtoBucket{
-		Id:          teb.Id.String(),
-		Name:        teb.Name,
-		Repository:  teb.Repository.String(),
-		Team:        teb.Team.String(),
-		Environment: teb.Environment,
-		IsDeleted:   teb.Deleted,
-		IsFrozen:    teb.Frozen,
+func (teb *SomaTreeElemBucket) export() proto.Bucket {
+	return proto.Bucket{
+		Id:           teb.Id.String(),
+		Name:         teb.Name,
+		RepositoryId: teb.Repository.String(),
+		TeamId:       teb.Team.String(),
+		Environment:  teb.Environment,
+		IsDeleted:    teb.Deleted,
+		IsFrozen:     teb.Frozen,
 	}
 }
 
@@ -227,7 +227,7 @@ func (teb *SomaTreeElemBucket) actionPropertyNew(a Action) {
 
 	a.Property.RepositoryId = teb.Repository.String()
 	a.Property.BucketId = teb.Id.String()
-	switch a.Property.PropertyType {
+	switch a.Property.Type {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
 	case "service":

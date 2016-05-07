@@ -228,11 +228,11 @@ func (ter *SomaTreeElemRepository) ComputeCheckInstances() {
 
 //
 //
-func (ter *SomaTreeElemRepository) export() somaproto.ProtoRepository {
-	return somaproto.ProtoRepository{
+func (ter *SomaTreeElemRepository) export() proto.Repository {
+	return proto.Repository{
 		Id:        ter.Id.String(),
 		Name:      ter.Name,
-		Team:      ter.Team.String(),
+		TeamId:    ter.Team.String(),
 		IsDeleted: ter.Deleted,
 		IsActive:  ter.Active,
 	}
@@ -269,7 +269,7 @@ func (ter *SomaTreeElemRepository) actionPropertyNew(a Action) {
 
 	a.Property.RepositoryId = ter.Id.String()
 	a.Property.BucketId = ""
-	switch a.Property.PropertyType {
+	switch a.Property.Type {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
 	case "service":

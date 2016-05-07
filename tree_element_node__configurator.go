@@ -388,7 +388,7 @@ func (ten *SomaTreeElemNode) evalAttributeOfService(
 			continue
 		}
 		for _, a := range t.Attributes {
-			if a.Attribute == attribute && t.View == view && a.Value == value {
+			if a.Name == attribute && t.View == view && a.Value == value {
 				return true
 			}
 		}
@@ -402,8 +402,8 @@ func (ten *SomaTreeElemNode) evalAttributeProp(
 	for _, v := range ten.PropertyService {
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
-			if a.Attribute == attr && a.Value == value && t.View == view {
-				f[t.Service] = a.Attribute
+			if a.Name == attr && a.Value == value && t.View == view {
+				f[t.Service] = a.Name
 			}
 		}
 	}
@@ -419,7 +419,7 @@ func (ten *SomaTreeElemNode) getServiceMap(serviceId string) map[string][]string
 
 	res := map[string][]string{}
 	for _, v := range svc.Attributes {
-		res[v.Attribute] = append(res[v.Attribute], v.Value)
+		res[v.Name] = append(res[v.Name], v.Value)
 	}
 	return res
 }

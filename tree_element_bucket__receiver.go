@@ -75,7 +75,7 @@ func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
 
 			teb.actionAssignNode(Action{
 				ChildType: "node",
-				ChildNode: somaproto.ProtoNode{
+				ChildNode: proto.Node{
 					Id: r.Node.GetID(),
 				},
 			})
