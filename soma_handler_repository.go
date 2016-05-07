@@ -8,13 +8,13 @@ import (
 
 type somaRepositoryRequest struct {
 	action     string
-	Repository somaproto.ProtoRepository
+	Repository proto.Repository
 	reply      chan somaResult
 }
 
 type somaRepositoryResult struct {
 	ResultError error
-	Repository  somaproto.ProtoRepository
+	Repository  proto.Repository
 }
 
 func (a *somaRepositoryResult) SomaAppendError(r *somaResult, err error) {

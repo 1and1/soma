@@ -20,7 +20,7 @@ type somaHostDeploymentResult struct {
 	ResultError error
 	Delete      bool
 	DeleteId    string
-	Deployment  somaproto.DeploymentDetails
+	Deployment  proto.Deployment
 }
 
 func (h *somaHostDeploymentResult) SomaAppendError(r *somaResult, err error) {

@@ -10,13 +10,13 @@ import (
 
 type somaValidityRequest struct {
 	action   string
-	Validity somaproto.Validity
+	Validity proto.Validity
 	reply    chan somaResult
 }
 
 type somaValidityResult struct {
 	ResultError error
-	Validity    somaproto.Validity
+	Validity    proto.Validity
 }
 
 func (a *somaValidityResult) SomaAppendError(r *somaResult, err error) {

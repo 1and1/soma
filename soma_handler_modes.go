@@ -10,13 +10,13 @@ import (
 
 type somaModeRequest struct {
 	action string
-	Mode   somaproto.ProtoMode
+	Mode   proto.Mode
 	reply  chan somaResult
 }
 
 type somaModeResult struct {
 	ResultError error
-	Mode        somaproto.ProtoMode
+	Mode        proto.Mode
 }
 
 func (a *somaModeResult) SomaAppendError(r *somaResult, err error) {

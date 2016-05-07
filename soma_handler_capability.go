@@ -12,13 +12,13 @@ import (
 
 type somaCapabilityRequest struct {
 	action     string
-	Capability somaproto.ProtoCapability
+	Capability proto.Capability
 	reply      chan somaResult
 }
 
 type somaCapabilityResult struct {
 	ResultError error
-	Capability  somaproto.ProtoCapability
+	Capability  proto.Capability
 }
 
 func (a *somaCapabilityResult) SomaAppendError(r *somaResult, err error) {

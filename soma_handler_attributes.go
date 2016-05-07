@@ -10,13 +10,13 @@ import (
 
 type somaAttributeRequest struct {
 	action    string
-	Attribute somaproto.Attribute
+	Attribute proto.Attribute
 	reply     chan somaResult
 }
 
 type somaAttributeResult struct {
 	ResultError error
-	Attribute   somaproto.Attribute
+	Attribute   proto.Attribute
 }
 
 func (a *somaAttributeResult) SomaAppendError(r *somaResult, err error) {

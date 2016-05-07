@@ -9,13 +9,13 @@ import (
 
 type somaCheckConfigRequest struct {
 	action      string
-	CheckConfig somaproto.CheckConfiguration
+	CheckConfig proto.CheckConfig
 	reply       chan somaResult
 }
 
 type somaCheckConfigResult struct {
 	ResultError error
-	CheckConfig somaproto.CheckConfiguration
+	CheckConfig proto.CheckConfig
 }
 
 func (a *somaCheckConfigResult) SomaAppendError(r *somaResult, err error) {

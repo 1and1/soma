@@ -8,13 +8,13 @@ import (
 
 type somaGroupRequest struct {
 	action string
-	Group  somaproto.ProtoGroup
+	Group  proto.Group
 	reply  chan somaResult
 }
 
 type somaGroupResult struct {
 	ResultError error
-	Group       somaproto.ProtoGroup
+	Group       proto.Group
 }
 
 func (a *somaGroupResult) SomaAppendError(r *somaResult, err error) {

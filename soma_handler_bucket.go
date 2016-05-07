@@ -8,13 +8,13 @@ import (
 
 type somaBucketRequest struct {
 	action string
-	Bucket somaproto.ProtoBucket
+	Bucket proto.Bucket
 	reply  chan somaResult
 }
 
 type somaBucketResult struct {
 	ResultError error
-	Bucket      somaproto.ProtoBucket
+	Bucket      proto.Bucket
 }
 
 func (a *somaBucketResult) SomaAppendError(r *somaResult, err error) {

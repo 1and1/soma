@@ -18,7 +18,7 @@ type somaDeploymentRequest struct {
 type somaDeploymentResult struct {
 	ResultError error
 	ListEntry   string
-	Deployment  somaproto.DeploymentDetails
+	Deployment  proto.Deployment
 }
 
 func (a *somaDeploymentResult) SomaAppendError(r *somaResult, err error) {

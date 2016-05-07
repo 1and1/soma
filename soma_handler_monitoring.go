@@ -12,13 +12,13 @@ import (
 
 type somaMonitoringRequest struct {
 	action     string
-	Monitoring somaproto.ProtoMonitoring
+	Monitoring proto.Monitoring
 	reply      chan somaResult
 }
 
 type somaMonitoringResult struct {
 	ResultError error
-	Monitoring  somaproto.ProtoMonitoring
+	Monitoring  proto.Monitoring
 }
 
 func (a *somaMonitoringResult) SomaAppendError(r *somaResult, err error) {

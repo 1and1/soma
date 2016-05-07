@@ -8,13 +8,13 @@ import (
 
 type somaClusterRequest struct {
 	action  string
-	Cluster somaproto.ProtoCluster
+	Cluster proto.Cluster
 	reply   chan somaResult
 }
 
 type somaClusterResult struct {
 	ResultError error
-	Cluster     somaproto.ProtoCluster
+	Cluster     proto.Cluster
 }
 
 func (a *somaClusterResult) SomaAppendError(r *somaResult, err error) {

@@ -10,13 +10,13 @@ import (
 
 type somaStatusRequest struct {
 	action string
-	Status somaproto.ProtoStatus
+	Status proto.Status
 	reply  chan somaResult
 }
 
 type somaStatusResult struct {
 	ResultError error
-	Status      somaproto.ProtoStatus
+	Status      proto.Status
 }
 
 func (a *somaStatusResult) SomaAppendError(r *somaResult, err error) {

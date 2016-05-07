@@ -11,20 +11,20 @@ import (
 type somaPropertyRequest struct {
 	action  string
 	prType  string
-	System  somaproto.TreePropertySystem
-	Native  somaproto.TreePropertyNative
-	Service somaproto.TreePropertyService
-	Custom  somaproto.TreePropertyCustom
+	System  proto.PropertySystem
+	Native  proto.PropertyNative
+	Service proto.PropertyService
+	Custom  proto.PropertyCustom
 	reply   chan somaResult
 }
 
 type somaPropertyResult struct {
 	ResultError error
 	prType      string
-	System      somaproto.TreePropertySystem
-	Native      somaproto.TreePropertyNative
-	Service     somaproto.TreePropertyService
-	Custom      somaproto.TreePropertyCustom
+	System      proto.PropertySystem
+	Native      proto.PropertyNative
+	Service     proto.PropertyService
+	Custom      proto.PropertyCustom
 }
 
 func (a *somaPropertyResult) SomaAppendError(r *somaResult, err error) {

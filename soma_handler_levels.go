@@ -10,13 +10,13 @@ import (
 
 type somaLevelRequest struct {
 	action string
-	Level  somaproto.ProtoLevel
+	Level  proto.Level
 	reply  chan somaResult
 }
 
 type somaLevelResult struct {
 	ResultError error
-	Level       somaproto.ProtoLevel
+	Level       proto.Level
 }
 
 func (a *somaLevelResult) SomaAppendError(r *somaResult, err error) {

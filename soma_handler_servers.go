@@ -12,13 +12,13 @@ import (
 
 type somaServerRequest struct {
 	action string
-	Server somaproto.ProtoServer
+	Server proto.Server
 	reply  chan somaResult
 }
 
 type somaServerResult struct {
 	ResultError error
-	Server      somaproto.ProtoServer
+	Server      proto.Server
 }
 
 func (a *somaServerResult) SomaAppendError(r *somaResult, err error) {

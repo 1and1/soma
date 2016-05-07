@@ -12,13 +12,13 @@ import (
 type somaViewRequest struct {
 	action string
 	name   string
-	View   somaproto.ProtoView
+	View   proto.View
 	reply  chan somaResult
 }
 
 type somaViewResult struct {
 	ResultError error
-	View        somaproto.ProtoView
+	View        proto.View
 }
 
 func (a *somaViewResult) SomaAppendError(r *somaResult, err error) {

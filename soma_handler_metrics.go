@@ -10,13 +10,13 @@ import (
 
 type somaMetricRequest struct {
 	action string
-	Metric somaproto.ProtoMetric
+	Metric proto.Metric
 	reply  chan somaResult
 }
 
 type somaMetricResult struct {
 	ResultError error
-	Metric      somaproto.ProtoMetric
+	Metric      proto.Metric
 }
 
 func (a *somaMetricResult) SomaAppendError(r *somaResult, err error) {

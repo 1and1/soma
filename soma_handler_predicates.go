@@ -10,13 +10,13 @@ import (
 
 type somaPredicateRequest struct {
 	action    string
-	Predicate somaproto.ProtoPredicate
+	Predicate proto.Predicate
 	reply     chan somaResult
 }
 
 type somaPredicateResult struct {
 	ResultError error
-	Predicate   somaproto.ProtoPredicate
+	Predicate   proto.Predicate
 }
 
 func (a *somaPredicateResult) SomaAppendError(r *somaResult, err error) {
