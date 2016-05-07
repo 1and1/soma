@@ -1,15 +1,15 @@
 package somaproto
 
 type Oncall struct {
-	Id      string         `json:"id, omitempty"`
-	Name    string         `json:"name, omitempty"`
-	Number  string         `json:"number, omitempty"`
-	Details *OncallDetails `json:"details, omitempty"`
+	Id      string          `json:"id, omitempty"`
+	Name    string          `json:"name, omitempty"`
+	Number  string          `json:"number, omitempty"`
+	Members *[]OncallMember `json:"members, omitempty"`
+	Details *OncallDetails  `json:"details, omitempty"`
 }
 
 type OncallDetails struct {
 	DetailsCreation
-	Members *[]OncallMember `json:"members, omitempty"`
 }
 
 type OncallMember struct {
