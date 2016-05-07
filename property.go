@@ -1,7 +1,7 @@
 package somaproto
 
 type Property struct {
-	PropertyType     string           `json:"propertyType"`
+	Type             string           `json:"type"`
 	RepositoryId     string           `json:"repositoryId, omitempty"`
 	BucketId         string           `json:"bucketId, omitempty"`
 	InstanceId       string           `json:"instanceId, omitempty"`
@@ -31,9 +31,9 @@ type PropertyDetails struct {
 }
 
 type PropertyCustom struct {
-	CustomId     string `json:"customId, omitempty"`
-	RepositoryId string `json:"repositoryId, omitempty"`
+	Id           string `json:"id, omitempty"`
 	Name         string `json:"name, omitempty"`
+	RepositoryId string `json:"repositoryId, omitempty"`
 	Value        string `json:"value, omitempty"`
 }
 
@@ -54,9 +54,9 @@ type PropertyNative struct {
 }
 
 type PropertyOncall struct {
-	OncallId string `json:"oncallId, omitempty"`
-	Name     string `json:"name, omitempty"`
-	Number   string `json:"number, omitempty"`
+	Id     string `json:"id, omitempty"`
+	Name   string `json:"name, omitempty"`
+	Number string `json:"number, omitempty"`
 }
 
 type ServiceAttribute struct {
