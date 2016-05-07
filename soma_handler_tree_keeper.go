@@ -1751,6 +1751,25 @@ Is Inherited:          %t%s`,
 					}
 				}
 			case "check_new":
+				log.Printf(`SQL: tkStmtCreateCheck:
+Check ID:            %s
+Repository ID:       %s
+Bucket ID:           %s
+Source Check ID:     %s
+Source Type:         %s
+Inherited From:      %s
+Check Config ID:     %s
+Check Capability ID: %s
+Node ID:             %s%s`,
+					a.Check.CheckId,
+					a.Check.RepositoryId,
+					a.Check.BucketId,
+					a.Check.SourceCheckId,
+					a.Check.SourceType,
+					a.Check.InheritedFrom,
+					a.Check.CheckConfigId,
+					a.Check.CapabilityId,
+					a.Node.Id, "\n")
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
 					a.Check.RepositoryId,
