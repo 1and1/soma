@@ -31,4 +31,25 @@ type UserFilter struct {
 	IsDeleted bool   `json:"isDeleted, omitempty"`
 }
 
+func NewUserRequest() Request {
+	return Request{
+		User: &User{},
+	}
+}
+
+func NewUserFilter() Request {
+	return Request{
+		Filter: &Filter{
+			User: &UserFilter{},
+		},
+	}
+}
+
+func NewUserResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Users:  &[]User{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

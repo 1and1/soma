@@ -11,4 +11,17 @@ type PermissionDetails struct {
 	DetailsCreation
 }
 
+func NewPermissionRequest() Request {
+	return Request{
+		Permission: &Permission{},
+	}
+}
+
+func NewPermissionResult() Result {
+	return Result{
+		Errors:      &[]string{},
+		Permissions: &[]Permission{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

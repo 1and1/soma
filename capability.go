@@ -43,4 +43,25 @@ func (c *Capability) DeepCompare(a *Capability) bool {
 	return true
 }
 
+func NewCapabilityRequest() Request {
+	return Request{
+		Capability: &Capability{},
+	}
+}
+
+func NewCapabilityFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Capability: &CapabilityFilter{},
+		},
+	}
+}
+
+func NewCapabilityResult() Result {
+	return Result{
+		Errors:       &[]string{},
+		Capabilities: &[]Capability{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

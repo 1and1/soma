@@ -47,4 +47,25 @@ member:
 	return true
 }
 
+func NewClusterRequest() Request {
+	return Request{
+		Cluster: &Cluster{},
+	}
+}
+
+func NewClusterFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Cluster: &ClusterFilter{},
+		},
+	}
+}
+
+func NewClusterResult() Result {
+	return Result{
+		Errors:   &[]string{},
+		Clusters: &[]Cluster{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

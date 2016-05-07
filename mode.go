@@ -9,4 +9,17 @@ type ModeDetails struct {
 	DetailsCreation
 }
 
+func NewModeRequest() Request {
+	return Request{
+		Mode: &Mode{},
+	}
+}
+
+func NewModeResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Modes:  &[]Mode{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

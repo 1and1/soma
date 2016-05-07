@@ -54,4 +54,25 @@ func (p *MetricPackage) DeepCompareSlice(a *[]MetricPackage) bool {
 	return false
 }
 
+func NewMetricRequest() Request {
+	return Request{
+		Metric: &Metric{},
+	}
+}
+
+func NewMetricFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Metric: &MetricFilter{},
+		},
+	}
+}
+
+func NewMetricResult() Result {
+	return Result{
+		Errors:  &[]string{},
+		Metrics: &[]Metric{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

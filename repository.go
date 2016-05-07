@@ -21,4 +21,25 @@ type RepositoryDetails struct {
 	DetailsCreation
 }
 
+func NewRepositoryRequest() Request {
+	return Request{
+		Repository: &Repository{},
+	}
+}
+
+func NewRepositoryFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Repository: &RepositoryFilter{},
+		},
+	}
+}
+
+func NewRepositoryResult() Result {
+	return Result{
+		Errors:       &[]string{},
+		Repositories: &[]Repository{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

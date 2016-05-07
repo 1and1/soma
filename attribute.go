@@ -10,4 +10,17 @@ type AttributeDetails struct {
 	DetailsCreation
 }
 
+func NewAttributeRequest() Request {
+	return Request{
+		Attribute: &Attribute{},
+	}
+}
+
+func NewAttributeResult() Result {
+	return Result{
+		Errors:     &[]string{},
+		Attributes: &[]Attribute{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

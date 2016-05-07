@@ -53,4 +53,25 @@ func (p *Node) DeepCompare(a *Node) bool {
 	return true
 }
 
+func NewNodeRequest() Request {
+	return Request{
+		Node: &Node{},
+	}
+}
+
+func NewNodeFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Node: &NodeFilter{},
+		},
+	}
+}
+
+func NewNodeResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Nodes:  &[]Node{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

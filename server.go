@@ -27,7 +27,6 @@ type ServerFilter struct {
 	Name       string `json:"name, omitempty"`
 }
 
-//
 func (p *Server) DeepCompare(a *Server) bool {
 	if p.Id != a.Id || p.AssetId != a.AssetId || p.Datacenter != a.Datacenter ||
 		p.Location != a.Location || p.Name != a.Name || p.IsOnline != a.IsOnline ||
@@ -35,6 +34,27 @@ func (p *Server) DeepCompare(a *Server) bool {
 		return false
 	}
 	return true
+}
+
+func NewServerRequest() Request {
+	return Request{
+		Server: &Server{},
+	}
+}
+
+func NewServerFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Server: &ServerFilter{},
+		},
+	}
+}
+
+func NewServerResult() Result {
+	return Result{
+		Errors:  &[]string{},
+		Servers: &[]Server{},
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

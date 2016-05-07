@@ -14,4 +14,17 @@ type GrantDetails struct {
 	DetailsCreation
 }
 
+func NewGrantRequest() Request {
+	return Request{
+		Grant: &Grant{},
+	}
+}
+
+func NewGrantResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Grants: &[]Grant{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

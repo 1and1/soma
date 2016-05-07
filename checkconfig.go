@@ -86,4 +86,25 @@ threshloop:
 	return true
 }
 
+func NewCheckConfigRequest() Request {
+	return Request{
+		CheckConfig: &CheckConfig{},
+	}
+}
+
+func NewCheckConfigFilter() Request {
+	return Request{
+		Filter: &Filter{
+			CheckConfig: &CheckConfigFilter{},
+		},
+	}
+}
+
+func NewCheckConfigResult() Result {
+	return Result{
+		Errors:       &[]string{},
+		CheckConfigs: &[]CheckConfig{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -24,4 +24,25 @@ type BucketDetails struct {
 	DetailsCreation
 }
 
+func NewBucketRequest() Request {
+	return Request{
+		Bucket: &Bucket{},
+	}
+}
+
+func NewBucketFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Bucket: &BucketFilter{},
+		},
+	}
+}
+
+func NewBucketResult() Result {
+	return Result{
+		Errors:  &[]string{},
+		Buckets: &[]Bucket{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

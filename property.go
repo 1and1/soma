@@ -94,4 +94,25 @@ func (t *ServiceAttribute) DeepCompareSlice(a *[]ServiceAttribute) bool {
 	return false
 }
 
+func NewPropertyRequest() Request {
+	return Request{
+		Property: &Property{},
+	}
+}
+
+func NewPropertyFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Property: &PropertyFilter{},
+		},
+	}
+}
+
+func NewPropertyResult() Result {
+	return Result{
+		Errors:     &[]string{},
+		Properties: &[]Property{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

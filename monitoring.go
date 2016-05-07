@@ -23,13 +23,33 @@ type MonitoringDetails struct {
 	Instances uint64 `json:"instances, omitempty"`
 }
 
-//
 func (p *Monitoring) DeepCompare(a *Monitoring) bool {
 	if p.Id != a.Id || p.Name != a.Name || p.Mode != a.Mode ||
 		p.Contact != a.Contact || p.TeamId != a.TeamId || p.Callback != a.Callback {
 		return false
 	}
 	return true
+}
+
+func NewMonitoringRequest() Request {
+	return Request{
+		Monitoring: &Monitoring{},
+	}
+}
+
+func NewMonitoringFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Monitoring: &MonitoringFilter{},
+		},
+	}
+}
+
+func NewMonitoringResult() Result {
+	return Result{
+		Errors:      &[]string{},
+		Monitorings: &[]Monitoring{},
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -9,4 +9,17 @@ type StatusDetails struct {
 	DetailsCreation
 }
 
+func NewStatusRequest() Request {
+	return Request{
+		Status: &Status{},
+	}
+}
+
+func NewStatusResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Status: &[]Status{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

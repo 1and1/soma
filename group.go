@@ -34,4 +34,25 @@ func (p *Group) DeepCompare(a *Group) bool {
 	return true
 }
 
+func NewGroupRequest() Request {
+	return Request{
+		Group: &Group{},
+	}
+}
+
+func NewGroupFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Group: &GroupFilter{},
+		},
+	}
+}
+
+func NewGroupResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Groups: &[]Group{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
