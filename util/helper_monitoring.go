@@ -15,20 +15,23 @@ func (u *SomaUtil) TryGetMonitoringByUUIDOrName(s string) string {
 }
 
 func (u *SomaUtil) GetMonitoringIdByName(monitoring string) string {
-	req := somaproto.ProtoRequestMonitoring{}
-	req.Filter = &somaproto.ProtoMonitoringFilter{}
-	req.Filter.Name = monitoring
-
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Monitoring: &proto.MonitoringFilter{
+				Name: monitoring,
+			},
+		},
+	}
 	resp := u.PostRequestWithBody(req, "/filter/monitoring/")
 	monitoringResult := u.DecodeProtoResultMonitoringFromResponse(resp)
 
-	if monitoring != monitoringResult.Systems[0].Name {
+	if monitoring != (*monitoringResult.Monitorings)[0].Name {
 		u.Abort("Received result set for incorrect monitoring system")
 	}
-	return monitoringResult.Systems[0].Id
+	return (*monitoringResult.Monitorings)[0].Id
 }
 
-func (u *SomaUtil) DecodeProtoResultMonitoringFromResponse(resp *resty.Response) *somaproto.Result {
+func (u *SomaUtil) DecodeProtoResultMonitoringFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

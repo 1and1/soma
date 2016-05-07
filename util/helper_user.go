@@ -15,21 +15,25 @@ func (u *SomaUtil) TryGetUserByUUIDOrName(s string) string {
 }
 
 func (u *SomaUtil) GetUserIdByName(user string) string {
-	req := somaproto.ProtoRequestUser{}
-	req.Filter = &somaproto.ProtoUserFilter{}
-	req.Filter.UserName = user
+	req := proto.Request{
+		Filter: &proto.Filter{
+			User: &proto.UserFilter{
+				UserName: user,
+			},
+		},
+	}
 
 	resp := u.PostRequestWithBody(req, "/filter/users/")
 	userResult := u.DecodeProtoResultUserFromResponse(resp)
 
-	if user != userResult.Users[0].UserName {
+	if user != (*userResult.Users)[0].UserName {
 		u.Abort("Received result set for incorrect user")
 	}
-	return userResult.Users[0].Id
+	return (*userResult.Users)[0].Id
 }
 
-func (u *SomaUtil) DecodeProtoResultUserFromResponse(resp *resty.Response) *somaproto.Result {
-	return DecodeResultFromResponse(resp)
+func (u *SomaUtil) DecodeProtoResultUserFromResponse(resp *resty.Response) *proto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

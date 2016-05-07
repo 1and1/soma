@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
 	"log"
 	"net/url"
+
+	"github.com/codegangsta/cli"
+	"gopkg.in/resty.v0"
 )
 
 func registerDatacenters(app cli.App) *cli.App {
@@ -85,8 +84,9 @@ func cmdDatacentersAdd(c *cli.Context) {
 	}
 	log.Printf("Command: add datacenter [%s]", datacenter)
 
-	var req somaproto.ProtoRequestDatacenter
-	req.Datacenter = datacenter
+	var req proto.Request
+	req.Datacenter = &proto.Datacenter{}
+	req.Datacenter.Locode = datacenter
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -116,8 +116,9 @@ func cmdDatacentersAddToGroup(c *cli.Context) {
 	}
 	log.Printf("Command: add datacenter [%s] to group [%s]", a.Get(0), a.Get(2))
 
-	var req somaproto.ProtoRequestDatacenter
-	req.Datacenter = a.Get(0)
+	var req proto.Request
+	req.Datacenter = &proto.Datacenter{}
+	req.Datacenter.Locode = a.Get(0)
 	url.Path = fmt.Sprintf("/datacentergroups/%s", a.Get(2))
 
 	resp, err := resty.New().
@@ -172,8 +173,9 @@ func cmdDatacentersRemoveFromGroup(c *cli.Context) {
 	}
 	log.Printf("Command: remove datacenter [%s] from group [%s]", a.Get(0), a.Get(2))
 
-	var req somaproto.ProtoRequestDatacenter
-	req.Datacenter = a.Get(0)
+	var req proto.Request
+	req.Datacenter = &proto.Datacenter{}
+	req.Datacenter.Locode = a.Get(0)
 	url.Path = fmt.Sprintf("/datacentergroups/%s", a.Get(2))
 
 	resp, err := resty.New().
@@ -204,8 +206,9 @@ func cmdDatacentersRename(c *cli.Context) {
 	}
 	log.Printf("Command: rename datacenter [%s] to [%s]", a.Get(0), a.Get(2))
 
-	var req somaproto.ProtoRequestDatacenter
-	req.Datacenter = a.Get(2)
+	var req proto.Request
+	req.Datacenter = &proto.Datacenter{}
+	req.Datacenter.Locode = a.Get(2)
 	url.Path = fmt.Sprintf("/datacenters/%s", a.Get(0))
 
 	resp, err := resty.New().
@@ -242,100 +245,26 @@ func cmdDatacentersList(c *cli.Context) {
 }
 
 func cmdDatacentersListGroups(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/datacentergroups"
+	utl.ValidateCliArgumentCount(c, 0)
 
-	a := c.Args()
-	if len(a) != 0 {
-		log.Fatal("Syntax error")
-	}
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
-
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var serverResult somaproto.ProtoResultDatacenterList
-	err = decoder.Decode(&serverResult)
-	if err != nil {
-		log.Fatal("Error decoding server response body")
-	}
-	fmt.Printf("Datacenter groups:\n------------------\n")
-	for _, group := range serverResult.Datacenters {
-		fmt.Printf("%s\n", group)
-	}
+	resp := utl.GetRequest("/datacentergroups/")
+	fmt.Println(resp)
 }
 
 func cmdDatacentersShowGroup(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if len(a) != 1 {
-		log.Fatal("Syntax error")
-	}
-	datacenterGroup := a.First()
-	if datacenterGroup == "" {
-		log.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/datacentergroups/%s", datacenterGroup)
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
-
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var serverResult somaproto.ProtoResultDatacenterDetail
-	err = decoder.Decode(&serverResult)
-	if err != nil {
-		log.Fatal("Error decoding server response body")
-	}
-	fmt.Printf("Details for datacenter group: %s\n", serverResult.Details.Datacenter)
-	fmt.Printf("Members:\n")
-	for _, datacenter := range serverResult.Details.UsedBy {
-		fmt.Printf("%s\n", datacenter)
-	}
+	path := fmt.Sprintf("/datacentergroups/%s", c.Args().First())
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdDatacentersShow(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if len(a) != 1 {
-		log.Fatal("Syntax error")
-	}
-	datacenter := a.First()
-	if datacenter == "" {
-		log.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/datacenters/%s", datacenter)
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
+	resp := utl.GetRequest(path)
+	fmt.Println(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

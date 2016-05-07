@@ -17,30 +17,34 @@ func (u SomaUtil) TryGetNodeByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetNodeIdByName(node string) string {
-	req := somaproto.ProtoRequestNode{}
-	req.Filter = &somaproto.ProtoNodeFilter{}
-	req.Filter.Name = node
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Node: &proto.NodeFilter{
+				Name: node,
+			},
+		},
+	}
 
 	resp := u.PostRequestWithBody(req, "/filter/nodes/")
 	nodeResult := u.DecodeProtoResultNodeFromResponse(resp)
 
-	if node != nodeResult.Nodes[0].Name {
+	if node != (*nodeResult.Nodes)[0].Name {
 		u.Abort("Received result set for incorrect oncall duty")
 	}
-	return nodeResult.Nodes[0].Id
+	return (*nodeResult.Nodes)[0].Id
 }
 
-func (u SomaUtil) GetNodeConfigById(node string) *somaproto.NodeConfig {
+func (u SomaUtil) GetNodeConfigById(node string) *proto.NodeConfig {
 	if _, err := uuid.FromString(node); err != nil {
 		node = u.GetNodeIdByName(node)
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)
 	resp := u.GetRequest(path)
 	nodeResult := u.DecodeResultFromResponse(resp)
-	return nodeResult.Nodes[0].Config
+	return (*nodeResult.Nodes)[0].Config
 }
 
-func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *somaproto.Result {
+func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

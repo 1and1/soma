@@ -58,14 +58,16 @@ func cmdCapabilityDeclare(c *cli.Context) {
 	thresholds, err := strconv.ParseUint(opts["thresholds"][0], 10, 64)
 	utl.AbortOnError(err, "Syntax error, threshold argument not numeric")
 
-	req := somaproto.ProtoRequestCapability{}
-	req.Capability = &somaproto.ProtoCapability{}
-	req.Capability.Monitoring = utl.TryGetMonitoringByUUIDOrName(
-		c.Args().First(),
-	)
-	req.Capability.Metric = opts["metric"][0]
-	req.Capability.View = opts["view"][0]
-	req.Capability.Thresholds = thresholds
+	req := proto.Request{
+		Capability: &proto.Capability{
+			MonitoringId: utl.TryGetMonitoringByUUIDOrName(
+				c.Args().First(),
+			),
+			Metric:     opts["metric"][0],
+			View:       opts["view"][0],
+			Thresholds: thresholds,
+		},
+	}
 
 	resp := utl.PostRequestWithBody(req, "/capability/")
 	fmt.Println(resp)

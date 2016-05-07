@@ -101,8 +101,8 @@ func cmdClusterCreate(c *cli.Context) {
 
 	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
 
-	var req somaproto.ProtoRequestCluster
-	req.Cluster = &somaproto.ProtoCluster{}
+	var req proto.Request
+	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = c.Args().First()
 	req.Cluster.BucketId = bucketId
 
@@ -143,8 +143,8 @@ func cmdClusterRename(c *cli.Context) {
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	var req somaproto.ProtoRequestCluster
-	req.Cluster = &somaproto.ProtoCluster{}
+	var req proto.Request
+	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = opts["to"][0]
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -204,15 +204,15 @@ func cmdClusterMemberAdd(c *cli.Context) {
 	clusterId := utl.TryGetClusterByUUIDOrName(
 		opts["to"][0], bucketId)
 
-	req := somaproto.ProtoRequestCluster{}
-	conf := somaproto.ProtoNodeConfig{
+	req := proto.Request{}
+	conf := proto.NodeConfig{
 		BucketId: bucketId,
 	}
-	node := somaproto.ProtoNode{
+	node := proto.Node{
 		Id:     nodeId,
 		Config: &conf,
 	}
-	req.Cluster = &somaproto.ProtoCluster{
+	req.Cluster = &proto.Cluster{
 		Id:       clusterId,
 		BucketId: bucketId,
 	}
@@ -275,12 +275,12 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) {
 	clusterId := utl.TryGetClusterByUUIDOrName(opts["to"][0], bucketId)
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
-	sprop := somaproto.TreePropertySystem{
+	sprop := proto.PropertySystem{
 		Name:  c.Args().First(),
 		Value: opts["value"][0],
 	}
 
-	tprop := somaproto.TreeProperty{
+	tprop := proto.Property{
 		PropertyType: "system",
 		View:         opts["view"][0],
 		System:       &sprop,
@@ -296,15 +296,15 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	propList := []somaproto.TreeProperty{tprop}
+	propList := []proto.Property{tprop}
 
-	cluster := somaproto.ProtoCluster{
+	cluster := proto.Cluster{
 		Id:         clusterId,
 		BucketId:   bucketId,
 		Properties: &propList,
 	}
 
-	req := somaproto.ProtoRequestCluster{
+	req := proto.Request{
 		Cluster: &cluster,
 	}
 
@@ -326,13 +326,13 @@ func cmdClusterServicePropertyAdd(c *cli.Context) {
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
-	tprop := somaproto.TreeProperty{
+	tprop := proto.Property{
 		PropertyType: "service",
 		View:         opts["view"][0],
-		Service: &somaproto.TreePropertyService{
+		Service: &proto.PropertyService{
 			Name:       c.Args().First(),
 			TeamId:     teamId,
-			Attributes: []somaproto.TreeServiceAttribute{},
+			Attributes: []proto.ServiceAttribute{},
 		},
 	}
 	if _, ok := opts["inheritance"]; ok {
@@ -346,11 +346,11 @@ func cmdClusterServicePropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	req := somaproto.ProtoRequestCluster{
-		Cluster: &somaproto.ProtoCluster{
+	req := proto.Request{
+		Cluster: &proto.Cluster{
 			Id:       clusterId,
 			BucketId: bucketId,
-			Properties: &[]somaproto.TreeProperty{
+			Properties: &[]proto.Property{
 				tprop,
 			},
 		},

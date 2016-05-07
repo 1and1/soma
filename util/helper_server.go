@@ -28,27 +28,36 @@ func (u SomaUtil) TryGetServerByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetServerIdByName(server string) string {
-	req := somaproto.ProtoRequestServer{}
-	req.Filter = &somaproto.ProtoServerFilter{}
-	req.Filter.Name = server
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Server: &proto.ServerFilter{
+				Name: server,
+			},
+		},
+	}
 
 	resp := u.PostRequestWithBody(req, "/filter/servers/")
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
-	if server != serverResult.Servers[0].Name {
+	if server != (*serverResult.Servers)[0].Name {
 		u.Abort("Received result set for incorrect oncall duty")
 	}
-	return serverResult.Servers[0].Id
+	return (*serverResult.Servers)[0].Id
 }
 
 func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {
 	url := u.ApiUrl
 	url.Path = "/servers"
 
-	var req somaproto.ProtoRequestServer
 	var err error
-	req.Filter.Name = serverName
-	req.Filter.Online = true
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Server: &proto.ServerFilter{
+				Name:     serverName,
+				IsOnline: true,
+			},
+		},
+	}
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -64,17 +73,17 @@ func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
 	// XXX really needed?
-	if len(serverResult.Servers) != 1 {
+	if len(*serverResult.Servers) != 1 {
 		u.Log.Fatal("Unexpected result set length - expected one server result")
 	}
-	if serverName != serverResult.Servers[0].Name {
+	if serverName != (*serverResult.Servers)[0].Name {
 		u.Log.Fatal("Received result set for incorrect server")
 	}
-	return serverResult.Servers[0].AssetId
+	return (*serverResult.Servers)[0].AssetId
 }
 
-func (u SomaUtil) DecodeProtoResultServerFromResponse(resp *resty.Response) *somaproto.Result {
-	return DecodeResultFromResponse(resp)
+func (u SomaUtil) DecodeProtoResultServerFromResponse(resp *resty.Response) *proto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

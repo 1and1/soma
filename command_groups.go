@@ -133,8 +133,8 @@ func cmdGroupCreate(c *cli.Context) {
 
 	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
 
-	var req somaproto.ProtoRequestGroup
-	req.Group = &somaproto.ProtoGroup{}
+	var req proto.Request
+	req.Group = &proto.Group{}
 	req.Group.Name = c.Args().First()
 	req.Group.BucketId = bucketId
 
@@ -175,8 +175,8 @@ func cmdGroupRename(c *cli.Context) {
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	var req somaproto.ProtoRequestGroup
-	req.Group = &somaproto.ProtoGroup{}
+	var req proto.Request
+	req.Group = &proto.Group{}
 	req.Group.Name = opts["to"][0]
 
 	_ = utl.PatchRequestWithBody(req, path)
@@ -184,23 +184,6 @@ func cmdGroupRename(c *cli.Context) {
 
 func cmdGroupList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
-	/*
-		multiple := []string{}
-		unique := []string{"bucket"}
-		required := []string{"bucket"}
-
-		opts := utl.ParseVariadicArguments(
-			multiple,
-			unique,
-			required,
-			c.Args())
-
-		req := somaproto.ProtoRequestGroup{}
-		req.Group = &somaproto.ProtoGroup{}
-		req.Filter = &somaproto.ProtoGroupFilter{}
-		req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
-		resp := utl.GetRequestWithBody(req, "/groups/")
-	*/
 	resp := utl.GetRequest("/groups/")
 	fmt.Println(resp)
 }
@@ -241,10 +224,10 @@ func cmdGroupMemberAddGroup(c *cli.Context) {
 		opts["to"][0],
 		bucketId)
 
-	var req somaproto.ProtoRequestGroup
-	var group somaproto.ProtoGroup
+	var req proto.Request
+	var group proto.Group
 	group.Id = mGroupId
-	req.Group = &somaproto.ProtoGroup{}
+	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
 	req.Group.MemberGroups = append(req.Group.MemberGroups, group)
@@ -272,10 +255,10 @@ func cmdGroupMemberAddCluster(c *cli.Context) {
 		opts["to"][0],
 		bucketId)
 
-	var req somaproto.ProtoRequestGroup
-	var cluster somaproto.ProtoCluster
+	var req proto.Request
+	var cluster proto.Cluster
 	cluster.Id = mClusterId
-	req.Group = &somaproto.ProtoGroup{}
+	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
 	req.Group.MemberClusters = append(req.Group.MemberClusters, cluster)
@@ -301,10 +284,10 @@ func cmdGroupMemberAddNode(c *cli.Context) {
 		opts["to"][0],
 		bucketId)
 
-	var req somaproto.ProtoRequestGroup
-	var node somaproto.ProtoNode
+	var req proto.Request
+	var node proto.Node
 	node.Id = mNodeId
-	req.Group = &somaproto.ProtoGroup{}
+	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
 	req.Group.MemberNodes = append(req.Group.MemberNodes, node)
@@ -413,12 +396,12 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 	groupId := utl.TryGetGroupByUUIDOrName(opts["to"][0], bucketId)
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
-	sprop := somaproto.TreePropertySystem{
+	sprop := proto.PropertySystem{
 		Name:  c.Args().First(),
 		Value: opts["value"][0],
 	}
 
-	tprop := somaproto.TreeProperty{
+	tprop := proto.Property{
 		PropertyType: "system",
 		View:         opts["view"][0],
 		System:       &sprop,
@@ -434,15 +417,15 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	propList := []somaproto.TreeProperty{tprop}
+	propList := []proto.Property{tprop}
 
-	group := somaproto.ProtoGroup{
+	group := proto.Group{
 		Id:         groupId,
 		BucketId:   bucketId,
 		Properties: &propList,
 	}
 
-	req := somaproto.ProtoRequestGroup{
+	req := proto.Request{
 		Group: &group,
 	}
 
@@ -464,13 +447,13 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
-	tprop := somaproto.TreeProperty{
+	tprop := proto.Property{
 		PropertyType: "service",
 		View:         opts["view"][0],
-		Service: &somaproto.TreePropertyService{
+		Service: &proto.PropertyService{
 			Name:       c.Args().First(),
 			TeamId:     teamId,
-			Attributes: []somaproto.TreeServiceAttribute{},
+			Attributes: []proto.ServiceAttribute{},
 		},
 	}
 	if _, ok := opts["inheritance"]; ok {
@@ -484,11 +467,11 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	req := somaproto.ProtoRequestGroup{
-		Group: &somaproto.ProtoGroup{
+	req := proto.Request{
+		Group: &proto.Group{
 			Id:       groupId,
 			BucketId: bucketId,
-			Properties: &[]somaproto.TreeProperty{
+			Properties: &[]proto.Property{
 				tprop,
 			},
 		},

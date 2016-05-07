@@ -5,21 +5,24 @@ import (
 )
 
 func (u *SomaUtil) TryGetLevelNameByNameOrShort(s string) string {
-	req := somaproto.ProtoRequestLevel{}
-	req.Filter = &somaproto.ProtoLevelFilter{
-		Name:      s,
-		ShortName: s,
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Level: &proto.LevelFilter{
+				Name:      s,
+				ShortName: s,
+			},
+		},
 	}
 	resp := u.PostRequestWithBody(req, "/filter/levels/")
 	levelResult := u.DecodeProtoResultLevelFromResponse(resp)
 
-	if s != levelResult.Levels[0].Name && s != levelResult.Levels[0].ShortName {
+	if s != (*levelResult.Levels)[0].Name && s != (*levelResult.Levels)[0].ShortName {
 		u.Abort("Received result set for incorrect level")
 	}
-	return levelResult.Levels[0].Name
+	return (*levelResult.Levels)[0].Name
 }
 
-func (u *SomaUtil) DecodeProtoResultLevelFromResponse(resp *resty.Response) *somaproto.Result {
+func (u *SomaUtil) DecodeProtoResultLevelFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

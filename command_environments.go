@@ -63,8 +63,9 @@ func cmdEnvironmentsAdd(c *cli.Context) {
 	}
 	log.Printf("Command: add environment [%s]", environment)
 
-	var req somaproto.ProtoRequestEnvironment
-	req.Environment = environment
+	var req proto.Request
+	req.Environment = &proto.Environment{}
+	req.Environment.Name = environment
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -118,8 +119,9 @@ func cmdEnvironmentsRename(c *cli.Context) {
 	}
 	log.Printf("Command: rename environment [%s] to [%s]", a.Get(0), a.Get(2))
 
-	var req somaproto.ProtoRequestEnvironment
-	req.Environment = a.Get(2)
+	var req proto.Request
+	req.Environment = &proto.Environment{}
+	req.Environment.Name = a.Get(2)
 	url.Path = fmt.Sprintf("/environments/%s", a.Get(0))
 
 	resp, err := resty.New().

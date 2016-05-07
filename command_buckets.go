@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -105,18 +104,15 @@ func cmdBucketCreate(c *cli.Context) {
 
 	// fetch list of environments from SOMA to check if a valid
 	// environment was requested
-	envResponse := utl.GetRequest("/environments/")
-	envs := somaproto.ProtoResultEnvironmentList{}
-	if err := json.Unmarshal(envResponse.Body(), &envs); err != nil {
-		utl.Abort("Failed to unmarshal Environment data")
-	}
-	utl.ValidateStringInSlice(opts["environment"][0], envs.Environments)
+	utl.VerifyEnvironment(opts["environment"][0])
 
-	var req somaproto.ProtoRequestBucket
-	req.Bucket = &somaproto.ProtoBucket{}
-	req.Bucket.Name = c.Args().First()
-	req.Bucket.Repository = repoId
-	req.Bucket.Environment = opts["environment"][0]
+	req := proto.Request{
+		Bucket: &proto.Bucket{
+			Name:         c.Args().First(),
+			RepositoryId: repoId,
+			Environment:  opts["environment"][0],
+		},
+	}
 
 	resp := utl.PostRequestWithBody(req, "/buckets/")
 	fmt.Println(resp)
@@ -131,7 +127,8 @@ func cmdBucketDelete(c *cli.Context) {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	fmt.Println(resp)
 }
 
 func cmdBucketRestore(c *cli.Context) {
@@ -143,10 +140,14 @@ func cmdBucketRestore(c *cli.Context) {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	var req somaproto.ProtoRequestBucket
-	req.Restore = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Restore: true,
+		},
+	}
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdBucketPurge(c *cli.Context) {
@@ -158,10 +159,14 @@ func cmdBucketPurge(c *cli.Context) {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	var req somaproto.ProtoRequestBucket
-	req.Purge = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Purge: true,
+		},
+	}
 
-	_ = utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdBucketFreeze(c *cli.Context) {
@@ -173,10 +178,14 @@ func cmdBucketFreeze(c *cli.Context) {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	var req somaproto.ProtoRequestBucket
-	req.Freeze = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Freeze: true,
+		},
+	}
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdBucketThaw(c *cli.Context) {
@@ -188,10 +197,14 @@ func cmdBucketThaw(c *cli.Context) {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	var req somaproto.ProtoRequestBucket
-	req.Thaw = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Thaw: true,
+		},
+	}
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdBucketRename(c *cli.Context) {
@@ -204,11 +217,14 @@ func cmdBucketRename(c *cli.Context) {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	var req somaproto.ProtoRequestBucket
-	req.Bucket = &somaproto.ProtoBucket{}
-	req.Bucket.Name = c.Args().Get(2)
+	req := proto.Request{
+		Bucket: &proto.Bucket{
+			Name: c.Args().Get(2),
+		},
+	}
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdBucketList(c *cli.Context) {
@@ -240,36 +256,32 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) {
 	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
-	sprop := somaproto.TreePropertySystem{
-		Name:  c.Args().First(),
-		Value: opts["value"][0],
-	}
-
-	tprop := somaproto.TreeProperty{
+	prop := proto.Property{
 		PropertyType: "system",
 		View:         opts["view"][0],
-		System:       &sprop,
+		System: &proto.PropertySystem{
+			Name:  c.Args().First(),
+			Value: opts["value"][0],
+		},
 	}
 	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+		prop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
 	} else {
-		tprop.Inheritance = true
+		prop.Inheritance = true
 	}
 	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+		prop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
 	} else {
-		tprop.ChildrenOnly = false
+		prop.ChildrenOnly = false
 	}
 
-	propList := []somaproto.TreeProperty{tprop}
-
-	bucket := somaproto.ProtoBucket{
-		Id:         bucketId,
-		Properties: &propList,
-	}
-
-	req := somaproto.ProtoRequestBucket{
-		Bucket: &bucket,
+	req := proto.Request{
+		Bucket: &proto.Bucket{
+			Id: bucketId,
+			Properties: &[]proto.Property{
+				prop,
+			},
+		},
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
@@ -291,31 +303,31 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	teamId := utl.TeamIdForBucket(bucketId)
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
-	tprop := somaproto.TreeProperty{
+	prop := proto.Property{
 		PropertyType: "service",
 		View:         opts["view"][0],
-		Service: &somaproto.TreePropertyService{
+		Service: &proto.PropertyService{
 			Name:       c.Args().First(),
 			TeamId:     teamId,
-			Attributes: []somaproto.TreeServiceAttribute{},
+			Attributes: []proto.ServiceAttribute{},
 		},
 	}
 	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+		prop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
 	} else {
-		tprop.Inheritance = true
+		prop.Inheritance = true
 	}
 	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+		prop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
 	} else {
-		tprop.ChildrenOnly = false
+		prop.ChildrenOnly = false
 	}
 
-	req := somaproto.ProtoRequestBucket{
-		Bucket: &somaproto.ProtoBucket{
+	req := proto.Request{
+		Bucket: &proto.Bucket{
 			Id: bucketId,
-			Properties: &[]somaproto.TreeProperty{
-				tprop,
+			Properties: &[]proto.Property{
+				prop,
 			},
 		},
 	}
