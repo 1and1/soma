@@ -1,8 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 
 	"github.com/satori/go.uuid"
@@ -32,28 +30,18 @@ func (u SomaUtil) GetNodeIdByName(node string) string {
 	return nodeResult.Nodes[0].Id
 }
 
-func (u SomaUtil) GetNodeConfigById(node string) *somaproto.ProtoNodeConfig {
+func (u SomaUtil) GetNodeConfigById(node string) *somaproto.NodeConfig {
 	if _, err := uuid.FromString(node); err != nil {
 		node = u.GetNodeIdByName(node)
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)
 	resp := u.GetRequest(path)
-	nodeResult := u.DecodeProtoResultNodeFromResponse(resp)
+	nodeResult := u.DecodeResultFromResponse(resp)
 	return nodeResult.Nodes[0].Config
 }
 
-func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *somaproto.ProtoResultNode {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultNode
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *somaproto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

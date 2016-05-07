@@ -1,9 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/satori/go.uuid"
@@ -33,18 +30,8 @@ func (u SomaUtil) GetOncallIdByName(oncall string) string {
 	return oncallResult.Oncalls[0].Id
 }
 
-func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoResultOncall {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultOncall
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.Result {
+	return DecodeResultFromResponse(resp)
 }
 
 func (u SomaUtil) ValidatePhoneNumber(n string) {

@@ -1,10 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
@@ -32,18 +28,8 @@ func (u *SomaUtil) GetMonitoringIdByName(monitoring string) string {
 	return monitoringResult.Systems[0].Id
 }
 
-func (u *SomaUtil) DecodeProtoResultMonitoringFromResponse(resp *resty.Response) *somaproto.ProtoResultMonitoring {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultMonitoring
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u *SomaUtil) DecodeProtoResultMonitoringFromResponse(resp *resty.Response) *somaproto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -178,13 +178,13 @@ func (u *SomaUtil) ParseVariadicArguments(
 
 func (u *SomaUtil) ParseVariadicCheckArguments(args []string) (
 	map[string][]string,
-	[]somaproto.CheckConfigurationConstraint,
-	[]somaproto.CheckConfigurationThreshold,
+	[]proto.CheckConfigConstraint,
+	[]proto.CheckConfigThreshold,
 ) {
 	// create return objects
 	result := make(map[string][]string)
-	constraints := []somaproto.CheckConfigurationConstraint{}
-	thresholds := []somaproto.CheckConfigurationThreshold{}
+	constraints := []proto.CheckConfigConstraint{}
+	thresholds := []proto.CheckConfigThreshold{}
 	var err error
 
 	multiple := []string{"threshold", "constraint"}
@@ -224,8 +224,8 @@ argloop:
 					[]string{"predicate", "level", "value"},
 					[]string{"predicate", "level", "value"},
 					args[pos+1:pos+7])
-				thr := somaproto.CheckConfigurationThreshold{}
-				thr.Predicate.Predicate = t["predicate"][0]
+				thr := proto.CheckConfigThreshold{}
+				thr.Predicate.Symbol = t["predicate"][0]
 				thr.Level.Name = t["level"][0]
 				if thr.Value, err = strconv.ParseInt(t["value"][0], 10, 64); err != nil {
 					u.Abort(fmt.Sprintf("Syntax error, value argument not numeric: %s",
@@ -246,11 +246,11 @@ argloop:
 					u.Abort(fmt.Sprintf("Syntax error, unknown contraint type: %s",
 						args[pos+1]))
 				}
-				constr := somaproto.CheckConfigurationConstraint{}
+				constr := proto.CheckConfigConstraint{}
 				constr.ConstraintType = args[pos+1]
 				switch constr.ConstraintType {
 				case "service":
-					constr.Service = &somaproto.TreePropertyService{}
+					constr.Service = &proto.PropertyService{}
 					switch args[pos+2] {
 					case "name":
 						constr.Service.Name = args[pos+3]
@@ -259,22 +259,22 @@ argloop:
 							args[pos+2]))
 					}
 				case "attribute":
-					constr.Attribute = &somaproto.TreeServiceAttribute{
-						Attribute: args[pos+2],
-						Value:     args[pos+3],
+					constr.Attribute = &proto.ServiceAttribute{
+						Name:  args[pos+2],
+						Value: args[pos+3],
 					}
 				case "system":
-					constr.System = &somaproto.TreePropertySystem{
+					constr.System = &proto.PropertySystem{
 						Name:  args[pos+2],
 						Value: args[pos+3],
 					}
 				case "custom":
-					constr.Custom = &somaproto.TreePropertyCustom{
+					constr.Custom = &proto.PropertyCustom{
 						Name:  args[pos+2],
 						Value: args[pos+3],
 					}
 				case "oncall":
-					constr.Oncall = &somaproto.TreePropertyOncall{}
+					constr.Oncall = &proto.PropertyOncall{}
 					switch args[pos+2] {
 					case "id":
 						constr.Oncall.OncallId = args[pos+3]
@@ -285,7 +285,7 @@ argloop:
 							args[pos+2]))
 					}
 				case "native":
-					constr.Native = &somaproto.TreePropertyNative{
+					constr.Native = &proto.PropertyNative{
 						Name:  args[pos+2],
 						Value: args[pos+3],
 					}

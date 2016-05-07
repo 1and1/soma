@@ -1,8 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 
 	"github.com/satori/go.uuid"
@@ -40,18 +38,8 @@ func (u SomaUtil) GetTeamIdByRepositoryId(repo string) string {
 	return repoResult.Repositories[0].Team
 }
 
-func (u SomaUtil) DecodeProtoResultRepositoryFromResponse(resp *resty.Response) *somaproto.ProtoResultRepository {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultRepository
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u SomaUtil) DecodeProtoResultRepositoryFromResponse(resp *resty.Response) *somaproto.Result {
+	return DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

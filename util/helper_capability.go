@@ -1,9 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/satori/go.uuid"
@@ -20,38 +17,31 @@ func (u *SomaUtil) TryGetCapabilityByUUIDOrName(s string) string {
 }
 
 func (u *SomaUtil) GetCapabilityIdByName(capability string) string {
-	req := somaproto.ProtoRequestCapability{}
-	req.Filter = &somaproto.ProtoCapabilityFilter{}
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Capability: &proto.CapabilityFilter{},
+		},
+	}
 
 	split := strings.SplitN(capability, ".", 3)
 	if len(split) != 3 {
 		u.Abort("Split failed, Capability name invalid")
 	}
-	req.Filter.Monitoring = u.TryGetMonitoringByUUIDOrName(split[0])
-	req.Filter.View = split[1]
-	req.Filter.Metric = split[2]
+	req.Filter.Capability.MonitoringId = u.TryGetMonitoringByUUIDOrName(split[0])
+	req.Filter.Capability.View = split[1]
+	req.Filter.Capability.Metric = split[2]
 
 	resp := u.PostRequestWithBody(req, "/filter/capability/")
 	capabilityResult := u.DecodeProtoResultCapabilityFromResponse(resp)
 
-	if capability != capabilityResult.Capabilities[0].Name {
+	if capability != (*capabilityResult.Capabilities)[0].Name {
 		u.Abort("Received result set for incorrect capability")
 	}
-	return capabilityResult.Capabilities[0].Id
+	return (*capabilityResult.Capabilities)[0].Id
 }
 
-func (u *SomaUtil) DecodeProtoResultCapabilityFromResponse(resp *resty.Response) *somaproto.ProtoResultCapability {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultCapability
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u *SomaUtil) DecodeProtoResultCapabilityFromResponse(resp *resty.Response) *proto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
