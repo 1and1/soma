@@ -100,4 +100,28 @@ func (r *Result) OK() {
 	r.StatusText = DisplayStatus[StatusOK]
 }
 
+// Legacy interface
+func (r *Result) ErrorMark(err error, imp bool, found bool,
+	length int, jobid string) bool {
+
+	if r.Error(err) {
+		return true
+	}
+	if imp {
+		r.NotImplemented()
+		return true
+	}
+	if found || length == 0 {
+		r.NotFound()
+		return true
+	}
+	if jobid != "" {
+		r.JobId = jobid
+		r.Accepted()
+		return true
+	}
+	r.OK()
+	return false
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
