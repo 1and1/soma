@@ -6,6 +6,7 @@ type Filter struct {
 	CheckConfig *CheckConfigFilter `json:"checkConfig, omitempty"`
 	Cluster     *ClusterFilter     `json:"cluster, omitempty"`
 	Group       *GroupFilter       `json:"group, omitempty"`
+	Level       *LevelFilter       `json:"level, omitempty"`
 	Metric      *MetricFilter      `json:"metric, omitempty"`
 	Monitoring  *MonitoringFilter  `json:"monitoring, omitempty"`
 	Node        *NodeFilter        `json:"node, omitempty"`
