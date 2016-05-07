@@ -2,7 +2,7 @@ package somaproto
 
 type Request struct {
 	Filter *Filter `json:"filter, omitempty"`
-	Flags  Flags   `json:"flags"`
+	Flags  *Flags  `json:"flags, omitempty"`
 
 	Attribute      *Attribute      `json:"attribute, omitempty"`
 	Bucket         *Bucket         `json:"bucket, omitempty"`
