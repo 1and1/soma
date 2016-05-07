@@ -45,8 +45,8 @@ func registerModes(app cli.App) *cli.App {
 func cmdModeCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.ProtoRequestMode{}
-	req.Mode = &somaproto.ProtoMode{}
+	req := proto.Request{}
+	req.Mode = &proto.Mode{}
 	req.Mode.Mode = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/modes/")

@@ -79,7 +79,7 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 
 	switch prop {
 	case (*propResult.Properties)[0].Custom.Name:
-		return (*propResult.Properties)[0].Custom.CustomId
+		return (*propResult.Properties)[0].Custom.Id
 	case (*propResult.Properties)[0].System.Name:
 		return (*propResult.Properties)[0].System.Name
 	case (*propResult.Properties)[0].Service.Name:

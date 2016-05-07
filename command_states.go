@@ -63,8 +63,11 @@ func cmdObjectStatesAdd(c *cli.Context) {
 	}
 	log.Printf("Command: add state [%s]", state)
 
-	var req somaproto.ProtoRequestObjectState
-	req.State = state
+	req := proto.Request{
+		State: &proto.State{
+			Name: state,
+		},
+	}
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -118,8 +121,9 @@ func cmdObjectStatesRename(c *cli.Context) {
 	}
 	log.Printf("Command: rename state [%s] to [%s]", a.Get(0), a.Get(2))
 
-	var req somaproto.ProtoRequestObjectState
-	req.State = a.Get(2)
+	var req proto.Request
+	req.State = &proto.State{}
+	req.State.Name = a.Get(2)
 	url.Path = fmt.Sprintf("/objstates/%s", a.Get(0))
 
 	resp, err := resty.New().

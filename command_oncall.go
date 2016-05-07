@@ -84,10 +84,10 @@ func cmdOnCallAdd(c *cli.Context) {
 		c.Args().Tail())
 	utl.ValidatePhoneNumber(opts["phone"][0])
 
-	req := somaproto.ProtoRequestOncall{}
-	req.OnCall = &somaproto.ProtoOncall{}
-	req.OnCall.Name = c.Args().First()
-	req.OnCall.Number = opts["phone"][0]
+	req := proto.Request{}
+	req.Oncall = &proto.Oncall{}
+	req.Oncall.Name = c.Args().First()
+	req.Oncall.Number = opts["phone"][0]
 
 	resp := utl.PostRequestWithBody(req, "/oncall/")
 	fmt.Println(resp)
@@ -110,9 +110,9 @@ func cmdOnCallRename(c *cli.Context) {
 	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
-	req := somaproto.ProtoRequestOncall{}
-	req.OnCall = &somaproto.ProtoOncall{}
-	req.OnCall.Name = opts["to"][0]
+	req := proto.Request{}
+	req.Oncall = &proto.Oncall{}
+	req.Oncall.Name = opts["to"][0]
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
@@ -128,16 +128,16 @@ func cmdOnCallUpdate(c *cli.Context) {
 	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
-	req := somaproto.ProtoRequestOncall{}
-	req.OnCall = &somaproto.ProtoOncall{}
+	req := proto.Request{}
+	req.Oncall = &proto.Oncall{}
 	validUpdate := false
 	if len(opts["phone"]) > 0 {
 		utl.ValidatePhoneNumber(opts["phone"][0])
-		req.OnCall.Number = opts["phone"][0]
+		req.Oncall.Number = opts["phone"][0]
 		validUpdate = true
 	}
 	if len(opts["name"]) > 0 {
-		req.OnCall.Name = opts["name"][0]
+		req.Oncall.Name = opts["name"][0]
 		validUpdate = true
 	}
 	if !validUpdate {
@@ -171,11 +171,12 @@ func cmdOnCallMemberAdd(c *cli.Context) {
 	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
 	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
 
-	req := somaproto.ProtoRequestOncall{}
-	member := somaproto.ProtoOncallMember{}
+	req := proto.Request{}
+	req.Oncall = &proto.Oncall{}
+	member := proto.OncallMember{}
 	member.UserId = userId
-	reqMembers := []somaproto.ProtoOncallMember{member}
-	req.Members = &reqMembers
+	reqMembers := []proto.OncallMember{member}
+	req.Oncall.Members = &reqMembers
 	path := fmt.Sprintf("/oncall/%s/members", oncallId)
 
 	resp := utl.PatchRequestWithBody(req, path)

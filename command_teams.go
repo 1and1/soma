@@ -71,16 +71,16 @@ func cmdTeamAdd(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
-	req := somaproto.ProtoRequestTeam{}
-	req.Team = &somaproto.ProtoTeam{}
+	req := proto.Request{}
+	req.Team = &proto.Team{}
 	req.Team.Name = c.Args().First()
-	req.Team.Ldap = opts["ldap"][0]
+	req.Team.LdapId = opts["ldap"][0]
 	if len(opts["system"]) > 0 {
 		bl, err := strconv.ParseBool(opts["system"][0])
 		if err != nil {
 			utl.Abort("Argument to system parameter must be boolean")
 		}
-		req.Team.System = bl
+		req.Team.IsSystem = bl
 	}
 
 	resp := utl.PostRequestWithBody(req, "/teams/")
@@ -104,8 +104,8 @@ func cmdTeamRename(c *cli.Context) {
 	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
-	req := somaproto.ProtoRequestTeam{}
-	req.Team = &somaproto.ProtoTeam{}
+	req := proto.Request{}
+	req.Team = &proto.Team{}
 	req.Team.Name = opts["to"][0]
 
 	resp := utl.PatchRequestWithBody(req, path)

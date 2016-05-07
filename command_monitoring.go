@@ -54,12 +54,12 @@ func cmdMonitoringCreate(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
-	req := somaproto.ProtoRequestMonitoring{}
-	req.Monitoring = &somaproto.ProtoMonitoring{}
+	req := proto.Request{}
+	req.Monitoring = &proto.Monitoring{}
 	req.Monitoring.Name = c.Args().First()
 	req.Monitoring.Mode = opts["mode"][0]
 	req.Monitoring.Contact = utl.TryGetUserByUUIDOrName(opts["contact"][0])
-	req.Monitoring.Team = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	req.Monitoring.TeamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
 
 	// optional arguments
 	if _, ok := opts["callback"]; ok {

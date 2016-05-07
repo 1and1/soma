@@ -277,7 +277,7 @@ argloop:
 					constr.Oncall = &proto.PropertyOncall{}
 					switch args[pos+2] {
 					case "id":
-						constr.Oncall.OncallId = args[pos+3]
+						constr.Oncall.Id = args[pos+3]
 					case "name":
 						constr.Oncall.Name = args[pos+3]
 					default:

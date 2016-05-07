@@ -257,8 +257,8 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) {
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
 	prop := proto.Property{
-		PropertyType: "system",
-		View:         opts["view"][0],
+		Type: "system",
+		View: opts["view"][0],
 		System: &proto.PropertySystem{
 			Name:  c.Args().First(),
 			Value: opts["value"][0],
@@ -304,8 +304,8 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
 	prop := proto.Property{
-		PropertyType: "service",
-		View:         opts["view"][0],
+		Type: "service",
+		View: opts["view"][0],
 		Service: &proto.PropertyService{
 			Name:       c.Args().First(),
 			TeamId:     teamId,

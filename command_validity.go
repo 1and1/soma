@@ -53,8 +53,8 @@ func cmdValidityCreate(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
-	req := somaproto.ValidityRequest{}
-	req.Validity = &somaproto.Validity{
+	req := proto.Request{}
+	req.Validity = &proto.Validity{
 		SystemProperty: c.Args().First(),
 		ObjectType:     opts["on"][0],
 		Direct:         utl.GetValidatedBool(opts["direct"][0]),

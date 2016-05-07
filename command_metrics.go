@@ -55,13 +55,13 @@ func cmdMetricCreate(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
-	req := somaproto.ProtoRequestMetric{}
-	req.Metric = &somaproto.ProtoMetric{}
-	req.Metric.Metric = c.Args().First()
+	req := proto.Request{}
+	req.Metric = &proto.Metric{}
+	req.Metric.Path = c.Args().First()
 	req.Metric.Unit = opts["unit"][0]
 	req.Metric.Description = opts["description"][0]
 
-	pkgs := make([]somaproto.ProtoMetricProviderPackage, 0)
+	pkgs := make([]proto.MetricPackage, 0)
 	if _, ok := opts["package"]; ok {
 		for _, p := range opts["package"] {
 			split := strings.SplitN(p, "::", 2)
@@ -70,9 +70,9 @@ func cmdMetricCreate(c *cli.Context) {
 				utl.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
 					p))
 			}
-			pkgs = append(pkgs, somaproto.ProtoMetricProviderPackage{
+			pkgs = append(pkgs, proto.MetricPackage{
 				Provider: split[0],
-				Package:  split[1],
+				Name:     split[1],
 			})
 		}
 		req.Metric.Packages = &pkgs

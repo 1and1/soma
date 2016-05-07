@@ -402,9 +402,9 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 	}
 
 	tprop := proto.Property{
-		PropertyType: "system",
-		View:         opts["view"][0],
-		System:       &sprop,
+		Type:   "system",
+		View:   opts["view"][0],
+		System: &sprop,
 	}
 	if _, ok := opts["inheritance"]; ok {
 		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
@@ -448,8 +448,8 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
 	tprop := proto.Property{
-		PropertyType: "service",
-		View:         opts["view"][0],
+		Type: "service",
+		View: opts["view"][0],
 		Service: &proto.PropertyService{
 			Name:       c.Args().First(),
 			TeamId:     teamId,

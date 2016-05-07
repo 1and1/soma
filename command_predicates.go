@@ -45,9 +45,9 @@ func registerPredicates(app cli.App) *cli.App {
 func cmdPredicateCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.ProtoRequestPredicate{}
-	req.Predicate = &somaproto.ProtoPredicate{}
-	req.Predicate.Predicate = c.Args().First()
+	req := proto.Request{}
+	req.Predicate = &proto.Predicate{}
+	req.Predicate.Symbol = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/predicates/")
 	fmt.Println(resp)

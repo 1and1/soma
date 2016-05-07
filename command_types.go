@@ -63,8 +63,9 @@ func cmdObjectTypesAdd(c *cli.Context) {
 	}
 	log.Printf("Command: add objectType [%s]", objectType)
 
-	var req somaproto.ProtoRequestObjectType
-	req.Type = objectType
+	var req proto.Request
+	req.Entity = &proto.Entity{}
+	req.Entity.Name = objectType
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -118,8 +119,9 @@ func cmdObjectTypesRename(c *cli.Context) {
 	}
 	log.Printf("Command: rename objectType [%s] to [%s]", a.Get(0), a.Get(2))
 
-	var req somaproto.ProtoRequestObjectType
-	req.Type = a.Get(2)
+	var req proto.Request
+	req.Entity = &proto.Entity{}
+	req.Entity.Name = a.Get(2)
 	url.Path = fmt.Sprintf("/objtypes/%s", a.Get(0))
 
 	resp, err := resty.New().

@@ -64,9 +64,9 @@ func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigConstraint
 		case "oncall":
 			oc := somaproto.PropertyOncall{}
 			if prop.Oncall.Name != "" {
-				oc.OncallId = u.TryGetOncallByUUIDOrName(prop.Oncall.Name)
-			} else if prop.Oncall.OncallId != "" {
-				oc.OncallId = u.TryGetOncallByUUIDOrName(prop.Oncall.OncallId)
+				oc.Id = u.TryGetOncallByUUIDOrName(prop.Oncall.Name)
+			} else if prop.Oncall.Id != "" {
+				oc.Id = u.TryGetOncallByUUIDOrName(prop.Oncall.Id)
 			}
 			clean = append(clean, somaproto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
@@ -84,7 +84,7 @@ func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigConstraint
 		case "custom":
 			co := somaproto.PropertyCustom{
 				RepositoryId: repoId,
-				CustomId:     u.TryGetCustomPropertyByUUIDOrName(prop.Custom.Name, repoId),
+				Id:           u.TryGetCustomPropertyByUUIDOrName(prop.Custom.Name, repoId),
 				Value:        prop.Custom.Value,
 			}
 			clean = append(clean, somaproto.CheckConfigConstraint{

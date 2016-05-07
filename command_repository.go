@@ -115,10 +115,10 @@ func cmdRepositoryCreate(c *cli.Context) {
 
 	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
 
-	var req somaproto.ProtoRequestRepository
-	req.Repository = &somaproto.ProtoRepository{}
+	var req proto.Request
+	req.Repository = &proto.Repository{}
 	req.Repository.Name = c.Args().Get(0)
-	req.Repository.Team = teamId
+	req.Repository.TeamId = teamId
 
 	resp := utl.PostRequestWithBody(req, "/repository/")
 	fmt.Println(resp)
@@ -137,10 +137,14 @@ func cmdRepositoryRestore(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	var req somaproto.ProtoRequestRepository
-	req.Restore = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Restore: true,
+		},
+	}
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdRepositoryPurge(c *cli.Context) {
@@ -148,10 +152,14 @@ func cmdRepositoryPurge(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	var req somaproto.ProtoRequestRepository
-	req.Purge = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Purge: true,
+		},
+	}
 
-	_ = utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdRepositoryClear(c *cli.Context) {
@@ -159,10 +167,14 @@ func cmdRepositoryClear(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	var req somaproto.ProtoRequestRepository
-	req.Clear = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Clear: true,
+		},
+	}
 
-	_ = utl.PutRequestWithBody(req, path)
+	resp := utl.PutRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdRepositoryRename(c *cli.Context) {
@@ -171,11 +183,12 @@ func cmdRepositoryRename(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	var req somaproto.ProtoRequestRepository
-	req.Repository = &somaproto.ProtoRepository{}
+	var req proto.Request
+	req.Repository = &proto.Repository{}
 	req.Repository.Name = c.Args().Get(2)
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdRepositoryRepossess(c *cli.Context) {
@@ -185,11 +198,12 @@ func cmdRepositoryRepossess(c *cli.Context) {
 	_ = utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
 	path := fmt.Sprintf("/repository/%s", id)
 
-	var req somaproto.ProtoRequestRepository
-	req.Repository = &somaproto.ProtoRepository{}
-	req.Repository.Team = c.Args().Get(2)
+	var req proto.Request
+	req.Repository = &proto.Repository{}
+	req.Repository.TeamId = c.Args().Get(2)
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdRepositoryClone(c *cli.Context) {
@@ -201,10 +215,14 @@ func cmdRepositoryActivate(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	var req somaproto.ProtoRequestRepository
-	req.Activate = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Activate: true,
+		},
+	}
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	fmt.Println(resp)
 }
 
 func cmdRepositoryWipe(c *cli.Context) {
@@ -239,15 +257,15 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 	repositoryId := utl.TryGetRepositoryByUUIDOrName(opts["to"][0])
 	utl.CheckStringIsSystemProperty(c.Args().First())
 
-	sprop := somaproto.TreePropertySystem{
+	sprop := proto.PropertySystem{
 		Name:  c.Args().First(),
 		Value: opts["value"][0],
 	}
 
-	tprop := somaproto.TreeProperty{
-		PropertyType: "system",
-		View:         opts["view"][0],
-		System:       &sprop,
+	tprop := proto.Property{
+		Type:   "system",
+		View:   opts["view"][0],
+		System: &sprop,
 	}
 	if _, ok := opts["inheritance"]; ok {
 		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
@@ -260,14 +278,14 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	propList := []somaproto.TreeProperty{tprop}
+	propList := []proto.Property{tprop}
 
-	repository := somaproto.ProtoRepository{
+	repository := proto.Repository{
 		Id:         repositoryId,
 		Properties: &propList,
 	}
 
-	req := somaproto.ProtoRequestRepository{
+	req := proto.Request{
 		Repository: &repository,
 	}
 
@@ -291,13 +309,13 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
-	tprop := somaproto.TreeProperty{
-		PropertyType: "service",
-		View:         opts["view"][0],
-		Service: &somaproto.TreePropertyService{
+	tprop := proto.Property{
+		Type: "service",
+		View: opts["view"][0],
+		Service: &proto.PropertyService{
 			Name:       c.Args().First(),
 			TeamId:     teamId,
-			Attributes: []somaproto.TreeServiceAttribute{},
+			Attributes: []proto.ServiceAttribute{},
 		},
 	}
 	if _, ok := opts["inheritance"]; ok {
@@ -311,10 +329,10 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 		tprop.ChildrenOnly = false
 	}
 
-	req := somaproto.ProtoRequestRepository{
-		Repository: &somaproto.ProtoRepository{
+	req := proto.Request{
+		Repository: &proto.Repository{
 			Id: repositoryId,
-			Properties: &[]somaproto.TreeProperty{
+			Properties: &[]proto.Property{
 				tprop,
 			},
 		},

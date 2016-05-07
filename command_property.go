@@ -208,12 +208,13 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 		c.Args().Tail())
 	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
 
-	req := somaproto.PropertyRequest{}
-	req.PropertyType = "custom"
+	req := proto.Request{}
+	req.Property = &proto.Property{}
+	req.Property.Type = "custom"
 
-	req.Custom = &somaproto.TreePropertyCustom{}
-	req.Custom.Name = c.Args().First()
-	req.Custom.RepositoryId = repoId
+	req.Property.Custom = &proto.PropertyCustom{}
+	req.Property.Custom.Name = c.Args().First()
+	req.Property.Custom.RepositoryId = repoId
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
@@ -224,11 +225,12 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 func cmdPropertySystemCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.PropertyRequest{}
-	req.PropertyType = "system"
+	req := proto.Request{}
+	req.Property = &proto.Property{}
+	req.Property.Type = "system"
 
-	req.System = &somaproto.TreePropertySystem{}
-	req.System.Name = c.Args().First()
+	req.Property.System = &proto.PropertySystem{}
+	req.Property.System.Name = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/property/system/")
 	fmt.Println(resp)
@@ -237,11 +239,12 @@ func cmdPropertySystemCreate(c *cli.Context) {
 func cmdPropertyNativeCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.PropertyRequest{}
-	req.PropertyType = "native"
+	req := proto.Request{}
+	req.Property = &proto.Property{}
+	req.Property.Type = "native"
 
-	req.Native = &somaproto.TreePropertyNative{}
-	req.Native.Name = c.Args().First()
+	req.Property.Native = &proto.PropertyNative{}
+	req.Property.Native.Name = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/property/native/")
 	fmt.Println(resp)
@@ -252,7 +255,7 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 
 	// fetch list of possible service attributes from SOMA
 	attrResponse := utl.GetRequest("/attributes/")
-	attrs := somaproto.AttributeResult{}
+	attrs := proto.Result{}
 	err := json.Unmarshal(attrResponse.Body(), &attrs)
 	if err != nil {
 		utl.Abort("Failed to unmarshal Service Attribute data")
@@ -262,12 +265,12 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 	// for command line parsing
 	multiple := []string{}
 	unique := []string{}
-	for _, attr := range attrs.Attributes {
+	for _, attr := range *attrs.Attributes {
 		switch attr.Cardinality {
 		case "once":
-			unique = append(unique, attr.Attribute)
+			unique = append(unique, attr.Name)
 		case "multi":
-			multiple = append(multiple, attr.Attribute)
+			multiple = append(multiple, attr.Name)
 		default:
 			utl.Abort()
 		}
@@ -300,15 +303,16 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 	}
 
 	// construct request body
-	req := somaproto.PropertyRequest{}
-	req.Service = &somaproto.TreePropertyService{}
-	req.Service.Name = c.Args().First()
-	req.Service.Attributes = make([]somaproto.TreeServiceAttribute, 0, 16)
+	req := proto.Request{}
+	req.Property = &proto.Property{}
+	req.Property.Service = &proto.PropertyService{}
+	req.Property.Service.Name = c.Args().First()
+	req.Property.Service.Attributes = make([]proto.ServiceAttribute, 0, 16)
 	if c.Command.Name == "service" {
-		req.PropertyType = `service`
-		req.Service.TeamId = teamId
+		req.Property.Type = `service`
+		req.Property.Service.TeamId = teamId
 	} else {
-		req.PropertyType = `template`
+		req.Property.Type = `template`
 	}
 
 	// fill attributes into request body
@@ -320,10 +324,10 @@ attrConversionLoop:
 			continue attrConversionLoop
 		}
 		for _, oVal := range opts[oName] {
-			req.Service.Attributes = append(req.Service.Attributes,
-				somaproto.TreeServiceAttribute{
-					Attribute: oName,
-					Value:     oVal,
+			req.Property.Service.Attributes = append(req.Property.Service.Attributes,
+				proto.ServiceAttribute{
+					Name:  oName,
+					Value: oVal,
 				},
 			)
 		}

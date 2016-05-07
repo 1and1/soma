@@ -126,25 +126,15 @@ func registerPermissions(app cli.App) *cli.App {
 }
 
 func cmdPermissionTypeAdd(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/permissions/types"
-
 	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().First()
-	Slog.Printf("Command: add permission type [%s]", permissionType)
 
-	var req somaproto.ProtoRequestPermission
-	req.PermissionType = permissionType
+	var req proto.Request
+	req.Permission = &proto.Permission{}
+	req.Permission.Category = permissionType
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	if err != nil {
-		Slog.Fatal(err)
-	}
-	Slog.Printf("Response: %s\n", resp.Status())
+	resp := utl.PostRequestWithBody(req, "/permission/types/")
+	fmt.Println(resp)
 }
 
 func cmdPermissionTypeDel(c *cli.Context) {
@@ -173,8 +163,9 @@ func cmdPermissionTypeRename(c *cli.Context) {
 	newPermissionType := c.Args().Get(2)
 	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
 
-	var req somaproto.ProtoRequestPermission
-	req.PermissionType = newPermissionType
+	var req proto.Request
+	req.Permission = &proto.Permission{}
+	req.Permission.Category = newPermissionType
 
 	_, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -228,9 +219,10 @@ func cmdPermissionAdd(c *cli.Context) {
 	permission := c.Args().Get(0)
 	permissionType := c.Args().Get(2)
 
-	var req somaproto.ProtoRequestPermission
-	req.Permission = permission
-	req.PermissionType = permissionType
+	var req proto.Request
+	req.Permission = &proto.Permission{}
+	req.Permission.Name = permission
+	req.Permission.Category = permissionType
 
 	_, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -356,121 +348,121 @@ func cmdPermissionAudit(c *cli.Context) {
 }
 
 func cmdPermissionGrantEnable(c *cli.Context) {
-	url := getApiUrl()
-
 	utl.ValidateCliArgumentCount(c, 1)
-	url.Path = fmt.Sprintf("/permissions/user/%s", c.Args().Get(0))
+	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	path := fmt.Sprintf("/permissions/user/%s", userId)
 
-	var req somaproto.ProtoRequestPermission
-	req.GrantEnabled = true
-
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	if err != nil {
-		Slog.Fatal(err)
-	}
-	//
+	resp := utl.PatchRequestWithBody(proto.Request{
+		Grant: &proto.Grant{
+			RecipientType: "user",
+			RecipientId:   userId,
+			Permission:    "global_grant_limited",
+		},
+	}, path,
+	)
+	fmt.Println(resp)
 }
 
 func cmdPermissionGrantGlobal(c *cli.Context) {
-	url := getApiUrl()
-	var objType string
+	/*
+		url := getApiUrl()
+		var objType string
 
-	utl.ValidateCliArgumentCount(c, 3)
-	switch c.Args().Get(1) {
-	case "user":
-		objType = "user"
-	case "team":
-		objType = "team"
-	case "tool":
-		objType = "tool"
-	default:
-		Slog.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/permissions/%s/%s", objType, c.Args().Get(2))
+		utl.ValidateCliArgumentCount(c, 3)
+		switch c.Args().Get(1) {
+		case "user":
+			objType = "user"
+		case "team":
+			objType = "team"
+		case "tool":
+			objType = "tool"
+		default:
+			Slog.Fatal("Syntax error")
+		}
+		url.Path = fmt.Sprintf("/permissions/%s/%s", objType, c.Args().Get(2))
 
-	var req somaproto.ProtoRequestPermission
-	req.Permission = c.Args().Get(0)
+		var req somaproto.ProtoRequestPermission
+		req.Permission = c.Args().Get(0)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	if err != nil {
-		Slog.Fatal(err)
-	}
+		_, err := resty.New().
+			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+			R().
+			SetBody(req).
+			Patch(url.String())
+		if err != nil {
+			Slog.Fatal(err)
+		}
+	*/
 }
 
 func cmdPermissionGrantLimited(c *cli.Context) {
-	url := getApiUrl()
-	keys := [...]string{"repository", "bucket", "group", "cluster"}
-	keySlice := make([]string, 0)
-	var objType string
-	var req somaproto.ProtoRequestPermission
-	req.Grant.GrantType = "limited"
+	/*
+		url := getApiUrl()
+		keys := [...]string{"repository", "bucket", "group", "cluster"}
+		keySlice := make([]string, 0)
+		var objType string
+		var req somaproto.ProtoRequestPermission
+		req.Grant.GrantType = "limited"
 
-	// the keys array is ordered towars increasing detail, ie. there can
-	// not be a limited grant on a cluster without specifying the
-	// repository
-	// Also, slicing uses halfopen interval [a:b), ie `a` is part of the
-	// resulting slice, but `b` is not
-	switch utl.GetCliArgumentCount(c) {
-	case 5:
-		keySlice = keys[0:1]
-	case 7:
-		keySlice = keys[0:2]
-	case 9:
-		keySlice = keys[0:3]
-	case 11:
-		keySlice = keys[:]
-	default:
-		Slog.Fatal("Syntax error, unexpected argument count")
-	}
-	// Tail() skips the first argument 0, which is returned by First(),
-	// thus contains arguments 1-n. The first 3 arguments 0-2 are fixed in
-	// order, the variable parts are arguments 4+ (argv 3-10) -- element
-	// 2-9 in the tail slice.
-	argSlice := c.Args().Tail()[2:]
-	options := *parseLimitedGrantArguments(keySlice, argSlice)
-
-	switch c.Args().Get(1) {
-	case "user":
-		objType = "user"
-	case "team":
-		objType = "team"
-	case "tool":
-		objType = "tool"
-	default:
-		Slog.Fatal("Syntax error")
-	}
-	req.Permission = c.Args().Get(0)
-	url.Path = fmt.Sprintf("/permissions/%s/%s", objType, c.Args().Get(2))
-
-	for k, v := range options {
-		switch k {
-		case "repository":
-			req.Grant.Repository = v
-		case "bucket":
-			req.Grant.Bucket = v
-		case "group":
-			req.Grant.Group = v
-		case "cluster":
-			req.Grant.Cluster = v
+		// the keys array is ordered towars increasing detail, ie. there can
+		// not be a limited grant on a cluster without specifying the
+		// repository
+		// Also, slicing uses halfopen interval [a:b), ie `a` is part of the
+		// resulting slice, but `b` is not
+		switch utl.GetCliArgumentCount(c) {
+		case 5:
+			keySlice = keys[0:1]
+		case 7:
+			keySlice = keys[0:2]
+		case 9:
+			keySlice = keys[0:3]
+		case 11:
+			keySlice = keys[:]
+		default:
+			Slog.Fatal("Syntax error, unexpected argument count")
 		}
-	}
+		// Tail() skips the first argument 0, which is returned by First(),
+		// thus contains arguments 1-n. The first 3 arguments 0-2 are fixed in
+		// order, the variable parts are arguments 4+ (argv 3-10) -- element
+		// 2-9 in the tail slice.
+		argSlice := c.Args().Tail()[2:]
+		options := *parseLimitedGrantArguments(keySlice, argSlice)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	if err != nil {
-		Slog.Fatal(err)
-	}
+		switch c.Args().Get(1) {
+		case "user":
+			objType = "user"
+		case "team":
+			objType = "team"
+		case "tool":
+			objType = "tool"
+		default:
+			Slog.Fatal("Syntax error")
+		}
+		req.Permission = c.Args().Get(0)
+		url.Path = fmt.Sprintf("/permissions/%s/%s", objType, c.Args().Get(2))
+
+		for k, v := range options {
+			switch k {
+			case "repository":
+				req.Grant.Repository = v
+			case "bucket":
+				req.Grant.Bucket = v
+			case "group":
+				req.Grant.Group = v
+			case "cluster":
+				req.Grant.Cluster = v
+			}
+		}
+
+		_, err := resty.New().
+			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+			R().
+			SetBody(req).
+			Patch(url.String())
+		if err != nil {
+			Slog.Fatal(err)
+		}
+	*/
 }
 
 func cmdPermissionGrantSystem(c *cli.Context) {
