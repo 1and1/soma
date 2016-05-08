@@ -24,17 +24,16 @@ func ListGroup(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestGroup{}
-	cReq.Filter = &somaproto.ProtoGroupFilter{}
+	cReq := proto.NewGroupFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Group.Name != "" {
 		filtered := make([]somaGroupResult, 0)
 		for _, i := range result.Groups {
-			if i.Group.Name == cReq.Filter.Name {
+			if i.Group.Name == cReq.Filter.Group.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -54,7 +53,7 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaGroupRequest{
 		action: "show",
 		reply:  returnChannel,
-		Group: somaproto.ProtoGroup{
+		Group: proto.Group{
 			Id: params.ByName("group"),
 		},
 	}
@@ -71,7 +70,7 @@ func ListGroupMembers(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaGroupRequest{
 		action: "member_list",
 		reply:  returnChannel,
-		Group: somaproto.ProtoGroup{
+		Group: proto.Group{
 			Id: params.ByName("group"),
 		},
 	}
@@ -85,7 +84,7 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestGroup{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -111,7 +110,7 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestGroup{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -146,7 +145,7 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestGroup{}
+	cReq := proto.Request{}
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
@@ -163,11 +162,11 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 			fmt.Errorf("Expected property count 1, actual count: %d",
 				len(*cReq.Group.Properties)))
 		return
-	case params.ByName("type") != (*cReq.Group.Properties)[0].PropertyType:
+	case params.ByName("type") != (*cReq.Group.Properties)[0].Type:
 		DispatchBadRequest(&w,
 			fmt.Errorf("Mismatched property types: %s, %s",
 				params.ByName("type"),
-				(*cReq.Group.Properties)[0].PropertyType))
+				(*cReq.Group.Properties)[0].Type))
 		return
 	case (params.ByName("type") == "service") && (*cReq.Group.Properties)[0].Service.Name == "":
 		DispatchBadRequest(&w,
@@ -194,20 +193,19 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
  * Utility
  */
 func SendGroupReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultGroup{}
+	result := proto.NewGroupResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Groups = make([]somaproto.ProtoGroup, 0)
 	for _, i := range (*r).Groups {
-		result.Groups = append(result.Groups, i.Group)
+		*result.Groups = append(*result.Groups, i.Group)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 
 dispatch:
+	result.Clean()
 	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)

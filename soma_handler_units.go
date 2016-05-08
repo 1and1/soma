@@ -10,13 +10,13 @@ import (
 
 type somaUnitRequest struct {
 	action string
-	Unit   somaproto.ProtoUnit
+	Unit   proto.Unit
 	reply  chan somaResult
 }
 
 type somaUnitResult struct {
 	ResultError error
-	Unit        somaproto.ProtoUnit
+	Unit        proto.Unit
 }
 
 func (a *somaUnitResult) SomaAppendError(r *somaResult, err error) {
@@ -96,7 +96,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 		for rows.Next() {
 			err := rows.Scan(&unit)
 			result.Append(err, &somaUnitResult{
-				Unit: somaproto.ProtoUnit{
+				Unit: proto.Unit{
 					Name: unit,
 				},
 			})
@@ -122,7 +122,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 		}
 
 		result.Append(err, &somaUnitResult{
-			Unit: somaproto.ProtoUnit{
+			Unit: proto.Unit{
 				Unit: unit,
 				Name: name,
 			},

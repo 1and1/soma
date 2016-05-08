@@ -20,11 +20,12 @@ func ListEnvironments(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	}
 
 	results := <-returnChannel
-	environments := make([]string, len(results))
-	for pos, res := range results {
-		environments[pos] = res.environment
+	res := proto.NewEnvironmentResult()
+	for _, env := range results {
+		*res.Environments = append(*res.Environments, proto.Environment{Name: env.environment})
 	}
-	json, err := json.Marshal(somaproto.ProtoResultEnvironmentList{Code: 200, Status: "OK", Environments: environments})
+	res.OK()
+	json, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -42,8 +43,8 @@ func ShowEnvironment(w http.ResponseWriter, r *http.Request, params httprouter.P
 		environment: params.ByName("environment"),
 		reply:       returnChannel,
 	}
-
 	results := <-returnChannel
+	res := proto.NewEnvironmentResult()
 	if len(results) == 0 {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -52,12 +53,11 @@ func ShowEnvironment(w http.ResponseWriter, r *http.Request, params httprouter.P
 		http.Error(w, "Not found", http.StatusInternalServerError)
 		return
 	}
-	result := results[0]
-	json, err := json.Marshal(somaproto.ProtoResultEnvironmentDetail{
-		Code:    200,
-		Status:  "OK",
-		Details: somaproto.ProtoEnvironmentDetails{Environment: result.environment},
+	*res.Environments = append(*res.Environments, proto.Environment{
+		Name: results[0].environment,
 	})
+	res.OK()
+	json, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,7 +71,7 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 
 	// read POST body
 	decoder := json.NewDecoder(r.Body)
-	var clientRequest somaproto.ProtoRequestEnvironment
+	var clientRequest proto.Request
 	err := decoder.Decode(&clientRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -81,16 +81,16 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	handler := handlerMap["environmentWriteHandler"].(somaEnvironmentWriteHandler)
 	handler.input <- somaEnvironmentRequest{
 		action:      "add",
-		environment: clientRequest.Environment,
+		environment: clientRequest.Environment.Name,
 		reply:       returnChannel,
 	}
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{"Database statement returned no/wrong number of results"},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
@@ -99,21 +99,19 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{result.err.Error()},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
 		return
 	}
 
-	txt := fmt.Sprintf("Added environment: %s", result.environment)
-	json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
+	json, _ := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -131,33 +129,19 @@ func DeleteEnvironment(w http.ResponseWriter, r *http.Request, params httprouter
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
+		DispatchInternalError(&w, fmt.Errorf("Database statement returned no/wrong number of results"))
 		return
 	}
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
+		DispatchInternalError(&w, result.err)
 		return
 	}
 
-	txt := fmt.Sprintf("Deleted environment: %s", result.environment)
-	json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
+	json, _ := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -168,7 +152,7 @@ func RenameEnvironment(w http.ResponseWriter, r *http.Request, params httprouter
 
 	// read POST body
 	decoder := json.NewDecoder(r.Body)
-	var clientRequest somaproto.ProtoRequestEnvironment
+	var clientRequest proto.Request
 	err := decoder.Decode(&clientRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -179,16 +163,16 @@ func RenameEnvironment(w http.ResponseWriter, r *http.Request, params httprouter
 	handler.input <- somaEnvironmentRequest{
 		action:      "rename",
 		environment: params.ByName("environment"),
-		rename:      clientRequest.Environment,
+		rename:      clientRequest.Environment.Name,
 		reply:       returnChannel,
 	}
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{"Database statement returned no/wrong number of results"},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
@@ -197,21 +181,19 @@ func RenameEnvironment(w http.ResponseWriter, r *http.Request, params httprouter
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{result.err.Error()},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
 		return
 	}
 
-	txt := fmt.Sprintf("Renamed environment: %s to %s", result.environment, clientRequest.Environment)
-	json, _ := json.Marshal(somaproto.ProtoResultEnvironment{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
+	json, _ := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)

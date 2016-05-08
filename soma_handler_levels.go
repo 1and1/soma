@@ -10,13 +10,13 @@ import (
 
 type somaLevelRequest struct {
 	action string
-	Level  somaproto.ProtoLevel
+	Level  proto.Level
 	reply  chan somaResult
 }
 
 type somaLevelResult struct {
 	ResultError error
-	Level       somaproto.ProtoLevel
+	Level       proto.Level
 }
 
 func (a *somaLevelResult) SomaAppendError(r *somaResult, err error) {
@@ -99,7 +99,7 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 		for rows.Next() {
 			err := rows.Scan(&level, &short)
 			result.Append(err, &somaLevelResult{
-				Level: somaproto.ProtoLevel{
+				Level: proto.Level{
 					Name:      level,
 					ShortName: short,
 				},
@@ -123,7 +123,7 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 		}
 
 		result.Append(err, &somaLevelResult{
-			Level: somaproto.ProtoLevel{
+			Level: proto.Level{
 				Name:      level,
 				ShortName: short,
 				Numeric:   numeric,

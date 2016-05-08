@@ -8,13 +8,13 @@ import (
 
 type somaClusterRequest struct {
 	action  string
-	Cluster somaproto.ProtoCluster
+	Cluster proto.Cluster
 	reply   chan somaResult
 }
 
 type somaClusterResult struct {
 	ResultError error
-	Cluster     somaproto.ProtoCluster
+	Cluster     proto.Cluster
 }
 
 func (a *somaClusterResult) SomaAppendError(r *somaResult, err error) {
@@ -102,7 +102,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		err                                                    error
 	)
 	result := somaResult{}
-	resC := somaproto.ProtoCluster{}
+	resC := proto.Cluster{}
 
 	switch q.action {
 	case "list":
@@ -117,7 +117,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		for rows.Next() {
 			err := rows.Scan(&clusterId, &clusterName)
 			result.Append(err, &somaClusterResult{
-				Cluster: somaproto.ProtoCluster{
+				Cluster: proto.Cluster{
 					Id:   clusterId,
 					Name: clusterName,
 				},
@@ -143,7 +143,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		}
 
 		result.Append(err, &somaClusterResult{
-			Cluster: somaproto.ProtoCluster{
+			Cluster: proto.Cluster{
 				Id:          clusterId,
 				Name:        clusterName,
 				BucketId:    bucketId,
@@ -165,7 +165,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			err := rows.Scan(&mNodeId, &mNodeName, &clusterName)
 			if err == nil {
 				resC.Name = clusterName
-				resC.Members = append(resC.Members, somaproto.ProtoNode{
+				resC.Members = append(resC.Members, proto.Node{
 					Id:   mNodeId,
 					Name: mNodeName,
 				})

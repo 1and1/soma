@@ -10,13 +10,13 @@ import (
 
 type somaAttributeRequest struct {
 	action    string
-	Attribute somaproto.Attribute
+	Attribute proto.Attribute
 	reply     chan somaResult
 }
 
 type somaAttributeResult struct {
 	ResultError error
-	Attribute   somaproto.Attribute
+	Attribute   proto.Attribute
 }
 
 func (a *somaAttributeResult) SomaAppendError(r *somaResult, err error) {
@@ -89,15 +89,15 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 		for rows.Next() {
 			err := rows.Scan(&attribute, &cardinality)
 			result.Append(err, &somaAttributeResult{
-				Attribute: somaproto.Attribute{
-					Attribute:   attribute,
+				Attribute: proto.Attribute{
+					Name:        attribute,
 					Cardinality: cardinality,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: attribute/show for %s", q.Attribute.Attribute)
-		err = r.show_stmt.QueryRow(q.Attribute.Attribute).Scan(
+		log.Printf("R: attribute/show for %s", q.Attribute.Name)
+		err = r.show_stmt.QueryRow(q.Attribute.Name).Scan(
 			&attribute,
 			&cardinality,
 		)
@@ -112,8 +112,8 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 		}
 
 		result.Append(err, &somaAttributeResult{
-			Attribute: somaproto.Attribute{
-				Attribute:   attribute,
+			Attribute: proto.Attribute{
+				Name:        attribute,
 				Cardinality: cardinality,
 			},
 		})
@@ -168,15 +168,15 @@ func (w *somaAttributeWriteHandler) process(q *somaAttributeRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: attributes/add for %s", q.Attribute.Attribute)
+		log.Printf("R: attributes/add for %s", q.Attribute.Name)
 		res, err = w.add_stmt.Exec(
-			q.Attribute.Attribute,
+			q.Attribute.Name,
 			q.Attribute.Cardinality,
 		)
 	case "delete":
-		log.Printf("R: attributes/del for %s", q.Attribute.Attribute)
+		log.Printf("R: attributes/del for %s", q.Attribute.Name)
 		res, err = w.del_stmt.Exec(
-			q.Attribute.Attribute,
+			q.Attribute.Name,
 		)
 	default:
 		log.Printf("R: unimplemented attributes/%s", q.action)

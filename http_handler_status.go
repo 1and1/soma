@@ -32,8 +32,8 @@ func ShowStatus(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaStatusRequest{
 		action: "show",
 		reply:  returnChannel,
-		Status: somaproto.ProtoStatus{
-			Status: params.ByName("status"),
+		Status: proto.Status{
+			Name: params.ByName("status"),
 		},
 	}
 	result := <-returnChannel
@@ -46,7 +46,7 @@ func AddStatus(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestStatus{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,8 +58,8 @@ func AddStatus(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaStatusRequest{
 		action: "add",
 		reply:  returnChannel,
-		Status: somaproto.ProtoStatus{
-			Status: cReq.Status.Status,
+		Status: proto.Status{
+			Name: cReq.Status.Name,
 		},
 	}
 	result := <-returnChannel
@@ -75,8 +75,8 @@ func DeleteStatus(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaStatusRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Status: somaproto.ProtoStatus{
-			Status: params.ByName("status"),
+		Status: proto.Status{
+			Name: params.ByName("status"),
 		},
 	}
 	result := <-returnChannel
@@ -86,16 +86,14 @@ func DeleteStatus(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendStatusReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultStatus{}
+	result := proto.NewStatusResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.StatusList = make([]somaproto.ProtoStatus, 0)
 	for _, i := range (*r).Status {
-		result.StatusList = append(result.StatusList, i.Status)
+		*result.Status = append(*result.Status, i.Status)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

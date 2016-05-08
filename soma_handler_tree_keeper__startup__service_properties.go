@@ -96,7 +96,7 @@ serviceloop:
 			Service:      serviceProperty,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]somatree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
@@ -126,9 +126,9 @@ serviceloop:
 				return
 			}
 
-			pa := somaproto.TreeServiceAttribute{
-				Attribute: attrKey,
-				Value:     attrValue,
+			pa := proto.ServiceAttribute{
+				Name:  attrKey,
+				Value: attrValue,
 			}
 			prop.Attributes = append(prop.Attributes, pa)
 		}
@@ -296,7 +296,7 @@ serviceloop:
 			Service:      serviceProperty,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]somatree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
@@ -326,9 +326,9 @@ serviceloop:
 				return
 			}
 
-			pa := somaproto.TreeServiceAttribute{
-				Attribute: attrKey,
-				Value:     attrValue,
+			pa := proto.ServiceAttribute{
+				Name:  attrKey,
+				Value: attrValue,
 			}
 			prop.Attributes = append(prop.Attributes, pa)
 		}
@@ -496,7 +496,7 @@ serviceloop:
 			Service:      serviceProperty,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]somatree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
@@ -526,9 +526,9 @@ serviceloop:
 				return
 			}
 
-			pa := somaproto.TreeServiceAttribute{
-				Attribute: attrKey,
-				Value:     attrValue,
+			pa := proto.ServiceAttribute{
+				Name:  attrKey,
+				Value: attrValue,
 			}
 			prop.Attributes = append(prop.Attributes, pa)
 		}
@@ -696,7 +696,7 @@ serviceloop:
 			Service:      serviceProperty,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]somatree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
@@ -726,9 +726,9 @@ serviceloop:
 				return
 			}
 
-			pa := somaproto.TreeServiceAttribute{
-				Attribute: attrKey,
-				Value:     attrValue,
+			pa := proto.ServiceAttribute{
+				Name:  attrKey,
+				Value: attrValue,
 			}
 			prop.Attributes = append(prop.Attributes, pa)
 		}
@@ -896,7 +896,7 @@ serviceloop:
 			Service:      serviceProperty,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]somaproto.TreeServiceAttribute, 0)
+		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]somatree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
@@ -926,9 +926,9 @@ serviceloop:
 				return
 			}
 
-			pa := somaproto.TreeServiceAttribute{
-				Attribute: attrKey,
-				Value:     attrValue,
+			pa := proto.ServiceAttribute{
+				Name:  attrKey,
+				Value: attrValue,
 			}
 			prop.Attributes = append(prop.Attributes, pa)
 		}

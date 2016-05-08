@@ -22,19 +22,20 @@ func ListCapability(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestCapability{}
-	cReq.Filter = &somaproto.ProtoCapabilityFilter{}
+	cReq := proto.Request{}
+	cReq.Filter = &proto.Filter{}
+	cReq.Filter.Capability = &proto.CapabilityFilter{}
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Monitoring != "" {
+	if cReq.Filter.Capability.MonitoringId != "" {
 		filtered := make([]somaCapabilityResult, 0)
 		for _, i := range result.Capabilities {
-			if i.Capability.Monitoring == cReq.Filter.Monitoring &&
-				i.Capability.Metric == cReq.Filter.Metric &&
-				i.Capability.View == cReq.Filter.View {
+			if i.Capability.MonitoringId == cReq.Filter.Capability.MonitoringId &&
+				i.Capability.Metric == cReq.Filter.Capability.Metric &&
+				i.Capability.View == cReq.Filter.Capability.View {
 				filtered = append(filtered, i)
 			}
 		}
@@ -43,7 +44,7 @@ func ListCapability(w http.ResponseWriter, r *http.Request,
 
 	// cleanup reply
 	for i, _ := range result.Capabilities {
-		result.Capabilities[i].Capability.Monitoring = ""
+		result.Capabilities[i].Capability.MonitoringId = ""
 		result.Capabilities[i].Capability.Metric = ""
 		result.Capabilities[i].Capability.View = ""
 	}
@@ -61,7 +62,7 @@ func ShowCapability(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaCapabilityRequest{
 		action: "show",
 		reply:  returnChannel,
-		Capability: somaproto.ProtoCapability{
+		Capability: proto.Capability{
 			Id: params.ByName("capability"),
 		},
 	}
@@ -75,7 +76,7 @@ func AddCapability(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestCapability{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -87,11 +88,11 @@ func AddCapability(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaCapabilityRequest{
 		action: "add",
 		reply:  returnChannel,
-		Capability: somaproto.ProtoCapability{
-			Monitoring: cReq.Capability.Monitoring,
-			Metric:     cReq.Capability.Metric,
-			View:       cReq.Capability.View,
-			Thresholds: cReq.Capability.Thresholds,
+		Capability: proto.Capability{
+			MonitoringId: cReq.Capability.MonitoringId,
+			Metric:       cReq.Capability.Metric,
+			View:         cReq.Capability.View,
+			Thresholds:   cReq.Capability.Thresholds,
 		},
 	}
 	result := <-returnChannel
@@ -107,7 +108,7 @@ func DeleteCapability(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaCapabilityRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Capability: somaproto.ProtoCapability{
+		Capability: proto.Capability{
 			Id: params.ByName("capability"),
 		},
 	}
@@ -118,20 +119,19 @@ func DeleteCapability(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendCapabilityReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultCapability{}
+	result := proto.NewCapabilityResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Capabilities = make([]somaproto.ProtoCapability, 0)
 	for _, i := range (*r).Capabilities {
-		result.Capabilities = append(result.Capabilities, i.Capability)
+		*result.Capabilities = append(*result.Capabilities, i.Capability)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 
 dispatch:
+	result.Clean()
 	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)

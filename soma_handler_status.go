@@ -10,13 +10,13 @@ import (
 
 type somaStatusRequest struct {
 	action string
-	Status somaproto.ProtoStatus
+	Status proto.Status
 	reply  chan somaResult
 }
 
 type somaStatusResult struct {
 	ResultError error
-	Status      somaproto.ProtoStatus
+	Status      proto.Status
 }
 
 func (a *somaStatusResult) SomaAppendError(r *somaResult, err error) {
@@ -94,14 +94,14 @@ func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
 		for rows.Next() {
 			err := rows.Scan(&status)
 			result.Append(err, &somaStatusResult{
-				Status: somaproto.ProtoStatus{
-					Status: status,
+				Status: proto.Status{
+					Name: status,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: status/show for %s", q.Status.Status)
-		err = r.show_stmt.QueryRow(q.Status.Status).Scan(
+		log.Printf("R: status/show for %s", q.Status.Name)
+		err = r.show_stmt.QueryRow(q.Status.Name).Scan(
 			&status,
 		)
 		if err != nil {
@@ -115,8 +115,8 @@ func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
 		}
 
 		result.Append(err, &somaStatusResult{
-			Status: somaproto.ProtoStatus{
-				Status: status,
+			Status: proto.Status{
+				Name: status,
 			},
 		})
 	default:
@@ -180,14 +180,14 @@ func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: status/add for %s", q.Status.Status)
+		log.Printf("R: status/add for %s", q.Status.Name)
 		res, err = w.add_stmt.Exec(
-			q.Status.Status,
+			q.Status.Name,
 		)
 	case "delete":
-		log.Printf("R: status/del for %s", q.Status.Status)
+		log.Printf("R: status/del for %s", q.Status.Name)
 		res, err = w.del_stmt.Exec(
-			q.Status.Status,
+			q.Status.Name,
 		)
 	default:
 		log.Printf("R: unimplemented status/%s", q.action)

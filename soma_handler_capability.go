@@ -12,13 +12,13 @@ import (
 
 type somaCapabilityRequest struct {
 	action     string
-	Capability somaproto.ProtoCapability
+	Capability proto.Capability
 	reply      chan somaResult
 }
 
 type somaCapabilityResult struct {
 	ResultError error
-	Capability  somaproto.ProtoCapability
+	Capability  proto.Capability
 }
 
 func (a *somaCapabilityResult) SomaAppendError(r *somaResult, err error) {
@@ -117,12 +117,12 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 				&monName,
 			)
 			result.Append(err, &somaCapabilityResult{
-				Capability: somaproto.ProtoCapability{
-					Id:         id,
-					Monitoring: monitoring,
-					Metric:     metric,
-					View:       view,
-					Name:       fmt.Sprintf("%s.%s.%s", monName, view, metric),
+				Capability: proto.Capability{
+					Id:           id,
+					MonitoringId: monitoring,
+					Metric:       metric,
+					View:         view,
+					Name:         fmt.Sprintf("%s.%s.%s", monName, view, metric),
 				},
 			})
 		}
@@ -146,13 +146,13 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 		}
 
 		result.Append(err, &somaCapabilityResult{
-			Capability: somaproto.ProtoCapability{
-				Id:         id,
-				Monitoring: monitoring,
-				Metric:     metric,
-				View:       view,
-				Thresholds: uint64(thresholds),
-				Name:       fmt.Sprintf("%s.%s.%s", monName, view, metric),
+			Capability: proto.Capability{
+				Id:           id,
+				MonitoringId: monitoring,
+				Metric:       metric,
+				View:         view,
+				Thresholds:   uint64(thresholds),
+				Name:         fmt.Sprintf("%s.%s.%s", monName, view, metric),
 			},
 		})
 	default:
@@ -225,14 +225,14 @@ func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 	switch q.action {
 	case "add":
 		log.Printf("R: capability/add for %s.%s.%s",
-			q.Capability.Monitoring,
+			q.Capability.MonitoringId,
 			q.Capability.View,
 			q.Capability.Metric,
 		)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
-			q.Capability.Monitoring,
+			q.Capability.MonitoringId,
 			q.Capability.Metric,
 			q.Capability.View,
 			q.Capability.Thresholds,

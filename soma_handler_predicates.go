@@ -10,13 +10,13 @@ import (
 
 type somaPredicateRequest struct {
 	action    string
-	Predicate somaproto.ProtoPredicate
+	Predicate proto.Predicate
 	reply     chan somaResult
 }
 
 type somaPredicateResult struct {
 	ResultError error
-	Predicate   somaproto.ProtoPredicate
+	Predicate   proto.Predicate
 }
 
 func (a *somaPredicateResult) SomaAppendError(r *somaResult, err error) {
@@ -96,14 +96,14 @@ func (r *somaPredicateReadHandler) process(q *somaPredicateRequest) {
 		for rows.Next() {
 			err := rows.Scan(&predicate)
 			result.Append(err, &somaPredicateResult{
-				Predicate: somaproto.ProtoPredicate{
-					Predicate: predicate,
+				Predicate: proto.Predicate{
+					Symbol: predicate,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: predicate/show for %s", q.Predicate.Predicate)
-		err = r.show_stmt.QueryRow(q.Predicate.Predicate).Scan(
+		log.Printf("R: predicate/show for %s", q.Predicate.Symbol)
+		err = r.show_stmt.QueryRow(q.Predicate.Symbol).Scan(
 			&predicate,
 		)
 		if err != nil {
@@ -117,8 +117,8 @@ func (r *somaPredicateReadHandler) process(q *somaPredicateRequest) {
 		}
 
 		result.Append(err, &somaPredicateResult{
-			Predicate: somaproto.ProtoPredicate{
-				Predicate: predicate,
+			Predicate: proto.Predicate{
+				Symbol: predicate,
 			},
 		})
 	default:
@@ -182,14 +182,14 @@ func (w *somaPredicateWriteHandler) process(q *somaPredicateRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: predicates/add for %s", q.Predicate.Predicate)
+		log.Printf("R: predicates/add for %s", q.Predicate.Symbol)
 		res, err = w.add_stmt.Exec(
-			q.Predicate.Predicate,
+			q.Predicate.Symbol,
 		)
 	case "delete":
-		log.Printf("R: predicates/del for %s", q.Predicate.Predicate)
+		log.Printf("R: predicates/del for %s", q.Predicate.Symbol)
 		res, err = w.del_stmt.Exec(
-			q.Predicate.Predicate,
+			q.Predicate.Symbol,
 		)
 	default:
 		log.Printf("R: unimplemented predicates/%s", q.action)

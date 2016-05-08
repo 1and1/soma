@@ -22,17 +22,16 @@ func ListUser(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestUser{}
-	cReq.Filter = &somaproto.ProtoUserFilter{}
+	cReq := proto.NewUserFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.UserName != "" {
+	if cReq.Filter.User.UserName != "" {
 		filtered := make([]somaUserResult, 0)
 		for _, i := range result.Users {
-			if i.User.UserName == cReq.Filter.UserName {
+			if i.User.UserName == cReq.Filter.User.UserName {
 				filtered = append(filtered, i)
 			}
 		}
@@ -52,7 +51,7 @@ func ShowUser(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaUserRequest{
 		action: "show",
 		reply:  returnChannel,
-		User: somaproto.ProtoUser{
+		User: proto.User{
 			Id: params.ByName("user"),
 		},
 	}
@@ -66,7 +65,7 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestUser{}
+	cReq := proto.NewUserRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -78,7 +77,7 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaUserRequest{
 		action: "add",
 		reply:  returnChannel,
-		User: somaproto.ProtoUser{
+		User: proto.User{
 			UserName:       cReq.User.UserName,
 			FirstName:      cReq.User.FirstName,
 			LastName:       cReq.User.LastName,
@@ -87,7 +86,7 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 			IsActive:       false,
 			IsSystem:       cReq.User.IsSystem,
 			IsDeleted:      false,
-			Team:           cReq.User.Team,
+			TeamId:         cReq.User.TeamId,
 		},
 	}
 	result := <-returnChannel
@@ -99,9 +98,9 @@ func DeleteUser(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 	action := "delete"
 
-	cReq := somaproto.ProtoRequestUser{}
+	cReq := proto.NewUserRequest()
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Purge {
+	if cReq.Flags.Purge {
 		action = "purge"
 	}
 
@@ -110,7 +109,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaUserRequest{
 		action: action,
 		reply:  returnChannel,
-		User: somaproto.ProtoUser{
+		User: proto.User{
 			Id: params.ByName("user"),
 		},
 	}
@@ -121,16 +120,14 @@ func DeleteUser(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendUserReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultUser{}
+	result := proto.NewUserResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Users = make([]somaproto.ProtoUser, 0)
 	for _, i := range (*r).Users {
-		result.Users = append(result.Users, i.User)
+		*result.Users = append(*result.Users, i.User)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

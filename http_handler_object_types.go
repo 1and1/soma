@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -20,11 +19,12 @@ func ListObjectTypes(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	}
 
 	results := <-returnChannel
-	objectTypes := make([]string, len(results))
-	for pos, res := range results {
-		objectTypes[pos] = res.objectType
+	pres := proto.NewEntityResult()
+	for _, res := range results {
+		*pres.Entities = append(*pres.Entities, proto.Entity{Name: res.objectType})
 	}
-	json, err := json.Marshal(somaproto.ProtoResultObjectTypeList{Code: 200, Status: "OK", Types: objectTypes})
+	pres.OK()
+	json, err := json.Marshal(pres)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -53,10 +53,10 @@ func ShowObjectType(w http.ResponseWriter, r *http.Request, params httprouter.Pa
 		return
 	}
 	result := results[0]
-	json, err := json.Marshal(somaproto.ProtoResultObjectTypeDetail{
-		Code:    200,
-		Status:  "OK",
-		Details: somaproto.ProtoObjectTypeDetails{Type: result.objectType},
+	json, err := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
+		Entities:   &[]proto.Entity{proto.Entity{Name: result.objectType}},
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -71,7 +71,7 @@ func AddObjectType(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	// read POST body
 	decoder := json.NewDecoder(r.Body)
-	var clientRequest somaproto.ProtoRequestObjectType
+	var clientRequest proto.Request
 	err := decoder.Decode(&clientRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -81,16 +81,16 @@ func AddObjectType(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	handler := handlerMap["objectTypeWriteHandler"].(somaObjectTypeWriteHandler)
 	handler.input <- somaObjectTypeRequest{
 		action:     "add",
-		objectType: clientRequest.Type,
+		objectType: clientRequest.Entity.Name,
 		reply:      returnChannel,
 	}
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{"Database statement returned no/wrong number of results"},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
@@ -99,21 +99,19 @@ func AddObjectType(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{result.err.Error()},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
 		return
 	}
 
-	txt := fmt.Sprintf("Added objectType: %s", result.objectType)
-	json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
+	json, _ := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -131,10 +129,10 @@ func DeleteObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{"Database statement returned no/wrong number of results"},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
@@ -143,21 +141,19 @@ func DeleteObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{result.err.Error()},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
 		return
 	}
 
-	txt := fmt.Sprintf("Deleted objectType: %s", result.objectType)
-	json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
+	json, _ := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -168,7 +164,7 @@ func RenameObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 
 	// read POST body
 	decoder := json.NewDecoder(r.Body)
-	var clientRequest somaproto.ProtoRequestObjectType
+	var clientRequest proto.Request
 	err := decoder.Decode(&clientRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -179,16 +175,16 @@ func RenameObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 	handler.input <- somaObjectTypeRequest{
 		action:     "rename",
 		objectType: params.ByName("objectType"),
-		rename:     clientRequest.Type,
+		rename:     clientRequest.Entity.Name,
 		reply:      returnChannel,
 	}
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{"Database statement returned no/wrong number of results"},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{"Database statement returned no/wrong number of results"},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
@@ -197,21 +193,19 @@ func RenameObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-			Code:   500,
-			Status: "Internal Server Error",
-			Text:   []string{result.err.Error()},
+		json, _ := json.Marshal(proto.Result{
+			StatusCode: 500,
+			StatusText: "Internal Server Error",
+			Errors:     &[]string{result.err.Error()},
 		})
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(json)
 		return
 	}
 
-	txt := fmt.Sprintf("Renamed objectType: %s to %s", result.objectType, clientRequest.Type)
-	json, _ := json.Marshal(somaproto.ProtoResultObjectType{
-		Code:   200,
-		Status: "OK",
-		Text:   []string{txt},
+	json, _ := json.Marshal(proto.Result{
+		StatusCode: 200,
+		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)

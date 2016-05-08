@@ -27,77 +27,8 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	var err error
 
 	switch s.(type) {
-	case *somaproto.ProtoRequestLevel:
-		c := s.(*somaproto.ProtoRequestLevel)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestPredicate:
-		c := s.(*somaproto.ProtoRequestPredicate)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestStatus:
-		c := s.(*somaproto.ProtoRequestStatus)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestOncall:
-		c := s.(*somaproto.ProtoRequestOncall)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestTeam:
-		c := s.(*somaproto.ProtoRequestTeam)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestNode:
-		c := s.(*somaproto.ProtoRequestNode)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestView:
-		c := s.(*somaproto.ProtoRequestView)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestServer:
-		c := s.(*somaproto.ProtoRequestServer)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestUnit:
-		c := s.(*somaproto.ProtoRequestUnit)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestProvider:
-		c := s.(*somaproto.ProtoRequestProvider)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestMetric:
-		c := s.(*somaproto.ProtoRequestMetric)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestMode:
-		c := s.(*somaproto.ProtoRequestMode)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestUser:
-		c := s.(*somaproto.ProtoRequestUser)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestMonitoring:
-		c := s.(*somaproto.ProtoRequestMonitoring)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestCapability:
-		c := s.(*somaproto.ProtoRequestCapability)
-		err = decoder.Decode(c)
-	case *somaproto.PropertyRequest:
-		c := s.(*somaproto.PropertyRequest)
-		err = decoder.Decode(c)
-	case *somaproto.AttributeRequest:
-		c := s.(*somaproto.AttributeRequest)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestRepository:
-		c := s.(*somaproto.ProtoRequestRepository)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestBucket:
-		c := s.(*somaproto.ProtoRequestBucket)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestGroup:
-		c := s.(*somaproto.ProtoRequestGroup)
-		err = decoder.Decode(c)
-	case *somaproto.ProtoRequestCluster:
-		c := s.(*somaproto.ProtoRequestCluster)
-		err = decoder.Decode(c)
-	case *somaproto.CheckConfigurationRequest:
-		c := s.(*somaproto.CheckConfigurationRequest)
-		err = decoder.Decode(c)
-	case *somaproto.HostDeploymentRequest:
-		c := s.(*somaproto.HostDeploymentRequest)
-		err = decoder.Decode(c)
-	case *somaproto.ValidityRequest:
-		c := s.(*somaproto.ValidityRequest)
+	case *proto.Request:
+		c := s.(*proto.Request)
 		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)
@@ -114,56 +45,66 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 
 func ResultLength(r *somaResult, t ErrorMarker) int {
 	switch t.(type) {
-	case *somaproto.ProtoResultLevel:
-		return len(r.Levels)
-	case *somaproto.ProtoResultPredicate:
-		return len(r.Predicates)
-	case *somaproto.ProtoResultStatus:
-		return len(r.Status)
-	case *somaproto.ProtoResultOncall:
-		return len(r.Oncall)
-	case *somaproto.ProtoResultTeam:
-		return len(r.Teams)
-	case *somaproto.ProtoResultNode:
-		return len(r.Nodes)
-	case *somaproto.ProtoResultView:
-		return len(r.Views)
-	case *somaproto.ProtoResultServer:
-		return len(r.Servers)
-	case *somaproto.ProtoResultUnit:
-		return len(r.Units)
-	case *somaproto.ProtoResultProvider:
-		return len(r.Providers)
-	case *somaproto.ProtoResultMetric:
-		return len(r.Metrics)
-	case *somaproto.ProtoResultMode:
-		return len(r.Modes)
-	case *somaproto.ProtoResultUser:
-		return len(r.Users)
-	case *somaproto.ProtoResultMonitoring:
-		return len(r.Systems)
-	case *somaproto.ProtoResultCapability:
-		return len(r.Capabilities)
-	case *somaproto.PropertyResult:
-		return len(r.Properties)
-	case *somaproto.AttributeResult:
-		return len(r.Attributes)
-	case *somaproto.ProtoResultRepository:
-		return len(r.Repositories)
-	case *somaproto.ProtoResultBucket:
-		return len(r.Buckets)
-	case *somaproto.ProtoResultGroup:
-		return len(r.Groups)
-	case *somaproto.ProtoResultCluster:
-		return len(r.Clusters)
-	case *somaproto.CheckConfigurationResult:
-		return len(r.CheckConfigs)
-	case *somaproto.DeploymentDetailsResult:
-		return len(r.Deployments)
-	case *somaproto.HostDeploymentResult:
-		return len(r.Deployments)
-	case *somaproto.ValidityResult:
-		return len(r.Validity)
+	case *proto.Result:
+		switch {
+		case r.Datacenters != nil:
+			return len(r.Datacenters)
+		case r.Levels != nil:
+			return len(r.Levels)
+		case r.Predicates != nil:
+			return len(r.Predicates)
+		case r.Status != nil:
+			return len(r.Status)
+		case r.Oncall != nil:
+			return len(r.Oncall)
+		case r.Teams != nil:
+			return len(r.Teams)
+		case r.Nodes != nil:
+			return len(r.Nodes)
+		case r.Views != nil:
+			return len(r.Views)
+		case r.Servers != nil:
+			return len(r.Servers)
+		case r.Units != nil:
+			return len(r.Units)
+		case r.Providers != nil:
+			return len(r.Providers)
+		case r.Metrics != nil:
+			return len(r.Metrics)
+		case r.Modes != nil:
+			return len(r.Modes)
+		case r.Users != nil:
+			return len(r.Users)
+		case r.Systems != nil:
+			return len(r.Systems)
+		case r.Capabilities != nil:
+			return len(r.Capabilities)
+		case r.Properties != nil:
+			return len(r.Properties)
+		case r.Attributes != nil:
+			return len(r.Attributes)
+		case r.Repositories != nil:
+			return len(r.Repositories)
+		case r.Buckets != nil:
+			return len(r.Buckets)
+		case r.Groups != nil:
+			return len(r.Groups)
+		case r.Clusters != nil:
+			return len(r.Clusters)
+		case r.CheckConfigs != nil:
+			return len(r.CheckConfigs)
+		case r.Validity != nil:
+			return len(r.Validity)
+		case r.HostDeployments != nil:
+			if len(r.Deployments) > len(r.HostDeployments) {
+				return len(r.Deployments)
+			}
+			return len(r.HostDeployments)
+		case r.Deployments != nil:
+			return len(r.Deployments)
+		}
+	default:
+		return 0
 	}
 	return 0
 }

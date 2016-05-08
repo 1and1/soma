@@ -3,21 +3,32 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
+
 )
 
 // Message structs
 type somaDatacenterRequest struct {
 	action     string
-	datacenter string
-	group      string
+	Datacenter proto.Datacenter
 	rename     string
-	reply      chan []somaDatacenterResult
+	reply      chan somaResult
 }
 
 type somaDatacenterResult struct {
-	err        error
-	datacenter string
+	ResultError error
+	Datacenter  proto.Datacenter
+}
+
+func (a *somaDatacenterResult) SomaAppendError(r *somaResult, err error) {
+	if err != nil {
+		r.Datacenters = append(r.Datacenters, somaDatacenterResult{ResultError: err})
+	}
+}
+
+func (a *somaDatacenterResult) SomaAppendResult(r *somaResult) {
+	r.Datacenters = append(r.Datacenters, *a)
 }
 
 /*  Read Access
@@ -90,109 +101,101 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 	var datacenter string
 	var rows *sql.Rows
 	var err error
-	result := make([]somaDatacenterResult, 0)
+	result := somaResult{}
 
 	switch q.action {
 	case "list":
+		log.Printf("R: datacenter/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
-		if err != nil {
-			result = append(result, somaDatacenterResult{
-				err:        err,
-				datacenter: q.datacenter,
-			})
+		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
 
 		for rows.Next() {
 			err = rows.Scan(&datacenter)
-			if err != nil {
-				result = append(result, somaDatacenterResult{
-					err:        err,
-					datacenter: q.datacenter,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaDatacenterResult{
-				err:        nil,
-				datacenter: datacenter,
+			result.Append(err, &somaDatacenterResult{
+				Datacenter: proto.Datacenter{
+					Locode: datacenter,
+				},
 			})
 		}
 	case "show":
-		err = r.show_stmt.QueryRow(q.datacenter).Scan(&datacenter)
+		log.Printf("R: datacenter/show for %s", q.Datacenter.Locode)
+		err = r.show_stmt.QueryRow(q.Datacenter.Locode).Scan(&datacenter)
 		if err != nil {
-			result = append(result, somaDatacenterResult{
-				err:        err,
-				datacenter: q.datacenter,
-			})
+			if err == sql.ErrNoRows {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
 			q.reply <- result
 			return
 		}
 
-		result = append(result, somaDatacenterResult{
-			err:        nil,
-			datacenter: datacenter,
+		result.Append(err, &somaDatacenterResult{
+			Datacenter: proto.Datacenter{
+				Locode: datacenter,
+			},
 		})
-	case "grouplist":
-		rows, err = r.grp_list.Query()
-		defer rows.Close()
-		if err != nil {
-			result = append(result, somaDatacenterResult{
-				err:        err,
-				datacenter: q.datacenter,
-			})
-			q.reply <- result
-			return
-		}
+		/*
+			case "grouplist":
+				rows, err = r.grp_list.Query()
+				defer rows.Close()
+				if err != nil {
+					result = append(result, somaDatacenterResult{
+						err:        err,
+						datacenter: q.datacenter,
+					})
+					q.reply <- result
+					return
+				}
 
-		for rows.Next() {
-			err = rows.Scan(&datacenter)
-			if err != nil {
-				result = append(result, somaDatacenterResult{
-					err:        err,
-					datacenter: q.datacenter,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaDatacenterResult{
-				err:        nil,
-				datacenter: datacenter,
-			})
-		}
-	case "groupshow":
-		rows, err = r.grp_show.Query(q.datacenter)
-		if err != nil {
-			result = append(result, somaDatacenterResult{
-				err:        err,
-				datacenter: q.datacenter,
-			})
-			q.reply <- result
-			return
-		}
+				for rows.Next() {
+					err = rows.Scan(&datacenter)
+					if err != nil {
+						result = append(result, somaDatacenterResult{
+							err:        err,
+							datacenter: q.datacenter,
+						})
+						err = nil
+						continue
+					}
+					result = append(result, somaDatacenterResult{
+						err:        nil,
+						datacenter: datacenter,
+					})
+				}
+			case "groupshow":
+				rows, err = r.grp_show.Query(q.datacenter)
+				if err != nil {
+					result = append(result, somaDatacenterResult{
+						err:        err,
+						datacenter: q.datacenter,
+					})
+					q.reply <- result
+					return
+				}
 
-		for rows.Next() {
-			err = rows.Scan(&datacenter)
-			if err != nil {
-				result = append(result, somaDatacenterResult{
-					err:        err,
-					datacenter: q.datacenter,
-				})
-				err = nil
-				continue
-			}
-			result = append(result, somaDatacenterResult{
-				err:        nil,
-				datacenter: datacenter,
-			})
-		}
+				for rows.Next() {
+					err = rows.Scan(&datacenter)
+					if err != nil {
+						result = append(result, somaDatacenterResult{
+							err:        err,
+							datacenter: q.datacenter,
+						})
+						err = nil
+						continue
+					}
+					result = append(result, somaDatacenterResult{
+						err:        nil,
+						datacenter: datacenter,
+					})
+				}
+		*/
 	default:
-		result = append(result, somaDatacenterResult{
-			err:        errors.New("not implemented"),
-			datacenter: "",
-		})
+		result.SetNotImplemented()
 	}
 	q.reply <- result
 }
@@ -281,50 +284,39 @@ func (w *somaDatacenterWriteHandler) process(q *somaDatacenterRequest) {
 	var res sql.Result
 	var err error
 
-	result := make([]somaDatacenterResult, 0)
+	result := somaResult{}
 	switch q.action {
 	case "add":
-		res, err = w.add_stmt.Exec(q.datacenter, q.datacenter)
-	case "groupadd":
-		res, err = w.grp_add.Exec(q.group, q.datacenter, q.group, q.datacenter)
+		res, err = w.add_stmt.Exec(q.Datacenter.Locode, q.Datacenter.Locode)
+	//case "groupadd":
+	//	res, err = w.grp_add.Exec(q.group, q.datacenter, q.group, q.datacenter)
 	case "delete":
-		res, err = w.del_stmt.Exec(q.datacenter)
-	case "groupdel":
-		res, err = w.grp_del.Exec(q.group, q.datacenter)
+		res, err = w.del_stmt.Exec(q.Datacenter.Locode)
+	//case "groupdel":
+	//	res, err = w.grp_del.Exec(q.group, q.datacenter)
 	case "rename":
-		res, err = w.ren_stmt.Exec(q.rename, q.datacenter)
+		res, err = w.ren_stmt.Exec(q.rename, q.Datacenter.Locode)
 	default:
-		result = append(result, somaDatacenterResult{
-			err:        errors.New("not implemented"),
-			datacenter: "",
-		})
+		log.Printf("R: unimplemented datacenter/%s", q.action)
+		result.SetNotImplemented()
 		q.reply <- result
 		return
 	}
-	if err != nil {
-		result = append(result, somaDatacenterResult{
-			err:        err,
-			datacenter: q.datacenter,
-		})
+	if result.SetRequestError(err) {
 		q.reply <- result
 		return
 	}
 
 	rowCnt, _ := res.RowsAffected()
-	if rowCnt == 0 {
-		result = append(result, somaDatacenterResult{
-			err:        errors.New("No rows affected"),
-			datacenter: q.datacenter,
-		})
-	} else if rowCnt > 1 {
-		result = append(result, somaDatacenterResult{
-			err:        errors.New("Too many rows affected"),
-			datacenter: q.datacenter,
-		})
-	} else {
-		result = append(result, somaDatacenterResult{
-			err:        nil,
-			datacenter: q.datacenter,
+	switch {
+	case rowCnt == 0:
+		result.Append(errors.New("No rows affected"), &somaDatacenterResult{})
+	case rowCnt > 1:
+		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
+			&somaDatacenterResult{})
+	default:
+		result.Append(nil, &somaDatacenterResult{
+			Datacenter: q.Datacenter,
 		})
 	}
 	q.reply <- result

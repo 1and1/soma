@@ -23,17 +23,16 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestServer{}
-	cReq.Filter = &somaproto.ProtoServerFilter{}
+	cReq := proto.NewServerFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Server.Name != "" {
 		filtered := make([]somaServerResult, 0)
 		for _, i := range result.Servers {
-			if i.Server.Name == cReq.Filter.Name {
+			if i.Server.Name == cReq.Filter.Server.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -53,7 +52,7 @@ func ShowServer(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaServerRequest{
 		action: "show",
 		reply:  returnChannel,
-		Server: somaproto.ProtoServer{
+		Server: proto.Server{
 			Id: params.ByName("server"),
 		},
 	}
@@ -67,7 +66,7 @@ func AddServer(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestServer{}
+	cReq := proto.NewServerRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -79,7 +78,7 @@ func AddServer(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaServerRequest{
 		action: "add",
 		reply:  returnChannel,
-		Server: somaproto.ProtoServer{
+		Server: proto.Server{
 			AssetId:    cReq.Server.AssetId,
 			Datacenter: cReq.Server.Datacenter,
 			Location:   cReq.Server.Location,
@@ -97,9 +96,9 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 	action := "delete"
 
-	cReq := somaproto.ProtoRequestServer{}
+	cReq := proto.NewServerRequest()
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Purge {
+	if cReq.Flags.Purge {
 		action = "purge"
 	}
 
@@ -108,7 +107,7 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaServerRequest{
 		action: action,
 		reply:  returnChannel,
-		Server: somaproto.ProtoServer{
+		Server: proto.Server{
 			Id: params.ByName("server"),
 		},
 	}
@@ -120,7 +119,7 @@ func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestServer{}
+	cReq := proto.NewServerRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -138,7 +137,7 @@ func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaServerRequest{
 		action: "insert-null",
 		reply:  returnChannel,
-		Server: somaproto.ProtoServer{
+		Server: proto.Server{
 			Datacenter: cReq.Server.Datacenter,
 		},
 	}
@@ -149,16 +148,14 @@ func InsertNullServer(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendServerReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultServer{}
+	result := proto.NewServerResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Servers = make([]somaproto.ProtoServer, 0)
 	for _, i := range (*r).Servers {
-		result.Servers = append(result.Servers, i.Server)
+		*result.Servers = append(*result.Servers, i.Server)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

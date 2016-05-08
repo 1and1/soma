@@ -8,13 +8,13 @@ import (
 
 type somaRepositoryRequest struct {
 	action     string
-	Repository somaproto.ProtoRepository
+	Repository proto.Repository
 	reply      chan somaResult
 }
 
 type somaRepositoryResult struct {
 	ResultError error
-	Repository  somaproto.ProtoRepository
+	Repository  proto.Repository
 }
 
 func (a *somaRepositoryResult) SomaAppendError(r *somaResult, err error) {
@@ -99,7 +99,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		for rows.Next() {
 			err := rows.Scan(&repoId, &repoName)
 			result.Append(err, &somaRepositoryResult{
-				Repository: somaproto.ProtoRepository{
+				Repository: proto.Repository{
 					Id:   repoId,
 					Name: repoName,
 				},
@@ -124,10 +124,10 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		}
 
 		result.Append(err, &somaRepositoryResult{
-			Repository: somaproto.ProtoRepository{
+			Repository: proto.Repository{
 				Id:        repoId,
 				Name:      repoName,
-				Team:      teamId,
+				TeamId:    teamId,
 				IsDeleted: false,
 				IsActive:  repoActive,
 			},

@@ -23,17 +23,16 @@ func ListNode(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestNode{}
-	cReq.Filter = &somaproto.ProtoNodeFilter{}
+	cReq := proto.NewNodeFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Node.Name != "" {
 		filtered := make([]somaNodeResult, 0)
 		for _, i := range result.Nodes {
-			if i.Node.Name == cReq.Filter.Name {
+			if i.Node.Name == cReq.Filter.Node.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -53,7 +52,7 @@ func ShowNode(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaNodeRequest{
 		action: "show",
 		reply:  returnChannel,
-		Node: somaproto.ProtoNode{
+		Node: proto.Node{
 			Id: params.ByName("node"),
 		},
 	}
@@ -70,7 +69,7 @@ func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaNodeRequest{
 		action: "get_config",
 		reply:  returnChannel,
-		Node: somaproto.ProtoNode{
+		Node: proto.Node{
 			Id: params.ByName("node"),
 		},
 	}
@@ -84,7 +83,7 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestNode{}
+	cReq := proto.NewNodeRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -97,11 +96,11 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 		action: "add",
 		reply:  returnChannel,
 		// TODO: assign default server if no server information provided
-		Node: somaproto.ProtoNode{
+		Node: proto.Node{
 			AssetId:   cReq.Node.AssetId,
 			Name:      cReq.Node.Name,
-			Team:      cReq.Node.Team,
-			Server:    cReq.Node.Server,
+			TeamId:    cReq.Node.TeamId,
+			ServerId:  cReq.Node.ServerId,
 			State:     "unassigned",
 			IsOnline:  true,
 			IsDeleted: false,
@@ -115,7 +114,7 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestNode{}
+	cReq := proto.NewNodeRequest()
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
@@ -141,9 +140,9 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 	action := "delete"
 
-	cReq := somaproto.ProtoRequestNode{}
+	cReq := proto.NewNodeRequest()
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Purge {
+	if cReq.Flags.Purge {
 		action = "purge"
 	}
 
@@ -152,7 +151,7 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaNodeRequest{
 		action: action,
 		reply:  returnChannel,
-		Node: somaproto.ProtoNode{
+		Node: proto.Node{
 			Id: params.ByName("node"),
 		},
 	}
@@ -164,7 +163,7 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestNode{}
+	cReq := proto.NewNodeRequest()
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
@@ -181,11 +180,11 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 			fmt.Errorf("Expected property count 1, actual count: %d",
 				len(*cReq.Node.Properties)))
 		return
-	case params.ByName("type") != (*cReq.Node.Properties)[0].PropertyType:
+	case params.ByName("type") != (*cReq.Node.Properties)[0].Type:
 		DispatchBadRequest(&w,
 			fmt.Errorf("Mismatched property types: %s, %s",
 				params.ByName("type"),
-				(*cReq.Node.Properties)[0].PropertyType))
+				(*cReq.Node.Properties)[0].Type))
 		return
 	case (params.ByName("type") == "service") && (*cReq.Node.Properties)[0].Service.Name == "":
 		DispatchBadRequest(&w,
@@ -211,16 +210,14 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendNodeReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultNode{}
+	result := proto.NewNodeResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Nodes = make([]somaproto.ProtoNode, 0)
 	for _, i := range (*r).Nodes {
-		result.Nodes = append(result.Nodes, i.Node)
+		*result.Nodes = append(*result.Nodes, i.Node)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

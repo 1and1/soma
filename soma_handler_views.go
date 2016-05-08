@@ -12,13 +12,13 @@ import (
 type somaViewRequest struct {
 	action string
 	name   string
-	View   somaproto.ProtoView
+	View   proto.View
 	reply  chan somaResult
 }
 
 type somaViewResult struct {
 	ResultError error
-	View        somaproto.ProtoView
+	View        proto.View
 }
 
 func (a *somaViewResult) SomaAppendError(r *somaResult, err error) {
@@ -96,8 +96,8 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 		for rows.Next() {
 			err = rows.Scan(&view)
 			result.Append(err, &somaViewResult{
-				View: somaproto.ProtoView{
-					View: view,
+				View: proto.View{
+					Name: view,
 				},
 			})
 		}
@@ -106,8 +106,8 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 			err = nil
 		}
 	case "show":
-		log.Printf("R: view/show for %s", q.View.View)
-		err = r.show_stmt.QueryRow(q.View.View).Scan(
+		log.Printf("R: view/show for %s", q.View.Name)
+		err = r.show_stmt.QueryRow(q.View.Name).Scan(
 			&view,
 		)
 		if err != nil {
@@ -121,8 +121,8 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 		}
 
 		result.Append(err, &somaViewResult{
-			View: somaproto.ProtoView{
-				View: view,
+			View: proto.View{
+				Name: view,
 			},
 		})
 	default:
@@ -198,19 +198,19 @@ func (w *somaViewWriteHandler) process(q *somaViewRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: view/add for %s", q.View.View)
+		log.Printf("R: view/add for %s", q.View.Name)
 		res, err = w.add_stmt.Exec(
-			q.View.View,
+			q.View.Name,
 		)
 	case "delete":
-		log.Printf("R: view/delete for %s", q.View.View)
+		log.Printf("R: view/delete for %s", q.View.Name)
 		res, err = w.del_stmt.Exec(
-			q.View.View,
+			q.View.Name,
 		)
 	case "rename":
 		log.Printf("R: view/rename for %s", q.name)
 		res, err = w.ren_stmt.Exec(
-			q.View.View,
+			q.View.Name,
 			q.name,
 		)
 	default:

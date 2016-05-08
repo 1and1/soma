@@ -32,8 +32,8 @@ func ShowMetric(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaMetricRequest{
 		action: "show",
 		reply:  returnChannel,
-		Metric: somaproto.ProtoMetric{
-			Metric: params.ByName("metric"),
+		Metric: proto.Metric{
+			Path: params.ByName("metric"),
 		},
 	}
 	result := <-returnChannel
@@ -46,7 +46,7 @@ func AddMetric(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestMetric{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -73,8 +73,8 @@ func DeleteMetric(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaMetricRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Metric: somaproto.ProtoMetric{
-			Metric: params.ByName("metric"),
+		Metric: proto.Metric{
+			Path: params.ByName("metric"),
 		},
 	}
 	result := <-returnChannel
@@ -84,16 +84,14 @@ func DeleteMetric(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendMetricReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultMetric{}
+	result := proto.NewMetricResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Metrics = make([]somaproto.ProtoMetric, 0)
 	for _, i := range (*r).Metrics {
-		result.Metrics = append(result.Metrics, i.Metric)
+		*result.Metrics = append(*result.Metrics, i.Metric)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

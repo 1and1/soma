@@ -8,13 +8,13 @@ import (
 
 type somaGroupRequest struct {
 	action string
-	Group  somaproto.ProtoGroup
+	Group  proto.Group
 	reply  chan somaResult
 }
 
 type somaGroupResult struct {
 	ResultError error
-	Group       somaproto.ProtoGroup
+	Group       proto.Group
 }
 
 func (a *somaGroupResult) SomaAppendError(r *somaResult, err error) {
@@ -137,7 +137,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		err                                              error
 	)
 	result := somaResult{}
-	resG := somaproto.ProtoGroup{}
+	resG := proto.Group{}
 
 	switch q.action {
 	case "list":
@@ -152,7 +152,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		for rows.Next() {
 			err := rows.Scan(&groupId, &groupName)
 			result.Append(err, &somaGroupResult{
-				Group: somaproto.ProtoGroup{
+				Group: proto.Group{
 					Id:   groupId,
 					Name: groupName,
 				},
@@ -178,7 +178,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		result.Append(err, &somaGroupResult{
-			Group: somaproto.ProtoGroup{
+			Group: proto.Group{
 				Id:          groupId,
 				Name:        groupName,
 				BucketId:    bucketId,
@@ -195,14 +195,14 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			return
 		}
 
-		resG = somaproto.ProtoGroup{
+		resG = proto.Group{
 			Id: q.Group.Id,
 		}
 		for rows.Next() {
 			err := rows.Scan(&mGroupId, &mGroupName, &groupName)
 			if err == nil {
 				resG.Name = groupName
-				resG.MemberGroups = append(resG.MemberGroups, somaproto.ProtoGroup{
+				resG.MemberGroups = append(resG.MemberGroups, proto.Group{
 					Id:   mGroupId,
 					Name: mGroupName,
 				})
@@ -219,7 +219,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		for rows.Next() {
 			err := rows.Scan(&mClusterId, &mClusterName, &groupName)
 			if err == nil {
-				resG.MemberClusters = append(resG.MemberClusters, somaproto.ProtoCluster{
+				resG.MemberClusters = append(resG.MemberClusters, proto.Cluster{
 					Id:   mClusterId,
 					Name: mClusterName,
 				})
@@ -236,7 +236,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		for rows.Next() {
 			err = rows.Scan(&mNodeId, &mNodeName, &groupName)
 			if err == nil {
-				resG.MemberNodes = append(resG.MemberNodes, somaproto.ProtoNode{
+				resG.MemberNodes = append(resG.MemberNodes, proto.Node{
 					Id:   mNodeId,
 					Name: mNodeName,
 				})

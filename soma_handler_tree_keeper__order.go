@@ -129,8 +129,8 @@ deployments:
 		}
 		/* a previous version of this check instance was found
 		 */
-		curDetails := somaproto.DeploymentDetails{}
-		prvDetails := somaproto.DeploymentDetails{}
+		curDetails := proto.Deployment{}
+		prvDetails := proto.Deployment{}
 		json.Unmarshal([]byte(currentDeploymentDetailsJSON), curDetails)
 		json.Unmarshal([]byte(previousDeploymentDetailsJSON), prvDetails)
 

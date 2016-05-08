@@ -32,7 +32,7 @@ func ShowUnit(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaUnitRequest{
 		action: "show",
 		reply:  returnChannel,
-		Unit: somaproto.ProtoUnit{
+		Unit: proto.Unit{
 			Unit: params.ByName("unit"),
 		},
 	}
@@ -46,7 +46,7 @@ func AddUnit(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestUnit{}
+	cReq := proto.NewUnitRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,7 +58,7 @@ func AddUnit(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaUnitRequest{
 		action: "add",
 		reply:  returnChannel,
-		Unit: somaproto.ProtoUnit{
+		Unit: proto.Unit{
 			Unit: cReq.Unit.Unit,
 			Name: cReq.Unit.Name,
 		},
@@ -76,7 +76,7 @@ func DeleteUnit(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaUnitRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Unit: somaproto.ProtoUnit{
+		Unit: proto.Unit{
 			Unit: params.ByName("unit"),
 		},
 	}
@@ -87,16 +87,14 @@ func DeleteUnit(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendUnitReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultUnit{}
+	result := proto.NewUnitResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Units = make([]somaproto.ProtoUnit, 0)
 	for _, i := range (*r).Units {
-		result.Units = append(result.Units, i.Unit)
+		*result.Units = append(*result.Units, i.Unit)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

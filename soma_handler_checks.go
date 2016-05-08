@@ -9,13 +9,13 @@ import (
 
 type somaCheckConfigRequest struct {
 	action      string
-	CheckConfig somaproto.CheckConfiguration
+	CheckConfig proto.CheckConfig
 	reply       chan somaResult
 }
 
 type somaCheckConfigResult struct {
 	ResultError error
-	CheckConfig somaproto.CheckConfiguration
+	CheckConfig proto.CheckConfig
 }
 
 func (a *somaCheckConfigResult) SomaAppendError(r *somaResult, err error) {
@@ -147,7 +147,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 				buck = bucketId.String
 			}
 			result.Append(err, &somaCheckConfigResult{
-				CheckConfig: somaproto.CheckConfiguration{
+				CheckConfig: proto.CheckConfig{
 					Id:           configId,
 					RepositoryId: repoId,
 					BucketId:     buck,
@@ -184,7 +184,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		if bucketId.Valid {
 			buck = bucketId.String
 		}
-		chkConfig := somaproto.CheckConfiguration{
+		chkConfig := proto.CheckConfig{
 			Id:           configId,
 			Name:         configName,
 			Interval:     uint64(interval),
@@ -199,7 +199,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 			ChildrenOnly: childrenOnly,
 			ExternalId:   extId,
 		}
-		chkConfig.Thresholds = make([]somaproto.CheckConfigurationThreshold, 0)
+		chkConfig.Thresholds = make([]proto.CheckConfigThreshold, 0)
 		if rows, err = r.show_threshold.Query(q.CheckConfig.Id); err != nil {
 			if err != sql.ErrNoRows {
 				if result.SetRequestError(err) {
@@ -231,11 +231,11 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					&numeric,
 				)
 				treshVal, _ = strconv.ParseInt(threshold, 10, 64)
-				thr := somaproto.CheckConfigurationThreshold{
-					Predicate: somaproto.ProtoPredicate{
-						Predicate: predicate,
+				thr := proto.CheckConfigThreshold{
+					Predicate: proto.Predicate{
+						Symbol: predicate,
 					},
-					Level: somaproto.ProtoLevel{
+					Level: proto.Level{
 						Name:      levelName,
 						ShortName: levelShort,
 						Numeric:   uint16(numeric),
@@ -247,7 +247,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 			}
 		}
 
-		chkConfig.Constraints = make([]somaproto.CheckConfigurationConstraint, 0)
+		chkConfig.Constraints = make([]proto.CheckConfigConstraint, 0)
 	constraintloop:
 		for _, tp := range []string{"custom", "system", "native", "service", "attribute", "oncall"} {
 			var (
@@ -279,10 +279,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 						&value,
 						&property,
 					)
-					constr := somaproto.CheckConfigurationConstraint{
+					constr := proto.CheckConfigConstraint{
 						ConstraintType: tp,
-						Custom: &somaproto.TreePropertyCustom{
-							CustomId:     propertyId,
+						Custom: &proto.PropertyCustom{
+							Id:           propertyId,
 							RepositoryId: repoId,
 							Name:         property,
 							Value:        value,
@@ -310,9 +310,9 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 						&property,
 						&value,
 					)
-					constr := somaproto.CheckConfigurationConstraint{
+					constr := proto.CheckConfigConstraint{
 						ConstraintType: tp,
-						System: &somaproto.TreePropertySystem{
+						System: &proto.PropertySystem{
 							Name:  property,
 							Value: value,
 						},
@@ -339,9 +339,9 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 						&property,
 						&value,
 					)
-					constr := somaproto.CheckConfigurationConstraint{
+					constr := proto.CheckConfigConstraint{
 						ConstraintType: tp,
-						Native: &somaproto.TreePropertyNative{
+						Native: &proto.PropertyNative{
 							Name:  property,
 							Value: value,
 						},
@@ -368,9 +368,9 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 						&propertyId,
 						&property,
 					)
-					constr := somaproto.CheckConfigurationConstraint{
+					constr := proto.CheckConfigConstraint{
 						ConstraintType: tp,
-						Service: &somaproto.TreePropertyService{
+						Service: &proto.PropertyService{
 							Name:   property,
 							TeamId: propertyId,
 						},
@@ -397,11 +397,11 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 						&property,
 						&value,
 					)
-					constr := somaproto.CheckConfigurationConstraint{
+					constr := proto.CheckConfigConstraint{
 						ConstraintType: tp,
-						Attribute: &somaproto.TreeServiceAttribute{
-							Attribute: property,
-							Value:     value,
+						Attribute: &proto.ServiceAttribute{
+							Name:  property,
+							Value: value,
 						},
 					}
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
@@ -427,12 +427,12 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 						&property,
 						&value,
 					)
-					constr := somaproto.CheckConfigurationConstraint{
+					constr := proto.CheckConfigConstraint{
 						ConstraintType: tp,
-						Oncall: &somaproto.TreePropertyOncall{
-							OncallId: propertyId,
-							Name:     property,
-							Number:   value,
+						Oncall: &proto.PropertyOncall{
+							Id:     propertyId,
+							Name:   property,
+							Number: value,
 						},
 					}
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)

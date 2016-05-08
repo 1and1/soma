@@ -24,17 +24,16 @@ func ListRepository(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestRepository{}
-	cReq.Filter = &somaproto.ProtoRepositoryFilter{}
+	cReq := proto.NewRepositoryFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Repository.Name != "" {
 		filtered := make([]somaRepositoryResult, 0)
 		for _, i := range result.Repositories {
-			if i.Repository.Name == cReq.Filter.Name {
+			if i.Repository.Name == cReq.Filter.Repository.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -54,7 +53,7 @@ func ShowRepository(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaRepositoryRequest{
 		action: "show",
 		reply:  returnChannel,
-		Repository: somaproto.ProtoRepository{
+		Repository: proto.Repository{
 			Id: params.ByName("repository"),
 		},
 	}
@@ -68,7 +67,7 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestRepository{}
+	cReq := proto.NewRepositoryRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -80,9 +79,9 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaRepositoryRequest{
 		action: "add",
 		reply:  returnChannel,
-		Repository: somaproto.ProtoRepository{
+		Repository: proto.Repository{
 			Name:      cReq.Repository.Name,
-			Team:      cReq.Repository.Team,
+			TeamId:    cReq.Repository.TeamId,
 			IsDeleted: cReq.Repository.IsDeleted,
 			IsActive:  cReq.Repository.IsActive,
 		},
@@ -95,7 +94,7 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestRepository{}
+	cReq := proto.NewRepositoryRequest()
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
@@ -112,11 +111,11 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 			fmt.Errorf("Expected property count 1, actual count: %d",
 				len(*cReq.Repository.Properties)))
 		return
-	case params.ByName("type") != (*cReq.Repository.Properties)[0].PropertyType:
+	case params.ByName("type") != (*cReq.Repository.Properties)[0].Type:
 		DispatchBadRequest(&w,
 			fmt.Errorf("Mismatched property types: %s, %s",
 				params.ByName("type"),
-				(*cReq.Repository.Properties)[0].PropertyType))
+				(*cReq.Repository.Properties)[0].Type))
 		return
 	case (params.ByName("type") == "service") && (*cReq.Repository.Properties)[0].Service.Name == "":
 		DispatchBadRequest(&w,
@@ -143,16 +142,14 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
  * Utility
  */
 func SendRepositoryReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultRepository{}
+	result := proto.NewRepositoryResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Repositories = make([]somaproto.ProtoRepository, 0)
 	for _, i := range (*r).Repositories {
-		result.Repositories = append(result.Repositories, i.Repository)
+		*result.Repositories = append(*result.Repositories, i.Repository)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

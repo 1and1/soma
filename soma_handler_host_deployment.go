@@ -20,7 +20,7 @@ type somaHostDeploymentResult struct {
 	ResultError error
 	Delete      bool
 	DeleteId    string
-	Deployment  somaproto.DeploymentDetails
+	Deployment  proto.Deployment
 }
 
 func (h *somaHostDeploymentResult) SomaAppendError(r *somaResult, err error) {
@@ -111,14 +111,14 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue idgetloop
 			}
-			depl := somaproto.DeploymentDetails{}
+			depl := proto.Deployment{}
 			if err = json.Unmarshal([]byte(deploymentDetails), depl); err != nil {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue idgetloop
 			}
 			// remove credentials from the hostapi
 			for i, _ := range depl.Service.Attributes {
-				if strings.Contains(depl.Service.Attributes[i].Attribute, "credential_") {
+				if strings.Contains(depl.Service.Attributes[i].Name, "credential_") {
 					depl.Service.Attributes[i].Value = ""
 				}
 			}
@@ -161,14 +161,14 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue assembleloop
 			}
-			depl := somaproto.DeploymentDetails{}
+			depl := proto.Deployment{}
 			if err = json.Unmarshal([]byte(deploymentDetails), depl); err != nil {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue assembleloop
 			}
 			// remove credentials from the hostapi
 			for i, _ := range depl.Service.Attributes {
-				if strings.Contains(depl.Service.Attributes[i].Attribute, "credential_") {
+				if strings.Contains(depl.Service.Attributes[i].Name, "credential_") {
 					depl.Service.Attributes[i].Value = ""
 				}
 			}

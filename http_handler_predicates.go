@@ -32,8 +32,8 @@ func ShowPredicate(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaPredicateRequest{
 		action: "show",
 		reply:  returnChannel,
-		Predicate: somaproto.ProtoPredicate{
-			Predicate: params.ByName("predicate"),
+		Predicate: proto.Predicate{
+			Symbol: params.ByName("predicate"),
 		},
 	}
 	result := <-returnChannel
@@ -46,7 +46,7 @@ func AddPredicate(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestPredicate{}
+	cReq := proto.NewPredicateRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,8 +58,8 @@ func AddPredicate(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaPredicateRequest{
 		action: "add",
 		reply:  returnChannel,
-		Predicate: somaproto.ProtoPredicate{
-			Predicate: cReq.Predicate.Predicate,
+		Predicate: proto.Predicate{
+			Symbol: cReq.Predicate.Symbol,
 		},
 	}
 	result := <-returnChannel
@@ -75,8 +75,8 @@ func DeletePredicate(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaPredicateRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Predicate: somaproto.ProtoPredicate{
-			Predicate: params.ByName("predicate"),
+		Predicate: proto.Predicate{
+			Symbol: params.ByName("predicate"),
 		},
 	}
 	result := <-returnChannel
@@ -86,16 +86,14 @@ func DeletePredicate(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendPredicateReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultPredicate{}
+	result := proto.NewPredicateResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Predicates = make([]somaproto.ProtoPredicate, 0)
 	for _, i := range (*r).Predicates {
-		result.Predicates = append(result.Predicates, i.Predicate)
+		*result.Predicates = append(*result.Predicates, i.Predicate)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

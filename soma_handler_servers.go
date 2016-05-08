@@ -12,13 +12,13 @@ import (
 
 type somaServerRequest struct {
 	action string
-	Server somaproto.ProtoServer
+	Server proto.Server
 	reply  chan somaResult
 }
 
 type somaServerResult struct {
 	ResultError error
-	Server      somaproto.ProtoServer
+	Server      proto.Server
 }
 
 func (a *somaServerResult) SomaAppendError(r *somaResult, err error) {
@@ -109,7 +109,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 		for rows.Next() {
 			err := rows.Scan(&serverId, &serverName)
 			result.Append(err, &somaServerResult{
-				Server: somaproto.ProtoServer{
+				Server: proto.Server{
 					Id:   serverId,
 					Name: serverName,
 				},
@@ -137,7 +137,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 		}
 
 		result.Append(err, &somaServerResult{
-			Server: somaproto.ProtoServer{
+			Server: proto.Server{
 				Id:         serverId,
 				AssetId:    uint64(serverAsset),
 				Datacenter: serverDc,

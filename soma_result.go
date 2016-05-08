@@ -15,31 +15,32 @@ type somaResult struct {
 	NotImplemented  bool
 	Accepted        bool
 	JobId           string
-	Nodes           []somaNodeResult
-	Servers         []somaServerResult
+	Attributes      []somaAttributeResult
+	Buckets         []somaBucketResult
+	Capabilities    []somaCapabilityResult
+	CheckConfigs    []somaCheckConfigResult
+	Clusters        []somaClusterResult
+	Datacenters     []somaDatacenterResult
+	Deployments     []somaDeploymentResult
+	Groups          []somaGroupResult
+	HostDeployments []somaHostDeploymentResult
 	Levels          []somaLevelResult
-	Predicates      []somaPredicateResult
-	Status          []somaStatusResult
-	Teams           []somaTeamResult
-	Oncall          []somaOncallResult
-	Views           []somaViewResult
-	Units           []somaUnitResult
-	Providers       []somaProviderResult
 	Metrics         []somaMetricResult
 	Modes           []somaModeResult
-	Users           []somaUserResult
-	Systems         []somaMonitoringResult
-	Capabilities    []somaCapabilityResult
+	Nodes           []somaNodeResult
+	Oncall          []somaOncallResult
+	Predicates      []somaPredicateResult
 	Properties      []somaPropertyResult
-	Attributes      []somaAttributeResult
+	Providers       []somaProviderResult
 	Repositories    []somaRepositoryResult
-	Buckets         []somaBucketResult
-	Groups          []somaGroupResult
-	Clusters        []somaClusterResult
-	CheckConfigs    []somaCheckConfigResult
-	Deployments     []somaDeploymentResult
-	HostDeployments []somaHostDeploymentResult
+	Servers         []somaServerResult
+	Status          []somaStatusResult
+	Systems         []somaMonitoringResult
+	Teams           []somaTeamResult
+	Units           []somaUnitResult
+	Users           []somaUserResult
 	Validity        []somaValidityResult
+	Views           []somaViewResult
 }
 
 func (r *somaResult) SetRequestError(err error) bool {

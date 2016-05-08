@@ -24,17 +24,18 @@ func ListCluster(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestCluster{}
-	cReq.Filter = &somaproto.ProtoClusterFilter{}
+	cReq := proto.Request{}
+	cReq.Filter = &proto.Filter{}
+	cReq.Filter.Cluster = &proto.ClusterFilter{}
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Cluster.Name != "" {
 		filtered := make([]somaClusterResult, 0)
 		for _, i := range result.Clusters {
-			if i.Cluster.Name == cReq.Filter.Name {
+			if i.Cluster.Name == cReq.Filter.Cluster.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -54,7 +55,7 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaClusterRequest{
 		action: "show",
 		reply:  returnChannel,
-		Cluster: somaproto.ProtoCluster{
+		Cluster: proto.Cluster{
 			Id: params.ByName("cluster"),
 		},
 	}
@@ -71,7 +72,7 @@ func ListClusterMembers(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaClusterRequest{
 		action: "member_list",
 		reply:  returnChannel,
-		Cluster: somaproto.ProtoCluster{
+		Cluster: proto.Cluster{
 			Id: params.ByName("cluster"),
 		},
 	}
@@ -85,7 +86,7 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestCluster{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -111,7 +112,7 @@ func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestCluster{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -137,7 +138,7 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestCluster{}
+	cReq := proto.Request{}
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
@@ -154,11 +155,11 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 			fmt.Errorf("Expected property count 1, actual count: %d",
 				len(*cReq.Cluster.Properties)))
 		return
-	case params.ByName("type") != (*cReq.Cluster.Properties)[0].PropertyType:
+	case params.ByName("type") != (*cReq.Cluster.Properties)[0].Type:
 		DispatchBadRequest(&w,
 			fmt.Errorf("Mismatched property types: %s, %s",
 				params.ByName("type"),
-				(*cReq.Cluster.Properties)[0].PropertyType))
+				(*cReq.Cluster.Properties)[0].Type))
 		return
 	case (params.ByName("type") == "service") && (*cReq.Cluster.Properties)[0].Service.Name == "":
 		DispatchBadRequest(&w,
@@ -185,16 +186,16 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
  * Utility
  */
 func SendClusterReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultCluster{}
+	result := proto.Result{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Clusters = make([]somaproto.ProtoCluster, 0)
+	result.Errors = &[]string{}
+	result.Clusters = &[]proto.Cluster{}
 	for _, i := range (*r).Clusters {
-		result.Clusters = append(result.Clusters, i.Cluster)
+		*result.Clusters = append(*result.Clusters, i.Cluster)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

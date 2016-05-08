@@ -22,18 +22,17 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declase here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestLevel{}
-	cReq.Filter = &somaproto.ProtoLevelFilter{}
+	cReq := proto.NewLevelFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if (cReq.Filter.Name != "") || (cReq.Filter.ShortName != "") {
+	if (cReq.Filter.Level.Name != "") || (cReq.Filter.Level.ShortName != "") {
 		filtered := make([]somaLevelResult, 0)
 		for _, i := range result.Levels {
-			if ((cReq.Filter.Name != "") && (cReq.Filter.Name == i.Level.Name)) ||
-				((cReq.Filter.ShortName != "") && (cReq.Filter.ShortName == i.Level.ShortName)) {
+			if ((cReq.Filter.Level.Name != "") && (cReq.Filter.Level.Name == i.Level.Name)) ||
+				((cReq.Filter.Level.ShortName != "") && (cReq.Filter.Level.ShortName == i.Level.ShortName)) {
 				filtered = append(filtered, i)
 			}
 		}
@@ -53,7 +52,7 @@ func ShowLevel(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaLevelRequest{
 		action: "show",
 		reply:  returnChannel,
-		Level: somaproto.ProtoLevel{
+		Level: proto.Level{
 			Name: params.ByName("level"),
 		},
 	}
@@ -67,7 +66,7 @@ func AddLevel(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestLevel{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -79,7 +78,7 @@ func AddLevel(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaLevelRequest{
 		action: "add",
 		reply:  returnChannel,
-		Level: somaproto.ProtoLevel{
+		Level: proto.Level{
 			Name:      cReq.Level.Name,
 			ShortName: cReq.Level.ShortName,
 			Numeric:   cReq.Level.Numeric,
@@ -98,7 +97,7 @@ func DeleteLevel(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaLevelRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Level: somaproto.ProtoLevel{
+		Level: proto.Level{
 			Name: params.ByName("level"),
 		},
 	}
@@ -109,16 +108,14 @@ func DeleteLevel(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendLevelReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultLevel{}
+	result := proto.NewLevelResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Levels = make([]somaproto.ProtoLevel, 0)
 	for _, i := range (*r).Levels {
-		result.Levels = append(result.Levels, i.Level)
+		*result.Levels = append(*result.Levels, i.Level)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

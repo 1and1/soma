@@ -21,24 +21,25 @@ func ListCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaCheckConfigRequest{
 		action: "list",
 		reply:  returnChannel,
-		CheckConfig: somaproto.CheckConfiguration{
+		CheckConfig: proto.CheckConfig{
 			RepositoryId: params.ByName("repository"),
 		},
 	}
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.CheckConfigurationRequest{}
-	cReq.Filter = &somaproto.CheckConfigurationFilter{}
+	cReq := proto.Request{}
+	cReq.Filter = &proto.Filter{}
+	cReq.Filter.CheckConfig = &proto.CheckConfigFilter{}
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.CheckConfig.Name != "" {
 		filtered := make([]somaCheckConfigResult, 0)
 		for _, i := range result.CheckConfigs {
-			if i.CheckConfig.Name == cReq.Filter.Name {
+			if i.CheckConfig.Name == cReq.Filter.CheckConfig.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -58,7 +59,7 @@ func ShowCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaCheckConfigRequest{
 		action: "show",
 		reply:  returnChannel,
-		CheckConfig: somaproto.CheckConfiguration{
+		CheckConfig: proto.CheckConfig{
 			Id:           params.ByName("check"),
 			RepositoryId: params.ByName("repository"),
 		},
@@ -74,22 +75,22 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.CheckConfigurationRequest{}
+	cReq := proto.Request{}
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
 	}
-	cReq.CheckConfiguration.Id = uuid.Nil.String()
+	cReq.CheckConfig.Id = uuid.Nil.String()
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(guidePost)
 	handler.input <- treeRequest{
 		RequestType: "check",
-		Action:      fmt.Sprintf("add_check_to_%s", cReq.CheckConfiguration.ObjectType),
+		Action:      fmt.Sprintf("add_check_to_%s", cReq.CheckConfig.ObjectType),
 		reply:       returnChannel,
 		CheckConfig: somaCheckConfigRequest{
 			action:      "check_configuration_new",
-			CheckConfig: *cReq.CheckConfiguration,
+			CheckConfig: *cReq.CheckConfig,
 		},
 	}
 	result := <-returnChannel
@@ -99,20 +100,21 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendCheckConfigurationReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.CheckConfigurationResult{}
+	result := proto.Result{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.CheckConfigurations = make([]somaproto.CheckConfiguration, 0)
+	result.Errors = &[]string{}
+	result.CheckConfigs = &[]proto.CheckConfig{}
 	for _, i := range (*r).CheckConfigs {
-		result.CheckConfigurations = append(result.CheckConfigurations, i.CheckConfig)
+		*result.CheckConfigs = append(*result.CheckConfigs, i.CheckConfig)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 
 dispatch:
+	result.Clean()
 	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)

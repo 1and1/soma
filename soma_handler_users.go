@@ -13,13 +13,13 @@ import (
 
 type somaUserRequest struct {
 	action string
-	User   somaproto.ProtoUser
+	User   proto.User
 	reply  chan somaResult
 }
 
 type somaUserResult struct {
 	ResultError error
-	User        somaproto.ProtoUser
+	User        proto.User
 }
 
 func (a *somaUserResult) SomaAppendError(r *somaResult, err error) {
@@ -113,7 +113,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 				&userName,
 			)
 			result.Append(err, &somaUserResult{
-				User: somaproto.ProtoUser{
+				User: proto.User{
 					Id:       userId,
 					UserName: userName,
 				},
@@ -148,7 +148,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 		}
 
 		result.Append(err, &somaUserResult{
-			User: somaproto.ProtoUser{
+			User: proto.User{
 				Id:             userId,
 				UserName:       userName,
 				FirstName:      firstName,
@@ -158,7 +158,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 				IsActive:       isActive,
 				IsSystem:       isSystem,
 				IsDeleted:      isDeleted,
-				Team:           team,
+				TeamId:         team,
 			},
 		})
 	default:
@@ -260,7 +260,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 			false,
 			q.User.IsSystem,
 			false,
-			q.User.Team,
+			q.User.TeamId,
 		)
 		q.User.Id = id.String()
 	case "delete":
