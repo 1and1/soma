@@ -33,6 +33,8 @@ type Result struct {
 	Errors *[]string `json:"errors, omitempty"`
 	// JobId is set for StatusCode 202 (async processing)
 	JobId string `json:"jobId, omitempty"`
+	// List of (outstanding) deployment IDs
+	DeploymentsList *[]string `json:"deploymentsList, omitempty"`
 
 	// Request dependent data
 	Attributes       *[]Attribute       `json:"attributes, omitempty"`
