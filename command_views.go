@@ -50,9 +50,9 @@ func registerViews(app cli.App) *cli.App {
 func cmdViewsAdd(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.ProtoRequestView{}
-	req.View = &somaproto.ProtoView{}
-	req.View.View = c.Args().First()
+	req := proto.Request{}
+	req.View = &proto.View{}
+	req.View.Name = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/views/")
 	fmt.Println(resp)
@@ -77,9 +77,9 @@ func cmdViewsRename(c *cli.Context) {
 		key,
 		c.Args().Tail())
 
-	req := somaproto.ProtoRequestView{}
-	req.View = &somaproto.ProtoView{}
-	req.View.View = opts["to"][0]
+	req := proto.Request{}
+	req.View = &proto.View{}
+	req.View.Name = opts["to"][0]
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
 	resp := utl.PatchRequestWithBody(req, path)

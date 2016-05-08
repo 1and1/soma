@@ -103,8 +103,8 @@ func cmdServerCreate(c *cli.Context) {
 	tail := a.Tail()
 	args = append(args, tail...)
 
-	req := somaproto.ProtoRequestServer{}
-	req.Server = &somaproto.ProtoServer{}
+	req := proto.Request{}
+	req.Server = &proto.Server{}
 	var err error
 
 	// golang on its own can't iterate over a slice two items at a time
@@ -248,8 +248,11 @@ func cmdServerPurgeDeleted(c *cli.Context) {
 		url.Path = fmt.Sprintf("/servers/%d", assetId)
 	}
 
-	var req somaproto.ProtoRequestServer
-	req.Purge = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Purge: true,
+		},
+	}
 
 	resp, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
@@ -272,7 +275,7 @@ func cmdServerUpdate(c *cli.Context) {
 	tail := a.Tail()
 	args = append(args, tail...)
 
-	var req somaproto.ProtoRequestServer
+	var req proto.Request
 	var err error
 
 	// golang on its own can't iterate over a slice two items at a time
@@ -389,7 +392,7 @@ func cmdServerRename(c *cli.Context) {
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
 
-	var req somaproto.ProtoRequestServer
+	var req proto.Request
 	req.Server.Name = newName
 
 	resp, err := resty.New().
@@ -436,7 +439,7 @@ func cmdServerOnline(c *cli.Context) {
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
 
-	var req somaproto.ProtoRequestServer
+	var req proto.Request
 	req.Server.IsOnline = true
 
 	resp, err := resty.New().
@@ -483,7 +486,7 @@ func cmdServerOffline(c *cli.Context) {
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
 
-	var req somaproto.ProtoRequestServer
+	var req proto.Request
 	req.Server.IsOnline = false
 
 	resp, err := resty.New().
@@ -527,7 +530,7 @@ func cmdServerMove(c *cli.Context) {
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
 
-	var req somaproto.ProtoRequestServer
+	var req proto.Request
 
 	// golang on its own can't iterate over a slice two items at a time
 	skipNext := false
@@ -594,37 +597,33 @@ func cmdServerShow(c *cli.Context) {
 }
 
 func cmdServerSyncRequest(c *cli.Context) {
-	url := getApiUrl()
-	url.Path = "/jobs"
-
-	a := c.Args()
-	// arguments must be present, and the arguments after the first must
-	// be zero => 1 argument given
-	if !a.Present() || len(a.Tail()) != 0 {
-		Slog.Fatal("Syntax error")
-	}
-	assetId, err := strconv.ParseUint(a.First(), 10, 64)
-
-	var req somaproto.ProtoRequestJob
-	req.JobType = "server"
-	req.Server.Action = "sync"
-	req.Server.Server.AssetId = assetId
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
-	}
-	utl.CheckRestyResponse(resp)
-	// TODO save jobid locally as outstanding
 	/*
-		TODO: decode resp.Body -> ProtoResultJob
-		job := ProtoResultJob.JobId
-		jobDbAddOutstandingJob(job)
+		url := getApiUrl()
+		url.Path = "/jobs"
+
+		a := c.Args()
+		// arguments must be present, and the arguments after the first must
+		// be zero => 1 argument given
+		if !a.Present() || len(a.Tail()) != 0 {
+			Slog.Fatal("Syntax error")
+		}
+		assetId, err := strconv.ParseUint(a.First(), 10, 64)
+
+		var req somaproto.ProtoRequestJob
+		req.JobType = "server"
+		req.Server.Action = "sync"
+		req.Server.Server.AssetId = assetId
+
+		resp, err := resty.New().
+			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+			R().
+			SetBody(req).
+			Patch(url.String())
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			Slog.Fatal(err)
+		}
+		utl.CheckRestyResponse(resp)
 	*/
 }
 
@@ -634,8 +633,8 @@ func cmdServerNull(c *cli.Context) {
 
 	opts := utl.ParseVariadicArguments(key, key, key, c.Args())
 
-	req := somaproto.ProtoRequestServer{}
-	req.Server = &somaproto.ProtoServer{}
+	req := proto.Request{}
+	req.Server = &proto.Server{}
 	req.Server.Id = "00000000-0000-0000-0000-000000000000"
 	req.Server.Datacenter = opts["datacenter"][0]
 

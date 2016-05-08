@@ -129,12 +129,12 @@ func cmdUserAdd(c *cli.Context) {
 	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])
 	utl.ValidateStringAsMailAddress(opts["mailaddr"][0])
 
-	req := somaproto.ProtoRequestUser{}
-	req.User = &somaproto.ProtoUser{}
+	req := proto.Request{}
+	req.User = &proto.User{}
 	req.User.UserName = c.Args().First()
 	req.User.FirstName = opts["firstname"][0]
 	req.User.LastName = opts["lastname"][0]
-	req.User.Team = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	req.User.TeamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = false
@@ -174,8 +174,11 @@ func cmdUserPurgeDeleted(c *cli.Context) {
 	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
 
-	req := somaproto.ProtoRequestUser{}
-	req.Purge = true
+	req := proto.Request{
+		Flags: &proto.Flags{
+			Purge: true,
+		},
+	}
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)

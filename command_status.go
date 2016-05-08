@@ -45,9 +45,9 @@ func registerStatus(app cli.App) *cli.App {
 func cmdStatusCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.ProtoRequestStatus{}
-	req.Status = &somaproto.ProtoStatus{}
-	req.Status.Status = c.Args().First()
+	req := proto.Request{}
+	req.Status = &proto.Status{}
+	req.Status.Name = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/status/")
 	fmt.Println(resp)

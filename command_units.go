@@ -47,8 +47,8 @@ func cmdUnitCreate(c *cli.Context) {
 
 	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	req := somaproto.ProtoRequestUnit{}
-	req.Unit = &somaproto.ProtoUnit{}
+	req := proto.Request{}
+	req.Unit = &proto.Unit{}
 	req.Unit.Unit = c.Args().First()
 	req.Unit.Name = opts["name"][0]
 

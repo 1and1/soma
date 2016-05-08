@@ -41,56 +41,56 @@ func cmdCheckAdd(c *cli.Context) {
 
 	opts, constraints, thresholds := utl.ParseVariadicCheckArguments(c.Args().Tail())
 
-	req := somaproto.CheckConfigurationRequest{}
-	req.CheckConfiguration = &somaproto.CheckConfiguration{
+	req := proto.Request{}
+	req.CheckConfig = &proto.CheckConfig{
 		Name:         utl.ValidateRuneCount(c.Args().First(), 256),
 		Interval:     utl.GetValidatedUint64(opts["interval"][0], 1),
 		BucketId:     utl.BucketByUUIDOrName(opts["in"][0]),
 		CapabilityId: utl.TryGetCapabilityByUUIDOrName(opts["with"][0]),
 		ObjectType:   opts["on/type"][0],
 	}
-	req.CheckConfiguration.RepositoryId = utl.GetRepositoryIdForBucket(
-		req.CheckConfiguration.BucketId)
-	req.CheckConfiguration.ObjectId = utl.GetObjectIdForCheck(
+	req.CheckConfig.RepositoryId = utl.GetRepositoryIdForBucket(
+		req.CheckConfig.BucketId)
+	req.CheckConfig.ObjectId = utl.GetObjectIdForCheck(
 		opts["on/type"][0],
 		opts["on/object"][0],
-		req.CheckConfiguration.BucketId)
+		req.CheckConfig.BucketId)
 
 	// clear bucketid if check is on a repository
-	if req.CheckConfiguration.ObjectType == "repository" {
-		req.CheckConfiguration.BucketId = ""
+	if req.CheckConfig.ObjectType == "repository" {
+		req.CheckConfig.BucketId = ""
 	}
 
 	// optional argument: inheritance
 	if iv, ok := opts["inheritance"]; ok {
-		req.CheckConfiguration.Inheritance = utl.GetValidatedBool(iv[0])
+		req.CheckConfig.Inheritance = utl.GetValidatedBool(iv[0])
 	} else {
 		// inheritance defaults to true
-		req.CheckConfiguration.Inheritance = true
+		req.CheckConfig.Inheritance = true
 	}
 
 	// optional argument: childrenonly
 	if co, ok := opts["childrenonly"]; ok {
-		req.CheckConfiguration.ChildrenOnly = utl.GetValidatedBool(co[0])
+		req.CheckConfig.ChildrenOnly = utl.GetValidatedBool(co[0])
 	} else {
 		// childrenonly defaults to false
-		req.CheckConfiguration.ChildrenOnly = false
+		req.CheckConfig.ChildrenOnly = false
 	}
 
 	// optional argument: extern
 	if ex, ok := opts["extern"]; ok {
-		req.CheckConfiguration.ExternalId = utl.ValidateRuneCount(ex[0], 64)
+		req.CheckConfig.ExternalId = utl.ValidateRuneCount(ex[0], 64)
 	}
 
-	teamId := utl.GetTeamIdByRepositoryId(req.CheckConfiguration.RepositoryId)
+	teamId := utl.GetTeamIdByRepositoryId(req.CheckConfig.RepositoryId)
 
-	req.CheckConfiguration.Thresholds = utl.CleanThresholds(thresholds)
-	req.CheckConfiguration.Constraints = utl.CleanConstraints(
+	req.CheckConfig.Thresholds = utl.CleanThresholds(thresholds)
+	req.CheckConfig.Constraints = utl.CleanConstraints(
 		constraints,
-		req.CheckConfiguration.RepositoryId,
+		req.CheckConfig.RepositoryId,
 		teamId)
 
-	path := fmt.Sprintf("/checks/%s/", req.CheckConfiguration.RepositoryId)
+	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
 }

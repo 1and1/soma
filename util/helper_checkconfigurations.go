@@ -1,8 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 
 	"github.com/satori/go.uuid"
@@ -28,16 +26,16 @@ func (u SomaUtil) GetObjectIdForCheck(t string, n string, b string) string {
 	return ""
 }
 
-func (u SomaUtil) CleanThresholds(thresholds []somaproto.CheckConfigurationThreshold) []somaproto.CheckConfigurationThreshold {
-	clean := []somaproto.CheckConfigurationThreshold{}
+func (u SomaUtil) CleanThresholds(thresholds []somaproto.CheckConfigThreshold) []somaproto.CheckConfigThreshold {
+	clean := []somaproto.CheckConfigThreshold{}
 
 	for _, thr := range thresholds {
-		c := somaproto.CheckConfigurationThreshold{
+		c := somaproto.CheckConfigThreshold{
 			Value: thr.Value,
-			Predicate: somaproto.ProtoPredicate{
-				Predicate: thr.Predicate.Predicate,
+			Predicate: somaproto.Predicate{
+				Symbol: thr.Predicate.Symbol,
 			},
-			Level: somaproto.ProtoLevel{
+			Level: somaproto.Level{
 				Name: u.TryGetLevelNameByNameOrShort(thr.Level.Name),
 			},
 		}
@@ -46,8 +44,8 @@ func (u SomaUtil) CleanThresholds(thresholds []somaproto.CheckConfigurationThres
 	return clean
 }
 
-func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigurationConstraint, repoId string, teamId string) []somaproto.CheckConfigurationConstraint {
-	clean := []somaproto.CheckConfigurationConstraint{}
+func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigConstraint, repoId string, teamId string) []somaproto.CheckConfigConstraint {
+	clean := []somaproto.CheckConfigConstraint{}
 
 	for _, prop := range constraints {
 		switch prop.ConstraintType {
@@ -60,36 +58,36 @@ func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigurationCon
 			_ = u.DecodeProtoResultPropertyFromResponse(resp) // aborts on 404
 			clean = append(clean, prop)
 		case "attribute":
-			resp := u.GetRequest(fmt.Sprintf("/attributes/%s", prop.Attribute.Attribute))
+			resp := u.GetRequest(fmt.Sprintf("/attributes/%s", prop.Attribute.Name))
 			_ = u.DecodeProtoResultAttributeFromResponse(resp) // aborts on 404
 			clean = append(clean, prop)
 		case "oncall":
-			oc := somaproto.TreePropertyOncall{}
+			oc := somaproto.PropertyOncall{}
 			if prop.Oncall.Name != "" {
-				oc.OncallId = u.TryGetOncallByUUIDOrName(prop.Oncall.Name)
-			} else if prop.Oncall.OncallId != "" {
-				oc.OncallId = u.TryGetOncallByUUIDOrName(prop.Oncall.OncallId)
+				oc.Id = u.TryGetOncallByUUIDOrName(prop.Oncall.Name)
+			} else if prop.Oncall.Id != "" {
+				oc.Id = u.TryGetOncallByUUIDOrName(prop.Oncall.Id)
 			}
-			clean = append(clean, somaproto.CheckConfigurationConstraint{
+			clean = append(clean, somaproto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
 				Oncall:         &oc,
 			})
 		case "service":
-			so := somaproto.TreePropertyService{
+			so := somaproto.PropertyService{
 				Name:   u.TryGetServicePropertyByUUIDOrName(prop.Service.Name, teamId),
 				TeamId: teamId,
 			}
-			clean = append(clean, somaproto.CheckConfigurationConstraint{
+			clean = append(clean, somaproto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
 				Service:        &so,
 			})
 		case "custom":
-			co := somaproto.TreePropertyCustom{
+			co := somaproto.PropertyCustom{
 				RepositoryId: repoId,
-				CustomId:     u.TryGetCustomPropertyByUUIDOrName(prop.Custom.Name, repoId),
+				Id:           u.TryGetCustomPropertyByUUIDOrName(prop.Custom.Name, repoId),
 				Value:        prop.Custom.Value,
 			}
-			clean = append(clean, somaproto.CheckConfigurationConstraint{
+			clean = append(clean, somaproto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
 				Custom:         &co,
 			})
@@ -108,9 +106,11 @@ func (u *SomaUtil) TryGetCheckByUUIDOrName(c string, r string) string {
 
 func (u *SomaUtil) GetCheckByName(c string, r string) string {
 	repo := u.TryGetRepositoryByUUIDOrName(r)
-	req := somaproto.CheckConfigurationRequest{
-		Filter: &somaproto.CheckConfigurationFilter{
-			Name: c,
+	req := somaproto.Request{
+		Filter: &somaproto.Filter{
+			CheckConfig: &somaproto.CheckConfigFilter{
+				Name: c,
+			},
 		},
 	}
 
@@ -118,24 +118,14 @@ func (u *SomaUtil) GetCheckByName(c string, r string) string {
 	resp := u.PostRequestWithBody(req, path)
 	checkResult := u.DecodeCheckConfigurationResultFromResponse(resp)
 
-	if c != checkResult.CheckConfigurations[0].Name {
+	if c != (*checkResult.CheckConfigs)[0].Name {
 		u.Abort("Received result set for incorrect check configuration")
 	}
-	return checkResult.CheckConfigurations[0].Id
+	return (*checkResult.CheckConfigs)[0].Id
 }
 
-func (u *SomaUtil) DecodeCheckConfigurationResultFromResponse(resp *resty.Response) *somaproto.CheckConfigurationResult {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	res := somaproto.CheckConfigurationResult{}
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u *SomaUtil) DecodeCheckConfigurationResultFromResponse(resp *resty.Response) *somaproto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

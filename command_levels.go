@@ -52,8 +52,8 @@ func cmdLevelCreate(c *cli.Context) {
 		multKeys,
 		c.Args().Tail())
 
-	req := somaproto.ProtoRequestLevel{}
-	req.Level = &somaproto.ProtoLevel{}
+	req := proto.Request{}
+	req.Level = &proto.Level{}
 	req.Level.Name = c.Args().First()
 	req.Level.ShortName = opts["shortname"][0]
 	l, err := strconv.ParseUint(opts["numeric"][0], 10, 16)

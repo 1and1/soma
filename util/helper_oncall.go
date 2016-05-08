@@ -1,9 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/satori/go.uuid"
@@ -20,31 +17,25 @@ func (u SomaUtil) TryGetOncallByUUIDOrName(s string) string {
 }
 
 func (u SomaUtil) GetOncallIdByName(oncall string) string {
-	req := somaproto.ProtoRequestOncall{}
-	req.Filter = &somaproto.ProtoOncallFilter{}
-	req.Filter.Name = oncall
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Oncall: &proto.OncallFilter{
+				Name: oncall,
+			},
+		},
+	}
 
 	resp := u.PostRequestWithBody(req, "/filter/oncall/")
 	oncallResult := u.DecodeProtoResultOncallFromResponse(resp)
 
-	if oncall != oncallResult.Oncalls[0].Name {
+	if oncall != (*oncallResult.Oncalls)[0].Name {
 		u.Abort("Received result set for incorrect oncall duty")
 	}
-	return oncallResult.Oncalls[0].Id
+	return (*oncallResult.Oncalls)[0].Id
 }
 
-func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *somaproto.ProtoResultOncall {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.ProtoResultOncall
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *proto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 func (u SomaUtil) ValidatePhoneNumber(n string) {

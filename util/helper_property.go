@@ -1,8 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 
 	"github.com/satori/go.uuid"
@@ -47,13 +45,17 @@ func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) string {
 
 func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) string {
 	var (
-		req         somaproto.PropertyRequest
+		req         proto.Request
 		ctxIdString string
 		path        string
 	)
-	req = somaproto.PropertyRequest{}
-	req.Filter = &somaproto.PropertyFilter{}
-	req.Filter.Name = prop
+	req = proto.Request{
+		Filter: &proto.Filter{
+			Property: &proto.PropertyFilter{
+				Name: prop,
+			},
+		},
+	}
 
 	switch pType {
 	case "custom":
@@ -76,12 +78,12 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	propResult := u.DecodeProtoResultPropertyFromResponse(resp)
 
 	switch prop {
-	case propResult.Custom[0].Name:
-		return propResult.Custom[0].CustomId
-	case propResult.System[0].Name:
-		return propResult.System[0].Name
-	case propResult.Service[0].Name:
-		return propResult.Service[0].Name
+	case (*propResult.Properties)[0].Custom.Name:
+		return (*propResult.Properties)[0].Custom.Id
+	case (*propResult.Properties)[0].System.Name:
+		return (*propResult.Properties)[0].System.Name
+	case (*propResult.Properties)[0].Service.Name:
+		return (*propResult.Properties)[0].Service.Name
 	default:
 		u.Abort("Received result set for incorrect property")
 	}
@@ -96,26 +98,16 @@ func (u SomaUtil) CheckStringIsSystemProperty(s string) {
 	resp := u.GetRequest("/property/system/")
 	res := u.DecodeProtoResultPropertyFromResponse(resp)
 
-	for _, prop := range res.System {
-		if prop.Name == s {
+	for _, prop := range *res.Properties {
+		if prop.System.Name == s {
 			return
 		}
 	}
 	u.Abort("Invalid system property requested")
 }
 
-func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *somaproto.PropertyResult {
-	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
-	var res somaproto.PropertyResult
-	err := decoder.Decode(&res)
-	u.AbortOnError(err, "Error decoding server response body")
-	if res.Code > 299 {
-		s := fmt.Sprintf("Request failed: %d - %s", res.Code, res.Status)
-		msgs := []string{s}
-		msgs = append(msgs, res.Text...)
-		u.Abort(msgs...)
-	}
-	return &res
+func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *proto.Result {
+	return u.DecodeResultFromResponse(resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

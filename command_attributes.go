@@ -61,10 +61,12 @@ func cmdAttributeCreate(c *cli.Context) {
 		utl.Abort("Illegal value for cardinality")
 	}
 
-	req := somaproto.AttributeRequest{}
-	req.Attribute = &somaproto.Attribute{}
-	req.Attribute.Attribute = c.Args().First()
-	req.Attribute.Cardinality = opts["cardinality"][0]
+	req := proto.Request{
+		Attribute: &proto.Attribute{
+			Name:        c.Args().First(),
+			Cardinality: opts["cardinality"][0],
+		},
+	}
 
 	resp := utl.PostRequestWithBody(req, "/attributes/")
 	fmt.Println(resp)

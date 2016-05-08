@@ -45,9 +45,9 @@ func registerProviders(app cli.App) *cli.App {
 func cmdProviderCreate(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	req := somaproto.ProtoRequestProvider{}
-	req.Provider = &somaproto.ProtoProvider{}
-	req.Provider.Provider = c.Args().First()
+	req := proto.Request{}
+	req.Provider = &proto.Provider{}
+	req.Provider.Name = c.Args().First()
 
 	resp := utl.PostRequestWithBody(req, "/providers/")
 	fmt.Println(resp)
