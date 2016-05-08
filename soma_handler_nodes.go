@@ -121,7 +121,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		for rows.Next() {
 			err := rows.Scan(&nodeId, &nodeName)
 			result.Append(err, &somaNodeResult{
-				Node: somaproto.ProtoNode{
+				Node: proto.Node{
 					Id:   nodeId,
 					Name: nodeName,
 				},
@@ -150,12 +150,12 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		}
 
 		result.Append(err, &somaNodeResult{
-			Node: somaproto.ProtoNode{
+			Node: proto.Node{
 				Id:        nodeId,
 				AssetId:   uint64(nodeAsset),
 				Name:      nodeName,
-				Team:      nodeTeam,
-				Server:    nodeServer,
+				TeamId:    nodeTeam,
+				ServerId:  nodeServer,
 				State:     nodeState,
 				IsOnline:  nodeOnline,
 				IsDeleted: nodeDeleted,
@@ -180,10 +180,10 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		}
 
 		result.Append(err, &somaNodeResult{
-			Node: somaproto.ProtoNode{
+			Node: proto.Node{
 				Id:   nodeId,
 				Name: nodeName,
-				Config: &somaproto.ProtoNodeConfig{
+				Config: &proto.NodeConfig{
 					RepositoryId: repositoryId,
 					BucketId:     bucketId,
 				},
@@ -274,15 +274,15 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	case "add":
 		log.Printf("R: node/add for %s", q.Node.Name)
 		id := uuid.NewV4()
-		if q.Node.Server == "" {
-			q.Node.Server = "00000000-0000-0000-0000-000000000000"
+		if q.Node.ServerId == "" {
+			q.Node.ServerId = "00000000-0000-0000-0000-000000000000"
 		}
 		res, err = w.add_stmt.Exec(
 			id.String(),
 			q.Node.AssetId,
 			q.Node.Name,
-			q.Node.Team,
-			q.Node.Server,
+			q.Node.TeamId,
+			q.Node.ServerId,
 			q.Node.State,
 			q.Node.IsOnline,
 			false,

@@ -89,17 +89,21 @@ func UpdateDeploymentDetails(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendDeploymentReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.DeploymentDetailsResult{}
+	result := proto.Result{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Deployments = make([]somaproto.DeploymentDetails, 0)
+	result.Deployments = &[]proto.Deployment{}
+	result.DeploymentsList = &[]string{}
 	for _, i := range (*r).Deployments {
 		if i.ListEntry != "" {
-			result.List = append(result.List, i.ListEntry)
+			*result.DeploymentsList = append(*result.DeploymentsList, i.ListEntry)
 			continue
 		}
-		result.Deployments = append(result.Deployments, i.Deployment)
+		*result.Deployments = append(*result.Deployments, i.Deployment)
+	}
+	if len(*result.DeploymentsList) == 0 {
+		result.DeploymentsList = nil
 	}
 
 dispatch:

@@ -97,14 +97,14 @@ func (r *somaMetricReadHandler) process(q *somaMetricRequest) {
 		for rows.Next() {
 			err := rows.Scan(&metric)
 			result.Append(err, &somaMetricResult{
-				Metric: somaproto.ProtoMetric{
-					Metric: metric,
+				Metric: proto.Metric{
+					Path: metric,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: metrics/show for %s", q.Metric.Metric)
-		err = r.show_stmt.QueryRow(q.Metric.Metric).Scan(
+		log.Printf("R: metrics/show for %s", q.Metric.Path)
+		err = r.show_stmt.QueryRow(q.Metric.Path).Scan(
 			&metric,
 			&unit,
 			&description,
@@ -120,8 +120,8 @@ func (r *somaMetricReadHandler) process(q *somaMetricRequest) {
 		}
 
 		result.Append(err, &somaMetricResult{
-			Metric: somaproto.ProtoMetric{
-				Metric:      metric,
+			Metric: proto.Metric{
+				Path:        metric,
 				Unit:        unit,
 				Description: description,
 			},
@@ -212,14 +212,14 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		res    sql.Result
 		err    error
 		tx     *sql.Tx
-		pkg    somaproto.ProtoMetricProviderPackage
+		pkg    proto.MetricPackage
 		rowCnt int64
 	)
 	result := somaResult{}
 
 	switch q.action {
 	case "add":
-		log.Printf("R: metrics/add for %s", q.Metric.Metric)
+		log.Printf("R: metrics/add for %s", q.Metric.Path)
 
 		// start transaction
 		tx, err = w.conn.Begin()
@@ -230,7 +230,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 
 		// insert metric
 		res, err = tx.Stmt(w.add_stmt).Exec(
-			q.Metric.Metric,
+			q.Metric.Path,
 			q.Metric.Unit,
 			q.Metric.Description,
 		)
@@ -249,9 +249,9 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		pkgloop:
 			for _, pkg = range *q.Metric.Packages {
 				res, err = tx.Stmt(w.pkg_add_stmt).Exec(
-					q.Metric.Metric,
+					q.Metric.Path,
 					pkg.Provider,
-					pkg.Package,
+					pkg.Name,
 				)
 				if err != nil {
 					break pkgloop
@@ -260,7 +260,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		}
 		err = tx.Commit()
 	case "delete":
-		log.Printf("R: metrics/del for %s", q.Metric.Metric)
+		log.Printf("R: metrics/del for %s", q.Metric.Path)
 
 		// start transaction
 		tx, err = w.conn.Begin()
@@ -271,7 +271,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 
 		// delete provider package information for this metric
 		res, err = tx.Stmt(w.pkg_del_stmt).Exec(
-			q.Metric.Metric,
+			q.Metric.Path,
 		)
 		if err != nil {
 			goto bailout
@@ -279,7 +279,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 
 		// delete metric that is no longer references
 		res, err = tx.Stmt(w.del_stmt).Exec(
-			q.Metric.Metric,
+			q.Metric.Path,
 		)
 		if err != nil {
 			goto bailout

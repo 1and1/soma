@@ -221,7 +221,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					System: somaproto.TreePropertySystem{
+					System: proto.PropertySystem{
 						Name: property,
 					},
 				})
@@ -229,7 +229,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				err := rows.Scan(&property, &team)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Service: somaproto.TreePropertyService{
+					Service: proto.PropertyService{
 						Name:   property,
 						TeamId: team,
 					},
@@ -238,7 +238,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Native: somaproto.TreePropertyNative{
+					Native: proto.PropertyNative{
 						Name: property,
 					},
 				})
@@ -246,7 +246,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				err := rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Service: somaproto.TreePropertyService{
+					Service: proto.PropertyService{
 						Name: property,
 					},
 				})
@@ -254,8 +254,8 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				err := rows.Scan(&property, &repository, &id)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
-					Custom: somaproto.TreePropertyCustom{
-						CustomId:     id,
+					Custom: proto.PropertyCustom{
+						Id:           id,
 						RepositoryId: repository,
 						Name:         property,
 					},
@@ -275,9 +275,9 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				&property,
 			)
 		case "custom":
-			log.Printf("R: property/show-custom for %s", q.Custom.CustomId)
+			log.Printf("R: property/show-custom for %s", q.Custom.Id)
 			err = r.show_cst_stmt.QueryRow(
-				q.Custom.CustomId,
+				q.Custom.Id,
 				q.Custom.RepositoryId,
 			).Scan(
 				&id,
@@ -312,28 +312,28 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 		case "system":
 			result.Append(err, &somaPropertyResult{
 				prType: q.prType,
-				System: somaproto.TreePropertySystem{
+				System: proto.PropertySystem{
 					Name: property,
 				},
 			})
 		case "native":
 			result.Append(err, &somaPropertyResult{
 				prType: q.prType,
-				Native: somaproto.TreePropertyNative{
+				Native: proto.PropertyNative{
 					Name: property,
 				},
 			})
 		case "custom":
 			result.Append(err, &somaPropertyResult{
 				prType: q.prType,
-				Custom: somaproto.TreePropertyCustom{
-					CustomId:     id,
+				Custom: proto.PropertyCustom{
+					Id:           id,
 					RepositoryId: repository,
 					Name:         property,
 				},
 			})
 		case "service":
-			propTempl := somaproto.TreePropertyService{}
+			propTempl := proto.PropertyService{}
 			var fErr error
 			for rows.Next() {
 				err := rows.Scan(
@@ -346,9 +346,9 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				if err != nil {
 					propTempl.Name = property
 					propTempl.TeamId = team
-					propTempl.Attributes = append(propTempl.Attributes, somaproto.TreeServiceAttribute{
-						Attribute: attribute,
-						Value:     value,
+					propTempl.Attributes = append(propTempl.Attributes, proto.ServiceAttribute{
+						Name:  attribute,
+						Value: value,
 					})
 				} else {
 					fErr = err
@@ -359,7 +359,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				Service: propTempl,
 			})
 		case "template":
-			propTempl := somaproto.TreePropertyService{}
+			propTempl := proto.PropertyService{}
 			var fErr error
 			for rows.Next() {
 				err := rows.Scan(
@@ -370,9 +370,9 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 
 				if err != nil {
 					propTempl.Name = property
-					propTempl.Attributes = append(propTempl.Attributes, somaproto.TreeServiceAttribute{
-						Attribute: attribute,
-						Value:     value,
+					propTempl.Attributes = append(propTempl.Attributes, proto.ServiceAttribute{
+						Name:  attribute,
+						Value: value,
 					})
 				} else {
 					fErr = err
@@ -591,7 +591,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 		res    sql.Result
 		err    error
 		tx     *sql.Tx
-		attr   somaproto.TreeServiceAttribute
+		attr   proto.ServiceAttribute
 		rowCnt int64
 	)
 	result := somaResult{}
@@ -614,7 +614,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 		case "custom":
 			log.Printf("R: property/add-custom for %s", q.Custom.Name)
 			res, err = w.add_cst_stmt.Exec(
-				q.Custom.CustomId,
+				q.Custom.Id,
 				q.Custom.RepositoryId,
 				q.Custom.Name,
 			)
@@ -643,7 +643,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 				res, err = tx.Stmt(w.add_srv_attr_stmt).Exec(
 					q.Service.TeamId,
 					q.Service.Name,
-					attr.Attribute,
+					attr.Name,
 					attr.Value,
 				)
 				if err != nil {
@@ -677,7 +677,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			for _, attr = range q.Service.Attributes {
 				res, err = tx.Stmt(w.add_tpl_attr_stmt).Exec(
 					q.Service.Name,
-					attr.Attribute,
+					attr.Name,
 					attr.Value,
 				)
 				if err != nil {
@@ -705,10 +705,10 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
-			log.Printf("R: property/delete-custom for %s", q.Custom.CustomId)
+			log.Printf("R: property/delete-custom for %s", q.Custom.Id)
 			res, err = w.del_cst_stmt.Exec(
 				q.Custom.RepositoryId,
-				q.Custom.CustomId,
+				q.Custom.Id,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "service":

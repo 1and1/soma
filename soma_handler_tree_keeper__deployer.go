@@ -157,14 +157,14 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 	defer rows.Close()
 
 	for rows.Next() {
-		detail := somaproto.DeploymentDetails{}
+		detail := proto.Deployment{}
 
 		err = rows.Scan(
 			&instanceCfgId,
 		)
 
 		//
-		detail.CheckInstance = &somaproto.TreeCheckInstance{
+		detail.CheckInstance = &proto.CheckInstance{
 			InstanceConfigId: instanceCfgId,
 		}
 		stmt_CheckInstance.QueryRow(instanceCfgId).Scan(
@@ -180,7 +180,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 		)
 
 		//
-		detail.Check = &somaproto.TreeCheck{
+		detail.Check = &proto.Check{
 			CheckId: detail.CheckInstance.CheckId,
 		}
 		stmt_Check.QueryRow(detail.CheckInstance.CheckId).Scan(
@@ -201,7 +201,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 		detail.Check.CheckConfigId = detail.CheckInstance.ConfigId
 
 		//
-		detail.CheckConfiguration = &somaproto.CheckConfiguration{
+		detail.CheckConfig = &proto.CheckConfig{
 			Id:           detail.Check.CheckConfigId,
 			RepositoryId: detail.Check.RepositoryId,
 			BucketId:     detail.Check.BucketId,
@@ -212,91 +212,91 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			ChildrenOnly: detail.Check.ChildrenOnly,
 		}
 		stmt_CheckConfig.QueryRow(detail.Check.CheckConfigId).Scan(
-			&detail.CheckConfiguration.Name,
-			&detail.CheckConfiguration.Interval,
-			&detail.CheckConfiguration.IsActive,
-			&detail.CheckConfiguration.IsEnabled,
-			&detail.CheckConfiguration.ExternalId,
+			&detail.CheckConfig.Name,
+			&detail.CheckConfig.Interval,
+			&detail.CheckConfig.IsActive,
+			&detail.CheckConfig.IsEnabled,
+			&detail.CheckConfig.ExternalId,
 		)
 
 		//
-		detail.CheckConfiguration.Thresholds = []somaproto.CheckConfigurationThreshold{}
-		thresh, _ = stmt_Threshold.Query(detail.CheckConfiguration.Id)
+		detail.CheckConfig.Thresholds = []proto.CheckConfigThreshold{}
+		thresh, _ = stmt_Threshold.Query(detail.CheckConfig.Id)
 		defer thresh.Close()
 
 		for thresh.Next() {
-			thr := somaproto.CheckConfigurationThreshold{
-				Predicate: somaproto.ProtoPredicate{},
-				Level:     somaproto.ProtoLevel{},
+			thr := proto.CheckConfigThreshold{
+				Predicate: proto.Predicate{},
+				Level:     proto.Level{},
 			}
 
 			err = thresh.Scan(
-				&thr.Predicate.Predicate,
+				&thr.Predicate.Symbol,
 				&thr.Value,
 				&thr.Level.Name,
 				&thr.Level.ShortName,
 				&thr.Level.Numeric,
 			)
-			detail.CheckConfiguration.Thresholds = append(detail.CheckConfiguration.Thresholds, thr)
+			detail.CheckConfig.Thresholds = append(detail.CheckConfig.Thresholds, thr)
 		}
 
 		// XXX TODO
 		//detail.CheckConfiguration.Constraints = []somaproto.CheckConfigurationConstraint{}
-		detail.CheckConfiguration.Constraints = nil
+		detail.CheckConfig.Constraints = nil
 
 		//
-		detail.Capability = &somaproto.ProtoCapability{
+		detail.Capability = &proto.Capability{
 			Id: detail.Check.CapabilityId,
 		}
-		detail.Monitoring = &somaproto.ProtoMonitoring{}
-		detail.Metric = &somaproto.ProtoMetric{}
-		detail.Unit = &somaproto.ProtoUnit{}
+		detail.Monitoring = &proto.Monitoring{}
+		detail.Metric = &proto.Metric{}
+		detail.Unit = &proto.Unit{}
 		stmt_CapMonMetric.QueryRow(detail.Capability.Id).Scan(
 			&detail.Capability.Metric,
-			&detail.Capability.Monitoring,
+			&detail.Capability.MonitoringId,
 			&detail.Capability.View,
 			&detail.Capability.Thresholds,
 			&detail.Monitoring.Name,
 			&detail.Monitoring.Mode,
 			&detail.Monitoring.Contact,
-			&detail.Monitoring.Team,
+			&detail.Monitoring.TeamId,
 			&detail.Monitoring.Callback,
 			&detail.Metric.Unit,
 			&detail.Metric.Description,
 			&detail.Unit.Name,
 		)
 		detail.Unit.Unit = detail.Metric.Unit
-		detail.Metric.Metric = detail.Capability.Metric
-		detail.Monitoring.Id = detail.Capability.Monitoring
+		detail.Metric.Path = detail.Capability.Metric
+		detail.Monitoring.Id = detail.Capability.MonitoringId
 		detail.Capability.Name = fmt.Sprintf("%s.%s.%s",
 			detail.Monitoring.Name,
 			detail.Capability.View,
-			detail.Metric.Metric,
+			detail.Metric.Path,
 		)
 		detail.View = detail.Capability.View
 
 		//
-		detail.Metric.Packages = &[]somaproto.ProtoMetricProviderPackage{}
-		pkgs, _ = stmt_Pkgs.Query(detail.Metric.Metric)
+		detail.Metric.Packages = &[]proto.MetricPackage{}
+		pkgs, _ = stmt_Pkgs.Query(detail.Metric.Path)
 		defer pkgs.Close()
 
 		for pkgs.Next() {
-			pkg := somaproto.ProtoMetricProviderPackage{}
+			pkg := proto.MetricPackage{}
 
 			err = pkgs.Scan(
 				&pkg.Provider,
-				&pkg.Package,
+				&pkg.Name,
 			)
 			*detail.Metric.Packages = append(*detail.Metric.Packages, pkg)
 		}
 
 		//
-		detail.Oncall = &somaproto.ProtoOncall{}
-		detail.Service = &somaproto.TreePropertyService{}
+		detail.Oncall = &proto.Oncall{}
+		detail.Service = &proto.PropertyService{}
 		switch objType {
 		case "group":
 			// fetch the group object
-			detail.Group = &somaproto.ProtoGroup{
+			detail.Group = &proto.Group{
 				Id: objId,
 			}
 			stmt_Group.QueryRow(objId).Scan(
@@ -309,7 +309,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				&detail.Repository,
 			)
 			// fetch team information
-			detail.Team = &somaproto.ProtoTeam{
+			detail.Team = &proto.Team{
 				Id: detail.Group.TeamId,
 			}
 			// fetch oncall information if the property is set,
@@ -334,25 +334,25 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				if err != nil {
 					detail.Service = nil
 				} else {
-					detail.Service.Attributes = []somaproto.TreeServiceAttribute{}
+					detail.Service.Attributes = []proto.ServiceAttribute{}
 					fm := map[string]string{}
 					_ = json.Unmarshal([]byte(detail.CheckInstance.InstanceServiceConfig), &fm)
 					for k, v := range fm {
-						a := somaproto.TreeServiceAttribute{
-							Attribute: k,
-							Value:     v,
+						a := proto.ServiceAttribute{
+							Name:  k,
+							Value: v,
 						}
 						detail.Service.Attributes = append(detail.Service.Attributes, a)
 					}
 				}
 			}
 			// fetch system properties
-			detail.Properties = &[]somaproto.TreePropertySystem{}
+			detail.Properties = &[]proto.PropertySystem{}
 			gSysProps, _ = stmt_GroupSysProp.Query(detail.Group.Id, detail.View)
 			defer gSysProps.Close()
 
 			for gSysProps.Next() {
-				prop := somaproto.TreePropertySystem{}
+				prop := proto.PropertySystem{}
 				err = gSysProps.Scan(
 					&prop.Name,
 					&prop.Value,
@@ -366,14 +366,14 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				detail.Properties = nil
 			}
 			// fetch custom properties
-			detail.CustomProperties = &[]somaproto.TreePropertyCustom{}
+			detail.CustomProperties = &[]proto.PropertyCustom{}
 			gCustProps, _ = stmt_GroupCustProp.Query(detail.Group.Id, detail.View)
 			defer gCustProps.Close()
 
 			for gCustProps.Next() {
-				prop := somaproto.TreePropertyCustom{}
+				prop := proto.PropertyCustom{}
 				gCustProps.Scan(
-					&prop.CustomId,
+					&prop.Id,
 					&prop.Name,
 					&prop.Value,
 				)
@@ -384,7 +384,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 		case "cluster":
 			// fetch the cluster object
-			detail.Cluster = &somaproto.ProtoCluster{
+			detail.Cluster = &proto.Cluster{
 				Id: objId,
 			}
 			stmt_Cluster.QueryRow(objId).Scan(
@@ -397,7 +397,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				&detail.Repository,
 			)
 			// fetch team information
-			detail.Team = &somaproto.ProtoTeam{
+			detail.Team = &proto.Team{
 				Id: detail.Cluster.TeamId,
 			}
 			// fetch oncall information if the property is set,
@@ -422,25 +422,25 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				if err != nil {
 					detail.Service = nil
 				} else {
-					detail.Service.Attributes = []somaproto.TreeServiceAttribute{}
+					detail.Service.Attributes = []proto.ServiceAttribute{}
 					fm := map[string]string{}
 					_ = json.Unmarshal([]byte(detail.CheckInstance.InstanceServiceConfig), &fm)
 					for k, v := range fm {
-						a := somaproto.TreeServiceAttribute{
-							Attribute: k,
-							Value:     v,
+						a := proto.ServiceAttribute{
+							Name:  k,
+							Value: v,
 						}
 						detail.Service.Attributes = append(detail.Service.Attributes, a)
 					}
 				}
 			}
 			// fetch system properties
-			detail.Properties = &[]somaproto.TreePropertySystem{}
+			detail.Properties = &[]proto.PropertySystem{}
 			cSysProps, _ = stmt_ClusterSysProp.Query(detail.Cluster.Id, detail.View)
 			defer cSysProps.Close()
 
 			for cSysProps.Next() {
-				prop := somaproto.TreePropertySystem{}
+				prop := proto.PropertySystem{}
 				err = cSysProps.Scan(
 					&prop.Name,
 					&prop.Value,
@@ -454,14 +454,14 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				detail.Properties = nil
 			}
 			// fetch custom properties
-			detail.CustomProperties = &[]somaproto.TreePropertyCustom{}
+			detail.CustomProperties = &[]proto.PropertyCustom{}
 			cCustProps, _ = stmt_ClusterCustProp.Query(detail.Cluster.Id, detail.View)
 			defer cCustProps.Close()
 
 			for cCustProps.Next() {
-				prop := somaproto.TreePropertyCustom{}
+				prop := proto.PropertyCustom{}
 				cCustProps.Scan(
-					&prop.CustomId,
+					&prop.Id,
 					&prop.Name,
 					&prop.Value,
 				)
@@ -472,15 +472,15 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 		case "node":
 			// fetch the node object
-			detail.Server = &somaproto.ProtoServer{}
-			detail.Node = &somaproto.ProtoNode{
+			detail.Server = &proto.Server{}
+			detail.Node = &proto.Node{
 				Id: objId,
 			}
 			stmt_Node.QueryRow(objId).Scan(
 				&detail.Node.AssetId,
 				&detail.Node.Name,
-				&detail.Node.Team,
-				&detail.Node.Server,
+				&detail.Node.TeamId,
+				&detail.Node.ServerId,
 				&detail.Node.State,
 				&detail.Node.IsOnline,
 				&detail.Node.IsDeleted,
@@ -494,15 +494,15 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				&detail.Server.IsOnline,
 				&detail.Server.IsDeleted,
 			)
-			detail.Server.Id = detail.Node.Server
+			detail.Server.Id = detail.Node.ServerId
 			detail.Datacenter = detail.Server.Datacenter
 			// fetch team information
-			detail.Team = &somaproto.ProtoTeam{
-				Id: detail.Node.Team,
+			detail.Team = &proto.Team{
+				Id: detail.Node.TeamId,
 			}
 			// fetch oncall information if the property is set,
 			// otherwise cleanup detail.Oncall
-			detail.Oncall = &somaproto.ProtoOncall{}
+			detail.Oncall = &proto.Oncall{}
 			err = stmt_NodeOncall.QueryRow(detail.Node.Id, detail.View).Scan(
 				&detail.Oncall.Id,
 				&detail.Oncall.Name,
@@ -523,25 +523,25 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				if err != nil {
 					detail.Service = nil
 				} else {
-					detail.Service.Attributes = []somaproto.TreeServiceAttribute{}
+					detail.Service.Attributes = []proto.ServiceAttribute{}
 					fm := map[string]string{}
 					_ = json.Unmarshal([]byte(detail.CheckInstance.InstanceServiceConfig), &fm)
 					for k, v := range fm {
-						a := somaproto.TreeServiceAttribute{
-							Attribute: k,
-							Value:     v,
+						a := proto.ServiceAttribute{
+							Name:  k,
+							Value: v,
 						}
 						detail.Service.Attributes = append(detail.Service.Attributes, a)
 					}
 				}
 			}
 			// fetch system properties
-			detail.Properties = &[]somaproto.TreePropertySystem{}
+			detail.Properties = &[]proto.PropertySystem{}
 			nSysProps, _ = stmt_NodeSysProp.Query(detail.Node.Id, detail.View)
 			defer nSysProps.Close()
 
 			for nSysProps.Next() {
-				prop := somaproto.TreePropertySystem{}
+				prop := proto.PropertySystem{}
 				err = nSysProps.Scan(
 					&prop.Name,
 					&prop.Value,
@@ -552,14 +552,14 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 				detail.Properties = nil
 			}
 			// fetch custom properties
-			detail.CustomProperties = &[]somaproto.TreePropertyCustom{}
+			detail.CustomProperties = &[]proto.PropertyCustom{}
 			nCustProps, _ = stmt_NodeCustProp.Query(detail.Node.Id, detail.View)
 			defer nCustProps.Close()
 
 			for nCustProps.Next() {
-				prop := somaproto.TreePropertyCustom{}
+				prop := proto.PropertyCustom{}
 				gCustProps.Scan(
-					&prop.CustomId,
+					&prop.Id,
 					&prop.Name,
 					&prop.Value,
 				)
@@ -572,7 +572,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 
 		stmt_Team.QueryRow(detail.Team.Id).Scan(
 			&detail.Team.Name,
-			&detail.Team.Ldap,
+			&detail.Team.LdapId,
 		)
 
 		// if no datacenter information was gathered, use the default DC

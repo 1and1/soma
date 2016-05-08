@@ -22,17 +22,16 @@ func ListOncall(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestOncall{}
-	cReq.Filter = &somaproto.ProtoOncallFilter{}
+	cReq := proto.NewOncallFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Oncall.Name != "" {
 		filtered := make([]somaOncallResult, 0)
 		for _, i := range result.Oncall {
-			if i.Oncall.Name == cReq.Filter.Name {
+			if i.Oncall.Name == cReq.Filter.Oncall.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -52,7 +51,7 @@ func ShowOncall(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaOncallRequest{
 		action: "show",
 		reply:  returnChannel,
-		Oncall: somaproto.ProtoOncall{
+		Oncall: proto.Oncall{
 			Id: params.ByName("oncall"),
 		},
 	}
@@ -66,7 +65,7 @@ func AddOncall(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestOncall{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -78,9 +77,9 @@ func AddOncall(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaOncallRequest{
 		action: "add",
 		reply:  returnChannel,
-		Oncall: somaproto.ProtoOncall{
-			Name:   cReq.OnCall.Name,
-			Number: cReq.OnCall.Number,
+		Oncall: proto.Oncall{
+			Name:   cReq.Oncall.Name,
+			Number: cReq.Oncall.Number,
 		},
 	}
 	result := <-returnChannel
@@ -91,7 +90,7 @@ func UpdateOncall(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestOncall{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -103,10 +102,10 @@ func UpdateOncall(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaOncallRequest{
 		action: "update",
 		reply:  returnChannel,
-		Oncall: somaproto.ProtoOncall{
+		Oncall: proto.Oncall{
 			Id:     params.ByName("oncall"),
-			Name:   cReq.OnCall.Name,
-			Number: cReq.OnCall.Number,
+			Name:   cReq.Oncall.Name,
+			Number: cReq.Oncall.Number,
 		},
 	}
 	result := <-returnChannel
@@ -122,7 +121,7 @@ func DeleteOncall(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaOncallRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Oncall: somaproto.ProtoOncall{
+		Oncall: proto.Oncall{
 			Id: params.ByName("oncall"),
 		},
 	}
@@ -133,16 +132,14 @@ func DeleteOncall(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendOncallReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultOncall{}
+	result := proto.NewOncallResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Oncalls = make([]somaproto.ProtoOncall, 0)
 	for _, i := range (*r).Oncall {
-		result.Oncalls = append(result.Oncalls, i.Oncall)
+		*result.Oncalls = append(*result.Oncalls, i.Oncall)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

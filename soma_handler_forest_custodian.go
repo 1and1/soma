@@ -93,7 +93,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 		somatree.NewRepository(somatree.RepositorySpec{
 			Id:      q.Repository.Id,
 			Name:    q.Repository.Name,
-			Team:    q.Repository.Team,
+			Team:    q.Repository.TeamId,
 			Deleted: false,
 			Active:  q.Repository.IsActive,
 		}).Attach(somatree.AttachRequest{
@@ -116,9 +116,9 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 						action.Repository.Name,
 						action.Repository.IsActive,
 						false,
-						action.Repository.Team,
+						action.Repository.TeamId,
 					)
-					team = action.Repository.Team
+					team = action.Repository.TeamId
 				}
 			case "attached":
 			}
@@ -178,10 +178,10 @@ func (f *forestCustodian) initialLoad() {
 			log.Printf("Error: %s", err.Error())
 		}
 		f.loadSomaTree(&somaRepositoryRequest{
-			Repository: somaproto.ProtoRepository{
+			Repository: proto.Repository{
 				Id:        repoId,
 				Name:      repoName,
-				Team:      teamId,
+				TeamId:    teamId,
 				IsDeleted: repoDeleted,
 				IsActive:  repoActive,
 			},
@@ -201,7 +201,7 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 	somatree.NewRepository(somatree.RepositorySpec{
 		Id:      q.Repository.Id,
 		Name:    q.Repository.Name,
-		Team:    q.Repository.Team,
+		Team:    q.Repository.TeamId,
 		Deleted: q.Repository.IsDeleted,
 		Active:  q.Repository.IsActive,
 	}).Attach(somatree.AttachRequest{
@@ -218,7 +218,7 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 		// discard actions on initial load
 		<-errChan
 	}
-	f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.Team)
+	f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.TeamId)
 }
 
 func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.SomaTree,

@@ -102,7 +102,7 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 		for rows.Next() {
 			err := rows.Scan(&oncallId, &oncallName)
 			result.Append(err, &somaOncallResult{
-				Oncall: somaproto.ProtoOncall{
+				Oncall: proto.Oncall{
 					Id:   oncallId,
 					Name: oncallName,
 				},
@@ -126,7 +126,7 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 		}
 
 		result.Append(err, &somaOncallResult{
-			Oncall: somaproto.ProtoOncall{
+			Oncall: proto.Oncall{
 				Id:     oncallId,
 				Name:   oncallName,
 				Number: strconv.Itoa(oncallNumber),

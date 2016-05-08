@@ -96,7 +96,7 @@ func (r *somaModeReadHandler) process(q *somaModeRequest) {
 		for rows.Next() {
 			err := rows.Scan(&mode)
 			result.Append(err, &somaModeResult{
-				Mode: somaproto.ProtoMode{
+				Mode: proto.Mode{
 					Mode: mode,
 				},
 			})
@@ -117,7 +117,7 @@ func (r *somaModeReadHandler) process(q *somaModeRequest) {
 		}
 
 		result.Append(err, &somaModeResult{
-			Mode: somaproto.ProtoMode{
+			Mode: proto.Mode{
 				Mode: mode,
 			},
 		})

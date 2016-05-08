@@ -108,7 +108,7 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 				&name,
 			)
 			result.Append(err, &somaMonitoringResult{
-				Monitoring: somaproto.ProtoMonitoring{
+				Monitoring: proto.Monitoring{
 					Id:   id,
 					Name: name,
 				},
@@ -140,12 +140,12 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 			callbackString = ""
 		}
 		result.Append(err, &somaMonitoringResult{
-			Monitoring: somaproto.ProtoMonitoring{
+			Monitoring: proto.Monitoring{
 				Id:       id,
 				Name:     name,
 				Mode:     mode,
 				Contact:  contact,
-				Team:     team,
+				TeamId:   team,
 				Callback: callbackString,
 			},
 		})
@@ -236,7 +236,7 @@ func (w *somaMonitoringWriteHandler) process(q *somaMonitoringRequest) {
 			q.Monitoring.Name,
 			q.Monitoring.Mode,
 			q.Monitoring.Contact,
-			q.Monitoring.Team,
+			q.Monitoring.TeamId,
 			callback,
 		)
 		q.Monitoring.Id = id.String()

@@ -96,7 +96,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 		for rows.Next() {
 			err := rows.Scan(&unit)
 			result.Append(err, &somaUnitResult{
-				Unit: somaproto.ProtoUnit{
+				Unit: proto.Unit{
 					Name: unit,
 				},
 			})
@@ -122,7 +122,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 		}
 
 		result.Append(err, &somaUnitResult{
-			Unit: somaproto.ProtoUnit{
+			Unit: proto.Unit{
 				Unit: unit,
 				Name: name,
 			},

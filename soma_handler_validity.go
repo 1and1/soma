@@ -100,7 +100,7 @@ func (r *somaValidityReadHandler) process(q *somaValidityRequest) {
 		for rows.Next() {
 			err := rows.Scan(&property, &object)
 			result.Append(err, &somaValidityResult{
-				Validity: somaproto.Validity{
+				Validity: proto.Validity{
 					SystemProperty: property,
 					ObjectType:     object,
 				},
@@ -156,7 +156,7 @@ func (r *somaValidityReadHandler) process(q *somaValidityRequest) {
 		for p_spec, _ := range m {
 			for o_spec, _ := range m[p_spec] {
 				result.Append(nil, &somaValidityResult{
-					Validity: somaproto.Validity{
+					Validity: proto.Validity{
 						SystemProperty: p_spec,
 						ObjectType:     o_spec,
 						Direct:         m[p_spec][o_spec]["direct"],

@@ -22,17 +22,16 @@ func ListMonitoring(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestMonitoring{}
-	cReq.Filter = &somaproto.ProtoMonitoringFilter{}
+	cReq := proto.NewMonitoringFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Monitoring.Name != "" {
 		filtered := make([]somaMonitoringResult, 0)
 		for _, i := range result.Systems {
-			if i.Monitoring.Name == cReq.Filter.Name {
+			if i.Monitoring.Name == cReq.Filter.Monitoring.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -52,7 +51,7 @@ func ShowMonitoring(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaMonitoringRequest{
 		action: "show",
 		reply:  returnChannel,
-		Monitoring: somaproto.ProtoMonitoring{
+		Monitoring: proto.Monitoring{
 			Id: params.ByName("monitoring"),
 		},
 	}
@@ -66,7 +65,7 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestMonitoring{}
+	cReq := proto.NewMonitoringRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -78,11 +77,11 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaMonitoringRequest{
 		action: "add",
 		reply:  returnChannel,
-		Monitoring: somaproto.ProtoMonitoring{
+		Monitoring: proto.Monitoring{
 			Name:     cReq.Monitoring.Name,
 			Mode:     cReq.Monitoring.Mode,
 			Contact:  cReq.Monitoring.Contact,
-			Team:     cReq.Monitoring.Team,
+			TeamId:   cReq.Monitoring.TeamId,
 			Callback: cReq.Monitoring.Callback,
 		},
 	}
@@ -99,7 +98,7 @@ func DeleteMonitoring(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaMonitoringRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Monitoring: somaproto.ProtoMonitoring{
+		Monitoring: proto.Monitoring{
 			Id: params.ByName("monitoring"),
 		},
 	}
@@ -110,16 +109,14 @@ func DeleteMonitoring(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendMonitoringReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultMonitoring{}
+	result := proto.NewMonitoringResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Systems = make([]somaproto.ProtoMonitoring, 0)
 	for _, i := range (*r).Systems {
-		result.Systems = append(result.Systems, i.Monitoring)
+		*result.Monitorings = append(*result.Monitorings, i.Monitoring)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

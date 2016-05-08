@@ -32,7 +32,7 @@ func ShowMode(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaModeRequest{
 		action: "show",
 		reply:  returnChannel,
-		Mode: somaproto.ProtoMode{
+		Mode: proto.Mode{
 			Mode: params.ByName("mode"),
 		},
 	}
@@ -46,7 +46,7 @@ func AddMode(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestMode{}
+	cReq := proto.NewModeRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,7 +58,7 @@ func AddMode(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaModeRequest{
 		action: "add",
 		reply:  returnChannel,
-		Mode: somaproto.ProtoMode{
+		Mode: proto.Mode{
 			Mode: cReq.Mode.Mode,
 		},
 	}
@@ -75,7 +75,7 @@ func DeleteMode(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaModeRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Mode: somaproto.ProtoMode{
+		Mode: proto.Mode{
 			Mode: params.ByName("mode"),
 		},
 	}
@@ -86,16 +86,14 @@ func DeleteMode(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendModeReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultMode{}
+	result := proto.NewModeResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Modes = make([]somaproto.ProtoMode, 0)
 	for _, i := range (*r).Modes {
-		result.Modes = append(result.Modes, i.Mode)
+		*result.Modes = append(*result.Modes, i.Mode)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

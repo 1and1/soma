@@ -32,8 +32,8 @@ func ShowAttribute(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaAttributeRequest{
 		action: "show",
 		reply:  returnChannel,
-		Attribute: somaproto.Attribute{
-			Attribute: params.ByName("attribute"),
+		Attribute: proto.Attribute{
+			Name: params.ByName("attribute"),
 		},
 	}
 	result := <-returnChannel
@@ -46,7 +46,7 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.AttributeRequest{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,8 +58,8 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaAttributeRequest{
 		action: "add",
 		reply:  returnChannel,
-		Attribute: somaproto.Attribute{
-			Attribute:   cReq.Attribute.Attribute,
+		Attribute: proto.Attribute{
+			Name:        cReq.Attribute.Name,
 			Cardinality: cReq.Attribute.Cardinality,
 		},
 	}
@@ -76,8 +76,8 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaAttributeRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Attribute: somaproto.Attribute{
-			Attribute: params.ByName("attribute"),
+		Attribute: proto.Attribute{
+			Name: params.ByName("attribute"),
 		},
 	}
 	result := <-returnChannel
@@ -87,16 +87,16 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendAttributeReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.AttributeResult{}
+	result := proto.Result{}
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Attributes = make([]somaproto.Attribute, 0)
+	result.Errors = &[]string{}
+	result.Attributes = &[]proto.Attribute{}
 	for _, i := range (*r).Attributes {
-		result.Attributes = append(result.Attributes, i.Attribute)
+		*result.Attributes = append(*result.Attributes, i.Attribute)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

@@ -32,8 +32,8 @@ func ShowProvider(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaProviderRequest{
 		action: "show",
 		reply:  returnChannel,
-		Provider: somaproto.ProtoProvider{
-			Provider: params.ByName("provider"),
+		Provider: proto.Provider{
+			Name: params.ByName("provider"),
 		},
 	}
 	result := <-returnChannel
@@ -46,7 +46,7 @@ func AddProvider(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestProvider{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,8 +58,8 @@ func AddProvider(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaProviderRequest{
 		action: "add",
 		reply:  returnChannel,
-		Provider: somaproto.ProtoProvider{
-			Provider: cReq.Provider.Provider,
+		Provider: proto.Provider{
+			Name: cReq.Provider.Name,
 		},
 	}
 	result := <-returnChannel
@@ -75,8 +75,8 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaProviderRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Provider: somaproto.ProtoProvider{
-			Provider: params.ByName("provider"),
+		Provider: proto.Provider{
+			Name: params.ByName("provider"),
 		},
 	}
 	result := <-returnChannel
@@ -86,16 +86,14 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendProviderReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultProvider{}
+	result := proto.NewProviderResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Providers = make([]somaproto.ProtoProvider, 0)
 	for _, i := range (*r).Providers {
-		result.Providers = append(result.Providers, i.Provider)
+		*result.Providers = append(*result.Providers, i.Provider)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

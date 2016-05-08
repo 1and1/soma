@@ -33,7 +33,7 @@ func ShowValidity(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaValidityRequest{
 		action: "show",
 		reply:  returnChannel,
-		Validity: somaproto.Validity{
+		Validity: proto.Validity{
 			SystemProperty: params.ByName("property"),
 		},
 	}
@@ -47,7 +47,7 @@ func AddValidity(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ValidityRequest{}
+	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -74,7 +74,7 @@ func DeleteValidity(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaValidityRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Validity: somaproto.Validity{
+		Validity: proto.Validity{
 			SystemProperty: params.ByName("property"),
 		},
 	}
@@ -85,16 +85,14 @@ func DeleteValidity(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendValidityReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ValidityResult{}
+	result := proto.NewValidityResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Validity = make([]somaproto.Validity, 0)
 	for _, i := range (*r).Validity {
-		result.Validity = append(result.Validity, i.Validity)
+		*result.Validities = append(*result.Validities, i.Validity)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

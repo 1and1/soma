@@ -95,14 +95,14 @@ func (r *somaProviderReadHandler) process(q *somaProviderRequest) {
 		for rows.Next() {
 			err := rows.Scan(&provider)
 			result.Append(err, &somaProviderResult{
-				Provider: somaproto.ProtoProvider{
-					Provider: provider,
+				Provider: proto.Provider{
+					Name: provider,
 				},
 			})
 		}
 	case "show":
-		log.Printf("R: providers/show for %s", q.Provider.Provider)
-		err = r.show_stmt.QueryRow(q.Provider.Provider).Scan(
+		log.Printf("R: providers/show for %s", q.Provider.Name)
+		err = r.show_stmt.QueryRow(q.Provider.Name).Scan(
 			&provider,
 		)
 		if err != nil {
@@ -116,8 +116,8 @@ func (r *somaProviderReadHandler) process(q *somaProviderRequest) {
 		}
 
 		result.Append(err, &somaProviderResult{
-			Provider: somaproto.ProtoProvider{
-				Provider: provider,
+			Provider: proto.Provider{
+				Name: provider,
 			},
 		})
 	default:
@@ -181,14 +181,14 @@ func (w *somaProviderWriteHandler) process(q *somaProviderRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: providers/add for %s", q.Provider.Provider)
+		log.Printf("R: providers/add for %s", q.Provider.Name)
 		res, err = w.add_stmt.Exec(
-			q.Provider.Provider,
+			q.Provider.Name,
 		)
 	case "delete":
-		log.Printf("R: providers/del for %s", q.Provider.Provider)
+		log.Printf("R: providers/del for %s", q.Provider.Name)
 		res, err = w.del_stmt.Exec(
-			q.Provider.Provider,
+			q.Provider.Name,
 		)
 	default:
 		log.Printf("R: unimplemented providers/%s", q.action)

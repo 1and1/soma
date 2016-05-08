@@ -171,7 +171,7 @@ func (g *guidePost) process(q *treeRequest) {
 		repoId = q.Repository.Repository.Id
 
 	case "create_bucket":
-		repoId = q.Bucket.Bucket.Repository
+		repoId = q.Bucket.Bucket.RepositoryId
 	case "add_system_property_to_bucket":
 		fallthrough
 	case "add_custom_property_to_bucket":
@@ -245,8 +245,8 @@ func (g *guidePost) process(q *treeRequest) {
 
 		q.Node.Node.AssetId = uint64(ndAsset)
 		q.Node.Node.Name = ndName
-		q.Node.Node.Team = ndTeam
-		q.Node.Node.Server = ndServer
+		q.Node.Node.TeamId = ndTeam
+		q.Node.Node.ServerId = ndServer
 		q.Node.Node.IsOnline = ndOnline
 		q.Node.Node.IsDeleted = ndDeleted
 		fallthrough
@@ -337,7 +337,7 @@ func (g *guidePost) process(q *treeRequest) {
 	if strings.Contains(q.Action, "add_service_property_to_") {
 		var service, attr, val, svName, svTeam string
 		var rows *sql.Rows
-		attrs := []somaproto.TreeServiceAttribute{}
+		attrs := []proto.ServiceAttribute{}
 
 		switch q.RequestType {
 		case "repository":
@@ -373,9 +373,9 @@ func (g *guidePost) process(q *treeRequest) {
 			if err = rows.Scan(&attr, &val); err != nil {
 				break attrloop
 			}
-			attrs = append(attrs, somaproto.TreeServiceAttribute{
-				Attribute: attr,
-				Value:     val,
+			attrs = append(attrs, proto.ServiceAttribute{
+				Name:  attr,
+				Value: val,
 			})
 		}
 

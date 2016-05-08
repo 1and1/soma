@@ -32,8 +32,8 @@ func ShowView(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaViewRequest{
 		action: "show",
 		reply:  returnChannel,
-		View: somaproto.ProtoView{
-			View: params.ByName("view"),
+		View: proto.View{
+			Name: params.ByName("view"),
 		},
 	}
 	result := <-returnChannel
@@ -46,7 +46,7 @@ func AddView(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestView{}
+	cReq := proto.NewViewRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -58,8 +58,8 @@ func AddView(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaViewRequest{
 		action: "add",
 		reply:  returnChannel,
-		View: somaproto.ProtoView{
-			View: cReq.View.View,
+		View: proto.View{
+			Name: cReq.View.Name,
 		},
 	}
 	result := <-returnChannel
@@ -75,8 +75,8 @@ func DeleteView(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaViewRequest{
 		action: "delete",
 		reply:  returnChannel,
-		View: somaproto.ProtoView{
-			View: params.ByName("view"),
+		View: proto.View{
+			Name: params.ByName("view"),
 		},
 	}
 	result := <-returnChannel
@@ -87,7 +87,7 @@ func RenameView(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestView{}
+	cReq := proto.NewViewRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -100,8 +100,8 @@ func RenameView(w http.ResponseWriter, r *http.Request,
 		action: "rename",
 		reply:  returnChannel,
 		name:   params.ByName("view"),
-		View: somaproto.ProtoView{
-			View: cReq.View.View,
+		View: proto.View{
+			Name: cReq.View.Name,
 		},
 	}
 	result := <-returnChannel
@@ -111,16 +111,14 @@ func RenameView(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendViewReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultView{}
+	result := proto.NewViewResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Views = make([]somaproto.ProtoView, 0)
 	for _, i := range (*r).Views {
-		result.Views = append(result.Views, i.View)
+		*result.Views = append(*result.Views, i.View)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

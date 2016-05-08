@@ -29,8 +29,13 @@ func GetHostDeployment(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	cReq := somaproto.HostDeploymentRequest{}
+	cReq := proto.Request{}
 	if err = DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if cReq.HostDeployment == nil {
 		DispatchBadRequest(&w, err)
 		return
 	}
@@ -42,7 +47,7 @@ func GetHostDeployment(w http.ResponseWriter, r *http.Request,
 		reply:   returnChannel,
 		system:  params.ByName("system"),
 		assetid: assetid,
-		idlist:  cReq.IdList,
+		idlist:  cReq.HostDeployment.CurrentCheckInstanceIdList,
 	}
 	result := <-returnChannel
 	SendHostDeploymentReply(&w, &result)
@@ -80,17 +85,19 @@ func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendHostDeploymentReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.HostDeploymentResult{}
+	result := proto.NewHostDeploymentResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Deployments = make([]somaproto.DeploymentDetails, 0)
 	for _, i := range (*r).HostDeployments {
 		if i.Delete {
-			result.Delete = append(result.Delete, i.DeleteId)
+			*result.HostDeployments = append(*result.HostDeployments, proto.HostDeployment{
+				DeleteInstance:  true,
+				CheckInstanceId: i.DeleteId,
+			})
 			continue
 		}
-		result.Deployments = append(result.Deployments, i.Deployment)
+		*result.Deployments = append(*result.Deployments, i.Deployment)
 	}
 
 dispatch:

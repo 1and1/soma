@@ -23,17 +23,16 @@ func ListTeam(w http.ResponseWriter, r *http.Request,
 	result := <-returnChannel
 
 	// declare here since goto does not jump over declarations
-	cReq := somaproto.ProtoRequestTeam{}
-	cReq.Filter = &somaproto.ProtoTeamFilter{}
+	cReq := proto.NewTeamFilter()
 	if result.Failure() {
 		goto skip
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Name != "" {
+	if cReq.Filter.Team.Name != "" {
 		filtered := make([]somaTeamResult, 0)
 		for _, i := range result.Teams {
-			if i.Team.Name == cReq.Filter.Name {
+			if i.Team.Name == cReq.Filter.Team.Name {
 				filtered = append(filtered, i)
 			}
 		}
@@ -53,7 +52,7 @@ func ShowTeam(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaTeamRequest{
 		action: "show",
 		reply:  returnChannel,
-		Team: somaproto.ProtoTeam{
+		Team: proto.Team{
 			Id: params.ByName("team"),
 		},
 	}
@@ -67,7 +66,7 @@ func AddTeam(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
-	cReq := somaproto.ProtoRequestTeam{}
+	cReq := proto.NewTeamRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
@@ -79,10 +78,10 @@ func AddTeam(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaTeamRequest{
 		action: "add",
 		reply:  returnChannel,
-		Team: somaproto.ProtoTeam{
-			Name:   cReq.Team.Name,
-			Ldap:   cReq.Team.Ldap,
-			System: cReq.Team.System,
+		Team: proto.Team{
+			Name:     cReq.Team.Name,
+			LdapId:   cReq.Team.LdapId,
+			IsSystem: cReq.Team.IsSystem,
 		},
 	}
 	result := <-returnChannel
@@ -98,7 +97,7 @@ func DeleteTeam(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaTeamRequest{
 		action: "delete",
 		reply:  returnChannel,
-		Team: somaproto.ProtoTeam{
+		Team: proto.Team{
 			Id: params.ByName("team"),
 		},
 	}
@@ -110,16 +109,14 @@ func DeleteTeam(w http.ResponseWriter, r *http.Request,
  * Utility
  */
 func SendTeamReply(w *http.ResponseWriter, r *somaResult) {
-	result := somaproto.ProtoResultTeam{}
+	result := proto.NewTeamResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Text = make([]string, 0)
-	result.Teams = make([]somaproto.ProtoTeam, 0)
 	for _, i := range (*r).Teams {
-		result.Teams = append(result.Teams, i.Team)
+		*result.Teams = append(*result.Teams, i.Team)
 		if i.ResultError != nil {
-			result.Text = append(result.Text, i.ResultError.Error())
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
 		}
 	}
 

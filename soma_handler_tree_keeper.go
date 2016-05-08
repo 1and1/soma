@@ -209,7 +209,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Attributes:   (*q.Repository.Repository.Properties)[0].Service.Attributes,
 		})
 	case "add_oncall_property_to_repository":
-		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.OncallId)
+		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "repository",
@@ -224,7 +224,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Number:       (*q.Repository.Repository.Properties)[0].Oncall.Number,
 		})
 	case "add_custom_property_to_repository":
-		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.CustomId)
+		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "repository",
@@ -256,7 +256,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Team:        tk.team,
 			Deleted:     q.Bucket.Bucket.IsDeleted,
 			Frozen:      q.Bucket.Bucket.IsFrozen,
-			Repository:  q.Bucket.Bucket.Repository,
+			Repository:  q.Bucket.Bucket.RepositoryId,
 		}).Attach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "repository",
@@ -288,7 +288,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Attributes:   (*q.Bucket.Bucket.Properties)[0].Service.Attributes,
 		})
 	case "add_oncall_property_to_bucket":
-		oncallId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Oncall.OncallId)
+		oncallId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Oncall.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "bucket",
@@ -303,7 +303,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Number:       (*q.Bucket.Bucket.Properties)[0].Oncall.Number,
 		})
 	case "add_custom_property_to_bucket":
-		customId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Custom.CustomId)
+		customId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Custom.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "bucket",
@@ -381,7 +381,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Attributes:   (*q.Group.Group.Properties)[0].Service.Attributes,
 		})
 	case "add_oncall_property_to_group":
-		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.OncallId)
+		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "group",
@@ -396,7 +396,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Number:       (*q.Group.Group.Properties)[0].Oncall.Number,
 		})
 	case "add_custom_property_to_group":
-		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.CustomId)
+		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "group",
@@ -474,7 +474,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Attributes:   (*q.Cluster.Cluster.Properties)[0].Service.Attributes,
 		})
 	case "add_oncall_property_to_cluster":
-		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.OncallId)
+		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "cluster",
@@ -489,7 +489,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Number:       (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
 		})
 	case "add_custom_property_to_cluster":
-		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.CustomId)
+		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "cluster",
@@ -518,8 +518,8 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Id:       q.Node.Node.Id,
 			AssetId:  q.Node.Node.AssetId,
 			Name:     q.Node.Node.Name,
-			Team:     q.Node.Node.Team,
-			ServerId: q.Node.Node.Server,
+			Team:     q.Node.Node.TeamId,
+			ServerId: q.Node.Node.ServerId,
 			Online:   q.Node.Node.IsOnline,
 			Deleted:  q.Node.Node.IsDeleted,
 		}).Attach(somatree.AttachRequest{
@@ -580,7 +580,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Attributes:   (*q.Node.Node.Properties)[0].Service.Attributes,
 		})
 	case "add_oncall_property_to_node":
-		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.OncallId)
+		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "node",
@@ -595,7 +595,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Number:       (*q.Node.Node.Properties)[0].Oncall.Number,
 		})
 	case "add_custom_property_to_node":
-		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.CustomId)
+		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
 
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "node",
@@ -982,7 +982,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		for _, thr := range q.CheckConfig.CheckConfig.Thresholds {
 			if _, err = txStmtCreateCheckConfigurationThreshold.Exec(
 				q.CheckConfig.CheckConfig.Id,
-				thr.Predicate.Predicate,
+				thr.Predicate.Symbol,
 				strconv.FormatInt(thr.Value, 10),
 				thr.Level.Name,
 			); err != nil {
@@ -1007,14 +1007,14 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			case "oncall":
 				if _, err = txStmtCreateCheckConfigurationConstraintOncall.Exec(
 					q.CheckConfig.CheckConfig.Id,
-					constr.Oncall.OncallId,
+					constr.Oncall.Id,
 				); err != nil {
 					break constrloop
 				}
 			case "custom":
 				if _, err = txStmtCreateCheckConfigurationConstraintCustom.Exec(
 					q.CheckConfig.CheckConfig.Id,
-					constr.Custom.CustomId,
+					constr.Custom.Id,
 					constr.Custom.RepositoryId,
 					constr.Custom.Value,
 				); err != nil {
@@ -1044,7 +1044,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			case "attribute":
 				if _, err = txStmtCreateCheckConfigurationConstraintAttribute.Exec(
 					q.CheckConfig.CheckConfig.Id,
-					constr.Attribute.Attribute,
+					constr.Attribute.Name,
 					constr.Attribute.Value,
 				); err != nil {
 					break constrloop
@@ -1073,14 +1073,14 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-				switch a.Property.PropertyType {
+				switch a.Property.Type {
 				case "custom":
 					if _, err = txStmtRepositoryPropertyCustomCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
 						a.Property.Custom.RepositoryId,
 						a.Property.View,
-						a.Property.Custom.CustomId,
+						a.Property.Custom.Id,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
 						a.Property.Custom.Value,
@@ -1121,7 +1121,7 @@ actionloop:
 						a.Property.SourceInstanceId,
 						a.Repository.Id,
 						a.Property.View,
-						a.Property.Oncall.OncallId,
+						a.Property.Oncall.Id,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
 					); err != nil {
@@ -1157,9 +1157,9 @@ actionloop:
 					a.Bucket.Name,
 					a.Bucket.IsFrozen,
 					a.Bucket.IsDeleted,
-					a.Bucket.Repository,
+					a.Bucket.RepositoryId,
 					a.Bucket.Environment,
-					a.Bucket.Team,
+					a.Bucket.TeamId,
 				); err != nil {
 					break actionloop
 				}
@@ -1167,7 +1167,7 @@ actionloop:
 				if _, err = txStmtBucketAssignNode.Exec(
 					a.ChildNode.Id,
 					a.Bucket.Id,
-					a.Bucket.Team,
+					a.Bucket.TeamId,
 				); err != nil {
 					break actionloop
 				}
@@ -1181,14 +1181,14 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-				switch a.Property.PropertyType {
+				switch a.Property.Type {
 				case "custom":
 					if _, err = txStmtBucketPropertyCustomCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
 						a.Bucket.Id,
 						a.Property.View,
-						a.Property.Custom.CustomId,
+						a.Property.Custom.Id,
 						a.Property.Custom.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
@@ -1251,7 +1251,7 @@ Children Only:         %t%s`,
 						a.Property.SourceInstanceId,
 						a.Bucket.Id,
 						a.Property.View,
-						a.Property.Oncall.OncallId,
+						a.Property.Oncall.Id,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
@@ -1368,14 +1368,14 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
-				switch a.Property.PropertyType {
+				switch a.Property.Type {
 				case "custom":
 					if _, err = txStmtGroupPropertyCustomCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
 						a.Group.Id,
 						a.Property.View,
-						a.Property.Custom.CustomId,
+						a.Property.Custom.Id,
 						a.Property.BucketId,
 						a.Property.Custom.RepositoryId,
 						a.Property.Inheritance,
@@ -1420,7 +1420,7 @@ Children Only:         %t%s`,
 						a.Property.SourceInstanceId,
 						a.Group.Id,
 						a.Property.View,
-						a.Property.Oncall.OncallId,
+						a.Property.Oncall.Id,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
@@ -1529,14 +1529,14 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
-				switch a.Property.PropertyType {
+				switch a.Property.Type {
 				case "custom":
 					if _, err = txStmtClusterPropertyCustomCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
 						a.Cluster.Id,
 						a.Property.View,
-						a.Property.Custom.CustomId,
+						a.Property.Custom.Id,
 						a.Property.BucketId,
 						a.Property.Custom.RepositoryId,
 						a.Property.Inheritance,
@@ -1581,7 +1581,7 @@ Children Only:         %t%s`,
 						a.Property.SourceInstanceId,
 						a.Cluster.Id,
 						a.Property.View,
-						a.Property.Oncall.OncallId,
+						a.Property.Oncall.Id,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
@@ -1644,7 +1644,7 @@ Children Only:         %t%s`,
 				if _, err = txStmtNodeUnassignFromBucket.Exec(
 					a.Node.Id,
 					a.Node.Config.BucketId,
-					a.Node.Team,
+					a.Node.TeamId,
 				); err != nil {
 					break actionloop
 				}
@@ -1667,14 +1667,14 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
-				switch a.Property.PropertyType {
+				switch a.Property.Type {
 				case "custom":
 					if _, err = txStmtNodePropertyCustomCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
 						a.Node.Id,
 						a.Property.View,
-						a.Property.Custom.CustomId,
+						a.Property.Custom.Id,
 						a.Property.BucketId,
 						a.Property.Custom.RepositoryId,
 						a.Property.Inheritance,
@@ -1742,7 +1742,7 @@ Is Inherited:          %t%s`,
 						a.Property.SourceInstanceId,
 						a.Node.Id,
 						a.Property.View,
-						a.Property.Oncall.OncallId,
+						a.Property.Oncall.Id,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
@@ -1877,7 +1877,7 @@ bailout:
 	return
 }
 
-func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatree.Check, error) {
+func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*somatree.Check, error) {
 	treechk := &somatree.Check{
 		Id:            uuid.Nil,
 		SourceId:      uuid.Nil,
@@ -1895,7 +1895,7 @@ func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatre
 	treechk.Thresholds = make([]somatree.CheckThreshold, len(conf.Thresholds))
 	for i, thr := range conf.Thresholds {
 		nthr := somatree.CheckThreshold{
-			Predicate: thr.Predicate.Predicate,
+			Predicate: thr.Predicate.Symbol,
 			Level:     uint8(thr.Level.Numeric),
 			Value:     thr.Value,
 		}
@@ -1913,9 +1913,9 @@ func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatre
 			ncon.Value = constr.Native.Value
 		case "oncall":
 			ncon.Key = "OncallId"
-			ncon.Value = constr.Oncall.OncallId
+			ncon.Value = constr.Oncall.Id
 		case "custom":
-			ncon.Key = constr.Custom.CustomId
+			ncon.Key = constr.Custom.Id
 			ncon.Value = constr.Custom.Value
 		case "system":
 			ncon.Key = constr.System.Name
@@ -1924,7 +1924,7 @@ func (tk *treeKeeper) convertCheck(conf *somaproto.CheckConfiguration) (*somatre
 			ncon.Key = "Name"
 			ncon.Value = constr.System.Name
 		case "attribute":
-			ncon.Key = constr.Attribute.Attribute
+			ncon.Key = constr.Attribute.Name
 			ncon.Value = constr.Attribute.Value
 		}
 		treechk.Constraints[i] = ncon

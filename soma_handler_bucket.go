@@ -87,7 +87,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 		for rows.Next() {
 			err := rows.Scan(&bucketId, &bucketName)
 			result.Append(err, &somaBucketResult{
-				Bucket: somaproto.ProtoBucket{
+				Bucket: proto.Bucket{
 					Id:   bucketId,
 					Name: bucketName,
 				},
@@ -115,14 +115,14 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 		}
 
 		result.Append(err, &somaBucketResult{
-			Bucket: somaproto.ProtoBucket{
-				Id:          bucketId,
-				Name:        bucketName,
-				Repository:  repoId,
-				Team:        teamId,
-				Environment: bucketEnv,
-				IsDeleted:   bucketDeleted,
-				IsFrozen:    bucketFrozen,
+			Bucket: proto.Bucket{
+				Id:           bucketId,
+				Name:         bucketName,
+				RepositoryId: repoId,
+				TeamId:       teamId,
+				Environment:  bucketEnv,
+				IsDeleted:    bucketDeleted,
+				IsFrozen:     bucketFrozen,
 			},
 		})
 	default:

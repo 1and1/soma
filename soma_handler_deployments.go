@@ -129,7 +129,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			return
 		}
 
-		depl := somaproto.DeploymentDetails{}
+		depl := proto.Deployment{}
 		if err = json.Unmarshal([]byte(details), depl); err != nil {
 			result.Append(err, &somaDeploymentResult{})
 			q.reply <- result
@@ -196,7 +196,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 				instanceConfigID,
 			)
 			result.Append(nil, &somaDeploymentResult{
-				Deployment: somaproto.DeploymentDetails{
+				Deployment: proto.Deployment{
 					Task: "rollout",
 				},
 			})
@@ -207,7 +207,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 				instanceConfigID,
 			)
 			result.Append(nil, &somaDeploymentResult{
-				Deployment: somaproto.DeploymentDetails{
+				Deployment: proto.Deployment{
 					Task: "deprovision",
 				},
 			})
@@ -238,7 +238,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 				instanceConfigID,
 			)
 			result.Append(nil, &somaDeploymentResult{
-				Deployment: somaproto.DeploymentDetails{
+				Deployment: proto.Deployment{
 					Task: "rollout",
 				},
 			})
@@ -249,7 +249,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 				instanceConfigID,
 			)
 			result.Append(nil, &somaDeploymentResult{
-				Deployment: somaproto.DeploymentDetails{
+				Deployment: proto.Deployment{
 					Task: "deprovision",
 				},
 			})
