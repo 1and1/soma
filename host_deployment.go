@@ -16,6 +16,7 @@ func NewHostDeploymentResult() Result {
 	return Result{
 		Errors:          &[]string{},
 		HostDeployments: &[]HostDeployment{},
+		Deployments:     &[]Deployment{},
 	}
 }
 
