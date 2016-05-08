@@ -1,43 +1,29 @@
 package somaproto
 
-type ProtoRequestGroup struct {
-	Group  *ProtoGroup       `json:"group,omitempty"`
-	Filter *ProtoGroupFilter `json:"filter,omitempty"`
+type Group struct {
+	Id             string        `json:"id, omitempty"`
+	Name           string        `json:"name, omitempty"`
+	BucketId       string        `json:"bucketId, omitempty"`
+	ObjectState    string        `json:"objectState, omitempty"`
+	TeamId         string        `json:"teamId, omitempty"`
+	MemberGroups   []Group       `json:"memberGroups, omitempty"`
+	MemberClusters []Cluster     `json:"memberClusters, omitempty"`
+	MemberNodes    []Node        `json:"memberNodes, omitempty"`
+	Details        *GroupDetails `json:"details, omitempty"`
+	Properties     *[]Property   `json:"properties, omitempty"`
 }
 
-type ProtoResultGroup struct {
-	Code   uint16       `json:"code,omitempty"`
-	Status string       `json:"status,omitempty"`
-	Text   []string     `json:"text,omitempty"`
-	Groups []ProtoGroup `json:"group,omitempty"`
-	JobId  string       `json:"jobid,omitempty"`
+type GroupFilter struct {
+	Name     string `json:"name, omitempty"`
+	BucketId string `json:"bucketId, omitempty"`
 }
 
-type ProtoGroup struct {
-	Id             string             `json:"id,omitempty"`
-	Name           string             `json:"name,omitempty"`
-	BucketId       string             `json:"bucketid,omitempty"`
-	ObjectState    string             `json:"objectstate,omitempty"`
-	TeamId         string             `json:"teamid,omitempty"`
-	MemberGroups   []ProtoGroup       `json:"membergroups,omitempty"`
-	MemberClusters []ProtoCluster     `json:"memberclusters,omitempty"`
-	MemberNodes    []ProtoNode        `json:"membernodes,omitempty"`
-	Details        *ProtoGroupDetails `json:"details,omitempty"`
-	Properties     *[]TreeProperty    `json:"properties,omitempty"`
-}
-
-type ProtoGroupFilter struct {
-	Name     string `json:"name,omitempty"`
-	BucketId string `json:"bucketid,omitempty"`
-}
-
-type ProtoGroupDetails struct {
-	CreatedAt string `json:"createdat,omitempty"`
-	CreatedBy string `json:"createdby,omitempty"`
+type GroupDetails struct {
+	DetailsCreation
 }
 
 //
-func (p *ProtoGroup) DeepCompare(a *ProtoGroup) bool {
+func (p *Group) DeepCompare(a *Group) bool {
 	if a == nil {
 		return false
 	}
@@ -48,70 +34,25 @@ func (p *ProtoGroup) DeepCompare(a *ProtoGroup) bool {
 	return true
 }
 
-//
-func (p *ProtoResultGroup) ErrorMark(err error, imp bool, found bool,
-	length int, jobid string) bool {
-	if p.markError(err) {
-		return true
+func NewGroupRequest() Request {
+	return Request{
+		Group: &Group{},
 	}
-	if p.markImplemented(imp) {
-		return true
-	}
-	if p.markFound(found, length) {
-		return true
-	}
-	if p.hasJobId(jobid) {
-		return p.markAccepted()
-	}
-	return p.markOk()
 }
 
-func (p *ProtoResultGroup) markError(err error) bool {
-	if err != nil {
-		p.Code = 500
-		p.Status = "ERROR"
-		p.Text = []string{err.Error()}
-		return true
+func NewGroupFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Group: &GroupFilter{},
+		},
 	}
-	return false
 }
 
-func (p *ProtoResultGroup) markImplemented(f bool) bool {
-	if f {
-		p.Code = 501
-		p.Status = "NOT IMPLEMENTED"
-		return true
+func NewGroupResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Groups: &[]Group{},
 	}
-	return false
-}
-
-func (p *ProtoResultGroup) markFound(f bool, i int) bool {
-	if f || i == 0 {
-		p.Code = 404
-		p.Status = "NOT FOUND"
-		return true
-	}
-	return false
-}
-
-func (p *ProtoResultGroup) markOk() bool {
-	p.Code = 200
-	p.Status = "OK"
-	return false
-}
-
-func (p *ProtoResultGroup) hasJobId(s string) bool {
-	if s != "" {
-		p.JobId = s
-		return true
-	}
-	return false
-}
-
-func (p *ProtoResultGroup) markAccepted() bool {
-	p.Code = 202
-	p.Status = "ACCEPTED"
-	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
