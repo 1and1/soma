@@ -25,6 +25,7 @@ func commandWipe(done chan<- bool, forced bool) {
 	db.Exec(`DROP SCHEMA auth CASCADE;`)
 	db.Exec(`DROP SCHEMA inventory CASCADE;`)
 	db.Exec(`DROP SCHEMA soma CASCADE;`)
+	db.Exec(`DROP TABLE public.schema_versions;`)
 
 	done <- true
 }
