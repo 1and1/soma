@@ -1,8 +1,8 @@
 package somaproto
 
 type Datacenter struct {
-	Locode  string             `json:"locode, omitempty"`
-	Details *DatacenterDetails `json:"details, omitempty"`
+	Locode  string             `json:"locode,omitempty"`
+	Details *DatacenterDetails `json:"details,omitempty"`
 }
 
 type DatacenterDetails struct {

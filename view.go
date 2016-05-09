@@ -1,8 +1,8 @@
 package somaproto
 
 type View struct {
-	Name    string       `json:"name, omitempty"`
-	Details *ViewDetails `json:"details, omitempty"`
+	Name    string       `json:"name,omitempty"`
+	Details *ViewDetails `json:"details,omitempty"`
 }
 
 type ViewDetails struct {

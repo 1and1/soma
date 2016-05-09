@@ -1,8 +1,8 @@
 package somaproto
 
 type Environment struct {
-	Name    string              `json:"name, omitempty"`
-	Details *EnvironmentDetails `json:"details, omitempty"`
+	Name    string              `json:"name,omitempty"`
+	Details *EnvironmentDetails `json:"details,omitempty"`
 }
 
 type EnvironmentDetails struct {

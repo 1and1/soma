@@ -1,11 +1,11 @@
 package somaproto
 
 type Team struct {
-	Id       string       `json:"id, omitempty"`
-	Name     string       `json:"name, omitempty"`
-	LdapId   string       `json:"ldapId, omitempty"`
+	Id       string       `json:"id,omitempty"`
+	Name     string       `json:"name,omitempty"`
+	LdapId   string       `json:"ldapId,omitempty"`
 	IsSystem bool         `json:"isSystem"`
-	Details  *TeamDetails `json:"details, omitempty"`
+	Details  *TeamDetails `json:"details,omitempty"`
 }
 
 type TeamDetails struct {
@@ -13,9 +13,9 @@ type TeamDetails struct {
 }
 
 type TeamFilter struct {
-	Name     string `json:"name, omitempty"`
-	LdapId   string `json:"ldapId, omitempty"`
-	IsSystem bool   `json:"isSystem, omitempty"`
+	Name     string `json:"name,omitempty"`
+	LdapId   string `json:"ldapId,omitempty"`
+	IsSystem bool   `json:"isSystem,omitempty"`
 }
 
 func (p *Team) DeepCompare(a *Team) bool {

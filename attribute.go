@@ -1,9 +1,9 @@
 package somaproto
 
 type Attribute struct {
-	Name        string            `json:"name, omitempty"`
-	Cardinality string            `json:"cardinality, omitempty"`
-	Details     *AttributeDetails `json:"details, omitempty"`
+	Name        string            `json:"name,omitempty"`
+	Cardinality string            `json:"cardinality,omitempty"`
+	Details     *AttributeDetails `json:"details,omitempty"`
 }
 
 type AttributeDetails struct {

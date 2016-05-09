@@ -1,20 +1,20 @@
 package somaproto
 
 type Capability struct {
-	Id           string             `json:"id, omitempty"`
-	Name         string             `json:"name, omitempty"`
-	MonitoringId string             `json:"monitoringId, omitempty"`
-	Metric       string             `json:"metric, omitempty"`
-	View         string             `json:"view, omitempty"`
-	Thresholds   uint64             `json:"thresholds, omitempty"`
-	Details      *CapabilityDetails `json:"details, omitempty"`
+	Id           string             `json:"id,omitempty"`
+	Name         string             `json:"name,omitempty"`
+	MonitoringId string             `json:"monitoringId,omitempty"`
+	Metric       string             `json:"metric,omitempty"`
+	View         string             `json:"view,omitempty"`
+	Thresholds   uint64             `json:"thresholds,omitempty"`
+	Details      *CapabilityDetails `json:"details,omitempty"`
 }
 
 type CapabilityFilter struct {
-	MonitoringId   string `json:"monitoringId, omitempty"`
-	MonitoringName string `json:"monitoringName, omitempty"`
-	Metric         string `json:"metric, omitempty"`
-	View           string `json:"view, omitempty"`
+	MonitoringId   string `json:"monitoringId,omitempty"`
+	MonitoringName string `json:"monitoringName,omitempty"`
+	Metric         string `json:"metric,omitempty"`
+	View           string `json:"view,omitempty"`
 }
 
 type CapabilityDetails struct {

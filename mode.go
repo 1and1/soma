@@ -1,8 +1,8 @@
 package somaproto
 
 type Mode struct {
-	Mode    string       `json:"mode, omitempty"`
-	Details *ModeDetails `json:"details, omitempty"`
+	Mode    string       `json:"mode,omitempty"`
+	Details *ModeDetails `json:"details,omitempty"`
 }
 
 type ModeDetails struct {

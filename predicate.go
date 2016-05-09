@@ -1,8 +1,8 @@
 package somaproto
 
 type Predicate struct {
-	Symbol  string            `json:"symbol, omitempty"`
-	Details *PredicateDetails `json:"details, omitempty"`
+	Symbol  string            `json:"symbol,omitempty"`
+	Details *PredicateDetails `json:"details,omitempty"`
 }
 
 type PredicateDetails struct {

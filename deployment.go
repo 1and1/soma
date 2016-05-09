@@ -13,14 +13,14 @@ type Deployment struct {
 	Metric           *Metric           `json:"metric"`
 	Unit             *Unit             `json:"unit"`
 	Team             *Team             `json:"organizationalTeam"`
-	Oncall           *Oncall           `json:"oncallDuty, omitempty"`
-	Service          *PropertyService  `json:"service, omitempty"`
-	Properties       *[]PropertySystem `json:"properties, omitempty"`
-	CustomProperties *[]PropertyCustom `json:"customProperties, omitempty"`
-	Group            *Group            `json:"group, omitempty"`
-	Cluster          *Cluster          `json:"cluster, omitempty"`
-	Node             *Node             `json:"node, omitempty"`
-	Server           *Server           `json:"server, omitempty"`
+	Oncall           *Oncall           `json:"oncallDuty,omitempty"`
+	Service          *PropertyService  `json:"service,omitempty"`
+	Properties       *[]PropertySystem `json:"properties,omitempty"`
+	CustomProperties *[]PropertyCustom `json:"customProperties,omitempty"`
+	Group            *Group            `json:"group,omitempty"`
+	Cluster          *Cluster          `json:"cluster,omitempty"`
+	Node             *Node             `json:"node,omitempty"`
+	Server           *Server           `json:"server,omitempty"`
 	CheckConfig      *CheckConfig      `json:"checkConfig"`
 	Check            *Check            `json:"check"`
 	CheckInstance    *CheckInstance    `json:"checkInstance"`

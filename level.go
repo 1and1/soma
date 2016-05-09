@@ -1,10 +1,10 @@
 package somaproto
 
 type Level struct {
-	Name      string        `json:"name, omitempty"`
-	ShortName string        `json:"shortName, omitempty"`
-	Numeric   uint16        `json:"numeric, omitempty"`
-	Details   *LevelDetails `json:"details, omitempty"`
+	Name      string        `json:"name,omitempty"`
+	ShortName string        `json:"shortName,omitempty"`
+	Numeric   uint16        `json:"numeric,omitempty"`
+	Details   *LevelDetails `json:"details,omitempty"`
 }
 
 type LevelFilter struct {

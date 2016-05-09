@@ -7,7 +7,7 @@ type Grant struct {
 	RepositoryId  string        `json:"repositoryId"`
 	ObjectType    string        `json:"objectType"`
 	ObjectId      string        `json:"objectId"`
-	Details       *GrantDetails `json:"details, omitempty"`
+	Details       *GrantDetails `json:"details,omitempty"`
 }
 
 type GrantDetails struct {

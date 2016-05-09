@@ -1,32 +1,32 @@
 package somaproto
 
 type Node struct {
-	Id         string       `json:"id, omitempty"`
-	AssetId    uint64       `json:"assetId, omitempty"`
-	Name       string       `json:"name, omitempty"`
-	TeamId     string       `json:"teamId, omitempty"`
-	ServerId   string       `json:"serverId, omitempty"`
-	State      string       `json:"state, omitempty"`
-	IsOnline   bool         `json:"isOnline, omitempty"`
-	IsDeleted  bool         `json:"isDeleted, omitempty"`
-	Details    *NodeDetails `json:"details, omitempty"`
-	Config     *NodeConfig  `json:"config, omitempty"`
-	Properties *[]Property  `json:"properties, omitempty"`
+	Id         string       `json:"id,omitempty"`
+	AssetId    uint64       `json:"assetId,omitempty"`
+	Name       string       `json:"name,omitempty"`
+	TeamId     string       `json:"teamId,omitempty"`
+	ServerId   string       `json:"serverId,omitempty"`
+	State      string       `json:"state,omitempty"`
+	IsOnline   bool         `json:"isOnline,omitempty"`
+	IsDeleted  bool         `json:"isDeleted,omitempty"`
+	Details    *NodeDetails `json:"details,omitempty"`
+	Config     *NodeConfig  `json:"config,omitempty"`
+	Properties *[]Property  `json:"properties,omitempty"`
 }
 
 type NodeDetails struct {
 	DetailsCreation
-	Server Server `json:"server, omitempty"`
+	Server Server `json:"server,omitempty"`
 }
 
 type NodeFilter struct {
-	Name       string `json:"name, omitempty"`
-	TeamId     string `json:"teamId, omitempty"`
-	ServerId   string `json:"serverId, omitempty"`
-	IsOnline   bool   `json:"isOnline, omitempty"`
-	NotOnline  bool   `json:"notOnline, omitempty"`
-	Deleted    bool   `json:"isDeleted, omitempty"`
-	NotDeleted bool   `json:"notDeleted, omitempty"`
+	Name       string `json:"name,omitempty"`
+	TeamId     string `json:"teamId,omitempty"`
+	ServerId   string `json:"serverId,omitempty"`
+	IsOnline   bool   `json:"isOnline,omitempty"`
+	NotOnline  bool   `json:"notOnline,omitempty"`
+	Deleted    bool   `json:"isDeleted,omitempty"`
+	NotDeleted bool   `json:"notDeleted,omitempty"`
 	/*
 		PropertyType  string `json:"propertytype,omitempty"`
 		Property      string `json:"property,omitempty"`
@@ -35,8 +35,8 @@ type NodeFilter struct {
 }
 
 type NodeConfig struct {
-	RepositoryId string `json:"repositoryId, omitempty"`
-	BucketId     string `json:"bucketId, omitempty"`
+	RepositoryId string `json:"repositoryId,omitempty"`
+	BucketId     string `json:"bucketId,omitempty"`
 }
 
 //

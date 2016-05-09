@@ -1,11 +1,11 @@
 package somaproto
 
 type Oncall struct {
-	Id      string          `json:"id, omitempty"`
-	Name    string          `json:"name, omitempty"`
-	Number  string          `json:"number, omitempty"`
-	Members *[]OncallMember `json:"members, omitempty"`
-	Details *OncallDetails  `json:"details, omitempty"`
+	Id      string          `json:"id,omitempty"`
+	Name    string          `json:"name,omitempty"`
+	Number  string          `json:"number,omitempty"`
+	Members *[]OncallMember `json:"members,omitempty"`
+	Details *OncallDetails  `json:"details,omitempty"`
 }
 
 type OncallDetails struct {
@@ -13,13 +13,13 @@ type OncallDetails struct {
 }
 
 type OncallMember struct {
-	UserName string `json:"userName, omitempty"`
-	UserId   string `json"userId, omitempty"`
+	UserName string `json:"userName,omitempty"`
+	UserId   string `json"userId,omitempty"`
 }
 
 type OncallFilter struct {
-	Name   string `json:"name, omitempty"`
-	Number string `json:"number, omitempty"`
+	Name   string `json:"name,omitempty"`
+	Number string `json:"number,omitempty"`
 }
 
 func (p *Oncall) DeepCompare(a *Oncall) bool {

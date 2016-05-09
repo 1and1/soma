@@ -1,10 +1,10 @@
 package somaproto
 
 type Permission struct {
-	Name     string             `json:"name, omitempty"`
-	Category string             `json:"category, omitempty"`
-	Grants   string             `json:"grants, omitempty"`
-	Details  *PermissionDetails `json:"details, omitempty"`
+	Name     string             `json:"name,omitempty"`
+	Category string             `json:"category,omitempty"`
+	Grants   string             `json:"grants,omitempty"`
+	Details  *PermissionDetails `json:"details,omitempty"`
 }
 
 type PermissionDetails struct {

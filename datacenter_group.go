@@ -1,9 +1,9 @@
 package somaproto
 
 type DatacenterGroup struct {
-	Name    string                  `json:"name, omitempty"`
-	Members *[]Datacenter           `json:"members, omitempty"`
-	Details *DatacenterGroupDetails `json:"details, omitempty"`
+	Name    string                  `json:"name,omitempty"`
+	Members *[]Datacenter           `json:"members,omitempty"`
+	Details *DatacenterGroupDetails `json:"details,omitempty"`
 }
 
 type DatacenterGroupDetails struct {

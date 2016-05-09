@@ -1,17 +1,17 @@
 package somaproto
 
 type Metric struct {
-	Path        string           `json:"path, omitempty"`
-	Unit        string           `json:"unit, omitempty"`
-	Description string           `json:"description, omitempty"`
-	Packages    *[]MetricPackage `json:"packages, omitempty"`
-	Details     *MetricDetails   `json:"details, omitempty"`
+	Path        string           `json:"path,omitempty"`
+	Unit        string           `json:"unit,omitempty"`
+	Description string           `json:"description,omitempty"`
+	Packages    *[]MetricPackage `json:"packages,omitempty"`
+	Details     *MetricDetails   `json:"details,omitempty"`
 }
 
 type MetricFilter struct {
-	Unit     string `json:"unit, omitempty"`
-	Provider string `json:"provider, omitempty"`
-	Package  string `json:"package, omitempty"`
+	Unit     string `json:"unit,omitempty"`
+	Provider string `json:"provider,omitempty"`
+	Package  string `json:"package,omitempty"`
 }
 
 type MetricDetails struct {
@@ -19,8 +19,8 @@ type MetricDetails struct {
 }
 
 type MetricPackage struct {
-	Provider string `json:"provider, omitempty"`
-	Name     string `json:"name, omitempty"`
+	Provider string `json:"provider,omitempty"`
+	Name     string `json:"name,omitempty"`
 }
 
 //
