@@ -103,11 +103,11 @@ func (r *Result) OK() {
 }
 
 func (r *Result) Clean() {
-	if len(*r.Errors) == 0 {
+	if r.Errors == nil || len(*r.Errors) == 0 {
 		r.Errors = nil
 	}
 
-	if len(*r.DeploymentsList) == 0 {
+	if r.DeploymentsList == nil || len(*r.DeploymentsList) == 0 {
 		r.DeploymentsList = nil
 	}
 }
