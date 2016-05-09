@@ -25,7 +25,7 @@ func (u SomaUtil) GetRepositoryIdByName(repo string) string {
 		},
 	}
 
-	resp := u.GetRequestWithBody(req, "/repository/")
+	resp := u.PostRequestWithBody(req, "/filter/repository/")
 	repoResult := u.DecodeProtoResultRepositoryFromResponse(resp)
 
 	if repo != (*repoResult.Repositories)[0].Name {
