@@ -26,9 +26,9 @@ func (u SomaUtil) BucketByUUIDOrName(b string) string {
 }
 
 func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
-	req := somaproto.Request{
-		Filter: &somaproto.Filter{
-			Bucket: &somaproto.BucketFilter{
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Bucket: &proto.BucketFilter{
 				Name:         bucket,
 				RepositoryId: repoId,
 			},
@@ -45,9 +45,9 @@ func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
 }
 
 func (u SomaUtil) BucketIdByName(bucket string) string {
-	req := somaproto.Request{
-		Filter: &somaproto.Filter{
-			Bucket: &somaproto.BucketFilter{
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Bucket: &proto.BucketFilter{
 				Name: bucket,
 			},
 		},
@@ -63,9 +63,9 @@ func (u SomaUtil) BucketIdByName(bucket string) string {
 }
 
 func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
-	req := somaproto.Request{
-		Filter: &somaproto.Filter{
-			Bucket: &somaproto.BucketFilter{},
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Bucket: &proto.BucketFilter{},
 		},
 	}
 	receivedUuidArgument := false
@@ -99,9 +99,9 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 }
 
 func (u SomaUtil) TeamIdForBucket(bucket string) string {
-	req := somaproto.Request{
-		Filter: &somaproto.Filter{
-			Bucket: &somaproto.BucketFilter{},
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Bucket: &proto.BucketFilter{},
 		},
 	}
 	receivedUuidArgument := false
@@ -134,7 +134,7 @@ func (u SomaUtil) TeamIdForBucket(bucket string) string {
 	return (*bucketResult.Buckets)[0].TeamId
 }
 
-func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *somaproto.Result {
+func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

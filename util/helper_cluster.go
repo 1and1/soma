@@ -19,9 +19,9 @@ func (u SomaUtil) TryGetClusterByUUIDOrName(c string, b string) string {
 }
 
 func (u SomaUtil) GetClusterIdByName(c string, bId string) string {
-	req := somaproto.Request{
-		Filter: &somaproto.Filter{
-			Cluster: &somaproto.ClusterFilter{
+	req := proto.Request{
+		Filter: &proto.Filter{
+			Cluster: &proto.ClusterFilter{
 				Name:     c,
 				BucketId: bId,
 			},
@@ -34,7 +34,7 @@ func (u SomaUtil) GetClusterIdByName(c string, bId string) string {
 	return (*clusterResult.Clusters)[0].Id
 }
 
-func (u SomaUtil) DecodeProtoResultClusterFromResponse(resp *resty.Response) *somaproto.Result {
+func (u SomaUtil) DecodeProtoResultClusterFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 
