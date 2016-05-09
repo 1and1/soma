@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Monitoring struct {
 	Id       string             `json:"id,omitempty"`

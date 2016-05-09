@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 // An Entity is a Type without the golang keyword problem
 type Entity struct {

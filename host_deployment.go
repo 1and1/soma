@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type HostDeployment struct {
 	CheckInstanceId            string   `json:"checkInstanceId"`

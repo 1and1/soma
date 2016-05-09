@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Metric struct {
 	Path        string           `json:"path,omitempty"`

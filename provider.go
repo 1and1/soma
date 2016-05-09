@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Provider struct {
 	Name    string           `json:"name,omitempty"`

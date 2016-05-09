@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type User struct {
 	Id             string           `json:"id,omitempty"`

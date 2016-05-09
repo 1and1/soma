@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type DetailsCreation struct {
 	CreatedAt string `json:"createdAt,omitempty"`

@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 const (
 	StatusOK             = 200

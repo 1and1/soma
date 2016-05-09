@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Property struct {
 	Type             string           `json:"type"`

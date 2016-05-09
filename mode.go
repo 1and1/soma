@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Mode struct {
 	Mode    string       `json:"mode,omitempty"`

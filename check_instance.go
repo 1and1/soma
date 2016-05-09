@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type CheckInstance struct {
 	InstanceId            string `json:"instanceId,omitempty"`

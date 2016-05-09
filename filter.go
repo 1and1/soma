@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Filter struct {
 	Bucket      *BucketFilter      `json:"bucket,omitempty"`

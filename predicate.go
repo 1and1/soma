@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Predicate struct {
 	Symbol  string            `json:"symbol,omitempty"`

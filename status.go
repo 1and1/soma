@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Status struct {
 	Name    string         `json:"name,omitempty"`

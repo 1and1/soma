@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Request struct {
 	Filter *Filter `json:"filter,omitempty"`

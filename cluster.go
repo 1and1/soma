@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Cluster struct {
 	Id          string          `json:"id,omitempty"`

@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Validity struct {
 	SystemProperty string           `json:"systemProperty,omitempty"`

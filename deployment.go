@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Deployment struct {
 	Repository       string            `json:"repository"`

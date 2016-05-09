@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Grant struct {
 	RecipientType string        `json:"recipientType"` //user,team,tool

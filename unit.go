@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Unit struct {
 	Unit    string       `json:"unit,omitempty"`

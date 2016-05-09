@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Team struct {
 	Id       string       `json:"id,omitempty"`

@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Flags struct {
 	Restore  bool `json:"restore"`
