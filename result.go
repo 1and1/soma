@@ -106,6 +106,10 @@ func (r *Result) Clean() {
 	if len(*r.Errors) == 0 {
 		r.Errors = nil
 	}
+
+	if len(*r.DeploymentsList) == 0 {
+		r.DeploymentsList = nil
+	}
 }
 
 // Legacy interface
