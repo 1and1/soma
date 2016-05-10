@@ -38,6 +38,15 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 		}
 		result.Servers = filtered
 	}
+	if cReq.Filter.Server.AssetId != 0 {
+		filtered := make([]somaServerResult, 0)
+		for _, i := range result.Servers {
+			if i.Server.AssetId == cReq.Filter.Server.AssetId {
+				filtered = append(filtered, i)
+			}
+		}
+		result.Servers = filtered
+	}
 
 skip:
 	SendServerReply(&w, &result)

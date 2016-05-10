@@ -47,7 +47,8 @@ func (r *somaServerReadHandler) run() {
 	log.Println("Prepare: server/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT server_id,
-       server_name
+       server_name,
+       server_asset_id
 FROM   inventory.servers
 WHERE  server_online
 AND    NOT server_deleted
@@ -61,11 +62,11 @@ AND    NOT server_id = '00000000-0000-0000-0000-000000000000';`)
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT server_id,
        server_asset_id,
-	   server_datacenter_name,
-	   server_datacenter_location,
-	   server_name,
-	   server_online,
-	   server_deleted
+       server_datacenter_name,
+       server_datacenter_location,
+       server_name,
+       server_online,
+       server_deleted
 FROM   inventory.servers
 WHERE  server_id = $1;`)
 	if err != nil {
@@ -107,11 +108,12 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&serverId, &serverName)
+			err := rows.Scan(&serverId, &serverName, &serverAsset)
 			result.Append(err, &somaServerResult{
 				Server: proto.Server{
-					Id:   serverId,
-					Name: serverName,
+					Id:      serverId,
+					Name:    serverName,
+					AssetId: uint64(serverAsset),
 				},
 			})
 		}
