@@ -52,6 +52,7 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	req = proto.Request{
 		Filter: &proto.Filter{
 			Property: &proto.PropertyFilter{
+				Type: pType,
 				Name: prop,
 			},
 		},
@@ -61,32 +62,56 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	case "custom":
 		// context ctx is repository
 		ctxIdString = u.TryGetRepositoryByUUIDOrName(ctx)
-		path = fmt.Sprintf("/property/custom/%s/", ctxIdString)
+		path = fmt.Sprintf("/filter/property/custom/%s/", ctxIdString)
+		req.Filter.Property.RepositoryId = ctxIdString
 	case "system":
-		path = "/property/system/"
+		path = "/filter/property/system/"
 	case "template":
-		path = "/property/service/global/"
+		path = "/filter/property/service/global/"
 	case "service":
 		// context ctx is team
 		ctxIdString = u.TryGetTeamByUUIDOrName(ctx)
-		path = fmt.Sprintf("/property/service/team/%s/", ctxIdString)
+		path = fmt.Sprintf("/filter/property/service/team/%s/", ctxIdString)
 	default:
 		u.Abort("Unsupported property type in util.GetPropertyIdByName()")
 	}
 
-	resp := u.GetRequestWithBody(req, path)
-	propResult := u.DecodeProtoResultPropertyFromResponse(resp)
+	resp := u.PostRequestWithBody(req, path)
+	res := u.DecodeProtoResultPropertyFromResponse(resp)
 
-	switch prop {
-	case (*propResult.Properties)[0].Custom.Name:
-		return (*propResult.Properties)[0].Custom.Id
-	case (*propResult.Properties)[0].System.Name:
-		return (*propResult.Properties)[0].System.Name
-	case (*propResult.Properties)[0].Service.Name:
-		return (*propResult.Properties)[0].Service.Name
-	default:
-		u.Abort("Received result set for incorrect property")
+	if res.Properties == nil || *res.Properties == nil {
+		u.Abort("Property lookup result contained no properties")
 	}
+	if len(*res.Properties) != 1 {
+		u.Abort(fmt.Sprintf("Property lookup expected 1 result, received: %d",
+			len(*res.Properties)))
+	}
+
+	switch pType {
+	case "custom":
+		if prop == (*res.Properties)[0].Custom.Name &&
+			ctxIdString == (*res.Properties)[0].Custom.RepositoryId {
+			return (*res.Properties)[0].Custom.Id
+		}
+	case "service":
+		if ctxIdString != (*res.Properties)[0].Service.TeamId {
+			goto fail
+		}
+		fallthrough
+	case "template":
+		if prop == (*res.Properties)[0].Service.Name {
+			return (*res.Properties)[0].Service.Name
+		}
+		goto fail
+	case "system":
+		if prop == (*res.Properties)[0].System.Name {
+			return (*res.Properties)[0].System.Name
+		}
+		goto fail
+	}
+
+fail:
+	u.Abort("Received result set for incorrect property")
 
 	// required to silence the compiler, since ending in a switch is not
 	// analyzed to always return:
