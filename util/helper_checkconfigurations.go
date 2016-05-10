@@ -26,16 +26,16 @@ func (u SomaUtil) GetObjectIdForCheck(t string, n string, b string) string {
 	return ""
 }
 
-func (u SomaUtil) CleanThresholds(thresholds []somaproto.CheckConfigThreshold) []somaproto.CheckConfigThreshold {
-	clean := []somaproto.CheckConfigThreshold{}
+func (u SomaUtil) CleanThresholds(thresholds []proto.CheckConfigThreshold) []proto.CheckConfigThreshold {
+	clean := []proto.CheckConfigThreshold{}
 
 	for _, thr := range thresholds {
-		c := somaproto.CheckConfigThreshold{
+		c := proto.CheckConfigThreshold{
 			Value: thr.Value,
-			Predicate: somaproto.Predicate{
+			Predicate: proto.Predicate{
 				Symbol: thr.Predicate.Symbol,
 			},
-			Level: somaproto.Level{
+			Level: proto.Level{
 				Name: u.TryGetLevelNameByNameOrShort(thr.Level.Name),
 			},
 		}
@@ -44,8 +44,8 @@ func (u SomaUtil) CleanThresholds(thresholds []somaproto.CheckConfigThreshold) [
 	return clean
 }
 
-func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigConstraint, repoId string, teamId string) []somaproto.CheckConfigConstraint {
-	clean := []somaproto.CheckConfigConstraint{}
+func (u SomaUtil) CleanConstraints(constraints []proto.CheckConfigConstraint, repoId string, teamId string) []proto.CheckConfigConstraint {
+	clean := []proto.CheckConfigConstraint{}
 
 	for _, prop := range constraints {
 		switch prop.ConstraintType {
@@ -62,32 +62,32 @@ func (u SomaUtil) CleanConstraints(constraints []somaproto.CheckConfigConstraint
 			_ = u.DecodeProtoResultAttributeFromResponse(resp) // aborts on 404
 			clean = append(clean, prop)
 		case "oncall":
-			oc := somaproto.PropertyOncall{}
+			oc := proto.PropertyOncall{}
 			if prop.Oncall.Name != "" {
 				oc.Id = u.TryGetOncallByUUIDOrName(prop.Oncall.Name)
 			} else if prop.Oncall.Id != "" {
 				oc.Id = u.TryGetOncallByUUIDOrName(prop.Oncall.Id)
 			}
-			clean = append(clean, somaproto.CheckConfigConstraint{
+			clean = append(clean, proto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
 				Oncall:         &oc,
 			})
 		case "service":
-			so := somaproto.PropertyService{
+			so := proto.PropertyService{
 				Name:   u.TryGetServicePropertyByUUIDOrName(prop.Service.Name, teamId),
 				TeamId: teamId,
 			}
-			clean = append(clean, somaproto.CheckConfigConstraint{
+			clean = append(clean, proto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
 				Service:        &so,
 			})
 		case "custom":
-			co := somaproto.PropertyCustom{
+			co := proto.PropertyCustom{
 				RepositoryId: repoId,
 				Id:           u.TryGetCustomPropertyByUUIDOrName(prop.Custom.Name, repoId),
 				Value:        prop.Custom.Value,
 			}
-			clean = append(clean, somaproto.CheckConfigConstraint{
+			clean = append(clean, proto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,
 				Custom:         &co,
 			})
@@ -106,9 +106,9 @@ func (u *SomaUtil) TryGetCheckByUUIDOrName(c string, r string) string {
 
 func (u *SomaUtil) GetCheckByName(c string, r string) string {
 	repo := u.TryGetRepositoryByUUIDOrName(r)
-	req := somaproto.Request{
-		Filter: &somaproto.Filter{
-			CheckConfig: &somaproto.CheckConfigFilter{
+	req := proto.Request{
+		Filter: &proto.Filter{
+			CheckConfig: &proto.CheckConfigFilter{
 				Name: c,
 			},
 		},
@@ -124,7 +124,7 @@ func (u *SomaUtil) GetCheckByName(c string, r string) string {
 	return (*checkResult.CheckConfigs)[0].Id
 }
 
-func (u *SomaUtil) DecodeCheckConfigurationResultFromResponse(resp *resty.Response) *somaproto.Result {
+func (u *SomaUtil) DecodeCheckConfigurationResultFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

@@ -16,7 +16,9 @@ func (u SomaUtil) DecodeResultFromResponse(resp *resty.Response) *proto.Result {
 	if res.StatusCode > 299 {
 		s := fmt.Sprintf("Request failed: %d - %s", res.StatusCode, res.StatusText)
 		msgs := []string{s}
-		msgs = append(msgs, *res.Errors...)
+		if res.Errors != nil { // pointer to slice
+			msgs = append(msgs, *res.Errors...)
+		}
 		u.Abort(msgs...)
 	}
 	return &res
