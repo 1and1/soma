@@ -94,6 +94,10 @@ checksloop:
 				for _, attr := range attributes {
 					hit := tec.evalAttributeOfService(id, view, attr.Key, attr.Value)
 					if hit {
+						if attributeC[id] == nil {
+							// attributeC[id] might still be a nil map
+							attributeC[id] = map[string][]string{}
+						}
 						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], attr.Value)
 					} else {
 						hasBrokenConstraint = true
@@ -113,6 +117,10 @@ checksloop:
 				if hit {
 					for id, _ := range svcIdMap {
 						serviceC[id] = svcIdMap[id]
+						if attributeC[id] == nil {
+							// attributeC[id] might still be a nil map
+							attributeC[id] = map[string][]string{}
+						}
 						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], attr.Value)
 					}
 				}
