@@ -56,25 +56,39 @@ func (c *Capability) DeepCompare(a *Capability) bool {
 			}
 			return false
 		}
-	} else if a.Demux != nil {
-		return false
 	}
-	if c.Constraints != nil {
-	deepconstraint:
-		for _, cstr := range *c.Constraints {
-			if cstr.DeepCompareSlice(a.Constraints) {
-				continue deepconstraint
+	if a.Demux != nil {
+	revdemuxloop:
+		for _, str := range *a.Demux {
+			if c.DeepCompareSlice(str, c.Demux) {
+				continue revdemuxloop
 			}
 			return false
 		}
-	} else if a.Constraints != nil {
-		return false
+	}
+	if c.Constraints != nil {
+	constraintloop:
+		for _, cstr := range *c.Constraints {
+			if cstr.DeepCompareSlice(a.Constraints) {
+				continue constraintloop
+			}
+			return false
+		}
+	}
+	if a.Constraints != nil {
+	revconstraintloop:
+		for _, cstr := range *a.Constraints {
+			if cstr.DeepCompareSlice(c.Constraints) {
+				continue revconstraintloop
+			}
+			return false
+		}
 	}
 	return true
 }
 
 func (c *Capability) DeepCompareSlice(s string, a *[]string) bool {
-	if a == nil {
+	if a == nil || *a == nil {
 		return false
 	}
 
@@ -98,7 +112,7 @@ func (c *CapabilityConstraint) DeepCompare(a *CapabilityConstraint) bool {
 }
 
 func (c *CapabilityConstraint) DeepCompareSlice(a *[]CapabilityConstraint) bool {
-	if a == nil {
+	if a == nil || *a == nil {
 		return false
 	}
 

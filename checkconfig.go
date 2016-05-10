@@ -29,6 +29,51 @@ type CheckConfigConstraint struct {
 	Attribute      *ServiceAttribute `json:"attribute,omitempty"`
 }
 
+func (c *CheckConfigConstraint) DeepCompare(a *CheckConfigConstraint) bool {
+	if c.ConstraintType != a.ConstraintType {
+		return false
+	}
+	switch c.ConstraintType {
+	case "native":
+		if c.Native.DeepCompare(a.Native) {
+			return true
+		}
+	case "oncall":
+		if c.Oncall.DeepCompare(a.Oncall) {
+			return true
+		}
+	case "custom":
+		if c.Custom.DeepCompare(a.Custom) {
+			return true
+		}
+	case "system":
+		if c.System.DeepCompare(a.System) {
+			return true
+		}
+	case "service":
+		if c.Service.DeepCompare(a.Service) {
+			return true
+		}
+	case "attribute":
+		if c.Attribute.DeepCompare(a.Attribute) {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *CheckConfigConstraint) DeepCompareSlice(a []CheckConfigConstraint) bool {
+	if a == nil {
+		return false
+	}
+	for _, constr := range a {
+		if c.DeepCompare(&constr) {
+			return true
+		}
+	}
+	return false
+}
+
 type CheckConfigThreshold struct {
 	Predicate Predicate
 	Level     Level
@@ -36,6 +81,9 @@ type CheckConfigThreshold struct {
 }
 
 func (c *CheckConfigThreshold) DeepCompareSlice(a []CheckConfigThreshold) bool {
+	if a == nil {
+		return false
+	}
 	for _, thr := range a {
 		if c.DeepCompare(&thr) {
 			return true
@@ -62,7 +110,6 @@ type CheckConfigFilter struct {
 	CapabilityId string `json:"capabilityId,omitempty"`
 }
 
-//
 func (c *CheckConfig) DeepCompare(a *CheckConfig) bool {
 	if a == nil {
 		return false
@@ -82,7 +129,27 @@ threshloop:
 		}
 		return false
 	}
-	// TODO: constraints
+revthreshloop:
+	for _, thr := range a.Thresholds {
+		if thr.DeepCompareSlice(c.Thresholds) {
+			continue revthreshloop
+		}
+		return false
+	}
+constrloop:
+	for _, constr := range c.Constraints {
+		if constr.DeepCompareSlice(a.Constraints) {
+			continue constrloop
+		}
+		return false
+	}
+revconstrloop:
+	for _, constr := range a.Constraints {
+		if constr.DeepCompareSlice(c.Constraints) {
+			continue revconstrloop
+		}
+		return false
+	}
 	return true
 }
 

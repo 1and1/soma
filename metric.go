@@ -35,6 +35,13 @@ packageloop:
 		}
 		return false
 	}
+revpackageloop:
+	for _, pkg := range *a.Packages {
+		if pkg.DeepCompareSlice(p.Packages) {
+			continue revpackageloop
+		}
+		return false
+	}
 	return true
 }
 
@@ -46,6 +53,9 @@ func (p *MetricPackage) DeepCompare(a *MetricPackage) bool {
 }
 
 func (p *MetricPackage) DeepCompareSlice(a *[]MetricPackage) bool {
+	if a == nil || *a == nil {
+		return false
+	}
 	for _, pkg := range *a {
 		if p.DeepCompare(&pkg) {
 			return true
