@@ -1,12 +1,12 @@
-package somaproto
+package proto
 
 type Provider struct {
-	Name    string           `json:"name, omitempty"`
-	Details *ProviderDetails `json:"details, omitempty"`
+	Name    string           `json:"name,omitempty"`
+	Details *ProviderDetails `json:"details,omitempty"`
 }
 
 type ProviderFilter struct {
-	Name string `json:"name, omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type ProviderDetails struct {

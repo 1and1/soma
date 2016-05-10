@@ -1,8 +1,8 @@
-package somaproto
+package proto
 
 type Category struct {
-	Name    string           `json:"name, omitempty"`
-	Details *CategoryDetails `json:"details, omitempty"`
+	Name    string           `json:"name,omitempty"`
+	Details *CategoryDetails `json:"details,omitempty"`
 }
 
 type CategoryDetails struct {

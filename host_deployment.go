@@ -1,9 +1,9 @@
-package somaproto
+package proto
 
 type HostDeployment struct {
 	CheckInstanceId            string   `json:"checkInstanceId"`
 	DeleteInstance             bool     `json:"deleteInstance"`
-	CurrentCheckInstanceIdList []string `json:"currentCheckInstanceIdList, omitempty"`
+	CurrentCheckInstanceIdList []string `json:"currentCheckInstanceIdList,omitempty"`
 }
 
 func NewHostDeploymentRequest() Request {

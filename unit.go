@@ -1,14 +1,14 @@
-package somaproto
+package proto
 
 type Unit struct {
-	Unit    string       `json:"unit, omitempty"`
-	Name    string       `json:"name, omitempty"`
-	Details *UnitDetails `json:"details, omitempty"`
+	Unit    string       `json:"unit,omitempty"`
+	Name    string       `json:"name,omitempty"`
+	Details *UnitDetails `json:"details,omitempty"`
 }
 
 type UnitFilter struct {
-	Unit string `json:"unit, omitempty"`
-	Name string `json:"name, omitempty"`
+	Unit string `json:"unit,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type UnitDetails struct {

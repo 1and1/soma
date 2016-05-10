@@ -1,21 +1,21 @@
-package somaproto
+package proto
 
 type Group struct {
-	Id             string        `json:"id, omitempty"`
-	Name           string        `json:"name, omitempty"`
-	BucketId       string        `json:"bucketId, omitempty"`
-	ObjectState    string        `json:"objectState, omitempty"`
-	TeamId         string        `json:"teamId, omitempty"`
-	MemberGroups   []Group       `json:"memberGroups, omitempty"`
-	MemberClusters []Cluster     `json:"memberClusters, omitempty"`
-	MemberNodes    []Node        `json:"memberNodes, omitempty"`
-	Details        *GroupDetails `json:"details, omitempty"`
-	Properties     *[]Property   `json:"properties, omitempty"`
+	Id             string        `json:"id,omitempty"`
+	Name           string        `json:"name,omitempty"`
+	BucketId       string        `json:"bucketId,omitempty"`
+	ObjectState    string        `json:"objectState,omitempty"`
+	TeamId         string        `json:"teamId,omitempty"`
+	MemberGroups   []Group       `json:"memberGroups,omitempty"`
+	MemberClusters []Cluster     `json:"memberClusters,omitempty"`
+	MemberNodes    []Node        `json:"memberNodes,omitempty"`
+	Details        *GroupDetails `json:"details,omitempty"`
+	Properties     *[]Property   `json:"properties,omitempty"`
 }
 
 type GroupFilter struct {
-	Name     string `json:"name, omitempty"`
-	BucketId string `json:"bucketId, omitempty"`
+	Name     string `json:"name,omitempty"`
+	BucketId string `json:"bucketId,omitempty"`
 }
 
 type GroupDetails struct {

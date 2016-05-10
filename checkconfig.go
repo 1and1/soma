@@ -1,32 +1,32 @@
-package somaproto
+package proto
 
 type CheckConfig struct {
-	Id           string                  `json:"id, omitempty"`
-	Name         string                  `json:"name, omitempty"`
-	Interval     uint64                  `json:"interval, omitempty"`
-	RepositoryId string                  `json:"repositoryId, omitempty"`
-	BucketId     string                  `json:"bucketId, omitempty"`
-	CapabilityId string                  `json:"capabilityId, omitempty"`
-	ObjectId     string                  `json:"objectId, omitempty"`
-	ObjectType   string                  `json:"objectType, omitempty"`
-	IsActive     bool                    `json:"isActive, omitempty"`
-	IsEnabled    bool                    `json:"isEnabled, omitempty"`
-	Inheritance  bool                    `json:"inheritance, omitempty"`
-	ChildrenOnly bool                    `json:"childrenOnly, omitempty"`
-	ExternalId   string                  `json:"externalId, omitempty"`
-	Constraints  []CheckConfigConstraint `json:"constraints, omitempty"`
-	Thresholds   []CheckConfigThreshold  `json:"thresholds, omitempty"`
-	Details      *CheckConfigDetails     `json:"details, omitempty"`
+	Id           string                  `json:"id,omitempty"`
+	Name         string                  `json:"name,omitempty"`
+	Interval     uint64                  `json:"interval,omitempty"`
+	RepositoryId string                  `json:"repositoryId,omitempty"`
+	BucketId     string                  `json:"bucketId,omitempty"`
+	CapabilityId string                  `json:"capabilityId,omitempty"`
+	ObjectId     string                  `json:"objectId,omitempty"`
+	ObjectType   string                  `json:"objectType,omitempty"`
+	IsActive     bool                    `json:"isActive,omitempty"`
+	IsEnabled    bool                    `json:"isEnabled,omitempty"`
+	Inheritance  bool                    `json:"inheritance,omitempty"`
+	ChildrenOnly bool                    `json:"childrenOnly,omitempty"`
+	ExternalId   string                  `json:"externalId,omitempty"`
+	Constraints  []CheckConfigConstraint `json:"constraints,omitempty"`
+	Thresholds   []CheckConfigThreshold  `json:"thresholds,omitempty"`
+	Details      *CheckConfigDetails     `json:"details,omitempty"`
 }
 
 type CheckConfigConstraint struct {
-	ConstraintType string            `json:"constraintType, omitempty"`
-	Native         *PropertyNative   `json:"native, omitempty"`
-	Oncall         *PropertyOncall   `json:"oncall, omitempty"`
-	Custom         *PropertyCustom   `json:"custom, omitempty"`
-	System         *PropertySystem   `json:"system, omitempty"`
-	Service        *PropertyService  `json:"service, omitempty"`
-	Attribute      *ServiceAttribute `json:"attribute, omitempty"`
+	ConstraintType string            `json:"constraintType,omitempty"`
+	Native         *PropertyNative   `json:"native,omitempty"`
+	Oncall         *PropertyOncall   `json:"oncall,omitempty"`
+	Custom         *PropertyCustom   `json:"custom,omitempty"`
+	System         *PropertySystem   `json:"system,omitempty"`
+	Service        *PropertyService  `json:"service,omitempty"`
+	Attribute      *ServiceAttribute `json:"attribute,omitempty"`
 }
 
 type CheckConfigThreshold struct {
@@ -57,9 +57,9 @@ type CheckConfigDetails struct {
 }
 
 type CheckConfigFilter struct {
-	Id           string `json:"id, omitempty"`
-	Name         string `json:"name, omitempty"`
-	CapabilityId string `json:"capabilityId, omitempty"`
+	Id           string `json:"id,omitempty"`
+	Name         string `json:"name,omitempty"`
+	CapabilityId string `json:"capabilityId,omitempty"`
 }
 
 //

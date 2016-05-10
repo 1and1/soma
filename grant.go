@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 type Grant struct {
 	RecipientType string        `json:"recipientType"` //user,team,tool
@@ -7,7 +7,7 @@ type Grant struct {
 	RepositoryId  string        `json:"repositoryId"`
 	ObjectType    string        `json:"objectType"`
 	ObjectId      string        `json:"objectId"`
-	Details       *GrantDetails `json:"details, omitempty"`
+	Details       *GrantDetails `json:"details,omitempty"`
 }
 
 type GrantDetails struct {

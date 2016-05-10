@@ -1,16 +1,16 @@
-package somaproto
+package proto
 
 type CheckInstance struct {
-	InstanceId            string `json:"instanceId, omitempty"`
-	CheckId               string `json:"checkId, omitempty"`
-	ConfigId              string `json:"configId, omitempty"`
-	InstanceConfigId      string `json:"instanceConfigId, omitempty"`
-	Version               uint64 `json:"version, omitempty"`
-	ConstraintHash        string `json:"constraintHash, omitempty"`
-	ConstraintValHash     string `json:"constraintValHash, omitempty"`
-	InstanceSvcCfgHash    string `json:"instanceSvcCfghash, omitempty"`
-	InstanceService       string `json:"instanceService, omitempty"`
-	InstanceServiceConfig string `json:"instanceServiceCfg, omitempty"`
+	InstanceId            string `json:"instanceId,omitempty"`
+	CheckId               string `json:"checkId,omitempty"`
+	ConfigId              string `json:"configId,omitempty"`
+	InstanceConfigId      string `json:"instanceConfigId,omitempty"`
+	Version               uint64 `json:"version,omitempty"`
+	ConstraintHash        string `json:"constraintHash,omitempty"`
+	ConstraintValHash     string `json:"constraintValHash,omitempty"`
+	InstanceSvcCfgHash    string `json:"instanceSvcCfghash,omitempty"`
+	InstanceService       string `json:"instanceService,omitempty"`
+	InstanceServiceConfig string `json:"instanceServiceCfg,omitempty"`
 }
 
 func (t *CheckInstance) DeepCompare(a *CheckInstance) bool {

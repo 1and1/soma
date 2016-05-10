@@ -1,4 +1,4 @@
-package somaproto
+package proto
 
 const (
 	StatusOK             = 200
@@ -30,46 +30,46 @@ type Result struct {
 	StatusText string `json:"statusText"`
 
 	// Errors is set for StatusCode >399
-	Errors *[]string `json:"errors, omitempty"`
+	Errors *[]string `json:"errors,omitempty"`
 	// JobId is set for StatusCode 202 (async processing)
-	JobId string `json:"jobId, omitempty"`
+	JobId string `json:"jobId,omitempty"`
 	// List of (outstanding) deployment IDs
-	DeploymentsList *[]string `json:"deploymentsList, omitempty"`
+	DeploymentsList *[]string `json:"deploymentsList,omitempty"`
 
 	// Request dependent data
-	Attributes       *[]Attribute       `json:"attributes, omitempty"`
-	Buckets          *[]Bucket          `json:"buckets, omitempty"`
-	Capabilities     *[]Capability      `json:"capability, omitempty"`
-	Categories       *[]Category        `json:"categories, omitempty"`
-	CheckConfigs     *[]CheckConfig     `json:"checkConfigs, omitempty"`
-	Clusters         *[]Cluster         `json:"clusters, omitempty"`
-	DatacenterGroups *[]DatacenterGroup `json:"datacenterGroups, omitempty"`
-	Datacenters      *[]Datacenter      `json:"datacenter, omitempty"`
-	Deployments      *[]Deployment      `json:"deployments, omitempty"`
-	Entities         *[]Entity          `json:"entities, omitempty"`
-	Environments     *[]Environment     `json:"environment, omitempty"`
-	Grants           *[]Grant           `json:"grants, omitempty"`
-	Groups           *[]Group           `json:"groups, omitempty"`
-	HostDeployments  *[]HostDeployment  `json:"hostDeployments, omitempty"`
-	Levels           *[]Level           `json:"levels, omitempty"`
-	Metrics          *[]Metric          `json:"metrics, omitempty"`
-	Modes            *[]Mode            `json:"modes, omitempty"`
-	Monitorings      *[]Monitoring      `json:"monitorings, omitempty"`
-	Nodes            *[]Node            `json:"nodes, omitempty"`
-	Oncalls          *[]Oncall          `json:"oncall, omitempty"`
-	Permissions      *[]Permission      `json:"permissions, omitempty"`
-	Predicates       *[]Predicate       `json:"predicates, omitempty"`
-	Properties       *[]Property        `json:"properties, omitempty"`
-	Providers        *[]Provider        `json:"providers, omitempty"`
-	Repositories     *[]Repository      `json:"repositories, omitempty"`
-	Servers          *[]Server          `json:"servers, omitempty"`
-	States           *[]State           `json:"states, omitempty"`
-	Status           *[]Status          `json:"status, omitempty"`
-	Teams            *[]Team            `json:"teams, omitempty"`
-	Units            *[]Unit            `json:"units, omitempty"`
-	Users            *[]User            `json:"users, omitempty"`
-	Validities       *[]Validity        `json:"validities, omitempty"`
-	Views            *[]View            `json:"views, omitempty"`
+	Attributes       *[]Attribute       `json:"attributes,omitempty"`
+	Buckets          *[]Bucket          `json:"buckets,omitempty"`
+	Capabilities     *[]Capability      `json:"capability,omitempty"`
+	Categories       *[]Category        `json:"categories,omitempty"`
+	CheckConfigs     *[]CheckConfig     `json:"checkConfigs,omitempty"`
+	Clusters         *[]Cluster         `json:"clusters,omitempty"`
+	DatacenterGroups *[]DatacenterGroup `json:"datacenterGroups,omitempty"`
+	Datacenters      *[]Datacenter      `json:"datacenter,omitempty"`
+	Deployments      *[]Deployment      `json:"deployments,omitempty"`
+	Entities         *[]Entity          `json:"entities,omitempty"`
+	Environments     *[]Environment     `json:"environment,omitempty"`
+	Grants           *[]Grant           `json:"grants,omitempty"`
+	Groups           *[]Group           `json:"groups,omitempty"`
+	HostDeployments  *[]HostDeployment  `json:"hostDeployments,omitempty"`
+	Levels           *[]Level           `json:"levels,omitempty"`
+	Metrics          *[]Metric          `json:"metrics,omitempty"`
+	Modes            *[]Mode            `json:"modes,omitempty"`
+	Monitorings      *[]Monitoring      `json:"monitorings,omitempty"`
+	Nodes            *[]Node            `json:"nodes,omitempty"`
+	Oncalls          *[]Oncall          `json:"oncall,omitempty"`
+	Permissions      *[]Permission      `json:"permissions,omitempty"`
+	Predicates       *[]Predicate       `json:"predicates,omitempty"`
+	Properties       *[]Property        `json:"properties,omitempty"`
+	Providers        *[]Provider        `json:"providers,omitempty"`
+	Repositories     *[]Repository      `json:"repositories,omitempty"`
+	Servers          *[]Server          `json:"servers,omitempty"`
+	States           *[]State           `json:"states,omitempty"`
+	Status           *[]Status          `json:"status,omitempty"`
+	Teams            *[]Team            `json:"teams,omitempty"`
+	Units            *[]Unit            `json:"units,omitempty"`
+	Users            *[]User            `json:"users,omitempty"`
+	Validities       *[]Validity        `json:"validities,omitempty"`
+	Views            *[]View            `json:"views,omitempty"`
 }
 
 func (r *Result) Error(err error) bool {
@@ -103,8 +103,12 @@ func (r *Result) OK() {
 }
 
 func (r *Result) Clean() {
-	if len(*r.Errors) == 0 {
+	if r.Errors == nil || len(*r.Errors) == 0 {
 		r.Errors = nil
+	}
+
+	if r.DeploymentsList == nil || len(*r.DeploymentsList) == 0 {
+		r.DeploymentsList = nil
 	}
 }
 

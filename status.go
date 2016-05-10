@@ -1,8 +1,8 @@
-package somaproto
+package proto
 
 type Status struct {
-	Name    string         `json:"name, omitempty"`
-	Details *StatusDetails `json:"details, omitempty"`
+	Name    string         `json:"name,omitempty"`
+	Details *StatusDetails `json:"details,omitempty"`
 }
 
 type StatusDetails struct {

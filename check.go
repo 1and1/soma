@@ -1,17 +1,17 @@
-package somaproto
+package proto
 
 type Check struct {
-	CheckId       string `json:"checkId, omitempty"`
-	SourceCheckId string `json:"sourceCheckId, omitempty"`
-	CheckConfigId string `json:"checkConfigId, omitempty"`
-	SourceType    string `json:"sourceType, omitempty"`
-	IsInherited   bool   `json:"isInherited, omitempty"`
-	InheritedFrom string `json:"inheritedFrom, omitempty"`
-	Inheritance   bool   `json:"inheritance, omitempty"`
-	ChildrenOnly  bool   `json:"childrenOnly, omitempty"`
-	RepositoryId  string `json:"repositoryId, omitempty"`
-	BucketId      string `json:"bucketId, omitempty"`
-	CapabilityId  string `json:"capabilityId, omitempty"`
+	CheckId       string `json:"checkId,omitempty"`
+	SourceCheckId string `json:"sourceCheckId,omitempty"`
+	CheckConfigId string `json:"checkConfigId,omitempty"`
+	SourceType    string `json:"sourceType,omitempty"`
+	IsInherited   bool   `json:"isInherited,omitempty"`
+	InheritedFrom string `json:"inheritedFrom,omitempty"`
+	Inheritance   bool   `json:"inheritance,omitempty"`
+	ChildrenOnly  bool   `json:"childrenOnly,omitempty"`
+	RepositoryId  string `json:"repositoryId,omitempty"`
+	BucketId      string `json:"bucketId,omitempty"`
+	CapabilityId  string `json:"capabilityId,omitempty"`
 }
 
 func (t *Check) DeepCompare(a *Check) bool {

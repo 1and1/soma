@@ -1,26 +1,26 @@
-package somaproto
+package proto
 
 type Monitoring struct {
-	Id       string             `json:"id, omitempty"`
-	Name     string             `json:"name, omitempty"`
-	Mode     string             `json:"mode, omitempty"`
-	Contact  string             `json:"contact, omitempty"`
-	TeamId   string             `json:"teamId, omitempty"`
-	Callback string             `json:"callback, omitempty"`
-	Details  *MonitoringDetails `json:"details, omitempty"`
+	Id       string             `json:"id,omitempty"`
+	Name     string             `json:"name,omitempty"`
+	Mode     string             `json:"mode,omitempty"`
+	Contact  string             `json:"contact,omitempty"`
+	TeamId   string             `json:"teamId,omitempty"`
+	Callback string             `json:"callback,omitempty"`
+	Details  *MonitoringDetails `json:"details,omitempty"`
 }
 
 type MonitoringFilter struct {
-	Name    string `json:"name, omitempty"`
-	Mode    string `json:"mode, omitempty"`
-	Contact string `json:"contact, omitempty"`
-	TeamId  string `json:"teamId, omitempty"`
+	Name    string `json:"name,omitempty"`
+	Mode    string `json:"mode,omitempty"`
+	Contact string `json:"contact,omitempty"`
+	TeamId  string `json:"teamId,omitempty"`
 }
 
 type MonitoringDetails struct {
 	DetailsCreation
-	Checks    uint64 `json:"checks, omitempty"`
-	Instances uint64 `json:"instances, omitempty"`
+	Checks    uint64 `json:"checks,omitempty"`
+	Instances uint64 `json:"instances,omitempty"`
 }
 
 func (p *Monitoring) DeepCompare(a *Monitoring) bool {
