@@ -83,4 +83,18 @@ func (u *SomaUtil) ValidateProviderExists(s string) {
 	u.Abort(fmt.Sprintf("Referenced provider %s is not registered with SOMA, see `somaadm providers help create`", s))
 }
 
+func (u *SomaUtil) ValidateUnitExists(s string) {
+	resp := u.GetRequest("/units/")
+	res := u.DecodeResultFromResponse(resp)
+
+	if res.Units != nil {
+		for _, unit := range *res.Units {
+			if unit.Unit == s {
+				return
+			}
+		}
+	}
+	u.Abort(fmt.Sprintf("Referenced unit %s is not registered with SOMA, see `somaadm units help create`", s))
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

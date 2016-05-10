@@ -55,6 +55,7 @@ func cmdMetricCreate(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
+	utl.ValidateUnitExists(opts["unit"][0])
 	req := proto.Request{}
 	req.Metric = &proto.Metric{}
 	req.Metric.Path = c.Args().First()
