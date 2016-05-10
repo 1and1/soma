@@ -332,4 +332,99 @@ argloop:
 	return result, constraints, thresholds
 }
 
+func (u *SomaUtil) ParseVariadicCapabilityArguments(
+	multKeys []string, // keys that may appear multiple times
+	uniqKeys []string, // keys that are allowed at most once
+	reqKeys []string, // keys that are required at least one
+	args []string, // arguments to parse
+) (map[string][]string, []proto.CapabilityConstraint) {
+	// returns a map of slices of string
+	result := make(map[string][]string)
+	constr := make([]proto.CapabilityConstraint, 0)
+
+	// merge key slices
+	multKeys = append(multKeys, []string{"constraint", "demux"}...)
+	keys := append(multKeys, uniqKeys...)
+
+	// helper to skip over next value in args slice
+	skip := false
+	skipcount := 0
+
+	for pos, val := range args {
+		// skip current arg if last argument was a keyword
+		if skip {
+			skipcount--
+			if skipcount == 0 {
+				skip = false
+			}
+			continue
+		}
+
+		if u.SliceContainsString(val, keys) {
+			// there must be at least one arguments left
+			if len(args[pos+1:]) < 1 {
+				u.Abort("Syntax error, incomplete key/value specification (too few items left to parse)")
+			}
+			// check for back-to-back keyswords
+			u.CheckStringNotAKeyword(args[pos+1], keys)
+
+			switch val {
+			case "constraint":
+				// must be at least 3 items left
+				if len(args[pos+1:]) < 3 {
+					u.Abort("Syntax error, incomplete constraint specification")
+				}
+				// constraint must be type `system` or `attribute`
+				switch args[pos+1] {
+				case "system":
+					u.CheckStringIsSystemProperty(args[pos+2])
+				case "attribute":
+					u.CheckStringIsServiceAttribute(args[pos+2])
+				default:
+					u.Abort(fmt.Sprintf("Syntax error, invalid constraint type: %s", args[pos+1]))
+				}
+				constr = append(constr, CapabilityConstraint{
+					Type:  args[pos+1],
+					Name:  args[pos+2],
+					Value: args[pos+3],
+				})
+				skip = true
+				skipcount = 3
+				continue
+			case "demux":
+				// argument to demux must be a service attribute
+				u.CheckStringIsServiceAttribute(args[pos+1])
+				fallthrough
+			default:
+				// append value of current keyword into result map
+				result[val] = append(result[val], args[pos+1])
+				skip = true
+				skipcount = 1
+				continue
+			}
+		}
+		// keywords trigger continue before this
+		// values after keywords are skip'ed
+		// reaching this is an error
+		u.Abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
+	}
+
+	// check if we managed to collect all required keywords
+	for _, key := range reqKeys {
+		// ok is false if slice is nil
+		if _, ok := result[key]; !ok {
+			u.Abort(fmt.Sprintf("Syntax error, missing required keyword: %s", key))
+		}
+	}
+
+	// check if unique keywords were only specified once
+	for _, key := range uniqKeys {
+		if sl, ok := result[key]; ok && (len(sl) > 1) {
+			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
+		}
+	}
+
+	return result, constr
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
