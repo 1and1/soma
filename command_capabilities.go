@@ -17,9 +17,10 @@ func registerCapability(app cli.App) *cli.App {
 				Before: runtimePreCmd,
 				Subcommands: []cli.Command{
 					{
-						Name:   "declare",
-						Usage:  "Declare a new monitoring system capability",
-						Action: cmdCapabilityDeclare,
+						Name:        "declare",
+						Usage:       "Declare a new monitoring system capability",
+						Description: help.CmdCapabilityDeclare,
+						Action:      cmdCapabilityDeclare,
 					},
 					{
 						Name:   "revoke",
