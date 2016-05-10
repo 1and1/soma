@@ -383,7 +383,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 				default:
 					u.Abort(fmt.Sprintf("Syntax error, invalid constraint type: %s", args[pos+1]))
 				}
-				constr = append(constr, CapabilityConstraint{
+				constr = append(constr, proto.CapabilityConstraint{
 					Type:  args[pos+1],
 					Name:  args[pos+2],
 					Value: args[pos+3],
