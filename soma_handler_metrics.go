@@ -209,17 +209,41 @@ runloop:
 
 func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 	var (
-		res    sql.Result
-		err    error
-		tx     *sql.Tx
-		pkg    proto.MetricPackage
-		rowCnt int64
+		res      sql.Result
+		err      error
+		tx       *sql.Tx
+		pkg      proto.MetricPackage
+		rowCnt   int64
+		inputVal string
 	)
 	result := somaResult{}
 
 	switch q.action {
 	case "add":
 		log.Printf("R: metrics/add for %s", q.Metric.Path)
+		// test the referenced unit exists, to prettify the error
+		w.conn.QueryRow("SELECT metric_unit FROM soma.metric_units WHERE metric_unit = $1::varchar;",
+			q.Metric.Unit).Scan(&inputVal)
+		if err != sql.ErrNoRows {
+			err = fmt.Errorf("Unit %s is not registered", q.Metric.Unit)
+			goto bailout
+		} else if err != nil {
+			goto bailout
+		}
+
+		// test the referenced providers exist
+		if q.Metric.Packages != nil && *q.Metric.Packages != nil {
+			for _, pkg = range *q.Metric.Packages {
+				w.conn.QueryRow("SELECT metric_provider FROM soma.metric_providers WHERE metric_provider = $1::varchar;",
+					pkg.Provider).Scan(&inputVal)
+				if err != sql.ErrNoRows {
+					err = fmt.Errorf("Provider %s is not registered", pkg.Provider)
+					goto bailout
+				} else if err != nil {
+					goto bailout
+				}
+			}
+		}
 
 		// start transaction
 		tx, err = w.conn.Begin()
