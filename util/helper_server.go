@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
@@ -21,10 +22,27 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 func (u SomaUtil) TryGetServerByUUIDOrName(s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
-		// aborts on failure
-		return u.GetServerIdByName(s)
+		if aid, err := strconv.ParseUint(s, 10, 64); err != nil {
+			// aborts on failure
+			return u.GetServerIdByName(s)
+		} else {
+			return u.GetServerIdByAssetId(aid)
+		}
 	}
 	return id.String()
+}
+
+func (u SomaUtil) GetServerIdByAssetId(aid uint64) string {
+	req := proto.NewServerFilter()
+	req.Filter.Server.AssetId = aid
+
+	resp := u.PostRequestWithBody(req, "/filter/servers/")
+	res := u.DecodeResultFromResponse(resp)
+
+	if aid != (*res.Servers)[0].AssetId {
+		u.Abort("Received result set for incorrect server")
+	}
+	return (*res.Servers)[0].Id
 }
 
 func (u SomaUtil) GetServerIdByName(server string) string {
@@ -40,7 +58,7 @@ func (u SomaUtil) GetServerIdByName(server string) string {
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
 	if server != (*serverResult.Servers)[0].Name {
-		u.Abort("Received result set for incorrect oncall duty")
+		u.Abort("Received result set for incorrect server")
 	}
 	return (*serverResult.Servers)[0].Id
 }
