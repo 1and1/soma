@@ -1,13 +1,8 @@
 package main
 
-import (
-	"github.com/codegangsta/cli"
-	"log"
-)
+import "github.com/codegangsta/cli"
 
 func registerCommands(app cli.App) *cli.App {
-	log.Print("Registering cli commands")
-
 	app.Commands = []cli.Command{
 		{
 			Name:    "initialize",
