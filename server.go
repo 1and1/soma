@@ -25,6 +25,7 @@ type ServerFilter struct {
 	NotDeleted bool   `json:"notDeleted,omitempty"`
 	Datacenter string `json:"datacenter,omitempty"`
 	Name       string `json:"name,omitempty"`
+	AssetId    uint64 `json:"assetId,omitempty"`
 }
 
 func (p *Server) DeepCompare(a *Server) bool {
