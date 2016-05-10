@@ -70,6 +70,7 @@ func cmdMetricCreate(c *cli.Context) {
 				utl.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
 					p))
 			}
+			utl.ValidateProviderExists(split[0])
 			pkgs = append(pkgs, proto.MetricPackage{
 				Provider: split[0],
 				Name:     split[1],

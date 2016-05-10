@@ -69,4 +69,18 @@ func (u *SomaUtil) ValidateStringInSlice(s string, sl []string) {
 	}
 }
 
+func (u *SomaUtil) ValidateProviderExists(s string) {
+	resp := u.GetRequest("/providers/")
+	res := u.DecodeResultFromResponse(resp)
+
+	if res.Providers != nil {
+		for _, prov := range *res.Providers {
+			if prov.Name == s {
+				return
+			}
+		}
+	}
+	u.Abort(fmt.Sprintf("Referenced provider %s is not registered with SOMA, see `somaadm providers help create`", s))
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
