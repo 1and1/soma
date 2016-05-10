@@ -26,7 +26,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.7.3"
+	version := "0.7.4"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	/*
 	 * Read configuration file
@@ -148,16 +148,19 @@ func main() {
 
 	router.GET("/property/system/", ListProperty)
 	router.GET("/property/system/:system", ShowProperty)
+	router.POST("/filter/property/system/", ListProperty)
 
 	router.GET("/property/custom/:repository/", ListProperty)
 	router.GET("/property/custom/:repository/:custom", ShowProperty)
-	router.POST("/filter/property/custom/", ListProperty)
+	router.POST("/filter/property/custom/:repository/", ListProperty)
 
 	router.GET("/property/service/global/", ListProperty)
 	router.GET("/property/service/global/:service", ShowProperty)
+	router.POST("/filter/property/service/global/", ListProperty)
 
 	router.GET("/property/service/team/:team/", ListProperty)
 	router.GET("/property/service/team/:team/:service", ShowProperty)
+	router.POST("/filter/property/service/team/:team/", ListProperty)
 
 	router.GET("/validity/", ListValidity)
 	router.GET("/validity/:property", ShowValidity)

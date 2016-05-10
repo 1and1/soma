@@ -59,6 +59,34 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		}
 		result.Properties = filtered
 	}
+	if (cReq.Filter.Property.Type == "system") && (cReq.Filter.Property.Name != "") {
+		filtered := make([]somaPropertyResult, 0)
+		for _, i := range result.Properties {
+			if i.System.Name == cReq.Filter.Property.Name {
+				filtered = append(filtered, i)
+			}
+		}
+		result.Properties = filtered
+	}
+	if (cReq.Filter.Property.Type == "service") && (cReq.Filter.Property.Name != "") {
+		filtered := make([]somaPropertyResult, 0)
+		for _, i := range result.Properties {
+			if (i.Service.Name == cReq.Filter.Property.Name) &&
+				(i.Service.TeamId == params.ByName("team")) {
+				filtered = append(filtered, i)
+			}
+		}
+		result.Properties = filtered
+	}
+	if (cReq.Filter.Property.Type == "template") && (cReq.Filter.Property.Name != "") {
+		filtered := make([]somaPropertyResult, 0)
+		for _, i := range result.Properties {
+			if i.Service.Name == cReq.Filter.Property.Name {
+				filtered = append(filtered, i)
+			}
+		}
+		result.Properties = filtered
+	}
 
 skip:
 	SendPropertyReply(&w, &result)

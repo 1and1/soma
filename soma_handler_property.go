@@ -285,14 +285,14 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				&property,
 			)
 		case "service":
-			log.Printf("R: property/list-service for %s/%s", q.Service.TeamId, q.Service.Name)
+			log.Printf("R: property/show-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			rows, err = r.show_srv_stmt.Query(
 				q.Service.Name,
 				q.Service.TeamId,
 			)
 			defer rows.Close()
 		case "template":
-			log.Printf("R: property/list-service-template for %s", q.Service.Name)
+			log.Printf("R: property/show-service-template for %s", q.Service.Name)
 			rows, err = r.show_tpl_stmt.Query(
 				q.Service.Name,
 			)
@@ -343,7 +343,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					&value,
 				)
 
-				if err != nil {
+				if err == nil {
 					propTempl.Name = property
 					propTempl.TeamId = team
 					propTempl.Attributes = append(propTempl.Attributes, proto.ServiceAttribute{
@@ -360,6 +360,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			})
 		case "template":
 			propTempl := proto.PropertyService{}
+			propTempl.Attributes = make([]proto.ServiceAttribute, 0)
 			var fErr error
 			for rows.Next() {
 				err := rows.Scan(
@@ -368,7 +369,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					&value,
 				)
 
-				if err != nil {
+				if err == nil {
 					propTempl.Name = property
 					propTempl.Attributes = append(propTempl.Attributes, proto.ServiceAttribute{
 						Name:  attribute,
