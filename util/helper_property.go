@@ -103,7 +103,7 @@ func (u SomaUtil) CheckStringIsSystemProperty(s string) {
 			return
 		}
 	}
-	u.Abort("Invalid system property requested")
+	u.Abort(fmt.Sprintf("Invalid system property requested: %s", s))
 }
 
 func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *proto.Result {
