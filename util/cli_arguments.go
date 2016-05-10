@@ -242,7 +242,7 @@ argloop:
 					u.Abort("Syntax error, incomplete constraint specification")
 				}
 				// check constraint type specification
-				if !u.SliceContainsString(args[pos+2], constraintTypes) {
+				if !u.SliceContainsString(args[pos+1], constraintTypes) {
 					u.Abort(fmt.Sprintf("Syntax error, unknown contraint type: %s",
 						args[pos+1]))
 				}
