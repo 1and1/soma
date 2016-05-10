@@ -175,28 +175,34 @@ func (tci *CheckInstance) Clone() CheckInstance {
 	cl.InstanceId, _ = uuid.FromString(tci.InstanceId.String())
 	cl.CheckId, _ = uuid.FromString(tci.CheckId.String())
 	cl.ConfigId, _ = uuid.FromString(tci.ConfigId.String())
+	cl.ConstraintService = make(map[string]string)
 	for k, v := range tci.ConstraintService {
 		t := v
 		cl.ConstraintService[k] = t
 	}
+	cl.ConstraintSystem = make(map[string]string)
 	for k, v := range tci.ConstraintSystem {
 		t := v
 		cl.ConstraintSystem[k] = t
 	}
+	cl.ConstraintCustom = make(map[string]string)
 	for k, v := range tci.ConstraintCustom {
 		t := v
 		cl.ConstraintCustom[k] = t
 	}
+	cl.ConstraintNative = make(map[string]string)
 	for k, v := range tci.ConstraintNative {
 		t := v
 		cl.ConstraintNative[k] = t
 	}
+	cl.InstanceServiceConfig = make(map[string]string)
 	for k, v := range tci.InstanceServiceConfig {
 		t := v
 		cl.InstanceServiceConfig[k] = t
 	}
 	cl.ConstraintAttribute = make(map[string]map[string][]string, 0)
 	for k, _ := range tci.ConstraintAttribute {
+		cl.ConstraintAttribute[k] = make(map[string][]string)
 		for k2, aVal := range tci.ConstraintAttribute[k] {
 			for _, val := range aVal {
 				t := val
