@@ -204,15 +204,54 @@ func SendPropertyReply(w *http.ResponseWriter, r *somaResult) {
 	for _, i := range (*r).Properties {
 		switch i.prType {
 		case "system":
-			*result.Properties = append(*result.Properties, proto.Property{Type: "system", System: &i.System})
+			*result.Properties = append(*result.Properties, proto.Property{Type: "system",
+				System: &proto.PropertySystem{
+					Name:  i.System.Name,
+					Value: i.System.Value,
+				}})
 		case "native":
-			*result.Properties = append(*result.Properties, proto.Property{Type: "native", Native: &i.Native})
+			*result.Properties = append(*result.Properties, proto.Property{Type: "native",
+				Native: &proto.PropertyNative{
+					Name:  i.Native.Name,
+					Value: i.Native.Value,
+				}})
 		case "custom":
-			*result.Properties = append(*result.Properties, proto.Property{Type: "custom", Custom: &i.Custom})
+			*result.Properties = append(*result.Properties, proto.Property{Type: "custom",
+				Custom: &proto.PropertyCustom{
+					Id:           i.Custom.Id,
+					Name:         i.Custom.Name,
+					Value:        i.Custom.Value,
+					RepositoryId: i.Custom.RepositoryId,
+				}})
 		case "service":
-			*result.Properties = append(*result.Properties, proto.Property{Type: "service", Service: &i.Service})
+			prop := proto.Property{
+				Type: "service",
+				Service: &proto.PropertyService{
+					Name:       i.Service.Name,
+					TeamId:     i.Service.TeamId,
+					Attributes: []proto.ServiceAttribute{},
+				}}
+			for _, a := range i.Service.Attributes {
+				prop.Service.Attributes = append(prop.Service.Attributes, proto.ServiceAttribute{
+					Name:  a.Name,
+					Value: a.Value,
+				})
+			}
+			*result.Properties = append(*result.Properties, prop)
 		case "template":
-			*result.Properties = append(*result.Properties, proto.Property{Type: "template", Service: &i.Service})
+			prop := proto.Property{
+				Type: "template",
+				Service: &proto.PropertyService{
+					Name:       i.Service.Name,
+					Attributes: []proto.ServiceAttribute{},
+				}}
+			for _, a := range i.Service.Attributes {
+				prop.Service.Attributes = append(prop.Service.Attributes, proto.ServiceAttribute{
+					Name:  a.Name,
+					Value: a.Value,
+				})
+			}
+			*result.Properties = append(*result.Properties, prop)
 		}
 		if i.ResultError != nil {
 			*result.Errors = append(*result.Errors, i.ResultError.Error())
