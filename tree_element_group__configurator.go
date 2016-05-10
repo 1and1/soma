@@ -411,7 +411,7 @@ func (teg *SomaTreeElemGroup) evalAttributeProp(
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
 			if a.Name == attr && a.Value == value && t.View == view {
-				f[t.Service] = a.Name
+				f[t.Id.String()] = a.Name
 			}
 		}
 	}
