@@ -224,7 +224,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		// test the referenced unit exists, to prettify the error
 		w.conn.QueryRow("SELECT metric_unit FROM soma.metric_units WHERE metric_unit = $1::varchar;",
 			q.Metric.Unit).Scan(&inputVal)
-		if err != sql.ErrNoRows {
+		if err == sql.ErrNoRows {
 			err = fmt.Errorf("Unit %s is not registered", q.Metric.Unit)
 			goto bailout
 		} else if err != nil {
@@ -236,7 +236,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 			for _, pkg = range *q.Metric.Packages {
 				w.conn.QueryRow("SELECT metric_provider FROM soma.metric_providers WHERE metric_provider = $1::varchar;",
 					pkg.Provider).Scan(&inputVal)
-				if err != sql.ErrNoRows {
+				if err == sql.ErrNoRows {
 					err = fmt.Errorf("Provider %s is not registered", pkg.Provider)
 					goto bailout
 				} else if err != nil {
