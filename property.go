@@ -44,6 +44,18 @@ func (t *PropertyCustom) DeepCompare(a *PropertyCustom) bool {
 	return true
 }
 
+func (t *PropertyCustom) DeepCompareSlice(a *[]PropertyCustom) bool {
+	if a == nil || *a == nil {
+		return false
+	}
+	for _, cust := range *a {
+		if t.DeepCompare(&cust) {
+			return true
+		}
+	}
+	return false
+}
+
 type PropertySystem struct {
 	Name  string `json:"name,omitempty"`
 	Value string `json:"value,omitempty"`
@@ -54,6 +66,18 @@ func (t *PropertySystem) DeepCompare(a *PropertySystem) bool {
 		return false
 	}
 	return true
+}
+
+func (t *PropertySystem) DeepCompareSlice(a *[]PropertySystem) bool {
+	if a == nil || *a == nil {
+		return false
+	}
+	for _, sys := range *a {
+		if t.DeepCompare(&sys) {
+			return true
+		}
+	}
+	return false
 }
 
 type PropertyService struct {

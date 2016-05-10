@@ -70,8 +70,42 @@ func (dd *Deployment) DeepCompare(alternate *Deployment) bool {
 	if !dd.Service.DeepCompare(alternate.Service) {
 		return false
 	}
-	// TODO: Properties
-	// TODO: CustomProperties
+	if dd.Properties != nil && *dd.Properties != nil {
+	proploop:
+		for _, pr := range *dd.Properties {
+			if pr.DeepCompareSlice(alternate.Properties) {
+				continue proploop
+			}
+			return false
+		}
+	}
+	if alternate.Properties != nil && *alternate.Properties != nil {
+	revproploop:
+		for _, pr := range *alternate.Properties {
+			if pr.DeepCompareSlice(dd.Properties) {
+				continue revproploop
+			}
+			return false
+		}
+	}
+	if dd.CustomProperties != nil && *dd.CustomProperties != nil {
+	cproploop:
+		for _, pr := range *dd.CustomProperties {
+			if pr.DeepCompareSlice(alternate.CustomProperties) {
+				continue cproploop
+			}
+			return false
+		}
+	}
+	if alternate.CustomProperties != nil && *alternate.CustomProperties != nil {
+	revcproploop:
+		for _, pr := range *alternate.CustomProperties {
+			if pr.DeepCompareSlice(dd.CustomProperties) {
+				continue revcproploop
+			}
+			return false
+		}
+	}
 	if dd.Group != nil && !dd.Group.DeepCompare(alternate.Group) {
 		return false
 	} else if dd.Group == nil && alternate.Group != nil {
