@@ -55,6 +55,8 @@ func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
 	tec.PropertySystem = make(map[string]SomaTreeProperty)
 	tec.PropertyCustom = make(map[string]SomaTreeProperty)
 	tec.Checks = make(map[string]Check)
+	tec.CheckInstances = make(map[string][]string)
+	tec.Instances = make(map[string]CheckInstance)
 
 	return tec
 }

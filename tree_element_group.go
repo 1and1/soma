@@ -55,6 +55,8 @@ func NewGroup(spec GroupSpec) *SomaTreeElemGroup {
 	teg.PropertySystem = make(map[string]SomaTreeProperty)
 	teg.PropertyCustom = make(map[string]SomaTreeProperty)
 	teg.Checks = make(map[string]Check)
+	teg.CheckInstances = make(map[string][]string)
+	teg.Instances = make(map[string]CheckInstance)
 
 	return teg
 }
