@@ -1,13 +1,15 @@
 package somaproto
 
 type Capability struct {
-	Id           string             `json:"id, omitempty"`
-	Name         string             `json:"name, omitempty"`
-	MonitoringId string             `json:"monitoringId, omitempty"`
-	Metric       string             `json:"metric, omitempty"`
-	View         string             `json:"view, omitempty"`
-	Thresholds   uint64             `json:"thresholds, omitempty"`
-	Details      *CapabilityDetails `json:"details, omitempty"`
+	Id           string                  `json:"id, omitempty"`
+	Name         string                  `json:"name, omitempty"`
+	MonitoringId string                  `json:"monitoringId, omitempty"`
+	Metric       string                  `json:"metric, omitempty"`
+	View         string                  `json:"view, omitempty"`
+	Thresholds   uint64                  `json:"thresholds, omitempty"`
+	Demux        *[]string               `json:"demux,omitempty"`
+	Constraints  *[]CapabilityConstraint `json:"constraints,omitempty"`
+	Details      *CapabilityDetails      `json:"details, omitempty"`
 }
 
 type CapabilityFilter struct {
@@ -15,6 +17,12 @@ type CapabilityFilter struct {
 	MonitoringName string `json:"monitoringName, omitempty"`
 	Metric         string `json:"metric, omitempty"`
 	View           string `json:"view, omitempty"`
+}
+
+type CapabilityConstraint struct {
+	Type  string
+	Name  string
+	Value string
 }
 
 type CapabilityDetails struct {
@@ -40,12 +48,74 @@ func (c *Capability) DeepCompare(a *Capability) bool {
 	if c.Thresholds != a.Thresholds {
 		return false
 	}
+	if c.Demux != nil {
+	demuxloop:
+		for _, str := range *c.Demux {
+			if c.DeepCompareSlice(str, a.Demux) {
+				continue demuxloop
+			}
+			return false
+		}
+	} else if a.Demux != nil {
+		return false
+	}
+	if c.Constraints != nil {
+	deepconstraint:
+		for _, cstr := range *c.Constraints {
+			if cstr.DeepCompareSlice(a.Constraints) {
+				continue deepconstraint
+			}
+			return false
+		}
+	} else if a.Constraints != nil {
+		return false
+	}
 	return true
+}
+
+func (c *Capability) DeepCompareSlice(s string, a *[]string) bool {
+	if a == nil {
+		return false
+	}
+
+	for _, str := range *a {
+		if s == str {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *CapabilityConstraint) DeepCompare(a *CapabilityConstraint) bool {
+	if a == nil {
+		return false
+	}
+
+	if c.Type != a.Type || c.Name != a.Type || c.Value != a.Value {
+		return false
+	}
+	return true
+}
+
+func (c *CapabilityConstraint) DeepCompareSlice(a *[]CapabilityConstraint) bool {
+	if a == nil {
+		return false
+	}
+
+	for _, cstr := range *a {
+		if c.DeepCompare(&cstr) {
+			return true
+		}
+	}
+	return false
 }
 
 func NewCapabilityRequest() Request {
 	return Request{
-		Capability: &Capability{},
+		Capability: &Capability{
+			Demux:       &[]string{},
+			Constraints: &[]CapabilityConstraint{},
+		},
 	}
 }
 
