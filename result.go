@@ -3,6 +3,7 @@ package proto
 const (
 	StatusOK             = 200
 	StatusAccepted       = 202
+	StatusPartial        = 206
 	StatusBadRequest     = 400
 	StatusUnauthorized   = 401
 	StatusForbidden      = 403
@@ -16,6 +17,7 @@ const (
 var DisplayStatus = map[int]string{
 	200: "OK",
 	202: "Accepted",
+	206: "Partial result",
 	400: "Bad Request",
 	401: "Unauthorized",
 	403: "Forbidden",
@@ -98,8 +100,17 @@ func (r *Result) Accepted() {
 }
 
 func (r *Result) OK() {
-	r.StatusCode = StatusOK
-	r.StatusText = DisplayStatus[StatusOK]
+	if r.Errors == nil || *r.Errors == nil || len(*r.Errors) == 0 {
+		r.StatusCode = StatusOK
+		r.StatusText = DisplayStatus[StatusOK]
+		return
+	}
+	r.Partial()
+}
+
+func (r *Result) Partial() {
+	r.StatusCode = StatusPartial
+	r.StatusText = DisplayStatus[StatusPartial]
 }
 
 func (r *Result) Clean() {
