@@ -71,9 +71,9 @@ runloop:
 
 func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 	var (
-		checkInstanceID, deploymentDetails string
-		idList                             *sql.Rows
-		err                                error
+		checkInstanceID, deploymentDetails, status string
+		idList                                     *sql.Rows
+		err                                        error
 	)
 	result := somaResult{}
 
@@ -106,15 +106,33 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue idgetloop
 			}
-			err = self.last_stmt.QueryRow(checkInstanceID).Scan(&deploymentDetails)
+			err = self.last_stmt.QueryRow(checkInstanceID).Scan(&deploymentDetails, &status)
 			if err != nil {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue idgetloop
 			}
 			depl := proto.Deployment{}
-			if err = json.Unmarshal([]byte(deploymentDetails), depl); err != nil {
+			if err = json.Unmarshal([]byte(deploymentDetails), &depl); err != nil {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue idgetloop
+			}
+			switch status {
+			case "awaiting_rollout":
+				depl.Task = "rollout"
+			case "rollout_in_progress":
+				depl.Task = "rollout"
+			case "active":
+				depl.Task = "rollout"
+			case "rollout_failed":
+				depl.Task = "rollout"
+			case "awaiting_deprovision":
+				depl.Task = "deprovision"
+			case "deprovision_in_progress":
+				depl.Task = "deprovision"
+			case "deprovision_failed":
+				depl.Task = "deprovision"
+			default:
+				depl.Task = "pending"
 			}
 			// remove credentials from the hostapi
 			for i, _ := range depl.Service.Attributes {
@@ -156,14 +174,30 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 				continue assembleloop
 			}
 			idMap[checkInstanceID] = true
-			err = self.last_stmt.QueryRow(checkInstanceID).Scan(&deploymentDetails)
+			err = self.last_stmt.QueryRow(checkInstanceID).Scan(&deploymentDetails, &status)
 			if err != nil {
 				result.Append(err, &somaHostDeploymentResult{})
 				continue assembleloop
 			}
 			depl := proto.Deployment{}
-			if err = json.Unmarshal([]byte(deploymentDetails), depl); err != nil {
+			if err = json.Unmarshal([]byte(deploymentDetails), &depl); err != nil {
 				result.Append(err, &somaHostDeploymentResult{})
+				continue assembleloop
+			}
+			switch status {
+			case "awaiting_rollout":
+				depl.Task = "rollout"
+			case "rollout_in_progress":
+				depl.Task = "rollout"
+			case "active":
+				depl.Task = "rollout"
+			case "rollout_failed":
+				depl.Task = "rollout"
+			case "blocked":
+				depl.Task = "rollout"
+			default:
+				// bump this id to the delete list
+				delete(idMap, checkInstanceID)
 				continue assembleloop
 			}
 			// remove credentials from the hostapi

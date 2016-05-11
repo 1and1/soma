@@ -88,11 +88,14 @@ AND    smc.capability_view = 'local'
 AND    smc.capability_monitoring = $2::uuid;`
 
 const stmtGetLastInstanceVersion = `
-SELECT deployment_details
+SELECT deployment_details,
+       status
 FROM   soma.check_instance_configurations
 WHERE  check_instance_id = $1::uuid
 AND    (   status != 'deprovisioned'
-       AND status != 'awaiting_deletion')
+       AND status != 'awaiting_deletion'
+       AND status != 'awaiting_computation'
+       AND status != 'computed')
 ORDER  BY version DESC
 LIMIT  1;`
 
