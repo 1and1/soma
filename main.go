@@ -26,7 +26,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.7.9"
+	version := "0.7.10"
 	log.Printf("Starting runtime config initialization, SOMA v%s", version)
 	/*
 	 * Read configuration file

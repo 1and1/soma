@@ -130,8 +130,8 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 		}
 
 		depl := proto.Deployment{}
-		if err = json.Unmarshal([]byte(details), depl); err != nil {
-			result.Append(err, &somaDeploymentResult{})
+		if err = json.Unmarshal([]byte(details), &depl); err != nil {
+			result.SetRequestError(err)
 			q.reply <- result
 			return
 		}
