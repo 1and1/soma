@@ -89,13 +89,16 @@ func UpdateDeploymentDetails(w http.ResponseWriter, r *http.Request,
 /* Utility
  */
 func SendDeploymentReply(w *http.ResponseWriter, r *somaResult) {
-	result := proto.Result{}
+	result := proto.NewDeploymentResult()
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
 	result.Deployments = &[]proto.Deployment{}
 	result.DeploymentsList = &[]string{}
 	for _, i := range (*r).Deployments {
+		if i.ResultError != nil {
+			*result.Errors = append(*result.Errors, i.ResultError.Error())
+		}
 		if i.ListEntry != "" {
 			*result.DeploymentsList = append(*result.DeploymentsList, i.ListEntry)
 			continue
@@ -107,6 +110,7 @@ func SendDeploymentReply(w *http.ResponseWriter, r *somaResult) {
 	}
 
 dispatch:
+	result.Clean()
 	json, err := json.Marshal(result)
 	if err != nil {
 		DispatchInternalError(w, err)
