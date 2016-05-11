@@ -102,4 +102,20 @@ SELECT check_instance_config_id,
 FROM   soma.check_instance_configurations
 WHERE  check_instance_id = $1::uuid;`
 
+const tkStmtLoadCheckGroupState = `
+SELECT sg.group_id,
+       sg.object_state
+FROM   soma.buckets sb
+JOIN   soma.groups  sg
+ON     sb.bucket_id = sg.bucket_id
+WHERE  sb.repository_id = $1::uuid;`
+
+const tkStmtLoadCheckGroupRelations = `
+SELECT sgmg.group_id,
+       sgmg.child_group_id
+FROM   soma.buckets sb
+JOIN   soma.group_membership_groups sgmg
+ON     sb.bucket_id = sgmg.bucket_id
+WHERE  sb.repository_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
