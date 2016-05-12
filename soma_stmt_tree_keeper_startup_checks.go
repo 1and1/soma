@@ -41,45 +41,61 @@ WHERE  configuration_id = $1::uuid
 AND    repository_id = $2::uuid;`
 
 const tkStmtLoadCheckThresholds = `
-SELECT predicate,
-       threshold,
-	   notification_level
-FROM   soma.configuration_thresholds
+SELECT sct.predicate,
+       sct.threshold,
+	   snl.level_name,
+	   snl.level_shortname,
+	   snl.level_numeric
+FROM   soma.configuration_thresholds sct
+JOIN   soma.notification_levels snl
+ON     sct.notification_level = snl.level_name
 WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintCustom = `
-SELECT custom_property_id,
-       repository_id,
-	   property_value
-FROM   soma.constraints_custom_property
+SELECT sccp.custom_property_id,
+       scp.custom_property,
+	   sccp.property_value
+FROM   soma.constraints_custom_property sccp
+JOIN   soma.custom_properties scp
+ON     sccp.custom_property_id = scp.custom_property_id
+AND    sccp.repository_id = scp.repository_id
 WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintNative = `
 SELECT native_property,
-       property_value
+       property_value,
+	   ''
 FROM   soma.constraints_native_property
 WHERE  configuration_id = $1::uuid;`
 
+// return configuration id: every constraint query has 2 columns
 const tkStmtLoadCheckConstraintOncall = `
-SELECT oncall_duty_id
-FROM   soma.constraints_oncall_property
-WHERE  configuration_id = $1::uuid;`
+SELECT scop.oncall_duty_id,
+       oncall_duty_name,
+	   oncall_duty_phone_number
+FROM   soma.constraints_oncall_property scop
+JOIN   inventory.oncall_duty_teams iodt
+ON     scop.oncall_duty_id = iodt.oncall_duty_id
+WHERE  scop.configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintAttribute = `
 SELECT service_property_attribute,
-       attribute_value
+       attribute_value,
+	   ''
 FROM   soma.constraints_service_attribute
 WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintService = `
 SELECT organizational_team_id,
-       service_property
+       service_property,
+	   ''
 FROM   soma.constraints_service_property
 WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintSystem = `
 SELECT system_property,
-       property_value
+       property_value,
+	   ''
 FROM   soma.constraints_system_property
 WHERE  configuration_id = $1::uuid;`
 

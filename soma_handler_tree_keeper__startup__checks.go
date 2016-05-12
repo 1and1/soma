@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
+
 )
 
 type tkLoader interface {
@@ -128,9 +130,19 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	}
 
 	var (
-		err     error
-		grOrder map[string][]string
-		grWeird map[string]string
+		err                                                           error
+		checkId, bucketId, srcCheckId, srcObjType, srcObjId, configId string
+		capabilityId, objId, objType, cfgName, cfgObjId, cfgObjType   string
+		externalId, predicate, threshold, levelName, levelShort       string
+		cstrType, value1, value2, value3                              string
+		levelNumeric, numVal                                          int64
+		isActive, hasInheritance, isChildrenOnly, isEnabled           bool
+		interval                                                      int64
+		grOrder                                                       map[string][]string
+		grWeird                                                       map[string]string
+		ckRows, thrRows, cstrRows                                     *sql.Rows
+		cfgMap                                                        map[string]proto.CheckConfig
+		victim                                                        proto.CheckConfig // go/issues/3117 workaround
 	)
 
 	switch typ {
@@ -144,18 +156,257 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	fmt.Printf("%+v\n", grOrder)
 	fmt.Printf("%+v\n", grWeird)
 
+	if ckRows, err = ld.loadChecks.Query(tk.repoId, typ); err == sql.ErrNoRows {
+		// no checks on this element type
+		return
+	} else if err != nil {
+		tk.broken = true
+		return
+	}
+	defer ckRows.Close()
+
+	// load all checks and start the assembly line
+	for ok := ckRows.Next(); ok; ok = ckRows.Next() {
+		if err = ckRows.Scan(
+			&checkId,
+			&bucketId,
+			&srcCheckId,
+			&srcObjType,
+			&srcObjId,
+			&configId,
+			&capabilityId,
+			&objId,
+			&objType,
+		); err != nil {
+			tk.broken = true
+			return
+		}
+		// save CheckConfig
+		cfgMap[checkId] = proto.CheckConfig{
+			Id:           configId,
+			RepositoryId: tk.repoId,
+			BucketId:     bucketId,
+			CapabilityId: capabilityId,
+			ObjectId:     objId,
+			ObjectType:   objType,
+		}
+
+	}
+	if ckRows.Err() == sql.ErrNoRows {
+		// no checks on this element type
+		return
+	} else if ckRows.Err() != nil {
+		tk.broken = true
+		return
+	}
+
+	// iterate over the loaded checks and continue assembly with values
+	// from the stored checkconfiguration
+	for checkId, _ = range cfgMap {
+		if err = ld.loadConfig.QueryRow(cfgMap[checkId].Id, tk.repoId).Scan(
+			&bucketId,
+			&cfgName,
+			&cfgObjId,
+			&cfgObjType,
+			&isActive,
+			&hasInheritance,
+			&isChildrenOnly,
+			&capabilityId,
+			&interval,
+			&isEnabled,
+			&externalId,
+		); err != nil {
+			// sql.ErrNoRows is fatal here, the check exists - there
+			// must be a configuration for it
+			tk.broken = true
+			return
+		}
+
+		victim = cfgMap[checkId]
+		victim.Name = cfgName
+		victim.Interval = uint64(interval)
+		victim.IsActive = isActive
+		victim.IsEnabled = isEnabled
+		victim.Inheritance = hasInheritance
+		victim.ChildrenOnly = isChildrenOnly
+		victim.ExternalId = externalId
+		cfgMap[checkId] = victim
+	}
+
+	// iterate over the loaded checks and continue assembly with values
+	// from the stored thresholds
+	for checkId, _ = range cfgMap {
+		if thrRows, err = ld.loadThresh.Query(cfgMap[checkId].Id); err != nil {
+			// sql.ErrNoRows is fatal here since a check without
+			// thresholds is rather useless
+			tk.broken = true
+		}
+		defer thrRows.Close()
+
+		victim = cfgMap[checkId]
+		victim.Thresholds = []proto.CheckConfigThreshold{}
+
+		// iterate over returned thresholds
+		for thrRows.Next() {
+			if err = thrRows.Scan(
+				&predicate,
+				&threshold,
+				&levelName,
+				&levelShort,
+				&levelNumeric,
+			); err != nil {
+				tk.broken = true
+				return
+			}
+			// ignore error since we converted this into the DB from int64
+			numVal, _ = strconv.ParseInt(threshold, 10, 64)
+
+			// save threshold
+			victim.Thresholds = append(victim.Thresholds,
+				proto.CheckConfigThreshold{
+					Predicate: proto.Predicate{
+						Symbol: predicate,
+					},
+					Level: proto.Level{
+						Name:      levelName,
+						ShortName: levelShort,
+						Numeric:   uint16(levelNumeric),
+					},
+					Value: numVal,
+				},
+			)
+		}
+		cfgMap[checkId] = victim
+	}
+
+	// iterate over the loaded checks and continue assembly with values
+	// from the stored constraints
+	for checkId, _ = range cfgMap {
+		victim = cfgMap[checkId]
+		victim.Constraints = []proto.CheckConfigConstraint{}
+		for _, cstrType = range []string{`custom`, `native`, `oncall`, `attribute`, `service`, `system`} {
+			switch cstrType {
+			case `custom`:
+				cstrRows, err = ld.loadCstrCustom.Query(cfgMap[checkId].Id)
+			case `native`:
+				cstrRows, err = ld.loadCstrNative.Query(cfgMap[checkId].Id)
+			case `oncall`:
+				cstrRows, err = ld.loadCstrOncall.Query(cfgMap[checkId].Id)
+			case `attribute`:
+				cstrRows, err = ld.loadCstrAttr.Query(cfgMap[checkId].Id)
+			case `service`:
+				cstrRows, err = ld.loadCstrServ.Query(cfgMap[checkId].Id)
+			case `system`:
+				cstrRows, err = ld.loadCstrSystem.Query(cfgMap[checkId].Id)
+			}
+			if err == nil {
+				tk.broken = true
+				return
+			}
+
+			// iterate over returned thresholds - no rows is valid, as
+			// constraints are not mandatory
+			for cstrRows.Next() {
+				if err = cstrRows.Scan(&value1, &value2, &value3); err != nil {
+					cstrRows.Close()
+					tk.broken = true
+					return
+				}
+				switch cstrType {
+				case `custom`:
+					victim.Constraints = append(victim.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Custom: &proto.PropertyCustom{
+								Id:           value1,
+								Name:         value2,
+								RepositoryId: tk.repoId,
+								Value:        value3,
+							},
+						},
+					)
+					cfgMap[checkId] = victim
+				case `native`:
+					victim.Constraints = append(victim.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Native: &proto.PropertyNative{
+								Name:  value1,
+								Value: value2,
+							},
+						},
+					)
+				case `oncall`:
+					victim.Constraints = append(victim.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Oncall: &proto.PropertyOncall{
+								Id:     value1,
+								Name:   value2,
+								Number: value3,
+							},
+						},
+					)
+				case `attribute`:
+					victim.Constraints = append(victim.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Attribute: &proto.ServiceAttribute{
+								Name:  value1,
+								Value: value2,
+							},
+						},
+					)
+				case `service`:
+					victim.Constraints = append(victim.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Service: &proto.PropertyService{
+								Name:   value2,
+								TeamId: value1,
+							},
+						},
+					)
+				case `system`:
+					victim.Constraints = append(victim.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							System: &proto.PropertySystem{
+								Name:  value1,
+								Value: value2,
+							},
+						},
+					)
+				} // switch cstrType
+			} // for cstrRows.Next()
+			if cstrRows.Err() != nil {
+				tk.broken = true
+				return
+			}
+		}
+		cfgMap[checkId] = victim
+	}
+
+	// iterate over the checks, convert them to tree.Check. Then load
+	// the inherited IDs via loadItems and populate tree.Check.Items.
+	// save in datastructure: map[string]map[string]tree.Check
+	//		objId -> checkId -> tree.Check
+	// this way it is possible to access the checks by objId, which is
+	// required to populate groups in the correct order.
+	// TODO
+
 	/*
-		Source-Checks laden: tkStmtLoadChecks
+		Source-Checks laden: tkStmtLoadChecks, DONE
 		Source-Checks.each:
-			Config laden: tkStmtLoadCheckConfiguration
-			Thresholds laden: tkStmtLoadCheckThresholds
-			Constraints laden:	tkStmtLoadCheckConstraintCustom
-								tkStmtLoadCheckConstraintNative
-								tkStmtLoadCheckConstraintOncall
-								tkStmtLoadCheckConstraintAttribute
-								tkStmtLoadCheckConstraintService
-								tkStmtLoadCheckConstraintSystem
-			Vererbte Checks laden [CheckItem]: tkStmtLoadInheritedChecks
+			Config laden: tkStmtLoadCheckConfiguration, DONE
+			Thresholds laden: tkStmtLoadCheckThresholds, DONE
+			Constraints laden:	tkStmtLoadCheckConstraintCustom, DONE
+								tkStmtLoadCheckConstraintNative, DONE
+								tkStmtLoadCheckConstraintOncall, DONE
+								tkStmtLoadCheckConstraintAttribute, DONE
+								tkStmtLoadCheckConstraintService, DONE
+								tkStmtLoadCheckConstraintSystem, DONE
+			Vererbte Checks laden [CheckItem]: tkStmtLoadInheritedChecks, XXX
 			--> Check anlegen
 		!! << NICHT tk.tree.ComputeCheckInstances() AUFRUFEN >> !!
 		CheckInstanzen laden: tkStmtLoadCheckInstances
