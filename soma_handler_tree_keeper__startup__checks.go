@@ -6,6 +6,8 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/satori/go.uuid"
+
 )
 
 type tkLoader interface {
@@ -134,15 +136,18 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		checkId, bucketId, srcCheckId, srcObjType, srcObjId, configId string
 		capabilityId, objId, objType, cfgName, cfgObjId, cfgObjType   string
 		externalId, predicate, threshold, levelName, levelShort       string
-		cstrType, value1, value2, value3                              string
+		cstrType, value1, value2, value3, itemId                      string
 		levelNumeric, numVal                                          int64
 		isActive, hasInheritance, isChildrenOnly, isEnabled           bool
 		interval                                                      int64
 		grOrder                                                       map[string][]string
 		grWeird                                                       map[string]string
-		ckRows, thrRows, cstrRows                                     *sql.Rows
+		ckRows, thrRows, cstrRows, itRows                             *sql.Rows
 		cfgMap                                                        map[string]proto.CheckConfig
 		victim                                                        proto.CheckConfig // go/issues/3117 workaround
+		ckTree                                                        *somatree.Check
+		ckItem                                                        somatree.CheckItem
+		ckOrder                                                       map[string]map[string]somatree.Check
 	)
 
 	switch typ {
@@ -240,8 +245,8 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			// sql.ErrNoRows is fatal here since a check without
 			// thresholds is rather useless
 			tk.broken = true
+			return
 		}
-		defer thrRows.Close()
 
 		victim = cfgMap[checkId]
 		victim.Thresholds = []proto.CheckConfigThreshold{}
@@ -255,6 +260,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				&levelShort,
 				&levelNumeric,
 			); err != nil {
+				thrRows.Close()
 				tk.broken = true
 				return
 			}
@@ -275,8 +281,13 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					Value: numVal,
 				},
 			)
+		} // implict close by Next() reaching EOF
+		if err = thrRows.Err(); err != nil {
+			tk.broken = true
+			return
 		}
 		cfgMap[checkId] = victim
+		thrRows.Close()
 	}
 
 	// iterate over the loaded checks and continue assembly with values
@@ -389,11 +400,52 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 
 	// iterate over the checks, convert them to tree.Check. Then load
 	// the inherited IDs via loadItems and populate tree.Check.Items.
-	// save in datastructure: map[string]map[string]tree.Check
+	// Save in datastructure: map[string]map[string]tree.Check
 	//		objId -> checkId -> tree.Check
 	// this way it is possible to access the checks by objId, which is
 	// required to populate groups in the correct order.
-	// TODO
+	for checkId, _ = range cfgMap {
+		ckOrder[cfgMap[checkId].ObjectId] = map[string]somatree.Check{}
+		victim = cfgMap[checkId]
+		if ckTree, err = tk.convertCheck(&victim); err != nil {
+			tk.broken = true
+			return
+		}
+		// add source check as well so it gets recreated with the
+		// correct UUID
+		ckItem = somatree.CheckItem{ObjectType: victim.ObjectType}
+		ckItem.ObjectId, _ = uuid.FromString(victim.ObjectId)
+		ckItem.ItemId, _ = uuid.FromString(checkId)
+		ckTree.Items = []somatree.CheckItem{ckItem}
+
+		if itRows, err = ld.loadItems.Query(tk.repoId, checkId); err != nil {
+			tk.broken = true
+			return
+		}
+
+		for itRows.Next() {
+			if err = itRows.Scan(
+				&itemId,
+				&objId,
+				&objType,
+			); err != nil {
+				itRows.Close()
+				tk.broken = true
+				return
+			}
+
+			// create new object per iteration
+			ckItem := somatree.CheckItem{ObjectType: objType}
+			ckItem.ObjectId, _ = uuid.FromString(objId)
+			ckItem.ItemId, _ = uuid.FromString(itemId)
+			ckTree.Items = append(ckTree.Items, ckItem)
+		}
+		if err = itRows.Err(); err != nil {
+			tk.broken = true
+			return
+		}
+		ckOrder[victim.ObjectId][checkId] = *ckTree
+	}
 
 	/*
 		Source-Checks laden: tkStmtLoadChecks, DONE
@@ -406,7 +458,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 								tkStmtLoadCheckConstraintAttribute, DONE
 								tkStmtLoadCheckConstraintService, DONE
 								tkStmtLoadCheckConstraintSystem, DONE
-			Vererbte Checks laden [CheckItem]: tkStmtLoadInheritedChecks, XXX
+			Vererbte Checks laden [CheckItem]: tkStmtLoadInheritedChecks, DONE
 			--> Check anlegen
 		!! << NICHT tk.tree.ComputeCheckInstances() AUFRUFEN >> !!
 		CheckInstanzen laden: tkStmtLoadCheckInstances
