@@ -147,4 +147,10 @@ func (tef *SomaTreeElemFault) GetEnvironment() string {
 func (tef *SomaTreeElemFault) ComputeCheckInstances() {
 }
 
+func (tef *SomaTreeElemFault) ClearLoadInfo() {
+}
+
+func (tef *SomaTreeElemFault) LoadInstance(i CheckInstance) {
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

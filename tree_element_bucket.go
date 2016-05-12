@@ -176,6 +176,21 @@ func (teb *SomaTreeElemBucket) ComputeCheckInstances() {
 
 //
 //
+func (teb *SomaTreeElemBucket) ClearLoadInfo() {
+	var wg sync.WaitGroup
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			teb.Children[c].ClearLoadInfo()
+		}()
+	}
+	wg.Wait()
+}
+
+//
+//
 func (teb *SomaTreeElemBucket) export() proto.Bucket {
 	return proto.Bucket{
 		Id:           teb.Id.String(),

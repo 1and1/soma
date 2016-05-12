@@ -9,6 +9,7 @@ type SomaTreeAttacher interface {
 	Detach()
 	GetName() string
 	ComputeCheckInstances()
+	ClearLoadInfo()
 
 	setActionDeep(c chan *Action)
 

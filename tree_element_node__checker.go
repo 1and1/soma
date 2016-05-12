@@ -50,4 +50,14 @@ func (ten *SomaTreeElemNode) checkCheck(checkId string) bool {
 	return false
 }
 
+//
+func (ten *SomaTreeElemNode) LoadInstance(i CheckInstance) {
+	ckId := i.CheckId.String()
+	ckInstId := i.InstanceId.String()
+	if ten.loadedInstances[ckId] == nil {
+		ten.loadedInstances[ckId] = map[string]CheckInstance{}
+	}
+	ten.loadedInstances[ckId][ckInstId] = i
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

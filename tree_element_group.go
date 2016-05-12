@@ -25,7 +25,8 @@ type SomaTreeElemGroup struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	Children        map[string]SomaTreeGroupAttacher //`json:"-"`
+	Children        map[string]SomaTreeGroupAttacher    `json:"-"`
+	loadedInstances map[string]map[string]CheckInstance `json:"-"`
 }
 
 type GroupSpec struct {
@@ -57,6 +58,7 @@ func NewGroup(spec GroupSpec) *SomaTreeElemGroup {
 	teg.Checks = make(map[string]Check)
 	teg.CheckInstances = make(map[string][]string)
 	teg.Instances = make(map[string]CheckInstance)
+	teg.loadedInstances = make(map[string]map[string]CheckInstance)
 
 	return teg
 }
@@ -110,6 +112,7 @@ func (teg SomaTreeElemGroup) Clone() *SomaTreeElemGroup {
 		cki[k] = chki.Clone()
 	}
 	cl.Instances = cki
+	cl.loadedInstances = make(map[string]map[string]CheckInstance)
 
 	ci := make(map[string][]string)
 	for k, _ := range teg.CheckInstances {
@@ -247,6 +250,22 @@ func (teg *SomaTreeElemGroup) ComputeCheckInstances() {
 	}
 	wg.Wait()
 	teg.updateCheckInstances()
+}
+
+//
+//
+func (teg *SomaTreeElemGroup) ClearLoadInfo() {
+	var wg sync.WaitGroup
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			teg.Children[c].ClearLoadInfo()
+		}()
+	}
+	wg.Wait()
+	teg.loadedInstances = map[string]map[string]CheckInstance{}
 }
 
 //

@@ -79,4 +79,14 @@ func (teg *SomaTreeElemGroup) checkCheck(checkId string) bool {
 	return false
 }
 
+//
+func (teg *SomaTreeElemGroup) LoadInstance(i CheckInstance) {
+	ckId := i.CheckId.String()
+	ckInstId := i.InstanceId.String()
+	if teg.loadedInstances[ckId] == nil {
+		teg.loadedInstances[ckId] = map[string]CheckInstance{}
+	}
+	teg.loadedInstances[ckId][ckInstId] = i
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -165,4 +165,13 @@ func (st *SomaTree) ComputeCheckInstances() {
 	st.Child.ComputeCheckInstances()
 }
 
+//
+func (st *SomaTree) ClearLoadInfo() {
+	if st.Child == nil {
+		panic(`SomaTree.ClearLoadInfo: no repository registered`)
+	}
+
+	st.Child.ClearLoadInfo()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

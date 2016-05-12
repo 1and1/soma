@@ -13,6 +13,7 @@ import (
 
 type Checker interface {
 	SetCheck(c Check)
+	LoadInstance(i CheckInstance)
 
 	inheritCheck(c Check)
 	inheritCheckDeep(c Check)

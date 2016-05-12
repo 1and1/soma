@@ -28,6 +28,7 @@ type SomaTreeElemNode struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
+	loadedInstances map[string]map[string]CheckInstance `json:"-"`
 }
 
 type NodeSpec struct {
@@ -66,6 +67,7 @@ func NewNode(spec NodeSpec) *SomaTreeElemNode {
 	ten.Checks = make(map[string]Check)
 	ten.CheckInstances = make(map[string][]string)
 	ten.Instances = make(map[string]CheckInstance)
+	ten.loadedInstances = make(map[string]map[string]CheckInstance)
 
 	return ten
 }
@@ -118,6 +120,7 @@ func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
 		cki[k] = chki.Clone()
 	}
 	cl.Instances = cki
+	cl.loadedInstances = make(map[string]map[string]CheckInstance)
 
 	ci := make(map[string][]string)
 	for k, _ := range ten.CheckInstances {
@@ -207,6 +210,12 @@ func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
 //
 func (ten *SomaTreeElemNode) ComputeCheckInstances() {
 	ten.updateCheckInstances()
+}
+
+//
+//
+func (ten *SomaTreeElemNode) ClearLoadInfo() {
+	ten.loadedInstances = map[string]map[string]CheckInstance{}
 }
 
 //

@@ -25,7 +25,8 @@ type SomaTreeElemCluster struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	Children        map[string]SomaTreeClusterAttacher //`json:"-"`
+	Children        map[string]SomaTreeClusterAttacher  `json:"-"`
+	loadedInstances map[string]map[string]CheckInstance `json:"-"`
 }
 
 type ClusterSpec struct {
@@ -57,6 +58,7 @@ func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
 	tec.Checks = make(map[string]Check)
 	tec.CheckInstances = make(map[string][]string)
 	tec.Instances = make(map[string]CheckInstance)
+	tec.loadedInstances = make(map[string]map[string]CheckInstance)
 
 	return tec
 }
@@ -111,6 +113,7 @@ func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
 		cki[k] = chki.Clone()
 	}
 	cl.Instances = cki
+	cl.loadedInstances = make(map[string]map[string]CheckInstance)
 
 	ci := make(map[string][]string)
 	for k, _ := range tec.CheckInstances {
@@ -248,6 +251,22 @@ func (tec *SomaTreeElemCluster) ComputeCheckInstances() {
 	}
 	wg.Wait()
 	tec.updateCheckInstances()
+}
+
+//
+//
+func (tec *SomaTreeElemCluster) ClearLoadInfo() {
+	var wg sync.WaitGroup
+	for child, _ := range tec.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			tec.Children[c].ClearLoadInfo()
+		}()
+	}
+	wg.Wait()
+	tec.loadedInstances = map[string]map[string]CheckInstance{}
 }
 
 //

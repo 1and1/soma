@@ -228,6 +228,21 @@ func (ter *SomaTreeElemRepository) ComputeCheckInstances() {
 
 //
 //
+func (ter *SomaTreeElemRepository) ClearLoadInfo() {
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		c := child
+		go func() {
+			defer wg.Done()
+			ter.Children[c].ClearLoadInfo()
+		}()
+	}
+	wg.Wait()
+}
+
+//
+//
 func (ter *SomaTreeElemRepository) export() proto.Repository {
 	return proto.Repository{
 		Id:        ter.Id.String(),

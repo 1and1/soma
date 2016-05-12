@@ -8,6 +8,13 @@ func (teg *SomaTreeElemGroup) updateCheckInstances() {
 		return
 	}
 
+	// if there are loaded instances, then this is the initial rebuild
+	// of the tree
+	startupLoad := false
+	if len(teg.loadedInstances) > 0 {
+		startupLoad = true
+	}
+
 	// process checks
 checksloop:
 	for i, _ := range teg.Checks {
@@ -275,29 +282,70 @@ checksloop:
 				inst.calcConstraintValHash()
 				inst.calcInstanceSvcCfgHash()
 
-				// lookup existing instance ids for check in teg.CheckInstances
-				// to determine if this is an update
-			instanceloop:
-				for _, exInstId := range teg.CheckInstances[i] {
-					exInst := teg.Instances[exInstId]
-					// this existing instance is for the same service
-					// configuration -> this is an update
-					if exInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
-						inst.InstanceId, _ = uuid.FromString(exInst.InstanceId.String())
-						inst.Version = exInst.Version + 1
-						break instanceloop
+				if startupLoad {
+				startinstanceloop:
+					for ldInstId, ldInst := range teg.loadedInstances[i] {
+						// check for data from loaded instance
+						if ldInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
+							inst.InstanceId, _ = uuid.FromString(ldInst.InstanceId.String())
+							if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
+								panic(`Matched instances loaded for different ConfigId`)
+							}
+							inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
+							inst.Version = ldInst.Version
+							if inst.ConstraintHash != ldInst.ConstraintHash {
+								panic(`Matched instances loaded for different ConstraintHash`)
+							}
+							if inst.ConstraintValHash != ldInst.ConstraintValHash {
+								panic(`Matched instances loaded for different ConstraintValHash`)
+							}
+							if inst.InstanceService != ldInst.InstanceService {
+								panic(`Matched instances loaded for different InstanceService`)
+							}
+							// we can assume InstanceServiceConfig to
+							// be equal, since InstanceSvcCfgHash is
+							// equal
+							delete(teg.loadedInstances[i], ldInstId)
+							break startinstanceloop
+						}
+						// if we hit here, then just computed an
+						// instance that we could not match to any
+						// loaded instances -> something is wrong
+						panic(`Failed to match computed instance to loaded instances`)
 					}
-				}
-				if uuid.Equal(uuid.Nil, inst.InstanceId) {
-					// no match was found during instanceloop, this is
-					// a new instance
-					inst.Version = 0
-					inst.InstanceId = uuid.NewV4()
+				} else {
+					// lookup existing instance ids for check in teg.CheckInstances
+					// to determine if this is an update
+				instanceloop:
+					for _, exInstId := range teg.CheckInstances[i] {
+						exInst := teg.Instances[exInstId]
+						// this existing instance is for the same service
+						// configuration -> this is an update
+						if exInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
+							inst.InstanceId, _ = uuid.FromString(exInst.InstanceId.String())
+							inst.Version = exInst.Version + 1
+							break instanceloop
+						}
+					}
+					if uuid.Equal(uuid.Nil, inst.InstanceId) {
+						// no match was found during instanceloop, this is
+						// a new instance
+						inst.Version = 0
+						inst.InstanceId = uuid.NewV4()
+					}
 				}
 				newInstances[inst.InstanceId.String()] = inst
 				newCheckInstances = append(newCheckInstances, inst.InstanceId.String())
 			}
 		} // LOOPEND: range serviceC
+
+		// all instances have been built and matched to
+		// loaded instances, but there are loaded
+		// instances left. why?
+		if startupLoad && len(teg.loadedInstances[i]) != 0 {
+			panic(`Leftover matched instances after assignment, computed instances missing`)
+		}
+
 		// all new check instances have been built, check which
 		// existing instances did not get an update and need to be
 		// deleted
@@ -316,7 +364,11 @@ checksloop:
 			if _, ok := teg.Instances[newInstanceId]; !ok {
 				// this instance is new, not an update
 				teg.Instances[newInstanceId] = newInstances[newInstanceId]
-				teg.actionCheckInstanceCreate(teg.Instances[newInstanceId].MakeAction())
+				// no need to send a create action during load; the
+				// action channel is drained anyway
+				if !startupLoad {
+					teg.actionCheckInstanceCreate(teg.Instances[newInstanceId].MakeAction())
+				}
 			}
 		}
 		delete(teg.CheckInstances, i)

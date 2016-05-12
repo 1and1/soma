@@ -79,4 +79,14 @@ func (tec *SomaTreeElemCluster) checkCheck(checkId string) bool {
 	return false
 }
 
+//
+func (tec *SomaTreeElemCluster) LoadInstance(i CheckInstance) {
+	ckId := i.CheckId.String()
+	ckInstId := i.InstanceId.String()
+	if tec.loadedInstances[ckId] == nil {
+		tec.loadedInstances[ckId] = map[string]CheckInstance{}
+	}
+	tec.loadedInstances[ckId][ckInstId] = i
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
