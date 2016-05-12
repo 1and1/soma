@@ -153,25 +153,20 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	switch typ {
 	case "group":
 		if err, grOrder, grWeird = tk.orderGroups(ld); err != nil {
-			tk.broken = true
-			return
+			goto fail
 		}
 	}
-	//XXX: silence declared and not used for now
-	fmt.Printf("%+v\n", grOrder)
-	fmt.Printf("%+v\n", grWeird)
 
 	if ckRows, err = ld.loadChecks.Query(tk.repoId, typ); err == sql.ErrNoRows {
 		// no checks on this element type
 		return
 	} else if err != nil {
-		tk.broken = true
-		return
+		goto fail
 	}
 	defer ckRows.Close()
 
 	// load all checks and start the assembly line
-	for ok := ckRows.Next(); ok; ok = ckRows.Next() {
+	for ckRows.Next() {
 		if err = ckRows.Scan(
 			&checkId,
 			&bucketId,
@@ -183,8 +178,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			&objId,
 			&objType,
 		); err != nil {
-			tk.broken = true
-			return
+			goto fail
 		}
 		// save CheckConfig
 		cfgMap[checkId] = proto.CheckConfig{
@@ -195,14 +189,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			ObjectId:     objId,
 			ObjectType:   objType,
 		}
-
 	}
-	if ckRows.Err() == sql.ErrNoRows {
-		// no checks on this element type
-		return
-	} else if ckRows.Err() != nil {
-		tk.broken = true
-		return
+	if ckRows.Err() != nil {
+		goto fail
 	}
 
 	// iterate over the loaded checks and continue assembly with values
@@ -223,8 +212,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		); err != nil {
 			// sql.ErrNoRows is fatal here, the check exists - there
 			// must be a configuration for it
-			tk.broken = true
-			return
+			goto fail
 		}
 
 		victim = cfgMap[checkId]
@@ -244,8 +232,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		if thrRows, err = ld.loadThresh.Query(cfgMap[checkId].Id); err != nil {
 			// sql.ErrNoRows is fatal here since a check without
 			// thresholds is rather useless
-			tk.broken = true
-			return
+			goto fail
 		}
 
 		victim = cfgMap[checkId]
@@ -261,8 +248,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				&levelNumeric,
 			); err != nil {
 				thrRows.Close()
-				tk.broken = true
-				return
+				goto fail
 			}
 			// ignore error since we converted this into the DB from int64
 			numVal, _ = strconv.ParseInt(threshold, 10, 64)
@@ -283,8 +269,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			)
 		} // implict close by Next() reaching EOF
 		if err = thrRows.Err(); err != nil {
-			tk.broken = true
-			return
+			goto fail
 		}
 		cfgMap[checkId] = victim
 		thrRows.Close()
@@ -311,8 +296,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				cstrRows, err = ld.loadCstrSystem.Query(cfgMap[checkId].Id)
 			}
 			if err == nil {
-				tk.broken = true
-				return
+				goto fail
 			}
 
 			// iterate over returned thresholds - no rows is valid, as
@@ -320,8 +304,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			for cstrRows.Next() {
 				if err = cstrRows.Scan(&value1, &value2, &value3); err != nil {
 					cstrRows.Close()
-					tk.broken = true
-					return
+					goto fail
 				}
 				switch cstrType {
 				case `custom`:
@@ -336,7 +319,6 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 							},
 						},
 					)
-					cfgMap[checkId] = victim
 				case `native`:
 					victim.Constraints = append(victim.Constraints,
 						proto.CheckConfigConstraint{
@@ -391,8 +373,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				} // switch cstrType
 			} // for cstrRows.Next()
 			if cstrRows.Err() != nil {
-				tk.broken = true
-				return
+				goto fail
 			}
 		}
 		cfgMap[checkId] = victim
@@ -405,11 +386,10 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// this way it is possible to access the checks by objId, which is
 	// required to populate groups in the correct order.
 	for checkId, _ = range cfgMap {
-		ckOrder[cfgMap[checkId].ObjectId] = map[string]somatree.Check{}
 		victim = cfgMap[checkId]
+		ckOrder[victim.ObjectId] = map[string]somatree.Check{}
 		if ckTree, err = tk.convertCheck(&victim); err != nil {
-			tk.broken = true
-			return
+			goto fail
 		}
 		// add source check as well so it gets recreated with the
 		// correct UUID
@@ -419,8 +399,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		ckTree.Items = []somatree.CheckItem{ckItem}
 
 		if itRows, err = ld.loadItems.Query(tk.repoId, checkId); err != nil {
-			tk.broken = true
-			return
+			goto fail
 		}
 
 		for itRows.Next() {
@@ -430,8 +409,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				&objType,
 			); err != nil {
 				itRows.Close()
-				tk.broken = true
-				return
+				goto fail
 			}
 
 			// create new object per iteration
@@ -439,12 +417,98 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			ckItem.ObjectId, _ = uuid.FromString(objId)
 			ckItem.ItemId, _ = uuid.FromString(itemId)
 			ckTree.Items = append(ckTree.Items, ckItem)
+			ckOrder[victim.ObjectId][checkId] = *ckTree
 		}
 		if err = itRows.Err(); err != nil {
-			tk.broken = true
-			return
+			goto fail
 		}
-		ckOrder[victim.ObjectId][checkId] = *ckTree
+	}
+
+	// apply all somatree.Check object to the tree, special case
+	// groups due to their ordering requirements
+	//
+	// grOrder maps from a standalone groupId to an array of child groupIds
+	// ckOrder maps from a groupId to all source checks on it
+	// ==> not every group has to have a check
+	// ==> groups can have more than one check
+	switch typ {
+	case "group":
+		for objKey, _ := range grOrder {
+			// objKey is a standalone groupId. Test if there are
+			// checks for it
+			if _, ok := ckOrder[objKey]; ok {
+				// apply all checks for objKey
+				for ck, _ := range ckOrder[objKey] {
+					tk.tree.Find(somatree.FindRequest{
+						ElementType: cfgMap[ck].ObjectType,
+						ElementId:   cfgMap[ck].ObjectId,
+					}, true).SetCheck(ckOrder[objKey][ck])
+					// drain after each check
+					for i := len(tk.actionChan); i > 0; i-- {
+						<-tk.actionChan
+					}
+					for i := len(tk.errChan); i > 0; i-- {
+						<-tk.errChan
+					}
+				}
+			}
+			// iterate through all childgroups of objKey
+			for pos, _ := range grOrder[objKey] {
+				// test if there is a check for it
+				if _, ok := ckOrder[grOrder[objKey][pos]]; ok {
+					// apply all checks for grOrder[objKey][pos]
+					for ck, _ := range ckOrder[objKey] {
+						tk.tree.Find(somatree.FindRequest{
+							ElementType: cfgMap[ck].ObjectType,
+							ElementId:   cfgMap[ck].ObjectId,
+						}, true).SetCheck(ckOrder[objKey][ck])
+						// drain after each check
+						for i := len(tk.actionChan); i > 0; i-- {
+							<-tk.actionChan
+						}
+						for i := len(tk.errChan); i > 0; i-- {
+							<-tk.errChan
+						}
+					}
+				}
+			}
+		}
+		// iterate through all weird groups as well
+		for objKey, _ := range grWeird {
+			// Test if there are checks for it
+			if _, ok := ckOrder[objKey]; ok {
+				// apply all checks for objKey
+				for ck, _ := range ckOrder[objKey] {
+					tk.tree.Find(somatree.FindRequest{
+						ElementType: cfgMap[ck].ObjectType,
+						ElementId:   cfgMap[ck].ObjectId,
+					}, true).SetCheck(ckOrder[objKey][ck])
+					// drain after each check
+					for i := len(tk.actionChan); i > 0; i-- {
+						<-tk.actionChan
+					}
+					for i := len(tk.errChan); i > 0; i-- {
+						<-tk.errChan
+					}
+				}
+			}
+		}
+	default:
+		for objKey, _ := range ckOrder {
+			for ckKey, _ := range ckOrder[objKey] {
+				tk.tree.Find(somatree.FindRequest{
+					ElementType: cfgMap[ckKey].ObjectType,
+					ElementId:   cfgMap[ckKey].ObjectId,
+				}, true).SetCheck(ckOrder[objKey][ckKey])
+				// drain after each check
+				for i := len(tk.actionChan); i > 0; i-- {
+					<-tk.actionChan
+				}
+				for i := len(tk.errChan); i > 0; i-- {
+					<-tk.errChan
+				}
+			}
+		}
 	}
 
 	/*
@@ -459,7 +523,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 								tkStmtLoadCheckConstraintService, DONE
 								tkStmtLoadCheckConstraintSystem, DONE
 			Vererbte Checks laden [CheckItem]: tkStmtLoadInheritedChecks, DONE
-			--> Check anlegen
+			--> Check anlegen, DONE
 		!! << NICHT tk.tree.ComputeCheckInstances() AUFRUFEN >> !!
 		CheckInstanzen laden: tkStmtLoadCheckInstances
 		CheckInstanz.each:
@@ -467,6 +531,11 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			--> Instanz anlegen
 			--> TODO: somatree CheckInstanz-Load Interface
 	*/
+	return
+
+fail:
+	tk.broken = true
+	return
 }
 
 // orderGroups orders the groups in a repository so they can be
