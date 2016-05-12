@@ -6,6 +6,11 @@ import (
 	"log"
 )
 
+type tkLoader interface {
+	GroupState() *sql.Stmt
+	GroupRelations() *sql.Stmt
+}
+
 type tkLoaderChecks struct {
 	loadChecks     *sql.Stmt
 	loadItems      *sql.Stmt
@@ -21,6 +26,14 @@ type tkLoaderChecks struct {
 	loadInstConfig *sql.Stmt
 	loadGroupState *sql.Stmt
 	loadGroupRel   *sql.Stmt
+}
+
+func (ld *tkLoaderChecks) GroupState() *sql.Stmt {
+	return ld.loadGroupState
+}
+
+func (ld *tkLoaderChecks) GroupRelations() *sql.Stmt {
+	return ld.loadGroupRel
 }
 
 func (tk *treeKeeper) startupChecks() {
@@ -155,7 +168,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 
 // orderGroups orders the groups in a repository so they can be
 // processed from root to leaf
-func (tk *treeKeeper) orderGroups(ld *tkLoaderChecks) (error, map[string][]string, map[string]string) {
+func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[string]string) {
 	if tk.broken {
 		return fmt.Errorf("Broken tree detected"), nil, nil
 	}
@@ -178,7 +191,7 @@ func (tk *treeKeeper) orderGroups(ld *tkLoaderChecks) (error, map[string][]strin
 	children = []string{}
 
 	// load groups in this repository
-	if stRows, err = ld.loadGroupState.Query(tk.repoId); err != nil {
+	if stRows, err = ld.GroupState().Query(tk.repoId); err != nil {
 		tk.broken = true
 		return err, nil, nil
 	}
@@ -204,7 +217,7 @@ func (tk *treeKeeper) orderGroups(ld *tkLoaderChecks) (error, map[string][]strin
 	}
 
 	// load relations between groups in this repository
-	if rlRows, err = ld.loadGroupRel.Query(tk.repoId); err != nil {
+	if rlRows, err = ld.GroupRelations().Query(tk.repoId); err != nil {
 		tk.broken = true
 		return err, nil, nil
 	}
