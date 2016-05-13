@@ -217,8 +217,9 @@ runloop:
 
 func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 	var (
-		res sql.Result
-		err error
+		inputVal string
+		res      sql.Result
+		err      error
 	)
 	result := somaResult{}
 
@@ -229,6 +230,33 @@ func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 			q.Capability.View,
 			q.Capability.Metric,
 		)
+		// input validation: MonitoringId
+		if w.conn.QueryRow("SELECT monitoring_id FROM soma.monitoring_systems WHERE monitoring_id = $1::uuid;",
+			q.Capability.MonitoringId).Scan(&inputVal); err == sql.ErrNoRows {
+			err = fmt.Errorf("Monitoring system with ID %s is not registered", q.Capability.MonitoringId)
+			goto bailout
+		} else if err != nil {
+			goto bailout
+		}
+
+		// input validation: metric
+		if w.conn.QueryRow("SELECT metric FROM soma.metrics WHERE metric = $1::varchar;",
+			q.Capability.Metric).Scan(&inputVal); err == sql.ErrNoRows {
+			err = fmt.Errorf("Metric %s is not registered", q.Capability.Metric)
+			goto bailout
+		} else if err != nil {
+			goto bailout
+		}
+
+		// input validation: view
+		if w.conn.QueryRow("SELECT view FROM soma.views WHERE view = $1::varchar;",
+			q.Capability.View).Scan(&inputVal); err == sql.ErrNoRows {
+			err = fmt.Errorf("View %s is not registered", q.Capability.View)
+			goto bailout
+		} else if err != nil {
+			goto bailout
+		}
+
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
@@ -249,6 +277,7 @@ func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 		q.reply <- result
 		return
 	}
+bailout:
 	if result.SetRequestError(err) {
 		q.reply <- result
 		return
