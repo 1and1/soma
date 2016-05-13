@@ -511,6 +511,22 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		}
 	}
 
+	// repository and bucket elements can not have check instances,
+	// they are metadata
+	if typ == "repository" || typ == "bucket" {
+		goto done
+	}
+
+	// iterate over all checks and load the checksInstances they
+	// created
+	for checkId, _ = range cfgMap {
+		// -> tkStmtLoadCheckInstances
+		// .each:
+		//		-> tkStmtLoadCheckInstanceConfiguration
+		//		-> assemble instance
+		//		-> tk.tree.Find().LoadInstance(instance)
+		// tk.tree.ComputeCheckInstances()
+	}
 	/*
 		Source-Checks laden: tkStmtLoadChecks, DONE
 		Source-Checks.each:
@@ -531,6 +547,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			--> Instanz anlegen
 			--> TODO: somatree CheckInstanz-Load Interface
 	*/
+done:
 	return
 
 fail:
