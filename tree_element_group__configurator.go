@@ -178,26 +178,54 @@ checksloop:
 			inst.calcConstraintHash()
 			inst.calcConstraintValHash()
 
-		nosvcinstanceloop:
-			for _, exInstId := range teg.CheckInstances[i] {
-				exInst := teg.Instances[exInstId]
-				// ignore instances with service constraints
-				if exInst.InstanceSvcCfgHash != "" {
-					continue nosvcinstanceloop
+			if startupLoad {
+			nosvcstartinstanceloop:
+				for ldInstId, ldInst := range tec.loadedInstances[i] {
+					if ldInst.InstanceSvcCfgHash != "" {
+						continue nosvcstartinstanceloop
+					}
+					// check if an instance exists bound against the
+					// same constraints
+					if ldInst.ConstraintHash == inst.ConstraintHash {
+						inst.InstanceId, _ = uuid.FromString(ldInst.InstanceId.String())
+						if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
+							panic(`Matched instances loaded for different ConfigId`)
+						}
+						inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
+						inst.Version = ldInst.Version
+						if inst.ConstraintValHash != ldInst.ConstraintValHash {
+							panic(`Matched instances loaded for different ConstraintValHash`)
+						}
+						delete(tec.loadedInstances[i], ldInstId)
+						break nosvcstartinstanceloop
+					}
+					// if we hit here, then we just computed an instance
+					// that we could not match to any loaded instances
+					// -> something is wrong
+					panic(`Failed to match computed instance to loaded instances`)
 				}
-				// check if an instance exists bound against the same
-				// constraints
-				if exInst.ConstraintHash == inst.ConstraintHash {
-					inst.InstanceId, _ = uuid.FromString(exInst.InstanceId.String())
-					inst.Version = exInst.Version + 1
-					break nosvcinstanceloop
+			} else {
+			nosvcinstanceloop:
+				for _, exInstId := range teg.CheckInstances[i] {
+					exInst := teg.Instances[exInstId]
+					// ignore instances with service constraints
+					if exInst.InstanceSvcCfgHash != "" {
+						continue nosvcinstanceloop
+					}
+					// check if an instance exists bound against the same
+					// constraints
+					if exInst.ConstraintHash == inst.ConstraintHash {
+						inst.InstanceId, _ = uuid.FromString(exInst.InstanceId.String())
+						inst.Version = exInst.Version + 1
+						break nosvcinstanceloop
+					}
 				}
-			}
-			if uuid.Equal(uuid.Nil, inst.InstanceId) {
-				// no match was found during nosvcinstanceloop, this
-				// is a new instance
-				inst.Version = 0
-				inst.InstanceId = uuid.NewV4()
+				if uuid.Equal(uuid.Nil, inst.InstanceId) {
+					// no match was found during nosvcinstanceloop, this
+					// is a new instance
+					inst.Version = 0
+					inst.InstanceId = uuid.NewV4()
+				}
 			}
 			newInstances[inst.InstanceId.String()] = inst
 			newCheckInstances = append(newCheckInstances, inst.InstanceId.String())
