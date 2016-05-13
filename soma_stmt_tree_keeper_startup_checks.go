@@ -64,7 +64,7 @@ WHERE  configuration_id = $1::uuid;`
 const tkStmtLoadCheckConstraintNative = `
 SELECT native_property,
        property_value,
-	   ''
+	   'squirrel'
 FROM   soma.constraints_native_property
 WHERE  configuration_id = $1::uuid;`
 
@@ -81,21 +81,21 @@ WHERE  scop.configuration_id = $1::uuid;`
 const tkStmtLoadCheckConstraintAttribute = `
 SELECT service_property_attribute,
        attribute_value,
-	   ''
+	   'squirrel'
 FROM   soma.constraints_service_attribute
 WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintService = `
 SELECT organizational_team_id,
        service_property,
-	   ''
+	   'squirrel'
 FROM   soma.constraints_service_property
 WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckConstraintSystem = `
 SELECT system_property,
        property_value,
-	   ''
+	   'squirrel'
 FROM   soma.constraints_system_property
 WHERE  configuration_id = $1::uuid;`
 
@@ -103,12 +103,12 @@ const tkStmtLoadCheckInstances = `
 SELECT check_instance_id,
        check_configuration_id,
 	   current_instance_config_id
+FROM   soma.check_instances
 WHERE  check_id = $1::uuid
 AND    NOT deleted;`
 
 const tkStmtLoadCheckInstanceConfiguration = `
-SELECT check_instance_config_id,
-       version,
+SELECT version,
 	   monitoring_id,
 	   constraint_hash,
 	   constraint_val_hash,
@@ -116,7 +116,8 @@ SELECT check_instance_config_id,
 	   instance_service_cfg_hash,
 	   instance_service_cfg
 FROM   soma.check_instance_configurations
-WHERE  check_instance_id = $1::uuid;`
+WHERE  check_instance_config_id = $1::uuid
+AND    check_instance_id = $2::uuid;`
 
 const tkStmtLoadCheckGroupState = `
 SELECT sg.group_id,

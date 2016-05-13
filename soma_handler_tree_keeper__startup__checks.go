@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -120,9 +121,35 @@ func (tk *treeKeeper) startupChecks() {
 	}
 	defer ld.loadGroupRel.Close()
 
+	// this is also needed early on
+	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
+		log.Fatal("treekeeper/get-view-by-capability: ", err)
+	}
+	defer tk.get_view.Close()
+
 	// load checks for the entire tree, in order from root to leaf.
 	for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
 		tk.startupScopedChecks(typ, &ld)
+	}
+
+	// recompute instances with preloaded IDs
+	tk.tree.ComputeCheckInstances()
+
+	// ensure there are no leftovers
+	tk.tree.ClearLoadInfo()
+
+	for i := len(tk.actionChan); i > 0; i-- {
+		a := <-tk.actionChan
+		j, _ := json.Marshal(a)
+		log.Println(">>>>>>>>   CLEANED ACTION <<<<<<<<<")
+		log.Println(string(j))
+		//log.Printf("%s -> %s\n", a.Action, a.Type)
+	}
+	for i := len(tk.errChan); i > 0; i-- {
+		e := <-tk.errChan
+		j, _ := json.Marshal(e)
+		log.Println(">>>>>>>>   CLEANED ERROR <<<<<<<<<")
+		log.Println(string(j))
 	}
 }
 
@@ -131,24 +158,30 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		return
 	}
 
+	fmt.Printf(">>CHECKS: %s -> %s\n", tk.repoName, typ)
+
 	var (
-		err                                                           error
-		checkId, bucketId, srcCheckId, srcObjType, srcObjId, configId string
-		capabilityId, objId, objType, cfgName, cfgObjId, cfgObjType   string
-		externalId, predicate, threshold, levelName, levelShort       string
-		cstrType, value1, value2, value3, itemId                      string
-		levelNumeric, numVal                                          int64
-		isActive, hasInheritance, isChildrenOnly, isEnabled           bool
-		interval                                                      int64
-		grOrder                                                       map[string][]string
-		grWeird                                                       map[string]string
-		ckRows, thrRows, cstrRows, itRows                             *sql.Rows
-		cfgMap                                                        map[string]proto.CheckConfig
-		victim                                                        proto.CheckConfig // go/issues/3117 workaround
-		ckTree                                                        *somatree.Check
-		ckItem                                                        somatree.CheckItem
-		ckOrder                                                       map[string]map[string]somatree.Check
+		err                                                          error
+		checkId, srcCheckId, srcObjType, srcObjId, configId          string
+		capabilityId, objId, objType, cfgName, cfgObjId, cfgObjType  string
+		externalId, predicate, threshold, levelName, levelShort      string
+		cstrType, value1, value2, value3, itemId, itemCfgId          string
+		monitoringId, cstrHash, cstrValHash, instSvc, instSvcCfgHash string
+		instSvcCfg                                                   string
+		levelNumeric, numVal, interval, version                      int64
+		isActive, hasInheritance, isChildrenOnly, isEnabled          bool
+		grOrder                                                      map[string][]string
+		grWeird                                                      map[string]string
+		ckRows, thrRows, cstrRows, itRows, inRows                    *sql.Rows
+		cfgMap                                                       map[string]proto.CheckConfig
+		victim                                                       proto.CheckConfig // go/issues/3117 workaround
+		ckTree                                                       *somatree.Check
+		ckItem                                                       somatree.CheckItem
+		ckOrder                                                      map[string]map[string]somatree.Check
+		nullBucketId                                                 sql.NullString
 	)
+	cfgMap = make(map[string]proto.CheckConfig)
+	ckOrder = make(map[string]map[string]somatree.Check)
 
 	switch typ {
 	case "group":
@@ -169,7 +202,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	for ckRows.Next() {
 		if err = ckRows.Scan(
 			&checkId,
-			&bucketId,
+			&nullBucketId,
 			&srcCheckId,
 			&srcObjType,
 			&srcObjId,
@@ -181,14 +214,17 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			goto fail
 		}
 		// save CheckConfig
-		cfgMap[checkId] = proto.CheckConfig{
+		victim := proto.CheckConfig{
 			Id:           configId,
 			RepositoryId: tk.repoId,
-			BucketId:     bucketId,
 			CapabilityId: capabilityId,
 			ObjectId:     objId,
 			ObjectType:   objType,
 		}
+		if nullBucketId.Valid {
+			victim.BucketId = nullBucketId.String
+		}
+		cfgMap[checkId] = victim
 	}
 	if ckRows.Err() != nil {
 		goto fail
@@ -198,7 +234,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// from the stored checkconfiguration
 	for checkId, _ = range cfgMap {
 		if err = ld.loadConfig.QueryRow(cfgMap[checkId].Id, tk.repoId).Scan(
-			&bucketId,
+			&nullBucketId,
 			&cfgName,
 			&cfgObjId,
 			&cfgObjType,
@@ -295,7 +331,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			case `system`:
 				cstrRows, err = ld.loadCstrSystem.Query(cfgMap[checkId].Id)
 			}
-			if err == nil {
+			if err != nil {
 				goto fail
 			}
 
@@ -303,6 +339,8 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			// constraints are not mandatory
 			for cstrRows.Next() {
 				if err = cstrRows.Scan(&value1, &value2, &value3); err != nil {
+					fmt.Println("ERROR: cstrRows.Scan(&value1, &value2, &value3")
+					fmt.Println("Scan4")
 					cstrRows.Close()
 					goto fail
 				}
@@ -415,6 +453,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			// create new object per iteration
 			ckItem := somatree.CheckItem{ObjectType: objType}
 			ckItem.ObjectId, _ = uuid.FromString(objId)
+			fmt.Printf("Inherited ID put into Item: %s\n", itemId)
 			ckItem.ItemId, _ = uuid.FromString(itemId)
 			ckTree.Items = append(ckTree.Items, ckItem)
 			ckOrder[victim.ObjectId][checkId] = *ckTree
@@ -500,6 +539,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					ElementType: cfgMap[ckKey].ObjectType,
 					ElementId:   cfgMap[ckKey].ObjectId,
 				}, true).SetCheck(ckOrder[objKey][ckKey])
+				fmt.Printf(">>[%s].SetCheck(), objKey %s, ckKey %s\n", tk.repoName, objKey, ckKey)
 				// drain after each check
 				for i := len(tk.actionChan); i > 0; i-- {
 					<-tk.actionChan
@@ -520,37 +560,78 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// iterate over all checks and load the checksInstances they
 	// created
 	for checkId, _ = range cfgMap {
-		// -> tkStmtLoadCheckInstances
-		// .each:
-		//		-> tkStmtLoadCheckInstanceConfiguration
-		//		-> assemble instance
-		//		-> tk.tree.Find().LoadInstance(instance)
-		// tk.tree.ComputeCheckInstances()
+		if inRows, err = ld.loadInstances.Query(checkId); err != nil {
+			goto fail
+		}
+
+		// retrieve row
+		for inRows.Next() {
+			if err = inRows.Scan(
+				&itemId,
+				&configId,
+				&itemCfgId,
+			); err != nil {
+				inRows.Close()
+				goto fail
+			}
+
+			// load configuration for check instance
+			if err = ld.loadInstConfig.QueryRow(itemCfgId, itemId).Scan(
+				&version,
+				&monitoringId,
+				&cstrHash,
+				&cstrValHash,
+				&instSvc,
+				&instSvcCfgHash,
+				&instSvcCfg,
+			); err != nil {
+				// sql.ErrNoRows is fatal, an instance must have a
+				// configuration
+				inRows.Close()
+				goto fail
+			}
+
+			// fresh object per iteration -> memory safe!
+			ckInstance := somatree.CheckInstance{
+				Version:            uint64(version),
+				ConstraintHash:     cstrHash,
+				ConstraintValHash:  cstrValHash,
+				InstanceService:    instSvc,
+				InstanceSvcCfgHash: instSvcCfgHash,
+			}
+			// if we have a configuration, deserialize it
+			if ckInstance.InstanceSvcCfgHash != "" {
+				ckInstance.InstanceServiceConfig = make(map[string]string)
+				if err = json.Unmarshal([]byte(instSvcCfg), &ckInstance.InstanceServiceConfig); err != nil {
+					inRows.Close()
+					goto fail
+				}
+			}
+			ckInstance.InstanceId, _ = uuid.FromString(itemId)
+			ckInstance.CheckId, _ = uuid.FromString(checkId)
+			ckInstance.ConfigId, _ = uuid.FromString(configId)
+			ckInstance.InstanceConfigId, _ = uuid.FromString(itemCfgId)
+
+			// attach instance to tree
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: cfgMap[checkId].ObjectType,
+				ElementId:   cfgMap[checkId].ObjectId,
+			}, true).LoadInstance(ckInstance)
+			fmt.Printf(">>[%s].LoadInstance: InstanceId=%s, CheckId=%s, ObjectId=%s, ObjectType=%s\n",
+				tk.repoName, ckInstance.InstanceId.String(), ckInstance.CheckId.String(),
+				cfgMap[checkId].ObjectId, cfgMap[checkId].ObjectType)
+		}
+		if err = inRows.Err(); err != nil {
+			inRows.Close()
+			goto fail
+		}
 	}
-	/*
-		Source-Checks laden: tkStmtLoadChecks, DONE
-		Source-Checks.each:
-			Config laden: tkStmtLoadCheckConfiguration, DONE
-			Thresholds laden: tkStmtLoadCheckThresholds, DONE
-			Constraints laden:	tkStmtLoadCheckConstraintCustom, DONE
-								tkStmtLoadCheckConstraintNative, DONE
-								tkStmtLoadCheckConstraintOncall, DONE
-								tkStmtLoadCheckConstraintAttribute, DONE
-								tkStmtLoadCheckConstraintService, DONE
-								tkStmtLoadCheckConstraintSystem, DONE
-			Vererbte Checks laden [CheckItem]: tkStmtLoadInheritedChecks, DONE
-			--> Check anlegen, DONE
-		!! << NICHT tk.tree.ComputeCheckInstances() AUFRUFEN >> !!
-		CheckInstanzen laden: tkStmtLoadCheckInstances
-		CheckInstanz.each:
-			InstanzConfig laden: tkStmtLoadCheckInstanceConfiguration
-			--> Instanz anlegen
-			--> TODO: somatree CheckInstanz-Load Interface
-	*/
+
 done:
 	return
 
 fail:
+	fmt.Println(err)
 	tk.broken = true
 	return
 }
@@ -581,6 +662,7 @@ func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[
 
 	// load groups in this repository
 	if stRows, err = ld.GroupState().Query(tk.repoId); err != nil {
+		fmt.Println("ld.GroupState().Query(tk.repoId)")
 		tk.broken = true
 		return err, nil, nil
 	}

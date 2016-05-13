@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/satori/go.uuid"
@@ -68,7 +69,10 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach checks
+	fmt.Println("!!INFO: loading check")
 	tk.startupChecks()
+
+	fmt.Println("LOAD CHECKS RETURNED!")
 
 	if len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
