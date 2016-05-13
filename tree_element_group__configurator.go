@@ -180,7 +180,7 @@ checksloop:
 
 			if startupLoad {
 			nosvcstartinstanceloop:
-				for ldInstId, ldInst := range tec.loadedInstances[i] {
+				for ldInstId, ldInst := range teg.loadedInstances[i] {
 					if ldInst.InstanceSvcCfgHash != "" {
 						continue nosvcstartinstanceloop
 					}
@@ -196,7 +196,7 @@ checksloop:
 						if inst.ConstraintValHash != ldInst.ConstraintValHash {
 							panic(`Matched instances loaded for different ConstraintValHash`)
 						}
-						delete(tec.loadedInstances[i], ldInstId)
+						delete(teg.loadedInstances[i], ldInstId)
 						break nosvcstartinstanceloop
 					}
 					// if we hit here, then we just computed an instance
