@@ -48,92 +48,96 @@ func (tk *treeKeeper) startupChecks() {
 		ld  tkLoaderChecks
 	)
 
-	// load all required prepared statements into the loader structure
+	// prepare all required statements into the loader structure
 	ld = tkLoaderChecks{}
 	if ld.loadChecks, err = tk.conn.Prepare(tkStmtLoadChecks); err != nil {
-		log.Fatal("treekeeper/load-checks: ", err)
+		log.Fatal("treekeeper/tkStmtLoadChecks: ", err)
 	}
 	defer ld.loadChecks.Close()
 
 	if ld.loadItems, err = tk.conn.Prepare(tkStmtLoadInheritedChecks); err != nil {
-		log.Fatal("treekeeper/load-inherited-checks: ", err)
+		log.Fatal("treekeeper/tkStmtLoadInheritedChecks: ", err)
 	}
 	defer ld.loadItems.Close()
 
 	if ld.loadConfig, err = tk.conn.Prepare(tkStmtLoadCheckConfiguration); err != nil {
-		log.Fatal("treekeeper/load-check-configuration: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConfiguration: ", err)
 	}
 	defer ld.loadConfig.Close()
 
 	if ld.loadThresh, err = tk.conn.Prepare(tkStmtLoadCheckThresholds); err != nil {
-		log.Fatal("treekeeper/load-check-thresholds: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckThresholds: ", err)
 	}
 	defer ld.loadThresh.Close()
 
 	if ld.loadCstrCustom, err = tk.conn.Prepare(tkStmtLoadCheckConstraintCustom); err != nil {
-		log.Fatal("treekeeper/load-check-constraint-custom: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConstraintCustom: ", err)
 	}
 	defer ld.loadCstrCustom.Close()
 
 	if ld.loadCstrNative, err = tk.conn.Prepare(tkStmtLoadCheckConstraintNative); err != nil {
-		log.Fatal("treekeeper/load-check-constraint-native: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConstraintNative: ", err)
 	}
 	defer ld.loadCstrNative.Close()
 
 	if ld.loadCstrOncall, err = tk.conn.Prepare(tkStmtLoadCheckConstraintOncall); err != nil {
-		log.Fatal("treekeeper/load-check-constraint-oncall: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConstraintOncall: ", err)
 	}
 	defer ld.loadCstrOncall.Close()
 
 	if ld.loadCstrAttr, err = tk.conn.Prepare(tkStmtLoadCheckConstraintAttribute); err != nil {
-		log.Fatal("treekeeper/load-check-constraint-attribute: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConstraintAttribute: ", err)
 	}
 	defer ld.loadCstrAttr.Close()
 
 	if ld.loadCstrServ, err = tk.conn.Prepare(tkStmtLoadCheckConstraintService); err != nil {
-		log.Fatal("treekeeper/load-check-constraint-service: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConstraintService: ", err)
 	}
 	defer ld.loadCstrServ.Close()
 
 	if ld.loadCstrSystem, err = tk.conn.Prepare(tkStmtLoadCheckConstraintSystem); err != nil {
-		log.Fatal("treekeeper/load-check-constraint-system: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckConstraintSystem: ", err)
 	}
 	defer ld.loadCstrSystem.Close()
 
+	// the following three statements are used to load check instances
+	if ld.loadTypeChecks, err = tk.conn.Prepare(tkStmtLoadChecksForType); err != nil {
+		log.Fatal("treekeeper/tkStmtLoadChecksForType: ", err)
+	}
+	defer ld.loadTypeChecks.Close()
+
 	if ld.loadInstances, err = tk.conn.Prepare(tkStmtLoadCheckInstances); err != nil {
-		log.Fatal("treekeeper/load-check-instance: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckInstances: ", err)
 	}
 	defer ld.loadInstances.Close()
 
 	if ld.loadInstConfig, err = tk.conn.Prepare(tkStmtLoadCheckInstanceConfiguration); err != nil {
-		log.Fatal("treekeeper/load-check-instance-configuration: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckInstanceConfiguration: ", err)
 	}
 	defer ld.loadInstConfig.Close()
 
 	// since groups are the only tree elements that can be stacked,
 	// additional ordering is required
 	if ld.loadGroupState, err = tk.conn.Prepare(tkStmtLoadCheckGroupState); err != nil {
-		log.Fatal("treekeeper/load-check-group-state: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckGroupState: ", err)
 	}
 	defer ld.loadGroupState.Close()
 
 	if ld.loadGroupRel, err = tk.conn.Prepare(tkStmtLoadCheckGroupRelations); err != nil {
-		log.Fatal("treekeeper/load-check-group-relations: ", err)
+		log.Fatal("treekeeper/tkStmtLoadCheckGroupRelations: ", err)
 	}
 	defer ld.loadGroupRel.Close()
 
-	if ld.loadTypeChecks, err = tk.conn.Prepare(tkStmtLoadChecksForType); err != nil {
-		log.Fatal("treekeeper/load-checks-for-type: ", err)
-	}
-	defer ld.loadTypeChecks.Close()
-
 	// this is also needed early on
 	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
-		log.Fatal("treekeeper/get-view-by-capability: ", err)
+		log.Fatal("treekeeper/tkStmtGetViewFromCapability: ", err)
 	}
 	defer tk.get_view.Close()
 
+	//
 	// load checks for the entire tree, in order from root to leaf.
+	// Afterwards, load all check instances. This does not require
+	// ordering.
 	for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
 		tk.startupScopedChecks(typ, &ld)
 	}
@@ -144,18 +148,17 @@ func (tk *treeKeeper) startupChecks() {
 	// ensure there are no leftovers
 	tk.tree.ClearLoadInfo()
 
-	for i := len(tk.actionChan); i > 0; i-- {
-		a := <-tk.actionChan
-		j, _ := json.Marshal(a)
-		log.Println(">>>>>>>>   CLEANED ACTION <<<<<<<<<")
-		log.Println(string(j))
-		//log.Printf("%s -> %s\n", a.Action, a.Type)
+	// this startup drains actions after checks, then suppresses
+	// actions for instances that could be matched to loaded
+	// information. Leftovers indicate that loaded and computed
+	// instances diverge!
+	if tk.drain(`action`) > 0 {
+		panic(`Leftovers in tk.actionChan`)
 	}
-	for i := len(tk.errChan); i > 0; i-- {
-		e := <-tk.errChan
-		j, _ := json.Marshal(e)
-		log.Println(">>>>>>>>   CLEANED ERROR <<<<<<<<<")
-		log.Println(string(j))
+
+	// drain the error channel for now
+	if tk.drain(`error`) > 0 {
+		panic(`Leftovers in tk.errChan`)
 	}
 }
 
@@ -164,8 +167,8 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		return
 	}
 
-	fmt.Printf(">>CHECKS: %s -> %s\n", tk.repoName, typ)
-
+	// forward declare variables to allow goto use to dedup exit
+	// handling
 	var (
 		err                                                          error
 		checkId, srcCheckId, srcObjType, srcObjId, configId          string
@@ -197,8 +200,8 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	}
 
 	if ckRows, err = ld.loadChecks.Query(tk.repoId, typ); err == sql.ErrNoRows {
-		// no checks on this element type, there can still be
-		// instances though
+		// go directly to loading instances since there are no source
+		// checks on this type
 		goto directinstances
 	} else if err != nil {
 		goto fail
@@ -310,12 +313,11 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					Value: numVal,
 				},
 			)
-		} // implict close by Next() reaching EOF
+		}
 		if err = thrRows.Err(); err != nil {
 			goto fail
 		}
 		cfgMap[checkId] = victim
-		thrRows.Close()
 	}
 
 	// iterate over the loaded checks and continue assembly with values
@@ -424,7 +426,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 
 	// iterate over the checks, convert them to tree.Check. Then load
 	// the inherited IDs via loadItems and populate tree.Check.Items.
-	// Save in datastructure: map[string]map[string]tree.Check
+	// Save in datastructure: ckOrder, map[string]map[string]tree.Check
 	//		objId -> checkId -> tree.Check
 	// this way it is possible to access the checks by objId, which is
 	// required to populate groups in the correct order.
@@ -440,6 +442,14 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		ckItem.ObjectId, _ = uuid.FromString(victim.ObjectId)
 		ckItem.ItemId, _ = uuid.FromString(checkId)
 		ckTree.Items = []somatree.CheckItem{ckItem}
+		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
+			tk.repoName,
+			`AssociateCheck`,
+			ckItem.ObjectType,
+			ckItem.ObjectId,
+			checkId,
+			ckItem.ItemId,
+		)
 
 		if itRows, err = ld.loadItems.Query(tk.repoId, checkId); err != nil {
 			goto fail
@@ -458,14 +468,21 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			// create new object per iteration
 			ckItem := somatree.CheckItem{ObjectType: objType}
 			ckItem.ObjectId, _ = uuid.FromString(objId)
-			fmt.Printf("Inherited ID put into Item: %s\n", itemId)
 			ckItem.ItemId, _ = uuid.FromString(itemId)
 			ckTree.Items = append(ckTree.Items, ckItem)
-			ckOrder[victim.ObjectId][checkId] = *ckTree
+			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
+				tk.repoName,
+				`AssociateCheck`,
+				objType,
+				objId,
+				checkId,
+				itemId,
+			)
 		}
 		if err = itRows.Err(); err != nil {
 			goto fail
 		}
+		ckOrder[victim.ObjectId][checkId] = *ckTree
 	}
 
 	// apply all somatree.Check object to the tree, special case
@@ -487,13 +504,18 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						ElementType: cfgMap[ck].ObjectType,
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+						tk.repoName,
+						`SetCheck`,
+						typ,
+						objKey,
+						ck,
+					)
 					// drain after each check
-					for i := len(tk.actionChan); i > 0; i-- {
-						<-tk.actionChan
+					if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+						panic(`Mismatched check creation`)
 					}
-					for i := len(tk.errChan); i > 0; i-- {
-						<-tk.errChan
-					}
+					tk.drain(`error`)
 				}
 			}
 			// iterate through all childgroups of objKey
@@ -506,13 +528,18 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 							ElementType: cfgMap[ck].ObjectType,
 							ElementId:   cfgMap[ck].ObjectId,
 						}, true).SetCheck(ckOrder[objKey][ck])
+						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+							tk.repoName,
+							`SetCheck`,
+							typ,
+							objKey,
+							ck,
+						)
 						// drain after each check
-						for i := len(tk.actionChan); i > 0; i-- {
-							<-tk.actionChan
+						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+							panic(`Mismatched check creation`)
 						}
-						for i := len(tk.errChan); i > 0; i-- {
-							<-tk.errChan
-						}
+						tk.drain(`error`)
 					}
 				}
 			}
@@ -527,31 +554,40 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						ElementType: cfgMap[ck].ObjectType,
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+						tk.repoName,
+						`SetCheck`,
+						typ,
+						objKey,
+						ck,
+					)
 					// drain after each check
-					for i := len(tk.actionChan); i > 0; i-- {
-						<-tk.actionChan
+					if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+						panic(`Mismatched check creation`)
 					}
-					for i := len(tk.errChan); i > 0; i-- {
-						<-tk.errChan
-					}
+					tk.drain(`error`)
 				}
 			}
 		}
 	default:
 		for objKey, _ := range ckOrder {
-			for ckKey, _ := range ckOrder[objKey] {
+			for ck, _ := range ckOrder[objKey] {
 				tk.tree.Find(somatree.FindRequest{
-					ElementType: cfgMap[ckKey].ObjectType,
-					ElementId:   cfgMap[ckKey].ObjectId,
-				}, true).SetCheck(ckOrder[objKey][ckKey])
-				fmt.Printf(">>[%s].SetCheck(), objKey %s, ckKey %s\n", tk.repoName, objKey, ckKey)
+					ElementType: cfgMap[ck].ObjectType,
+					ElementId:   cfgMap[ck].ObjectId,
+				}, true).SetCheck(ckOrder[objKey][ck])
+				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+					tk.repoName,
+					`SetCheck`,
+					typ,
+					objKey,
+					ck,
+				)
 				// drain after each check
-				for i := len(tk.actionChan); i > 0; i-- {
-					<-tk.actionChan
+				if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+					panic(`Mismatched check creation`)
 				}
-				for i := len(tk.errChan); i > 0; i-- {
-					<-tk.errChan
-				}
+				tk.drain(`error`)
 			}
 		}
 	}
@@ -570,7 +606,7 @@ directinstances:
 	}
 
 	for tckRows.Next() {
-		// load a check information
+		// load check information
 		if err = tckRows.Scan(
 			&checkId,
 			&objId,
@@ -579,12 +615,12 @@ directinstances:
 			goto fail
 		}
 
+		// lookup instances for that check
 		if inRows, err = ld.loadInstances.Query(checkId); err != nil {
 			tckRows.Close()
 			goto fail
 		}
 
-		// retrieve row
 		for inRows.Next() {
 			if err = inRows.Scan(
 				&itemId,
@@ -608,6 +644,7 @@ directinstances:
 			); err != nil {
 				// sql.ErrNoRows is fatal, an instance must have a
 				// configuration
+				tckRows.Close()
 				inRows.Close()
 				goto fail
 			}
@@ -620,10 +657,11 @@ directinstances:
 				InstanceService:    instSvc,
 				InstanceSvcCfgHash: instSvcCfgHash,
 			}
-			// if we have a configuration, deserialize it
+			// if we have a saved service configuration, deserialize it
 			if ckInstance.InstanceSvcCfgHash != "" {
 				ckInstance.InstanceServiceConfig = make(map[string]string)
 				if err = json.Unmarshal([]byte(instSvcCfg), &ckInstance.InstanceServiceConfig); err != nil {
+					tckRows.Close()
 					inRows.Close()
 					goto fail
 				}
@@ -638,17 +676,21 @@ directinstances:
 				ElementType: typ,
 				ElementId:   objId,
 			}, true).LoadInstance(ckInstance)
-			fmt.Printf(">>[%s].LoadInstance: InstanceId=%s, CheckId=%s\n",
-				tk.repoName, ckInstance.InstanceId.String(), ckInstance.CheckId.String())
+			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+				tk.repoName,
+				`LoadInstance`,
+				typ,
+				objId,
+				ckInstance.CheckId.String(),
+				ckInstance.InstanceId.String(),
+			)
 		}
 		if err = inRows.Err(); err != nil {
-			tckRows.Close()
 			inRows.Close()
 			goto fail
 		}
 	}
 	if err = tckRows.Err(); err != nil {
-		tckRows.Close()
 		goto fail
 	}
 
@@ -656,7 +698,6 @@ done:
 	return
 
 fail:
-	fmt.Println(err)
 	tk.broken = true
 	return
 }
@@ -687,29 +728,26 @@ func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[
 
 	// load groups in this repository
 	if stRows, err = ld.GroupState().Query(tk.repoId); err != nil {
-		fmt.Println("ld.GroupState().Query(tk.repoId)")
 		tk.broken = true
 		return err, nil, nil
 	}
 	defer stRows.Close()
 
 	for stRows.Next() {
-		if err = stRows.Scan(&groupId, &groupState); err == sql.ErrNoRows {
-			// this repository has no groups
-			return nil, grOrder, grWeirdMap
-		} else if err != nil {
+		if err = stRows.Scan(&groupId, &groupState); err != nil {
 			// error loading group state
 			tk.broken = true
 			return err, nil, nil
 		}
 		grStateMap[groupId] = groupState
 	}
-	if err = stRows.Err(); err == sql.ErrNoRows {
-		// this repository has no groups
-		return nil, grOrder, grWeirdMap
-	} else if err != nil {
+	if err = stRows.Err(); err != nil {
 		tk.broken = true
 		return err, nil, nil
+	}
+	if len(grStateMap) == 0 {
+		// repository has no groups, return empty handed
+		return nil, grOrder, grWeirdMap
 	}
 
 	// load relations between groups in this repository
@@ -719,12 +757,8 @@ func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[
 	}
 	defer rlRows.Close()
 
-relations:
 	for rlRows.Next() {
-		if err = rlRows.Scan(&groupId, &childId); err == sql.ErrNoRows {
-			// no stacked groups
-			break relations
-		} else if err != nil {
+		if err = rlRows.Scan(&groupId, &childId); err != nil {
 			// error loading relations
 			tk.broken = true
 			return err, nil, nil
@@ -777,6 +811,7 @@ orderloop:
 		// install a breaker switch in case the groups can not be
 		// ordered. if no elements were deleted from grStateMap
 		// for three full iterations => give up
+		// XXX 3 was chosen via dice roll
 		if len(grStateMap) == oldLen {
 			sameCount++
 		} else {
