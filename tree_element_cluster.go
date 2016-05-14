@@ -233,6 +233,10 @@ func (tec *SomaTreeElemCluster) GetRepository() string {
 	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 }
 
+func (tec *SomaTreeElemCluster) GetRepositoryName() string {
+	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepositoryName()
+}
+
 func (tec *SomaTreeElemCluster) GetEnvironment() string {
 	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetEnvironment()
 }

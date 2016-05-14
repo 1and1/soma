@@ -303,4 +303,8 @@ func (ten *SomaTreeElemNode) actionDispatch(action string, a Action) {
 	ten.Action <- &a
 }
 
+func (ten *SomaTreeElemNode) repositoryName() string {
+	return ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepositoryName()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

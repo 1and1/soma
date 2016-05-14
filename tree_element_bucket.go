@@ -159,6 +159,10 @@ func (teb *SomaTreeElemBucket) GetRepository() string {
 	return teb.Repository.String()
 }
 
+func (teb *SomaTreeElemBucket) GetRepositoryName() string {
+	return teb.Parent.(*SomaTreeElemRepository).GetName()
+}
+
 //
 //
 func (teb *SomaTreeElemBucket) ComputeCheckInstances() {

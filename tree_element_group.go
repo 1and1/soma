@@ -232,6 +232,10 @@ func (teg *SomaTreeElemGroup) GetRepository() string {
 	return teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 }
 
+func (teg *SomaTreeElemGroup) GetRepositoryName() string {
+	return teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepositoryName()
+}
+
 func (teg *SomaTreeElemGroup) GetEnvironment() string {
 	return teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetEnvironment()
 }
