@@ -1,6 +1,10 @@
 package somatree
 
-import "github.com/satori/go.uuid"
+import (
+	"log"
+
+	"github.com/satori/go.uuid"
+)
 
 func (teg *SomaTreeElemGroup) updateCheckInstances() {
 	// object has no checks
@@ -14,6 +18,8 @@ func (teg *SomaTreeElemGroup) updateCheckInstances() {
 	if len(teg.loadedInstances) > 0 {
 		startupLoad = true
 	}
+
+	repoName := teg.GetRepositoryName()
 
 	// process checks
 checksloop:
@@ -87,6 +93,14 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
+			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+				repoName,
+				`ConstraintEvaluation`,
+				`group`,
+				teg.Id.String(),
+				i,
+				false,
+			)
 			continue checksloop
 		}
 
@@ -146,9 +160,25 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
+			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+				repoName,
+				`ConstraintEvaluation`,
+				`group`,
+				teg.Id.String(),
+				i,
+				false,
+			)
 			continue checksloop
 		}
 		// check triggered, create instances
+		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			repoName,
+			`ConstraintEvaluation`,
+			`group`,
+			teg.Id.String(),
+			i,
+			true,
+		)
 
 		/* if there are no service constraints, one check instance is
 		* created for this check
@@ -187,7 +217,7 @@ checksloop:
 					// check if an instance exists bound against the
 					// same constraints
 					if ldInst.ConstraintHash == inst.ConstraintHash {
-						inst.InstanceId, _ = uuid.FromString(ldInst.InstanceId.String())
+						inst.InstanceId, _ = uuid.FromString(ldInstId)
 						if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
 							panic(`Matched instances loaded for different ConfigId`)
 						}
@@ -197,6 +227,15 @@ checksloop:
 							panic(`Matched instances loaded for different ConstraintValHash`)
 						}
 						delete(teg.loadedInstances[i], ldInstId)
+						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+							repoName,
+							`ComputeInstance`,
+							`group`,
+							teg.Id.String(),
+							i,
+							ldInstId,
+							false,
+						)
 						break nosvcstartinstanceloop
 					}
 					// if we hit here, then we just computed an instance
@@ -226,6 +265,15 @@ checksloop:
 					inst.Version = 0
 					inst.InstanceId = uuid.NewV4()
 				}
+				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+					repoName,
+					`ComputeInstance`,
+					`group`,
+					teg.Id.String(),
+					i,
+					inst.InstanceId.String(),
+					false,
+				)
 			}
 			newInstances[inst.InstanceId.String()] = inst
 			newCheckInstances = append(newCheckInstances, inst.InstanceId.String())
@@ -315,7 +363,7 @@ checksloop:
 					for ldInstId, ldInst := range teg.loadedInstances[i] {
 						// check for data from loaded instance
 						if ldInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
-							inst.InstanceId, _ = uuid.FromString(ldInst.InstanceId.String())
+							inst.InstanceId, _ = uuid.FromString(ldInstId)
 							if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
 								panic(`Matched instances loaded for different ConfigId`)
 							}
@@ -334,6 +382,15 @@ checksloop:
 							// be equal, since InstanceSvcCfgHash is
 							// equal
 							delete(teg.loadedInstances[i], ldInstId)
+							log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+								repoName,
+								`ComputeInstance`,
+								`group`,
+								teg.Id.String(),
+								i,
+								ldInstId,
+								true,
+							)
 							break startinstanceloop
 						}
 						// if we hit here, then just computed an
@@ -361,6 +418,15 @@ checksloop:
 						inst.Version = 0
 						inst.InstanceId = uuid.NewV4()
 					}
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+						repoName,
+						`ComputeInstance`,
+						`group`,
+						teg.Id.String(),
+						i,
+						inst.InstanceId.String(),
+						true,
+					)
 				}
 				newInstances[inst.InstanceId.String()] = inst
 				newCheckInstances = append(newCheckInstances, inst.InstanceId.String())
@@ -381,12 +447,28 @@ checksloop:
 			if _, ok := newInstances[oldInstanceId]; !ok {
 				// there is no new version for this instance id
 				teg.actionCheckInstanceDelete(teg.Instances[oldInstanceId].MakeAction())
+				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					repoName,
+					`DeleteInstance`,
+					`group`,
+					teg.Id.String(),
+					i,
+					oldInstanceId,
+				)
 				delete(teg.Instances, oldInstanceId)
 				continue
 			}
 			delete(teg.Instances, oldInstanceId)
 			teg.Instances[oldInstanceId] = newInstances[oldInstanceId]
 			teg.actionCheckInstanceUpdate(teg.Instances[oldInstanceId].MakeAction())
+			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+				repoName,
+				`UpdateInstance`,
+				`group`,
+				teg.Id.String(),
+				i,
+				oldInstanceId,
+			)
 		}
 		for _, newInstanceId := range newCheckInstances {
 			if _, ok := teg.Instances[newInstanceId]; !ok {
@@ -396,6 +478,23 @@ checksloop:
 				// action channel is drained anyway
 				if !startupLoad {
 					teg.actionCheckInstanceCreate(teg.Instances[newInstanceId].MakeAction())
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+						repoName,
+						`CreateInstance`,
+						`group`,
+						teg.Id.String(),
+						i,
+						newInstanceId,
+					)
+				} else {
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+						repoName,
+						`RecreateInstance`,
+						`group`,
+						teg.Id.String(),
+						i,
+						newInstanceId,
+					)
 				}
 			}
 		}
