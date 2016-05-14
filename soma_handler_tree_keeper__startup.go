@@ -30,6 +30,12 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupClusterSystemProperties()
 	tk.startupNodeSystemProperties()
 
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
 	// attach service properties
 	tk.startupRepositoryServiceProperties()
 	tk.startupBucketServiceProperties()
@@ -37,7 +43,22 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupClusterServiceProperties()
 	tk.startupNodeServiceProperties()
 
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
+	// attach custom properties
 	tk.startupGroupCustomProperties()
+
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
+	// attach oncall properties
 	tk.startupGroupOncallProperties()
 
 	if len(tk.actionChan) > 0 {
@@ -46,6 +67,23 @@ func (tk *treeKeeper) startupLoad() {
 		return
 	}
 
+	// attach checks
+	tk.startupChecks()
+
+	if len(tk.actionChan) > 0 {
+		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.broken = true
+		return
+	}
+
+	// attach check instances
+	//tk.startupRepositoryCheckInstances()
+	//tk.startupBucketCheckInstances()
+	//tk.startupGroupCheckInstances()
+	//tk.startupClusterCheckInstances()
+	//tk.startupNodeCheckInstances()
+
+	// preload pending/unfinished jobs
 	tk.startupJobs()
 
 	if len(tk.actionChan) > 0 {
