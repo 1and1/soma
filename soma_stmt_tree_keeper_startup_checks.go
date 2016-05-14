@@ -24,6 +24,13 @@ WHERE  repository_id = $1::uuid
 AND    source_check_id = $2::uuid
 AND    source_check_id != check_id;`
 
+const tkStmtLoadChecksForType = `
+SELECT check_id,
+       object_id
+FROM   soma.checks
+WHERE  repository_id = $1::uuid
+AND    object_type = $2::varchar;`
+
 const tkStmtLoadCheckConfiguration = `
 SELECT bucket_id,
        configuration_name,
@@ -101,14 +108,17 @@ WHERE  configuration_id = $1::uuid;`
 
 const tkStmtLoadCheckInstances = `
 SELECT check_instance_id,
-       check_configuration_id,
-	   current_instance_config_id
+       check_configuration_id
 FROM   soma.check_instances
 WHERE  check_id = $1::uuid
 AND    NOT deleted;`
 
+// load the most recent configuration for this instance, which is
+// not always the current one, since a newer version could be blocked
+// by the current versions rollout
 const tkStmtLoadCheckInstanceConfiguration = `
-SELECT version,
+SELECT check_instance_config_id,
+       version,
 	   monitoring_id,
 	   constraint_hash,
 	   constraint_val_hash,
@@ -116,8 +126,9 @@ SELECT version,
 	   instance_service_cfg_hash,
 	   instance_service_cfg
 FROM   soma.check_instance_configurations
-WHERE  check_instance_config_id = $1::uuid
-AND    check_instance_id = $2::uuid;`
+WHERE  check_instance_id = $1::uuid
+ORDER  BY created DESC
+LIMIT  1;`
 
 const tkStmtLoadCheckGroupState = `
 SELECT sg.group_id,

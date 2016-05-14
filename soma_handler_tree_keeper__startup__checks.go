@@ -31,6 +31,7 @@ type tkLoaderChecks struct {
 	loadInstConfig *sql.Stmt
 	loadGroupState *sql.Stmt
 	loadGroupRel   *sql.Stmt
+	loadTypeChecks *sql.Stmt
 }
 
 func (ld *tkLoaderChecks) GroupState() *sql.Stmt {
@@ -121,6 +122,11 @@ func (tk *treeKeeper) startupChecks() {
 	}
 	defer ld.loadGroupRel.Close()
 
+	if ld.loadTypeChecks, err = tk.conn.Prepare(tkStmtLoadChecksForType); err != nil {
+		log.Fatal("treekeeper/load-checks-for-type: ", err)
+	}
+	defer ld.loadTypeChecks.Close()
+
 	// this is also needed early on
 	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
 		log.Fatal("treekeeper/get-view-by-capability: ", err)
@@ -172,7 +178,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		isActive, hasInheritance, isChildrenOnly, isEnabled          bool
 		grOrder                                                      map[string][]string
 		grWeird                                                      map[string]string
-		ckRows, thrRows, cstrRows, itRows, inRows                    *sql.Rows
+		ckRows, thrRows, cstrRows, itRows, inRows, tckRows           *sql.Rows
 		cfgMap                                                       map[string]proto.CheckConfig
 		victim                                                       proto.CheckConfig // go/issues/3117 workaround
 		ckTree                                                       *somatree.Check
@@ -191,8 +197,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	}
 
 	if ckRows, err = ld.loadChecks.Query(tk.repoId, typ); err == sql.ErrNoRows {
-		// no checks on this element type
-		return
+		// no checks on this element type, there can still be
+		// instances though
+		goto directinstances
 	} else if err != nil {
 		goto fail
 	}
@@ -339,8 +346,6 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			// constraints are not mandatory
 			for cstrRows.Next() {
 				if err = cstrRows.Scan(&value1, &value2, &value3); err != nil {
-					fmt.Println("ERROR: cstrRows.Scan(&value1, &value2, &value3")
-					fmt.Println("Scan4")
 					cstrRows.Close()
 					goto fail
 				}
@@ -551,16 +556,31 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		}
 	}
 
+directinstances:
 	// repository and bucket elements can not have check instances,
-	// they are metadata
+	// they are essentially metadata
 	if typ == "repository" || typ == "bucket" {
 		goto done
 	}
 
-	// iterate over all checks and load the checksInstances they
-	// created
-	for checkId, _ = range cfgMap {
+	// iterate over all checks on this object type and load the check
+	// instances they have created
+	if tckRows, err = ld.loadTypeChecks.Query(tk.repoId, typ); err != nil {
+		goto fail
+	}
+
+	for tckRows.Next() {
+		// load a check information
+		if err = tckRows.Scan(
+			&checkId,
+			&objId,
+		); err != nil {
+			tckRows.Close()
+			goto fail
+		}
+
 		if inRows, err = ld.loadInstances.Query(checkId); err != nil {
+			tckRows.Close()
 			goto fail
 		}
 
@@ -569,14 +589,15 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			if err = inRows.Scan(
 				&itemId,
 				&configId,
-				&itemCfgId,
 			); err != nil {
+				tckRows.Close()
 				inRows.Close()
 				goto fail
 			}
 
 			// load configuration for check instance
-			if err = ld.loadInstConfig.QueryRow(itemCfgId, itemId).Scan(
+			if err = ld.loadInstConfig.QueryRow(itemId).Scan(
+				&itemCfgId,
 				&version,
 				&monitoringId,
 				&cstrHash,
@@ -614,17 +635,21 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 
 			// attach instance to tree
 			tk.tree.Find(somatree.FindRequest{
-				ElementType: cfgMap[checkId].ObjectType,
-				ElementId:   cfgMap[checkId].ObjectId,
+				ElementType: typ,
+				ElementId:   objId,
 			}, true).LoadInstance(ckInstance)
-			fmt.Printf(">>[%s].LoadInstance: InstanceId=%s, CheckId=%s, ObjectId=%s, ObjectType=%s\n",
-				tk.repoName, ckInstance.InstanceId.String(), ckInstance.CheckId.String(),
-				cfgMap[checkId].ObjectId, cfgMap[checkId].ObjectType)
+			fmt.Printf(">>[%s].LoadInstance: InstanceId=%s, CheckId=%s\n",
+				tk.repoName, ckInstance.InstanceId.String(), ckInstance.CheckId.String())
 		}
 		if err = inRows.Err(); err != nil {
+			tckRows.Close()
 			inRows.Close()
 			goto fail
 		}
+	}
+	if err = tckRows.Err(); err != nil {
+		tckRows.Close()
+		goto fail
 	}
 
 done:
