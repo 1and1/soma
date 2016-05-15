@@ -26,40 +26,147 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package somaauth
 
-import "encoding/base64"
+import (
+	"bytes"
+	"crypto/rand"
+	"encoding/hex"
+	"net"
+	"net/http"
+	"time"
 
-// TokenRequest is the data passed between client and server to
+	"github.com/mjolnir42/scrypth64"
+)
+
+// Token is the data passed between client and server to
 // authenticate the client and issue a token for it that can be used
 // as HTTP Basic Auth password.
-type TokenRequest struct {
-	UserId    string `json:"user_id,omitempty"`
-	UserName  string `json:"user_name"`
+type Token struct {
+	UserName  string `json:"username"`
 	Password  string `json:"password,omitempty"`
 	Token     string `json:"token,omitempty"`
-	ExpiresAt string `json:"expires_at,omitempty"`
+	ValidFrom string `json:"validFrom,omitempty"`
+	ExpiresAt string `json:"expiresAt,omitempty"`
+	Salt      string `json:"-"`
+	SourceIP  net.IP `json:"-"`
 }
 
-// TokenExpirySeconds can be set to regulate the lifetime of newly
-// issued authentication tokens. The default value is 43200, or 12
-// hours.
-var TokenExpirySeconds uint64 = 43200
-
-// NewTokenRequest returns an empty TokenRequest
-func NewTokenRequest() *TokenRequest {
-	return &TokenRequest{}
+// NewToken returns an empty Token
+func NewToken() *Token {
+	return &Token{}
 }
 
-// ZeroPassword ensures the Password field is set to the zero value
-func (t *TokenRequest) ZeroPassword() {
+// Generate verifies a the embedded credentials in Token and
+// issues a new token to be returned to the user. Calling
+// GenerateToken consumes the embedded password regardless of outcome.
+// Returns ErrAuth if the password is incorrect.
+func (t *Token) Generate(mcf scrypth64.Mcf, key, seed []byte) error {
+	var (
+		err                 error
+		ok                  bool
+		stuntSeed, stuntKey []byte
+	)
+	// do not generate Tokens with an incorrectly configured seed or
+	// key
+	if seed == nil || key == nil || len(seed) == 0 || len(key) == 0 {
+		err = ErrInput
+		goto fail
+	}
+
+	// net.IP is a bit of a pain since an unset net.IP does not equal
+	// nil, and .String() prints `<nil>`
+	if t.SourceIP.Equal(net.IP{}) {
+		err = ErrInput
+		goto fail
+	}
+
+	// Username and password have to be set
+	if t.UserName == "" || t.Password == "" {
+		err = ErrInput
+		goto fail
+	}
+
+	// stunt data
+	stuntSeed = bytes.Repeat([]byte{0x0F}, len(seed))
+	stuntKey = bytes.Repeat([]byte{0xAB}, len(key))
+
+	// start of timing critical path
+	if ok, err = t.comparePassword(mcf); !ok || err != nil {
+		// spend some quality time computing garbage
+		t.mixToken(stuntKey, stuntSeed)
+		goto fail
+	}
+
+	if err = t.mixToken(key, seed); err != nil {
+		goto fail
+	}
+
+	t.zeroPassword()
+	return nil
+
+fail:
+	t.zeroPassword()
+	if err != nil {
+		return err
+	}
+	return ErrAuth
+}
+
+// zeroPassword ensures the Password field is set to the zero value
+func (t *Token) zeroPassword() {
 	t.Password = ""
 }
 
-// ComparePassword
-func (t *TokenRequest) ComparePassword(
-	salt *[64]byte,
-	hash string,
-) (bool, error) {
-	return false, nil
+// comparePassword is used to verify the user supplied password
+// against a scrypth64.Mcf
+func (t *Token) comparePassword(mcf scrypth64.Mcf) (bool, error) {
+	return scrypth64.Verify(t.Password, mcf)
+}
+
+// mixToken generates a new password token
+func (t *Token) mixToken(key, seed []byte) error {
+	var (
+		salt, bin, btime []byte
+		err              error
+		valid, expires   time.Time
+	)
+	// expiry time
+	valid = time.Now().UTC()
+	expires = valid.Add(
+		time.Duration(TokenExpirySeconds) * time.Second,
+	).UTC()
+	if btime, err = expires.MarshalBinary(); err != nil {
+		goto fail
+	}
+	t.ValidFrom = valid.Format(rfc3339Milli)
+	t.ExpiresAt = expires.Format(rfc3339Milli)
+
+	// add random salt
+	salt = make([]byte, 16)
+	if _, err = rand.Read(salt); err != nil {
+		goto fail
+	}
+	t.Salt = hex.EncodeToString(salt)
+
+	// compute the token
+	bin = computeToken(
+		[]byte(t.UserName),
+		key,
+		seed,
+		btime,
+		salt,
+		[]byte(t.SourceIP.String()),
+	)
+	t.Token = hex.EncodeToString(bin)
+
+	return nil
+
+fail:
+	return err
+}
+
+// SetIPAddress records the client's IP address
+func (t *Token) SetIPAddress(r *http.Request) {
+	t.SourceIP = net.ParseIP(extractAddress(r.RemoteAddr))
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
