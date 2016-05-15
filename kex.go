@@ -31,6 +31,7 @@ package auth
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"hash"
 	"math/big"
@@ -283,6 +284,88 @@ func (k *Kex) SetTimeUTC() {
 // SetIPAddress records the client's IP address
 func (k *Kex) SetIPAddress(r *http.Request) {
 	k.sourceIP = net.ParseIP(extractAddress(r.RemoteAddr))
+}
+
+// DecodeAndDecrypt takes a base64 encoded message and decrypts it
+// using the exchanged keys.
+func (k *Kex) DecodeAndDecrypt(encoded, plaintext *[]byte) error {
+	var (
+		nonce            *[24]byte
+		peerKey, privKey *[32]byte
+		decoded          []byte
+		dlen             int
+		err              error
+		ok               bool
+	)
+
+	// check is kex is still valid
+	if k.IsExpired() {
+		return ErrCrypt
+	}
+
+	// calculate the next nonce
+	if nonce = k.NextNonce(); nonce == nil {
+		return ErrCrypt
+	}
+
+	if peerKey = k.PeerKey(); peerKey == nil {
+		return ErrCrypt
+	}
+
+	if privKey = k.PrivateKey(); privKey == nil {
+		return ErrCrypt
+	}
+
+	// decode input
+	if dlen, err = base64.StdEncoding.Decode(decoded, *encoded); err != nil {
+		return ErrCrypt
+	}
+
+	// decrypt ciphertext
+	*plaintext, ok = box.Open(nil, decoded[:dlen], nonce, peerKey, privKey)
+	if !ok {
+		return ErrCrypt
+	}
+
+	return nil
+}
+
+// EncryptAndEncode takes a plaintext messages and encrypts it
+// using the exchanged keys. The ciphertext is then encoded as base64.
+func (k *Kex) EncryptAndEncode(plaintext, encoded *[]byte) error {
+	var (
+		nonce            *[24]byte
+		peerKey, privKey *[32]byte
+		ciphertext       []byte
+	)
+
+	// check is kex is still valid
+	if k.IsExpired() {
+		return ErrCrypt
+	}
+
+	if nonce = k.NextNonce(); nonce == nil {
+		return ErrCrypt
+	}
+
+	if peerKey = k.PeerKey(); peerKey == nil {
+		return ErrCrypt
+	}
+
+	if privKey = k.PrivateKey(); privKey == nil {
+		return ErrCrypt
+	}
+
+	// encrypt input
+	ciphertext = box.Seal(nil, *plaintext, nonce, peerKey, privKey)
+	if len(ciphertext) == 0 {
+		return ErrCrypt
+	}
+
+	// encode ciphertext
+	base64.StdEncoding.Encode(*encoded, ciphertext)
+
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

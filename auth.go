@@ -53,6 +53,9 @@ var ErrAuth = errors.New("Authentication failed")
 // misconfiguration
 var ErrInput = errors.New("Invalid input")
 
+// ErrCrypt is returned if encryption or decryption of data failed
+var ErrCrypt = errors.New(`Encryption/decryption error`)
+
 // computeToken does what it says on the label and computes the HMAC
 // token. As input it takes the username, hmac key, token seed, token
 // expiry time, token salt and client ip address
