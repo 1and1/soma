@@ -167,13 +167,8 @@ bucketloop:
 			ParentId:   tk.repoId,
 			ParentName: tk.repoName,
 		})
-		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
+		tk.drain(`action`)
+		tk.drain(`error`)
 	}
 }
 
@@ -239,13 +234,8 @@ grouploop:
 			ParentType: "bucket",
 			ParentId:   bucketId,
 		})
-		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
+		tk.drain(`action`)
+		tk.drain(`error`)
 	}
 }
 
@@ -308,13 +298,8 @@ memberloop:
 			ParentId:   groupId,
 		})
 	}
-	for i := len(tk.actionChan); i > 0; i-- {
-		a := <-tk.actionChan
-		log.Printf("%s -> %s\n", a.Action, a.Type)
-	}
-	for i := len(tk.errChan); i > 0; i-- {
-		<-tk.errChan
-	}
+	tk.drain(`action`)
+	tk.drain(`error`)
 }
 
 func (tk *treeKeeper) startupGroupedClusters() {
@@ -384,13 +369,8 @@ clusterloop:
 			ParentId:   groupId,
 		})
 	}
-	for i := len(tk.actionChan); i > 0; i-- {
-		a := <-tk.actionChan
-		log.Printf("%s -> %s\n", a.Action, a.Type)
-	}
-	for i := len(tk.errChan); i > 0; i-- {
-		<-tk.errChan
-	}
+	tk.drain(`action`)
+	tk.drain(`error`)
 }
 
 func (tk *treeKeeper) startupClusters() {
@@ -458,13 +438,8 @@ clusterloop:
 			ParentId:   bucketId,
 		})
 	}
-	for i := len(tk.actionChan); i > 0; i-- {
-		a := <-tk.actionChan
-		log.Printf("%s -> %s [%s(%s)]\n", a.Action, a.Type, a.Cluster.Id, a.Cluster.Name)
-	}
-	for i := len(tk.errChan); i > 0; i-- {
-		<-tk.errChan
-	}
+	tk.drain(`action`)
+	tk.drain(`error`)
 }
 
 func (tk *treeKeeper) startupNodes() {
@@ -571,13 +546,8 @@ nodeloop:
 			})
 		}
 	}
-	for i := len(tk.actionChan); i > 0; i-- {
-		a := <-tk.actionChan
-		log.Printf("%s -> %s\n", a.Action, a.Type)
-	}
-	for i := len(tk.errChan); i > 0; i-- {
-		<-tk.errChan
-	}
+	tk.drain(`action`)
+	tk.drain(`error`)
 }
 
 func (tk *treeKeeper) startupJobs() {
@@ -786,13 +756,8 @@ customloop:
 		// throw away all generated actions, we do this for every
 		// property since with inheritance this can create a lot of
 		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
+		tk.drain(`action`)
+		tk.drain(`error`)
 	}
 }
 
@@ -944,13 +909,8 @@ oncallloop:
 		// throw away all generated actions, we do this for every
 		// property since with inheritance this can create a lot of
 		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			a := <-tk.actionChan
-			log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
+		tk.drain(`action`)
+		tk.drain(`error`)
 	}
 }
 
