@@ -8,7 +8,7 @@ func schemaInserts(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 10)
+	queries := make([]string, 100)
 
 	queryMap["insertSystemGroupWheel"] = `
 INSERT INTO inventory.organizational_teams (
@@ -115,7 +115,18 @@ VALUES
 	queries[idx] = "insertJobTypes"
 	idx++
 
-	performDatabaseTask(printOnly, verbose, queries, queryMap)
+	queryMap["insertRootRestricted"] = `
+INSERT INTO root.flags (
+    flag,
+    status
+VALUES
+    ( 'restricted', false ),
+    ( 'disabled', false )
+;`
+	queries[idx] = "insertRootRestricted"
+	idx++
+
+	performDatabaseTask(printOnly, verbose, queries[:idx], queryMap)
 }
 
 func schemaVersionInserts(printOnly bool, verbose bool, version string) {
@@ -124,7 +135,7 @@ func schemaVersionInserts(printOnly bool, verbose bool, version string) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 10)
+	queries := make([]string, 100)
 
 	invString := fmt.Sprintf(`
 INSERT INTO public.schema_versions (
@@ -168,7 +179,21 @@ VALUES (
 	queries[idx] = "insertSomaSchemaVersion"
 	idx++
 
-	performDatabaseTask(printOnly, verbose, queries, queryMap)
+	rootString := fmt.Sprintf(`
+INSERT INTO public.schema_versions (
+    schema,
+    version,
+    description )
+VALUES (
+    'root',
+    201605150001,
+    'Initial create - somadbctl %s'
+);`, version)
+	queryMap["insertRootSchemaVersion"] = rootString
+	queries[idx] = "insertRootSchemaVersion"
+	idx++
+
+	performDatabaseTask(printOnly, verbose, queries[:idx], queryMap)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

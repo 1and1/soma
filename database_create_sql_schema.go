@@ -10,7 +10,7 @@ func createSqlSchema(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 15)
+	queries := make([]string, 100)
 
 	queryMap["createSchemaSoma"] = `create schema if not exists soma;`
 	queries[idx] = "createSchemaSoma"
@@ -22,6 +22,10 @@ func createSqlSchema(printOnly bool, verbose bool) {
 
 	queryMap["createSchemaAuth"] = `create schema if not exists auth;`
 	queries[idx] = "createSchemaAuth"
+	idx++
+
+	queryMap["createSchemaRoot"] = `create schema if not exists root;`
+	queries[idx] = "createSchemaRoot"
 	idx++
 
 	queryMap["alterDatabaseDefaultSearchPath"] = fmt.Sprintf("alter database %s set search_path TO soma,inventory,auth;", Cfg.Database.Name)
@@ -40,6 +44,10 @@ func createSqlSchema(printOnly bool, verbose bool) {
 	queries[idx] = "grantUsageSomaSvcInventory"
 	idx++
 
+	queryMap["grantUsageSomaSvcRoot"] = `grant usage on schema root to soma_svc;`
+	queries[idx] = "grantUsageSomaSvcRoot"
+	idx++
+
 	queryMap["grantUsageSomaSvcAuth"] = `grant usage on schema auth to soma_svc;`
 	queries[idx] = "grantUsageSomaSvcAuth"
 	idx++
@@ -56,7 +64,7 @@ func createSqlSchema(printOnly bool, verbose bool) {
 	queries[idx] = "grantUsageSomaInvAuth"
 	idx++
 
-	performDatabaseTask(printOnly, verbose, queries, queryMap)
+	performDatabaseTask(printOnly, verbose, queries[:idx], queryMap)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

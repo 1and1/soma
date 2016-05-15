@@ -14,7 +14,8 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool, version s
 	createTablesInventoryAccounts(printOnly, verbose)
 
 	createTablesAuthentication(printOnly, verbose)
-	// root_token table
+
+	createTablesRoot(printOnly, verbose)
 
 	createTablesProperties(printOnly, verbose)
 
