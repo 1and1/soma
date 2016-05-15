@@ -173,6 +173,13 @@ func (k *svKexMap) insert(kex auth.Kex) {
 	k.KMap[kex.Request.String()] = kex
 }
 
+func (k *svKexMap) remove(kexRequest string) {
+	k.lock()
+	defer k.unlock()
+
+	delete(k.KMap, kexRequest)
+}
+
 // set writelock
 func (k *svKexMap) lock() {
 	k.mutex.Lock()
