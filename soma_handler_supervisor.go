@@ -32,7 +32,6 @@ import (
 	"fmt"
 	"log"
 	"math/big"
-	"strings"
 	"time"
 
 )
@@ -49,9 +48,7 @@ type supervisor struct {
 	kex         svKexMap
 	tokens      svTokenMap
 	credentials svCredMap
-	stmt_FUTok  *sql.Stmt
-	stmt_FATok  *sql.Stmt
-	stmt_FTTok  *sql.Stmt
+	stmt_FToken *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -67,20 +64,10 @@ func (s *supervisor) run() {
 	s.kex = s.newKexMap()
 
 	// prepare SQL statements
-	if s.stmt_FUTok, err = s.conn.Prepare(stmt.SelectUserToken); err != nil {
-		log.Fatal("supervisor/fetch-user-token: ", err)
+	if s.stmt_FToken, err = s.conn.Prepare(stmt.SelectToken); err != nil {
+		log.Fatal("supervisor/fetch-token: ", err)
 	}
-	defer s.stmt_FUTok.Close()
-
-	if s.stmt_FATok, err = s.conn.Prepare(stmt.SelectAdminToken); err != nil {
-		log.Fatal("supervisor/fetch-admin-token: ", err)
-	}
-	defer s.stmt_FATok.Close()
-
-	if s.stmt_FTTok, err = s.conn.Prepare(stmt.SelectToolToken); err != nil {
-		log.Fatal("supervisor/fetch-tool-token: ", err)
-	}
-	defer s.stmt_FTTok.Close()
+	defer s.stmt_FToken.Close()
 
 runloop:
 	for {
@@ -189,7 +176,7 @@ func (s *supervisor) Validate(account, token, addr string) uint16 {
 		// rw instance knows every token
 		return 401
 	} else if tok == nil {
-		if !s.fetchTokenFromDB(account, token) {
+		if !s.fetchTokenFromDB(token) {
 			return 401
 		}
 		tok = s.tokens.read(token)
@@ -207,21 +194,14 @@ func (s *supervisor) Validate(account, token, addr string) uint16 {
 	return 401
 }
 
-func (s *supervisor) fetchTokenFromDB(account, token string) bool {
+func (s *supervisor) fetchTokenFromDB(token string) bool {
 	var (
 		err                       error
 		salt, strValid, strExpire string
 		validF, validU            time.Time
 	)
 
-	switch {
-	case strings.HasPrefix(account, `admin_`):
-		err = s.stmt_FATok.QueryRow(token).Scan(&salt, &validF, &validU)
-	case strings.HasPrefix(account, `tool_`):
-		err = s.stmt_FTTok.QueryRow(token).Scan(&salt, &validF, &validU)
-	default:
-		err = s.stmt_FUTok.QueryRow(token).Scan(&salt, &validF, &validU)
-	}
+	err = s.stmt_FToken.QueryRow(token).Scan(&salt, &validF, &validU)
 	if err == sql.ErrNoRows {
 		return false
 	} else if err != nil {
