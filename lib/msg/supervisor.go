@@ -10,6 +10,7 @@ package msg
 
 
 type Supervisor struct {
+	Verdict    uint16
 	RemoteAddr string
 	KexId      string
 	Data       []byte

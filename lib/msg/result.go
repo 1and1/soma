@@ -11,6 +11,7 @@ package msg
 type Result struct {
 	Type   string
 	Action string
+	Code   uint16
 	Error  error
 
 	Super *Supervisor
