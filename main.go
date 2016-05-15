@@ -304,6 +304,16 @@ func main() {
 		router.GET("/deployments/monitoring/:uuid", DeliverMonitoringDeployments)
 		router.GET("/deployments/monitoring/:uuid/:all", DeliverMonitoringDeployments)
 		router.PATCH("/deployments/id/:uuid/:result", UpdateDeploymentDetails)
+
+		router.POST("/authenticate/", AuthenticationKex)
+		router.PUT("/authenticate/bootstrap/:uuid", AuthenticationBootstrapRoot)
+		//router.PATCH("/authenticate/root/restrict", AuthenticationRestrictRoot) XXX -> move to somadbctl
+		//router.GET("/authenticate/token/", AuthenticationListTokens)
+		//router.PUT("/authenticate/token/:uuid", AuthenticationIssueToken)
+		//router.GET("/authenticate/validate/", AuthenticationValidate)
+		//router.POST("/authenticate/activate/", AuthenticationActivateUser)
+		//router.DELETE("/authenticate/invalidate/token/", AuthenticationInvalidateToken)
+		//router.DELETE("/authenticate/invalidate/all/", AuthenticationInvalidateAllTokens)
 	}
 
 	if SomaCfg.Daemon.Tls {

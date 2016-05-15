@@ -1,6 +1,14 @@
 package main
 
+import (
+	"encoding/hex"
+
+)
+
 func startHandlers() {
+	// supervisor is always started
+	spawnSupervisorHandler()
+
 	spawnViewReadHandler()
 	spawnEnvironmentReadHandler()
 	spawnObjectStateReadHandler()
@@ -543,6 +551,25 @@ func spawnValidityWriteHandler() {
 	validityWriteHandler.conn = conn
 	handlerMap["validityWriteHandler"] = validityWriteHandler
 	go validityWriteHandler.run()
+}
+
+func spawnSupervisorHandler() {
+	var supervisorHandler supervisor
+	var err error
+	supervisorHandler.input = make(chan msg.Request, 64)
+	supervisorHandler.shutdown = make(chan bool)
+	supervisorHandler.conn = conn
+	supervisorHandler.readonly = SomaCfg.ReadOnly
+	if supervisorHandler.seed, err = hex.DecodeString(SomaCfg.Auth.TokenSeed); err != nil {
+		panic(err)
+	}
+	if supervisorHandler.key, err = hex.DecodeString(SomaCfg.Auth.TokenKey); err != nil {
+		panic(err)
+	}
+	supervisorHandler.tokenExpiry = SomaCfg.Auth.TokenExpirySeconds
+	supervisorHandler.kexExpiry = SomaCfg.Auth.KexExpirySeconds
+	handlerMap[`supervisorHandler`] = supervisorHandler
+	go supervisorHandler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
