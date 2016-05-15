@@ -297,7 +297,12 @@ func (k *Kex) SetTimeUTC() {
 
 // SetIPAddress records the client's IP address
 func (k *Kex) SetIPAddress(r *http.Request) {
-	k.sourceIP = net.ParseIP(extractAddress(r.RemoteAddr))
+	k.SetIPAddressString(r.RemoteAddr)
+}
+
+// SetIPAddressString records the client's IP address
+func (k *Kex) SetIPAddressString(addr string) {
+	k.sourceIP = net.ParseIP(extractAddress(addr))
 }
 
 // DecodeAndDecrypt takes a base64 encoded message and decrypts it
