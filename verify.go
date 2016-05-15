@@ -32,12 +32,11 @@ import (
 )
 
 // Verify checks a user supplied username and token pair
-func Verify(name, token, addr string, key, seed, expires, salt []byte) bool {
+func Verify(name, addr string, token, key, seed, expires, salt []byte) bool {
 	bname := []byte(name)
-	btoken := []byte(token)
 	bip := []byte(net.ParseIP(extractAddress(addr)))
 
-	expected := computeToken(
+	calculated := computeToken(
 		bname,
 		key,
 		seed,
@@ -45,7 +44,7 @@ func Verify(name, token, addr string, key, seed, expires, salt []byte) bool {
 		salt,
 		bip,
 	)
-	return hmac.Equal(btoken, expected)
+	return hmac.Equal(token, calculated)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
