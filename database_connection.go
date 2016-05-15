@@ -3,9 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"log"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 func connectToDatabase() {
@@ -21,6 +22,9 @@ func connectToDatabase() {
 		SomaCfg.Database.TlsMode,
 		SomaCfg.Database.Timeout,
 	)
+
+	// enable handling of infinity timestamps
+	pq.EnableInfinityTs(NegTimeInf, PosTimeInf)
 
 	conn, err = sql.Open(driver, connect)
 	if err != nil {

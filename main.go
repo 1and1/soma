@@ -8,15 +8,33 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/julienschmidt/httprouter"
 )
 
 // global variables
-var conn *sql.DB
-var handlerMap = make(map[string]interface{})
-var SomaCfg SomaConfig
+var (
+	// database connection
+	conn *sql.DB
+	// lookup table for go routine input channels
+	handlerMap = make(map[string]interface{})
+	// config file runtime configuration
+	SomaCfg SomaConfig
+	// this offset influences the biggest date representable in
+	// the system without overflow
+	unixToInternalOffset int64 = 62135596800
+	// this will be used as mapping for the PostgreSQL time value
+	// -infinity. Dates earlier than this will be truncated to
+	// NegTimeInf. RFC3339: -8192-01-01T00:00:00Z
+	NegTimeInf = time.Date(-8192, time.January, 1, 0, 0, 0, 0, time.UTC)
+	// this will be used as mapping for the PostgreSQL time value
+	// +infinity. It is as far as research showed close to the highest
+	// time value Go can represent.
+	// RFC: 219248499-12-06 15:30:07.999999999 +0000 UTC
+	PosTimeInf = time.Unix(1<<63-1-unixToInternalOffset, 999999999)
+)
 
 func main() {
 	var (
