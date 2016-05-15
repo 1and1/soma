@@ -11,9 +11,6 @@ func createTablesAuthentication(printOnly bool, verbose bool) {
 	queryMap["createTableUserAuthentication"] = `
 create table if not exists auth.user_authentication (
     user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
-    algorithm                   varchar(16)     NOT NULL,
-    rounds                      numeric(10,0)   NOT NULL,
-    salt                        text            NOT NULL,
     crypt                       text            NOT NULL,
     reset_pending               boolean         NOT NULL DEFAULT 'no',
     valid_from                  timestamptz(3)  NOT NULL,
@@ -24,16 +21,16 @@ create table if not exists auth.user_authentication (
 	queries[idx] = "createTableUserAuthentication"
 	idx++
 
-	queryMap["createTableUserTokenAuthentication"] = `
-create table if not exists auth.user_token_authentication (
-    user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE CASCADE DEFERRABLE,
+	queryMap["createTableTokenAuthentication"] = `
+create table if not exists auth.tokens (
     token                       varchar(256)    UNIQUE NOT NULL,
+    salt                        varchar(256)    NOT NULL,
     valid_from                  timestamptz(3)  NOT NULL,
     valid_until                 timestamptz(3)  NOT NULL,
     CHECK( EXTRACT( TIMEZONE FROM valid_from )  = '0' ),
     CHECK( EXTRACT( TIMEZONE FROM valid_until ) = '0' )
 );`
-	queries[idx] = "createTableUserTokenAuthentication"
+	queries[idx] = "createTableTokenAuthentication"
 	idx++
 
 	queryMap["createTableUserKeys"] = `
@@ -77,7 +74,9 @@ create table if not exists auth.admins (
     admin_uid                   varchar(256)    UNIQUE NOT NULL,
     admin_user_uid              varchar(256)    NOT NULL REFERENCES inventory.users ( user_uid ) ON DELETE CASCADE DEFERRABLE,
     admin_is_active             boolean         NOT NULL DEFAULT 'yes',
+    -- verify the admin_uid has the prefix admin_
     CHECK( left( admin_uid, 6 ) = 'admin_' ),
+    -- verify admin_uid contains the user_uid of the owner
     CHECK( position( admin_user_uid in admin_uid ) != 0 )
 );`
 	queries[idx] = "createTableAdmins"
@@ -86,9 +85,6 @@ create table if not exists auth.admins (
 	queryMap["createTableAdminAuthentication"] = `
 create table if not exists auth.admin_authentication (
     admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
-    algorithm                   varchar(16)     NOT NULL,
-    rounds                      numeric(10,0)   NOT NULL,
-    salt                        text            NOT NULL,
     crypt                       text            NOT NULL,
     reset_pending               boolean         NOT NULL DEFAULT 'no',
     valid_from                  timestamptz(3)  NOT NULL,
@@ -97,18 +93,6 @@ create table if not exists auth.admin_authentication (
     CHECK( EXTRACT( TIMEZONE FROM valid_until ) = '0' )
 );`
 	queries[idx] = "createTableAdminAuthentication"
-	idx++
-
-	queryMap["createTableAdminTokenAuthentication"] = `
-create table if not exists auth.admin_token_authentication (
-    admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
-    token                       varchar(256)    UNIQUE NOT NULL,
-    valid_from                  timestamptz(3)  NOT NULL,
-    valid_until                 timestamptz(3)  NOT NULL,
-    CHECK( EXTRACT( TIMEZONE FROM valid_from )  = '0' ),
-    CHECK( EXTRACT( TIMEZONE FROM valid_until ) = '0' )
-);`
-	queries[idx] = "createTableAdminTokenAuthentication"
 	idx++
 
 	queryMap["createTableAdminKeys"] = `
@@ -152,7 +136,8 @@ create table if not exists auth.tools (
     tool_name                   varchar(256)    UNIQUE NOT NULL,
     tool_owner_id               uuid            NOT NULL REFERENCES inventory.users ( user_id ) ON DELETE RESTRICT DEFERRABLE,
     created                     timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
-    CHECK( EXTRACT( TIMEZONE FROM created ) = '0' )
+    CHECK( EXTRACT( TIMEZONE FROM created ) = '0' ),
+    CHECK( left( tool_name, 5 ) = 'tool_' )
 );`
 	queries[idx] = "createTableTools"
 	idx++
@@ -160,9 +145,6 @@ create table if not exists auth.tools (
 	queryMap["createTableToolAuthentication"] = `
 create table if not exists auth.tool_authentication (
     tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
-    algorithm                   varchar(16)     NOT NULL,
-    rounds                      numeric(10,0)   NOT NULL,
-    salt                        text            NOT NULL,
     crypt                       text            NOT NULL,
     reset_pending               boolean         NOT NULL DEFAULT 'no',
     valid_from                  timestamptz(3)  NOT NULL,
@@ -171,18 +153,6 @@ create table if not exists auth.tool_authentication (
     CHECK( EXTRACT( TIMEZONE FROM valid_until ) = '0' )
 );`
 	queries[idx] = "createTableToolAuthentication"
-	idx++
-
-	queryMap["createTableToolTokenAuthentication"] = `
-create table if not exists auth.tool_token_authentication (
-    tool_id                     uuid            NOT NULL REFERENCES auth.tools ( tool_id ) ON DELETE CASCADE DEFERRABLE,
-    token                       varchar(256)    UNIQUE NOT NULL,
-    valid_from                  timestamptz(3)  NOT NULL,
-    valid_until                 timestamptz(3)  NOT NULL,
-    CHECK( EXTRACT( TIMEZONE FROM valid_from )  = '0' ),
-    CHECK( EXTRACT( TIMEZONE FROM valid_until ) = '0' )
-);`
-	queries[idx] = "createTableToolTokenAuthentication"
 	idx++
 
 	queryMap["createTableToolKeys"] = `

@@ -158,7 +158,7 @@ INSERT INTO public.schema_versions (
     description )
 VALUES (
     'auth',
-    201605060001,
+    201605150002,
     'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertAuthSchemaVersion"] = authString
