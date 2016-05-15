@@ -29,6 +29,7 @@ package somaauth
 import (
 	"crypto/hmac"
 	"errors"
+	"strings"
 
 	"github.com/dchest/blake2b"
 )
@@ -40,6 +41,10 @@ const rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 // issued authentication tokens. The default value is 43200, or 12
 // hours.
 var TokenExpirySeconds uint64 = 43200
+
+// KexExpirySeconds can be set to regulate how fast an open KexRequest
+// expires
+var KexExpirySeconds uint64 = 60
 
 // ErrAuth indicates an authentication failure
 var ErrAuth = errors.New("Authentication failed")
@@ -59,6 +64,25 @@ func computeToken(name, key, seed, expires, salt, ip []byte) []byte {
 	mac.Write(expires)
 	mac.Write(salt)
 	return mac.Sum(nil)
+}
+
+// extractAddress extracts the IP address part of the IP:port string
+// set as net/http.Request.RemoteAddr. It handles IPv4 cases like
+// 192.0.2.1:48467 and IPv6 cases like [2001:db8::1%lo0]:48467
+func extractAddress(str string) string {
+	var addr string
+
+	switch {
+	case strings.Contains(str, `]`):
+		// IPv6 address [2001:db8::1%lo0]:48467
+		addr = strings.Split(str, `]`)[0]
+		addr = strings.Split(addr, `%`)[0]
+		addr = strings.TrimLeft(addr, `[`)
+	default:
+		// IPv4 address 192.0.2.1:48467
+		addr = strings.Split(str, `:`)[0]
+	}
+	return addr
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
