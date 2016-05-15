@@ -24,9 +24,9 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Package somaauth implements the common key exchange and
+// Package auth implements the common key exchange and
 // authentication bits between SOMA service and client.
-package somaauth
+package auth
 
 import (
 	"bytes"
