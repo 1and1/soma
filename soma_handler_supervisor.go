@@ -29,10 +29,14 @@ package main
 import (
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
 	"time"
+
+	"github.com/mjolnir42/scrypth64"
+	"github.com/satori/go.uuid"
 
 )
 
@@ -135,8 +139,143 @@ func (s *supervisor) kexInit(q *msg.Request) {
 }
 
 func (s *supervisor) bootstrapRoot(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`}
-	// TODO
+	result := msg.Result{Type: `supervisor`, Action: `bootstrap_root`}
+	kexId := q.Super.KexId
+	data := q.Super.Data
+	var kex *auth.Kex
+	var err error
+	var plain []byte
+	var token auth.Token
+	var rootToken string
+	var mcf scrypth64.Mcf
+	var tx *sql.Tx
+	var validFrom, expiresAt time.Time
+
+	// start response timer
+	timer := time.NewTimer(1 * time.Second)
+	defer timer.Stop()
+
+	// -> check if root is not already active
+	if s.credentials.read(`root`) != nil {
+		result.Code = 400
+		result.Error = fmt.Errorf(`Root account is already active`)
+		//    --> delete kex
+		s.kex.remove(kexId)
+		goto dispatch
+	}
+	// -> get kex
+	if kex = s.kex.read(kexId); kex == nil {
+		//    --> reply 404 if not found
+		result.Code = 404
+		result.Error = fmt.Errorf(`Key exchange not found`)
+		goto dispatch
+	}
+	// -> check kex.SameSource
+	if !kex.IsSameSourceString(q.Super.RemoteAddr) {
+		//    --> reply 404 if !SameSource
+		result.Code = 404
+		result.Error = fmt.Errorf(`Key exchange not found`)
+		goto dispatch
+	}
+	// -> delete kex from s.kex (kex is now used)
+	s.kex.remove(kexId)
+	// -> rdata = kex.DecodeAndDecrypt(data)
+	if err = kex.DecodeAndDecrypt(&data, &plain); err != nil {
+		result.Code = 500
+		result.Error = err
+		goto dispatch
+	}
+	// -> json.Unmarshal(rdata, &token)
+	if err = json.Unmarshal(plain, &token); err != nil {
+		result.Code = 500
+		result.Error = err
+		goto dispatch
+	}
+	// -> check token.UserName == `root`
+	if token.UserName != `root` {
+		//    --> reply 401
+		result.Code = 401
+		goto dispatch
+	}
+	// -> check token.Token is correct bearer token
+	if rootToken, err = s.fetchRootToken(); err != nil {
+		result.Code = 401
+		result.Error = err
+		goto dispatch
+	}
+	if token.Token != rootToken || len(token.Password) == 0 {
+		//    --> reply 401
+		result.Code = 401
+		goto dispatch
+	}
+	// -> scrypth64.Digest(Password, nil)
+	if mcf, err = scrypth64.Digest(token.Password, nil); err != nil {
+		result.Code = 401
+		result.Error = err
+		goto dispatch
+	}
+	// -> generate token
+	token.SetIPAddressString(q.Super.RemoteAddr)
+	if err = token.Generate(mcf, s.key, s.seed); err != nil {
+		result.Code = 401
+		result.Error = err
+		goto dispatch
+	}
+	validFrom, _ = time.Parse(rfc3339Milli, token.ValidFrom)
+	expiresAt, _ = time.Parse(rfc3339Milli, token.ExpiresAt)
+
+	// -> DB Insert: root password data
+	if tx, err = s.conn.Begin(); err != nil {
+		result.Code = 401
+		result.Error = err
+		goto dispatch
+	}
+	defer tx.Rollback()
+	if _, err = tx.Exec(
+		stmt.SetRootCredentials,
+		uuid.Nil,
+		mcf.String(),
+		validFrom.UTC(),
+	); err != nil {
+		// XXX
+	}
+	// -> DB Insert: token data
+	if _, err = tx.Exec(
+		stmt.InsertToken,
+		token.Token,
+		validFrom.UTC(),
+		expiresAt.UTC(),
+	); err != nil {
+		// XXX
+	}
+	// -> s.credentials Update
+	s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
+		PosTimeInf.UTC(), mcf)
+	// -> s.tokens Update
+	if err = s.tokens.insert(token.Token, token.ValidFrom, token.ExpiresAt,
+		token.Salt); err != nil {
+		// XXX
+	}
+	if err = tx.Commit(); err != nil {
+		// XXX
+	}
+	// -> sdata = kex.EncryptAndEncode(&token)
+	plain = []byte{}
+	data = []byte{}
+	if plain, err = json.Marshal(token); err != nil {
+		// XXX
+	}
+	if err = kex.EncryptAndEncode(&plain, &data); err != nil {
+		// XXX
+	}
+	// -> send sdata reply
+	result.Super = &msg.Supervisor{
+		Verdict: 200,
+		Data:    data,
+	}
+
+dispatch:
+	<-timer.C
 	q.Reply <- result
 }
 
@@ -216,6 +355,19 @@ func (s *supervisor) fetchTokenFromDB(token string) bool {
 		return true
 	}
 	return false
+}
+
+func (s *supervisor) fetchRootToken() (string, error) {
+	var (
+		err   error
+		token string
+	)
+
+	err = s.conn.QueryRow(stmt.SelectRootToken).Scan(&token)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 // the nonces used for encryption are implemented as

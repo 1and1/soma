@@ -57,9 +57,8 @@ func (t *svTokenMap) read(token string) *svToken {
 	defer t.runlock()
 	if tok, ok := t.TMap[token]; ok {
 		return &tok
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func (t *svTokenMap) insert(token, valid, expires, salt string) error {
@@ -137,6 +136,29 @@ type svCredMap struct {
 	mutex sync.RWMutex
 }
 
+func (c *svCredMap) read(user string) *svCredential {
+	c.rlock()
+	defer c.runlock()
+	if cred, ok := c.CMap[user]; ok {
+		return &cred
+	}
+	return nil
+}
+
+func (c *svCredMap) insert(user string, uid uuid.UUID, valid, expires time.Time, mcf scrypth64.Mcf) {
+	c.lock()
+	defer c.unlock()
+	c.CMap[user] = svCredential{
+		id:          uid,
+		validFrom:   valid,
+		expiresAt:   expires,
+		cryptMCF:    mcf,
+		resetActive: false,
+		resetToken:  "",
+		isActive:    true,
+	}
+}
+
 // set writelock
 func (c *svCredMap) lock() {
 	c.mutex.Lock()
@@ -164,6 +186,19 @@ type svKexMap struct {
 	// kexid(uuid.string) -> auth.Kex
 	KMap  map[string]auth.Kex
 	mutex sync.RWMutex
+}
+
+// the nonce information would normally mean returning
+// a copy is problematic, but since these keys are only
+// used for any client/server exchange, they are never
+// put back
+func (k *svKexMap) read(kexRequest string) *auth.Kex {
+	k.rlock()
+	defer k.runlock()
+	if kex, ok := k.KMap[kexRequest]; ok {
+		return &kex
+	}
+	return nil
 }
 
 func (k *svKexMap) insert(kex auth.Kex) {
