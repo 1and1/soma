@@ -30,7 +30,10 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"math/big"
+	"strings"
+	"time"
 
 )
 
@@ -46,15 +49,38 @@ type supervisor struct {
 	kex         svKexMap
 	tokens      svTokenMap
 	credentials svCredMap
+	stmt_FUTok  *sql.Stmt
+	stmt_FATok  *sql.Stmt
+	stmt_FTTok  *sql.Stmt
 }
 
 func (s *supervisor) run() {
+	var err error
+
+	// set library options
 	auth.TokenExpirySeconds = s.tokenExpiry
 	auth.KexExpirySeconds = s.kexExpiry
 
+	// initialize maps
 	s.tokens = s.newTokenMap()
 	s.credentials = s.newCredentialMap()
 	s.kex = s.newKexMap()
+
+	// prepare SQL statements
+	if s.stmt_FUTok, err = s.conn.Prepare(stmt.SelectUserToken); err != nil {
+		log.Fatal("supervisor/fetch-user-token: ", err)
+	}
+	defer s.stmt_FUTok.Close()
+
+	if s.stmt_FATok, err = s.conn.Prepare(stmt.SelectAdminToken); err != nil {
+		log.Fatal("supervisor/fetch-admin-token: ", err)
+	}
+	defer s.stmt_FATok.Close()
+
+	if s.stmt_FTTok, err = s.conn.Prepare(stmt.SelectToolToken); err != nil {
+		log.Fatal("supervisor/fetch-tool-token: ", err)
+	}
+	defer s.stmt_FTTok.Close()
 
 runloop:
 	for {
@@ -155,6 +181,61 @@ func (s *supervisor) newKexMap() svKexMap {
 	m := svKexMap{}
 	m.KMap = make(map[string]auth.Kex)
 	return m
+}
+
+func (s *supervisor) Validate(account, token, addr string) uint16 {
+	tok := s.tokens.read(token)
+	if tok == nil && !s.readonly {
+		// rw instance knows every token
+		return 401
+	} else if tok == nil {
+		if !s.fetchTokenFromDB(account, token) {
+			return 401
+		}
+		tok = s.tokens.read(token)
+	}
+	if time.Now().UTC().Before(tok.validFrom.UTC()) ||
+		time.Now().UTC().After(tok.expiresAt.UTC()) {
+		return 401
+	}
+
+	if auth.Verify(account, addr, tok.binToken, s.key,
+		s.seed, tok.binExpiresAt, tok.salt) {
+		return 200
+	}
+
+	return 401
+}
+
+func (s *supervisor) fetchTokenFromDB(account, token string) bool {
+	var (
+		err                       error
+		salt, strValid, strExpire string
+		validF, validU            time.Time
+	)
+
+	switch {
+	case strings.HasPrefix(account, `admin_`):
+		err = s.stmt_FATok.QueryRow(token).Scan(&salt, &validF, &validU)
+	case strings.HasPrefix(account, `tool_`):
+		err = s.stmt_FTTok.QueryRow(token).Scan(&salt, &validF, &validU)
+	default:
+		err = s.stmt_FUTok.QueryRow(token).Scan(&salt, &validF, &validU)
+	}
+	if err == sql.ErrNoRows {
+		return false
+	} else if err != nil {
+		// XXX log error
+		return false
+	}
+
+	strValid = validF.UTC().Format(rfc3339Milli)
+	strExpire = validU.UTC().Format(rfc3339Milli)
+
+	if err = s.tokens.insert(token, strValid, strExpire, salt); err == nil {
+		return true
+	}
+	return false
 }
 
 // the nonces used for encryption are implemented as
