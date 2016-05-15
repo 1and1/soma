@@ -4,28 +4,28 @@ SOMA Authentication Protocol
 1.Key Exchange - Phase I, Client
 ----------------------------------
 
-The client generates `somaauth.KexRequest` and sends it to the server
+The client generates `auth.Kex` and sends it to the server
 as `application/json` body at `POST /authenticate/`.
 
-The `KexRequest` must contain the following fields:
+The `Kex` must contain the following fields:
 * Public, hex encoded string
 * InitializationVector, hex encoded string
 
-Values set as Request and Token are ignored by the server.
-The client's `KexRequest.count` is initialized as the uint zero value
+Values set as Request are ignored by the server.
+The client's `Kex.count` is initialized as the uint zero value
 `0`.
 
 2.Key Exchange - Phase II, Server
 -----------------------------------
 
-The server receives the `KexRequest` from the client.
+The server receives the `Kex` from the client.
 It takes the public key from `Public` and saves it as `peer`.
-It generates its own keypair via `KexRequest.GenerateNewKeypair()`.
-It saves the client IP address via `KexRequest.SetIPAddress()`.
-It assigns an UUIDv4 via `KexRequest.GenerateNewRequestID()`.
-It saves the time of the request as `KexRequest.SetTimeUTC()`.
+It generates its own keypair via `Kex.GenerateNewKeypair()`.
+It saves the client IP address via `Kex.SetIPAddress()`.
+It assigns an UUIDv4 via `Kex.GenerateNewRequestID()`.
+It saves the time of the request as `Kex.SetTimeUTC()`.
 
-The server replies the client with a `KexRequest` of its own. This
+The server replies the client with a `Kex` of its own. This
 must contain the following fields:
 * Public, hex encoded string
 * Request, uuid string
@@ -36,20 +36,20 @@ confirmation of acceptance. A different InitializationVector aborts
 the kex exchange. The server may freely reject the client submitted
 InitializationVector.
 
-The server keeps the `KexRequest` stored in memory until it is either
+The server keeps the `Kex` stored in memory until it is either
 used or expires due to a present timeout. A periodic prune job should
-remove unused expired `KexRequest` structures.
+remove unused expired `Kex` structures.
 
 The server may implement a limit on the number of pending key
 exchanges to protect against memory exhaustion attacks.
 
-The server's `KexRequest.count` is initialized as the uint zero value
+The server's `Kex.count` is initialized as the uint zero value
 `0`.
 
 3.Key Exchange - Phase III, Client
 ----------------------------------
 
-The client receives the `KexRequest` reply from the server.
+The client receives the `Kex` reply from the server.
 It takes the server's public key from `Public` and saves it as `peer`.
 It saves the server assigned `Request` UUID as the identifier for this
 exchange.
@@ -82,25 +82,25 @@ Example URI to a new password token would for example be:
 ---------------------------------
 
 The server uses the request UUID from the URI to look up the
-`KexRequest`. If verifies validity (not expired) and source IP. Using
+`Kex`. If verifies validity (not expired) and source IP. Using
 `nacl/box.Open` it tries to unseal the ciphertext after removing the
 base64 transport encoding and incrementing the counter.
 The resulting JSON data is used to process the request.
 
-Referencing a pending `KexRequest` by UUID from the same source IP
+Referencing a pending `Kex` by UUID from the same source IP
 does not invalidate the exchange. All other faults during this stage
-abort the exchange and delete the `KexRequest` on the server side.
+abort the exchange and delete the `Kex` on the server side.
 All failures are reported to the client as `401 - Unauthorized`.
 
 Since authenticated encryption is used, no further checks are required
 if the server is able to decrypt the client message.
 
-For the reply, the server as well increments `KexExchange.count` again
+For the reply, the server as well increments `Kex.count` again
 and uses `nacl/box.Seal` to encrypt the JSON result.
 It is transport encoded with `base64.StdEncoding` and sent as
 `application/octet-stream`.
 
-After using the `KexRequest` once (successfully or not), the server
+After using the `Kex` once (successfully or not), the server
 deletes it.
 
 6.Data Exchange - Phase 3, Client
