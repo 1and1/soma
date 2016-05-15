@@ -28,7 +28,9 @@ package main
 
 import (
 	"database/sql"
-	"time"
+	"encoding/hex"
+	"fmt"
+	"math/big"
 
 )
 
@@ -77,8 +79,45 @@ func (s *supervisor) process(q *msg.Request) {
 }
 
 func (s *supervisor) kexInit(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`}
-	// TODO
+	result := msg.Result{Type: `supervisor`, Action: `kex_reply`}
+	kex := q.Super.Kex
+	var err error
+
+	// check the client submitted IV for fishyness
+	err = s.checkIV(kex.InitializationVector)
+	for err != nil {
+		if err = kex.GenerateNewVector(); err != nil {
+			continue
+		}
+		err = s.checkIV(kex.InitializationVector)
+	}
+
+	// record the kex submission time
+	kex.SetTimeUTC()
+
+	// record the client ip address
+	kex.SetIPAddressString(q.Super.RemoteAddr)
+
+	// generate a request ID
+	kex.GenerateNewRequestID()
+
+	// set the client submitted public key as peer key
+	kex.SetPeerKey(kex.PublicKey())
+
+	// generate our own keypair
+	kex.GenerateNewKeypair()
+
+	// save kex
+	s.kex.insert(kex)
+
+	// send out reply
+	result.Super = &msg.Supervisor{
+		Kex: auth.Kex{
+			Public:               kex.Public,
+			InitializationVector: kex.InitializationVector,
+			Request:              kex.Request,
+		},
+	}
 	q.Reply <- result
 }
 
@@ -116,6 +155,35 @@ func (s *supervisor) newKexMap() svKexMap {
 	m := svKexMap{}
 	m.KMap = make(map[string]auth.Kex)
 	return m
+}
+
+// the nonces used for encryption are implemented as
+// a counter on top of the agreed upon IV. The first
+// nonce used is IV+1.
+// Check that the IV is not 0, this is likely to indicate
+// a bad client. An IV of -1 would be worse, resulting in
+// an initial nonce of 0 which can always lead to crypto
+// swamps. Why are safe from that, since the Nonce calculation
+// always takes the Abs value of the IV, stripping the sign.
+func (s *supervisor) checkIV(iv string) error {
+	var (
+		err       error
+		bIV       []byte
+		iIV, zero *big.Int
+	)
+	zero = big.NewInt(0)
+
+	if bIV, err = hex.DecodeString(iv); err != nil {
+		return err
+	}
+
+	iIV = big.NewInt(0)
+	iIV.SetBytes(bIV)
+	iIV.Abs(iIV)
+	if iIV.Cmp(zero) == 0 {
+		return fmt.Errorf(`Invalid Initialization vector`)
+	}
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
