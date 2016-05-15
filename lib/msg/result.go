@@ -9,8 +9,11 @@
 package msg
 
 type Result struct {
-	Type  string
-	Error error
+	Type   string
+	Action string
+	Error  error
+
+	Super *Supervisor
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
