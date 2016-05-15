@@ -62,18 +62,14 @@ type Kex struct {
 func NewKex() *Kex {
 	var (
 		err error
-		bIV []byte
 		k   Kex
 	)
 
 	k = Kex{}
 
-	// generate the IV from 192bit random
-	bIV = make([]byte, 24)
-	if _, err = rand.Read(bIV); err != nil {
+	if err = k.GenerateNewVector(); err != nil {
 		return nil
 	}
-	k.InitializationVector = hex.EncodeToString(bIV)
 
 	if err = k.GenerateNewKeypair(); err != nil {
 		return nil
@@ -117,6 +113,24 @@ func (k *Kex) GenerateNewKeypair() error {
 // GenerateNewRequestID generate a new UUIDv4 for this Kex
 func (k *Kex) GenerateNewRequestID() {
 	k.Request = uuid.NewV4()
+}
+
+// GenerateNewVector generates a new random Initialization
+// Vector
+func (k *Kex) GenerateNewVector() error {
+	var (
+		b   []byte
+		err error
+	)
+
+	// generate the IV from 192bit of randomness
+	b = make([]byte, 24)
+	if _, err = rand.Read(b); err != nil {
+		return err
+	}
+
+	k.InitializationVector = hex.EncodeToString(b)
+	return nil
 }
 
 // IsExpired returns true if the Kex-Exchange is more than
