@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -85,14 +86,35 @@ func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
 			Data:       data,
 		},
 	}
-	<-returnChannel
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
 }
 
 /* Utility
  */
 
-//func SendAuthReply(w *http.ResponseWriter, r *superVisorResult) {
-//result := somaauth.KexRequest{}
-//}
+func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
+	var (
+		bjson []byte
+		err   error
+	)
+
+	switch r.Type {
+	case `supervisor`:
+		switch r.Action {
+		case `kex_reply`:
+			k := r.Super.Kex
+			if bjson, err = json.Marshal(&k); err != nil {
+				DispatchInternalError(w, err)
+				return
+			}
+			goto dispatchJSON
+		}
+	}
+
+dispatchJSON:
+	DispatchJsonReply(w, &bjson)
+	return
+}
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
