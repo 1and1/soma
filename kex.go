@@ -48,7 +48,6 @@ type Kex struct {
 	Public               string    `json:"public_key"`
 	Request              uuid.UUID `json:"request,omitempty"`
 	InitializationVector string    `json:"initialization_vector"`
-	Token                string    `json:"password_token,omitempty"`
 	// unexported private fields
 	private  string    `json:"-"`
 	peer     string    `json:"-"`
