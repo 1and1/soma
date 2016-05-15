@@ -36,6 +36,11 @@ var (
 	PosTimeInf = time.Unix(1<<63-1-unixToInternalOffset, 999999999)
 )
 
+const (
+	// Format string for millisecond precision RFC3339
+	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
+)
+
 func main() {
 	var (
 		configFlag, configFile string
