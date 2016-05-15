@@ -44,7 +44,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type KexRequest struct {
+type Kex struct {
 	Public               string    `json:"public_key"`
 	Request              uuid.UUID `json:"request,omitempty"`
 	InitializationVector string    `json:"initialization_vector"`
@@ -57,16 +57,16 @@ type KexRequest struct {
 	time     time.Time `json:"-"`
 }
 
-// NewKexRequest returns a KexRequest with a set random
+// NewKex returns a Kex with a set random
 // InitializationVector and new generated random keypair
-func NewKexRequest() *KexRequest {
+func NewKex() *Kex {
 	var (
 		err error
 		bIV []byte
-		k   KexRequest
+		k   Kex
 	)
 
-	k = KexRequest{}
+	k = Kex{}
 
 	// generate the IV from 192bit random
 	bIV = make([]byte, 24)
@@ -82,7 +82,7 @@ func NewKexRequest() *KexRequest {
 }
 
 // GenerateNewKeypair generate a new public,private Keypair
-func (k *KexRequest) GenerateNewKeypair() error {
+func (k *Kex) GenerateNewKeypair() error {
 	var (
 		err                   error
 		bRandom, bSecret      []byte
@@ -115,20 +115,20 @@ func (k *KexRequest) GenerateNewKeypair() error {
 }
 
 // GenerateNewRequestID generate a new UUIDv4 for this Kex
-func (k *KexRequest) GenerateNewRequestID() {
+func (k *Kex) GenerateNewRequestID() {
 	k.Request = uuid.NewV4()
 }
 
 // IsExpired returns true if the Kex-Exchange is more than
 // KexExpirySeconds seconds old
-func (k *KexRequest) IsExpired() bool {
+func (k *Kex) IsExpired() bool {
 	return time.Now().UTC().After(k.time.UTC().Add(
 		time.Duration(KexExpirySeconds) * time.Second))
 }
 
 // IsSameSource returns true if the paramter IP address is the
-// same as the one recorded in the KexRequest
-func (k *KexRequest) IsSameSource(ip net.IP) bool {
+// same as the one recorded in the Kex
+func (k *Kex) IsSameSource(ip net.IP) bool {
 	return k.sourceIP.Equal(ip)
 }
 
@@ -137,7 +137,7 @@ func (k *KexRequest) IsSameSource(ip net.IP) bool {
 // count of requested nonces; thus implementing a simple non-repeating
 // counter. The IV itself is never used as a nonce.
 // Returns nil on error
-func (k *KexRequest) NextNonce() *[24]byte {
+func (k *Kex) NextNonce() *[24]byte {
 	var (
 		ib    []byte
 		iv    *big.Int
@@ -172,7 +172,7 @@ func (k *KexRequest) NextNonce() *[24]byte {
 
 // PeerKey returns the public key of the kex peer, or nil if it has
 // not been set yet.
-func (k *KexRequest) PeerKey() *[32]byte {
+func (k *Kex) PeerKey() *[32]byte {
 	var (
 		pk   []byte
 		err  error
@@ -202,7 +202,7 @@ func (k *KexRequest) PeerKey() *[32]byte {
 
 // PrivateKey returns our private key for this kex, or nil if it has
 // not been set yet.
-func (k *KexRequest) PrivateKey() *[32]byte {
+func (k *Kex) PrivateKey() *[32]byte {
 	var (
 		pk      []byte
 		err     error
@@ -232,7 +232,7 @@ func (k *KexRequest) PrivateKey() *[32]byte {
 
 // PublicKey returns our public key for this key exchange, or nil if
 // it has not been set yet.
-func (k *KexRequest) PublicKey() *[32]byte {
+func (k *Kex) PublicKey() *[32]byte {
 	var (
 		pk     []byte
 		err    error
@@ -261,12 +261,12 @@ func (k *KexRequest) PublicKey() *[32]byte {
 }
 
 // SetPeerKey sets the kex peer public key
-func (k *KexRequest) SetPeerKey(pk *[32]byte) {
+func (k *Kex) SetPeerKey(pk *[32]byte) {
 	k.peer = hex.EncodeToString(pk[:])
 }
 
 // SetRequestUUID sets the UUID of this Kex from a string
-func (k *KexRequest) SetRequestUUID(s string) error {
+func (k *Kex) SetRequestUUID(s string) error {
 	var err error
 
 	if k.Request, err = uuid.FromString(s); err != nil {
@@ -277,12 +277,12 @@ func (k *KexRequest) SetRequestUUID(s string) error {
 }
 
 // SetTimeUTC records the current time within the Kex
-func (k *KexRequest) SetTimeUTC() {
+func (k *Kex) SetTimeUTC() {
 	k.time = time.Now().UTC()
 }
 
 // SetIPAddress records the client's IP address
-func (k *KexRequest) SetIPAddress(r *http.Request) {
+func (k *Kex) SetIPAddress(r *http.Request) {
 	k.sourceIP = net.ParseIP(extractAddress(r.RemoteAddr))
 }
 
