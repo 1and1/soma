@@ -41,22 +41,18 @@ type supervisor struct {
 	readonly    bool
 	tokenExpiry uint64
 	kexExpiry   uint64
-	kexMap      map[string]auth.Kex
-	tokenMap    map[string]svToken
-}
-
-type svToken struct {
-	binToken     []byte
-	validFrom    time.Time
-	binExpiresAt []byte
-	salt         []byte
+	kex         svKexMap
+	tokens      svTokenMap
+	credentials svCredMap
 }
 
 func (s *supervisor) run() {
-	//var err error
-
 	auth.TokenExpirySeconds = s.tokenExpiry
 	auth.KexExpirySeconds = s.kexExpiry
+
+	s.tokens = s.newTokenMap()
+	s.credentials = s.newCredentialMap()
+	s.kex = s.newKexMap()
 
 runloop:
 	for {
@@ -95,11 +91,31 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 // TODO: timer
 // delete all expired key exchanges
 func (s *supervisor) pruneKex() {
-	for kexId, kex := range s.kexMap {
+	s.kex.lock()
+	defer s.kex.unlock()
+	for kexId, kex := range s.kex.KMap {
 		if kex.IsExpired() {
-			delete(s.kexMap, kexId)
+			delete(s.kex.KMap, kexId)
 		}
 	}
+}
+
+func (s *supervisor) newTokenMap() svTokenMap {
+	m := svTokenMap{}
+	m.TMap = make(map[string]svToken)
+	return m
+}
+
+func (s *supervisor) newCredentialMap() svCredMap {
+	m := svCredMap{}
+	m.CMap = make(map[string]svCredential)
+	return m
+}
+
+func (s *supervisor) newKexMap() svKexMap {
+	m := svKexMap{}
+	m.KMap = make(map[string]auth.Kex)
+	return m
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
