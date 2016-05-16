@@ -309,28 +309,29 @@ func (s *supervisor) newKexMap() svKexMap {
 	return m
 }
 
-func (s *supervisor) Validate(account, token, addr string) uint16 {
+func (s *supervisor) Validate(account, token, addr string) bool {
 	tok := s.tokens.read(token)
 	if tok == nil && !s.readonly {
 		// rw instance knows every token
-		return 401
+		goto unauthorized
 	} else if tok == nil {
 		if !s.fetchTokenFromDB(token) {
-			return 401
+			goto unauthorized
 		}
 		tok = s.tokens.read(token)
 	}
 	if time.Now().UTC().Before(tok.validFrom.UTC()) ||
 		time.Now().UTC().After(tok.expiresAt.UTC()) {
-		return 401
+		goto unauthorized
 	}
 
 	if auth.Verify(account, addr, tok.binToken, s.key,
 		s.seed, tok.binExpiresAt, tok.salt) {
-		return 200
+		return true
 	}
 
-	return 401
+unauthorized:
+	return false
 }
 
 func (s *supervisor) fetchTokenFromDB(token string) bool {

@@ -90,6 +90,16 @@ func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+}
+
+func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+}
+
 /* Utility
  */
 
