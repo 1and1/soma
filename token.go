@@ -166,7 +166,12 @@ fail:
 
 // SetIPAddress records the client's IP address
 func (t *Token) SetIPAddress(r *http.Request) {
-	t.SourceIP = net.ParseIP(extractAddress(r.RemoteAddr))
+	t.SetIPAddressString(r.RemoteAddr)
+}
+
+// SetIPAddressString records the client's IP address
+func (t *Token) SetIPAddressString(addr string) {
+	t.SourceIP = net.ParseIP(extractAddress(addr))
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
