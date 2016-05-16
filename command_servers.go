@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -129,7 +130,7 @@ func cmdServerCreate(c *cli.Context) {
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
 					"Cannot parse id argument to uint64\n")
-				Slog.Fatal(err)
+				log.Fatal(err)
 			}
 			skipNext = true
 			argumentCheck["id"] = true
@@ -154,7 +155,7 @@ func cmdServerCreate(c *cli.Context) {
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
 					"parameter online must be true or false\n")
-				Slog.Fatal(err)
+				log.Fatal(err)
 			}
 			skipNext = true
 			argumentCheck["online"] = true
@@ -184,7 +185,7 @@ func cmdServerCreate(c *cli.Context) {
 		Post(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
@@ -201,19 +202,19 @@ func cmdServerMarkAsDeleted(c *cli.Context) {
 
 	a := c.Args()
 	if !a.Present() {
-		Slog.Fatal("Syntax error")
+		log.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
 		server := a.Get(1)
 		if server == "" {
-			Slog.Fatal("Syntax error")
+			log.Fatal("Syntax error")
 		}
 		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
@@ -224,7 +225,7 @@ func cmdServerMarkAsDeleted(c *cli.Context) {
 		Delete(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
@@ -238,12 +239,12 @@ func cmdServerPurgeDeleted(c *cli.Context) {
 	} else {
 		a := c.Args()
 		if !a.Present() || len(a.Tail()) != 0 {
-			Slog.Fatal("Syntax error")
+			log.Fatal("Syntax error")
 		}
 		assetId, err := strconv.ParseUint(a.First(), 10, 64)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 		url.Path = fmt.Sprintf("/servers/%d", assetId)
 	}
@@ -300,7 +301,7 @@ func cmdServerUpdate(c *cli.Context) {
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
 					"Cannot parse id argument to uint64\n")
-				Slog.Fatal(err)
+				log.Fatal(err)
 			}
 			skipNext = true
 			argumentCheck["id"] = true
@@ -325,7 +326,7 @@ func cmdServerUpdate(c *cli.Context) {
 			if err != nil {
 				fmt.Fprintf(os.Stderr,
 					"parameter online must be true or false\n")
-				Slog.Fatal(err)
+				log.Fatal(err)
 			}
 			skipNext = true
 			argumentCheck["online"] = true
@@ -356,7 +357,7 @@ func cmdServerUpdate(c *cli.Context) {
 		Post(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
@@ -373,12 +374,12 @@ func cmdServerRename(c *cli.Context) {
 
 	a := c.Args()
 	if !a.Present() {
-		Slog.Fatal("Syntax error")
+		log.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
 		server := a.Get(1)
 		if server == "" || a.Get(2) != "to" || a.Get(3) == "" {
-			Slog.Fatal("Syntax error")
+			log.Fatal("Syntax error")
 		}
 		assetId = utl.GetServerAssetIdByName(server)
 		newName = a.Get(3)
@@ -386,7 +387,7 @@ func cmdServerRename(c *cli.Context) {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
 		if err != nil || a.Get(1) != "to" || a.Get(2) == "" {
 			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 		newName = a.Get(2)
 	}
@@ -402,7 +403,7 @@ func cmdServerRename(c *cli.Context) {
 		Patch(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
@@ -417,24 +418,24 @@ func cmdServerOnline(c *cli.Context) {
 
 	a := c.Args()
 	if !a.Present() {
-		Slog.Fatal("Syntax error")
+		log.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
 		server := a.Get(1)
 		if server == "" {
-			Slog.Fatal("Syntax error")
+			log.Fatal("Syntax error")
 		}
 		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		idString := a.First()
 		if idString == "" {
 			fmt.Fprintf(os.Stderr, "Could not read assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 		assetId, err = strconv.ParseUint(idString, 10, 64)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
@@ -449,7 +450,7 @@ func cmdServerOnline(c *cli.Context) {
 		Patch(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
@@ -464,24 +465,24 @@ func cmdServerOffline(c *cli.Context) {
 
 	a := c.Args()
 	if !a.Present() {
-		Slog.Fatal("Syntax error")
+		log.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
 		server := a.Get(1)
 		if server == "" {
-			Slog.Fatal("Syntax error")
+			log.Fatal("Syntax error")
 		}
 		assetId = utl.GetServerAssetIdByName(server)
 	} else {
 		idString := a.First()
 		if idString == "" {
 			fmt.Fprintf(os.Stderr, "Could not read assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 		assetId, err = strconv.ParseUint(idString, 10, 64)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 	}
 	url.Path = fmt.Sprintf("/servers/%d", assetId)
@@ -496,7 +497,7 @@ func cmdServerOffline(c *cli.Context) {
 		Patch(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
@@ -512,7 +513,7 @@ func cmdServerMove(c *cli.Context) {
 	a := c.Args()
 	args := make([]string, 1)
 	if !a.Present() {
-		Slog.Fatal("Syntax error")
+		log.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
 		assetId = utl.GetServerAssetIdByName(a.Get(1))
@@ -523,7 +524,7 @@ func cmdServerMove(c *cli.Context) {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
 		if err != nil || a.Get(1) != "to" || a.Get(2) == "" {
 			fmt.Fprintf(os.Stderr, "Could not parse assetId\n")
-			Slog.Fatal(err)
+			log.Fatal(err)
 		}
 		tail := a.Tail()
 		args = append(args, tail...)
@@ -574,7 +575,7 @@ func cmdServerMove(c *cli.Context) {
 		Patch(url.String())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
@@ -605,7 +606,7 @@ func cmdServerSyncRequest(c *cli.Context) {
 		// arguments must be present, and the arguments after the first must
 		// be zero => 1 argument given
 		if !a.Present() || len(a.Tail()) != 0 {
-			Slog.Fatal("Syntax error")
+			log.Fatal("Syntax error")
 		}
 		assetId, err := strconv.ParseUint(a.First(), 10, 64)
 

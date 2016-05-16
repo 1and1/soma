@@ -1,15 +1,10 @@
 package main
 
-import (
-	"fmt"
-	"log"
-	"net/url"
-	"os"
-	"path"
-)
+import "net/url"
 
-var Slog *log.Logger
+//var Slog *log.Logger
 
+/*
 func initLogFile() {
 	f, err := os.OpenFile(path.Join(Cfg.Run.PathLogs, "somaadm.log"),
 		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0640)
@@ -23,6 +18,7 @@ func initLogFile() {
 	Cfg.Run.Logger = utl.Log
 	Slog = utl.Log
 }
+*/
 
 func getApiUrl() *url.URL {
 	url, err := url.Parse(Cfg.Api)

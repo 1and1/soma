@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/codegangsta/cli"
 	"gopkg.in/resty.v0"
 )
@@ -143,14 +145,14 @@ func cmdPermissionTypeDel(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().First()
 	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
-	Slog.Printf("Command: delete permission type [%s]", permissionType)
+	log.Printf("Command: delete permission type [%s]", permissionType)
 
 	_, err := resty.New().
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
 		R().
 		Delete(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -173,7 +175,7 @@ func cmdPermissionTypeRename(c *cli.Context) {
 		SetBody(req).
 		Patch(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -188,7 +190,7 @@ func cmdPermissionTypeList(c *cli.Context) {
 		R().
 		Get(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	// TODO display list result
 }
@@ -205,7 +207,7 @@ func cmdPermissionTypeShow(c *cli.Context) {
 		R().
 		Get(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	// TODO display show result
 }
@@ -230,7 +232,7 @@ func cmdPermissionAdd(c *cli.Context) {
 		SetBody(req).
 		Post(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -246,7 +248,7 @@ func cmdPermissionDel(c *cli.Context) {
 		R().
 		Delete(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -261,7 +263,7 @@ func cmdPermissionList(c *cli.Context) {
 		R().
 		Get(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	// TODO list permissions
 }
@@ -281,7 +283,7 @@ func cmdPermissionShowGeneric(c *cli.Context, objType string) {
 		utl.ValidateCliArgument(c, 2, "repository")
 		hasRepo = true
 	default:
-		Slog.Fatal("Syntax error, unexpected argument count")
+		log.Fatal("Syntax error, unexpected argument count")
 	}
 
 	objName = c.Args().Get(0)
@@ -298,7 +300,7 @@ func cmdPermissionShowGeneric(c *cli.Context, objType string) {
 		R().
 		Get(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	// TODO list permissions
 }
@@ -326,7 +328,7 @@ func cmdPermissionShowPermission(c *cli.Context) {
 		R().
 		Get(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	// TODO list users
 }
@@ -342,7 +344,7 @@ func cmdPermissionAudit(c *cli.Context) {
 		R().
 		Get(url.String())
 	if err != nil {
-		Slog.Fatal(err)
+		log.Fatal(err)
 	}
 	// TODO list permissions
 }
