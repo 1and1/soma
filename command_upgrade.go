@@ -137,13 +137,15 @@ func upgrade_root_to_201605160001(curr int, tool string, printOnly bool) int {
 	vstmt := fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('root', 201605160001, 'Upgrade - somadbctl %s');", tool)
 	if !printOnly {
 		db.Exec(istmt, token)
+		db.Exec(vstmt)
+	} else {
+		fmt.Println(vstmt)
 	}
-	db.Exec(vstmt)
 	fmt.Fprintf(os.Stderr, "The generated boostrap token was: %s\n", token)
 	if printOnly {
 		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!\n")
 	}
-	return 201605150001
+	return 201605160001
 }
 
 func getCurrentSchemaVersion(schema string) int {
