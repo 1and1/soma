@@ -5,7 +5,10 @@ import (
 )
 
 func dbClose(c *cli.Context) error {
-	defer db.Close()
+	printOnly := c.GlobalBool("no-execute")
+	if !printOnly {
+		defer db.Close()
+	}
 
 	return nil
 }

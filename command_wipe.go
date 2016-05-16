@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func commandWipe(done chan<- bool, forced bool) {
+func commandWipe(done chan<- bool, forced, printOnly bool) {
 	if !forced {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Printf("Are you sure (yes/no)? ")
@@ -19,14 +19,25 @@ func commandWipe(done chan<- bool, forced bool) {
 		}
 	}
 	log.Printf("Wiping database %s", Cfg.Database.Name)
+	stmts := []string{
+		`DROP SCHEMA IF EXISTS auth CASCADE;`,
+		`DROP SCHEMA IF EXISTS inventory CASCADE;`,
+		`DROP SCHEMA IF EXISTS soma CASCADE;`,
+		`DROP SCHEMA IF EXISTS root CASCADE;`,
+		`DROP TABLE IF EXISTS public.schema_versions;`,
+	}
 
-	dbOpen()
+	if !printOnly {
+		dbOpen()
 
-	db.Exec(`DROP SCHEMA auth CASCADE;`)
-	db.Exec(`DROP SCHEMA inventory CASCADE;`)
-	db.Exec(`DROP SCHEMA soma CASCADE;`)
-	db.Exec(`DROP SCHEMA root CASCADE;`)
-	db.Exec(`DROP TABLE public.schema_versions;`)
+		for _, stmt := range stmts {
+			db.Exec(stmt)
+		}
+	} else {
+		for _, stmt := range stmts {
+			fmt.Println(stmt)
+		}
+	}
 
 	done <- true
 }

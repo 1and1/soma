@@ -44,7 +44,8 @@ func registerCommands(app cli.App) *cli.App {
 			Action: func(c *cli.Context) {
 				done := make(chan bool, 1)
 				forced := c.Bool("force")
-				commandWipe(done, forced)
+				printOnly := c.GlobalBool("no-execute")
+				commandWipe(done, forced, printOnly)
 				<-done
 			},
 		},
