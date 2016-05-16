@@ -1,13 +1,37 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strconv"
+	"time"
+
+	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
 )
 
 func runtimePreCmd(c *cli.Context) error {
-	err := configSetup(c)
+	var (
+		err  error
+		mode uint64
+	)
+	err = configSetup(c)
 	if err != nil {
 		return err
+	}
+	dbTimeout := time.Duration(Cfg.BoltDB.Timeout)
+	if mode, err = strconv.ParseUint(Cfg.BoltDB.Mode, 8, 32); err != nil {
+		fmt.Fprintf(os.Stderr,
+			"Failed to parse configuration field boltdb.mode: %s\n", err)
+		os.Exit(1)
+	}
+	if err = store.Open(
+		Cfg.Run.PathBoltDB,
+		os.FileMode(uint32(mode)),
+		&bolt.Options{Timeout: dbTimeout * time.Second},
+	); err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
+		os.Exit(1)
 	}
 
 	//

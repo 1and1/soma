@@ -1,12 +1,14 @@
 package main
 
 import (
-	"github.com/codegangsta/cli"
 	"os"
+
+	"github.com/codegangsta/cli"
 )
 
 var Cfg Config
 var utl util.SomaUtil
+var store db.DB
 
 func main() {
 	app := cli.NewApp()

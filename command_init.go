@@ -10,7 +10,7 @@ import (
 )
 
 // This command runs before the config file exists
-func cmdClientInit(c *cli.Context) {
+func cmdClientInit(c *cli.Context) error {
 	// get user home directory
 	home, err := homedir.Dir()
 	if err != nil {
@@ -58,5 +58,10 @@ func cmdClientInit(c *cli.Context) {
 	} else {
 		dbPath = path.Join(somaPath, "db")
 	}
-	fmt.Println(dbPath)
+	err = os.MkdirAll(dbPath, 0700)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating path %s: %s\n", dbPath, err.Error())
+		os.Exit(1)
+	}
+	return nil
 }
