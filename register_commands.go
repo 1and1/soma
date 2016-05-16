@@ -49,6 +49,19 @@ func registerCommands(app cli.App) *cli.App {
 				<-done
 			},
 		},
+		{
+			Name:    "upgrade",
+			Aliases: []string{"update"},
+			Usage:   "update database schema version",
+			Before:  configSetup,
+			After:   dbClose,
+			Action: func(c *cli.Context) {
+				done := make(chan bool, 1)
+				printOnly := c.GlobalBool("no-execute")
+				commandUpgradeSchema(done, 0, app.Version, printOnly)
+				<-done
+			},
+		},
 	}
 	return &app
 }
