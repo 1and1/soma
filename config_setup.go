@@ -49,13 +49,13 @@ func configSetup(c *cli.Context) error {
 			case "logdir":
 				Cfg.LogDir = c.GlobalString(params[p])
 			case "jobdb":
-				Cfg.JobDb = c.GlobalString(params[p])
+				Cfg.BoltDB.Path = c.GlobalString(params[p])
 			}
 			continue
 		}
 		// set default values for unset configuration parameters
 		switch params[p] {
-		case "api":
+		case "host":
 			if Cfg.Api == "" {
 				Cfg.Api = "http://localhost.my.domain:9876/"
 			}
@@ -71,15 +71,15 @@ func configSetup(c *cli.Context) error {
 			if Cfg.LogDir == "" {
 				Cfg.LogDir = "logs"
 			}
-		case "jobdb":
-			if Cfg.JobDb == "" {
-				Cfg.JobDb = "jobs"
+		case "dbdir":
+			if Cfg.BoltDB.Path == "" {
+				Cfg.BoltDB.Path = "db"
 			}
 		}
 	}
 
-	Cfg.Run.PathLogs = path.Join(home, ".somaadm", Cfg.LogDir)
-	Cfg.Run.PathLevelDB = path.Join(home, ".somaadm", Cfg.JobDb)
+	Cfg.Run.PathLogs = path.Join(home, ".soma", "adm", Cfg.LogDir)
+	Cfg.Run.PathBoltDB = path.Join(home, ".soma", "adm", Cfg.BoltDB.Path, Cfg.BoltDB.File)
 
 	// TODO prompt for Password
 	if Cfg.Auth.Pass == "" {

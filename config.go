@@ -4,19 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/nahanni/go-ucl"
-	"github.com/syndtr/goleveldb/leveldb"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/nahanni/go-ucl"
 )
 
 type Config struct {
-	Timeout string     `json:"timeout"`
-	Api     string     `json:"api"`
-	JobDb   string     `json:"jobdb"`
-	LogDir  string     `json:"logdir"`
-	Auth    AuthConfig `json:"auth"`
+	Timeout string       `json:"timeout"`
+	Api     string       `json:"api"`
+	LogDir  string       `json:"logdir"`
+	Auth    AuthConfig   `json:"auth"`
+	BoltDB  ConfigBoltDB `json:"boltdb"`
 	Run     RunTimeConfig
 }
 
@@ -25,11 +25,17 @@ type AuthConfig struct {
 	Pass string `json:"pass"`
 }
 
+type ConfigBoltDB struct {
+	Path    string `json:"path"`
+	File    string `json:"file"`
+	Mode    string `json:"mode"`
+	Timeout uint   `json:"open.timeout,string"`
+}
+
 type RunTimeConfig struct {
-	LevelDB     *leveldb.DB
-	PathLevelDB string
-	PathLogs    string
-	Logger      *log.Logger
+	PathLogs   string
+	PathBoltDB string
+	Logger     *log.Logger
 }
 
 func (c *Config) populateFromFile(fname string) error {
