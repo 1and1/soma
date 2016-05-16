@@ -21,7 +21,7 @@ func registerFlags(app cli.App) *cli.App {
 			EnvVar: "SOMA_ADM_TIMEOUT",
 		},
 		cli.StringFlag{
-			Name:   "host, h",
+			Name:   "host, H",
 			Usage:  "API URI to connect to",
 			EnvVar: "SOMA_ADM_API",
 		},
