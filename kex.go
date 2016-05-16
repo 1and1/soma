@@ -146,6 +146,12 @@ func (k *Kex) IsSameSource(ip net.IP) bool {
 	return k.sourceIP.Equal(ip)
 }
 
+// IsSameSourceString returns true if the paramter IP address is
+// same as the one recorded in the Kex
+func (k *Kex) IsSameSourceString(addr string) bool {
+	return k.IsSameSource(net.ParseIP(extractAddress(addr)))
+}
+
 // NextNonce returns the next nonce to use. Nonces are built by
 // interpreting the IV as a positive integer number and adding the
 // count of requested nonces; thus implementing a simple non-repeating
