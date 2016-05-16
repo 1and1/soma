@@ -18,9 +18,9 @@ func configSetup(c *cli.Context) error {
 	}
 	var confPath string
 	if c.GlobalIsSet("config") {
-		confPath = path.Join(home, ".somaadm", c.GlobalString("config"))
+		confPath = path.Join(home, ".soma", "adm", c.GlobalString("config"))
 	} else {
-		confPath = path.Join(home, ".somaadm", "somaadm.conf")
+		confPath = path.Join(home, ".soma", "adm", "somaadm.conf")
 	}
 
 	// try loading a configuration file
@@ -34,7 +34,7 @@ func configSetup(c *cli.Context) error {
 	}
 
 	// finish setting up runtime configuration
-	params := []string{"api", "timeout", "user", "logdir", "jobdb"}
+	params := []string{"api", "timeout", "user", "logdir", "dbdir"}
 
 	for p := range params {
 		// update configuration with cli argument overrides
@@ -48,7 +48,7 @@ func configSetup(c *cli.Context) error {
 				Cfg.Auth.User = c.GlobalString(params[p])
 			case "logdir":
 				Cfg.LogDir = c.GlobalString(params[p])
-			case "jobdb":
+			case "dbdir":
 				Cfg.BoltDB.Path = c.GlobalString(params[p])
 			}
 			continue
@@ -65,7 +65,7 @@ func configSetup(c *cli.Context) error {
 			}
 		case "user":
 			if Cfg.Auth.User == "" {
-				Cfg.Auth.User = "admin_fooname"
+				Cfg.Auth.User = "fooname"
 			}
 		case "logdir":
 			if Cfg.LogDir == "" {
