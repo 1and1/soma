@@ -21,14 +21,14 @@ func registerFlags(app cli.App) *cli.App {
 			EnvVar: "SOMA_ADM_TIMEOUT",
 		},
 		cli.StringFlag{
-			Name:   "api, a",
+			Name:   "host, h",
 			Usage:  "API URI to connect to",
 			EnvVar: "SOMA_ADM_API",
 		},
 		cli.StringFlag{
-			Name:   "jobdb, j",
-			Usage:  "name of the jobs data subdirectory",
-			EnvVar: "SOMA_ADM_JOBSDB",
+			Name:   "dbdir, d",
+			Usage:  "name of the db subdirectory",
+			EnvVar: "SOMA_ADM_DBDIR",
 		},
 		cli.StringFlag{
 			Name:   "logdir, l",
