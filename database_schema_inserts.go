@@ -186,7 +186,7 @@ INSERT INTO public.schema_versions (
     description )
 VALUES (
     'root',
-    201605150001,
+    201605160001,
     'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertRootSchemaVersion"] = rootString

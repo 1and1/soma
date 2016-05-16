@@ -59,6 +59,8 @@ func commandInitialize(done chan<- bool, printOnly bool, verbose bool, version s
 
 	grantPermissions(printOnly, verbose)
 
+	insertRootToken(printOnly, verbose)
+
 	done <- true
 }
 
