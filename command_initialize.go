@@ -1,7 +1,9 @@
 package main
 
 func commandInitialize(done chan<- bool, printOnly bool, verbose bool, version string) {
-	dbOpen()
+	if !printOnly {
+		dbOpen()
+	}
 
 	createSqlSchema(printOnly, verbose)
 
