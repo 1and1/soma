@@ -519,7 +519,7 @@ func (teg *SomaTreeElemGroup) evalNativeProp(
 			return true
 		}
 	case "object_type":
-		if val == "node" {
+		if val == "group" {
 			return true
 		}
 	case "object_state":

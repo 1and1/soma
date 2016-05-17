@@ -519,7 +519,7 @@ func (tec *SomaTreeElemCluster) evalNativeProp(
 			return true
 		}
 	case "object_type":
-		if val == "node" {
+		if val == "cluster" {
 			return true
 		}
 	case "object_state":
