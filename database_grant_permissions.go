@@ -16,7 +16,7 @@ func grantPermissions(printOnly bool, verbose bool) {
 	queries[idx] = "grantServiceUserSequencesSoma"
 	idx++
 
-	queryMap["grantServiceUserSchemaRoot"] = `grant select on all tables in schema root ro soma_svc;`
+	queryMap["grantServiceUserSchemaRoot"] = `grant select on all tables in schema root to soma_svc;`
 	queries[idx] = "grantServiceUserSchemaRoot"
 	idx++
 
