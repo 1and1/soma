@@ -43,7 +43,7 @@ func registerMetrics(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdMetricCreate(c *cli.Context) {
+func cmdMetricCreate(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{"package"}
 	unique := []string{"unit", "description"}
@@ -82,29 +82,33 @@ func cmdMetricCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/metrics/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdMetricDelete(c *cli.Context) {
+func cmdMetricDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdMetricList(c *cli.Context) {
+func cmdMetricList(c *cli.Context) error {
 	resp := utl.GetRequest("/metrics/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdMetricShow(c *cli.Context) {
+func cmdMetricShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

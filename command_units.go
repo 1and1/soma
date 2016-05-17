@@ -41,7 +41,7 @@ func registerUnits(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdUnitCreate(c *cli.Context) {
+func cmdUnitCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"name"}
 
@@ -54,29 +54,33 @@ func cmdUnitCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/units/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUnitDelete(c *cli.Context) {
+func cmdUnitDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/units/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUnitList(c *cli.Context) {
+func cmdUnitList(c *cli.Context) error {
 	resp := utl.GetRequest("/units/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUnitShow(c *cli.Context) {
+func cmdUnitShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/units/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

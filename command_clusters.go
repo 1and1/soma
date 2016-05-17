@@ -90,7 +90,7 @@ func registerClusters(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdClusterCreate(c *cli.Context) {
+func cmdClusterCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -108,9 +108,10 @@ func cmdClusterCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/clusters/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdClusterDelete(c *cli.Context) {
+func cmdClusterDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -126,9 +127,10 @@ func cmdClusterDelete(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdClusterRename(c *cli.Context) {
+func cmdClusterRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -148,9 +150,10 @@ func cmdClusterRename(c *cli.Context) {
 	req.Cluster.Name = opts["to"][0]
 
 	_ = utl.PatchRequestWithBody(req, path)
+	return nil
 }
 
-func cmdClusterList(c *cli.Context) {
+func cmdClusterList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 	/*
 			multKeys := []string{"bucket"}
@@ -168,9 +171,10 @@ func cmdClusterList(c *cli.Context) {
 	*/
 	resp := utl.GetRequest("/clusters/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdClusterShow(c *cli.Context) {
+func cmdClusterShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -187,9 +191,10 @@ func cmdClusterShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdClusterMemberAdd(c *cli.Context) {
+func cmdClusterMemberAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -222,9 +227,10 @@ func cmdClusterMemberAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdClusterMemberDelete(c *cli.Context) {
+func cmdClusterMemberDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "bucket"}
 
@@ -243,9 +249,10 @@ func cmdClusterMemberDelete(c *cli.Context) {
 		nodeId)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdClusterMemberList(c *cli.Context) {
+func cmdClusterMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -262,9 +269,10 @@ func cmdClusterMemberList(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdClusterSystemPropertyAdd(c *cli.Context) {
+func cmdClusterSystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 9)
 	multiple := []string{}
 	required := []string{"to", "in", "value", "view"}
@@ -311,9 +319,10 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s/property/system/", clusterId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdClusterServicePropertyAdd(c *cli.Context) {
+func cmdClusterServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "in", "view"}
@@ -359,6 +368,7 @@ func cmdClusterServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s/property/service/", clusterId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

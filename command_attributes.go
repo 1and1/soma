@@ -42,7 +42,7 @@ func registerAttributes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdAttributeCreate(c *cli.Context) {
+func cmdAttributeCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"cardinality"}
@@ -70,29 +70,33 @@ func cmdAttributeCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/attributes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdAttributeDelete(c *cli.Context) {
+func cmdAttributeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdAttributeList(c *cli.Context) {
+func cmdAttributeList(c *cli.Context) error {
 	resp := utl.GetRequest("/attributes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdAttributeShow(c *cli.Context) {
+func cmdAttributeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

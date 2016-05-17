@@ -156,7 +156,7 @@ func registerNodes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdNodeAdd(c *cli.Context) {
+func cmdNodeAdd(c *cli.Context) error {
 	keySlice := []string{"assetid", "name", "team", "server", "online"}
 	reqSlice := []string{"assetid", "name", "team"}
 
@@ -188,18 +188,20 @@ func cmdNodeAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/nodes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeDel(c *cli.Context) {
+func cmdNodeDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodePurge(c *cli.Context) {
+func cmdNodePurge(c *cli.Context) error {
 	var (
 		path string
 		req  proto.Request
@@ -221,9 +223,10 @@ func cmdNodePurge(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeRestore(c *cli.Context) {
+func cmdNodeRestore(c *cli.Context) error {
 	var (
 		path string
 		req  proto.Request
@@ -245,9 +248,10 @@ func cmdNodeRestore(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeRename(c *cli.Context) {
+func cmdNodeRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
@@ -259,9 +263,10 @@ func cmdNodeRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeRepo(c *cli.Context) {
+func cmdNodeRepo(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetNodeByUUIDOrName(c.Args().Get(0))
@@ -276,9 +281,10 @@ func cmdNodeRepo(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeMove(c *cli.Context) {
+func cmdNodeMove(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetNodeByUUIDOrName(c.Args().Get(0))
@@ -293,9 +299,10 @@ func cmdNodeMove(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeOnline(c *cli.Context) {
+func cmdNodeOnline(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
@@ -306,9 +313,10 @@ func cmdNodeOnline(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeOffline(c *cli.Context) {
+func cmdNodeOffline(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
@@ -319,9 +327,10 @@ func cmdNodeOffline(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeAssign(c *cli.Context) {
+func cmdNodeAssign(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"to"}
@@ -342,34 +351,38 @@ func cmdNodeAssign(c *cli.Context) {
 	path := fmt.Sprintf("/nodes/%s/config", nodeId)
 	resp := utl.PutRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeList(c *cli.Context) {
+func cmdNodeList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
 	resp := utl.GetRequest("/nodes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeShow(c *cli.Context) {
+func cmdNodeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeConfig(c *cli.Context) {
+func cmdNodeConfig(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/config", id)
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeSystemPropertyAdd(c *cli.Context) {
+func cmdNodeSystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "value", "view"}
@@ -418,9 +431,10 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/nodes/%s/property/system/", nodeId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdNodeServicePropertyAdd(c *cli.Context) {
+func cmdNodeServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	required := []string{"to", "view"}
@@ -469,6 +483,7 @@ func cmdNodeServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/nodes/%s/property/service/", nodeId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

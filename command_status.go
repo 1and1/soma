@@ -42,7 +42,7 @@ func registerStatus(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdStatusCreate(c *cli.Context) {
+func cmdStatusCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -51,29 +51,33 @@ func cmdStatusCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/status/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdStatusDelete(c *cli.Context) {
+func cmdStatusDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdStatusList(c *cli.Context) {
+func cmdStatusList(c *cli.Context) error {
 	resp := utl.GetRequest("/status/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdStatusShow(c *cli.Context) {
+func cmdStatusShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -109,7 +109,7 @@ func registerRepository(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdRepositoryCreate(c *cli.Context) {
+func cmdRepositoryCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
 
@@ -122,17 +122,19 @@ func cmdRepositoryCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/repository/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryDelete(c *cli.Context) {
+func cmdRepositoryDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdRepositoryRestore(c *cli.Context) {
+func cmdRepositoryRestore(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
@@ -145,9 +147,10 @@ func cmdRepositoryRestore(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryPurge(c *cli.Context) {
+func cmdRepositoryPurge(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
@@ -160,9 +163,10 @@ func cmdRepositoryPurge(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryClear(c *cli.Context) {
+func cmdRepositoryClear(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
@@ -175,9 +179,10 @@ func cmdRepositoryClear(c *cli.Context) {
 
 	resp := utl.PutRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryRename(c *cli.Context) {
+func cmdRepositoryRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
@@ -189,9 +194,10 @@ func cmdRepositoryRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryRepossess(c *cli.Context) {
+func cmdRepositoryRepossess(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
@@ -204,13 +210,15 @@ func cmdRepositoryRepossess(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryClone(c *cli.Context) {
+func cmdRepositoryClone(c *cli.Context) error {
 	utl.NotImplemented()
+	return nil
 }
 
-func cmdRepositoryActivate(c *cli.Context) {
+func cmdRepositoryActivate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
@@ -223,28 +231,32 @@ func cmdRepositoryActivate(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryWipe(c *cli.Context) {
+func cmdRepositoryWipe(c *cli.Context) error {
 	utl.NotImplemented()
+	return nil
 }
 
-func cmdRepositoryList(c *cli.Context) {
+func cmdRepositoryList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest("/repository/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryShow(c *cli.Context) {
+func cmdRepositoryShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositorySystemPropertyAdd(c *cli.Context) {
+func cmdRepositorySystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "value", "view"}
@@ -292,9 +304,10 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdRepositoryServicePropertyAdd(c *cli.Context) {
+func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	required := []string{"to", "view"}
@@ -341,6 +354,7 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/repository/%s/property/service/", repositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

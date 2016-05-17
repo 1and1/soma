@@ -36,7 +36,7 @@ func registerChecks(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdCheckAdd(c *cli.Context) {
+func cmdCheckAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 8)
 
 	opts, constraints, thresholds := utl.ParseVariadicCheckArguments(c.Args().Tail())
@@ -93,9 +93,10 @@ func cmdCheckAdd(c *cli.Context) {
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCheckList(c *cli.Context) {
+func cmdCheckList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 2)
 	multiple := []string{}
 	unique := []string{"in"}
@@ -112,9 +113,10 @@ func cmdCheckList(c *cli.Context) {
 	path := fmt.Sprintf("/checks/%s/", repoId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCheckShow(c *cli.Context) {
+func cmdCheckShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"in"}
@@ -132,6 +134,7 @@ func cmdCheckShow(c *cli.Context) {
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

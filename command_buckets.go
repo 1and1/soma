@@ -150,7 +150,7 @@ func cmdBucketRestore(c *cli.Context) {
 	fmt.Println(resp)
 }
 
-func cmdBucketPurge(c *cli.Context) {
+func cmdBucketPurge(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
@@ -167,9 +167,10 @@ func cmdBucketPurge(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketFreeze(c *cli.Context) {
+func cmdBucketFreeze(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
@@ -186,9 +187,10 @@ func cmdBucketFreeze(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketThaw(c *cli.Context) {
+func cmdBucketThaw(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
@@ -205,9 +207,10 @@ func cmdBucketThaw(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketRename(c *cli.Context) {
+func cmdBucketRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	utl.ValidateCliArgument(c, 2, "to")
 	utl.ValidateCliArgument(c, 4, "repository")
@@ -225,25 +228,28 @@ func cmdBucketRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketList(c *cli.Context) {
+func cmdBucketList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
 	resp := utl.GetRequest("/buckets/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketShow(c *cli.Context) {
+func cmdBucketShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	bucketId := utl.BucketByUUIDOrName(c.Args().First())
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketSystemPropertyAdd(c *cli.Context) {
+func cmdBucketSystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "value", "view"}
@@ -287,9 +293,10 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketServicePropertyAdd(c *cli.Context) {
+func cmdBucketServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	required := []string{"to", "view"}
@@ -335,6 +342,7 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/buckets/%s/property/service/", bucketId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

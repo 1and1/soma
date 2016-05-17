@@ -53,7 +53,7 @@ func registerLevels(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdLevelCreate(c *cli.Context) {
+func cmdLevelCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}
 
@@ -72,29 +72,33 @@ func cmdLevelCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/levels/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdLevelDelete(c *cli.Context) {
+func cmdLevelDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdLevelList(c *cli.Context) {
+func cmdLevelList(c *cli.Context) error {
 	resp := utl.GetRequest("/levels/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdLevelShow(c *cli.Context) {
+func cmdLevelShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

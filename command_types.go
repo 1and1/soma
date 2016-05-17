@@ -49,7 +49,7 @@ func registerTypes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdObjectTypesAdd(c *cli.Context) {
+func cmdObjectTypesAdd(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -76,9 +76,10 @@ func cmdObjectTypesAdd(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectTypesRemove(c *cli.Context) {
+func cmdObjectTypesRemove(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -100,9 +101,10 @@ func cmdObjectTypesRemove(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectTypesRename(c *cli.Context) {
+func cmdObjectTypesRename(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -133,9 +135,10 @@ func cmdObjectTypesRename(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectTypesList(c *cli.Context) {
+func cmdObjectTypesList(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -155,9 +158,10 @@ func cmdObjectTypesList(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectTypesShow(c *cli.Context) {
+func cmdObjectTypesShow(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -181,6 +185,7 @@ func cmdObjectTypesShow(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

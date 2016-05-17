@@ -53,7 +53,7 @@ func registerTeams(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdTeamAdd(c *cli.Context) {
+func cmdTeamAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 3)
 	switch utl.GetCliArgumentCount(c) {
 	case 3, 5:
@@ -85,18 +85,20 @@ func cmdTeamAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/teams/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdTeamDel(c *cli.Context) {
+func cmdTeamDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdTeamRename(c *cli.Context) {
+func cmdTeamRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"to"}
 	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
@@ -110,21 +112,24 @@ func cmdTeamRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdTeamMigrate(c *cli.Context) {
+func cmdTeamMigrate(c *cli.Context) error {
 	// XXX
 	utl.Abort("Not implemented")
+	return nil
 }
 
-func cmdTeamList(c *cli.Context) {
+func cmdTeamList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
 	resp := utl.GetRequest("/teams/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdTeamShow(c *cli.Context) {
+func cmdTeamShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
@@ -132,6 +137,7 @@ func cmdTeamShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -42,7 +42,7 @@ func registerModes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdModeCreate(c *cli.Context) {
+func cmdModeCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -51,29 +51,33 @@ func cmdModeCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/modes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdModeDelete(c *cli.Context) {
+func cmdModeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdModeList(c *cli.Context) {
+func cmdModeList(c *cli.Context) error {
 	resp := utl.GetRequest("/modes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdModeShow(c *cli.Context) {
+func cmdModeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

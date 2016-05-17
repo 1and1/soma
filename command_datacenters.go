@@ -70,7 +70,7 @@ func registerDatacenters(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdDatacentersAdd(c *cli.Context) {
+func cmdDatacentersAdd(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -97,9 +97,10 @@ func cmdDatacentersAdd(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdDatacentersAddToGroup(c *cli.Context) {
+func cmdDatacentersAddToGroup(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -130,9 +131,10 @@ func cmdDatacentersAddToGroup(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s", resp.Status())
+	return nil
 }
 
-func cmdDatacentersRemove(c *cli.Context) {
+func cmdDatacentersRemove(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -154,9 +156,10 @@ func cmdDatacentersRemove(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdDatacentersRemoveFromGroup(c *cli.Context) {
+func cmdDatacentersRemoveFromGroup(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -187,9 +190,10 @@ func cmdDatacentersRemoveFromGroup(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s", resp.Status())
+	return nil
 }
 
-func cmdDatacentersRename(c *cli.Context) {
+func cmdDatacentersRename(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -220,9 +224,10 @@ func cmdDatacentersRename(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdDatacentersList(c *cli.Context) {
+func cmdDatacentersList(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -242,29 +247,33 @@ func cmdDatacentersList(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdDatacentersListGroups(c *cli.Context) {
+func cmdDatacentersListGroups(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
 	resp := utl.GetRequest("/datacentergroups/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdDatacentersShowGroup(c *cli.Context) {
+func cmdDatacentersShowGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/datacentergroups/%s", c.Args().First())
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdDatacentersShow(c *cli.Context) {
+func cmdDatacentersShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

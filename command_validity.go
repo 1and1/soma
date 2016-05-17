@@ -41,7 +41,7 @@ func registerValidity(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdValidityCreate(c *cli.Context) {
+func cmdValidityCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{"on", "direct", "inherited"}
@@ -63,29 +63,33 @@ func cmdValidityCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/validity/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdValidityDelete(c *cli.Context) {
+func cmdValidityDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/validity/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdValidityList(c *cli.Context) {
+func cmdValidityList(c *cli.Context) error {
 	resp := utl.GetRequest("/validity/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdValidityShow(c *cli.Context) {
+func cmdValidityShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/validity/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

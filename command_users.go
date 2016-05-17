@@ -110,7 +110,7 @@ func registerUsers(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdUserAdd(c *cli.Context) {
+func cmdUserAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 11)
 	multiple := []string{}
 	unique := []string{"firstname", "lastname", "employeenr",
@@ -156,9 +156,10 @@ func cmdUserAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/users/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUserMarkDeleted(c *cli.Context) {
+func cmdUserMarkDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
@@ -166,9 +167,10 @@ func cmdUserMarkDeleted(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUserPurgeDeleted(c *cli.Context) {
+func cmdUserPurgeDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
@@ -182,6 +184,7 @@ func cmdUserPurgeDeleted(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 /*
@@ -316,18 +319,20 @@ func cmdUserDeactivate(c *cli.Context) {
 }
 */
 
-func cmdUserList(c *cli.Context) {
+func cmdUserList(c *cli.Context) error {
 	resp := utl.GetRequest("/users/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUserShow(c *cli.Context) {
+func cmdUserShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetUserByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/users/%s", id)
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 /*

@@ -49,7 +49,7 @@ func registerEnvironments(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdEnvironmentsAdd(c *cli.Context) {
+func cmdEnvironmentsAdd(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -76,9 +76,10 @@ func cmdEnvironmentsAdd(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdEnvironmentsRemove(c *cli.Context) {
+func cmdEnvironmentsRemove(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -100,9 +101,10 @@ func cmdEnvironmentsRemove(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdEnvironmentsRename(c *cli.Context) {
+func cmdEnvironmentsRename(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -133,9 +135,10 @@ func cmdEnvironmentsRename(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdEnvironmentsList(c *cli.Context) {
+func cmdEnvironmentsList(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -155,9 +158,10 @@ func cmdEnvironmentsList(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdEnvironmentsShow(c *cli.Context) {
+func cmdEnvironmentsShow(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -181,6 +185,7 @@ func cmdEnvironmentsShow(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

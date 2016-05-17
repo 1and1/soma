@@ -49,7 +49,7 @@ func registerStates(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdObjectStatesAdd(c *cli.Context) {
+func cmdObjectStatesAdd(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -78,9 +78,10 @@ func cmdObjectStatesAdd(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectStatesRemove(c *cli.Context) {
+func cmdObjectStatesRemove(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -102,9 +103,10 @@ func cmdObjectStatesRemove(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectStatesRename(c *cli.Context) {
+func cmdObjectStatesRename(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -135,9 +137,10 @@ func cmdObjectStatesRename(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectStatesList(c *cli.Context) {
+func cmdObjectStatesList(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -157,9 +160,10 @@ func cmdObjectStatesList(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
-func cmdObjectStatesShow(c *cli.Context) {
+func cmdObjectStatesShow(c *cli.Context) error {
 	url, err := url.Parse(Cfg.Api)
 	if err != nil {
 		log.Fatal(err)
@@ -183,6 +187,7 @@ func cmdObjectStatesShow(c *cli.Context) {
 		log.Fatal(err)
 	}
 	log.Printf("Response: %s\n", resp.Status())
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

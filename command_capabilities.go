@@ -44,7 +44,7 @@ func registerCapability(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdCapabilityDeclare(c *cli.Context) {
+func cmdCapabilityDeclare(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{"metric", "view", "thresholds"}
@@ -72,9 +72,10 @@ func cmdCapabilityDeclare(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/capability/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCapabilityRevoke(c *cli.Context) {
+func cmdCapabilityRevoke(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	id := utl.TryGetCapabilityByUUIDOrName(c.Args().First())
@@ -82,14 +83,16 @@ func cmdCapabilityRevoke(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCapabilityList(c *cli.Context) {
+func cmdCapabilityList(c *cli.Context) error {
 	resp := utl.GetRequest("/capability/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCapabilityShow(c *cli.Context) {
+func cmdCapabilityShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	id := utl.TryGetCapabilityByUUIDOrName(c.Args().First())
@@ -97,6 +100,7 @@ func cmdCapabilityShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
