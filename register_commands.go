@@ -10,6 +10,11 @@ func registerCommands(app cli.App) *cli.App {
 			Usage:  "Initialize local client files",
 			Action: cmdClientInit,
 		},
+		{
+			Name:   "experiment",
+			Usage:  "Test cli.Action functionality",
+			Action: runtime(cmdExperiment),
+		},
 	}
 
 	app = *registerAttributes(app)

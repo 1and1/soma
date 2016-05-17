@@ -45,3 +45,13 @@ func runtimePreCmd(c *cli.Context) error {
 	//
 	return nil
 }
+
+func runtime(action cli.ActionFunc) cli.ActionFunc {
+	return func(c *cli.Context) error {
+		fmt.Println("Do stuff here")
+
+		return action(c)
+	}
+}
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
