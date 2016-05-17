@@ -1927,7 +1927,7 @@ func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*somatree.Check, er
 			ncon.Key = constr.System.Name
 			ncon.Value = constr.System.Value
 		case "service":
-			ncon.Key = "Name"
+			ncon.Key = "name"
 			ncon.Value = constr.Service.Name
 		case "attribute":
 			ncon.Key = constr.Attribute.Name
