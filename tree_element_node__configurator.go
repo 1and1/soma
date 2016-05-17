@@ -27,9 +27,6 @@ checksloop:
 		if ten.Checks[i].Inherited == false && ten.Checks[i].ChildrenOnly == true {
 			continue checksloop
 		}
-		if ten.Checks[i].View == "local" {
-			continue checksloop
-		}
 		hasBrokenConstraint := false
 		hasServiceConstraint := false
 		hasAttributeConstraint := false
