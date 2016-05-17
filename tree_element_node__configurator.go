@@ -523,6 +523,10 @@ func (ten *SomaTreeElemNode) evalNativeProp(
 		if val == ten.State {
 			return true
 		}
+	case "hardware_node":
+		// XX needs ten.ServerName extension of ten
+		// if val == ten.ServerName { return true }
+		return false
 	}
 	return false
 }
@@ -531,7 +535,7 @@ func (ten *SomaTreeElemNode) evalSystemProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range ten.PropertySystem {
 		t := v.(*PropertySystem)
-		if t.Key == prop && t.Value == val && t.View == view {
+		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
 			return t.Key, true
 		}
 	}
@@ -542,8 +546,8 @@ func (ten *SomaTreeElemNode) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range ten.PropertyOncall {
 		t := v.(*PropertyOncall)
-		if "name" == prop && t.Name == val && t.View == view {
-			return t.Name, true
+		if "OncallId" == prop && t.Id.String() == val && (t.View == view || t.View == `any`) {
+			return t.Id.String(), true
 		}
 	}
 	return "", false
@@ -553,7 +557,7 @@ func (ten *SomaTreeElemNode) evalCustomProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range ten.PropertyCustom {
 		t := v.(*PropertyCustom)
-		if t.Key == prop && t.Value == val && t.View == view {
+		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
 			return t.Key, true
 		}
 	}
@@ -564,8 +568,8 @@ func (ten *SomaTreeElemNode) evalServiceProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range ten.PropertyService {
 		t := v.(*PropertyService)
-		if prop == "name" && t.Service == val && t.View == view {
-			return t.View, true
+		if prop == "name" && (t.Service == val || val == `@defined`) && (t.View == view || t.View == `any`) {
+			return t.Id.String(), true
 		}
 	}
 	return "", false
@@ -579,7 +583,7 @@ func (ten *SomaTreeElemNode) evalAttributeOfService(
 			continue
 		}
 		for _, a := range t.Attributes {
-			if a.Name == attribute && t.View == view && a.Value == value {
+			if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
 				return true
 			}
 		}
@@ -593,7 +597,7 @@ func (ten *SomaTreeElemNode) evalAttributeProp(
 	for _, v := range ten.PropertyService {
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
-			if a.Name == attr && a.Value == value && t.View == view {
+			if a.Name == attr && (a.Value == value || value == `@defined`) && (t.View == view || view == `any`) {
 				f[t.Id.String()] = a.Name
 			}
 		}

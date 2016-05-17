@@ -526,6 +526,9 @@ func (tec *SomaTreeElemCluster) evalNativeProp(
 		if val == tec.State {
 			return true
 		}
+	case "hardware_node":
+		// cluster != hardware
+		return false
 	}
 	return false
 }
@@ -534,7 +537,7 @@ func (tec *SomaTreeElemCluster) evalSystemProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range tec.PropertySystem {
 		t := v.(*PropertySystem)
-		if t.Key == prop && t.Value == val && t.View == view {
+		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
 			return t.Key, true
 		}
 	}
@@ -545,8 +548,8 @@ func (tec *SomaTreeElemCluster) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range tec.PropertyOncall {
 		t := v.(*PropertyOncall)
-		if "name" == prop && t.Name == val && t.View == view {
-			return t.Name, true
+		if "OncallId" == prop && t.Id.String() == val && (t.View == view || t.View == `any`) {
+			return t.Id.String(), true
 		}
 	}
 	return "", false
@@ -556,7 +559,7 @@ func (tec *SomaTreeElemCluster) evalCustomProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range tec.PropertyCustom {
 		t := v.(*PropertyCustom)
-		if t.Key == prop && t.Value == val && t.View == view {
+		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
 			return t.Key, true
 		}
 	}
@@ -567,8 +570,8 @@ func (tec *SomaTreeElemCluster) evalServiceProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range tec.PropertyService {
 		t := v.(*PropertyService)
-		if prop == "name" && t.Service == val && t.View == view {
-			return t.View, true
+		if prop == "name" && (t.Service == val || val == `@defined`) && (t.View == view || t.View == `any`) {
+			return t.Id.String(), true
 		}
 	}
 	return "", false
@@ -582,7 +585,7 @@ func (tec *SomaTreeElemCluster) evalAttributeOfService(
 			continue
 		}
 		for _, a := range t.Attributes {
-			if a.Name == attribute && t.View == view && a.Value == value {
+			if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
 				return true
 			}
 		}
@@ -596,7 +599,7 @@ func (tec *SomaTreeElemCluster) evalAttributeProp(
 	for _, v := range tec.PropertyService {
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
-			if a.Name == attr && a.Value == value && t.View == view {
+			if a.Name == attr && (a.Value == value || value == `@defined`) && (t.View == view || view == `any`) {
 				f[t.Id.String()] = a.Name
 			}
 		}

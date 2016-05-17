@@ -526,6 +526,9 @@ func (teg *SomaTreeElemGroup) evalNativeProp(
 		if val == teg.State {
 			return true
 		}
+	case "hardware_node":
+		// group != hardware
+		return false
 	}
 	return false
 }
@@ -534,7 +537,7 @@ func (teg *SomaTreeElemGroup) evalSystemProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range teg.PropertySystem {
 		t := v.(*PropertySystem)
-		if t.Key == prop && t.Value == val && t.View == view {
+		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
 			return t.Key, true
 		}
 	}
@@ -545,8 +548,8 @@ func (teg *SomaTreeElemGroup) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range teg.PropertyOncall {
 		t := v.(*PropertyOncall)
-		if "name" == prop && t.Name == val && t.View == view {
-			return t.Name, true
+		if "OncallId" == prop && t.Id.String() == val && (t.View == view || t.View == `any`) {
+			return t.Id.String(), true
 		}
 	}
 	return "", false
@@ -556,7 +559,7 @@ func (teg *SomaTreeElemGroup) evalCustomProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range teg.PropertyCustom {
 		t := v.(*PropertyCustom)
-		if t.Key == prop && t.Value == val && t.View == view {
+		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
 			return t.Key, true
 		}
 	}
@@ -567,8 +570,8 @@ func (teg *SomaTreeElemGroup) evalServiceProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range teg.PropertyService {
 		t := v.(*PropertyService)
-		if prop == "name" && t.Service == val && t.View == view {
-			return t.View, true
+		if prop == "name" && (t.Service == val || val == `@defined`) && (t.View == view || t.View == `any`) {
+			return t.Id.String(), true
 		}
 	}
 	return "", false
@@ -582,7 +585,7 @@ func (teg *SomaTreeElemGroup) evalAttributeOfService(
 			continue
 		}
 		for _, a := range t.Attributes {
-			if a.Name == attribute && t.View == view && a.Value == value {
+			if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
 				return true
 			}
 		}
@@ -596,7 +599,7 @@ func (teg *SomaTreeElemGroup) evalAttributeProp(
 	for _, v := range teg.PropertyService {
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
-			if a.Name == attr && a.Value == value && t.View == view {
+			if a.Name == attr && (a.Value == value || value == `@defined`) && (t.View == view || view == `any`) {
 				f[t.Id.String()] = a.Name
 			}
 		}
