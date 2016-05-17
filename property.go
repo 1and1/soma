@@ -158,6 +158,7 @@ func (t *ServiceAttribute) DeepCompareSlice(a *[]ServiceAttribute) bool {
 
 func NewPropertyRequest() Request {
 	return Request{
+		Flags:    &Flags{},
 		Property: &Property{},
 	}
 }

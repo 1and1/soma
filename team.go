@@ -27,7 +27,8 @@ func (p *Team) DeepCompare(a *Team) bool {
 
 func NewTeamRequest() Request {
 	return Request{
-		Team: &Team{},
+		Flags: &Flags{},
+		Team:  &Team{},
 	}
 }
 

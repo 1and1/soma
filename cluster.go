@@ -49,6 +49,7 @@ member:
 
 func NewClusterRequest() Request {
 	return Request{
+		Flags:   &Flags{},
 		Cluster: &Cluster{},
 	}
 }

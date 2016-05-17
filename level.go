@@ -19,6 +19,7 @@ type LevelDetails struct {
 
 func NewLevelRequest() Request {
 	return Request{
+		Flags: &Flags{},
 		Level: &Level{},
 	}
 }

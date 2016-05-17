@@ -12,6 +12,7 @@ type AttributeDetails struct {
 
 func NewAttributeRequest() Request {
 	return Request{
+		Flags:     &Flags{},
 		Attribute: &Attribute{},
 	}
 }

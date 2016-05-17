@@ -11,6 +11,7 @@ type StatusDetails struct {
 
 func NewStatusRequest() Request {
 	return Request{
+		Flags:  &Flags{},
 		Status: &Status{},
 	}
 }

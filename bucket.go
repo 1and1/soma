@@ -26,6 +26,7 @@ type BucketDetails struct {
 
 func NewBucketRequest() Request {
 	return Request{
+		Flags:  &Flags{},
 		Bucket: &Bucket{},
 	}
 }

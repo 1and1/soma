@@ -11,6 +11,7 @@ type EnvironmentDetails struct {
 
 func NewEnvironmentRequest() Request {
 	return Request{
+		Flags:       &Flags{},
 		Environment: &Environment{},
 	}
 }

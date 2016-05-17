@@ -126,6 +126,7 @@ func (c *CapabilityConstraint) DeepCompareSlice(a *[]CapabilityConstraint) bool 
 
 func NewCapabilityRequest() Request {
 	return Request{
+		Flags: &Flags{},
 		Capability: &Capability{
 			Demux:       &[]string{},
 			Constraints: &[]CapabilityConstraint{},

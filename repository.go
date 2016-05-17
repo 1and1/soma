@@ -23,6 +23,7 @@ type RepositoryDetails struct {
 
 func NewRepositoryRequest() Request {
 	return Request{
+		Flags:      &Flags{},
 		Repository: &Repository{},
 	}
 }

@@ -33,7 +33,8 @@ type UserFilter struct {
 
 func NewUserRequest() Request {
 	return Request{
-		User: &User{},
+		Flags: &Flags{},
+		User:  &User{},
 	}
 }
 

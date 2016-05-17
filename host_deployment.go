@@ -8,6 +8,7 @@ type HostDeployment struct {
 
 func NewHostDeploymentRequest() Request {
 	return Request{
+		Flags:          &Flags{},
 		HostDeployment: &HostDeployment{},
 	}
 }

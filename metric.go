@@ -66,6 +66,7 @@ func (p *MetricPackage) DeepCompareSlice(a *[]MetricPackage) bool {
 
 func NewMetricRequest() Request {
 	return Request{
+		Flags:  &Flags{},
 		Metric: &Metric{},
 	}
 }

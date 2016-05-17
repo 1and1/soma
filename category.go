@@ -11,6 +11,7 @@ type CategoryDetails struct {
 
 func NewCategoryRequest() Request {
 	return Request{
+		Flags:    &Flags{},
 		Category: &Category{},
 	}
 }

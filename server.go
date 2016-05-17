@@ -39,6 +39,7 @@ func (p *Server) DeepCompare(a *Server) bool {
 
 func NewServerRequest() Request {
 	return Request{
+		Flags:  &Flags{},
 		Server: &Server{},
 	}
 }

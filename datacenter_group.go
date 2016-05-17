@@ -12,6 +12,7 @@ type DatacenterGroupDetails struct {
 
 func NewDatacenterGroupRequest() Request {
 	return Request{
+		Flags:           &Flags{},
 		DatacenterGroup: &DatacenterGroup{},
 	}
 }

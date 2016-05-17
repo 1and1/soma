@@ -25,7 +25,8 @@ func (p *Unit) DeepCompare(a *Unit) bool {
 
 func NewUnitRequest() Request {
 	return Request{
-		Unit: &Unit{},
+		Flags: &Flags{},
+		Unit:  &Unit{},
 	}
 }
 

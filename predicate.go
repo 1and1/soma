@@ -11,6 +11,7 @@ type PredicateDetails struct {
 
 func NewPredicateRequest() Request {
 	return Request{
+		Flags:     &Flags{},
 		Predicate: &Predicate{},
 	}
 }

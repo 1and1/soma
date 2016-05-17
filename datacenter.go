@@ -11,6 +11,7 @@ type DatacenterDetails struct {
 
 func NewDatacenterRequest() Request {
 	return Request{
+		Flags:      &Flags{},
 		Datacenter: &Datacenter{},
 	}
 }

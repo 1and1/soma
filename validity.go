@@ -14,6 +14,7 @@ type ValidityDetails struct {
 
 func NewValidityRequest() Request {
 	return Request{
+		Flags:    &Flags{},
 		Validity: &Validity{},
 	}
 }

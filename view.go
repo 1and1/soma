@@ -11,7 +11,8 @@ type ViewDetails struct {
 
 func NewViewRequest() Request {
 	return Request{
-		View: &View{},
+		Flags: &Flags{},
+		View:  &View{},
 	}
 }
 

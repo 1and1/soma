@@ -13,6 +13,7 @@ type PermissionDetails struct {
 
 func NewPermissionRequest() Request {
 	return Request{
+		Flags:      &Flags{},
 		Permission: &Permission{},
 	}
 }

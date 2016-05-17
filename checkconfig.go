@@ -155,6 +155,7 @@ revconstrloop:
 
 func NewCheckConfigRequest() Request {
 	return Request{
+		Flags:       &Flags{},
 		CheckConfig: &CheckConfig{},
 	}
 }

@@ -16,6 +16,7 @@ type GrantDetails struct {
 
 func NewGrantRequest() Request {
 	return Request{
+		Flags: &Flags{},
 		Grant: &Grant{},
 	}
 }

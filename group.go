@@ -36,6 +36,7 @@ func (p *Group) DeepCompare(a *Group) bool {
 
 func NewGroupRequest() Request {
 	return Request{
+		Flags: &Flags{},
 		Group: &Group{},
 	}
 }

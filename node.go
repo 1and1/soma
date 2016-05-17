@@ -55,7 +55,8 @@ func (p *Node) DeepCompare(a *Node) bool {
 
 func NewNodeRequest() Request {
 	return Request{
-		Node: &Node{},
+		Flags: &Flags{},
+		Node:  &Node{},
 	}
 }
 

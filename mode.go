@@ -11,7 +11,8 @@ type ModeDetails struct {
 
 func NewModeRequest() Request {
 	return Request{
-		Mode: &Mode{},
+		Flags: &Flags{},
+		Mode:  &Mode{},
 	}
 }
 

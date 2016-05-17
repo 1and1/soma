@@ -12,6 +12,7 @@ type EntityDetails struct {
 
 func NewEntityRequest() Request {
 	return Request{
+		Flags:  &Flags{},
 		Entity: &Entity{},
 	}
 }

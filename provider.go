@@ -15,6 +15,7 @@ type ProviderDetails struct {
 
 func NewProviderRequest() Request {
 	return Request{
+		Flags:    &Flags{},
 		Provider: &Provider{},
 	}
 }

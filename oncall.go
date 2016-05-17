@@ -31,6 +31,7 @@ func (p *Oncall) DeepCompare(a *Oncall) bool {
 
 func NewOncallRequest() Request {
 	return Request{
+		Flags:  &Flags{},
 		Oncall: &Oncall{},
 	}
 }

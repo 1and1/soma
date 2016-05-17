@@ -33,6 +33,7 @@ func (p *Monitoring) DeepCompare(a *Monitoring) bool {
 
 func NewMonitoringRequest() Request {
 	return Request{
+		Flags:      &Flags{},
 		Monitoring: &Monitoring{},
 	}
 }
