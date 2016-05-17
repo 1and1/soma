@@ -118,7 +118,7 @@ VALUES
 	queryMap["insertRootRestricted"] = `
 INSERT INTO root.flags (
     flag,
-    status
+    status )
 VALUES
     ( 'restricted', false ),
     ( 'disabled', false )
