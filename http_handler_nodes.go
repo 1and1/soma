@@ -141,7 +141,11 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 	action := "delete"
 
 	cReq := proto.NewNodeRequest()
-	_ = DecodeJsonBody(r, &cReq)
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
 	if cReq.Flags.Purge {
 		action = "purge"
 	}
