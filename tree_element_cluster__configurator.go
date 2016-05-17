@@ -66,8 +66,8 @@ checksloop:
 					break constraintcheck
 				}
 			case "system":
-				if id, hit := tec.evalSystemProp(c.Key, c.Value, view); hit {
-					systemC[id] = c.Value
+				if id, hit, bind := tec.evalSystemProp(c.Key, c.Value, view); hit {
+					systemC[id] = bind
 				} else {
 					hasBrokenConstraint = true
 					break constraintcheck
@@ -80,16 +80,16 @@ checksloop:
 					break constraintcheck
 				}
 			case "custom":
-				if id, hit := tec.evalCustomProp(c.Key, c.Value, view); hit {
-					customC[id] = c.Value
+				if id, hit, bind := tec.evalCustomProp(c.Key, c.Value, view); hit {
+					customC[id] = bind
 				} else {
 					hasBrokenConstraint = true
 					break constraintcheck
 				}
 			case "service":
 				hasServiceConstraint = true
-				if id, hit := tec.evalServiceProp(c.Key, c.Value, view); hit {
-					serviceC[id] = c.Value
+				if id, hit, bind := tec.evalServiceProp(c.Key, c.Value, view); hit {
+					serviceC[id] = bind
 				} else {
 					hasBrokenConstraint = true
 					break constraintcheck
@@ -120,13 +120,13 @@ checksloop:
 		svcattrloop:
 			for id, _ := range serviceC {
 				for _, attr := range attributes {
-					hit := tec.evalAttributeOfService(id, view, attr.Key, attr.Value)
+					hit, bind := tec.evalAttributeOfService(id, view, attr.Key, attr.Value)
 					if hit {
 						if attributeC[id] == nil {
 							// attributeC[id] might still be a nil map
 							attributeC[id] = map[string][]string{}
 						}
-						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], attr.Value)
+						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], bind)
 					} else {
 						hasBrokenConstraint = true
 						break svcattrloop
@@ -143,19 +143,22 @@ checksloop:
 			for _, attr := range attributes {
 				hit, svcIdMap := tec.evalAttributeProp(view, attr.Key, attr.Value)
 				if hit {
-					for id, _ := range svcIdMap {
+					for id, bind := range svcIdMap {
 						serviceC[id] = svcIdMap[id]
 						if attributeC[id] == nil {
 							// attributeC[id] might still be a nil map
-							attributeC[id] = map[string][]string{}
+							attributeC[id] = make(map[string][]string)
 						}
-						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], attr.Value)
+						attributeC[id][attr.Key] = append(attributeC[id][attr.Key], bind)
 					}
 				}
 			}
 			// delete all services that did not match all attributes
+			//
+			// if a check has two attribute constraints on the same
+			// attribute, then len(attributeC[id]) != len(attributes)
 			for id, _ := range attributeC {
-				if len(attributeC[id]) != attrCount {
+				if tec.countAttribC(attributeC[id]) != attrCount {
 					delete(serviceC, id)
 					delete(attributeC, id)
 				}
@@ -534,14 +537,14 @@ func (tec *SomaTreeElemCluster) evalNativeProp(
 }
 
 func (tec *SomaTreeElemCluster) evalSystemProp(
-	prop string, val string, view string) (string, bool) {
+	prop string, val string, view string) (string, bool, string) {
 	for _, v := range tec.PropertySystem {
 		t := v.(*PropertySystem)
 		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
-			return t.Key, true
+			return t.Key, true, t.Value
 		}
 	}
-	return "", false
+	return "", false, ""
 }
 
 func (tec *SomaTreeElemCluster) evalOncallProp(
@@ -556,41 +559,36 @@ func (tec *SomaTreeElemCluster) evalOncallProp(
 }
 
 func (tec *SomaTreeElemCluster) evalCustomProp(
-	prop string, val string, view string) (string, bool) {
+	prop string, val string, view string) (string, bool, string) {
 	for _, v := range tec.PropertyCustom {
 		t := v.(*PropertyCustom)
 		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
-			return t.Key, true
+			return t.Key, true, t.Value
 		}
 	}
-	return "", false
+	return "", false, ""
 }
 
 func (tec *SomaTreeElemCluster) evalServiceProp(
-	prop string, val string, view string) (string, bool) {
+	prop string, val string, view string) (string, bool, string) {
 	for _, v := range tec.PropertyService {
 		t := v.(*PropertyService)
 		if prop == "name" && (t.Service == val || val == `@defined`) && (t.View == view || t.View == `any`) {
-			return t.Id.String(), true
+			return t.Id.String(), true, t.Service
 		}
 	}
-	return "", false
+	return "", false, ""
 }
 
 func (tec *SomaTreeElemCluster) evalAttributeOfService(
-	svcName string, view string, attribute string, value string) bool {
-	for _, v := range tec.PropertyService {
-		t := v.(*PropertyService)
-		if t.Service != svcName {
-			continue
-		}
-		for _, a := range t.Attributes {
-			if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
-				return true
-			}
+	svcId string, view string, attribute string, value string) (bool, string) {
+	t := tec.PropertyService[svcId].(*PropertyService)
+	for _, a := range t.Attributes {
+		if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
+			return true, a.Value
 		}
 	}
-	return false
+	return false, ""
 }
 
 func (tec *SomaTreeElemCluster) evalAttributeProp(
@@ -601,7 +599,7 @@ svcloop:
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
 			if a.Name == attr && (a.Value == value || value == `@defined`) && (t.View == view || t.View == `any`) {
-				f[t.Id.String()] = a.Name
+				f[t.Id.String()] = a.Value
 				continue svcloop
 			}
 		}
@@ -621,6 +619,14 @@ func (tec *SomaTreeElemCluster) getServiceMap(serviceId string) map[string][]str
 		res[v.Name] = append(res[v.Name], v.Value)
 	}
 	return res
+}
+
+func (tec *SomaTreeElemCluster) countAttribC(attributeC map[string][]string) int {
+	var count int = 0
+	for key, _ := range attributeC {
+		count = count + len(attributeC[key])
+	}
+	return count
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
