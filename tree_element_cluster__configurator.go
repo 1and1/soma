@@ -596,11 +596,13 @@ func (tec *SomaTreeElemCluster) evalAttributeOfService(
 func (tec *SomaTreeElemCluster) evalAttributeProp(
 	view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
+svcloop:
 	for _, v := range tec.PropertyService {
 		t := v.(*PropertyService)
 		for _, a := range t.Attributes {
-			if a.Name == attr && (a.Value == value || value == `@defined`) && (t.View == view || view == `any`) {
+			if a.Name == attr && (a.Value == value || value == `@defined`) && (t.View == view || t.View == `any`) {
 				f[t.Id.String()] = a.Name
+				continue svcloop
 			}
 		}
 	}
