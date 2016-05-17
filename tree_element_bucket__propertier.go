@@ -119,9 +119,10 @@ customloop:
 		if !teb.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := new(PropertyCustom)
-		*f = *teb.PropertyCustom[prop].(*PropertyCustom)
-		f.Inherited = true
+		f := teb.PropertyCustom[prop].(*PropertyCustom).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teb.Children[childId].inheritProperty(f)
 	}
 oncallloop:
@@ -129,9 +130,10 @@ oncallloop:
 		if !teb.PropertyOncall[prop].hasInheritance() {
 			continue oncallloop
 		}
-		f := new(PropertyOncall)
-		*f = *teb.PropertyOncall[prop].(*PropertyOncall)
-		f.Inherited = true
+		f := teb.PropertyOncall[prop].(*PropertyOncall).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teb.Children[childId].inheritProperty(f)
 	}
 serviceloop:
@@ -139,9 +141,10 @@ serviceloop:
 		if !teb.PropertyService[prop].hasInheritance() {
 			continue serviceloop
 		}
-		f := new(PropertyService)
-		*f = *teb.PropertyService[prop].(*PropertyService)
-		f.Inherited = true
+		f := teb.PropertyService[prop].(*PropertyService).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teb.Children[childId].inheritProperty(f)
 	}
 systemloop:
@@ -149,9 +152,10 @@ systemloop:
 		if !teb.PropertySystem[prop].hasInheritance() {
 			continue systemloop
 		}
-		f := new(PropertySystem)
-		*f = *teb.PropertySystem[prop].(*PropertySystem)
-		f.Inherited = true
+		f := teb.PropertySystem[prop].(*PropertySystem).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teb.Children[childId].inheritProperty(f)
 	}
 }

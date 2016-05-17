@@ -119,10 +119,10 @@ customloop:
 		if !tec.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := new(PropertyCustom)
-		*f = *tec.PropertyCustom[prop].(*PropertyCustom)
-		f.Inherited = true
-		f.Id = uuid.Nil
+		f := tec.PropertyCustom[prop].(*PropertyCustom).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		tec.Children[childId].inheritProperty(f)
 	}
 oncallloop:
@@ -130,10 +130,10 @@ oncallloop:
 		if !tec.PropertyOncall[prop].hasInheritance() {
 			continue oncallloop
 		}
-		f := new(PropertyOncall)
-		*f = *tec.PropertyOncall[prop].(*PropertyOncall)
-		f.Inherited = true
-		f.Id = uuid.Nil
+		f := tec.PropertyOncall[prop].(*PropertyOncall).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		tec.Children[childId].inheritProperty(f)
 	}
 serviceloop:
@@ -141,10 +141,10 @@ serviceloop:
 		if !tec.PropertyService[prop].hasInheritance() {
 			continue serviceloop
 		}
-		f := new(PropertyService)
-		*f = *tec.PropertyService[prop].(*PropertyService)
-		f.Inherited = true
-		f.Id = uuid.Nil
+		f := tec.PropertyService[prop].(*PropertyService).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		tec.Children[childId].inheritProperty(f)
 	}
 systemloop:
@@ -152,10 +152,10 @@ systemloop:
 		if !tec.PropertySystem[prop].hasInheritance() {
 			continue systemloop
 		}
-		f := new(PropertySystem)
-		*f = *tec.PropertySystem[prop].(*PropertySystem)
-		f.Inherited = true
-		f.Id = uuid.Nil
+		f := tec.PropertySystem[prop].(*PropertySystem).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		tec.Children[childId].inheritProperty(f)
 	}
 }

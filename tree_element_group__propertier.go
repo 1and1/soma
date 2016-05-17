@@ -125,9 +125,10 @@ customloop:
 		if !teg.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := new(PropertyCustom)
-		*f = *teg.PropertyCustom[prop].(*PropertyCustom)
-		f.Inherited = true
+		f := teg.PropertyCustom[prop].(*PropertyCustom)
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teg.Children[childId].inheritProperty(f)
 	}
 oncallloop:
@@ -135,9 +136,10 @@ oncallloop:
 		if !teg.PropertyOncall[prop].hasInheritance() {
 			continue oncallloop
 		}
-		f := new(PropertyOncall)
-		*f = *teg.PropertyOncall[prop].(*PropertyOncall)
-		f.Inherited = true
+		f := teg.PropertyOncall[prop].(*PropertyOncall).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teg.Children[childId].inheritProperty(f)
 	}
 serviceloop:
@@ -145,9 +147,10 @@ serviceloop:
 		if !teg.PropertyService[prop].hasInheritance() {
 			continue serviceloop
 		}
-		f := new(PropertyService)
-		*f = *teg.PropertyService[prop].(*PropertyService)
-		f.Inherited = true
+		f := teg.PropertyService[prop].(*PropertyService).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teg.Children[childId].inheritProperty(f)
 	}
 systemloop:
@@ -155,9 +158,10 @@ systemloop:
 		if !teg.PropertySystem[prop].hasInheritance() {
 			continue systemloop
 		}
-		f := new(PropertySystem)
-		*f = *teg.PropertySystem[prop].(*PropertySystem)
-		f.Inherited = true
+		f := teg.PropertySystem[prop].(*PropertySystem).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		teg.Children[childId].inheritProperty(f)
 	}
 }

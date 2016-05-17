@@ -119,9 +119,10 @@ customloop:
 		if !ter.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := new(PropertyCustom)
-		*f = *ter.PropertyCustom[prop].(*PropertyCustom)
-		f.Inherited = true
+		f := ter.PropertyCustom[prop].(*PropertyCustom).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		ter.Children[childId].inheritProperty(f)
 	}
 oncallloop:
@@ -129,9 +130,10 @@ oncallloop:
 		if !ter.PropertyOncall[prop].hasInheritance() {
 			continue oncallloop
 		}
-		f := new(PropertyOncall)
-		*f = *ter.PropertyOncall[prop].(*PropertyOncall)
-		f.Inherited = true
+		f := ter.PropertyOncall[prop].(*PropertyOncall).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		ter.Children[childId].inheritProperty(f)
 	}
 serviceloop:
@@ -139,9 +141,10 @@ serviceloop:
 		if !ter.PropertyService[prop].hasInheritance() {
 			continue serviceloop
 		}
-		f := new(PropertyService)
-		*f = *ter.PropertyService[prop].(*PropertyService)
-		f.Inherited = true
+		f := ter.PropertyService[prop].(*PropertyService).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		ter.Children[childId].inheritProperty(f)
 	}
 systemloop:
@@ -149,9 +152,10 @@ systemloop:
 		if !ter.PropertySystem[prop].hasInheritance() {
 			continue systemloop
 		}
-		f := new(PropertySystem)
-		*f = *ter.PropertySystem[prop].(*PropertySystem)
-		f.Inherited = true
+		f := ter.PropertySystem[prop].(*PropertySystem).Clone()
+		f.SetInherited(true)
+		f.SetId(uuid.UUID{})
+		f.clearInstances()
 		ter.Children[childId].inheritProperty(f)
 	}
 }
