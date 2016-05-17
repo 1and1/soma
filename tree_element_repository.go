@@ -2,6 +2,7 @@ package somatree
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sync"
 
@@ -214,6 +215,12 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 //
 //
 func (ter *SomaTreeElemRepository) ComputeCheckInstances() {
+	log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+		ter.Name,
+		`ComputeCheckInstances`,
+		`repository`,
+		ter.Id.String(),
+	)
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)

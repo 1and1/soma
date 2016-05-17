@@ -2,6 +2,7 @@ package somatree
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
 
@@ -166,6 +167,12 @@ func (teb *SomaTreeElemBucket) GetRepositoryName() string {
 //
 //
 func (teb *SomaTreeElemBucket) ComputeCheckInstances() {
+	log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+		teb.GetRepositoryName(),
+		`ComputeCheckInstances`,
+		`bucket`,
+		teb.Id.String(),
+	)
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)

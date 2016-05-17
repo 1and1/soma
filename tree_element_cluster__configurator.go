@@ -7,8 +7,17 @@ import (
 )
 
 func (tec *SomaTreeElemCluster) updateCheckInstances() {
+	repoName := tec.GetRepositoryName()
+
 	// object has no checks
 	if len(tec.Checks) == 0 {
+		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
+			repoName,
+			`UpdateCheckInstances`,
+			`node`,
+			tec.Id.String(),
+			false,
+		)
 		return
 	}
 
@@ -18,8 +27,6 @@ func (tec *SomaTreeElemCluster) updateCheckInstances() {
 	if len(tec.loadedInstances) > 0 {
 		startupLoad = true
 	}
-
-	repoName := tec.GetRepositoryName()
 
 	// process checks
 checksloop:

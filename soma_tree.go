@@ -1,6 +1,10 @@
 package somatree
 
-import "github.com/satori/go.uuid"
+import (
+	"log"
+
+	"github.com/satori/go.uuid"
+)
 
 type SomaTree struct {
 	Id     uuid.UUID
@@ -162,7 +166,14 @@ func (st *SomaTree) ComputeCheckInstances() {
 		panic(`SomaTree.ComputeCheckInstances: no repository registered`)
 	}
 
+	log.Printf("SomaTree[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+		st.Name,
+		`ComputeCheckInstances`,
+		`tree`,
+		st.Id.String(),
+	)
 	st.Child.ComputeCheckInstances()
+	return
 }
 
 //

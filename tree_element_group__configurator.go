@@ -7,8 +7,17 @@ import (
 )
 
 func (teg *SomaTreeElemGroup) updateCheckInstances() {
+	repoName := teg.GetRepositoryName()
+
 	// object has no checks
 	if len(teg.Checks) == 0 {
+		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
+			repoName,
+			`UpdateCheckInstances`,
+			`node`,
+			teg.Id.String(),
+			false,
+		)
 		return
 	}
 
@@ -18,8 +27,6 @@ func (teg *SomaTreeElemGroup) updateCheckInstances() {
 	if len(teg.loadedInstances) > 0 {
 		startupLoad = true
 	}
-
-	repoName := teg.GetRepositoryName()
 
 	// process checks
 checksloop:
