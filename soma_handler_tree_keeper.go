@@ -1059,6 +1059,8 @@ func (tk *treeKeeper) process(q *treeRequest) {
 actionloop:
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
+		jBxX, _ := json.Marshal(a)
+		log.Printf("Processing message: %s\n", string(jBxX))
 		switch a.Type {
 		// REPOSITORY
 		case "repository":
