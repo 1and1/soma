@@ -11,11 +11,12 @@ import (
 )
 
 type SomaConfig struct {
-	Environment string         `json:"environment"`
-	ReadOnly    bool           `json:"readonly,string"`
-	Database    SomaDbConfig   `json:"database"`
-	Daemon      SomaDaemon     `json:"daemon"`
-	Auth        SomaAuthConfig `json:"authentication"`
+	Environment  string         `json:"environment"`
+	ReadOnly     bool           `json:"readonly,string"`
+	OpenInstance bool           `json:"open.door.policy,string"`
+	Database     SomaDbConfig   `json:"database"`
+	Daemon       SomaDaemon     `json:"daemon"`
+	Auth         SomaAuthConfig `json:"authentication"`
 }
 
 type SomaDbConfig struct {

@@ -45,6 +45,12 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 		ps httprouter.Params) {
 		const basicAuthPrefix string = "Basic "
 
+		// disable authentication much?
+		if SomaCfg.OpenInstance {
+			h(w, r, ps)
+			return
+		}
+
 		// Get credentials
 		auth := r.Header.Get("Authorization")
 		if strings.HasPrefix(auth, basicAuthPrefix) {
