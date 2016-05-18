@@ -11,10 +11,12 @@ import (
 )
 
 type SomaConfig struct {
-	Environment string       `json:"environment"`
-	ReadOnly    bool         `json:"readonly,string"`
-	Database    SomaDbConfig `json:"database"`
-	Daemon      SomaDaemon   `json:"daemon"`
+	Environment  string         `json:"environment"`
+	ReadOnly     bool           `json:"readonly,string"`
+	OpenInstance bool           `json:"open.door.policy,string"`
+	Database     SomaDbConfig   `json:"database"`
+	Daemon       SomaDaemon     `json:"daemon"`
+	Auth         SomaAuthConfig `json:"authentication"`
 }
 
 type SomaDbConfig struct {
@@ -34,6 +36,14 @@ type SomaDaemon struct {
 	Tls    bool     `json:"tls,string"`
 	Cert   string   `json:"cert-file"`
 	Key    string   `json:"key-file"`
+}
+
+type SomaAuthConfig struct {
+	KexExpirySeconds   uint64 `json:"kex_expiry,string"`
+	TokenExpirySeconds uint64 `json:"token_expiry,string"`
+	// dd if=/dev/random bs=1M count=1 2>/dev/null | sha512
+	TokenSeed string `json:"token_seed"`
+	TokenKey  string `json:"token_key"`
 }
 
 func (c *SomaConfig) readConfigFile(fname string) error {

@@ -8,15 +8,39 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/julienschmidt/httprouter"
 )
 
 // global variables
-var conn *sql.DB
-var handlerMap = make(map[string]interface{})
-var SomaCfg SomaConfig
+var (
+	// database connection
+	conn *sql.DB
+	// lookup table for go routine input channels
+	handlerMap = make(map[string]interface{})
+	// config file runtime configuration
+	SomaCfg SomaConfig
+	// this offset influences the biggest date representable in
+	// the system without overflow
+	unixToInternalOffset int64 = 62135596800
+	// this will be used as mapping for the PostgreSQL time value
+	// -infinity. Dates earlier than this will be truncated to
+	// NegTimeInf. RFC3339: -8192-01-01T00:00:00Z
+	NegTimeInf = time.Date(-8192, time.January, 1, 0, 0, 0, 0, time.UTC)
+	// this will be used as mapping for the PostgreSQL time value
+	// +infinity. It is as far as research showed close to the highest
+	// time value Go can represent.
+	// RFC: 219248499-12-06 15:30:07.999999999 +0000 UTC
+	PosTimeInf = time.Unix(1<<63-1-unixToInternalOffset, 999999999)
+)
+
+const (
+	// Format string for millisecond precision RFC3339
+	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
+	SomaVersion  string = `0.7.18`
+)
 
 func main() {
 	var (
@@ -26,8 +50,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.7.17"
-	log.Printf("Starting runtime config initialization, SOMA v%s", version)
+	log.Printf("Starting runtime config initialization, SOMA v%s", SomaVersion)
 	/*
 	 * Read configuration file
 	 */
@@ -73,6 +96,8 @@ func main() {
 	startHandlers()
 
 	router := httprouter.New()
+
+	router.HEAD("/", Ping)
 
 	router.GET("/views", ListView)
 	router.GET("/views/:view", ShowView)
@@ -194,116 +219,126 @@ func main() {
 	router.POST("/hostdeployment/:system/:assetid", AssembleHostUpdate)
 
 	if !SomaCfg.ReadOnly {
-		router.POST("/views/", AddView)
-		router.DELETE("/views/:view", DeleteView)
-		router.PATCH("/views/:view", RenameView)
+		router.POST("/views/", BasicAuth(AddView))
+		router.DELETE("/views/:view", BasicAuth(DeleteView))
+		router.PATCH("/views/:view", BasicAuth(RenameView))
 
-		router.POST("/environments", AddEnvironment)
-		router.DELETE("/environments/:environment", DeleteEnvironment)
-		router.PUT("/environments/:environment", RenameEnvironment)
+		router.POST("/environments", BasicAuth(AddEnvironment))
+		router.DELETE("/environments/:environment", BasicAuth(DeleteEnvironment))
+		router.PUT("/environments/:environment", BasicAuth(RenameEnvironment))
 
-		router.POST("/objstates", AddObjectState)
-		router.DELETE("/objstates/:state", DeleteObjectState)
-		router.PUT("/objstates/:state", RenameObjectState)
+		router.POST("/objstates", BasicAuth(AddObjectState))
+		router.DELETE("/objstates/:state", BasicAuth(DeleteObjectState))
+		router.PUT("/objstates/:state", BasicAuth(RenameObjectState))
 
-		router.POST("/objtypes", AddObjectType)
-		router.DELETE("/objtypes/:type", DeleteObjectType)
-		router.PUT("/objtypes/:type", RenameObjectType)
+		router.POST("/objtypes", BasicAuth(AddObjectType))
+		router.DELETE("/objtypes/:type", BasicAuth(DeleteObjectType))
+		router.PUT("/objtypes/:type", BasicAuth(RenameObjectType))
 
-		router.POST("/datacenters", AddDatacenter)
-		router.DELETE("/datacenters/:datacenter", DeleteDatacenter)
-		router.PUT("/datacenters/:datacenter", RenameDatacenter)
+		router.POST("/datacenters", BasicAuth(AddDatacenter))
+		router.DELETE("/datacenters/:datacenter", BasicAuth(DeleteDatacenter))
+		router.PUT("/datacenters/:datacenter", BasicAuth(RenameDatacenter))
 
-		router.PATCH("/datacentergroups/:datacentergroup", AddDatacenterToGroup)
-		router.DELETE("/datacentergroups/:datacentergroup", DeleteDatacenterFromGroup)
+		router.PATCH("/datacentergroups/:datacentergroup", BasicAuth(AddDatacenterToGroup))
+		router.DELETE("/datacentergroups/:datacentergroup", BasicAuth(DeleteDatacenterFromGroup))
 
-		router.POST("/levels/", AddLevel)
-		router.DELETE("/levels/:level", DeleteLevel)
+		router.POST("/levels/", BasicAuth(AddLevel))
+		router.DELETE("/levels/:level", BasicAuth(DeleteLevel))
 
-		router.POST("/predicates/", AddPredicate)
-		router.DELETE("/predicates/:predicate", DeletePredicate)
+		router.POST("/predicates/", BasicAuth(AddPredicate))
+		router.DELETE("/predicates/:predicate", BasicAuth(DeletePredicate))
 
-		router.POST("/status/", AddStatus)
-		router.DELETE("/status/:status", DeleteStatus)
+		router.POST("/status/", BasicAuth(AddStatus))
+		router.DELETE("/status/:status", BasicAuth(DeleteStatus))
 
-		router.POST("/oncall/", AddOncall)
-		router.PATCH("/oncall/:oncall", UpdateOncall)
-		router.DELETE("/oncall/:oncall", DeleteOncall)
+		router.POST("/oncall/", BasicAuth(AddOncall))
+		router.PATCH("/oncall/:oncall", BasicAuth(UpdateOncall))
+		router.DELETE("/oncall/:oncall", BasicAuth(DeleteOncall))
 
-		router.POST("/teams/", AddTeam)
-		router.DELETE("/teams/:team", DeleteTeam)
+		router.POST("/teams/", BasicAuth(AddTeam))
+		router.DELETE("/teams/:team", BasicAuth(DeleteTeam))
 
-		router.POST("/servers/", AddServer)
-		router.DELETE("/servers/:server", DeleteServer)
-		router.PUT("/servers/:server", InsertNullServer)
+		router.POST("/servers/", BasicAuth(AddServer))
+		router.DELETE("/servers/:server", BasicAuth(DeleteServer))
+		router.PUT("/servers/:server", BasicAuth(InsertNullServer))
 
-		router.POST("/units/", AddUnit)
-		router.DELETE("/units/:unit", DeleteUnit)
+		router.POST("/units/", BasicAuth(AddUnit))
+		router.DELETE("/units/:unit", BasicAuth(DeleteUnit))
 
-		router.POST("/providers/", AddProvider)
-		router.DELETE("/providers/:provider", DeleteProvider)
+		router.POST("/providers/", BasicAuth(AddProvider))
+		router.DELETE("/providers/:provider", BasicAuth(DeleteProvider))
 
-		router.POST("/metrics/", AddMetric)
-		router.DELETE("/metrics/:metric", DeleteMetric)
+		router.POST("/metrics/", BasicAuth(AddMetric))
+		router.DELETE("/metrics/:metric", BasicAuth(DeleteMetric))
 
-		router.POST("/modes/", AddMode)
-		router.DELETE("/modes/:mode", DeleteMode)
+		router.POST("/modes/", BasicAuth(AddMode))
+		router.DELETE("/modes/:mode", BasicAuth(DeleteMode))
 
-		router.POST("/users/", AddUser)
-		router.DELETE("/users/:user", DeleteUser)
+		router.POST("/users/", BasicAuth(AddUser))
+		router.DELETE("/users/:user", BasicAuth(DeleteUser))
 
-		router.POST("/monitoring/", AddMonitoring)
-		router.DELETE("/monitoring/:monitoring", DeleteMonitoring)
+		router.POST("/monitoring/", BasicAuth(AddMonitoring))
+		router.DELETE("/monitoring/:monitoring", BasicAuth(DeleteMonitoring))
 
-		router.POST("/capability/", AddCapability)
-		router.DELETE("/capability/:capability", DeleteCapability)
+		router.POST("/capability/", BasicAuth(AddCapability))
+		router.DELETE("/capability/:capability", BasicAuth(DeleteCapability))
 
-		router.POST("/property/native/", AddProperty)
-		router.DELETE("/property/native/:native", DeleteProperty)
+		router.POST("/property/native/", BasicAuth(AddProperty))
+		router.DELETE("/property/native/:native", BasicAuth(DeleteProperty))
 
-		router.POST("/property/system/", AddProperty)
-		router.DELETE("/property/system/:system", DeleteProperty)
+		router.POST("/property/system/", BasicAuth(AddProperty))
+		router.DELETE("/property/system/:system", BasicAuth(DeleteProperty))
 
-		router.POST("/property/custom/:repository/", AddProperty)
-		router.DELETE("/property/custom/:repository/:custom", DeleteProperty)
+		router.POST("/property/custom/:repository/", BasicAuth(AddProperty))
+		router.DELETE("/property/custom/:repository/:custom", BasicAuth(DeleteProperty))
 
-		router.POST("/property/service/global/", AddProperty)
-		router.DELETE("/property/service/global/:service", DeleteProperty)
+		router.POST("/property/service/global/", BasicAuth(AddProperty))
+		router.DELETE("/property/service/global/:service", BasicAuth(DeleteProperty))
 
-		router.POST("/property/service/team/:team/", AddProperty)
-		router.DELETE("/property/service/team/:team/:service", DeleteProperty)
+		router.POST("/property/service/team/:team/", BasicAuth(AddProperty))
+		router.DELETE("/property/service/team/:team/:service", BasicAuth(DeleteProperty))
 
-		router.POST("/validity/", AddValidity)
-		router.DELETE("/validity/:property", DeleteValidity)
+		router.POST("/validity/", BasicAuth(AddValidity))
+		router.DELETE("/validity/:property", BasicAuth(DeleteValidity))
 
-		router.POST("/attributes/", AddAttribute)
-		router.DELETE("/attributes/:attribute", DeleteAttribute)
+		router.POST("/attributes/", BasicAuth(AddAttribute))
+		router.DELETE("/attributes/:attribute", BasicAuth(DeleteAttribute))
 
-		router.POST("/repository/", AddRepository)
-		router.POST("/repository/:repository/property/:type/", AddPropertyToRepository)
+		router.POST("/repository/", BasicAuth(AddRepository))
+		router.POST("/repository/:repository/property/:type/", BasicAuth(AddPropertyToRepository))
 
-		router.POST("/buckets/", AddBucket)
-		router.POST("/buckets/:bucket/property/:type/", AddPropertyToBucket)
+		router.POST("/buckets/", BasicAuth(AddBucket))
+		router.POST("/buckets/:bucket/property/:type/", BasicAuth(AddPropertyToBucket))
 
-		router.POST("/groups/", AddGroup)
-		router.POST("/groups/:group/members/", AddMemberToGroup)
-		router.POST("/groups/:group/property/:type/", AddPropertyToGroup)
+		router.POST("/groups/", BasicAuth(AddGroup))
+		router.POST("/groups/:group/members/", BasicAuth(AddMemberToGroup))
+		router.POST("/groups/:group/property/:type/", BasicAuth(AddPropertyToGroup))
 
-		router.POST("/clusters/", AddCluster)
-		router.POST("/clusters/:cluster/members/", AddMemberToCluster)
-		router.POST("/clusters/:cluster/property/:type/", AddPropertyToCluster)
+		router.POST("/clusters/", BasicAuth(AddCluster))
+		router.POST("/clusters/:cluster/members/", BasicAuth(AddMemberToCluster))
+		router.POST("/clusters/:cluster/property/:type/", BasicAuth(AddPropertyToCluster))
 
-		router.POST("/nodes/", AddNode)
-		router.DELETE("/nodes/:node", DeleteNode)
-		router.PUT("/nodes/:node/config", AssignNode)
-		router.POST("/nodes/:node/property/:type/", AddPropertyToNode)
+		router.POST("/nodes/", BasicAuth(AddNode))
+		router.DELETE("/nodes/:node", BasicAuth(DeleteNode))
+		router.PUT("/nodes/:node/config", BasicAuth(AssignNode))
+		router.POST("/nodes/:node/property/:type/", BasicAuth(AddPropertyToNode))
 
-		router.POST("/checks/:repository/", AddCheckConfiguration)
+		router.POST("/checks/:repository/", BasicAuth(AddCheckConfiguration))
 
 		router.GET("/deployments/id/:uuid", DeliverDeploymentDetails)
 		router.GET("/deployments/monitoring/:uuid", DeliverMonitoringDeployments)
 		router.GET("/deployments/monitoring/:uuid/:all", DeliverMonitoringDeployments)
 		router.PATCH("/deployments/id/:uuid/:result", UpdateDeploymentDetails)
+
+		router.POST("/authenticate/", AuthenticationKex)
+		router.PUT("/authenticate/bootstrap/:uuid", AuthenticationBootstrapRoot)
+		//router.PATCH("/authenticate/root/restrict", AuthenticationRestrictRoot) XXX -> move to somadbctl
+		//router.GET("/authenticate/token/", AuthenticationListTokens)
+		router.PUT("/authenticate/token/:uuid", BasicAuth(AuthenticationIssueToken))
+		//router.GET("/authenticate/validate/", AuthenticationValidate)
+		router.POST("/authenticate/activate/", BasicAuth(AuthenticationActivateUser))
+		//router.DELETE("/authenticate/invalidate/token/", AuthenticationInvalidateToken)
+		//router.DELETE("/authenticate/invalidate/all/", AuthenticationInvalidateAllTokens)
 	}
 
 	if SomaCfg.Daemon.Tls {
