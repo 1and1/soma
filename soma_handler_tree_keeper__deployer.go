@@ -21,6 +21,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 		objId, objType                                                                   string
 		rows, thresh, pkgs, gSysProps, cSysProps, nSysProps                              *sql.Rows
 		gCustProps, cCustProps, nCustProps                                               *sql.Rows
+		callback                                                                         sql.NullString
 	)
 
 	//
@@ -260,11 +261,16 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			&detail.Monitoring.Mode,
 			&detail.Monitoring.Contact,
 			&detail.Monitoring.TeamId,
-			&detail.Monitoring.Callback,
+			&callback,
 			&detail.Metric.Unit,
 			&detail.Metric.Description,
 			&detail.Unit.Name,
 		)
+		if callback.Valid {
+			detail.Monitoring.Callback = callback.String
+		} else {
+			detail.Monitoring.Callback = ""
+		}
 		detail.Unit.Unit = detail.Metric.Unit
 		detail.Metric.Path = detail.Capability.Metric
 		detail.Monitoring.Id = detail.Capability.MonitoringId
