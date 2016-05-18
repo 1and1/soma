@@ -122,7 +122,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		interval                                                                            int64
 		rows                                                                                *sql.Rows
 		err                                                                                 error
-		bucketId                                                                            *sql.NullString
+		bucketId                                                                            sql.NullString
 	)
 	result := somaResult{}
 
