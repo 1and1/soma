@@ -568,7 +568,7 @@ func spawnSupervisorHandler() {
 	}
 	supervisorHandler.tokenExpiry = SomaCfg.Auth.TokenExpirySeconds
 	supervisorHandler.kexExpiry = SomaCfg.Auth.KexExpirySeconds
-	handlerMap[`supervisorHandler`] = supervisorHandler
+	handlerMap[`supervisor`] = supervisorHandler
 	go supervisorHandler.run()
 }
 
