@@ -29,17 +29,6 @@ func GetHostDeployment(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	cReq := proto.Request{}
-	if err = DecodeJsonBody(r, &cReq); err != nil {
-		DispatchBadRequest(&w, err)
-		return
-	}
-
-	if cReq.HostDeployment == nil {
-		DispatchBadRequest(&w, err)
-		return
-	}
-
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["hostDeploymentHandler"].(somaHostDeploymentHandler)
 	handler.input <- somaHostDeploymentRequest{
@@ -47,7 +36,6 @@ func GetHostDeployment(w http.ResponseWriter, r *http.Request,
 		reply:   returnChannel,
 		system:  params.ByName("system"),
 		assetid: assetid,
-		idlist:  cReq.HostDeployment.CurrentCheckInstanceIdList,
 	}
 	result := <-returnChannel
 	SendHostDeploymentReply(&w, &result)
@@ -70,6 +58,17 @@ func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	cReq := proto.Request{}
+	if err = DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if cReq.HostDeployment == nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["hostDeploymentHandler"].(somaHostDeploymentHandler)
 	handler.input <- somaHostDeploymentRequest{
@@ -77,6 +76,7 @@ func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
 		reply:   returnChannel,
 		system:  params.ByName("system"),
 		assetid: assetid,
+		idlist:  cReq.HostDeployment.CurrentCheckInstanceIdList,
 	}
 	result := <-returnChannel
 	SendHostDeploymentReply(&w, &result)
