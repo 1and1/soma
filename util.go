@@ -113,15 +113,53 @@ func ResultLength(r *somaResult, t ErrorMarker) int {
 }
 
 func DispatchBadRequest(w *http.ResponseWriter, err error) {
-	http.Error(*w, err.Error(), http.StatusBadRequest)
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+}
+
+func DispatchUnauthorized(w *http.ResponseWriter, err error) {
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+}
+
+func DispatchForbidden(w *http.ResponseWriter, err error) {
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusForbidden)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+}
+
+func DispatchNotFound(w *http.ResponseWriter, err error) {
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusNotFound)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
 func DispatchInternalError(w *http.ResponseWriter, err error) {
-	http.Error(*w, err.Error(), http.StatusInternalServerError)
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
 func DispatchJsonReply(w *http.ResponseWriter, b *[]byte) {
 	(*w).Header().Set("Content-Type", "application/json")
+	(*w).WriteHeader(http.StatusOK)
+	(*w).Write(*b)
+}
+
+func DispatchOctetReply(w *http.ResponseWriter, b *[]byte) {
+	(*w).Header().Set("Content-Type", `application/octet-stream`)
 	(*w).WriteHeader(http.StatusOK)
 	(*w).Write(*b)
 }
