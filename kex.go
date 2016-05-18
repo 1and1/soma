@@ -342,11 +342,13 @@ func (k *Kex) DecodeAndDecrypt(encoded, plaintext *[]byte) error {
 	}
 
 	// decode input
+	decoded = make([]byte, base64.StdEncoding.DecodedLen(len(*encoded)))
 	if dlen, err = base64.StdEncoding.Decode(decoded, *encoded); err != nil {
 		return ErrCrypt
 	}
 
 	// decrypt ciphertext
+	*plaintext = make([]byte, dlen)
 	*plaintext, ok = box.Open(nil, decoded[:dlen], nonce, peerKey, privKey)
 	if !ok {
 		return ErrCrypt
