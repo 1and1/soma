@@ -144,6 +144,10 @@ func (u *SomaUtil) ParseVariadicArguments(
 		}
 
 		if u.SliceContainsString(val, keys) {
+			// there must be at least one arguments left
+			if len(args[pos+1:]) < 1 {
+				u.Abort("Syntax error, incomplete key/value specification (too few items left to parse)")
+			}
 			// check for back-to-back keyswords
 			u.CheckStringNotAKeyword(args[pos+1], keys)
 
@@ -211,6 +215,10 @@ argloop:
 		}
 
 		if u.SliceContainsString(val, keys) {
+			// there must be at least one arguments left
+			if len(args[pos+1:]) < 1 {
+				u.Abort("Syntax error, incomplete key/value specification (too few items left to parse)")
+			}
 			// check for back-to-back keyswords
 			u.CheckStringNotAKeyword(args[pos+1], keys)
 
