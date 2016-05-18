@@ -39,6 +39,7 @@ var (
 const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
+	SomaVersion  string = `0.7.13`
 )
 
 func main() {
@@ -49,8 +50,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.7.13"
-	log.Printf("Starting runtime config initialization, SOMA v%s", version)
+	log.Printf("Starting runtime config initialization, SOMA v%s", SomaVersion)
 	/*
 	 * Read configuration file
 	 */
@@ -96,6 +96,8 @@ func main() {
 	startHandlers()
 
 	router := httprouter.New()
+
+	router.HEAD("/", Ping)
 
 	router.GET("/views", ListView)
 	router.GET("/views/:view", ShowView)
