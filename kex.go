@@ -388,6 +388,7 @@ func (k *Kex) EncryptAndEncode(plaintext, encoded *[]byte) error {
 	}
 
 	// encode ciphertext
+	*encoded = make([]byte, base64.StdEncoding.EncodedLen(len(ciphertext)))
 	base64.StdEncoding.Encode(*encoded, ciphertext)
 
 	return nil
