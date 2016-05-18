@@ -42,7 +42,7 @@ func registerPredicates(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdPredicateCreate(c *cli.Context) {
+func cmdPredicateCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -51,29 +51,33 @@ func cmdPredicateCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/predicates/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdPredicateDelete(c *cli.Context) {
+func cmdPredicateDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdPredicateList(c *cli.Context) {
+func cmdPredicateList(c *cli.Context) error {
 	resp := utl.GetRequest("/predicates/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdPredicateShow(c *cli.Context) {
+func cmdPredicateShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

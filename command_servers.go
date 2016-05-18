@@ -93,7 +93,7 @@ func registerServers(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdServerCreate(c *cli.Context) {
+func cmdServerCreate(c *cli.Context) error {
 	url := getApiUrl()
 	url.Path = "/servers/"
 
@@ -191,9 +191,10 @@ func cmdServerCreate(c *cli.Context) {
 	// checks the embedded status code
 	_ = utl.DecodeProtoResultServerFromResponse(resp)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdServerMarkAsDeleted(c *cli.Context) {
+func cmdServerMarkAsDeleted(c *cli.Context) error {
 	url := getApiUrl()
 	var (
 		assetId uint64
@@ -229,9 +230,10 @@ func cmdServerMarkAsDeleted(c *cli.Context) {
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
+	return nil
 }
 
-func cmdServerPurgeDeleted(c *cli.Context) {
+func cmdServerPurgeDeleted(c *cli.Context) error {
 	url := getApiUrl()
 
 	if c.Bool("all") {
@@ -264,9 +266,10 @@ func cmdServerPurgeDeleted(c *cli.Context) {
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
+	return nil
 }
 
-func cmdServerUpdate(c *cli.Context) {
+func cmdServerUpdate(c *cli.Context) error {
 	url := getApiUrl()
 
 	// required gymnastics to get a []string
@@ -362,9 +365,10 @@ func cmdServerUpdate(c *cli.Context) {
 	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
 	_ = utl.DecodeProtoResultServerFromResponse(resp)
+	return nil
 }
 
-func cmdServerRename(c *cli.Context) {
+func cmdServerRename(c *cli.Context) error {
 	url := getApiUrl()
 	var (
 		assetId uint64
@@ -407,9 +411,10 @@ func cmdServerRename(c *cli.Context) {
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
+	return nil
 }
 
-func cmdServerOnline(c *cli.Context) {
+func cmdServerOnline(c *cli.Context) error {
 	url := getApiUrl()
 	var (
 		assetId uint64
@@ -454,9 +459,10 @@ func cmdServerOnline(c *cli.Context) {
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
+	return nil
 }
 
-func cmdServerOffline(c *cli.Context) {
+func cmdServerOffline(c *cli.Context) error {
 	url := getApiUrl()
 	var (
 		assetId uint64
@@ -501,9 +507,10 @@ func cmdServerOffline(c *cli.Context) {
 	}
 	utl.CheckRestyResponse(resp)
 	// TODO check delete action success
+	return nil
 }
 
-func cmdServerMove(c *cli.Context) {
+func cmdServerMove(c *cli.Context) error {
 	url := getApiUrl()
 	var (
 		assetId uint64
@@ -580,14 +587,16 @@ func cmdServerMove(c *cli.Context) {
 	utl.CheckRestyResponse(resp)
 	// checks the embedded status code
 	_ = utl.DecodeProtoResultServerFromResponse(resp)
+	return nil
 }
 
-func cmdServerList(c *cli.Context) {
+func cmdServerList(c *cli.Context) error {
 	resp := utl.GetRequest("/servers/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdServerShow(c *cli.Context) {
+func cmdServerShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	serverId := utl.TryGetServerByUUIDOrName(c.Args().First())
@@ -595,9 +604,10 @@ func cmdServerShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdServerSyncRequest(c *cli.Context) {
+func cmdServerSyncRequest(c *cli.Context) error {
 	/*
 		url := getApiUrl()
 		url.Path = "/jobs"
@@ -626,9 +636,10 @@ func cmdServerSyncRequest(c *cli.Context) {
 		}
 		utl.CheckRestyResponse(resp)
 	*/
+	return nil
 }
 
-func cmdServerNull(c *cli.Context) {
+func cmdServerNull(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 2)
 	key := []string{"datacenter"}
 
@@ -641,6 +652,7 @@ func cmdServerNull(c *cli.Context) {
 
 	resp := utl.PutRequestWithBody(req, "/servers/null")
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

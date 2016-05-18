@@ -127,7 +127,7 @@ func registerPermissions(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdPermissionTypeAdd(c *cli.Context) {
+func cmdPermissionTypeAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().First()
 
@@ -137,9 +137,10 @@ func cmdPermissionTypeAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/permission/types/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdPermissionTypeDel(c *cli.Context) {
+func cmdPermissionTypeDel(c *cli.Context) error {
 	url := getApiUrl()
 
 	utl.ValidateCliArgumentCount(c, 1)
@@ -154,9 +155,10 @@ func cmdPermissionTypeDel(c *cli.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
 }
 
-func cmdPermissionTypeRename(c *cli.Context) {
+func cmdPermissionTypeRename(c *cli.Context) error {
 	url := getApiUrl()
 
 	utl.ValidateCliArgumentCount(c, 3)
@@ -177,9 +179,10 @@ func cmdPermissionTypeRename(c *cli.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
 }
 
-func cmdPermissionTypeList(c *cli.Context) {
+func cmdPermissionTypeList(c *cli.Context) error {
 	url := getApiUrl()
 	url.Path = "/permissions/types"
 
@@ -193,9 +196,10 @@ func cmdPermissionTypeList(c *cli.Context) {
 		log.Fatal(err)
 	}
 	// TODO display list result
+	return nil
 }
 
-func cmdPermissionTypeShow(c *cli.Context) {
+func cmdPermissionTypeShow(c *cli.Context) error {
 	url := getApiUrl()
 
 	utl.ValidateCliArgumentCount(c, 1)
@@ -210,9 +214,10 @@ func cmdPermissionTypeShow(c *cli.Context) {
 		log.Fatal(err)
 	}
 	// TODO display show result
+	return nil
 }
 
-func cmdPermissionAdd(c *cli.Context) {
+func cmdPermissionAdd(c *cli.Context) error {
 	url := getApiUrl()
 	url.Path = "/permissions"
 
@@ -234,9 +239,10 @@ func cmdPermissionAdd(c *cli.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
 }
 
-func cmdPermissionDel(c *cli.Context) {
+func cmdPermissionDel(c *cli.Context) error {
 	url := getApiUrl()
 
 	utl.ValidateCliArgumentCount(c, 1)
@@ -250,9 +256,10 @@ func cmdPermissionDel(c *cli.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return nil
 }
 
-func cmdPermissionList(c *cli.Context) {
+func cmdPermissionList(c *cli.Context) error {
 	url := getApiUrl()
 	url.Path = "/permissions"
 
@@ -266,6 +273,7 @@ func cmdPermissionList(c *cli.Context) {
 		log.Fatal(err)
 	}
 	// TODO list permissions
+	return nil
 }
 
 func cmdPermissionShowGeneric(c *cli.Context, objType string) {
@@ -305,19 +313,22 @@ func cmdPermissionShowGeneric(c *cli.Context, objType string) {
 	// TODO list permissions
 }
 
-func cmdPermissionShowUser(c *cli.Context) {
+func cmdPermissionShowUser(c *cli.Context) error {
 	cmdPermissionShowGeneric(c, "user")
+	return nil
 }
 
-func cmdPermissionShowTeam(c *cli.Context) {
+func cmdPermissionShowTeam(c *cli.Context) error {
 	cmdPermissionShowGeneric(c, "team")
+	return nil
 }
 
-func cmdPermissionShowTool(c *cli.Context) {
+func cmdPermissionShowTool(c *cli.Context) error {
 	cmdPermissionShowGeneric(c, "tool")
+	return nil
 }
 
-func cmdPermissionShowPermission(c *cli.Context) {
+func cmdPermissionShowPermission(c *cli.Context) error {
 	url := getApiUrl()
 
 	utl.ValidateCliArgumentCount(c, 1)
@@ -331,9 +342,10 @@ func cmdPermissionShowPermission(c *cli.Context) {
 		log.Fatal(err)
 	}
 	// TODO list users
+	return nil
 }
 
-func cmdPermissionAudit(c *cli.Context) {
+func cmdPermissionAudit(c *cli.Context) error {
 	url := getApiUrl()
 
 	utl.ValidateCliArgumentCount(c, 1)
@@ -347,9 +359,10 @@ func cmdPermissionAudit(c *cli.Context) {
 		log.Fatal(err)
 	}
 	// TODO list permissions
+	return nil
 }
 
-func cmdPermissionGrantEnable(c *cli.Context) {
+func cmdPermissionGrantEnable(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/permissions/user/%s", userId)
@@ -363,9 +376,10 @@ func cmdPermissionGrantEnable(c *cli.Context) {
 	}, path,
 	)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdPermissionGrantGlobal(c *cli.Context) {
+func cmdPermissionGrantGlobal(c *cli.Context) error {
 	/*
 		url := getApiUrl()
 		var objType string
@@ -395,9 +409,10 @@ func cmdPermissionGrantGlobal(c *cli.Context) {
 			Slog.Fatal(err)
 		}
 	*/
+	return nil
 }
 
-func cmdPermissionGrantLimited(c *cli.Context) {
+func cmdPermissionGrantLimited(c *cli.Context) error {
 	/*
 		url := getApiUrl()
 		keys := [...]string{"repository", "bucket", "group", "cluster"}
@@ -465,9 +480,11 @@ func cmdPermissionGrantLimited(c *cli.Context) {
 			Slog.Fatal(err)
 		}
 	*/
+	return nil
 }
 
-func cmdPermissionGrantSystem(c *cli.Context) {
+func cmdPermissionGrantSystem(c *cli.Context) error {
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

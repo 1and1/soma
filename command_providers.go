@@ -42,7 +42,7 @@ func registerProviders(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdProviderCreate(c *cli.Context) {
+func cmdProviderCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -51,29 +51,33 @@ func cmdProviderCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/providers/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdProviderDelete(c *cli.Context) {
+func cmdProviderDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdProviderList(c *cli.Context) {
+func cmdProviderList(c *cli.Context) error {
 	resp := utl.GetRequest("/providers/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdProviderShow(c *cli.Context) {
+func cmdProviderShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

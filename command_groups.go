@@ -122,7 +122,7 @@ func registerGroups(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdGroupCreate(c *cli.Context) {
+func cmdGroupCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -140,9 +140,10 @@ func cmdGroupCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/groups/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupDelete(c *cli.Context) {
+func cmdGroupDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -158,9 +159,10 @@ func cmdGroupDelete(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s", groupId)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdGroupRename(c *cli.Context) {
+func cmdGroupRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -180,15 +182,17 @@ func cmdGroupRename(c *cli.Context) {
 	req.Group.Name = opts["to"][0]
 
 	_ = utl.PatchRequestWithBody(req, path)
+	return nil
 }
 
-func cmdGroupList(c *cli.Context) {
+func cmdGroupList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest("/groups/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupShow(c *cli.Context) {
+func cmdGroupShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -205,9 +209,10 @@ func cmdGroupShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupMemberAddGroup(c *cli.Context) {
+func cmdGroupMemberAddGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -236,9 +241,10 @@ func cmdGroupMemberAddGroup(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupMemberAddCluster(c *cli.Context) {
+func cmdGroupMemberAddCluster(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -267,9 +273,10 @@ func cmdGroupMemberAddCluster(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupMemberAddNode(c *cli.Context) {
+func cmdGroupMemberAddNode(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -296,9 +303,10 @@ func cmdGroupMemberAddNode(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupMemberDeleteGroup(c *cli.Context) {
+func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "bucket"}
 
@@ -319,9 +327,10 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) {
 		mGroupId)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdGroupMemberDeleteCluster(c *cli.Context) {
+func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "bucket"}
 
@@ -342,9 +351,10 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) {
 		mClusterId)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdGroupMemberDeleteNode(c *cli.Context) {
+func cmdGroupMemberDeleteNode(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "bucket"}
 
@@ -363,9 +373,10 @@ func cmdGroupMemberDeleteNode(c *cli.Context) {
 		mNodeId)
 
 	_ = utl.DeleteRequest(path)
+	return nil
 }
 
-func cmdGroupMemberList(c *cli.Context) {
+func cmdGroupMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -383,9 +394,10 @@ func cmdGroupMemberList(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupSystemPropertyAdd(c *cli.Context) {
+func cmdGroupSystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 9)
 	multiple := []string{}
 	required := []string{"to", "in", "value", "view"}
@@ -432,9 +444,10 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/property/system/", groupId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdGroupServicePropertyAdd(c *cli.Context) {
+func cmdGroupServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "in", "view"}
@@ -480,6 +493,7 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/property/service/", groupId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -90,7 +90,7 @@ func registerBuckets(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdBucketCreate(c *cli.Context) {
+func cmdBucketCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"repository", "environment"}
 	uniqKeys := []string{}
@@ -116,9 +116,10 @@ func cmdBucketCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/buckets/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketDelete(c *cli.Context) {
+func cmdBucketDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
@@ -129,9 +130,10 @@ func cmdBucketDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdBucketRestore(c *cli.Context) {
+func cmdBucketRestore(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
 	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
@@ -148,6 +150,7 @@ func cmdBucketRestore(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 func cmdBucketPurge(c *cli.Context) error {
