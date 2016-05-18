@@ -45,6 +45,7 @@ func registerCommands(app cli.App) *cli.App {
 	app = *registerUsers(app)
 	app = *registerValidity(app)
 	app = *registerViews(app)
+	app = *registerOps(app)
 
 	return &app
 }
