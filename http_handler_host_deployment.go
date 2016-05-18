@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -65,7 +66,7 @@ func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
 	}
 
 	if cReq.HostDeployment == nil {
-		DispatchBadRequest(&w, err)
+		DispatchBadRequest(&w, fmt.Errorf(`HostDeployment section missing`))
 		return
 	}
 
