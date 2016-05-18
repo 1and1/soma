@@ -41,8 +41,9 @@ INSERT INTO auth.user_authentication (
 ) VALUES (
     $1::uuid,
     $2::text,
+    'no'::boolean,
     $3::timestamptz,
-    infinity
+    'infinity'::timestamptz
 );`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
