@@ -62,6 +62,24 @@ func registerCommands(app cli.App) *cli.App {
 				<-done
 			},
 		},
+		{
+			Name:  "cleanup",
+			Usage: "Clean database from various objects",
+			Subcommands: []cli.Command{
+				{
+					Name:   "checks",
+					Usage:  "Clean out all checks from the database",
+					Before: configSetup,
+					After:  dbClose,
+					Action: func(c *cli.Context) {
+						done := make(chan bool, 1)
+						printOnly := c.GlobalBool("no-execute")
+						commandCleanupChecks(done, printOnly)
+						<-done
+					},
+				},
+			},
+		},
 	}
 	return &app
 }
