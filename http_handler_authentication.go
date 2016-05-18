@@ -64,7 +64,8 @@ func AuthenticationKex(w http.ResponseWriter, r *http.Request,
 		},
 	}
 
-	<-returnChannel
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
 }
 
 func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
