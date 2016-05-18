@@ -5,7 +5,7 @@ type CheckInstance struct {
 	CheckId               string `json:"checkId,omitempty"`
 	ConfigId              string `json:"configId,omitempty"`
 	InstanceConfigId      string `json:"instanceConfigId,omitempty"`
-	Version               uint64 `json:"version,omitempty"`
+	Version               uint64 `json:"version"`
 	ConstraintHash        string `json:"constraintHash,omitempty"`
 	ConstraintValHash     string `json:"constraintValHash,omitempty"`
 	InstanceSvcCfgHash    string `json:"instanceSvcCfghash,omitempty"`
