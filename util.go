@@ -30,6 +30,9 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 	case *proto.Request:
 		c := s.(*proto.Request)
 		err = decoder.Decode(c)
+	case *auth.Kex:
+		c := s.(*auth.Kex)
+		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)
 		//return fmt.Errorf("DecodeJsonBody: Unhandled request type: %s", rt)
