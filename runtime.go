@@ -42,7 +42,7 @@ func initCommon(c *cli.Context) {
 	}
 
 	// set the configured API endpoint
-	utl.SetUrl(Cfg.Api)
+	utl.SetUrl(Cfg.Run.SomaAPI.String())
 
 	// setup our REST client
 	Client = resty.New().SetRESTMode().
