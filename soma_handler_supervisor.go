@@ -129,12 +129,15 @@ func (s *supervisor) kexInit(q *msg.Request) {
 
 	// send out reply
 	result.Super = &msg.Supervisor{
+		Verdict: 200,
 		Kex: auth.Kex{
 			Public:               kex.Public,
 			InitializationVector: kex.InitializationVector,
 			Request:              kex.Request,
 		},
 	}
+	result.OK()
+
 	q.Reply <- result
 }
 
@@ -157,8 +160,7 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 
 	// -> check if root is not already active
 	if s.credentials.read(`root`) != nil {
-		result.Code = 400
-		result.Error = fmt.Errorf(`Root account is already active`)
+		result.BadRequest(fmt.Errorf(`Root account is already active`))
 		//    --> delete kex
 		s.kex.remove(kexId)
 		goto dispatch
@@ -166,59 +168,52 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 	// -> get kex
 	if kex = s.kex.read(kexId); kex == nil {
 		//    --> reply 404 if not found
-		result.Code = 404
-		result.Error = fmt.Errorf(`Key exchange not found`)
+		result.NotFound(fmt.Errorf(`Key exchange not found`))
 		goto dispatch
 	}
 	// -> check kex.SameSource
 	if !kex.IsSameSourceString(q.Super.RemoteAddr) {
 		//    --> reply 404 if !SameSource
-		result.Code = 404
-		result.Error = fmt.Errorf(`Key exchange not found`)
+		result.NotFound(fmt.Errorf(`Key exchange not found`))
 		goto dispatch
 	}
 	// -> delete kex from s.kex (kex is now used)
 	s.kex.remove(kexId)
 	// -> rdata = kex.DecodeAndDecrypt(data)
 	if err = kex.DecodeAndDecrypt(&data, &plain); err != nil {
-		result.Code = 500
-		result.Error = err
+		result.ServerError(err)
 		goto dispatch
 	}
 	// -> json.Unmarshal(rdata, &token)
 	if err = json.Unmarshal(plain, &token); err != nil {
-		result.Code = 500
-		result.Error = err
+		result.ServerError(err)
 		goto dispatch
 	}
 	// -> check token.UserName == `root`
 	if token.UserName != `root` {
 		//    --> reply 401
-		result.Code = 401
+		result.Unauthorized(nil)
 		goto dispatch
 	}
 	// -> check token.Token is correct bearer token
 	if rootToken, err = s.fetchRootToken(); err != nil {
-		result.Code = 401
-		result.Error = err
+		result.ServerError(err)
 		goto dispatch
 	}
 	if token.Token != rootToken || len(token.Password) == 0 {
 		//    --> reply 401
-		result.Code = 401
+		result.Unauthorized(nil)
 		goto dispatch
 	}
 	// -> scrypth64.Digest(Password, nil)
 	if mcf, err = scrypth64.Digest(token.Password, nil); err != nil {
-		result.Code = 401
-		result.Error = err
+		result.Unauthorized(nil)
 		goto dispatch
 	}
 	// -> generate token
 	token.SetIPAddressString(q.Super.RemoteAddr)
 	if err = token.Generate(mcf, s.key, s.seed); err != nil {
-		result.Code = 401
-		result.Error = err
+		result.ServerError(err)
 		goto dispatch
 	}
 	validFrom, _ = time.Parse(rfc3339Milli, token.ValidFrom)
@@ -226,8 +221,7 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 
 	// -> DB Insert: root password data
 	if tx, err = s.conn.Begin(); err != nil {
-		result.Code = 401
-		result.Error = err
+		result.ServerError(err)
 		goto dispatch
 	}
 	defer tx.Rollback()
@@ -237,16 +231,19 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 		mcf.String(),
 		validFrom.UTC(),
 	); err != nil {
-		// XXX
+		result.ServerError(err)
+		goto dispatch
 	}
 	// -> DB Insert: token data
 	if _, err = tx.Exec(
 		stmt.InsertToken,
 		token.Token,
+		token.Salt,
 		validFrom.UTC(),
 		expiresAt.UTC(),
 	); err != nil {
-		// XXX
+		result.ServerError(err)
+		goto dispatch
 	}
 	// -> s.credentials Update
 	s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
@@ -254,25 +251,30 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 	// -> s.tokens Update
 	if err = s.tokens.insert(token.Token, token.ValidFrom, token.ExpiresAt,
 		token.Salt); err != nil {
-		// XXX
+		result.ServerError(err)
+		goto dispatch
 	}
 	if err = tx.Commit(); err != nil {
-		// XXX
+		result.ServerError(err)
+		goto dispatch
 	}
 	// -> sdata = kex.EncryptAndEncode(&token)
 	plain = []byte{}
 	data = []byte{}
 	if plain, err = json.Marshal(token); err != nil {
-		// XXX
+		result.ServerError(err)
+		goto dispatch
 	}
 	if err = kex.EncryptAndEncode(&plain, &data); err != nil {
-		// XXX
+		result.ServerError(err)
+		goto dispatch
 	}
 	// -> send sdata reply
 	result.Super = &msg.Supervisor{
 		Verdict: 200,
 		Data:    data,
 	}
+	result.OK()
 
 dispatch:
 	<-timer.C
