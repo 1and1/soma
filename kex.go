@@ -33,6 +33,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"hash"
 	"math/big"
 	"net"
@@ -325,26 +326,26 @@ func (k *Kex) DecodeAndDecrypt(encoded, plaintext *[]byte) error {
 
 	// check is kex is still valid
 	if k.IsExpired() {
-		return ErrCrypt
+		return fmt.Errorf(`KeyExchange is expired`)
 	}
 
 	// calculate the next nonce
 	if nonce = k.NextNonce(); nonce == nil {
-		return ErrCrypt
+		return fmt.Errorf(`Failed to get next Nonce`)
 	}
 
 	if peerKey = k.PeerKey(); peerKey == nil {
-		return ErrCrypt
+		return fmt.Errorf(`Failed to get PeerKey`)
 	}
 
 	if privKey = k.PrivateKey(); privKey == nil {
-		return ErrCrypt
+		return fmt.Errorf(`Failed to get Private Key`)
 	}
 
 	// decode input
 	decoded = make([]byte, base64.StdEncoding.DecodedLen(len(*encoded)))
 	if dlen, err = base64.StdEncoding.Decode(decoded, *encoded); err != nil {
-		return ErrCrypt
+		return err
 	}
 
 	// decrypt ciphertext
@@ -368,19 +369,19 @@ func (k *Kex) EncryptAndEncode(plaintext, encoded *[]byte) error {
 
 	// check is kex is still valid
 	if k.IsExpired() {
-		return ErrCrypt
+		return fmt.Errorf(`KeyExchange is expired`)
 	}
 
 	if nonce = k.NextNonce(); nonce == nil {
-		return ErrCrypt
+		return fmt.Errorf(`Failed to get next Nonce`)
 	}
 
 	if peerKey = k.PeerKey(); peerKey == nil {
-		return ErrCrypt
+		return fmt.Errorf(`Failed to get PeerKey`)
 	}
 
 	if privKey = k.PrivateKey(); privKey == nil {
-		return ErrCrypt
+		return fmt.Errorf(`Failed to get Private Key`)
 	}
 
 	// encrypt input
