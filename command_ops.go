@@ -151,7 +151,7 @@ Alright. Let's sully that pristine database. Here we go!
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	if err = json.Unmarshal(plain, tCred); err != nil {
+	if err = json.Unmarshal(*plain, tCred); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
