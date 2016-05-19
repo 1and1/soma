@@ -46,7 +46,7 @@ func configSetup(c *cli.Context) error {
 			case "user":
 				Cfg.Auth.User = c.GlobalString(params[p])
 			case "timeout":
-				Cfg.Timeout = strconv.Itoa(c.GlobalInt(params[p]))
+				Cfg.Timeout = uint(c.GlobalInt(params[p]))
 			case "host":
 				Cfg.Api = c.GlobalString(params[p])
 			case "dbdir":
@@ -59,8 +59,8 @@ func configSetup(c *cli.Context) error {
 		// set default values for unset configuration parameters
 		switch params[p] {
 		case "timeout":
-			if Cfg.Timeout == "" {
-				Cfg.Timeout = strconv.Itoa(5)
+			if Cfg.Timeout == 0 {
+				Cfg.Timeout = 2
 			}
 		case "logdir":
 			if Cfg.LogDir == "" {
