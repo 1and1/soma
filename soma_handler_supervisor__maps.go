@@ -81,7 +81,7 @@ func (t *svTokenMap) insert(token, valid, expires, salt string) error {
 	if bToken, err = hex.DecodeString(token); err != nil {
 		return err
 	}
-	if bSalt, err = hex.DecodeString(token); err != nil {
+	if bSalt, err = hex.DecodeString(salt); err != nil {
 		return err
 	}
 	// acquire write lock
