@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"github.com/mitchellh/go-homedir"
 	"os"
 	"path"
 	"strconv"
+	"time"
+
+	"github.com/codegangsta/cli"
+	"github.com/mitchellh/go-homedir"
 )
 
 func configSetup(c *cli.Context) error {
@@ -40,32 +42,24 @@ func configSetup(c *cli.Context) error {
 		// update configuration with cli argument overrides
 		if c.GlobalIsSet(params[p]) {
 			switch params[p] {
-			case "api":
-				Cfg.Api = c.GlobalString(params[p])
-			case "timeout":
-				Cfg.Timeout = strconv.Itoa(c.GlobalInt(params[p]))
 			case "user":
 				Cfg.Auth.User = c.GlobalString(params[p])
-			case "logdir":
-				Cfg.LogDir = c.GlobalString(params[p])
+			case "timeout":
+				Cfg.Timeout = strconv.Itoa(c.GlobalInt(params[p]))
+			case "host":
+				Cfg.Api = c.GlobalString(params[p])
 			case "dbdir":
 				Cfg.BoltDB.Path = c.GlobalString(params[p])
+			case "logdir":
+				Cfg.LogDir = c.GlobalString(params[p])
 			}
 			continue
 		}
 		// set default values for unset configuration parameters
 		switch params[p] {
-		case "host":
-			if Cfg.Api == "" {
-				Cfg.Api = "http://localhost.my.domain:9876/"
-			}
 		case "timeout":
 			if Cfg.Timeout == "" {
 				Cfg.Timeout = strconv.Itoa(5)
-			}
-		case "user":
-			if Cfg.Auth.User == "" {
-				Cfg.Auth.User = "fooname"
 			}
 		case "logdir":
 			if Cfg.LogDir == "" {
@@ -78,14 +72,18 @@ func configSetup(c *cli.Context) error {
 		}
 	}
 
-	Cfg.Run.PathLogs = path.Join(home, ".soma", "adm", Cfg.LogDir)
-	Cfg.Run.PathBoltDB = path.Join(home, ".soma", "adm", Cfg.BoltDB.Path, Cfg.BoltDB.File)
-
-	// TODO prompt for Password
-	if Cfg.Auth.Pass == "" {
-		fmt.Fprintf(os.Stderr, "Password required")
-		os.Exit(1)
+	Cfg.Run.PathLogs = path.Join(home, ".soma", "adm",
+		Cfg.LogDir)
+	Cfg.Run.PathBoltDB = path.Join(home, ".soma", "adm",
+		Cfg.BoltDB.Path, Cfg.BoltDB.File)
+	Cfg.Run.ModeBoltDB, err = strconv.ParseUint(Cfg.BoltDB.Mode, 8, 32)
+	if err != nil {
+		return fmt.Errorf(
+			"Failed to parse configuration field boltdb.mode: "+
+				"%s\n", err.Error())
 	}
+	Cfg.Run.TimeoutBoltDB = time.Duration(Cfg.BoltDB.Timeout)
+
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 
 	"github.com/nahanni/go-ucl"
 )
@@ -33,9 +34,11 @@ type ConfigBoltDB struct {
 }
 
 type RunTimeConfig struct {
-	PathLogs   string
-	PathBoltDB string
-	Logger     *log.Logger
+	PathLogs      string        `json:"-"`
+	PathBoltDB    string        `json:"-"`
+	ModeBoltDB    uint64        `json:"-"`
+	TimeoutBoltDB time.Duration `json:"-"`
+	Logger        *log.Logger   `json:"-"`
 }
 
 func (c *Config) populateFromFile(fname string) error {

@@ -7,33 +7,24 @@ import (
 func registerFlags(app cli.App) *cli.App {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:   "user, u",
-			Usage:  "username for authentication",
-			EnvVar: "SOMA_ADM_USER,USER",
-		},
-		cli.BoolFlag{
-			Name:  "password, p",
-			Usage: "prompt for password",
+			Name:  "user, u",
+			Usage: "username for authentication",
 		},
 		cli.IntFlag{
-			Name:   "timeout, t",
-			Usage:  "connect timeout in seconds",
-			EnvVar: "SOMA_ADM_TIMEOUT",
+			Name:  "timeout, t",
+			Usage: "connect timeout in seconds",
 		},
 		cli.StringFlag{
-			Name:   "host, H",
-			Usage:  "API URI to connect to",
-			EnvVar: "SOMA_ADM_API",
+			Name:  "host, H",
+			Usage: "API URI to connect to",
 		},
 		cli.StringFlag{
-			Name:   "dbdir, d",
-			Usage:  "name of the db subdirectory",
-			EnvVar: "SOMA_ADM_DBDIR",
+			Name:  "dbdir, d",
+			Usage: "name of the db subdirectory",
 		},
 		cli.StringFlag{
-			Name:   "logdir, l",
-			Usage:  "name of the log subdirectory",
-			EnvVar: "SOMA_ADM_LOGDIR",
+			Name:  "logdir, l",
+			Usage: "name of the log subdirectory",
 		},
 		cli.StringFlag{
 			Name:   "config, c",
