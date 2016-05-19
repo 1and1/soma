@@ -29,6 +29,7 @@ package main
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 
@@ -108,20 +109,52 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 	var (
 		bjson []byte
 		err   error
+		k     auth.Kex
 	)
+
+	// this is central error command, proceeding to log
+	if r.Error != nil {
+		log.Printf(LogStrErr, `supervisor`, r.Action, r.Code, r.Error.Error())
+	}
 
 	switch r.Type {
 	case `supervisor`:
 		switch r.Action {
 		case `kex_reply`:
-			k := r.Super.Kex
+			k = r.Super.Kex
 			if bjson, err = json.Marshal(&k); err != nil {
-				DispatchInternalError(w, err)
+				log.Printf(LogStrErr, `supervisor`, r.Action, r.Code, err)
+				DispatchInternalError(w, nil)
 				return
 			}
 			goto dispatchJSON
+		case `bootstrap_root`:
+			// for this request type, errors are masked in responses
+			switch r.Code {
+			case 200:
+				if r.Super.Verdict == 200 {
+					log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 200)
+					goto dispatchOCTET
+				}
+				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 401)
+				DispatchUnauthorized(w, nil)
+			case 400:
+				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 400)
+				DispatchBadRequest(w, nil)
+			case 404:
+				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 404)
+				DispatchNotFound(w, r.Error)
+			default:
+				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 401)
+				DispatchUnauthorized(w, nil)
+			}
+			return
 		}
 	}
+
+dispatchOCTET:
+	DispatchOctetReply(w, &r.Super.Data)
+	return
 
 dispatchJSON:
 	DispatchJsonReply(w, &bjson)
