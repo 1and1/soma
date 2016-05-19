@@ -9,39 +9,58 @@
 package db
 
 import (
-	"fmt"
+	"encoding/json"
 	"time"
 
 	"github.com/boltdb/bolt"
 )
 
-func (d *DB) SaveToken(expires, token string) error {
+func (d *DB) SaveToken(user, valid, expires, token string) error {
 	return d.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(`tokens`))
-		return b.Put([]byte(expires), []byte(token))
+		u, err := b.CreateBucketIfNotExists([]byte(user))
+		if err != nil {
+			return err
+		}
+		mapdata := map[string]string{
+			"valid":   valid,
+			"expires": expires,
+			"token":   token,
+		}
+		data, _ := json.Marshal(&mapdata)
+		return u.Put([]byte(expires), data)
 	})
 }
 
-func (d *DB) GetActiveToken() (string, error) {
-	var token []byte
+func (d *DB) GetActiveToken(user string) (string, error) {
+	var token string
 	if err := d.db.View(func(tx *bolt.Tx) error {
+		// build cursor seek position
 		var k, v []byte
 		min := []byte(time.Now().UTC().Format(rfc3339Milli))
 
-		c := tx.Bucket([]byte(`tokens`)).Cursor()
+		// open bucket for that user
+		b := tx.Bucket([]byte(`tokens`)).Bucket([]byte(user))
+		if b == nil {
+			return bolt.ErrBucketNotFound
+		}
+
+		// seek an entry
+		c := b.Cursor()
 		k, v = c.Seek(min)
 		if k != nil {
-			token = make([]byte, len(v))
-			copy(token, v)
+			data := make(map[string]string)
+			json.Unmarshal(v, &data)
+			token = data["token"]
 		}
 		return nil
 	}); err != nil {
 		return "", err
 	}
-	if token != nil {
-		return string(token), nil
+	if token != "" {
+		return token, nil
 	}
-	return "", fmt.Errorf(`Not found`)
+	return "", bolt.ErrBucketNotFound
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
