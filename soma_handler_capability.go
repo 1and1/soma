@@ -44,7 +44,6 @@ type somaCapabilityReadHandler struct {
 func (r *somaCapabilityReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: capability/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT    mc.capability_id,
           mc.capability_monitoring,
@@ -59,7 +58,6 @@ ON        mc.capability_monitoring = ms.monitoring_id;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: capability/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT    mc.capability_id,
           mc.capability_monitoring,
@@ -174,7 +172,6 @@ type somaCapabilityWriteHandler struct {
 func (w *somaCapabilityWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: capability/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.monitoring_capabilities (
 	capability_id,
@@ -195,7 +192,6 @@ WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: capability/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`)

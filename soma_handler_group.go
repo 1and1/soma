@@ -43,7 +43,6 @@ type somaGroupReadHandler struct {
 func (r *somaGroupReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: group/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT group_id,
        group_name
@@ -53,7 +52,6 @@ FROM soma.groups;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: group/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT group_id,
        bucket_id,
@@ -67,7 +65,6 @@ WHERE  group_id = $1::uuid;`)
 	}
 	defer r.show_stmt.Close()
 
-	log.Println("Prepare: group/memberlist-group")
 	r.mbgl_stmt, err = r.conn.Prepare(`
 SELECT sg.group_id,
        sg.group_name,
@@ -83,7 +80,6 @@ WHERE  sgmg.group_id = $1::uuid;`)
 	}
 	defer r.mbgl_stmt.Close()
 
-	log.Println("Prepare: group/memberlist-cluster")
 	r.mbcl_stmt, err = r.conn.Prepare(`
 SELECT sc.cluster_id,
        sc.cluster_name,
@@ -99,7 +95,6 @@ WHERE  sgmc.group_id = $1::uuid;`)
 	}
 	defer r.mbcl_stmt.Close()
 
-	log.Println("Prepare: group/memberlist-node")
 	r.mbnl_stmt, err = r.conn.Prepare(`
 SELECT sn.node_id,
        sn.node_name,

@@ -45,7 +45,6 @@ type somaOncallReadHandler struct {
 func (r *somaOncallReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: oncall/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT oncall_duty_id,
        oncall_duty_name
@@ -55,7 +54,6 @@ FROM   inventory.oncall_duty_teams;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: oncall/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT oncall_duty_id,
        oncall_duty_name,
@@ -152,7 +150,6 @@ type somaOncallWriteHandler struct {
 func (w *somaOncallWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: oncall/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO inventory.oncall_duty_teams (
 	oncall_duty_id,
@@ -169,7 +166,6 @@ SELECT $1::uuid, $2::varchar, $3::numeric WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: oncall/update")
 	w.upd_stmt, err = w.conn.Prepare(`
 UPDATE inventory.oncall_duty_teams
 SET    oncall_duty_name = CASE WHEN $1::varchar IS NOT NULL
@@ -184,7 +180,6 @@ WHERE  oncall_duty_id = $3;`)
 	}
 	defer w.upd_stmt.Close()
 
-	log.Println("Prepare: oncall/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.oncall_duty_teams
 WHERE  oncall_duty_id = $1;`)

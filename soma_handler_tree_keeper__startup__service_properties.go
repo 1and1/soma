@@ -20,7 +20,6 @@ func (tk *treeKeeper) startupRepositoryServiceProperties() {
 		rows, attribute_rows, instance_rows                                    *sql.Rows
 		load_properties, load_attributes, load_instances                       *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-repository-service-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT instance_id,
        source_instance_id,
@@ -38,7 +37,6 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-repository-service-property-attributes")
 	load_attributes, err = tk.conn.Prepare(`
 SELECT service_property_attribute,
        value
@@ -50,7 +48,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	log.Println("Prepare: treekeeper/load-repository-service-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-repository-service-property-instances: ", err)
@@ -220,7 +217,6 @@ func (tk *treeKeeper) startupBucketServiceProperties() {
 		rows, attribute_rows, instance_rows                                *sql.Rows
 		load_properties, load_attributes, load_instances                   *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-bucket-service-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT instance_id,
        source_instance_id,
@@ -238,7 +234,6 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-bucket-service-property-attributes")
 	load_attributes, err = tk.conn.Prepare(`
 SELECT service_property_attribute,
        value
@@ -250,7 +245,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	log.Println("Prepare: treekeeper/load-bucket-service-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-bucket-service-property-instances: ", err)
@@ -420,7 +414,6 @@ func (tk *treeKeeper) startupGroupServiceProperties() {
 		rows, attribute_rows, instance_rows                               *sql.Rows
 		load_properties, load_attributes, load_instances                  *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-group-service-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT instance_id,
        source_instance_id,
@@ -438,7 +431,6 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-group-service-property-attributes")
 	load_attributes, err = tk.conn.Prepare(`
 SELECT service_property_attribute,
        value
@@ -450,7 +442,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	log.Println("Prepare: treekeeper/load-group-service-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-group-service-property-instances: ", err)
@@ -620,7 +611,6 @@ func (tk *treeKeeper) startupClusterServiceProperties() {
 		rows, attribute_rows, instance_rows                                 *sql.Rows
 		load_properties, load_attributes, load_instances                    *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-cluster-service-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT instance_id,
        source_instance_id,
@@ -638,7 +628,6 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-cluster-service-property-attributes")
 	load_attributes, err = tk.conn.Prepare(`
 SELECT service_property_attribute,
        value
@@ -650,7 +639,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	log.Println("Prepare: treekeeper/load-cluster-service-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-cluster-service-property-instances: ", err)
@@ -820,7 +808,6 @@ func (tk *treeKeeper) startupNodeServiceProperties() {
 		rows, attribute_rows, instance_rows                              *sql.Rows
 		load_properties, load_attributes, load_instances                 *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-node-service-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT instance_id,
        source_instance_id,
@@ -838,7 +825,6 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-node-service-property-attributes")
 	load_attributes, err = tk.conn.Prepare(`
 SELECT service_property_attribute,
        value
@@ -850,7 +836,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	log.Println("Prepare: treekeeper/load-node-service-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-node-service-property-instances: ", err)

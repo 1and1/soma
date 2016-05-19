@@ -48,55 +48,46 @@ type somaCheckConfigurationReadHandler struct {
 func (r *somaCheckConfigurationReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: checkconfig/list")
 	if r.list_stmt, err = r.conn.Prepare(stmtCheckConfigList); err != nil {
 		log.Fatal("checkconfig/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: checkconfig/show-base")
 	if r.show_base, err = r.conn.Prepare(stmtCheckConfigShowBase); err != nil {
 		log.Fatal("checkconfig/show-base: ", err)
 	}
 	defer r.show_base.Close()
 
-	log.Println("Prepare: checkconfig/show-threshold")
 	if r.show_threshold, err = r.conn.Prepare(stmtCheckConfigShowThreshold); err != nil {
 		log.Fatal("checkconfig/show-threshold: ", err)
 	}
 	defer r.show_threshold.Close()
 
-	log.Println("Prepare: checkconfig/show-constraint-custom")
 	if r.show_constr_custom, err = r.conn.Prepare(stmtCheckConfigShowConstrCustom); err != nil {
 		log.Fatal("checkconfig/show-constraint-custom: ", err)
 	}
 	defer r.show_constr_custom.Close()
 
-	log.Println("Prepare: checkconfig/show-constraint-system")
 	if r.show_constr_system, err = r.conn.Prepare(stmtCheckConfigShowConstrSystem); err != nil {
 		log.Fatal("checkconfig/show-constraint-system: ", err)
 	}
 	defer r.show_constr_system.Close()
 
-	log.Println("Prepare: checkconfig/show-constraint-native")
 	if r.show_constr_native, err = r.conn.Prepare(stmtCheckConfigShowConstrNative); err != nil {
 		log.Fatal("checkconfig/show-constraint-native: ", err)
 	}
 	defer r.show_constr_native.Close()
 
-	log.Println("Prepare: checkconfig/show-constraint-service")
 	if r.show_constr_service, err = r.conn.Prepare(stmtCheckConfigShowConstrService); err != nil {
 		log.Fatal("checkconfig/show-constraint-service: ", err)
 	}
 	defer r.show_constr_service.Close()
 
-	log.Println("Prepare: checkconfig/show-constraint-attribute")
 	if r.show_constr_attribute, err = r.conn.Prepare(stmtCheckConfigShowConstrAttribute); err != nil {
 		log.Fatal("checkconfig/show-constraint-attribute: ", err)
 	}
 	defer r.show_constr_attribute.Close()
 
-	log.Println("Prepare: checkconfig/show-constraint-oncall")
 	if r.show_constr_oncall, err = r.conn.Prepare(stmtCheckConfigShowConstrOncall); err != nil {
 		log.Fatal("checkconfig/show-constraint-oncall: ", err)
 	}

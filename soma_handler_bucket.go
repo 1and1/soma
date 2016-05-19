@@ -40,13 +40,11 @@ type somaBucketReadHandler struct {
 func (r *somaBucketReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: bucket/list")
 	if r.list_stmt, err = r.conn.Prepare(stmtBucketList); err != nil {
 		log.Fatal("bucket/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: bucket/show")
 	if r.show_stmt, err = r.conn.Prepare(stmtBucketShow); err != nil {
 		log.Fatal("bucket/show: ", err)
 	}

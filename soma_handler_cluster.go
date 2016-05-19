@@ -41,7 +41,6 @@ type somaClusterReadHandler struct {
 func (r *somaClusterReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: cluster/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT cluster_id,
        cluster_name
@@ -51,7 +50,6 @@ FROM soma.clusters;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: cluster/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT cluster_id,
        bucket_id,
@@ -65,7 +63,6 @@ WHERE  cluster_id = $1::uuid;`)
 	}
 	defer r.show_stmt.Close()
 
-	log.Println("Prepare: cluster/memberlist-node")
 	r.mbnl_stmt, err = r.conn.Prepare(`
 SELECT sn.node_id,
        sn.node_name,

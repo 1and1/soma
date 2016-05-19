@@ -44,7 +44,6 @@ type somaMonitoringReadHandler struct {
 func (r *somaMonitoringReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: monitoring/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT monitoring_id,
        monitoring_name
@@ -54,7 +53,6 @@ FROM   soma.monitoring_systems;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: monitoring/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT monitoring_id,
        monitoring_name,
@@ -168,7 +166,6 @@ type somaMonitoringWriteHandler struct {
 func (w *somaMonitoringWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: monitoring/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.monitoring_systems (
 	monitoring_id,
@@ -188,7 +185,6 @@ WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: monitoring/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`)

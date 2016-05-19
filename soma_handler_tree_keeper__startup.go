@@ -109,7 +109,6 @@ func (tk *treeKeeper) startupBuckets() {
 		err                                       error
 		load_bucket                               *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-buckets")
 	load_bucket, err = tk.conn.Prepare(`
 SELECT sb.bucket_id,
        sb.bucket_name,
@@ -183,7 +182,6 @@ func (tk *treeKeeper) startupGroups() {
 		err                                  error
 		load_group                           *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-groups")
 	load_group, err = tk.conn.Prepare(`
 SELECT sg.group_id,
        sg.group_name,
@@ -250,7 +248,6 @@ func (tk *treeKeeper) startupGroupMemberGroups() {
 		err                   error
 		load_grp_mbr_grp      *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-group-member-groups")
 	load_grp_mbr_grp, err = tk.conn.Prepare(`
 SELECT sgmg.group_id,
        sgmg.child_group_id
@@ -313,7 +310,6 @@ func (tk *treeKeeper) startupGroupedClusters() {
 		clusterId, clusterName, teamId, groupId string
 		load_grp_cluster                        *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-grouped-clusters")
 	load_grp_cluster, err = tk.conn.Prepare(`
 SELECT sc.cluster_id,
        sc.cluster_name,
@@ -384,7 +380,6 @@ func (tk *treeKeeper) startupClusters() {
 		clusterId, clusterName, bucketId, teamId string
 		load_cluster                             *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-clusters")
 	load_cluster, err = tk.conn.Prepare(`
 SELECT sc.cluster_id,
        sc.cluster_name,
@@ -456,7 +451,6 @@ func (tk *treeKeeper) startupNodes() {
 		clusterId, groupId                           sql.NullString
 		load_nodes                                   *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-nodes")
 	load_nodes, err = tk.conn.Prepare(`
 SELECT    sn.node_id,
           sn.node_asset_id,
@@ -561,7 +555,6 @@ func (tk *treeKeeper) startupJobs() {
 		job       string
 		load_jobs *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-jobs")
 	load_jobs, err = tk.conn.Prepare(`
 SELECT   job
 FROM     soma.jobs
@@ -621,7 +614,6 @@ func (tk *treeKeeper) startupGroupCustomProperties() {
 		rows, instance_rows                                                       *sql.Rows
 		load_properties, load_instances                                           *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-group-custom-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT sgcp.instance_id,
        sgcp.source_instance_id,
@@ -642,7 +634,6 @@ AND    sgcp.repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-group-custom-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-group-custom-property-instances: ", err)
@@ -774,7 +765,6 @@ func (tk *treeKeeper) startupGroupOncallProperties() {
 		rows, instance_rows                                                          *sql.Rows
 		load_properties, load_instances                                              *sql.Stmt
 	)
-	log.Println("Prepare: treekeeper/load-group-oncall-properties")
 	load_properties, err = tk.conn.Prepare(`
 SELECT  sgop.instance_id,
         sgop.source_instance_id,
@@ -795,7 +785,6 @@ WHERE   sgop.instance_id = sgop.source_instance_id
 	}
 	defer load_properties.Close()
 
-	log.Println("Prepare: treekeeper/load-group-oncall-property-instances")
 	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
 	if err != nil {
 		log.Fatal("treekeeper/load-group-oncall-property-instances: ", err)

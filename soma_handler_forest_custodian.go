@@ -20,7 +20,6 @@ type forestCustodian struct {
 func (f *forestCustodian) run() {
 	var err error
 
-	log.Println("Prepare: repository/create")
 	f.add_stmt, err = f.conn.Prepare(`
 INSERT INTO soma.repositories (
 	repository_id,
@@ -39,7 +38,6 @@ WHERE NOT EXISTS (
 	}
 	defer f.add_stmt.Close()
 
-	log.Println("Prepare: repository/load")
 	f.load_stmt, err = f.conn.Prepare(`
 SELECT repository_id,
 	   repository_name,

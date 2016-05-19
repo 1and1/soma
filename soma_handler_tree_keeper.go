@@ -69,21 +69,19 @@ func (tk *treeKeeper) run() {
 		}
 		return
 	}
-	log.Printf("TK[%s]: ready for service!\n", tk.repoName)
-	tk.ready = true
-
 	var err error
-	log.Println("Prepare: treekeeper/start-job")
 	if tk.start_job, err = tk.conn.Prepare(tkStmtStartJob); err != nil {
 		log.Fatal("treekeeper/start-job: ", err)
 	}
 	defer tk.start_job.Close()
 
-	log.Println("Prepare: treekeeper/get-view-by-capability")
 	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
 		log.Fatal("treekeeper/get-view-by-capability: ", err)
 	}
 	defer tk.get_view.Close()
+
+	log.Printf("TK[%s]: ready for service!\n", tk.repoName)
+	tk.ready = true
 
 runloop:
 	for {

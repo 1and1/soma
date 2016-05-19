@@ -45,7 +45,6 @@ type somaNodeReadHandler struct {
 func (r *somaNodeReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: node/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT node_id,
        node_name
@@ -55,7 +54,6 @@ WHERE  node_online;`)
 		log.Fatal("node/list: ", err)
 	}
 
-	log.Println("Prepare: node/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT node_id,
        node_asset_id,
@@ -71,7 +69,6 @@ WHERE  node_id = $1;`)
 		log.Fatal("node/show: ", err)
 	}
 
-	log.Println("Prepare: node/get-config")
 	r.conf_stmt, err = r.conn.Prepare(`
 SELECT nodes.node_id,
        nodes.node_name,
@@ -210,7 +207,6 @@ type somaNodeWriteHandler struct {
 func (w *somaNodeWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: node/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.nodes (
 	node_id,
@@ -233,7 +229,6 @@ WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: node/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE soma.nodes
 SET    node_deleted = 'yes'
@@ -244,7 +239,6 @@ AND    node_deleted = 'no';`)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: node/purge")
 	w.prg_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.nodes
 WHERE       node_id = $1

@@ -47,43 +47,36 @@ type somaDeploymentHandler struct {
 func (self *somaDeploymentHandler) run() {
 	var err error
 
-	log.Println("Prepare: deployment/get")
 	if self.get_stmt, err = self.conn.Prepare(stmtGetDeployment); err != nil {
 		log.Fatal("deployment/get: ", err)
 	}
 	defer self.get_stmt.Close()
 
-	log.Println("Prepare: deployment/update")
 	if self.upd_stmt, err = self.conn.Prepare(stmtUpdateDeployment); err != nil {
 		log.Fatal("deployment/update: ", err)
 	}
 	defer self.upd_stmt.Close()
 
-	log.Println("Prepare: deployment/status")
 	if self.sta_stmt, err = self.conn.Prepare(stmtDeploymentStatus); err != nil {
 		log.Fatal("deployment/status: ", err)
 	}
 	defer self.sta_stmt.Close()
 
-	log.Println("Prepare: deployment/activate")
 	if self.act_stmt, err = self.conn.Prepare(stmtActivateDeployment); err != nil {
 		log.Fatal("deployment/activate: ", err)
 	}
 	defer self.act_stmt.Close()
 
-	log.Println("Prepare: deployment/list")
 	if self.lst_stmt, err = self.conn.Prepare(stmtGetDeploymentList); err != nil {
 		log.Fatal("deployment/list: ", err)
 	}
 	defer self.lst_stmt.Close()
 
-	log.Println("Prepare: deployment/listall")
 	if self.all_stmt, err = self.conn.Prepare(stmtGetAllDeploymentList); err != nil {
 		log.Fatal("deployment/listall: ", err)
 	}
 	defer self.all_stmt.Close()
 
-	log.Println("Prepare: deployment/clearflag")
 	if self.clr_stmt, err = self.conn.Prepare(stmtDeployClearFlag); err != nil {
 		log.Fatal("deployment/clearflag: ", err)
 	}

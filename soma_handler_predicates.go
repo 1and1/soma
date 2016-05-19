@@ -43,7 +43,6 @@ type somaPredicateReadHandler struct {
 func (r *somaPredicateReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: predicate/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT predicate
 FROM   soma.configuration_predicates; `)
@@ -52,7 +51,6 @@ FROM   soma.configuration_predicates; `)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: predicate/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT predicate
 FROM   soma.configuration_predicates
@@ -140,7 +138,6 @@ type somaPredicateWriteHandler struct {
 func (w *somaPredicateWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: predicate/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.configuration_predicates (
 	predicate)
@@ -153,7 +150,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: predicate/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.configuration_predicates
 WHERE  predicate = $1;`)

@@ -43,13 +43,11 @@ type somaAttributeReadHandler struct {
 func (r *somaAttributeReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: attribute/list")
 	if r.list_stmt, err = r.conn.Prepare(stmtAttributeList); err != nil {
 		log.Fatal("attribute/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: attribute/show")
 	if r.show_stmt, err = r.conn.Prepare(stmtAttributeShow); err != nil {
 		log.Fatal("attribute/show: ", err)
 	}
@@ -136,13 +134,11 @@ type somaAttributeWriteHandler struct {
 func (w *somaAttributeWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: attribute/add")
 	if w.add_stmt, err = w.conn.Prepare(stmtAttributeAdd); err != nil {
 		log.Fatal("attribute/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: attribute/delete")
 	if w.del_stmt, err = w.conn.Prepare(stmtAttributeDelete); err != nil {
 		log.Fatal("attribute/delete: ", err)
 	}
