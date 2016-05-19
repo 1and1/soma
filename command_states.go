@@ -13,34 +13,33 @@ func registerStates(app cli.App) *cli.App {
 		[]cli.Command{
 			// states
 			{
-				Name:   "states",
-				Usage:  "SUBCOMMANDS for states",
-				Before: runtimePreCmd,
+				Name:  "states",
+				Usage: "SUBCOMMANDS for states",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Add a new object state",
-						Action: cmdObjectStatesAdd,
+						Action: runtime(cmdObjectStatesAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing object state",
-						Action: cmdObjectStatesRemove,
+						Action: runtime(cmdObjectStatesRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing object state",
-						Action: cmdObjectStatesRename,
+						Action: runtime(cmdObjectStatesRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all object states",
-						Action: cmdObjectStatesList,
+						Action: runtime(cmdObjectStatesList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about an object states",
-						Action: cmdObjectStatesShow,
+						Action: runtime(cmdObjectStatesShow),
 					},
 				},
 			}, // end states

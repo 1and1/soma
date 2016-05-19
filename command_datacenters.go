@@ -14,54 +14,53 @@ func registerDatacenters(app cli.App) *cli.App {
 		[]cli.Command{
 			// datacenters
 			{
-				Name:   "datacenters",
-				Usage:  "SUBCOMMANDS for datacenters",
-				Before: runtimePreCmd,
+				Name:  "datacenters",
+				Usage: "SUBCOMMANDS for datacenters",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Register a new datacenter",
-						Action: cmdDatacentersAdd,
+						Action: runtime(cmdDatacentersAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing datacenter",
-						Action: cmdDatacentersRemove,
+						Action: runtime(cmdDatacentersRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing datacenter",
-						Action: cmdDatacentersRename,
+						Action: runtime(cmdDatacentersRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all datacenters",
-						Action: cmdDatacentersList,
+						Action: runtime(cmdDatacentersList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific datacenter",
-						Action: cmdDatacentersShow,
+						Action: runtime(cmdDatacentersShow),
 					},
 					{
 						Name:   "groupadd",
 						Usage:  "Add a datacenter to a datacenter group",
-						Action: cmdDatacentersAddToGroup,
+						Action: runtime(cmdDatacentersAddToGroup),
 					},
 					{
 						Name:   "groupdel",
 						Usage:  "Remove a datacenter from a datacenter group",
-						Action: cmdDatacentersRemoveFromGroup,
+						Action: runtime(cmdDatacentersRemoveFromGroup),
 					},
 					{
 						Name:   "grouplist",
 						Usage:  "List all datacenter groups",
-						Action: cmdDatacentersListGroups,
+						Action: runtime(cmdDatacentersListGroups),
 					},
 					{
 						Name:   "groupshow",
 						Usage:  "Show information about a datacenter group",
-						Action: cmdDatacentersShowGroup,
+						Action: runtime(cmdDatacentersShowGroup),
 					},
 				},
 			}, // end datacenters

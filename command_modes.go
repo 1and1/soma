@@ -11,29 +11,28 @@ func registerModes(app cli.App) *cli.App {
 		[]cli.Command{
 			// modes
 			{
-				Name:   "modes",
-				Usage:  "SUBCOMMANDS for monitoring system modes",
-				Before: runtimePreCmd,
+				Name:  "modes",
+				Usage: "SUBCOMMANDS for monitoring system modes",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new monitoring system mode",
-						Action: cmdModeCreate,
+						Action: runtime(cmdModeCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a monitoring system mode",
-						Action: cmdModeDelete,
+						Action: runtime(cmdModeDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List monitoring system modes",
-						Action: cmdModeList,
+						Action: runtime(cmdModeList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a monitoring mode",
-						Action: cmdModeShow,
+						Action: runtime(cmdModeShow),
 					},
 				},
 			}, // end modes

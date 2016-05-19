@@ -12,39 +12,38 @@ func registerTeams(app cli.App) *cli.App {
 		[]cli.Command{
 			// teams
 			{
-				Name:   "teams",
-				Usage:  "SUBCOMMANDS for teams",
-				Before: runtimePreCmd,
+				Name:  "teams",
+				Usage: "SUBCOMMANDS for teams",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Register a new team",
-						Action: cmdTeamAdd,
+						Action: runtime(cmdTeamAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Delete an existing team",
-						Action: cmdTeamDel,
+						Action: runtime(cmdTeamDel),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing team",
-						Action: cmdTeamRename,
+						Action: runtime(cmdTeamRename),
 					},
 					{
 						Name:   "migrate",
 						Usage:  "Migrate users between teams",
-						Action: cmdTeamMigrate,
+						Action: runtime(cmdTeamMigrate),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all teams",
-						Action: cmdTeamList,
+						Action: runtime(cmdTeamList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a team",
-						Action: cmdTeamShow,
+						Action: runtime(cmdTeamShow),
 					},
 				},
 			}, // end teams

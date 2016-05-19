@@ -11,29 +11,28 @@ func registerMonitoring(app cli.App) *cli.App {
 		[]cli.Command{
 			// monitoring
 			{
-				Name:   "monitoring",
-				Usage:  "SUBCOMMANDS for monitoring systems",
-				Before: runtimePreCmd,
+				Name:  "monitoring",
+				Usage: "SUBCOMMANDS for monitoring systems",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new monitoring system",
-						Action: cmdMonitoringCreate,
+						Action: runtime(cmdMonitoringCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a monitoring system",
-						Action: cmdMonitoringDelete,
+						Action: runtime(cmdMonitoringDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List monitoring systems",
-						Action: cmdMonitoringList,
+						Action: runtime(cmdMonitoringList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a monitoring system",
-						Action: cmdMonitoringShow,
+						Action: runtime(cmdMonitoringShow),
 					},
 				},
 			}, // end monitoring

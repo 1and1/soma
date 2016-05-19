@@ -11,34 +11,33 @@ func registerClusters(app cli.App) *cli.App {
 		[]cli.Command{
 			// clusters
 			{
-				Name:   "clusters",
-				Usage:  "SUBCOMMANDS for clusters",
-				Before: runtimePreCmd,
+				Name:  "clusters",
+				Usage: "SUBCOMMANDS for clusters",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new cluster",
-						Action: cmdClusterCreate,
+						Action: runtime(cmdClusterCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a cluster",
-						Action: cmdClusterDelete,
+						Action: runtime(cmdClusterDelete),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename a cluster",
-						Action: cmdClusterRename,
+						Action: runtime(cmdClusterRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all clusters",
-						Action: cmdClusterList,
+						Action: runtime(cmdClusterList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a cluster",
-						Action: cmdClusterShow,
+						Action: runtime(cmdClusterShow),
 					},
 					{
 						Name:  "members",
@@ -47,17 +46,17 @@ func registerClusters(app cli.App) *cli.App {
 							{
 								Name:   "add",
 								Usage:  "Add a node to a cluster",
-								Action: cmdClusterMemberAdd,
+								Action: runtime(cmdClusterMemberAdd),
 							},
 							{
 								Name:   "delete",
 								Usage:  "Delete a node from a cluster",
-								Action: cmdClusterMemberDelete,
+								Action: runtime(cmdClusterMemberDelete),
 							},
 							{
 								Name:   "list",
 								Usage:  "List members of a cluster",
-								Action: cmdClusterMemberList,
+								Action: runtime(cmdClusterMemberList),
 							},
 						},
 					},
@@ -72,12 +71,12 @@ func registerClusters(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a cluster",
-										Action: cmdClusterSystemPropertyAdd,
+										Action: runtime(cmdClusterSystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a cluster",
-										Action: cmdClusterServicePropertyAdd,
+										Action: runtime(cmdClusterServicePropertyAdd),
 									},
 								},
 							},

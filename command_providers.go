@@ -11,29 +11,28 @@ func registerProviders(app cli.App) *cli.App {
 		[]cli.Command{
 			// providers
 			{
-				Name:   "providers",
-				Usage:  "SUBCOMMANDS for metric providers",
-				Before: runtimePreCmd,
+				Name:  "providers",
+				Usage: "SUBCOMMANDS for metric providers",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new metric provider",
-						Action: cmdProviderCreate,
+						Action: runtime(cmdProviderCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a metric provider",
-						Action: cmdProviderDelete,
+						Action: runtime(cmdProviderDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List metric providers",
-						Action: cmdProviderList,
+						Action: runtime(cmdProviderList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a metric provider",
-						Action: cmdProviderShow,
+						Action: runtime(cmdProviderShow),
 					},
 				},
 			}, // end providers

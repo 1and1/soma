@@ -13,34 +13,33 @@ func registerTypes(app cli.App) *cli.App {
 		[]cli.Command{
 			// types
 			{
-				Name:   "types",
-				Usage:  "SUBCOMMANDS for object types",
-				Before: runtimePreCmd,
+				Name:  "types",
+				Usage: "SUBCOMMANDS for object types",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Add a new object type",
-						Action: cmdObjectTypesAdd,
+						Action: runtime(cmdObjectTypesAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing object type",
-						Action: cmdObjectTypesRemove,
+						Action: runtime(cmdObjectTypesRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing object type",
-						Action: cmdObjectTypesRename,
+						Action: runtime(cmdObjectTypesRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all object types",
-						Action: cmdObjectTypesList,
+						Action: runtime(cmdObjectTypesList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific object type",
-						Action: cmdObjectTypesShow,
+						Action: runtime(cmdObjectTypesShow),
 					},
 				},
 			}, // end types

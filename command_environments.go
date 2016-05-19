@@ -13,34 +13,33 @@ func registerEnvironments(app cli.App) *cli.App {
 		[]cli.Command{
 			// environments
 			{
-				Name:   "environments",
-				Usage:  "SUBCOMMANDS for environments",
-				Before: runtimePreCmd,
+				Name:  "environments",
+				Usage: "SUBCOMMANDS for environments",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Register a new view",
-						Action: cmdEnvironmentsAdd,
+						Action: runtime(cmdEnvironmentsAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing unused environment",
-						Action: cmdEnvironmentsRemove,
+						Action: runtime(cmdEnvironmentsRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing environment",
-						Action: cmdEnvironmentsRename,
+						Action: runtime(cmdEnvironmentsRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all available environments",
-						Action: cmdEnvironmentsList,
+						Action: runtime(cmdEnvironmentsList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific environment",
-						Action: cmdEnvironmentsShow,
+						Action: runtime(cmdEnvironmentsShow),
 					},
 				},
 			}, // end environments

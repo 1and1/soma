@@ -13,24 +13,23 @@ func registerNodes(app cli.App) *cli.App {
 		[]cli.Command{
 			// nodes
 			{
-				Name:   "nodes",
-				Usage:  "SUBCOMMANDS for nodes",
-				Before: runtimePreCmd,
+				Name:  "nodes",
+				Usage: "SUBCOMMANDS for nodes",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Register a new node",
-						Action: cmdNodeAdd,
+						Action: runtime(cmdNodeAdd),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark a node as deleted",
-						Action: cmdNodeDel,
+						Action: runtime(cmdNodeDel),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Purge a node marked as deleted",
-						Action: cmdNodePurge,
+						Action: runtime(cmdNodePurge),
 						Flags: []cli.Flag{
 							cli.BoolFlag{
 								Name:  "all, a",
@@ -41,7 +40,7 @@ func registerNodes(app cli.App) *cli.App {
 					{
 						Name:   "restore",
 						Usage:  "Restore a node marked as deleted",
-						Action: cmdNodeRestore,
+						Action: runtime(cmdNodeRestore),
 						Flags: []cli.Flag{
 							cli.BoolFlag{
 								Name:  "all, a",
@@ -52,47 +51,47 @@ func registerNodes(app cli.App) *cli.App {
 					{
 						Name:   "rename",
 						Usage:  "Rename a node",
-						Action: cmdNodeRename,
+						Action: runtime(cmdNodeRename),
 					},
 					{
 						Name:   "repossess",
 						Usage:  "Repossess a node to a different team",
-						Action: cmdNodeRepo,
+						Action: runtime(cmdNodeRepo),
 					},
 					{
 						Name:   "relocate",
 						Usage:  "Relocate a node to a different server",
-						Action: cmdNodeMove,
+						Action: runtime(cmdNodeMove),
 					},
 					{
 						Name:   "online",
 						Usage:  "Set a nodes to online",
-						Action: cmdNodeOnline,
+						Action: runtime(cmdNodeOnline),
 					},
 					{
 						Name:   "offline",
 						Usage:  "Set a node to offline",
-						Action: cmdNodeOffline,
+						Action: runtime(cmdNodeOffline),
 					},
 					{
 						Name:   "assign",
 						Usage:  "Assign a node to configuration bucket",
-						Action: cmdNodeAssign,
+						Action: runtime(cmdNodeAssign),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all nodes",
-						Action: cmdNodeList,
+						Action: runtime(cmdNodeList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a node",
-						Action: cmdNodeShow,
+						Action: runtime(cmdNodeShow),
 					},
 					{
 						Name:   "config",
 						Usage:  "Show which bucket a node is assigned to",
-						Action: cmdNodeConfig,
+						Action: runtime(cmdNodeConfig),
 					},
 					{
 						Name:  "property",
@@ -105,12 +104,12 @@ func registerNodes(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a node",
-										Action: cmdNodeSystemPropertyAdd,
+										Action: runtime(cmdNodeSystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a node",
-										Action: cmdNodeServicePropertyAdd,
+										Action: runtime(cmdNodeServicePropertyAdd),
 									},
 								},
 							},

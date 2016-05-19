@@ -12,54 +12,53 @@ func registerBuckets(app cli.App) *cli.App {
 		[]cli.Command{
 			// buckets
 			{
-				Name:   "buckets",
-				Usage:  "SUBCOMMANDS for buckets",
-				Before: runtimePreCmd,
+				Name:  "buckets",
+				Usage: "SUBCOMMANDS for buckets",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new bucket inside a repository",
-						Action: cmdBucketCreate,
+						Action: runtime(cmdBucketCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark an existing bucket as deleted",
-						Action: cmdBucketDelete,
+						Action: runtime(cmdBucketDelete),
 					},
 					{
 						Name:   "restore",
 						Usage:  "Restore a bucket marked as deleted",
-						Action: cmdBucketRestore,
+						Action: runtime(cmdBucketRestore),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Remove a deleted bucket",
-						Action: cmdBucketPurge,
+						Action: runtime(cmdBucketPurge),
 					},
 					{
 						Name:   "freeze",
 						Usage:  "Freeze a bucket",
-						Action: cmdBucketFreeze,
+						Action: runtime(cmdBucketFreeze),
 					},
 					{
 						Name:   "thaw",
 						Usage:  "Thaw a frozen bucket",
-						Action: cmdBucketThaw,
+						Action: runtime(cmdBucketThaw),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing bucket",
-						Action: cmdBucketRename,
+						Action: runtime(cmdBucketRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List existing buckets",
-						Action: cmdBucketList,
+						Action: runtime(cmdBucketList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific bucket",
-						Action: cmdBucketShow,
+						Action: runtime(cmdBucketShow),
 					},
 					{
 						Name:  "property",
@@ -72,12 +71,12 @@ func registerBuckets(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a bucket",
-										Action: cmdBucketSystemPropertyAdd,
+										Action: runtime(cmdBucketSystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a bucket",
-										Action: cmdBucketServicePropertyAdd,
+										Action: runtime(cmdBucketServicePropertyAdd),
 									},
 								},
 							},

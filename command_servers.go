@@ -15,25 +15,24 @@ func registerServers(app cli.App) *cli.App {
 		[]cli.Command{
 			// servers
 			{
-				Name:   "servers",
-				Usage:  "SUBCOMMANDS for servers",
-				Before: runtimePreCmd,
+				Name:  "servers",
+				Usage: "SUBCOMMANDS for servers",
 				Subcommands: []cli.Command{
 					{
 						Name:        "create",
 						Usage:       "Create a new physical server",
 						Description: help.CmdServerCreate,
-						Action:      cmdServerCreate,
+						Action:      runtime(cmdServerCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark an existing physical server as deleted",
-						Action: cmdServerMarkAsDeleted,
+						Action: runtime(cmdServerMarkAsDeleted),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Remove all unreferenced servers marked as deleted",
-						Action: cmdServerPurgeDeleted,
+						Action: runtime(cmdServerPurgeDeleted),
 						Flags: []cli.Flag{
 							cli.BoolFlag{
 								Name:  "all, a",
@@ -44,47 +43,47 @@ func registerServers(app cli.App) *cli.App {
 					{
 						Name:   "update",
 						Usage:  "Full update of server attributes (replace, not merge)",
-						Action: cmdServerUpdate,
+						Action: runtime(cmdServerUpdate),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing server",
-						Action: cmdServerRename,
+						Action: runtime(cmdServerRename),
 					},
 					{
 						Name:   "online",
 						Usage:  "Set an existing server to online",
-						Action: cmdServerOnline,
+						Action: runtime(cmdServerOnline),
 					},
 					{
 						Name:   "offline",
 						Usage:  "Set an existing server to offline",
-						Action: cmdServerOffline,
+						Action: runtime(cmdServerOffline),
 					},
 					{
 						Name:   "move",
 						Usage:  "Change a server's registered location",
-						Action: cmdServerMove,
+						Action: runtime(cmdServerMove),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all servers, see full description for possible filters",
-						Action: cmdServerList,
+						Action: runtime(cmdServerList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a specific server",
-						Action: cmdServerShow,
+						Action: runtime(cmdServerShow),
 					},
 					{
 						Name:   "sync",
 						Usage:  "Request a data sync for a server",
-						Action: cmdServerSyncRequest,
+						Action: runtime(cmdServerSyncRequest),
 					},
 					{
 						Name:   "null",
 						Usage:  "Bootstrap the null server",
-						Action: cmdServerNull,
+						Action: runtime(cmdServerNull),
 					},
 				},
 			}, // end servers

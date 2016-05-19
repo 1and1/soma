@@ -11,29 +11,28 @@ func registerAttributes(app cli.App) *cli.App {
 		[]cli.Command{
 			// attributes
 			{
-				Name:   "attributes",
-				Usage:  "SUBCOMMANDS for service attributes",
-				Before: runtimePreCmd,
+				Name:  "attributes",
+				Usage: "SUBCOMMANDS for service attributes",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new service attribute",
-						Action: cmdAttributeCreate,
+						Action: runtime(cmdAttributeCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a service attribute",
-						Action: cmdAttributeDelete,
+						Action: runtime(cmdAttributeDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List service attributes",
-						Action: cmdAttributeList,
+						Action: runtime(cmdAttributeList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a service attribute",
-						Action: cmdAttributeShow,
+						Action: runtime(cmdAttributeShow),
 					},
 				},
 			}, // end attributes

@@ -11,29 +11,28 @@ func registerStatus(app cli.App) *cli.App {
 		[]cli.Command{
 			// status
 			{
-				Name:   "status",
-				Usage:  "SUBCOMMANDS for check instance status",
-				Before: runtimePreCmd,
+				Name:  "status",
+				Usage: "SUBCOMMANDS for check instance status",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Add a check instance status",
-						Action: cmdStatusCreate,
+						Action: runtime(cmdStatusCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a check instance status",
-						Action: cmdStatusDelete,
+						Action: runtime(cmdStatusDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List check instance status",
-						Action: cmdStatusList,
+						Action: runtime(cmdStatusList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a check instance status",
-						Action: cmdStatusShow,
+						Action: runtime(cmdStatusShow),
 					},
 				},
 			}, // end status

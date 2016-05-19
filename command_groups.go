@@ -11,34 +11,33 @@ func registerGroups(app cli.App) *cli.App {
 		[]cli.Command{
 			// groups
 			{
-				Name:   "groups",
-				Usage:  "SUBCOMMANDS for groups",
-				Before: runtimePreCmd,
+				Name:  "groups",
+				Usage: "SUBCOMMANDS for groups",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new group",
-						Action: cmdGroupCreate,
+						Action: runtime(cmdGroupCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a group",
-						Action: cmdGroupDelete,
+						Action: runtime(cmdGroupDelete),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename a group",
-						Action: cmdGroupRename,
+						Action: runtime(cmdGroupRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all groups",
-						Action: cmdGroupList,
+						Action: runtime(cmdGroupList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a group",
-						Action: cmdGroupShow,
+						Action: runtime(cmdGroupShow),
 					},
 					{
 						Name:  "members",
@@ -51,17 +50,17 @@ func registerGroups(app cli.App) *cli.App {
 									{
 										Name:   "group",
 										Usage:  "Add a group to a group",
-										Action: cmdGroupMemberAddGroup,
+										Action: runtime(cmdGroupMemberAddGroup),
 									},
 									{
 										Name:   "cluster",
 										Usage:  "Add a cluster to a group",
-										Action: cmdGroupMemberAddCluster,
+										Action: runtime(cmdGroupMemberAddCluster),
 									},
 									{
 										Name:   "node",
 										Usage:  "Add a node to a group",
-										Action: cmdGroupMemberAddNode,
+										Action: runtime(cmdGroupMemberAddNode),
 									},
 								},
 							},
@@ -72,24 +71,24 @@ func registerGroups(app cli.App) *cli.App {
 									{
 										Name:   "group",
 										Usage:  "Delete a group from a group",
-										Action: cmdGroupMemberDeleteGroup,
+										Action: runtime(cmdGroupMemberDeleteGroup),
 									},
 									{
 										Name:   "cluster",
 										Usage:  "Delete a cluster from a group",
-										Action: cmdGroupMemberDeleteCluster,
+										Action: runtime(cmdGroupMemberDeleteCluster),
 									},
 									{
 										Name:   "node",
 										Usage:  "Delete a node from a group",
-										Action: cmdGroupMemberDeleteNode,
+										Action: runtime(cmdGroupMemberDeleteNode),
 									},
 								},
 							},
 							{
 								Name:   "list",
 								Usage:  "List all members of a group",
-								Action: cmdGroupMemberList,
+								Action: runtime(cmdGroupMemberList),
 							},
 						},
 					},
@@ -104,12 +103,12 @@ func registerGroups(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a group",
-										Action: cmdGroupSystemPropertyAdd,
+										Action: runtime(cmdGroupSystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a group",
-										Action: cmdGroupServicePropertyAdd,
+										Action: runtime(cmdGroupServicePropertyAdd),
 									},
 								},
 							},

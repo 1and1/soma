@@ -10,24 +10,23 @@ func registerChecks(app cli.App) *cli.App {
 	app.Commands = append(app.Commands,
 		[]cli.Command{
 			{
-				Name:   "checks",
-				Usage:  "SUBCOMMANDS for check configurations",
-				Before: runtimePreCmd,
+				Name:  "checks",
+				Usage: "SUBCOMMANDS for check configurations",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new check configuration",
-						Action: cmdCheckAdd,
+						Action: runtime(cmdCheckAdd),
 					},
 					{
 						Name:   "list",
 						Usage:  "List check configurations",
-						Action: cmdCheckList,
+						Action: runtime(cmdCheckList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a check configuration",
-						Action: cmdCheckShow,
+						Action: runtime(cmdCheckShow),
 					},
 				},
 			},

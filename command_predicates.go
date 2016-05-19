@@ -11,29 +11,28 @@ func registerPredicates(app cli.App) *cli.App {
 		[]cli.Command{
 			// predicates
 			{
-				Name:   "predicates",
-				Usage:  "SUBCOMMANDS for threshold predicates",
-				Before: runtimePreCmd,
+				Name:  "predicates",
+				Usage: "SUBCOMMANDS for threshold predicates",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Add a predicate",
-						Action: cmdPredicateCreate,
+						Action: runtime(cmdPredicateCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a predicate",
-						Action: cmdPredicateDelete,
+						Action: runtime(cmdPredicateDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List predicates",
-						Action: cmdPredicateList,
+						Action: runtime(cmdPredicateList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a predicate",
-						Action: cmdPredicateShow,
+						Action: runtime(cmdPredicateShow),
 					},
 				},
 			}, // end predicates

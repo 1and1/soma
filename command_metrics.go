@@ -12,29 +12,28 @@ func registerMetrics(app cli.App) *cli.App {
 		[]cli.Command{
 			// metrics
 			{
-				Name:   "metrics",
-				Usage:  "SUBCOMMANDS for metrics",
-				Before: runtimePreCmd,
+				Name:  "metrics",
+				Usage: "SUBCOMMANDS for metrics",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new metric",
-						Action: cmdMetricCreate,
+						Action: runtime(cmdMetricCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a metric",
-						Action: cmdMetricDelete,
+						Action: runtime(cmdMetricDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List metrics",
-						Action: cmdMetricList,
+						Action: runtime(cmdMetricList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a metric",
-						Action: cmdMetricShow,
+						Action: runtime(cmdMetricShow),
 					},
 				},
 			}, // end metrics

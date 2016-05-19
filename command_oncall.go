@@ -11,39 +11,38 @@ func registerOncall(app cli.App) *cli.App {
 		[]cli.Command{
 			// oncall
 			{
-				Name:   "oncall",
-				Usage:  "SUBCOMMANDS for oncall duty teams",
-				Before: runtimePreCmd,
+				Name:  "oncall",
+				Usage: "SUBCOMMANDS for oncall duty teams",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Register a new oncall duty team",
-						Action: cmdOnCallAdd,
+						Action: runtime(cmdOnCallAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Delete an existing oncall duty team",
-						Action: cmdOnCallDel,
+						Action: runtime(cmdOnCallDel),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing oncall duty team",
-						Action: cmdOnCallRename,
+						Action: runtime(cmdOnCallRename),
 					},
 					{
 						Name:   "update",
 						Usage:  "Update phone number of an existing oncall duty team",
-						Action: cmdOnCallUpdate,
+						Action: runtime(cmdOnCallUpdate),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all registered oncall duty teams",
-						Action: cmdOnCallList,
+						Action: runtime(cmdOnCallList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific oncall duty team",
-						Action: cmdOnCallShow,
+						Action: runtime(cmdOnCallShow),
 					},
 					{
 						Name:  "member",
@@ -52,17 +51,17 @@ func registerOncall(app cli.App) *cli.App {
 							{
 								Name:   "add",
 								Usage:  "Add a user to an oncall duty team",
-								Action: cmdOnCallMemberAdd,
+								Action: runtime(cmdOnCallMemberAdd),
 							},
 							{
 								Name:   "remove",
 								Usage:  "Remove a member from an oncall duty team",
-								Action: cmdOnCallMemberDel,
+								Action: runtime(cmdOnCallMemberDel),
 							},
 							{
 								Name:   "list",
 								Usage:  "List the users of an oncall duty team",
-								Action: cmdOnCallMemberList,
+								Action: runtime(cmdOnCallMemberList),
 							},
 						},
 					},

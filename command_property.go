@@ -12,9 +12,8 @@ func registerProperty(app cli.App) *cli.App {
 		[]cli.Command{
 			// property
 			{
-				Name:   "property",
-				Usage:  "SUBCOMMANDS for property",
-				Before: runtimePreCmd,
+				Name:  "property",
+				Usage: "SUBCOMMANDS for property",
 				Subcommands: []cli.Command{
 					{
 						Name:  "create",
@@ -23,27 +22,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "Create a new per-team service property",
-								Action: cmdPropertyServiceCreate,
+								Action: runtime(cmdPropertyServiceCreate),
 							},
 							{
 								Name:   "system",
 								Usage:  "Create a new global system property",
-								Action: cmdPropertySystemCreate,
+								Action: runtime(cmdPropertySystemCreate),
 							},
 							{
 								Name:   "native",
 								Usage:  "Create a new global native property",
-								Action: cmdPropertyNativeCreate,
+								Action: runtime(cmdPropertyNativeCreate),
 							},
 							{
 								Name:   "custom",
 								Usage:  "Create a new per-repo custom property",
-								Action: cmdPropertyCustomCreate,
+								Action: runtime(cmdPropertyCustomCreate),
 							},
 							{
 								Name:   "template",
 								Usage:  "Create a new global service template",
-								Action: cmdPropertyServiceCreate,
+								Action: runtime(cmdPropertyServiceCreate),
 							},
 						},
 					}, // end property create
@@ -54,27 +53,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "Delete a team service property",
-								Action: cmdPropertyServiceDelete,
+								Action: runtime(cmdPropertyServiceDelete),
 							},
 							{
 								Name:   "system",
 								Usage:  "Delete a system property",
-								Action: cmdPropertySystemDelete,
+								Action: runtime(cmdPropertySystemDelete),
 							},
 							{
 								Name:   "native",
 								Usage:  "Delete a native property",
-								Action: cmdPropertyNativeDelete,
+								Action: runtime(cmdPropertyNativeDelete),
 							},
 							{
 								Name:   "custom",
 								Usage:  "Delete a repository custom property",
-								Action: cmdPropertyCustomDelete,
+								Action: runtime(cmdPropertyCustomDelete),
 							},
 							{
 								Name:   "template",
 								Usage:  "Delete a global service property template",
-								Action: cmdPropertyTemplateDelete,
+								Action: runtime(cmdPropertyTemplateDelete),
 							},
 						},
 					}, // end property delete
@@ -131,27 +130,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "Show a service property",
-								Action: cmdPropertyServiceShow,
+								Action: runtime(cmdPropertyServiceShow),
 							},
 							{
 								Name:   "custom",
 								Usage:  "Show a custom property",
-								Action: cmdPropertyCustomShow,
+								Action: runtime(cmdPropertyCustomShow),
 							},
 							{
 								Name:   "system",
 								Usage:  "Show a system property",
-								Action: cmdPropertySystemShow,
+								Action: runtime(cmdPropertySystemShow),
 							},
 							{
 								Name:   "native",
 								Usage:  "Show a native property",
-								Action: cmdPropertyNativeShow,
+								Action: runtime(cmdPropertyNativeShow),
 							},
 							{
 								Name:   "template",
 								Usage:  "Show a service property template",
-								Action: cmdPropertyTemplateShow,
+								Action: runtime(cmdPropertyTemplateShow),
 							},
 						},
 					}, // end property show
@@ -162,27 +161,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "List service properties",
-								Action: cmdPropertyServiceList,
+								Action: runtime(cmdPropertyServiceList),
 							},
 							{
 								Name:   "custom",
 								Usage:  "List custom properties",
-								Action: cmdPropertyCustomList,
+								Action: runtime(cmdPropertyCustomList),
 							},
 							{
 								Name:   "system",
 								Usage:  "List system properties",
-								Action: cmdPropertySystemList,
+								Action: runtime(cmdPropertySystemList),
 							},
 							{
 								Name:   "native",
 								Usage:  "List native properties",
-								Action: cmdPropertyNativeList,
+								Action: runtime(cmdPropertyNativeList),
 							},
 							{
 								Name:   "template",
 								Usage:  "List service property templates",
-								Action: cmdPropertyTemplateList,
+								Action: runtime(cmdPropertyTemplateList),
 							},
 						},
 					}, // end property list

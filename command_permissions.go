@@ -13,9 +13,8 @@ func registerPermissions(app cli.App) *cli.App {
 		[]cli.Command{
 			// permissions
 			{
-				Name:   "permissions",
-				Usage:  "SUBCOMMANDS for permissions",
-				Before: runtimePreCmd,
+				Name:  "permissions",
+				Usage: "SUBCOMMANDS for permissions",
 				Subcommands: []cli.Command{
 					{
 						Name:  "type",
@@ -24,44 +23,44 @@ func registerPermissions(app cli.App) *cli.App {
 							{
 								Name:   "add",
 								Usage:  "Register a new permission type",
-								Action: cmdPermissionTypeAdd,
+								Action: runtime(cmdPermissionTypeAdd),
 							},
 							{
 								Name:   "remove",
 								Usage:  "Remove an existing permission type",
-								Action: cmdPermissionTypeDel,
+								Action: runtime(cmdPermissionTypeDel),
 							},
 							{
 								Name:   "rename",
 								Usage:  "Rename an existing permission type",
-								Action: cmdPermissionTypeRename,
+								Action: runtime(cmdPermissionTypeRename),
 							},
 							{
 								Name:   "list",
 								Usage:  "List all permission types",
-								Action: cmdPermissionTypeList,
+								Action: runtime(cmdPermissionTypeList),
 							},
 							{
 								Name:   "show",
 								Usage:  "Show details for a permission type",
-								Action: cmdPermissionTypeShow,
+								Action: runtime(cmdPermissionTypeShow),
 							},
 						}, // end permissions type
 					},
 					{
 						Name:   "add",
 						Usage:  "Register a new permission",
-						Action: cmdPermissionAdd,
+						Action: runtime(cmdPermissionAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove a permission",
-						Action: cmdPermissionDel,
+						Action: runtime(cmdPermissionDel),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all permissions",
-						Action: cmdPermissionList,
+						Action: runtime(cmdPermissionList),
 					},
 					{
 						Name:  "show",
@@ -70,29 +69,29 @@ func registerPermissions(app cli.App) *cli.App {
 							{
 								Name:   "user",
 								Usage:  "Show permissions of a user",
-								Action: cmdPermissionShowUser,
+								Action: runtime(cmdPermissionShowUser),
 							},
 							{
 								Name:   "team",
 								Usage:  "Show permissions of a team",
-								Action: cmdPermissionShowTeam,
+								Action: runtime(cmdPermissionShowTeam),
 							},
 							{
 								Name:   "tool",
 								Usage:  "Show permissions of a tool account",
-								Action: cmdPermissionShowTool,
+								Action: runtime(cmdPermissionShowTool),
 							},
 							{
 								Name:   "permission",
 								Usage:  "Show details about a permission",
-								Action: cmdPermissionShowPermission,
+								Action: runtime(cmdPermissionShowPermission),
 							},
 						},
 					}, // end permissions show
 					{
 						Name:   "audit",
 						Usage:  "Show all limited permissions associated with a repository",
-						Action: cmdPermissionAudit,
+						Action: runtime(cmdPermissionAudit),
 					},
 					{
 						Name:  "grant",
@@ -101,22 +100,22 @@ func registerPermissions(app cli.App) *cli.App {
 							{
 								Name:   "enable",
 								Usage:  "Enable a useraccount to receive GRANT permissions",
-								Action: cmdPermissionGrantEnable,
+								Action: runtime(cmdPermissionGrantEnable),
 							},
 							{
 								Name:   "global",
 								Usage:  "Grant a global permission",
-								Action: cmdPermissionGrantGlobal,
+								Action: runtime(cmdPermissionGrantGlobal),
 							},
 							{
 								Name:   "limited",
 								Usage:  "Grant a limited permission",
-								Action: cmdPermissionGrantLimited,
+								Action: runtime(cmdPermissionGrantLimited),
 							},
 							{
 								Name:   "system",
 								Usage:  "Grant a system permission",
-								Action: cmdPermissionGrantSystem,
+								Action: runtime(cmdPermissionGrantSystem),
 							},
 						},
 					}, // end permissions grant

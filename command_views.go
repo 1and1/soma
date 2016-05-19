@@ -11,34 +11,33 @@ func registerViews(app cli.App) *cli.App {
 		[]cli.Command{
 			// views
 			{
-				Name:   "views",
-				Usage:  "SUBCOMMANDS for views",
-				Before: runtimePreCmd,
+				Name:  "views",
+				Usage: "SUBCOMMANDS for views",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Register a new view",
-						Action: cmdViewsAdd,
+						Action: runtime(cmdViewsAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing view",
-						Action: cmdViewsRemove,
+						Action: runtime(cmdViewsRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing view",
-						Action: cmdViewsRename,
+						Action: runtime(cmdViewsRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all registered views",
-						Action: cmdViewsList,
+						Action: runtime(cmdViewsList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific view",
-						Action: cmdViewsShow,
+						Action: runtime(cmdViewsShow),
 					},
 				},
 			}, // end views

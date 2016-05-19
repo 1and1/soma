@@ -10,29 +10,28 @@ func registerUnits(app cli.App) *cli.App {
 	app.Commands = append(app.Commands,
 		[]cli.Command{
 			{
-				Name:   "units",
-				Usage:  "SUBCOMMANDS for metric units",
-				Before: runtimePreCmd,
+				Name:  "units",
+				Usage: "SUBCOMMANDS for metric units",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new metric unit",
-						Action: cmdUnitCreate,
+						Action: runtime(cmdUnitCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a metric unit",
-						Action: cmdUnitDelete,
+						Action: runtime(cmdUnitDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List metric units",
-						Action: cmdUnitList,
+						Action: runtime(cmdUnitList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a metric unit",
-						Action: cmdUnitShow,
+						Action: runtime(cmdUnitShow),
 					},
 				},
 			},

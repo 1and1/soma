@@ -12,44 +12,43 @@ func registerRepository(app cli.App) *cli.App {
 		[]cli.Command{
 			// repository
 			{
-				Name:   "repository",
-				Usage:  "SUBCOMMANDS for repository",
-				Before: runtimePreCmd,
+				Name:  "repository",
+				Usage: "SUBCOMMANDS for repository",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new repository",
-						Action: cmdRepositoryCreate,
+						Action: runtime(cmdRepositoryCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark an existing repository as deleted",
-						Action: cmdRepositoryDelete,
+						Action: runtime(cmdRepositoryDelete),
 					},
 					{
 						Name:   "restore",
 						Usage:  "Restore a repository marked as deleted",
-						Action: cmdRepositoryRestore,
+						Action: runtime(cmdRepositoryRestore),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Remove an unreferenced deleted repository",
-						Action: cmdRepositoryPurge,
+						Action: runtime(cmdRepositoryPurge),
 					},
 					{
 						Name:   "clear",
 						Usage:  "Clear all check instances for this repository",
-						Action: cmdRepositoryClear,
+						Action: runtime(cmdRepositoryClear),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing repository",
-						Action: cmdRepositoryRename,
+						Action: runtime(cmdRepositoryRename),
 					},
 					{
 						Name:   "repossess",
 						Usage:  "Change the owner of a repository",
-						Action: cmdRepositoryRepossess,
+						Action: runtime(cmdRepositoryRepossess),
 					},
 					/*
 						{
@@ -61,7 +60,7 @@ func registerRepository(app cli.App) *cli.App {
 					{
 						Name:   "activate",
 						Usage:  "Activate a cloned repository",
-						Action: cmdRepositoryActivate,
+						Action: runtime(cmdRepositoryActivate),
 					},
 					/*
 						{
@@ -73,12 +72,12 @@ func registerRepository(app cli.App) *cli.App {
 					{
 						Name:   "list",
 						Usage:  "List all existing repositories",
-						Action: cmdRepositoryList,
+						Action: runtime(cmdRepositoryList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific repository",
-						Action: cmdRepositoryShow,
+						Action: runtime(cmdRepositoryShow),
 					},
 					{
 						Name:  "property",
@@ -91,12 +90,12 @@ func registerRepository(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a repository",
-										Action: cmdRepositorySystemPropertyAdd,
+										Action: runtime(cmdRepositorySystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a repository",
-										Action: cmdRepositoryServicePropertyAdd,
+										Action: runtime(cmdRepositoryServicePropertyAdd),
 									},
 								},
 							},

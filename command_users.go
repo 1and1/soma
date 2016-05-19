@@ -12,24 +12,23 @@ func registerUsers(app cli.App) *cli.App {
 		[]cli.Command{
 			// users
 			{
-				Name:   "users",
-				Usage:  "SUBCOMMANDS for users",
-				Before: runtimePreCmd,
+				Name:  "users",
+				Usage: "SUBCOMMANDS for users",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new user",
-						Action: cmdUserAdd,
+						Action: runtime(cmdUserAdd),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark a user as deleted",
-						Action: cmdUserMarkDeleted,
+						Action: runtime(cmdUserMarkDeleted),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Purge a user marked as deleted",
-						Action: cmdUserPurgeDeleted,
+						Action: runtime(cmdUserPurgeDeleted),
 						Flags: []cli.Flag{
 							cli.BoolFlag{
 								Name:  "all, a",
@@ -96,12 +95,12 @@ func registerUsers(app cli.App) *cli.App {
 					{
 						Name:   "list",
 						Usage:  "List all registered users",
-						Action: cmdUserList,
+						Action: runtime(cmdUserList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific user",
-						Action: cmdUserShow,
+						Action: runtime(cmdUserShow),
 					},
 				},
 			}, // end users

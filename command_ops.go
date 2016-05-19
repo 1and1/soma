@@ -14,9 +14,8 @@ func registerOps(app cli.App) *cli.App {
 	app.Commands = append(app.Commands,
 		[]cli.Command{
 			{
-				Name:   "ops",
-				Usage:  "SUBCOMMANDS for SOMA administration",
-				Before: runtimePreCmd,
+				Name:  "ops",
+				Usage: "SUBCOMMANDS for SOMA administration",
 				Subcommands: []cli.Command{
 					{
 						Name:   "bootstrap",
@@ -179,7 +178,6 @@ Suggested next steps:
 	- activate your user
 	- switch to using your user instead of root
 	`)
-	// TODO: output disclaimer text
 
 	return nil
 }
