@@ -556,7 +556,7 @@ func spawnValidityWriteHandler() {
 func spawnSupervisorHandler() {
 	var supervisorHandler supervisor
 	var err error
-	supervisorHandler.input = make(chan msg.Request, 64)
+	supervisorHandler.input = make(chan msg.Request, 1024)
 	supervisorHandler.shutdown = make(chan bool)
 	supervisorHandler.conn = conn
 	supervisorHandler.readonly = SomaCfg.ReadOnly
