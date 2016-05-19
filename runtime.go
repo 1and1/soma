@@ -91,10 +91,10 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 		utl.SetUrl(Cfg.Api)
 
 		Client = resty.New().SetRESTMode().
-			SetHeader(`X-Client`, `0.4.8`).
+			SetHeader(`X-SOMA-Client`, `somaadm 0.4.8`).
 			SetHostURL(utl.ApiUrl.String())
 
-			// check configured API
+		// check configured API
 		if resp, err = Client.R().Head(`/`); err != nil {
 			utl.AbortOnError(err)
 		} else if resp.StatusCode() != 204 {
