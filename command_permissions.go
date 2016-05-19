@@ -140,7 +140,7 @@ func cmdPermissionTypeAdd(c *cli.Context) error {
 }
 
 func cmdPermissionTypeDel(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().First()
@@ -158,7 +158,7 @@ func cmdPermissionTypeDel(c *cli.Context) error {
 }
 
 func cmdPermissionTypeRename(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to") // starts args counting at 1
@@ -182,7 +182,7 @@ func cmdPermissionTypeRename(c *cli.Context) error {
 }
 
 func cmdPermissionTypeList(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	url.Path = "/permissions/types"
 
 	utl.ValidateCliArgumentCount(c, 0)
@@ -199,7 +199,7 @@ func cmdPermissionTypeList(c *cli.Context) error {
 }
 
 func cmdPermissionTypeShow(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	utl.ValidateCliArgumentCount(c, 1)
 	permissionType := c.Args().Get(0)
@@ -217,7 +217,7 @@ func cmdPermissionTypeShow(c *cli.Context) error {
 }
 
 func cmdPermissionAdd(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	url.Path = "/permissions"
 
 	utl.ValidateCliArgumentCount(c, 3)
@@ -242,7 +242,7 @@ func cmdPermissionAdd(c *cli.Context) error {
 }
 
 func cmdPermissionDel(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	utl.ValidateCliArgumentCount(c, 1)
 	permission := c.Args().Get(0)
@@ -259,7 +259,7 @@ func cmdPermissionDel(c *cli.Context) error {
 }
 
 func cmdPermissionList(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	url.Path = "/permissions"
 
 	utl.ValidateCliArgumentCount(c, 0)
@@ -276,7 +276,7 @@ func cmdPermissionList(c *cli.Context) error {
 }
 
 func cmdPermissionShowGeneric(c *cli.Context, objType string) {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	var (
 		objName string
 		repo    string
@@ -328,7 +328,7 @@ func cmdPermissionShowTool(c *cli.Context) error {
 }
 
 func cmdPermissionShowPermission(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	utl.ValidateCliArgumentCount(c, 1)
 	url.Path = fmt.Sprintf("/permissions/permission/%s", c.Args().Get(0))
@@ -345,7 +345,7 @@ func cmdPermissionShowPermission(c *cli.Context) error {
 }
 
 func cmdPermissionAudit(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	utl.ValidateCliArgumentCount(c, 1)
 	url.Path = fmt.Sprintf("/permissions/repository/%s", c.Args().Get(0))

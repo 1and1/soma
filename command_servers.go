@@ -93,7 +93,7 @@ func registerServers(app cli.App) *cli.App {
 }
 
 func cmdServerCreate(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	url.Path = "/servers/"
 
 	// required gymnastics to get a []string
@@ -194,7 +194,7 @@ func cmdServerCreate(c *cli.Context) error {
 }
 
 func cmdServerMarkAsDeleted(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	var (
 		assetId uint64
 		err     error
@@ -233,7 +233,7 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 }
 
 func cmdServerPurgeDeleted(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	if c.Bool("all") {
 		url.Path = fmt.Sprintf("/servers")
@@ -269,7 +269,7 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 }
 
 func cmdServerUpdate(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 
 	// required gymnastics to get a []string
 	a := c.Args()
@@ -368,7 +368,7 @@ func cmdServerUpdate(c *cli.Context) error {
 }
 
 func cmdServerRename(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	var (
 		assetId uint64
 		err     error
@@ -414,7 +414,7 @@ func cmdServerRename(c *cli.Context) error {
 }
 
 func cmdServerOnline(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	var (
 		assetId uint64
 		err     error
@@ -462,7 +462,7 @@ func cmdServerOnline(c *cli.Context) error {
 }
 
 func cmdServerOffline(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	var (
 		assetId uint64
 		err     error
@@ -510,7 +510,7 @@ func cmdServerOffline(c *cli.Context) error {
 }
 
 func cmdServerMove(c *cli.Context) error {
-	url := getApiUrl()
+	url := Cfg.Run.SomaAPI
 	var (
 		assetId uint64
 		err     error
