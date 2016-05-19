@@ -5,30 +5,30 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetClusterByUUIDOrName(c string, b string) string {
+func (u SomaUtil) TryGetClusterByUUIDOrName(c *resty.Client, cl string, b string) string {
 	var id string
-	bId := u.BucketByUUIDOrName(b)
+	bId := u.BucketByUUIDOrName(c, b)
 
-	cId, err := uuid.FromString(c)
+	cId, err := uuid.FromString(cl)
 	if err != nil {
-		id = u.GetClusterIdByName(c, bId)
+		id = u.GetClusterIdByName(c, cl, bId)
 	} else {
 		id = cId.String()
 	}
 	return id
 }
 
-func (u SomaUtil) GetClusterIdByName(c string, bId string) string {
+func (u SomaUtil) GetClusterIdByName(c *resty.Client, cl string, bId string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Cluster: &proto.ClusterFilter{
-				Name:     c,
+				Name:     cl,
 				BucketId: bId,
 			},
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/clusters/")
+	resp := u.PostRequestWithBody(c, req, "/filter/clusters/")
 	clusterResult := u.DecodeProtoResultClusterFromResponse(resp)
 
 	return (*clusterResult.Clusters)[0].Id

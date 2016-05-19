@@ -82,17 +82,17 @@ func cmdTeamAdd(c *cli.Context) error {
 		req.Team.IsSystem = bl
 	}
 
-	resp := utl.PostRequestWithBody(req, "/teams/")
+	resp := utl.PostRequestWithBody(Client, req, "/teams/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdTeamDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
+	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -102,14 +102,14 @@ func cmdTeamRename(c *cli.Context) error {
 	key := []string{"to"}
 	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
+	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
 	req := proto.Request{}
 	req.Team = &proto.Team{}
 	req.Team.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -123,7 +123,7 @@ func cmdTeamMigrate(c *cli.Context) error {
 func cmdTeamList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/teams/")
+	resp := utl.GetRequest(Client, "/teams/")
 	fmt.Println(resp)
 	return nil
 }
@@ -131,10 +131,10 @@ func cmdTeamList(c *cli.Context) error {
 func cmdTeamShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	id := utl.TryGetTeamByUUIDOrName(c.Args().First())
+	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

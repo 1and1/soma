@@ -6,8 +6,8 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) CheckStringIsServiceAttribute(s string) {
-	resp := u.GetRequest("/attributes/")
+func (u SomaUtil) CheckStringIsServiceAttribute(c *resty.Client, s string) {
+	resp := u.GetRequest(c, "/attributes/")
 	res := u.DecodeResultFromResponse(resp)
 
 	for _, attr := range *res.Attributes {

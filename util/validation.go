@@ -5,6 +5,8 @@ import (
 	"net/mail"
 	"strconv"
 	"unicode/utf8"
+
+	"gopkg.in/resty.v0"
 )
 
 func (u *SomaUtil) ValidateStringAsNodeAssetId(s string) {
@@ -69,8 +71,8 @@ func (u *SomaUtil) ValidateStringInSlice(s string, sl []string) {
 	}
 }
 
-func (u *SomaUtil) ValidateProviderExists(s string) {
-	resp := u.GetRequest("/providers/")
+func (u *SomaUtil) ValidateProviderExists(c *resty.Client, s string) {
+	resp := u.GetRequest(c, "/providers/")
 	res := u.DecodeResultFromResponse(resp)
 
 	if res.Providers != nil {
@@ -83,8 +85,8 @@ func (u *SomaUtil) ValidateProviderExists(s string) {
 	u.Abort(fmt.Sprintf("Referenced provider %s is not registered with SOMA, see `somaadm providers help create`", s))
 }
 
-func (u *SomaUtil) ValidateUnitExists(s string) {
-	resp := u.GetRequest("/units/")
+func (u *SomaUtil) ValidateUnitExists(c *resty.Client, s string) {
+	resp := u.GetRequest(c, "/units/")
 	res := u.DecodeResultFromResponse(resp)
 
 	if res.Units != nil {

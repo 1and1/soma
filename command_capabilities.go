@@ -60,7 +60,7 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 
 	req := proto.Request{
 		Capability: &proto.Capability{
-			MonitoringId: utl.TryGetMonitoringByUUIDOrName(
+			MonitoringId: utl.TryGetMonitoringByUUIDOrName(Client,
 				c.Args().First(),
 			),
 			Metric:     opts["metric"][0],
@@ -69,7 +69,7 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PostRequestWithBody(req, "/capability/")
+	resp := utl.PostRequestWithBody(Client, req, "/capability/")
 	fmt.Println(resp)
 	return nil
 }
@@ -77,16 +77,16 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 func cmdCapabilityRevoke(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	id := utl.TryGetCapabilityByUUIDOrName(c.Args().First())
+	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/capability/%s", id)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdCapabilityList(c *cli.Context) error {
-	resp := utl.GetRequest("/capability/")
+	resp := utl.GetRequest(Client, "/capability/")
 	fmt.Println(resp)
 	return nil
 }
@@ -94,10 +94,10 @@ func cmdCapabilityList(c *cli.Context) error {
 func cmdCapabilityShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	id := utl.TryGetCapabilityByUUIDOrName(c.Args().First())
+	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/capability/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

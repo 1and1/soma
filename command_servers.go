@@ -590,7 +590,7 @@ func cmdServerMove(c *cli.Context) error {
 }
 
 func cmdServerList(c *cli.Context) error {
-	resp := utl.GetRequest("/servers/")
+	resp := utl.GetRequest(Client, "/servers/")
 	fmt.Println(resp)
 	return nil
 }
@@ -598,10 +598,10 @@ func cmdServerList(c *cli.Context) error {
 func cmdServerShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	serverId := utl.TryGetServerByUUIDOrName(c.Args().First())
+	serverId := utl.TryGetServerByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/servers/%s", serverId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -649,7 +649,7 @@ func cmdServerNull(c *cli.Context) error {
 	req.Server.Id = "00000000-0000-0000-0000-000000000000"
 	req.Server.Datacenter = opts["datacenter"][0]
 
-	resp := utl.PutRequestWithBody(req, "/servers/null")
+	resp := utl.PutRequestWithBody(Client, req, "/servers/null")
 	fmt.Println(resp)
 	return nil
 }

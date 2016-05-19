@@ -134,7 +134,7 @@ func cmdPermissionTypeAdd(c *cli.Context) error {
 	req.Permission = &proto.Permission{}
 	req.Permission.Category = permissionType
 
-	resp := utl.PostRequestWithBody(req, "/permission/types/")
+	resp := utl.PostRequestWithBody(Client, req, "/permission/types/")
 	fmt.Println(resp)
 	return nil
 }
@@ -363,10 +363,10 @@ func cmdPermissionAudit(c *cli.Context) error {
 
 func cmdPermissionGrantEnable(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/permissions/user/%s", userId)
 
-	resp := utl.PatchRequestWithBody(proto.Request{
+	resp := utl.PatchRequestWithBody(Client, proto.Request{
 		Grant: &proto.Grant{
 			RecipientType: "user",
 			RecipientId:   userId,

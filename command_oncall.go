@@ -88,17 +88,17 @@ func cmdOnCallAdd(c *cli.Context) error {
 	req.Oncall.Name = c.Args().First()
 	req.Oncall.Number = opts["phone"][0]
 
-	resp := utl.PostRequestWithBody(req, "/oncall/")
+	resp := utl.PostRequestWithBody(Client, req, "/oncall/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdOnCallDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
+	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -108,14 +108,14 @@ func cmdOnCallRename(c *cli.Context) error {
 	key := []string{"to"}
 	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
+	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
 	req := proto.Request{}
 	req.Oncall = &proto.Oncall{}
 	req.Oncall.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -127,7 +127,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 3)
 	opts := utl.ParseVariadicArguments(allowed, unique, required, c.Args().Tail())
 
-	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
+	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
 	req := proto.Request{}
@@ -146,7 +146,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 		utl.Abort("Syntax error, specify name or phone to update")
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -154,7 +154,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 func cmdOnCallList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/oncall/")
+	resp := utl.GetRequest(Client, "/oncall/")
 	fmt.Println(resp)
 	return nil
 }
@@ -162,10 +162,10 @@ func cmdOnCallList(c *cli.Context) error {
 func cmdOnCallShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	id := utl.TryGetOncallByUUIDOrName(c.Args().First())
+	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -173,8 +173,8 @@ func cmdOnCallShow(c *cli.Context) error {
 func cmdOnCallMemberAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
-	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
-	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().Get(0))
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(2))
 
 	req := proto.Request{}
 	req.Oncall = &proto.Oncall{}
@@ -184,7 +184,7 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 	req.Oncall.Members = &reqMembers
 	path := fmt.Sprintf("/oncall/%s/members", oncallId)
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -192,23 +192,23 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 func cmdOnCallMemberDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "from")
-	userId := utl.TryGetUserByUUIDOrName(c.Args().Get(0))
-	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(2))
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().Get(0))
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(2))
 
 	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdOnCallMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	oncallId := utl.TryGetOncallByUUIDOrName(c.Args().Get(0))
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(0))
 
 	path := fmt.Sprintf("/oncall/%s/members/", oncallId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

@@ -7,16 +7,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetCapabilityByUUIDOrName(s string) string {
+func (u *SomaUtil) TryGetCapabilityByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetCapabilityIdByName(s)
+		return u.GetCapabilityIdByName(c, s)
 	}
 	return id.String()
 }
 
-func (u *SomaUtil) GetCapabilityIdByName(capability string) string {
+func (u *SomaUtil) GetCapabilityIdByName(c *resty.Client, capability string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Capability: &proto.CapabilityFilter{},
@@ -27,11 +27,11 @@ func (u *SomaUtil) GetCapabilityIdByName(capability string) string {
 	if len(split) != 3 {
 		u.Abort("Split failed, Capability name invalid")
 	}
-	req.Filter.Capability.MonitoringId = u.TryGetMonitoringByUUIDOrName(split[0])
+	req.Filter.Capability.MonitoringId = u.TryGetMonitoringByUUIDOrName(c, split[0])
 	req.Filter.Capability.View = split[1]
 	req.Filter.Capability.Metric = split[2]
 
-	resp := u.PostRequestWithBody(req, "/filter/capability/")
+	resp := u.PostRequestWithBody(c, req, "/filter/capability/")
 	capabilityResult := u.DecodeProtoResultCapabilityFromResponse(resp)
 
 	if capability != (*capabilityResult.Capabilities)[0].Name {

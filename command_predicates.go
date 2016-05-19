@@ -48,7 +48,7 @@ func cmdPredicateCreate(c *cli.Context) error {
 	req.Predicate = &proto.Predicate{}
 	req.Predicate.Symbol = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/predicates/")
+	resp := utl.PostRequestWithBody(Client, req, "/predicates/")
 	fmt.Println(resp)
 	return nil
 }
@@ -58,13 +58,13 @@ func cmdPredicateDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdPredicateList(c *cli.Context) error {
-	resp := utl.GetRequest("/predicates/")
+	resp := utl.GetRequest(Client, "/predicates/")
 	fmt.Println(resp)
 	return nil
 }
@@ -74,7 +74,7 @@ func cmdPredicateShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

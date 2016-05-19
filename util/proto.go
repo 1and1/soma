@@ -24,8 +24,8 @@ func (u SomaUtil) DecodeResultFromResponse(resp *resty.Response) *proto.Result {
 	return &res
 }
 
-func (u SomaUtil) VerifyEnvironment(env string) {
-	resp := u.GetRequest("/environments/")
+func (u SomaUtil) VerifyEnvironment(c *resty.Client, env string) {
+	resp := u.GetRequest(c, "/environments/")
 	res := u.DecodeResultFromResponse(resp)
 	for _, e := range *res.Environments {
 		if e.Name == env {

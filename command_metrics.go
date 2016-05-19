@@ -54,7 +54,7 @@ func cmdMetricCreate(c *cli.Context) error {
 		required,
 		c.Args().Tail())
 
-	utl.ValidateUnitExists(opts["unit"][0])
+	utl.ValidateUnitExists(Client, opts["unit"][0])
 	req := proto.Request{}
 	req.Metric = &proto.Metric{}
 	req.Metric.Path = c.Args().First()
@@ -70,7 +70,7 @@ func cmdMetricCreate(c *cli.Context) error {
 				utl.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
 					p))
 			}
-			utl.ValidateProviderExists(split[0])
+			utl.ValidateProviderExists(Client, split[0])
 			pkgs = append(pkgs, proto.MetricPackage{
 				Provider: split[0],
 				Name:     split[1],
@@ -79,7 +79,7 @@ func cmdMetricCreate(c *cli.Context) error {
 		req.Metric.Packages = &pkgs
 	}
 
-	resp := utl.PostRequestWithBody(req, "/metrics/")
+	resp := utl.PostRequestWithBody(Client, req, "/metrics/")
 	fmt.Println(resp)
 	return nil
 }
@@ -89,13 +89,13 @@ func cmdMetricDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdMetricList(c *cli.Context) error {
-	resp := utl.GetRequest("/metrics/")
+	resp := utl.GetRequest(Client, "/metrics/")
 	fmt.Println(resp)
 	return nil
 }
@@ -105,7 +105,7 @@ func cmdMetricShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

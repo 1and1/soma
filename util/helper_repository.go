@@ -7,16 +7,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetRepositoryByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetRepositoryByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetRepositoryIdByName(s)
+		return u.GetRepositoryIdByName(c, s)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetRepositoryIdByName(repo string) string {
+func (u SomaUtil) GetRepositoryIdByName(c *resty.Client, repo string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Repository: &proto.RepositoryFilter{
@@ -25,7 +25,7 @@ func (u SomaUtil) GetRepositoryIdByName(repo string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/repository/")
+	resp := u.PostRequestWithBody(c, req, "/filter/repository/")
 	repoResult := u.DecodeProtoResultRepositoryFromResponse(resp)
 
 	if repo != (*repoResult.Repositories)[0].Name {
@@ -34,10 +34,10 @@ func (u SomaUtil) GetRepositoryIdByName(repo string) string {
 	return (*repoResult.Repositories)[0].Id
 }
 
-func (u SomaUtil) GetTeamIdByRepositoryId(repo string) string {
-	repoId := u.TryGetRepositoryByUUIDOrName(repo)
+func (u SomaUtil) GetTeamIdByRepositoryId(c *resty.Client, repo string) string {
+	repoId := u.TryGetRepositoryByUUIDOrName(c, repo)
 
-	resp := u.GetRequest(fmt.Sprintf("/repository/%s", repoId))
+	resp := u.GetRequest(c, fmt.Sprintf("/repository/%s", repoId))
 	repoResult := u.DecodeResultFromResponse(resp)
 	return (*repoResult.Repositories)[0].TeamId
 }

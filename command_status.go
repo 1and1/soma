@@ -48,7 +48,7 @@ func cmdStatusCreate(c *cli.Context) error {
 	req.Status = &proto.Status{}
 	req.Status.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/status/")
+	resp := utl.PostRequestWithBody(Client, req, "/status/")
 	fmt.Println(resp)
 	return nil
 }
@@ -58,13 +58,13 @@ func cmdStatusDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdStatusList(c *cli.Context) error {
-	resp := utl.GetRequest("/status/")
+	resp := utl.GetRequest(Client, "/status/")
 	fmt.Println(resp)
 	return nil
 }
@@ -74,7 +74,7 @@ func cmdStatusShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

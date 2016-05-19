@@ -179,23 +179,23 @@ func cmdNodeAdd(c *cli.Context) error {
 		req.Node.IsOnline = true
 	}
 	if utl.SliceContainsString("server", optional) {
-		req.Node.ServerId = utl.TryGetServerByUUIDOrName(options["server"])
+		req.Node.ServerId = utl.TryGetServerByUUIDOrName(Client, options["server"])
 	}
 	req.Node.AssetId, _ = strconv.ParseUint(options["assetid"], 10, 64)
 	req.Node.Name = options["name"]
-	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(options["team"])
+	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, options["team"])
 
-	resp := utl.PostRequestWithBody(req, "/nodes/")
+	resp := utl.PostRequestWithBody(Client, req, "/nodes/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdNodeDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -210,7 +210,7 @@ func cmdNodePurge(c *cli.Context) error {
 		path = "/nodes/"
 	} else {
 		utl.ValidateCliArgumentCount(c, 1)
-		id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+		id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 		path = fmt.Sprintf("/nodes/%s", id)
 	}
 
@@ -220,7 +220,7 @@ func cmdNodePurge(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -235,7 +235,7 @@ func cmdNodeRestore(c *cli.Context) error {
 		path = "/nodes/"
 	} else {
 		utl.ValidateCliArgumentCount(c, 1)
-		id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+		id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 		path = fmt.Sprintf("/nodes/%s", id)
 	}
 
@@ -245,7 +245,7 @@ func cmdNodeRestore(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -253,14 +253,14 @@ func cmdNodeRestore(c *cli.Context) error {
 func cmdNodeRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 	req.Node.Name = c.Args().Get(2)
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -268,17 +268,17 @@ func cmdNodeRename(c *cli.Context) error {
 func cmdNodeRepo(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetNodeByUUIDOrName(c.Args().Get(0))
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().Get(0))
 	team := c.Args().Get(2)
 	// try resolving team name to uuid as name validation
-	_ = utl.GetTeamIdByName(team)
+	_ = utl.GetTeamIdByName(Client, team)
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 	req.Node.TeamId = team
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -286,7 +286,7 @@ func cmdNodeRepo(c *cli.Context) error {
 func cmdNodeMove(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetNodeByUUIDOrName(c.Args().Get(0))
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().Get(0))
 	server := c.Args().Get(2)
 	// try resolving server name to uuid as name validation
 	_ = utl.GetServerAssetIdByName(server)
@@ -296,35 +296,35 @@ func cmdNodeMove(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.ServerId = server
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdNodeOnline(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 	req.Node.IsOnline = true
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdNodeOffline(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 	req.Node.IsOnline = false
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -336,9 +336,9 @@ func cmdNodeAssign(c *cli.Context) error {
 	required := []string{"to"}
 
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
-	repoId := utl.GetRepositoryIdForBucket(bucketId)
-	nodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
+	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
+	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
@@ -348,7 +348,7 @@ func cmdNodeAssign(c *cli.Context) error {
 	req.Node.Config.BucketId = bucketId
 
 	path := fmt.Sprintf("/nodes/%s/config", nodeId)
-	resp := utl.PutRequestWithBody(req, path)
+	resp := utl.PutRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -356,27 +356,27 @@ func cmdNodeAssign(c *cli.Context) error {
 func cmdNodeList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/nodes/")
+	resp := utl.GetRequest(Client, "/nodes/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdNodeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdNodeConfig(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/config", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -391,10 +391,10 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) error {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
 	}
 
-	nodeId := utl.TryGetNodeByUUIDOrName(opts["to"][0])
-	utl.CheckStringIsSystemProperty(c.Args().First())
+	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts["to"][0])
+	utl.CheckStringIsSystemProperty(Client, c.Args().First())
 
-	config := utl.GetNodeConfigById(nodeId)
+	config := utl.GetNodeConfigById(Client, nodeId)
 
 	tprop := proto.Property{
 		Type: "system",
@@ -428,7 +428,7 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/nodes/%s/property/system/", nodeId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -443,9 +443,9 @@ func cmdNodeServicePropertyAdd(c *cli.Context) error {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
 	}
 
-	nodeId := utl.TryGetNodeByUUIDOrName(opts["to"][0])
-	config := utl.GetNodeConfigById(nodeId)
-	teamId := utl.TeamIdForBucket(config.BucketId)
+	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts["to"][0])
+	config := utl.GetNodeConfigById(Client, nodeId)
+	teamId := utl.TeamIdForBucket(Client, config.BucketId)
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
@@ -480,7 +480,7 @@ func cmdNodeServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/nodes/%s/property/service/", nodeId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }

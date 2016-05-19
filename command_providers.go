@@ -48,7 +48,7 @@ func cmdProviderCreate(c *cli.Context) error {
 	req.Provider = &proto.Provider{}
 	req.Provider.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/providers/")
+	resp := utl.PostRequestWithBody(Client, req, "/providers/")
 	fmt.Println(resp)
 	return nil
 }
@@ -58,13 +58,13 @@ func cmdProviderDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdProviderList(c *cli.Context) error {
-	resp := utl.GetRequest("/providers/")
+	resp := utl.GetRequest(Client, "/providers/")
 	fmt.Println(resp)
 	return nil
 }
@@ -74,7 +74,7 @@ func cmdProviderShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

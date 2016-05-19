@@ -5,20 +5,20 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetGroupByUUIDOrName(g string, b string) string {
+func (u SomaUtil) TryGetGroupByUUIDOrName(c *resty.Client, g string, b string) string {
 	var id string
-	bId := u.BucketByUUIDOrName(b)
+	bId := u.BucketByUUIDOrName(c, b)
 
 	gId, err := uuid.FromString(g)
 	if err != nil {
-		id = u.GetGroupIdByName(g, bId)
+		id = u.GetGroupIdByName(c, g, bId)
 	} else {
 		id = gId.String()
 	}
 	return id
 }
 
-func (u SomaUtil) GetGroupIdByName(g string, bId string) string {
+func (u SomaUtil) GetGroupIdByName(c *resty.Client, g string, bId string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Group: &proto.GroupFilter{
@@ -28,7 +28,7 @@ func (u SomaUtil) GetGroupIdByName(g string, bId string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/groups/")
+	resp := u.PostRequestWithBody(c, req, "/filter/groups/")
 	groupResult := u.DecodeProtoResultGroupFromResponse(resp)
 
 	return (*groupResult.Groups)[0].Id

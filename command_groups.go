@@ -130,14 +130,14 @@ func cmdGroupCreate(c *cli.Context) error {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
 
 	var req proto.Request
 	req.Group = &proto.Group{}
 	req.Group.Name = c.Args().First()
 	req.Group.BucketId = bucketId
 
-	resp := utl.PostRequestWithBody(req, "/groups/")
+	resp := utl.PostRequestWithBody(Client, req, "/groups/")
 	fmt.Println(resp)
 	return nil
 }
@@ -151,13 +151,13 @@ func cmdGroupDelete(c *cli.Context) error {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	groupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	_ = utl.DeleteRequest(path)
+	_ = utl.DeleteRequest(Client, path)
 	return nil
 }
 
@@ -170,8 +170,8 @@ func cmdGroupRename(c *cli.Context) error {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	groupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
@@ -180,13 +180,13 @@ func cmdGroupRename(c *cli.Context) error {
 	req.Group = &proto.Group{}
 	req.Group.Name = opts["to"][0]
 
-	_ = utl.PatchRequestWithBody(req, path)
+	_ = utl.PatchRequestWithBody(Client, req, path)
 	return nil
 }
 
 func cmdGroupList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest("/groups/")
+	resp := utl.GetRequest(Client, "/groups/")
 	fmt.Println(resp)
 	return nil
 }
@@ -200,13 +200,13 @@ func cmdGroupShow(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	groupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -220,11 +220,11 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	mGroupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["to"][0],
 		bucketId)
 
@@ -238,7 +238,7 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -252,11 +252,11 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	mClusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["to"][0],
 		bucketId)
 
@@ -270,7 +270,7 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -284,9 +284,9 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	mNodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	groupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["to"][0],
 		bucketId)
 
@@ -300,7 +300,7 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -314,18 +314,18 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	mGroupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["from"][0],
 		bucketId)
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mGroupId)
 
-	_ = utl.DeleteRequest(path)
+	_ = utl.DeleteRequest(Client, path)
 	return nil
 }
 
@@ -338,18 +338,18 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	mClusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["from"][0],
 		bucketId)
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mClusterId)
 
-	_ = utl.DeleteRequest(path)
+	_ = utl.DeleteRequest(Client, path)
 	return nil
 }
 
@@ -362,16 +362,16 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	mNodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
-	groupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["from"][0],
 		bucketId)
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mNodeId)
 
-	_ = utl.DeleteRequest(path)
+	_ = utl.DeleteRequest(Client, path)
 	return nil
 }
 
@@ -384,14 +384,14 @@ func cmdGroupMemberList(c *cli.Context) error {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	groupId := utl.TryGetGroupByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -403,9 +403,9 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) error {
 	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
 
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	groupId := utl.TryGetGroupByUUIDOrName(opts["to"][0], bucketId)
-	utl.CheckStringIsSystemProperty(c.Args().First())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts["to"][0], bucketId)
+	utl.CheckStringIsSystemProperty(Client, c.Args().First())
 
 	sprop := proto.PropertySystem{
 		Name:  c.Args().First(),
@@ -441,7 +441,7 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s/property/system/", groupId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -453,9 +453,9 @@ func cmdGroupServicePropertyAdd(c *cli.Context) error {
 	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
 
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	groupId := utl.TryGetGroupByUUIDOrName(opts["to"][0], bucketId)
-	teamId := utl.TeamIdForBucket(bucketId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts["to"][0], bucketId)
+	teamId := utl.TeamIdForBucket(Client, bucketId)
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
@@ -490,7 +490,7 @@ func cmdGroupServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s/property/service/", groupId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }

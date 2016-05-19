@@ -252,7 +252,7 @@ func cmdDatacentersList(c *cli.Context) error {
 func cmdDatacentersListGroups(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/datacentergroups/")
+	resp := utl.GetRequest(Client, "/datacentergroups/")
 	fmt.Println(resp)
 	return nil
 }
@@ -261,7 +261,7 @@ func cmdDatacentersShowGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/datacentergroups/%s", c.Args().First())
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -270,7 +270,7 @@ func cmdDatacentersShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

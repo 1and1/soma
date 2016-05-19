@@ -53,7 +53,7 @@ func cmdViewsAdd(c *cli.Context) error {
 	req.View = &proto.View{}
 	req.View.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/views/")
+	resp := utl.PostRequestWithBody(Client, req, "/views/")
 	fmt.Println(resp)
 	return nil
 }
@@ -63,7 +63,7 @@ func cmdViewsRemove(c *cli.Context) error {
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -83,13 +83,13 @@ func cmdViewsRename(c *cli.Context) error {
 	req.View.Name = opts["to"][0]
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdViewsList(c *cli.Context) error {
-	resp := utl.GetRequest("/views/")
+	resp := utl.GetRequest(Client, "/views/")
 	fmt.Println(resp)
 	return nil
 }
@@ -99,7 +99,7 @@ func cmdViewsShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

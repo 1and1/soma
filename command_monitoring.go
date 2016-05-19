@@ -57,15 +57,15 @@ func cmdMonitoringCreate(c *cli.Context) error {
 	req.Monitoring = &proto.Monitoring{}
 	req.Monitoring.Name = c.Args().First()
 	req.Monitoring.Mode = opts["mode"][0]
-	req.Monitoring.Contact = utl.TryGetUserByUUIDOrName(opts["contact"][0])
-	req.Monitoring.TeamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	req.Monitoring.Contact = utl.TryGetUserByUUIDOrName(Client, opts["contact"][0])
+	req.Monitoring.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 
 	// optional arguments
 	if _, ok := opts["callback"]; ok {
 		req.Monitoring.Callback = opts["callback"][0]
 	}
 
-	resp := utl.PostRequestWithBody(req, "/monitoring/")
+	resp := utl.PostRequestWithBody(Client, req, "/monitoring/")
 	fmt.Println(resp)
 	return nil
 }
@@ -73,26 +73,26 @@ func cmdMonitoringCreate(c *cli.Context) error {
 func cmdMonitoringDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	userId := utl.TryGetMonitoringByUUIDOrName(c.Args().First())
+	userId := utl.TryGetMonitoringByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/monitoring/%s", userId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdMonitoringList(c *cli.Context) error {
-	resp := utl.GetRequest("/monitoring/")
+	resp := utl.GetRequest(Client, "/monitoring/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdMonitoringShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetMonitoringByUUIDOrName(c.Args().First())
+	id := utl.TryGetMonitoringByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/monitoring/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

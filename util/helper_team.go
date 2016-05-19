@@ -5,16 +5,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetTeamByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetTeamByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetTeamIdByName(s)
+		return u.GetTeamIdByName(c, s)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetTeamIdByName(teamName string) string {
+func (u SomaUtil) GetTeamIdByName(c *resty.Client, teamName string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Team: &proto.TeamFilter{
@@ -23,7 +23,7 @@ func (u SomaUtil) GetTeamIdByName(teamName string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/teams/")
+	resp := u.PostRequestWithBody(c, req, "/filter/teams/")
 	teamResult := u.DecodeProtoResultTeamFromResponse(resp)
 
 	if teamName != (*teamResult.Teams)[0].Name {

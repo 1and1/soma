@@ -205,7 +205,7 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 		unique,
 		required,
 		c.Args().Tail())
-	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
 	req := proto.Request{}
 	req.Property = &proto.Property{}
@@ -217,7 +217,7 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -232,7 +232,7 @@ func cmdPropertySystemCreate(c *cli.Context) error {
 	req.Property.System = &proto.PropertySystem{}
 	req.Property.System.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/property/system/")
+	resp := utl.PostRequestWithBody(Client, req, "/property/system/")
 	fmt.Println(resp)
 	return nil
 }
@@ -248,7 +248,7 @@ func cmdPropertyNativeCreate(c *cli.Context) error {
 	req.Property.Native = &proto.PropertyNative{}
 	req.Property.Native.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/property/native/")
+	resp := utl.PostRequestWithBody(Client, req, "/property/native/")
 	fmt.Println(resp)
 	return nil
 }
@@ -257,7 +257,7 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 
 	// fetch list of possible service attributes from SOMA
-	attrResponse := utl.GetRequest("/attributes/")
+	attrResponse := utl.GetRequest(Client, "/attributes/")
 	attrs := proto.Result{}
 	err := json.Unmarshal(attrResponse.Body(), &attrs)
 	if err != nil {
@@ -302,7 +302,7 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	// team lookup only for service
 	var teamId string
 	if c.Command.Name == "service" {
-		teamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+		teamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	}
 
 	// construct request body
@@ -344,7 +344,7 @@ attrConversionLoop:
 	case `template`:
 		path = `/property/service/global/`
 	}
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -363,13 +363,13 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 		required,
 		c.Args().Tail())
 
-	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
-	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().First(),
+	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(),
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId, propId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -378,7 +378,7 @@ func cmdPropertySystemDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -387,7 +387,7 @@ func cmdPropertyNativeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -395,21 +395,21 @@ func cmdPropertyNativeDelete(c *cli.Context) error {
 func cmdPropertyServiceDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId)
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
+	propId := utl.TryGetServicePropertyByUUIDOrName(Client, c.Args().Get(0), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdPropertyTemplateDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	propId := utl.TryGetTemplatePropertyByUUIDOrName(c.Args().Get(0))
+	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
 	path := fmt.Sprintf("/property/service/global/%s", propId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -443,12 +443,12 @@ func cmdPropertyTemplateRename(c *cli.Context) {
 func cmdPropertyCustomShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().Get(0),
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/", repoId,
 		propId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -456,7 +456,7 @@ func cmdPropertyCustomShow(c *cli.Context) error {
 func cmdPropertySystemShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -464,7 +464,7 @@ func cmdPropertySystemShow(c *cli.Context) error {
 func cmdPropertyNativeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -472,20 +472,20 @@ func cmdPropertyNativeShow(c *cli.Context) error {
 func cmdPropertyServiceShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId)
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
+	propId := utl.TryGetServicePropertyByUUIDOrName(Client, c.Args().Get(0), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdPropertyTemplateShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	propId := utl.TryGetTemplatePropertyByUUIDOrName(c.Args().Get(0))
+	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
 	path := fmt.Sprintf("/property/service/global/%s", propId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -493,25 +493,25 @@ func cmdPropertyTemplateShow(c *cli.Context) error {
 func cmdPropertyCustomList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdPropertySystemList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest("/property/system/")
+	resp := utl.GetRequest(Client, "/property/system/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdPropertyNativeList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest("/property/native/")
+	resp := utl.GetRequest(Client, "/property/native/")
 	fmt.Println(resp)
 	return nil
 }
@@ -519,11 +519,11 @@ func cmdPropertyNativeList(c *cli.Context) error {
 func cmdPropertyServiceList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 2)
 	utl.ValidateCliArgument(c, 1, "team")
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(1))
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(1))
 
 	path := fmt.Sprintf("/property/service/team/%s/", teamId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -531,7 +531,7 @@ func cmdPropertyServiceList(c *cli.Context) error {
 func cmdPropertyTemplateList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/property/service/global/")
+	resp := utl.GetRequest(Client, "/property/service/global/")
 	fmt.Println(resp)
 	return nil
 }

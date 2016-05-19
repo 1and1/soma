@@ -7,43 +7,43 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(s string, r string) string {
+func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetPropertyIdByName("custom", s, r)
+		return u.GetPropertyIdByName(c, "custom", s, r)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) TryGetServicePropertyByUUIDOrName(s string, t string) string {
+func (u SomaUtil) TryGetServicePropertyByUUIDOrName(c *resty.Client, s string, t string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetPropertyIdByName("service", s, t)
+		return u.GetPropertyIdByName(c, "service", s, t)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) TryGetSystemPropertyByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetSystemPropertyByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetPropertyIdByName("system", s, "none")
+		return u.GetPropertyIdByName(c, "system", s, "none")
 	}
 	return id.String()
 }
 
-func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetPropertyIdByName("template", s, "none")
+		return u.GetPropertyIdByName(c, "template", s, "none")
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) string {
+func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string, ctx string) string {
 	var (
 		req         proto.Request
 		ctxIdString string
@@ -61,7 +61,7 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 	switch pType {
 	case "custom":
 		// context ctx is repository
-		ctxIdString = u.TryGetRepositoryByUUIDOrName(ctx)
+		ctxIdString = u.TryGetRepositoryByUUIDOrName(c, ctx)
 		path = fmt.Sprintf("/filter/property/custom/%s/", ctxIdString)
 		req.Filter.Property.RepositoryId = ctxIdString
 	case "system":
@@ -70,13 +70,13 @@ func (u SomaUtil) GetPropertyIdByName(pType string, prop string, ctx string) str
 		path = "/filter/property/service/global/"
 	case "service":
 		// context ctx is team
-		ctxIdString = u.TryGetTeamByUUIDOrName(ctx)
+		ctxIdString = u.TryGetTeamByUUIDOrName(c, ctx)
 		path = fmt.Sprintf("/filter/property/service/team/%s/", ctxIdString)
 	default:
 		u.Abort("Unsupported property type in util.GetPropertyIdByName()")
 	}
 
-	resp := u.PostRequestWithBody(req, path)
+	resp := u.PostRequestWithBody(c, req, path)
 	res := u.DecodeProtoResultPropertyFromResponse(resp)
 
 	if res.Properties == nil || *res.Properties == nil {
@@ -119,8 +119,8 @@ fail:
 	panic("unreachable")
 }
 
-func (u SomaUtil) CheckStringIsSystemProperty(s string) {
-	resp := u.GetRequest("/property/system/")
+func (u SomaUtil) CheckStringIsSystemProperty(c *resty.Client, s string) {
+	resp := u.GetRequest(c, "/property/system/")
 	res := u.DecodeProtoResultPropertyFromResponse(resp)
 
 	for _, prop := range *res.Properties {

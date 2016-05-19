@@ -67,7 +67,7 @@ func cmdAttributeCreate(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PostRequestWithBody(req, "/attributes/")
+	resp := utl.PostRequestWithBody(Client, req, "/attributes/")
 	fmt.Println(resp)
 	return nil
 }
@@ -77,13 +77,13 @@ func cmdAttributeDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdAttributeList(c *cli.Context) error {
-	resp := utl.GetRequest("/attributes/")
+	resp := utl.GetRequest(Client, "/attributes/")
 	fmt.Println(resp)
 	return nil
 }
@@ -93,7 +93,7 @@ func cmdAttributeShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

@@ -51,7 +51,7 @@ func cmdUnitCreate(c *cli.Context) error {
 	req.Unit.Unit = c.Args().First()
 	req.Unit.Name = opts["name"][0]
 
-	resp := utl.PostRequestWithBody(req, "/units/")
+	resp := utl.PostRequestWithBody(Client, req, "/units/")
 	fmt.Println(resp)
 	return nil
 }
@@ -61,13 +61,13 @@ func cmdUnitDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/units/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdUnitList(c *cli.Context) error {
-	resp := utl.GetRequest("/units/")
+	resp := utl.GetRequest(Client, "/units/")
 	fmt.Println(resp)
 	return nil
 }
@@ -77,7 +77,7 @@ func cmdUnitShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/units/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

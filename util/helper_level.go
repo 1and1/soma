@@ -4,7 +4,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetLevelNameByNameOrShort(s string) string {
+func (u *SomaUtil) TryGetLevelNameByNameOrShort(c *resty.Client, s string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Level: &proto.LevelFilter{
@@ -13,7 +13,7 @@ func (u *SomaUtil) TryGetLevelNameByNameOrShort(s string) string {
 			},
 		},
 	}
-	resp := u.PostRequestWithBody(req, "/filter/levels/")
+	resp := u.PostRequestWithBody(c, req, "/filter/levels/")
 	levelResult := u.DecodeProtoResultLevelFromResponse(resp)
 
 	if s != (*levelResult.Levels)[0].Name && s != (*levelResult.Levels)[0].ShortName {

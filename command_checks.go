@@ -44,13 +44,14 @@ func cmdCheckAdd(c *cli.Context) error {
 	req.CheckConfig = &proto.CheckConfig{
 		Name:         utl.ValidateRuneCount(c.Args().First(), 256),
 		Interval:     utl.GetValidatedUint64(opts["interval"][0], 1),
-		BucketId:     utl.BucketByUUIDOrName(opts["in"][0]),
-		CapabilityId: utl.TryGetCapabilityByUUIDOrName(opts["with"][0]),
+		BucketId:     utl.BucketByUUIDOrName(Client, opts["in"][0]),
+		CapabilityId: utl.TryGetCapabilityByUUIDOrName(Client, opts["with"][0]),
 		ObjectType:   opts["on/type"][0],
 	}
 	req.CheckConfig.RepositoryId = utl.GetRepositoryIdForBucket(
-		req.CheckConfig.BucketId)
+		Client, req.CheckConfig.BucketId)
 	req.CheckConfig.ObjectId = utl.GetObjectIdForCheck(
+		Client,
 		opts["on/type"][0],
 		opts["on/object"][0],
 		req.CheckConfig.BucketId)
@@ -81,16 +82,17 @@ func cmdCheckAdd(c *cli.Context) error {
 		req.CheckConfig.ExternalId = utl.ValidateRuneCount(ex[0], 64)
 	}
 
-	teamId := utl.GetTeamIdByRepositoryId(req.CheckConfig.RepositoryId)
+	teamId := utl.GetTeamIdByRepositoryId(Client, req.CheckConfig.RepositoryId)
 
-	req.CheckConfig.Thresholds = utl.CleanThresholds(thresholds)
+	req.CheckConfig.Thresholds = utl.CleanThresholds(Client, thresholds)
 	req.CheckConfig.Constraints = utl.CleanConstraints(
+		Client,
 		constraints,
 		req.CheckConfig.RepositoryId,
 		teamId)
 
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -106,11 +108,11 @@ func cmdCheckList(c *cli.Context) error {
 		unique,
 		required,
 		c.Args())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	repoId := utl.GetRepositoryIdForBucket(bucketId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 
 	path := fmt.Sprintf("/checks/%s/", repoId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -126,12 +128,12 @@ func cmdCheckShow(c *cli.Context) error {
 		unique,
 		required,
 		c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	repoId := utl.GetRepositoryIdForBucket(bucketId)
-	checkId := utl.TryGetCheckByUUIDOrName(c.Args().First(), repoId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
+	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

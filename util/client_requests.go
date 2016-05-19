@@ -5,87 +5,54 @@ import (
 )
 
 // GET
-func (u SomaUtil) GetRequest(p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(u.ApiUrl.String())
+func (u SomaUtil) GetRequest(c *resty.Client, p string) *resty.Response {
+	resp, err := c.R().Get(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp
 }
 
-func (u SomaUtil) GetRequestWithBody(body interface{}, p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Get(u.ApiUrl.String())
+func (u SomaUtil) GetRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+	resp, err := c.R().SetBody(body).Get(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp
 }
 
 // PUT
-func (u SomaUtil) PutRequestWithBody(body interface{}, p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Put(u.ApiUrl.String())
+func (u SomaUtil) PutRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+	resp, err := c.R().SetBody(body).Put(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp
 }
 
 // PATCH
-func (u SomaUtil) PatchRequestWithBody(body interface{}, p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Patch(u.ApiUrl.String())
+func (u SomaUtil) PatchRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+	resp, err := c.R().SetBody(body).Patch(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp
 }
 
 // POST
-func (u SomaUtil) PostRequestWithBody(body interface{}, p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Post(u.ApiUrl.String())
+func (u SomaUtil) PostRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+	resp, err := c.R().SetBody(body).Post(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp
 }
 
 // DELETE
-func (u SomaUtil) DeleteRequest(p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(u.ApiUrl.String())
+func (u SomaUtil) DeleteRequest(c *resty.Client, p string) *resty.Response {
+	resp, err := c.R().Delete(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp
 }
 
-func (u SomaUtil) DeleteRequestWithBody(body interface{}, p string) *resty.Response {
-	u.ApiUrl.Path = p
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(body).
-		Delete(u.ApiUrl.String())
+func (u SomaUtil) DeleteRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+	resp, err := c.R().SetBody(body).Delete(p)
 	u.AbortOnError(err)
 	u.CheckRestyResponse(resp)
 	return resp

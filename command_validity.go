@@ -60,7 +60,7 @@ func cmdValidityCreate(c *cli.Context) error {
 		Inherited:      utl.GetValidatedBool(opts["inherited"][0]),
 	}
 
-	resp := utl.PostRequestWithBody(req, "/validity/")
+	resp := utl.PostRequestWithBody(Client, req, "/validity/")
 	fmt.Println(resp)
 	return nil
 }
@@ -70,13 +70,13 @@ func cmdValidityDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/validity/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdValidityList(c *cli.Context) error {
-	resp := utl.GetRequest("/validity/")
+	resp := utl.GetRequest(Client, "/validity/")
 	fmt.Println(resp)
 	return nil
 }
@@ -86,7 +86,7 @@ func cmdValidityShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/validity/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

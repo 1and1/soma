@@ -133,7 +133,7 @@ func cmdUserAdd(c *cli.Context) error {
 	req.User.UserName = c.Args().First()
 	req.User.FirstName = opts["firstname"][0]
 	req.User.LastName = opts["lastname"][0]
-	req.User.TeamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	req.User.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = false
@@ -153,7 +153,7 @@ func cmdUserAdd(c *cli.Context) error {
 		req.User.IsSystem = false
 	}
 
-	resp := utl.PostRequestWithBody(req, "/users/")
+	resp := utl.PostRequestWithBody(Client, req, "/users/")
 	fmt.Println(resp)
 	return nil
 }
@@ -161,10 +161,10 @@ func cmdUserAdd(c *cli.Context) error {
 func cmdUserMarkDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -172,7 +172,7 @@ func cmdUserMarkDeleted(c *cli.Context) error {
 func cmdUserPurgeDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
 
 	req := proto.Request{
@@ -181,7 +181,7 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -214,7 +214,7 @@ func cmdUserRestoreDeleted(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.Restore = true
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 
 func cmdUserUpdate(c *cli.Context) {
@@ -262,7 +262,7 @@ func cmdUserUpdate(c *cli.Context) {
 		}
 	}
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 
 func cmdUserRename(c *cli.Context) {
@@ -292,7 +292,7 @@ func cmdUserRename(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.User.UserName = newName
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 
 func cmdUserActivate(c *cli.Context) {
@@ -303,7 +303,7 @@ func cmdUserActivate(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.User.IsActive = true
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 
 func cmdUserDeactivate(c *cli.Context) {
@@ -314,22 +314,22 @@ func cmdUserDeactivate(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.User.IsActive = false
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 */
 
 func cmdUserList(c *cli.Context) error {
-	resp := utl.GetRequest("/users/")
+	resp := utl.GetRequest(Client, "/users/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdUserShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetUserByUUIDOrName(c.Args().First())
+	id := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
@@ -343,7 +343,7 @@ func cmdUserPasswordUpdate(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.Credentials.Password = pass
 
-	_ = utl.PutRequestWithBody(req, path)
+	_ = utl.PutRequestWithBody(Client, req, path)
 }
 
 func cmdUserPasswordReset(c *cli.Context) {
@@ -353,7 +353,7 @@ func cmdUserPasswordReset(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.Credentials.Reset = true
 
-	_ = utl.PutRequestWithBody(req, path)
+	_ = utl.PutRequestWithBody(Client, req, path)
 }
 
 func cmdUserPasswordForce(c *cli.Context) {
@@ -365,7 +365,7 @@ func cmdUserPasswordForce(c *cli.Context) {
 	req.Credentials.Force = true
 	req.Credentials.Password = pass
 
-	_ = utl.PutRequestWithBody(req, path)
+	_ = utl.PutRequestWithBody(Client, req, path)
 }
 */
 

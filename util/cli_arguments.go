@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gopkg.in/resty.v0"
+
 
 	"github.com/codegangsta/cli"
 )
@@ -333,6 +335,7 @@ argloop:
 }
 
 func (u *SomaUtil) ParseVariadicCapabilityArguments(
+	c *resty.Client,
 	multKeys []string, // keys that may appear multiple times
 	uniqKeys []string, // keys that are allowed at most once
 	reqKeys []string, // keys that are required at least one
@@ -377,9 +380,9 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 				// constraint must be type `system` or `attribute`
 				switch args[pos+1] {
 				case "system":
-					u.CheckStringIsSystemProperty(args[pos+2])
+					u.CheckStringIsSystemProperty(c, args[pos+2])
 				case "attribute":
-					u.CheckStringIsServiceAttribute(args[pos+2])
+					u.CheckStringIsServiceAttribute(c, args[pos+2])
 				default:
 					u.Abort(fmt.Sprintf("Syntax error, invalid constraint type: %s", args[pos+1]))
 				}
@@ -393,7 +396,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 				continue
 			case "demux":
 				// argument to demux must be a service attribute
-				u.CheckStringIsServiceAttribute(args[pos+1])
+				u.CheckStringIsServiceAttribute(c, args[pos+1])
 				fallthrough
 			default:
 				// append value of current keyword into result map

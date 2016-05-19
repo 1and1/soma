@@ -48,7 +48,7 @@ func cmdModeCreate(c *cli.Context) error {
 	req.Mode = &proto.Mode{}
 	req.Mode.Mode = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/modes/")
+	resp := utl.PostRequestWithBody(Client, req, "/modes/")
 	fmt.Println(resp)
 	return nil
 }
@@ -58,13 +58,13 @@ func cmdModeDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdModeList(c *cli.Context) error {
-	resp := utl.GetRequest("/modes/")
+	resp := utl.GetRequest(Client, "/modes/")
 	fmt.Println(resp)
 	return nil
 }
@@ -74,7 +74,7 @@ func cmdModeShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
 	return nil
 }

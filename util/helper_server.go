@@ -19,24 +19,24 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 	}
 }
 
-func (u SomaUtil) TryGetServerByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetServerByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		if aid, err := strconv.ParseUint(s, 10, 64); err != nil {
 			// aborts on failure
-			return u.GetServerIdByName(s)
+			return u.GetServerIdByName(c, s)
 		} else {
-			return u.GetServerIdByAssetId(aid)
+			return u.GetServerIdByAssetId(c, aid)
 		}
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetServerIdByAssetId(aid uint64) string {
+func (u SomaUtil) GetServerIdByAssetId(c *resty.Client, aid uint64) string {
 	req := proto.NewServerFilter()
 	req.Filter.Server.AssetId = aid
 
-	resp := u.PostRequestWithBody(req, "/filter/servers/")
+	resp := u.PostRequestWithBody(c, req, "/filter/servers/")
 	res := u.DecodeResultFromResponse(resp)
 
 	if aid != (*res.Servers)[0].AssetId {
@@ -45,7 +45,7 @@ func (u SomaUtil) GetServerIdByAssetId(aid uint64) string {
 	return (*res.Servers)[0].Id
 }
 
-func (u SomaUtil) GetServerIdByName(server string) string {
+func (u SomaUtil) GetServerIdByName(c *resty.Client, server string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Server: &proto.ServerFilter{
@@ -54,7 +54,7 @@ func (u SomaUtil) GetServerIdByName(server string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/servers/")
+	resp := u.PostRequestWithBody(c, req, "/filter/servers/")
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
 	if server != (*serverResult.Servers)[0].Name {

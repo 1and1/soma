@@ -7,16 +7,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetNodeByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetNodeByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetNodeIdByName(s)
+		return u.GetNodeIdByName(c, s)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetNodeIdByName(node string) string {
+func (u SomaUtil) GetNodeIdByName(c *resty.Client, node string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Node: &proto.NodeFilter{
@@ -25,7 +25,7 @@ func (u SomaUtil) GetNodeIdByName(node string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/nodes/")
+	resp := u.PostRequestWithBody(c, req, "/filter/nodes/")
 	nodeResult := u.DecodeProtoResultNodeFromResponse(resp)
 
 	if node != (*nodeResult.Nodes)[0].Name {
@@ -34,12 +34,12 @@ func (u SomaUtil) GetNodeIdByName(node string) string {
 	return (*nodeResult.Nodes)[0].Id
 }
 
-func (u SomaUtil) GetNodeConfigById(node string) *proto.NodeConfig {
+func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeConfig {
 	if _, err := uuid.FromString(node); err != nil {
-		node = u.GetNodeIdByName(node)
+		node = u.GetNodeIdByName(c, node)
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)
-	resp := u.GetRequest(path)
+	resp := u.GetRequest(c, path)
 	nodeResult := u.DecodeResultFromResponse(resp)
 	return (*nodeResult.Nodes)[0].Config
 }
