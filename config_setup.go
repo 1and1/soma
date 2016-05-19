@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
@@ -74,6 +75,7 @@ func configSetup(c *cli.Context) error {
 
 	Cfg.Run.PathLogs = path.Join(home, ".soma", "adm",
 		Cfg.LogDir)
+
 	Cfg.Run.PathBoltDB = path.Join(home, ".soma", "adm",
 		Cfg.BoltDB.Path, Cfg.BoltDB.File)
 	Cfg.Run.ModeBoltDB, err = strconv.ParseUint(Cfg.BoltDB.Mode, 8, 32)
@@ -83,6 +85,12 @@ func configSetup(c *cli.Context) error {
 				"%s\n", err.Error())
 	}
 	Cfg.Run.TimeoutBoltDB = time.Duration(Cfg.BoltDB.Timeout)
+
+	Cfg.Run.SomaAPI, err = url.Parse(Cfg.Api)
+	if err != nil {
+		return fmt.Errorf(
+			"Failed to parse SOMA API address: %s\n", err.Error())
+	}
 
 	return nil
 }

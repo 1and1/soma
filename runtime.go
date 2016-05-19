@@ -41,14 +41,11 @@ func initCommon(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	// set the configured API endpoint
-	utl.SetUrl(Cfg.Run.SomaAPI.String())
-
 	// setup our REST client
 	Client = resty.New().SetRESTMode().
 		SetDisableWarn(true).
 		SetHeader(`User-Agent`, `somaadm 0.4.8`).
-		SetHostURL(utl.ApiUrl.String())
+		SetHostURL(Cfg.Run.SomaAPI.String())
 
 	// check configured API
 	if resp, err = Client.R().Head(`/`); err != nil {

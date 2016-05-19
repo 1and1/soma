@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"time"
 
@@ -34,6 +35,7 @@ type ConfigBoltDB struct {
 }
 
 type RunTimeConfig struct {
+	SomaAPI       *url.URL      `json:"-"`
 	PathLogs      string        `json:"-"`
 	PathBoltDB    string        `json:"-"`
 	ModeBoltDB    uint64        `json:"-"`
