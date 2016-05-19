@@ -92,6 +92,8 @@ func (s *supervisor) process(q *msg.Request) {
 		s.kexInit(q)
 	case `bootstrap_root`:
 		s.bootstrapRoot(q)
+	case `basic_auth`:
+		s.validate_basic_auth(q)
 	}
 }
 
@@ -311,29 +313,38 @@ func (s *supervisor) newKexMap() svKexMap {
 	return m
 }
 
-func (s *supervisor) Validate(account, token, addr string) bool {
-	tok := s.tokens.read(token)
+func (s *supervisor) validate_basic_auth(q *msg.Request) {
+	result := msg.Result{Type: `supervisor`, Action: `authenticate`}
+
+	tok := s.tokens.read(q.Super.BasicAuthToken)
 	if tok == nil && !s.readonly {
 		// rw instance knows every token
+		result.ServerError(fmt.Errorf(`Unknown Token (TokenMap)`))
 		goto unauthorized
 	} else if tok == nil {
-		if !s.fetchTokenFromDB(token) {
+		if !s.fetchTokenFromDB(q.Super.BasicAuthToken) {
+			result.ServerError(fmt.Errorf(`Unknown Token (pgSQL)`))
 			goto unauthorized
 		}
-		tok = s.tokens.read(token)
+		tok = s.tokens.read(q.Super.BasicAuthToken)
 	}
 	if time.Now().UTC().Before(tok.validFrom.UTC()) ||
 		time.Now().UTC().After(tok.expiresAt.UTC()) {
+		result.Unauthorized(fmt.Errorf(`Token expired`))
 		goto unauthorized
 	}
 
-	if auth.Verify(account, addr, tok.binToken, s.key,
+	if auth.Verify(q.Super.BasicAuthUser, q.Super.RemoteAddr, tok.binToken, s.key,
 		s.seed, tok.binExpiresAt, tok.salt) {
-		return true
+		// valid token
+		result.Super = &msg.Supervisor{Verdict: 200}
+		result.OK()
+		q.Reply <- result
 	}
 
 unauthorized:
-	return false
+	result.Super = &msg.Supervisor{Verdict: 401}
+	q.Reply <- result
 }
 
 func (s *supervisor) fetchTokenFromDB(token string) bool {
