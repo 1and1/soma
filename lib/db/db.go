@@ -65,14 +65,6 @@ func (d *DB) EnsureBuckets() error {
 				if _, err := b.CreateBucketIfNotExists([]byte(`data`)); err != nil {
 					return fmt.Errorf("Failed to create DB bucket: %s", err)
 				}
-			case `tokens`:
-				b := tx.Bucket([]byte(buck))
-				if _, err := b.CreateBucketIfNotExists([]byte(`user`)); err != nil {
-					return fmt.Errorf("Failed to create DB bucket: %s", err)
-				}
-				if _, err := b.CreateBucketIfNotExists([]byte(`admin`)); err != nil {
-					return fmt.Errorf("Failed to create DB bucket: %s", err)
-				}
 			}
 			return nil
 		})
