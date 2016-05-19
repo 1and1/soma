@@ -24,6 +24,10 @@ func registerOps(app cli.App) *cli.App {
 						Usage:  "Bootstrap authenticate to a new installation",
 						Action: boottime(cmdOpsBootstrap),
 					},
+					// -> tree suspend/resume/start/stop
+					// -> settings loglevel/opendoor/...
+					// -> metrics?
+					// -> termui?
 				},
 			},
 		}...,
@@ -44,6 +48,7 @@ func cmdOpsBootstrap(c *cli.Context) error {
 	)
 	jBytes := &[]byte{}
 	cipher := &[]byte{}
+	plain := &[]byte{}
 
 	fmt.Println(`
 Welcome to SOMA!
@@ -67,7 +72,6 @@ password_read:
 	}
 
 	fmt.Println(`
-
 Very good. Now enter the bootstrap token printed by somadbctl at the
 end of the schema installation.
 `)
@@ -81,14 +85,22 @@ end of the schema installation.
 		}
 	}
 
-	kex = auth.NewKex()
+	fmt.Println(`
+Alright. Let's sully that pristine database. Here we go!
+`)
 
+	fmt.Printf("\nGenerating keypair: ")
+	kex = auth.NewKex()
+	fmt.Println(`OK`)
+
+	fmt.Printf(`Initiating key exchange: `)
 	if resp, err = Client.R().SetBody(kex).Post(`/authenticate/`); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 	if resp.StatusCode() >= 300 {
 		fmt.Fprintln(os.Stderr, resp.StatusCode, resp.Status, resp.String())
+		os.Exit(1)
 	}
 
 	peer = &auth.Kex{}
@@ -102,23 +114,54 @@ end of the schema installation.
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	fmt.Println(`OK`)
 
 	tCred = &auth.Token{
 		UserName: `root`,
 		Password: password,
 		Token:    token,
 	}
+	fmt.Printf(`Sending bootstrap request: `)
 	if *jBytes, err = json.Marshal(tCred); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 	kex.SetTimeUTC()
-	cipher = &[]byte{}
 	if err = kex.EncryptAndEncode(jBytes, cipher); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	fmt.Println(string(*cipher))
+
+	fmt.Println(kex.Request.String())
+	if resp, err = Client.R().
+		SetHeader(`Content-Type`, `application/octet-stream`).
+		SetBody(*cipher).
+		Put(fmt.Sprintf(
+			"/authenticate/bootstrap/%s", kex.Request.String())); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if resp.StatusCode() >= 300 {
+		fmt.Fprintln(os.Stderr, resp.StatusCode, resp.Status, resp.String())
+		os.Exit(1)
+	}
+
+	b := resp.Body()
+	if err = kex.DecodeAndDecrypt(&b, plain); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if err = json.Unmarshal(plain, tCred); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	fmt.Println(`OK`)
+
+	fmt.Printf(`Validating received token: `)
+	// TODO: test received token
+	// TODO: save received token in boltdb
+	// TODO: output disclaimer text
+
 	return nil
 }
 
