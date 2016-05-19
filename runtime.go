@@ -98,7 +98,7 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 		if resp, err = Client.R().Head(`/`); err != nil {
 			utl.AbortOnError(err)
 		} else if resp.StatusCode() != 204 {
-			utl.Abort(fmt.Sprintf("API Url returned %d instead of 200. Sure this is SOMA?\n",
+			utl.Abort(fmt.Sprintf("API Url returned %d instead of 204. Sure this is SOMA?\n",
 				resp.StatusCode()))
 		}
 
