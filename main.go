@@ -11,6 +11,8 @@ var Cfg Config
 var utl util.SomaUtil
 var store db.DB
 
+const rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "somaadm"
