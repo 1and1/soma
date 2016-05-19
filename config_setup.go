@@ -84,7 +84,8 @@ func configSetup(c *cli.Context) error {
 			"Failed to parse configuration field boltdb.mode: "+
 				"%s\n", err.Error())
 	}
-	Cfg.Run.TimeoutBoltDB = time.Duration(Cfg.BoltDB.Timeout)
+	Cfg.Run.TimeoutBoltDB = time.Duration(Cfg.BoltDB.Timeout) * time.Second
+	Cfg.Run.TimeoutResty = time.Duration(Cfg.Timeout) * time.Second
 
 	Cfg.Run.SomaAPI, err = url.Parse(Cfg.Api)
 	if err != nil {

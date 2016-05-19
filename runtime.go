@@ -29,7 +29,7 @@ func initCommon(c *cli.Context) {
 	if err = store.Open(
 		Cfg.Run.PathBoltDB,
 		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB * time.Second},
+		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
 	); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
 		os.Exit(1)
@@ -43,6 +43,7 @@ func initCommon(c *cli.Context) {
 
 	// setup our REST client
 	Client = resty.New().SetRESTMode().
+		SetTimeout(Cfg.Run.TimeoutResty).
 		SetDisableWarn(true).
 		SetHeader(`User-Agent`, `somaadm 0.4.8`).
 		SetHostURL(Cfg.Run.SomaAPI.String())

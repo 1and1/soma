@@ -14,7 +14,7 @@ import (
 )
 
 type Config struct {
-	Timeout string       `json:"timeout"`
+	Timeout uint         `json:"timeout,string"`
 	Api     string       `json:"api"`
 	LogDir  string       `json:"logdir"`
 	Auth    AuthConfig   `json:"auth"`
@@ -40,6 +40,7 @@ type RunTimeConfig struct {
 	PathBoltDB    string        `json:"-"`
 	ModeBoltDB    uint64        `json:"-"`
 	TimeoutBoltDB time.Duration `json:"-"`
+	TimeoutResty  time.Duration `json:"-"`
 	Logger        *log.Logger   `json:"-"`
 }
 
