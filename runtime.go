@@ -83,6 +83,10 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 			fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
 			os.Exit(1)
 		}
+		if err = store.EnsureBuckets(); err != nil {
+			fmt.Fprintf(os.Stderr, "Database bucket error: %s\n", err)
+			os.Exit(1)
+		}
 
 		utl.SetUrl(Cfg.Api)
 
