@@ -76,45 +76,37 @@ Very good. Now enter the bootstrap token printed by somadbctl at the
 end of the schema installation.
 `)
 
-	for token == "" {
-		if token, err = adm.ReadConfirmed(`token`); err == liner.ErrPromptAborted {
-			os.Exit(0)
-		} else if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-	}
+	token = adm.ReadVerified(`password`)
 
 	fmt.Println(`
-Alright. Let's sully that pristine database. Here we go!
-`)
+Alright. Let's sully that pristine database. Here we go!  `)
 
 	fmt.Printf("\nGenerating keypair: ")
 	kex = auth.NewKex()
-	fmt.Println(`OK`)
+	fmt.Println(adm.GREEN+adm.SUCCESS+adm.CLEAR, ` OK`)
 
 	fmt.Printf(`Initiating key exchange: `)
 	if resp, err = Client.R().SetBody(kex).Post(`/authenticate/`); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
-	if resp.StatusCode() >= 300 {
-		fmt.Fprintln(os.Stderr, resp.StatusCode, resp.Status, resp.String())
+	if resp.StatusCode() != 200 {
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, resp.Status())
 		os.Exit(1)
 	}
 
 	peer = &auth.Kex{}
 	if err = json.Unmarshal(resp.Body(), peer); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
 
 	kex.SetPeerKey(peer.PublicKey())
 	if err = kex.SetRequestUUID(peer.Request.String()); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
-	fmt.Println(`OK`)
+	fmt.Println(adm.GREEN+adm.SUCCESS+adm.CLEAR, ` OK`)
 
 	tCred = &auth.Token{
 		UserName: `root`,
@@ -123,43 +115,71 @@ Alright. Let's sully that pristine database. Here we go!
 	}
 	fmt.Printf(`Sending bootstrap request: `)
 	if *jBytes, err = json.Marshal(tCred); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
 	kex.SetTimeUTC()
 	if err = kex.EncryptAndEncode(jBytes, cipher); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
 
-	fmt.Println(kex.Request.String())
 	if resp, err = Client.R().
 		SetHeader(`Content-Type`, `application/octet-stream`).
 		SetBody(*cipher).
 		Put(fmt.Sprintf(
 			"/authenticate/bootstrap/%s", kex.Request.String())); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
-	if resp.StatusCode() >= 300 {
-		fmt.Fprintln(os.Stderr, resp.StatusCode, resp.Status, resp.String())
+	if resp.StatusCode() != 200 {
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR+` FAILED`, resp.Status())
 		os.Exit(1)
 	}
 
 	b := resp.Body()
 	if err = kex.DecodeAndDecrypt(&b, plain); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
 	if err = json.Unmarshal(*plain, tCred); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
 		os.Exit(1)
 	}
-	fmt.Println(`OK`)
+	fmt.Println(adm.GREEN+adm.SUCCESS+adm.CLEAR, ` OK`)
 
 	fmt.Printf(`Validating received token: `)
-	// TODO: test received token
-	// TODO: save received token in boltdb
+	if resp, err = Client.R().
+		SetBasicAuth(`root`, tCred.Token).
+		Get(`/authenticate/validate/`); err != nil || resp.StatusCode() != 204 {
+
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR+` FAILED`, resp.String())
+		os.Exit(1)
+	}
+
+	defer store.Close()
+	fmt.Printf(`Writing token to local cache: `)
+	if err = store.SaveToken(
+		`root`,
+		tCred.ValidFrom,
+		tCred.ExpiresAt,
+		tCred.Token,
+	); err != nil {
+		fmt.Fprintln(os.Stderr, adm.RED+adm.FAILURE+adm.CLEAR, err)
+		os.Exit(1)
+	}
+	fmt.Println(adm.GREEN+adm.SUCCESS+adm.CLEAR, ` OK`)
+
+	fmt.Println(`
+All done. Thank you for flying with SOMA.
+Suggested next steps:
+	- create system_admin permission
+	- create your team
+	- create your user
+	- grant system_admin to your user
+	- activate your user
+	- switch to using your user instead of root
+	`)
 	// TODO: output disclaimer text
 
 	return nil
