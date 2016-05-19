@@ -36,6 +36,9 @@ func Verify(name, addr string, token, key, seed, expires, salt []byte) bool {
 	bname := []byte(name)
 	bip := []byte(net.ParseIP(extractAddress(addr)))
 
+	// whiteout unstable subsecond timestamp part with "random" value
+	copy(expires[9:], []byte{0xde, 0xad, 0xca, 0xfe})
+
 	calculated := computeToken(
 		bname,
 		key,

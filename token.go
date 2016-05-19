@@ -140,6 +140,9 @@ func (t *Token) mixToken(key, seed []byte) error {
 	t.ValidFrom = valid.Format(rfc3339Milli)
 	t.ExpiresAt = expires.Format(rfc3339Milli)
 
+	// whiteout unstable subsecond timestamp part with "random" value
+	copy(btime[9:], []byte{0xde, 0xad, 0xca, 0xfe})
+
 	// add random salt
 	salt = make([]byte, 16)
 	if _, err = rand.Read(salt); err != nil {
