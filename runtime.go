@@ -91,6 +91,7 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 		utl.SetUrl(Cfg.Api)
 
 		Client = resty.New().SetRESTMode().
+			SetDisableWarn(true).
 			SetHeader(`X-SOMA-Client`, `somaadm 0.4.8`).
 			SetHostURL(utl.ApiUrl.String())
 
