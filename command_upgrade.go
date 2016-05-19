@@ -15,6 +15,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 	//	},
 	"auth": map[int]func(int, string, bool) int{
 		201605060001: upgrade_auth_to_201605150002,
+		201605150002: upgrade_auth_to_201605190001,
 	},
 	//	"soma": map[int]func(int, string) int{
 	//		201605060001: mock_upgrade_soma_201605060001,
@@ -97,6 +98,27 @@ func upgrade_auth_to_201605150002(curr int, tool string, printOnly bool) int {
 	return 201605150002
 }
 
+func upgrade_auth_to_201605190001(curr int, tool string, printOnly bool) int {
+	if curr != 201605150002 {
+		return 0
+	}
+
+	stmts := []string{
+		`ALTER TABLE auth.tokens DROP COLUMN IF EXISTS user_id;`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('auth', 201605190001, 'Upgrade - somadbctl %s');", tool),
+	)
+	for _, stmt := range stmts {
+		if printOnly {
+			fmt.Println(stmt)
+			continue
+		}
+		db.Exec(stmt)
+	}
+
+	return 201605190001
+}
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
 	if curr != 000000000001 {
 		return 0
