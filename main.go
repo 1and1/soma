@@ -339,7 +339,7 @@ func main() {
 		//router.PATCH("/authenticate/root/restrict", AuthenticationRestrictRoot) XXX -> move to somadbctl
 		//router.GET("/authenticate/token/", AuthenticationListTokens)
 		router.PUT("/authenticate/token/:uuid", BasicAuth(AuthenticationIssueToken))
-		//router.GET("/authenticate/validate/", AuthenticationValidate)
+		router.GET("/authenticate/validate/", BasicAuth(AuthenticationValidate))
 		router.POST("/authenticate/activate/", BasicAuth(AuthenticationActivateUser))
 		//router.DELETE("/authenticate/invalidate/token/", AuthenticationInvalidateToken)
 		//router.DELETE("/authenticate/invalidate/all/", AuthenticationInvalidateAllTokens)

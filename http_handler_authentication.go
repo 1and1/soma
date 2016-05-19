@@ -102,6 +102,11 @@ func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 }
 
+func AuthenticationValidate(w http.ResponseWriter, _ *http.Request,
+	_ httprouter.Params) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
 /* Utility
  */
 
