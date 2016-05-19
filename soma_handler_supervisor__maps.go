@@ -84,6 +84,8 @@ func (t *svTokenMap) insert(token, valid, expires, salt string) error {
 	if bSalt, err = hex.DecodeString(salt); err != nil {
 		return err
 	}
+	// whiteout unstable subsecond timestamp part with "random" value
+	copy(bExpTime[9:], []byte{0xde, 0xad, 0xca, 0xfe})
 	// acquire write lock
 	t.lock()
 	defer t.unlock()
