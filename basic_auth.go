@@ -1,5 +1,6 @@
 /*-
 Copyright (c) 2013 Julien Schmidt. All rights reserved.
+Copyright (c) 2016 Jörg Pernfuß <joerg.pernfuss@1und1.de>
 
 
 Redistribution and use in source and binary forms, with or without
@@ -34,8 +35,11 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
+	"log"
 	"net/http"
 	"strings"
+
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -59,21 +63,35 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 				auth[len(basicAuthPrefix):])
 			if err == nil {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
-				super := handlerMap[`supervisor`].(supervisor)
-				if len(pair) == 2 &&
-					super.Validate(
-						string(pair[0]),
-						string(pair[1]),
-						r.RemoteAddr,
-					) {
-					// record the authenticated user
-					ps = append(ps, httprouter.Param{
-						Key:   `AuthenticatedUser`,
-						Value: string(pair[1]),
-					})
-					// Delegate request to given handle
-					h(w, r, ps)
-					return
+				if len(pair) == 2 {
+					returnChannel := make(chan msg.Result)
+					super := handlerMap[`supervisor`].(supervisor)
+					super.input <- msg.Request{
+						Type:   `supervisor`,
+						Action: `basic_auth`,
+						Reply:  returnChannel,
+						Super: &msg.Supervisor{
+							RemoteAddr:     r.RemoteAddr,
+							BasicAuthUser:  string(pair[0]),
+							BasicAuthToken: string(pair[1]),
+						},
+					}
+					result := <-returnChannel
+					if result.Error != nil {
+						// log authentication errors
+						log.Printf(LogStrErr, fmt.Sprintf("BasicAuth:%s", string(pair[0])), result.Action, result.Code, result.Error.Error())
+					}
+					if result.Super.Verdict == 200 {
+						// record the authenticated user
+						ps = append(ps, httprouter.Param{
+							Key:   `AuthenticatedUser`,
+							Value: string(pair[0]),
+						})
+						// Delegate request to given handle
+						h(w, r, ps)
+						return
+
+					}
 				}
 			}
 		}
