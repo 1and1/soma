@@ -8,7 +8,6 @@ import (
 	"gopkg.in/resty.v0"
 
 	"github.com/codegangsta/cli"
-	"github.com/peterh/liner"
 )
 
 func registerOps(app cli.App) *cli.App {
