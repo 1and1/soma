@@ -17,4 +17,40 @@ type Result struct {
 	Super *Supervisor
 }
 
+func (r *Result) SetError(err error) {
+	if err != nil {
+		r.Error = err
+	}
+}
+
+func (r *Result) OK() {
+	r.Code = 200
+	r.Error = nil
+}
+
+func (r *Result) BadRequest(err error) {
+	r.Code = 400
+	r.SetError(err)
+}
+
+func (r *Result) Unauthorized(err error) {
+	r.Code = 401
+	r.SetError(err)
+}
+
+func (r *Result) Forbidden(err error) {
+	r.Code = 403
+	r.SetError(err)
+}
+
+func (r *Result) NotFound(err error) {
+	r.Code = 404
+	r.SetError(err)
+}
+
+func (r *Result) ServerError(err error) {
+	r.Code = 500
+	r.SetError(err)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
