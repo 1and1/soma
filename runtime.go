@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"gopkg.in/resty.v0"
@@ -13,42 +12,6 @@ import (
 )
 
 var Client *resty.Client
-
-func runtimePreCmd(c *cli.Context) error {
-	var (
-		err  error
-		mode uint64
-	)
-	err = configSetup(c)
-	if err != nil {
-		return err
-	}
-	dbTimeout := time.Duration(Cfg.BoltDB.Timeout)
-	if mode, err = strconv.ParseUint(Cfg.BoltDB.Mode, 8, 32); err != nil {
-		fmt.Fprintf(os.Stderr,
-			"Failed to parse configuration field boltdb.mode: %s\n", err)
-		os.Exit(1)
-	}
-	if err = store.Open(
-		Cfg.Run.PathBoltDB,
-		os.FileMode(uint32(mode)),
-		&bolt.Options{Timeout: dbTimeout * time.Second},
-	); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
-		os.Exit(1)
-	}
-
-	//
-	//initLogFile()
-
-	//
-	utl.SetUrl(Cfg.Api)
-	utl.SetPropertyTypes([]string{"system", "service", "custom", "oncall"})
-	utl.SetViews([]string{"internal", "external", "local", "any"})
-
-	//
-	return nil
-}
 
 // initCommon provides common startup initialization
 func initCommon(c *cli.Context) {
