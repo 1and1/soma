@@ -22,7 +22,8 @@ const (
 	CLEAR = "\x1b[0m"
 )
 
-var ErrMismatch = errors.New(`Passwords did not match`)
+var ErrPMismatch = errors.New(`Passwords did not match`)
+var ErrTMismatch = errors.New(`Tokens did not match`)
 
 func Read(style string) (string, error) {
 	var (
@@ -80,7 +81,12 @@ func ReadConfirmed(style string) (string, error) {
 
 	// compare passwords
 	if pass != again {
-		return "", ErrMismatch
+		switch style {
+		case `password`:
+			return "", ErrPMismatch
+		case `token`:
+			return "", ErrTMismatch
+		}
 	}
 
 	return pass, nil
@@ -96,7 +102,7 @@ read_loop:
 	for password == "" {
 		if password, err = ReadConfirmed(style); err == liner.ErrPromptAborted {
 			os.Exit(0)
-		} else if err == ErrMismatch {
+		} else if err == ErrPMismatch || err == ErrTMismatch {
 			fmt.Fprintf(
 				os.Stderr,
 				RED+FAILURE+CLEAR+" %s\n",
