@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 
+
 	"gopkg.in/resty.v0"
 
 	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
+	"github.com/peterh/liner"
 )
 
 var Client *resty.Client
@@ -93,8 +95,58 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 // runtime is the regular pre-run target
 func runtime(action cli.ActionFunc) cli.ActionFunc {
 	return func(c *cli.Context) error {
+		var err error
+		var token string
+		var cred *auth.Token
+
+		// common initialization
 		initCommon(c)
 
+		// prompt for user
+		for Cfg.Auth.User == "" {
+			if Cfg.Auth.User, err = adm.Read(`user`); err == liner.ErrPromptAborted {
+				os.Exit(1)
+			} else if err != nil {
+				return err
+			}
+		}
+
+		// load token
+		token, err = store.GetActiveToken(Cfg.Auth.User)
+		if err == bolt.ErrBucketNotFound {
+			// no token in cache
+			for Cfg.Auth.Pass == "" {
+				if Cfg.Auth.Pass, err = adm.Read(`password`); err == liner.ErrPromptAborted {
+					os.Exit(1)
+				} else if err != nil {
+					return err
+				}
+			}
+			// request new token (validated)
+			if cred, err = adm.RequestToken(Client, &auth.Token{
+				UserName: Cfg.Auth.User,
+				Password: Cfg.Auth.Pass,
+			}); err != nil {
+				return err
+			}
+			// save token
+			if err = store.SaveToken(
+				cred.UserName,
+				cred.ValidFrom,
+				cred.ExpiresAt,
+				cred.Token,
+			); err != nil {
+				return err
+			}
+			token = cred.Token
+		} else if err != nil {
+			return err
+		}
+
+		// set token for basic auth
+		Client = Client.SetBasicAuth(Cfg.Auth.User, token)
+
+		// run action
 		return action(c)
 	}
 }
