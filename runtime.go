@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"os"
 
@@ -15,8 +16,9 @@ var Client *resty.Client
 // initCommon provides common startup initialization
 func initCommon(c *cli.Context) {
 	var (
-		err  error
-		resp *resty.Response
+		err     error
+		resp    *resty.Response
+		session tls.ClientSessionCache
 	)
 	if err = configSetup(c); err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to read the configuration: "+
@@ -49,7 +51,16 @@ func initCommon(c *cli.Context) {
 		SetContentLength(true)
 
 	if Cfg.Run.SomaAPI.Scheme == `https` {
-		Client = Client.SetRootCertificate(Cfg.Run.CertPath)
+		session = tls.NewLRUClientSessionCache(64)
+
+		// SetTLSClientConfig replaces, SetRootCertificate updates the
+		// tls configuration - option ordering is important
+		Client = Client.SetTLSClientConfig(&tls.Config{
+			ClientSessionCache: session,
+			MinVersion:         tls.VersionTLS12,
+			MaxVersion:         tls.VersionTLS12,
+			CipherSuites:       []uint16{tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256},
+		}).SetRootCertificate(Cfg.Run.CertPath)
 	}
 
 	// check configured API
