@@ -34,7 +34,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		soma   *url.URL
 		client *resty.Client
 		resp   *resty.Response
-		res    somaproto.DeploymentDetailsResult
+		res    proto.Result
 	)
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(msg); err != nil {
@@ -64,15 +64,15 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		dispatchUnprocessable(&w, err.Error())
 		return
 	}
-	if res.Code != 200 {
+	if res.StatusCode != 200 {
 		dispatchGone(&w, err.Error())
 		return
 	}
-	if len(res.Deployments) != 1 {
+	if len(*res.Deployments) != 1 {
 		dispatchPrecondition(&w, err.Error())
 		return
 	}
-	if err = CheckUpdateOrInsertOrDelete(&res.Deployments[0]); err != nil {
+	if err = CheckUpdateOrInsertOrDelete(&(*res.Deployments)[0]); err != nil {
 		dispatchInternalServerError(&w, err.Error())
 		return
 	}

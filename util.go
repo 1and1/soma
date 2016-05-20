@@ -47,16 +47,16 @@ func CalculateLookupId(id uint64, metric string) string {
 	return hex.EncodeToString(hash.Sum(nil))
 }
 
-func Itemize(details *somaproto.DeploymentDetails) (string, *ConfigurationItem, error) {
+func Itemize(details *proto.Deployment) (string, *ConfigurationItem, error) {
 	var (
 		fqdn, dns_zone string
 		err            error
 	)
-	lookupID := CalculateLookupId(details.Node.AssetId, details.Metric.Metric)
+	lookupID := CalculateLookupId(details.Node.AssetId, details.Metric.Path)
 
 	item := &ConfigurationItem{
-		Metric:   details.Metric.Metric,
-		Interval: details.CheckConfiguration.Interval,
+		Metric:   details.Metric.Path,
+		Interval: details.CheckConfig.Interval,
 		HostId:   strconv.FormatUint(details.Node.AssetId, 10),
 		Metadata: ConfigurationMetaData{
 			Monitoring: details.Monitoring.Name,
@@ -101,9 +101,9 @@ func Itemize(details *somaproto.DeploymentDetails) (string, *ConfigurationItem, 
 	}
 
 	// slurp all thresholds
-	for _, thr := range details.CheckConfiguration.Thresholds {
+	for _, thr := range details.CheckConfig.Thresholds {
 		t := ConfigurationThreshold{
-			Predicate: thr.Predicate.Predicate,
+			Predicate: thr.Predicate.Symbol,
 			Level:     thr.Level.Numeric,
 			Value:     thr.Value,
 		}

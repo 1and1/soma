@@ -32,7 +32,7 @@ import (
 
 )
 
-func CheckUpdateOrInsertOrDelete(details *somaproto.DeploymentDetails) error {
+func CheckUpdateOrInsertOrDelete(details *proto.Deployment) error {
 	var (
 		err              error
 		itemID, lookupID string

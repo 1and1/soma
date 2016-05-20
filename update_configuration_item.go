@@ -39,8 +39,8 @@ func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 		dec      *json.Decoder
 		item     *ConfigurationItem
 		lookupID string
-		details  *somaproto.DeploymentDetails
-		raw      *somaproto.DeploymentDetailsResult
+		details  *proto.Deployment
+		raw      *proto.Result
 		err      error
 	)
 
@@ -55,11 +55,11 @@ func UpdateConfigurationItem(w http.ResponseWriter, r *http.Request, params http
 		return
 	}
 
-	if len(raw.Deployments) != 1 {
+	if len(*raw.Deployments) != 1 {
 		dispatchBadRequest(&w, "Invalid number of deployments in requests")
 		return
 	}
-	details = &raw.Deployments[0]
+	*details = (*raw.Deployments)[0]
 
 	if details.Task != "rollout" {
 		dispatchBadRequest(&w, "Deprovision request against rollout API")
