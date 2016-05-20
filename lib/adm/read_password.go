@@ -13,6 +13,7 @@ const (
 	repeatPassword = `Repeat password: `
 	promptToken    = `Enter token: `
 	repeatToken    = `Repeat token: `
+	promptUser     = `Username: `
 
 	SUCCESS = "\xe2\x9c\x94"
 	FAILURE = "\xe2\x9c\x98"
@@ -40,6 +41,8 @@ func Read(style string) (string, error) {
 		pass, err = line.PasswordPrompt(promptPassword)
 	case `token`:
 		pass, err = line.PasswordPrompt(promptToken)
+	case `user`:
+		pass, err = line.Prompt(promptUser)
 	}
 	if err != nil {
 		return "", err
