@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/codegangsta/cli"
 )
@@ -58,18 +60,24 @@ func registerUsers(app cli.App) *cli.App {
 							Usage:  "Change a user's username",
 							Action: cmdUserRename,
 						},
-						{
-							Name:   "activate",
-							Usage:  "Activate a deativated user",
-							Action: cmdUserActivate,
+					*/
+					{
+						Name:   "activate",
+						Usage:  "Activate a deativated user",
+						Action: cmdUserActivate,
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "force, f",
+								Usage: "Apply administrative force to the activation",
+							},
 						},
+					},
+					/*
 						{
 							Name:   "deactivate",
 							Usage:  "Deactivate a user account",
 							Action: cmdUserDeactivate,
 						},
-					*/
-					/*
 						{
 							Name:  "password",
 							Usage: "SUBCOMMANDS for user passwords",
@@ -294,18 +302,86 @@ func cmdUserRename(c *cli.Context) {
 
 	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
+*/
 
-func cmdUserActivate(c *cli.Context) {
-	url := getApiUrl()
-	id := utl.UserIdByUuidOrName(c)
-	url.Path = fmt.Sprintf("/users/%s", id.String())
-
-	var req somaproto.ProtoRequestUser
-	req.User.IsActive = true
-
-	_ = utl.PatchRequestWithBody(Client, req, url.String())
+func cmdUserActivate(c *cli.Context) error {
+	// administrative use, full runtime is available
+	if c.GlobalIsSet(`admin`) {
+		utl.ValidateCliArgumentCount(c, 1)
+		return runtime(cmdUserAdminActivate)(c)
+	}
+	// user trying to activate the account for the first
+	// time, reduced runtime
+	utl.ValidateCliArgumentCount(c, 0)
+	return boottime(cmdUserUserActivate)(c)
 }
 
+func cmdUserUserActivate(c *cli.Context) error {
+	var err error
+	var password string
+	var passKey string
+	var happy bool
+	var cred *auth.Token
+
+	if Cfg.Auth.User == "" {
+		fmt.Println(`Please specify which account to activate.`)
+		if Cfg.Auth.User, err = adm.Read(`user`); err != nil {
+			return err
+		}
+	} else {
+		fmt.Printf("Starting with activation of account '%s' in 2 seconds.\n", Cfg.Auth.User)
+		fmt.Printf(`Use --user flag to activate a different account.`)
+		time.Sleep(2 * time.Second)
+	}
+	if strings.Contains(Cfg.Auth.User, `:`) {
+		return fmt.Errorf(`Usernames must not contain : character.`)
+	}
+
+	fmt.Printf("\nPlease provide the password you want to use.")
+password_read:
+	password = adm.ReadVerified(`password`)
+
+	if happy, err = adm.EvaluatePassword(3, password, Cfg.Auth.User, `soma`); err != nil {
+		return err
+	} else if !happy {
+		password = ""
+		goto password_read
+	}
+
+	fmt.Printf("\nTo confirm that this is your account, an additional credential is required" +
+		" this once.\n")
+
+	switch Cfg.Activation {
+	case `ldap`:
+		fmt.Println(`Please provide your LDAP password to establish ownership.`)
+		passKey = adm.ReadVerified(`password`)
+	case `mailtoken`:
+		fmt.Println(`Please provide the token you received via email.`)
+		passKey = adm.ReadVerified(`token`)
+	default:
+		return fmt.Errorf(`Unknown activation mode`)
+	}
+
+	if cred, err = adm.ActivateAccount(Client, &auth.Token{
+		UserName: Cfg.Auth.User,
+		Password: password,
+		Token:    passKey,
+	}); err != nil {
+		return err
+	}
+	// XXX
+	fmt.Println("%#+v\n", cred)
+
+	// adm.ValidateToken
+	// adm.StoreToken
+	return nil
+}
+
+func cmdUserAdminActivate(c *cli.Context) error {
+	return nil
+}
+
+/*
 func cmdUserDeactivate(c *cli.Context) {
 	url := getApiUrl()
 	id := utl.UserIdByUuidOrName(c)
