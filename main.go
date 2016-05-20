@@ -340,7 +340,7 @@ func main() {
 		//router.GET("/authenticate/token/", AuthenticationListTokens)
 		router.PUT("/authenticate/token/:uuid", BasicAuth(AuthenticationIssueToken))
 		router.GET("/authenticate/validate/", BasicAuth(AuthenticationValidate))
-		router.POST("/authenticate/activate/", BasicAuth(AuthenticationActivateUser))
+		router.PUT("/authenticate/activate/:uuid", AuthenticationActivateUser)
 		//router.DELETE("/authenticate/invalidate/token/", AuthenticationInvalidateToken)
 		//router.DELETE("/authenticate/invalidate/all/", AuthenticationInvalidateAllTokens)
 	}
