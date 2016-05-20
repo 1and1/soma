@@ -93,6 +93,14 @@ func configSetup(c *cli.Context) error {
 			"Failed to parse SOMA API address: %s\n", err.Error())
 	}
 
+	if Cfg.Run.SomaAPI.Scheme == `https` {
+		if Cfg.Cert == "" {
+			return fmt.Errorf(
+				"HTTPS API endpoint requires configured CA file.")
+		}
+		Cfg.Run.CertPath = path.Join(home, ".soma", "adm", Cfg.Cert)
+	}
+
 	return nil
 }
 

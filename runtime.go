@@ -45,7 +45,12 @@ func initCommon(c *cli.Context) {
 		SetTimeout(Cfg.Run.TimeoutResty).
 		SetDisableWarn(true).
 		SetHeader(`User-Agent`, `somaadm 0.4.8`).
-		SetHostURL(Cfg.Run.SomaAPI.String())
+		SetHostURL(Cfg.Run.SomaAPI.String()).
+		SetContentLength(true)
+
+	if Cfg.Run.SomaAPI.Scheme == `https` {
+		Client = Client.SetRootCertificate(Cfg.Run.CertPath)
+	}
 
 	// check configured API
 	if resp, err = Client.R().Head(`/`); err != nil {
