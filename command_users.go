@@ -308,15 +308,15 @@ func cmdUserActivate(c *cli.Context) error {
 	// administrative use, full runtime is available
 	if c.GlobalIsSet(`admin`) {
 		utl.ValidateCliArgumentCount(c, 1)
-		return runtime(cmdUserAdminActivate)(c)
+		return runtime(cmdUserActivateAdmin)(c)
 	}
 	// user trying to activate the account for the first
 	// time, reduced runtime
 	utl.ValidateCliArgumentCount(c, 0)
-	return boottime(cmdUserUserActivate)(c)
+	return boottime(cmdUserActivateUser)(c)
 }
 
-func cmdUserUserActivate(c *cli.Context) error {
+func cmdUserActivateUser(c *cli.Context) error {
 	var err error
 	var password string
 	var passKey string
@@ -369,15 +369,25 @@ password_read:
 	}); err != nil {
 		return err
 	}
-	// XXX
-	fmt.Println("%#+v\n", cred)
 
-	// adm.ValidateToken
-	// adm.StoreToken
+	// validate received token
+	if err = adm.ValidateToken(Client, Cfg.Auth.User, cred.Token); err != nil {
+		return err
+	}
+	// save received token. store is opened in initCommon
+	defer store.Close()
+	if err = store.SaveToken(
+		Cfg.Auth.User,
+		cred.ValidFrom,
+		cred.ExpiresAt,
+		cred.Token,
+	); err != nil {
+		return err
+	}
 	return nil
 }
 
-func cmdUserAdminActivate(c *cli.Context) error {
+func cmdUserActivateAdmin(c *cli.Context) error {
 	return nil
 }
 
