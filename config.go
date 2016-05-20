@@ -14,14 +14,15 @@ import (
 )
 
 type Config struct {
-	Api       string       `json:"api"`
-	Cert      string       `json:"cert"`
-	LogDir    string       `json:"logdir"`
-	Timeout   uint         `json:"timeout,string"`
-	Auth      AuthConfig   `json:"auth"`
-	AdminAuth AuthConfig   `json:"admin.auth"`
-	BoltDB    ConfigBoltDB `json:"boltdb"`
-	Run       RunTimeConfig
+	Api        string       `json:"api"`
+	Cert       string       `json:"cert"`
+	LogDir     string       `json:"logdir"`
+	Timeout    uint         `json:"timeout,string"`
+	Activation string       `json:"activation.mode"`
+	Auth       AuthConfig   `json:"auth"`
+	AdminAuth  AuthConfig   `json:"admin.auth"`
+	BoltDB     ConfigBoltDB `json:"boltdb"`
+	Run        RunTimeConfig
 }
 
 type AuthConfig struct {

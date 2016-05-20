@@ -36,6 +36,13 @@ func configSetup(c *cli.Context) error {
 		}
 	}
 
+	// check account activation mode
+	if Cfg.Activation == `` {
+		Cfg.Activation = `ldap`
+	} else if Cfg.Activation != `ldap` && Cfg.Activation != `mailtoken` {
+		fmt.Fprintln(os.Stderr, `Config setting activation.mode must be 'ldap' or 'mailtoken'.`)
+	}
+
 	// finish setting up runtime configuration
 	params := []string{"api", "timeout", "user", "logdir", "dbdir"}
 
