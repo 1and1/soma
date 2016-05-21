@@ -36,6 +36,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+/* Read functions
+ */
+
+func AuthenticationValidate(w http.ResponseWriter, _ *http.Request,
+	_ httprouter.Params) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
 /* Write functions
  */
 
@@ -86,6 +94,7 @@ func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
 			RemoteAddr: r.RemoteAddr,
 			KexId:      params.ByName(`uuid`),
 			Data:       data,
+			Restricted: false,
 		},
 	}
 	result := <-returnChannel
@@ -95,16 +104,30 @@ func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
 func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	data := make([]byte, r.ContentLength)
+	io.ReadFull(r.Body, data)
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:   `supervisor`,
+		Action: `request_token`,
+		Reply:  returnChannel,
+		Super: &msg.Supervisor{
+			RemoteAddr: r.RemoteAddr,
+			KexId:      params.ByName(`uuid`),
+			Data:       data,
+			Restricted: false,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
 }
 
 func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-}
-
-func AuthenticationValidate(w http.ResponseWriter, _ *http.Request,
-	_ httprouter.Params) {
-	w.WriteHeader(http.StatusNoContent)
 }
 
 /* Utility
@@ -134,6 +157,8 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			}
 			goto dispatchJSON
 		case `bootstrap_root`:
+			fallthrough
+		case `issue_token`:
 			// for this request type, errors are masked in responses
 			switch r.Code {
 			case 200:
@@ -157,7 +182,11 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 				DispatchUnauthorized(w, nil)
 			}
 			return
+		default:
+			DispatchUnauthorized(w, nil)
 		}
+	default:
+		DispatchInternalError(w, nil)
 	}
 
 dispatchOCTET:

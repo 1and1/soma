@@ -99,6 +99,8 @@ func (s *supervisor) process(q *msg.Request) {
 		s.bootstrapRoot(q)
 	case `basic_auth`:
 		s.validate_basic_auth(q)
+	case `request_token`:
+		s.issue_token(q)
 	}
 }
 
@@ -269,6 +271,128 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 	// -> s.credentials Update
 	s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
 		PosTimeInf.UTC(), mcf)
+	// -> s.tokens Update
+	if err = s.tokens.insert(token.Token, token.ValidFrom, token.ExpiresAt,
+		token.Salt); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	if err = tx.Commit(); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	// -> sdata = kex.EncryptAndEncode(&token)
+	plain = []byte{}
+	data = []byte{}
+	if plain, err = json.Marshal(token); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	if err = kex.EncryptAndEncode(&plain, &data); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	// -> send sdata reply
+	result.Super = &msg.Supervisor{
+		Verdict: 200,
+		Data:    data,
+	}
+	result.OK()
+
+dispatch:
+	<-timer.C
+
+conflict:
+	q.Reply <- result
+}
+
+func (s *supervisor) issue_token(q *msg.Request) {
+	result := msg.Result{Type: `supervisor`, Action: `issue_token`}
+	var (
+		cred                 *svCredential
+		err                  error
+		kex                  *auth.Kex
+		plain                []byte
+		timer                *time.Timer
+		token                auth.Token
+		tx                   *sql.Tx
+		validFrom, expiresAt time.Time
+	)
+	data := q.Super.Data
+
+	// issue_token is a master instance function
+	if s.readonly {
+		result.Conflict(fmt.Errorf(`Readonly instance`))
+		goto conflict
+	}
+	// start response timer
+	timer = time.NewTimer(1 * time.Second)
+	defer timer.Stop()
+
+	// -> get kex
+	if kex = s.kex.read(q.Super.KexId); kex == nil {
+		result.NotFound(fmt.Errorf(`Key exchange not found`))
+		goto dispatch
+	}
+	// check kex.SameSource
+	if !kex.IsSameSourceString(q.Super.RemoteAddr) {
+		result.NotFound(fmt.Errorf(`Key exchange not found`))
+		goto dispatch
+	}
+	// delete kex from s.kex (kex is now used)
+	s.kex.remove(q.Super.KexId)
+	// decrypt request
+	if err = kex.DecodeAndDecrypt(&data, &plain); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	// -> json.Unmarshal(rdata, &token)
+	if err = json.Unmarshal(plain, &token); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	if token.UserName == `root` && s.root_restricted && !q.Super.Restricted {
+		result.ServerError(
+			fmt.Errorf(`Root token requested on unrestricted endpoint`))
+		goto dispatch
+	}
+	if cred = s.credentials.read(token.UserName); cred == nil {
+		result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))
+		goto dispatch
+	}
+	if !cred.isActive {
+		result.Unauthorized(fmt.Errorf("Inactive user: %s", token.UserName))
+		goto dispatch
+	}
+	if time.Now().UTC().Before(cred.validFrom.UTC()) ||
+		time.Now().UTC().After(cred.expiresAt.UTC()) {
+		result.Unauthorized(fmt.Errorf("Expired: %s", token.UserName))
+		goto dispatch
+	}
+	// generate token
+	token.SetIPAddressString(q.Super.RemoteAddr)
+	if err = token.Generate(cred.cryptMCF, s.key, s.seed); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	validFrom, _ = time.Parse(rfc3339Milli, token.ValidFrom)
+	expiresAt, _ = time.Parse(rfc3339Milli, token.ExpiresAt)
+	// -> DB Insert: token data
+	if tx, err = s.conn.Begin(); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	defer tx.Rollback()
+	if _, err = tx.Exec(
+		stmt.InsertToken,
+		token.Token,
+		token.Salt,
+		validFrom.UTC(),
+		expiresAt.UTC(),
+	); err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
 	// -> s.tokens Update
 	if err = s.tokens.insert(token.Token, token.ValidFrom, token.ExpiresAt,
 		token.Salt); err != nil {

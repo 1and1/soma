@@ -40,7 +40,7 @@ const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// SOMA version
-	SomaVersion string = `0.7.19`
+	SomaVersion string = `0.7.20`
 	// Logging format strings
 	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
 	LogStrErr = `Subsystem=%s, Action=%s, InternalCode=%d, Error=%s`
@@ -222,6 +222,8 @@ func main() {
 	router.GET("/hostdeployment/:system/:assetid", GetHostDeployment)
 	router.POST("/hostdeployment/:system/:assetid", AssembleHostUpdate)
 
+	router.GET("/authenticate/validate/", BasicAuth(AuthenticationValidate))
+
 	if !SomaCfg.ReadOnly {
 		router.POST("/views/", BasicAuth(AddView))
 		router.DELETE("/views/:view", BasicAuth(DeleteView))
@@ -339,7 +341,6 @@ func main() {
 		//router.PATCH("/authenticate/root/restrict", AuthenticationRestrictRoot) XXX -> move to somadbctl
 		//router.GET("/authenticate/token/", AuthenticationListTokens)
 		router.PUT("/authenticate/token/:uuid", BasicAuth(AuthenticationIssueToken))
-		router.GET("/authenticate/validate/", BasicAuth(AuthenticationValidate))
 		router.PUT("/authenticate/activate/:uuid", AuthenticationActivateUser)
 		//router.DELETE("/authenticate/invalidate/token/", AuthenticationInvalidateToken)
 		//router.DELETE("/authenticate/invalidate/all/", AuthenticationInvalidateAllTokens)
