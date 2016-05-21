@@ -11,12 +11,12 @@ func createTablesPermissions(printOnly bool, verbose bool) {
 	queryMap["createTablePermissionTypes"] = `
 create table if not exists soma.permission_types (
     permission_type             varchar(32)     PRIMARY KEY
-    -- OMNIPOTENCE
-    -- SYSTEM_GRANT
-    -- SYSTEM
-    -- GLOBAL
-    -- REPO_GRANT
-    -- REPO
+    -- omnipotence
+    -- grant_system
+    -- system
+    -- global
+    -- grant_limited
+    -- limited
 );`
 	queries[idx] = "createTablePermissionTypes"
 	idx++
@@ -27,7 +27,9 @@ create table if not exists soma.permissions (
     permission_name             varchar(128)    NOT NULL,
     permission_type             varchar(32)     NOT NULL REFERENCES soma.permission_types ( permission_type ) DEFERRABLE,
     UNIQUE ( permission_name ),
-    UNIQUE ( permission_id, permission_type )
+    UNIQUE ( permission_id, permission_type ),
+    -- only omnipotence is type omnipotence
+    CHECK  ( permission_type != 'omnipotence' OR permission_name = 'omnipotence' )
 );`
 	queries[idx] = "createTableSomaPermissions"
 	idx++
@@ -43,7 +45,9 @@ create table if not exists soma.global_authorizations (
     CHECK (   ( admin_id IS NOT NULL AND user_id IS     NULL AND tool_id IS     NULL )
            OR ( admin_id IS     NULL AND user_id IS NOT NULL AND tool_id IS     NULL )
            OR ( admin_id IS     NULL AND user_id IS     NULL AND tool_id IS NOT NULL ) ),
-    CHECK ( permission_type IN ( 'OMNIPOTENCE', 'SYSTEM_GRANT', 'SYSTEM', 'GLOBAL' ) )
+    CHECK ( permission_type IN ( 'omnipotence', 'grant_system', 'system', 'global' ) ),
+    -- only root can have omnipotence
+    CHECK ( permission_id != '00000000-0000-0000-0000-000000000000'::uuid OR user_id = '00000000-0000-0000-0000-000000000000'::uuid )
 );`
 	queries[idx] = "createTableGlobalAuthorizations"
 	idx++
@@ -60,7 +64,7 @@ create table if not exists soma.repo_authorizations (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( permission_type IN ( 'REPO_GRANT', 'REPO' ) )
+    CHECK ( permission_type IN ( 'grant_limited', 'limited' ) )
 );`
 	queries[idx] = "createTableRepoAuthorizations"
 	idx++
@@ -79,7 +83,7 @@ create table if not exists soma.bucket_authorizations (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( permission_type = 'REPO' )
+    CHECK ( permission_type = 'limited' )
 );`
 	queries[idx] = "createTableBucketAuthorizations"
 	idx++
@@ -100,7 +104,7 @@ create table if not exists soma.group_authorizations (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( permission_type = 'REPO' )
+    CHECK ( permission_type = 'limited' )
 );`
 	queries[idx] = "createTableGroupAuthorizations"
 	idx++
@@ -121,7 +125,7 @@ create table if not exists soma.cluster_authorizations (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( permission_type = 'REPO' )
+    CHECK ( permission_type = 'limited' )
 );`
 	queries[idx] = "createTableClusterAuthorizations"
 	idx++

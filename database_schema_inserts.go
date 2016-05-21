@@ -12,116 +12,151 @@ func schemaInserts(printOnly bool, verbose bool) {
 
 	queryMap["insertSystemGroupWheel"] = `
 INSERT INTO inventory.organizational_teams (
-    organizational_team_id,
-    organizational_team_name,
-    organizational_team_ldap_id,
-    organizational_team_system )
-VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    'wheel',
-    0,
-    'yes'
+            organizational_team_id,
+            organizational_team_name,
+            organizational_team_ldap_id,
+            organizational_team_system
+) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            'wheel',
+            0,
+            'yes'
 );`
 	queries[idx] = "insertSystemGroupWheel"
 	idx++
 
 	queryMap["insertSystemUserRoot"] = `
 INSERT INTO inventory.users (
-    user_id,
-    user_uid,
-    user_first_name,
-    user_last_name,
-    user_employee_number,
-    user_mail_address,
-    user_is_active,
-    user_is_system,
-    user_is_deleted,
-    organizational_team_id )
-VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    'root',
-    'Charlie',
-    'Root',
-    0,
-    'monitoring@1und1.de',
-    'yes',
-    'yes',
-    'no',
-    '00000000-0000-0000-0000-000000000000'
+            user_id,
+            user_uid,
+            user_first_name,
+            user_last_name,
+            user_employee_number,
+            user_mail_address,
+            user_is_active,
+            user_is_system,
+            user_is_deleted,
+            organizational_team_id
+) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            'root',
+            'Charlie',
+            'Root',
+            0,
+            'monitoring@1und1.de',
+            'yes',
+            'yes',
+            'no',
+            '00000000-0000-0000-0000-000000000000'
 );`
 	queries[idx] = "insertSystemUserRoot"
 	idx++
 
+	queryMap["insertCategoryOmnipotence"] = `
+INSERT INTO soma.permission_types (
+            permission_type
+) VALUES (
+            'omnipotence'
+);`
+	queries[idx] = "insertCategoryOmnipotence"
+	idx++
+
+	queryMap["insertPermissionOmnipotence"] = `
+INSERT INTO soma.permissions (
+            permission_id,
+            permission_name,
+            permission_type
+) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            'omnipotence',
+            'omnipotence'
+);`
+	queries[idx] = "insertPermissionOmnipotence"
+	idx++
+
+	queryMap["grantOmnipotence"] = `
+INSERT INTO soma.global_authorizations (
+            user_id,
+            permission_id,
+            permission_type
+) VALUES (
+            '00000000-0000-0000-0000-000000000000',
+            '00000000-0000-0000-0000-000000000000',
+            'omnipotence'
+);`
+	queries[idx] = "grantOmnipotence"
+	idx++
+
 	queryMap["insertJobStatus"] = `
 INSERT INTO soma.job_status (
-    job_status )
-VALUES
-    ( 'queued' ),
-    ( 'in_progress' ),
-    ( 'processed' )
+            job_status
+) VALUES
+            ( 'queued' ),
+            ( 'in_progress' ),
+            ( 'processed' )
 ;`
 	queries[idx] = "insertJobStatus"
 	idx++
 
 	queryMap["insertJobResults"] = `
 INSERT INTO soma.job_results (
-    job_result )
-VALUES
-    ( 'pending' ),
-    ( 'success' ),
-    ( 'failed' )
+            job_result
+) VALUES
+            ( 'pending' ),
+            ( 'success' ),
+            ( 'failed' )
 ;`
 	queries[idx] = "insertJobResults"
 	idx++
 
 	queryMap["insertJobTypes"] = `
 INSERT INTO soma.job_types (
-    job_type )
-VALUES
-    ( 'create_bucket' ),
-    ( 'create_group' ),
-    ( 'create_cluster' ),
-    ( 'assign_node' ),
-    ( 'add_group_to_group' ),
-    ( 'add_cluster_to_group' ),
-    ( 'add_node_to_group' ),
-    ( 'add_node_to_cluster' ),
-    ( 'add_system_property_to_repository' ),
-    ( 'add_custom_property_to_repository' ),
-    ( 'add_oncall_property_to_repository' ),
-    ( 'add_service_property_to_repository' ),
-    ( 'add_system_property_to_bucket' ),
-    ( 'add_custom_property_to_bucket' ),
-    ( 'add_oncall_property_to_bucket' ),
-    ( 'add_service_property_to_bucket' ),
-    ( 'add_system_property_to_group' ),
-    ( 'add_custom_property_to_group' ),
-    ( 'add_oncall_property_to_group' ),
-    ( 'add_service_property_to_group' ),
-    ( 'add_system_property_to_cluster' ),
-    ( 'add_custom_property_to_cluster' ),
-    ( 'add_oncall_property_to_cluster' ),
-    ( 'add_service_property_to_cluster' ),
-    ( 'add_system_property_to_node' ),
-    ( 'add_custom_property_to_node' ),
-    ( 'add_oncall_property_to_node' ),
-    ( 'add_service_property_to_node' ),
-    ( 'add_check_to_repository' ),
-    ( 'add_check_to_bucket' ),
-    ( 'add_check_to_group' ),
-    ( 'add_check_to_cluster' ),
-    ( 'add_check_to_node' )
+            job_type
+) VALUES
+            ( 'create_bucket' ),
+            ( 'create_group' ),
+            ( 'create_cluster' ),
+            ( 'assign_node' ),
+            ( 'add_group_to_group' ),
+            ( 'add_cluster_to_group' ),
+            ( 'add_node_to_group' ),
+            ( 'add_node_to_cluster' ),
+            ( 'add_system_property_to_repository' ),
+            ( 'add_custom_property_to_repository' ),
+            ( 'add_oncall_property_to_repository' ),
+            ( 'add_service_property_to_repository' ),
+            ( 'add_system_property_to_bucket' ),
+            ( 'add_custom_property_to_bucket' ),
+            ( 'add_oncall_property_to_bucket' ),
+            ( 'add_service_property_to_bucket' ),
+            ( 'add_system_property_to_group' ),
+            ( 'add_custom_property_to_group' ),
+            ( 'add_oncall_property_to_group' ),
+            ( 'add_service_property_to_group' ),
+            ( 'add_system_property_to_cluster' ),
+            ( 'add_custom_property_to_cluster' ),
+            ( 'add_oncall_property_to_cluster' ),
+            ( 'add_service_property_to_cluster' ),
+            ( 'add_system_property_to_node' ),
+            ( 'add_custom_property_to_node' ),
+            ( 'add_oncall_property_to_node' ),
+            ( 'add_service_property_to_node' ),
+            ( 'add_check_to_repository' ),
+            ( 'add_check_to_bucket' ),
+            ( 'add_check_to_group' ),
+            ( 'add_check_to_cluster' ),
+            ( 'add_check_to_node' )
 ;`
 	queries[idx] = "insertJobTypes"
 	idx++
 
 	queryMap["insertRootRestricted"] = `
 INSERT INTO root.flags (
-    flag,
-    status )
-VALUES
-    ( 'restricted', false ),
-    ( 'disabled', false )
+            flag,
+            status
+) VALUES
+            ( 'restricted', false ),
+            ( 'disabled', false )
 ;`
 	queries[idx] = "insertRootRestricted"
 	idx++
@@ -139,13 +174,13 @@ func schemaVersionInserts(printOnly bool, verbose bool, version string) {
 
 	invString := fmt.Sprintf(`
 INSERT INTO public.schema_versions (
-    schema,
-    version,
-    description )
+            schema,
+            version,
+            description )
 VALUES (
-    'inventory',
-    201605060001,
-    'Initial create - somadbctl %s'
+            'inventory',
+            201605060001,
+            'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertInventorySchemaVersion"] = invString
 	queries[idx] = "insertInventorySchemaVersion"
@@ -153,13 +188,13 @@ VALUES (
 
 	authString := fmt.Sprintf(`
 INSERT INTO public.schema_versions (
-    schema,
-    version,
-    description )
-VALUES (
-    'auth',
-    201605190001,
-    'Initial create - somadbctl %s'
+            schema,
+            version,
+            description
+) VALUES (
+            'auth',
+            201605190001,
+            'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertAuthSchemaVersion"] = authString
 	queries[idx] = "insertAuthSchemaVersion"
@@ -167,13 +202,13 @@ VALUES (
 
 	somaString := fmt.Sprintf(`
 INSERT INTO public.schema_versions (
-    schema,
-    version,
-    description )
-VALUES (
-    'soma',
-    201605060001,
-    'Initial create - somadbctl %s'
+            schema,
+            version,
+            description
+) VALUES (
+            'soma',
+            201605210001,
+            'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertSomaSchemaVersion"] = somaString
 	queries[idx] = "insertSomaSchemaVersion"
@@ -181,13 +216,13 @@ VALUES (
 
 	rootString := fmt.Sprintf(`
 INSERT INTO public.schema_versions (
-    schema,
-    version,
-    description )
-VALUES (
-    'root',
-    201605160001,
-    'Initial create - somadbctl %s'
+            schema,
+            version,
+            description
+) VALUES (
+            'root',
+            201605160001,
+            'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertRootSchemaVersion"] = rootString
 	queries[idx] = "insertRootSchemaVersion"

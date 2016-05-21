@@ -17,10 +17,9 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201605060001: upgrade_auth_to_201605150002,
 		201605150002: upgrade_auth_to_201605190001,
 	},
-	//	"soma": map[int]func(int, string) int{
-	//		201605060001: mock_upgrade_soma_201605060001,
-	//		201605060002: mock_upgrade_soma_201605060002,
-	//	},
+	"soma": map[int]func(int, string, bool) int{
+		201605060001: upgrade_soma_to_201605210001,
+	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
 		201605150001: upgrade_root_to_201605160001,
@@ -87,13 +86,8 @@ func upgrade_auth_to_201605150002(curr int, tool string, printOnly bool) int {
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('auth', 201605150002, 'Upgrade - somadbctl %s');", tool),
 	)
-	for _, stmt := range stmts {
-		if printOnly {
-			fmt.Println(stmt)
-			continue
-		}
-		db.Exec(stmt)
-	}
+
+	executeUpgrades(stmts, printOnly)
 
 	return 201605150002
 }
@@ -109,16 +103,44 @@ func upgrade_auth_to_201605190001(curr int, tool string, printOnly bool) int {
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('auth', 201605190001, 'Upgrade - somadbctl %s');", tool),
 	)
-	for _, stmt := range stmts {
-		if printOnly {
-			fmt.Println(stmt)
-			continue
-		}
-		db.Exec(stmt)
-	}
+	executeUpgrades(stmts, printOnly)
 
 	return 201605190001
 }
+
+func upgrade_soma_to_201605210001(curr int, tool string, printOnly bool) int {
+	if curr != 201605060001 {
+		return 0
+	}
+	stmts := []string{
+		`INSERT INTO soma.permission_types ( permission_type ) VALUES ( 'omnipotence' );`,
+		`INSERT INTO soma.permissions (permission_id, permission_name, permission_type )
+		 VALUES ( '00000000-0000-0000-0000-000000000000','omnipotence', 'omnipotence' );`,
+		`INSERT INTO soma.global_authorizations ( user_id, permission_id, permission_type )
+		 VALUES ( '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'omnipotence' );`,
+		`ALTER TABLE soma.permissions ADD CHECK  ( permission_type != 'omnipotence' OR permission_name = 'omnipotence' );`,
+		`ALTER TABLE soma.global_authorizations DROP CONSTRAINT "global_authorizations_permission_type_check";`,
+		`ALTER TABLE soma.repo_authorizations DROP CONSTRAINT "repo_authorizations_permission_type_check";`,
+		`ALTER TABLE soma.bucket_authorizations DROP CONSTRAINT "bucket_authorizations_permission_type_check";`,
+		`ALTER TABLE soma.group_authorizations DROP CONSTRAINT "group_authorizations_permission_type_check";`,
+		`ALTER TABLE soma.cluster_authorizations DROP CONSTRAINT "cluster_authorizations_permission_type_check";`,
+		`ALTER TABLE soma.global_authorizations ADD CHECK ( permission_type IN ( 'omnipotence', 'grant_system', 'system', 'global' ) );`,
+		`ALTER TABLE soma.global_authorizations ADD CHECK ( permission_id != '00000000-0000-0000-0000-000000000000'::uuid OR user_id = '00000000-0000-0000-0000-000000000000'::uuid );`,
+		`ALTER TABLE soma.global_authorizations ADD CHECK ( permission_type IN ( 'omnipotence', 'grant_system', 'system', 'global' ) );`,
+		`ALTER TABLE soma.repo_authorizations ADD CHECK ( permission_type IN ( 'grant_limited', 'limited' ) );`,
+		`ALTER TABLE soma.bucket_authorizations ADD CHECK ( permission_type = 'limited' );`,
+		`ALTER TABLE soma.group_authorizations ADD CHECK ( permission_type = 'limited' );`,
+		`ALTER TABLE soma.cluster_authorizations ADD CHECK ( permission_type = 'limited' );`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605210001, 'Upgrade - somadbctl %s');", tool),
+	)
+
+	executeUpgrades(stmts, printOnly)
+
+	return 201605210001
+}
+
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
 	if curr != 000000000001 {
 		return 0
@@ -135,13 +157,8 @@ func install_root_201605150001(curr int, tool string, printOnly bool) int {
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('root', 201605150001, 'Upgrade create - somadbctl %s');", tool),
 	)
-	for _, stmt := range stmts {
-		if printOnly {
-			fmt.Println(stmt)
-			continue
-		}
-		db.Exec(stmt)
-	}
+
+	executeUpgrades(stmts, printOnly)
 
 	return 201605150001
 }
@@ -168,6 +185,16 @@ func upgrade_root_to_201605160001(curr int, tool string, printOnly bool) int {
 		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!\n")
 	}
 	return 201605160001
+}
+
+func executeUpgrades(stmts []string, printOnly bool) {
+	for _, stmt := range stmts {
+		if printOnly {
+			fmt.Println(stmt)
+			continue
+		}
+		db.Exec(stmt)
+	}
 }
 
 func getCurrentSchemaVersion(schema string) int {
