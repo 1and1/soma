@@ -159,6 +159,19 @@ func (c *svCredMap) insert(user string, uid uuid.UUID, valid, expires time.Time,
 	}
 }
 
+func (c *svCredMap) restore(user string, uid uuid.UUID, valid, expires time.Time, mcf scrypth64.Mcf, reset, active bool) {
+	c.lock()
+	defer c.unlock()
+	c.CMap[user] = svCredential{
+		id:          uid,
+		validFrom:   valid,
+		expiresAt:   expires,
+		cryptMCF:    mcf,
+		resetActive: reset,
+		isActive:    active,
+	}
+}
+
 // set writelock
 func (c *svCredMap) lock() {
 	c.mutex.Lock()
