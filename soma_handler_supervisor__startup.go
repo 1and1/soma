@@ -39,6 +39,8 @@ func (s *supervisor) startupLoad() {
 
 	s.startupRoot()
 
+	s.startupCredentials()
+
 	s.startupTokens()
 
 }
@@ -92,6 +94,49 @@ func (s *supervisor) startupRoot() {
 	}
 	s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
 		PosTimeInf.UTC(), mcf)
+}
+
+func (s *supervisor) startupCredentials() {
+	var (
+		err                  error
+		rows                 *sql.Rows
+		user_id, user, crypt string
+		reset                bool
+		validFrom, expiresAt time.Time
+		id                   uuid.UUID
+		mcf                  scrypth64.Mcf
+	)
+
+	rows, err = s.conn.Query(stmt.LoadAllUserCredentials)
+	if err != nil {
+		log.Fatal(`supervisor/load-credentials,query: `, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&user_id,
+			&crypt,
+			&reset,
+			&validFrom,
+			&expiresAt,
+			&user,
+		); err != nil {
+			log.Fatal(`supervisor/load-credentials,scan: `, err)
+		}
+
+		if id, err = uuid.FromString(user_id); err != nil {
+			log.Fatal(`supervisor/string-to-uuid: `, err)
+		}
+		if mcf, err = scrypth64.FromString(crypt); err != nil {
+			log.Fatal(`supervisor/string-to-mcf: `, err)
+		}
+
+		s.credentials.restore(user, id, validFrom, expiresAt, mcf, reset, true)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(`supervisor/load-credentials,next: `, err)
+	}
 }
 
 func (s *supervisor) startupTokens() {
