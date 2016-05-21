@@ -188,12 +188,24 @@ func upgrade_root_to_201605160001(curr int, tool string, printOnly bool) int {
 }
 
 func executeUpgrades(stmts []string, printOnly bool) {
+	var tx *sql.Tx
+
+	if !printOnly {
+		tx, _ = db.Begin()
+		defer tx.Rollback()
+		tx.Exec(`SET CONSTRAINTS ALL DEFERRED;`)
+	}
+
 	for _, stmt := range stmts {
 		if printOnly {
 			fmt.Println(stmt)
 			continue
 		}
-		db.Exec(stmt)
+		tx.Exec(stmt)
+	}
+
+	if !printOnly {
+		tx.Commit()
 	}
 }
 
