@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
-	"log"
-	"net/url"
 )
 
 func registerEnvironments(app cli.App) *cli.App {
@@ -49,141 +47,56 @@ func registerEnvironments(app cli.App) *cli.App {
 }
 
 func cmdEnvironmentsAdd(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/environments"
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	environment := a.First()
-	if environment == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: add environment [%s]", environment)
+	req := proto.NewEnvironmentRequest()
+	req.Environment.Name = c.Args().First()
 
-	var req proto.Request
-	req.Environment = &proto.Environment{}
-	req.Environment.Name = environment
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.PostRequestWithBody(Client, req, "/environments/")
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdEnvironmentsRemove(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	environment := a.First()
-	if environment == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: remove environment [%s]", environment)
-	url.Path = fmt.Sprintf("/environments/%s", environment)
+	path := fmt.Sprintf("/environments/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdEnvironmentsRename(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 3)
+	key := []string{`to`}
 
-	a := c.Args()
-	// we expected exactly 3 arguments
-	if len(a) != 3 {
-		log.Fatal("Syntax error")
-	}
-	// second arg must be `to`
-	if a.Get(1) != "to" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: rename environment [%s] to [%s]", a.Get(0), a.Get(2))
+	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	var req proto.Request
-	req.Environment = &proto.Environment{}
-	req.Environment.Name = a.Get(2)
-	url.Path = fmt.Sprintf("/environments/%s", a.Get(0))
+	req := proto.NewEnvironmentRequest()
+	req.Environment.Name = opts[`to`][0]
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Put(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	path := fmt.Sprintf("/environments/%s", c.Args().First())
+
+	resp := utl.PutRequestWithBody(Client, req, path)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdEnvironmentsList(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/environments"
-
-	a := c.Args()
-	if len(a) != 0 {
-		log.Fatal("Syntax error")
-	}
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, "/environments/")
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdEnvironmentsShow(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if len(a) != 1 {
-		log.Fatal("Syntax error")
-	}
-	environment := a.First()
-	if environment == "" {
-		log.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/environments/%s", environment)
+	path := fmt.Sprintf("/environments/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.GetRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
