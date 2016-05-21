@@ -128,7 +128,6 @@ type svCredential struct {
 	expiresAt   time.Time
 	cryptMCF    scrypth64.Mcf
 	resetActive bool
-	resetToken  string
 	isActive    bool
 }
 
@@ -156,7 +155,6 @@ func (c *svCredMap) insert(user string, uid uuid.UUID, valid, expires time.Time,
 		expiresAt:   expires,
 		cryptMCF:    mcf,
 		resetActive: false,
-		resetToken:  "",
 		isActive:    true,
 	}
 }
