@@ -39,6 +39,8 @@ func (s *supervisor) startupLoad() {
 
 	s.startupRoot()
 
+	s.startupTokens()
+
 }
 
 func (s *supervisor) startupRoot() {
@@ -90,6 +92,41 @@ func (s *supervisor) startupRoot() {
 	}
 	s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
 		PosTimeInf.UTC(), mcf)
+}
+
+func (s *supervisor) startupTokens() {
+	var (
+		err                         error
+		token, salt, valid, expires string
+		validFrom, expiresAt        time.Time
+		rows                        *sql.Rows
+	)
+
+	rows, err = s.conn.Query(stmt.LoadAllTokens)
+	if err != nil {
+		log.Fatal(`supervisor/load-tokens,query: `, err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&token,
+			&salt,
+			&validFrom,
+			&expiresAt,
+		); err != nil {
+			log.Fatal(`supervisor/load-tokens,scan: `, err)
+		}
+		valid = validFrom.Format(rfc3339Milli)
+		expires = expiresAt.Format(rfc3339Milli)
+
+		if err = s.tokens.insert(token, valid, expires, salt); err != nil {
+			log.Fatal(`supervisor/load-tokens,insert: `, err)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(`supervisor/load-tokens,next: `, err)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
