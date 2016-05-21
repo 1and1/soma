@@ -40,7 +40,7 @@ const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// SOMA version
-	SomaVersion string = `0.7.20`
+	SomaVersion string = `0.7.21`
 	// Logging format strings
 	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
 	LogStrErr = `Subsystem=%s, Action=%s, InternalCode=%d, Error=%s`

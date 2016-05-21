@@ -17,6 +17,7 @@ type SomaConfig struct {
 	Database     SomaDbConfig   `json:"database"`
 	Daemon       SomaDaemon     `json:"daemon"`
 	Auth         SomaAuthConfig `json:"authentication"`
+	Ldap         SomaLdapConfig `json:"ldap"`
 }
 
 type SomaDbConfig struct {
@@ -34,16 +35,29 @@ type SomaDaemon struct {
 	Listen string   `json:"listen"`
 	Port   string   `json:"port"`
 	Tls    bool     `json:"tls,string"`
-	Cert   string   `json:"cert-file"`
-	Key    string   `json:"key-file"`
+	Cert   string   `json:"cert.file"`
+	Key    string   `json:"key.file"`
 }
 
 type SomaAuthConfig struct {
-	KexExpirySeconds   uint64 `json:"kex_expiry,string"`
-	TokenExpirySeconds uint64 `json:"token_expiry,string"`
+	KexExpirySeconds     uint64 `json:"kex.expiry,string"`
+	TokenExpirySeconds   uint64 `json:"token.expiry,string"`
+	CredentialExpiryDays uint64 `json:"credential.expiry,string"`
+	Activation           string `json:"activation.mode"`
 	// dd if=/dev/random bs=1M count=1 2>/dev/null | sha512
-	TokenSeed string `json:"token_seed"`
-	TokenKey  string `json:"token_key"`
+	TokenSeed string `json:"token.seed"`
+	TokenKey  string `json:"token.key"`
+}
+
+type SomaLdapConfig struct {
+	Attribute  string `json:"uid.attribute"`
+	BaseDN     string `json:"base.dn"`
+	UserDN     string `json:"user.dn"`
+	Address    string `json:"address"`
+	Port       uint64 `json:"port,string"`
+	Tls        bool   `json:"tls,string"`
+	Cert       string `json:"cert.file"`
+	SkipVerify bool   `json:"insecure,string"`
 }
 
 func (c *SomaConfig) readConfigFile(fname string) error {

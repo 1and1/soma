@@ -81,30 +81,27 @@ func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	data := make([]byte, r.ContentLength)
-	io.ReadFull(r.Body, data)
-
-	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
-	handler.input <- msg.Request{
-		Type:   `supervisor`,
-		Action: `bootstrap_root`,
-		Reply:  returnChannel,
-		Super: &msg.Supervisor{
-			RemoteAddr: r.RemoteAddr,
-			KexId:      params.ByName(`uuid`),
-			Data:       data,
-			Restricted: false,
-		},
-	}
-	result := <-returnChannel
-	SendMsgResult(&w, &result)
+	AuthenticationEncryptedData(&w, r, &params, `bootstrap_root`)
 }
 
 func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
+	AuthenticationEncryptedData(&w, r, &params, `request_token`)
+}
+
+func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	AuthenticationEncryptedData(&w, r, &params, `activate_user`)
+}
+
+func AuthenticationEncryptedData(w *http.ResponseWriter, r *http.Request,
+	params *httprouter.Params, action string) {
+	defer PanicCatcher(*w)
+
 	data := make([]byte, r.ContentLength)
 	io.ReadFull(r.Body, data)
 
@@ -112,7 +109,7 @@ func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:   `supervisor`,
-		Action: `request_token`,
+		Action: action,
 		Reply:  returnChannel,
 		Super: &msg.Supervisor{
 			RemoteAddr: r.RemoteAddr,
@@ -122,12 +119,7 @@ func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
 		},
 	}
 	result := <-returnChannel
-	SendMsgResult(&w, &result)
-}
-
-func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
+	SendMsgResult(w, &result)
 }
 
 /* Utility
@@ -157,6 +149,8 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			}
 			goto dispatchJSON
 		case `bootstrap_root`:
+			fallthrough
+		case `activate_user`:
 			fallthrough
 		case `issue_token`:
 			// for this request type, errors are masked in responses
