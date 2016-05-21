@@ -105,7 +105,7 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 		// prompt for user
 		for Cfg.Auth.User == "" {
 			if Cfg.Auth.User, err = adm.Read(`user`); err == liner.ErrPromptAborted {
-				os.Exit(1)
+				os.Exit(0)
 			} else if err != nil {
 				return err
 			}
@@ -117,7 +117,7 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 			// no token in cache
 			for Cfg.Auth.Pass == "" {
 				if Cfg.Auth.Pass, err = adm.Read(`password`); err == liner.ErrPromptAborted {
-					os.Exit(1)
+					os.Exit(0)
 				} else if err != nil {
 					return err
 				}
