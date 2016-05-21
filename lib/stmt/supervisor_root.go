@@ -8,17 +8,19 @@
 
 package stmt
 
+// the bootstrap token to initialize the system
 const SelectRootToken = `
 SELECT token
 FROM   root.token;`
 
 // 'restricted' => true|false
-const DiscoverRootStatus = `
+// 'disabled' => true|false
+const LoadRootFlags = `
 SELECT flag,
        status
 FROM   root.flags;`
 
-const DetectRootPasswordSet = `
+const LoadRootPassword = `
 SELECT aua.crypt,
        aua.valid_from,
        aua.valid_until
@@ -28,22 +30,23 @@ ON     ui.user_id = aua.user_id
 WHERE  ui.user_id = '00000000-0000-0000-0000-000000000000'::uuid
 AND    ui.user_uid = 'root'
 AND    ui.user_is_system
+AND    ui.user_is_active
 AND    aua.valid_from < NOW()
 AND    aua.valid_until > NOW();`
 
 const SetRootCredentials = `
 INSERT INTO auth.user_authentication (
-    user_id,
-    crypt,
-    reset_pending,
-    valid_from,
-    valid_until
+            user_id,
+            crypt,
+            reset_pending,
+            valid_from,
+            valid_until
 ) VALUES (
-    $1::uuid,
-    $2::text,
-    'no'::boolean,
-    $3::timestamptz,
-    'infinity'::timestamptz
+            $1::uuid,
+            $2::text,
+            'no'::boolean,
+            $3::timestamptz,
+            'infinity'::timestamptz
 );`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
