@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
-	"log"
-	"net/url"
 )
 
 func registerStates(app cli.App) *cli.App {
@@ -49,143 +47,56 @@ func registerStates(app cli.App) *cli.App {
 }
 
 func cmdObjectStatesAdd(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/objstates"
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	state := a.First()
-	if state == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: add state [%s]", state)
+	req := proto.NewStateRequest()
+	req.State.Name = c.Args().First()
 
-	req := proto.Request{
-		State: &proto.State{
-			Name: state,
-		},
-	}
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.PostRequestWithBody(Client, req, `/objstates/`)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdObjectStatesRemove(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	state := a.First()
-	if state == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: remove state [%s]", state)
-	url.Path = fmt.Sprintf("/objstates/%s", state)
+	path := fmt.Sprintf("/objstates/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdObjectStatesRename(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 3)
+	key := []string{`to`}
 
-	a := c.Args()
-	// we expected exactly 3 arguments
-	if len(a) != 3 {
-		log.Fatal("Syntax error")
-	}
-	// second arg must be `to`
-	if a.Get(1) != "to" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: rename state [%s] to [%s]", a.Get(0), a.Get(2))
+	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	var req proto.Request
-	req.State = &proto.State{}
-	req.State.Name = a.Get(2)
-	url.Path = fmt.Sprintf("/objstates/%s", a.Get(0))
+	req := proto.NewStateRequest()
+	req.State.Name = opts[`to`][0]
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Put(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	path := fmt.Sprintf("/objstates/%s", c.Args().First())
+
+	resp := utl.PutRequestWithBody(Client, req, path)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdObjectStatesList(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/objstates"
-
-	a := c.Args()
-	if len(a) != 0 {
-		log.Fatal("Syntax error")
-	}
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, "/objstates/")
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdObjectStatesShow(c *cli.Context) error {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if len(a) != 1 {
-		log.Fatal("Syntax error")
-	}
-	state := a.First()
-	if state == "" {
-		log.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/objstates/%s", state)
+	path := fmt.Sprintf("/objstates/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.GetRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
