@@ -144,6 +144,14 @@ func DispatchNotFound(w *http.ResponseWriter, err error) {
 	http.Error(*w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 }
 
+func DispatchConflict(w *http.ResponseWriter, err error) {
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusConflict)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusConflict), http.StatusConflict)
+}
+
 func DispatchInternalError(w *http.ResponseWriter, err error) {
 	if err != nil {
 		http.Error(*w, err.Error(), http.StatusInternalServerError)

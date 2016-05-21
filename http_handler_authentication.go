@@ -149,6 +149,9 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			case 404:
 				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 404)
 				DispatchNotFound(w, r.Error)
+			case 406:
+				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 406)
+				DispatchConflict(w, r.Error)
 			default:
 				log.Printf(LogStrOK, `supervisor`, r.Action, r.Code, 401)
 				DispatchUnauthorized(w, nil)

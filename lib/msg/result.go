@@ -48,6 +48,11 @@ func (r *Result) NotFound(err error) {
 	r.SetError(err)
 }
 
+func (r *Result) Conflict(err error) {
+	r.Code = 406
+	r.SetError(err)
+}
+
 func (r *Result) ServerError(err error) {
 	r.Code = 500
 	r.SetError(err)

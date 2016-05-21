@@ -107,6 +107,12 @@ func (s *supervisor) kexInit(q *msg.Request) {
 	kex := q.Super.Kex
 	var err error
 
+	// kexInit is a master instance function
+	if s.readonly {
+		result.Conflict(fmt.Errorf(`Readonly instance`))
+		goto dispatch
+	}
+
 	// check the client submitted IV for fishyness
 	err = s.checkIV(kex.InitializationVector)
 	for err != nil {
@@ -145,6 +151,7 @@ func (s *supervisor) kexInit(q *msg.Request) {
 	}
 	result.OK()
 
+dispatch:
 	q.Reply <- result
 }
 
@@ -160,9 +167,16 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 	var mcf scrypth64.Mcf
 	var tx *sql.Tx
 	var validFrom, expiresAt time.Time
+	var timer *time.Timer
+
+	// bootstrapRoot is a master instance function
+	if s.readonly {
+		result.Conflict(fmt.Errorf(`Readonly instance`))
+		goto conflict
+	}
 
 	// start response timer
-	timer := time.NewTimer(1 * time.Second)
+	timer = time.NewTimer(1 * time.Second)
 	defer timer.Stop()
 
 	// -> check if root is not already active
@@ -285,6 +299,8 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 
 dispatch:
 	<-timer.C
+
+conflict:
 	q.Reply <- result
 }
 
@@ -319,9 +335,26 @@ func (s *supervisor) newKexMap() svKexMap {
 }
 
 func (s *supervisor) validate_basic_auth(q *msg.Request) {
+	var tok *svToken
 	result := msg.Result{Type: `supervisor`, Action: `authenticate`}
 
-	tok := s.tokens.read(q.Super.BasicAuthToken)
+	// basic auth always fails for root if root is disabled
+	if q.Super.BasicAuthUser == `root` && s.root_disabled {
+		result.ServerError(
+			fmt.Errorf(`Attempted authentication on disabled root account`))
+		goto unauthorized
+	}
+
+	// basic auth always fails for root if root is restricted and
+	// the request comes from an unrestricted endpoint. Note: there
+	// are currently no restricted endpoints (https over unix socket)
+	if q.Super.BasicAuthUser == `root` && s.root_restricted && !q.Super.Restricted {
+		result.ServerError(
+			fmt.Errorf(`Attempted root authentication on unrestricted endpoint`))
+		goto unauthorized
+	}
+
+	tok = s.tokens.read(q.Super.BasicAuthToken)
 	if tok == nil && !s.readonly {
 		// rw instance knows every token
 		result.ServerError(fmt.Errorf(`Unknown Token (TokenMap)`))

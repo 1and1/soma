@@ -39,7 +39,9 @@ func (s *supervisor) startupLoad() {
 
 	s.startupRoot()
 
-	s.startupCredentials()
+	if !s.readonly {
+		s.startupCredentials()
+	}
 
 	s.startupTokens()
 
@@ -79,21 +81,24 @@ func (s *supervisor) startupRoot() {
 		log.Fatal(`supervisor/load-root-flags,next: `, err)
 	}
 
-	if err = s.conn.QueryRow(stmt.LoadRootPassword).Scan(
-		&crypt,
-		&validFrom,
-		&expiresAt,
-	); err == sql.ErrNoRows {
-		// root bootstrap outstanding
-		return
-	} else if err != nil {
-		log.Fatal(`supervisor/load-root-password: `, err)
+	// only load root credentials on master instance
+	if !s.readonly {
+		if err = s.conn.QueryRow(stmt.LoadRootPassword).Scan(
+			&crypt,
+			&validFrom,
+			&expiresAt,
+		); err == sql.ErrNoRows {
+			// root bootstrap outstanding
+			return
+		} else if err != nil {
+			log.Fatal(`supervisor/load-root-password: `, err)
+		}
+		if mcf, err = scrypth64.FromString(crypt); err != nil {
+			log.Fatal(`supervisor/string-to-mcf: `, err)
+		}
+		s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
+			PosTimeInf.UTC(), mcf)
 	}
-	if mcf, err = scrypth64.FromString(crypt); err != nil {
-		log.Fatal(`supervisor/string-to-mcf: `, err)
-	}
-	s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
-		PosTimeInf.UTC(), mcf)
 }
 
 func (s *supervisor) startupCredentials() {

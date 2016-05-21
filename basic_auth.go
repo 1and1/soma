@@ -72,6 +72,7 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 						Reply:  returnChannel,
 						Super: &msg.Supervisor{
 							RemoteAddr:     r.RemoteAddr,
+							Restricted:     false,
 							BasicAuthUser:  string(pair[0]),
 							BasicAuthToken: string(pair[1]),
 						},
