@@ -69,6 +69,9 @@ func (s *supervisor) run() {
 	s.credentials = s.newCredentialMap()
 	s.kex = s.newKexMap()
 
+	// load from datbase
+	s.startupLoad()
+
 	// prepare SQL statements
 	if s.stmt_FToken, err = s.conn.Prepare(stmt.SelectToken); err != nil {
 		log.Fatal("supervisor/fetch-token: ", err)
