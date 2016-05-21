@@ -51,6 +51,10 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 
 		// disable authentication much?
 		if SomaCfg.OpenInstance {
+			ps = append(ps, httprouter.Param{
+				Key:   `AuthenticatedUser`,
+				Value: `AnonymousCoward`,
+			})
 			h(w, r, ps)
 			return
 		}
