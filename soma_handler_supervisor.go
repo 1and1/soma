@@ -41,18 +41,20 @@ import (
 )
 
 type supervisor struct {
-	input       chan msg.Request
-	shutdown    chan bool
-	conn        *sql.DB
-	seed        []byte
-	key         []byte
-	readonly    bool
-	tokenExpiry uint64
-	kexExpiry   uint64
-	kex         svKexMap
-	tokens      svTokenMap
-	credentials svCredMap
-	stmt_FToken *sql.Stmt
+	input           chan msg.Request
+	shutdown        chan bool
+	conn            *sql.DB
+	seed            []byte
+	key             []byte
+	readonly        bool
+	tokenExpiry     uint64
+	kexExpiry       uint64
+	root_disabled   bool
+	root_restricted bool
+	kex             svKexMap
+	tokens          svTokenMap
+	credentials     svCredMap
+	stmt_FToken     *sql.Stmt
 }
 
 func (s *supervisor) run() {
