@@ -289,7 +289,7 @@ func cmdNodeMove(c *cli.Context) error {
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().Get(0))
 	server := c.Args().Get(2)
 	// try resolving server name to uuid as name validation
-	_ = utl.GetServerAssetIdByName(server)
+	_ = utl.GetServerAssetIdByName(Client, server)
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}

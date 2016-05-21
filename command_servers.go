@@ -209,7 +209,7 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 		if server == "" {
 			log.Fatal("Syntax error")
 		}
-		assetId = utl.GetServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(Client, server)
 	} else {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
 		if err != nil {
@@ -384,7 +384,7 @@ func cmdServerRename(c *cli.Context) error {
 		if server == "" || a.Get(2) != "to" || a.Get(3) == "" {
 			log.Fatal("Syntax error")
 		}
-		assetId = utl.GetServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(Client, server)
 		newName = a.Get(3)
 	} else {
 		assetId, err = strconv.ParseUint(a.First(), 10, 64)
@@ -429,7 +429,7 @@ func cmdServerOnline(c *cli.Context) error {
 		if server == "" {
 			log.Fatal("Syntax error")
 		}
-		assetId = utl.GetServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(Client, server)
 	} else {
 		idString := a.First()
 		if idString == "" {
@@ -477,7 +477,7 @@ func cmdServerOffline(c *cli.Context) error {
 		if server == "" {
 			log.Fatal("Syntax error")
 		}
-		assetId = utl.GetServerAssetIdByName(server)
+		assetId = utl.GetServerAssetIdByName(Client, server)
 	} else {
 		idString := a.First()
 		if idString == "" {
@@ -522,7 +522,7 @@ func cmdServerMove(c *cli.Context) error {
 		log.Fatal("Syntax error")
 	}
 	if a.First() == "by-name" {
-		assetId = utl.GetServerAssetIdByName(a.Get(1))
+		assetId = utl.GetServerAssetIdByName(Client, a.Get(1))
 		tail := a.Tail()
 		subTail := tail[1:]
 		args = append(args, subTail...)

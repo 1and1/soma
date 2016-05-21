@@ -63,11 +63,7 @@ func (u SomaUtil) GetServerIdByName(c *resty.Client, server string) string {
 	return (*serverResult.Servers)[0].Id
 }
 
-func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {
-	url := u.ApiUrl
-	url.Path = "/servers"
-
-	var err error
+func (u SomaUtil) GetServerAssetIdByName(c *resty.Client, serverName string) uint64 {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Server: &proto.ServerFilter{
@@ -77,23 +73,9 @@ func (u SomaUtil) GetServerAssetIdByName(serverName string) uint64 {
 		},
 	}
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Get(url.String())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, err.Error())
-		u.Log.Fatal(err)
-	}
-
-	u.CheckRestyResponse(resp)
+	resp := u.PostRequestWithBody(c, req, "/filter/servers/")
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
-	// XXX really needed?
-	if len(*serverResult.Servers) != 1 {
-		u.Log.Fatal("Unexpected result set length - expected one server result")
-	}
 	if serverName != (*serverResult.Servers)[0].Name {
 		u.Log.Fatal("Received result set for incorrect server")
 	}
