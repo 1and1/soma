@@ -16,9 +16,10 @@ SELECT aua.user_id,
        aua.valid_until,
 	   iu.user_uid,
 	   iu.user_is_active
-FROM   auth.user_authentication aua
-JOIN   inventory.users iu
-ON     aua.user_id = iu.user_id
-WHERE  iu.user_id != '00000000-0000-0000-0000-000000000000'::uuid;`
+FROM   inventory.users iu
+JOIN   auth.user_authentication aua
+ON     iu.user_id = aua.user_id
+WHERE  iu.user_id != '00000000-0000-0000-0000-000000000000'::uuid
+AND    NOW() < aua.valid_until;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
