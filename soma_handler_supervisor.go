@@ -218,6 +218,11 @@ func (s *supervisor) bootstrapRoot(q *msg.Request) {
 		result.Unauthorized(nil)
 		goto dispatch
 	}
+	if token.UserName == `root` && s.root_restricted && !q.Super.Restricted {
+		result.ServerError(
+			fmt.Errorf(`Root bootstrap requested on unrestricted endpoint`))
+		goto dispatch
+	}
 	// -> check token.Token is correct bearer token
 	if rootToken, err = s.fetchRootToken(); err != nil {
 		result.ServerError(err)
