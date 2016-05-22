@@ -203,7 +203,7 @@ type svKexMap struct {
 
 // the nonce information would normally mean returning
 // a copy is problematic, but since these keys are only
-// used for any client/server exchange, they are never
+// used for one client/server exchange, they are never
 // put back
 func (k *svKexMap) read(kexRequest string) *auth.Kex {
 	k.rlock()
