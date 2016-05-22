@@ -94,7 +94,7 @@ func (s *supervisor) activate_user(q *msg.Request) {
 	}
 
 	// check we have the user
-	if err = s.conn.QueryRow(stmt.FindUserID, token.UserName).Scan(&userId); err == sql.ErrNoRows {
+	if err = s.stmt_FindUser.QueryRow(token.UserName).Scan(&userId); err == sql.ErrNoRows {
 		result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))
 		goto dispatch
 	} else if err != nil {

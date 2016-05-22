@@ -53,6 +53,7 @@ type supervisor struct {
 	tokens          svTokenMap
 	credentials     svCredMap
 	stmt_FToken     *sql.Stmt
+	stmt_FindUser   *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -75,6 +76,11 @@ func (s *supervisor) run() {
 		log.Fatal("supervisor/fetch-token: ", err)
 	}
 	defer s.stmt_FToken.Close()
+
+	if s.stmt_FindUser, err = s.conn.Prepare(stmt.FindUserID); err != nil {
+		log.Fatal(`supervisor/find-userid: `, err)
+	}
+	defer s.stmt_FindUser.Close()
 
 runloop:
 	for {
