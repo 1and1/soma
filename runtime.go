@@ -50,8 +50,7 @@ func initCommon(c *cli.Context) {
 		SetTimeout(Cfg.Run.TimeoutResty).
 		SetDisableWarn(true).
 		SetHeader(`User-Agent`, `somaadm 0.4.8`).
-		SetHostURL(Cfg.Run.SomaAPI.String()).
-		SetContentLength(true)
+		SetHostURL(Cfg.Run.SomaAPI.String())
 
 	if Cfg.Run.SomaAPI.Scheme == `https` {
 		session = tls.NewLRUClientSessionCache(64)
