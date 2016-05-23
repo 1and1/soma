@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"os"
+	"strings"
 
 
 	"gopkg.in/resty.v0"
@@ -58,6 +59,7 @@ func initCommon(c *cli.Context) {
 		// SetTLSClientConfig replaces, SetRootCertificate updates the
 		// tls configuration - option ordering is important
 		Client = Client.SetTLSClientConfig(&tls.Config{
+			ServerName:         strings.SplitN(Cfg.Run.SomaAPI.Host, `:`, 2)[0],
 			ClientSessionCache: session,
 			MinVersion:         tls.VersionTLS12,
 			MaxVersion:         tls.VersionTLS12,
