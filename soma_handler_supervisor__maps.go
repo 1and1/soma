@@ -541,16 +541,39 @@ type svTeamMap struct {
 	mutex sync.RWMutex
 }
 
+func (t *svTeamMap) insert(team, uuid string) {
+	t.lock()
+	defer t.unlock()
+	t.TMap[team] = uuid
+}
+
+func (t *svTeamMap) remove(team string) {
+	t.lock()
+	defer t.unlock()
+	delete(t.TMap, team)
+}
+
+func (t *svTeamMap) get(team string) (string, bool) {
+	t.rlock()
+	defer t.runlock()
+	uuid, ok := t.TMap[team]
+	return uuid, ok
+}
+
 func (t *svTeamMap) lock() {
+	t.mutex.Lock()
 }
 
 func (t *svTeamMap) rlock() {
+	t.mutex.RLock()
 }
 
 func (t *svTeamMap) unlock() {
+	t.mutex.Unlock()
 }
 
 func (t *svTeamMap) runlock() {
+	t.mutex.RUnlock()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
