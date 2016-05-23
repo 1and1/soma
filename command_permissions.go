@@ -30,11 +30,13 @@ func registerPermissions(app cli.App) *cli.App {
 								Usage:  "Remove an existing permission type",
 								Action: runtime(cmdPermissionTypeDel),
 							},
-							{
-								Name:   "rename",
-								Usage:  "Rename an existing permission type",
-								Action: runtime(cmdPermissionTypeRename),
-							},
+							/*
+								{
+									Name:   "rename",
+									Usage:  "Rename an existing permission type",
+									Action: runtime(cmdPermissionTypeRename),
+								},
+							*/
 							{
 								Name:   "list",
 								Usage:  "List all permission types",
