@@ -453,16 +453,39 @@ type svPermMap struct {
 	mutex sync.RWMutex
 }
 
+func (p *svPermMap) insert(perm, uuid string) {
+	p.lock()
+	defer p.unlock()
+	p.PMap[perm] = uuid
+}
+
+func (p *svPermMap) remove(perm string) {
+	p.lock()
+	defer p.unlock()
+	delete(p.PMap, perm)
+}
+
+func (p *svPermMap) get(perm string) (string, bool) {
+	p.rlock()
+	defer p.runlock()
+	uuid, ok := p.PMap[perm]
+	return uuid, ok
+}
+
 func (p *svPermMap) lock() {
+	p.mutex.Lock()
 }
 
 func (p *svPermMap) rlock() {
+	p.mutex.RLock()
 }
 
 func (p *svPermMap) unlock() {
+	p.mutex.Unlock()
 }
 
 func (p *svPermMap) runlock() {
+	p.mutex.RUnlock()
 }
 
 //
