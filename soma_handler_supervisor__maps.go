@@ -446,134 +446,46 @@ func (l *svPermMapLimited) runlock() {
 
 //
 //
-// read/write locked permission id map
-type svPermMap struct {
-	// permission name -> permission uuid
-	PMap  map[string]string
-	mutex sync.RWMutex
-}
-
-func (p *svPermMap) insert(perm, uuid string) {
-	p.lock()
-	defer p.unlock()
-	p.PMap[perm] = uuid
-}
-
-func (p *svPermMap) remove(perm string) {
-	p.lock()
-	defer p.unlock()
-	delete(p.PMap, perm)
-}
-
-func (p *svPermMap) get(perm string) (string, bool) {
-	p.rlock()
-	defer p.runlock()
-	uuid, ok := p.PMap[perm]
-	return uuid, ok
-}
-
-func (p *svPermMap) lock() {
-	p.mutex.Lock()
-}
-
-func (p *svPermMap) rlock() {
-	p.mutex.RLock()
-}
-
-func (p *svPermMap) unlock() {
-	p.mutex.Unlock()
-}
-
-func (p *svPermMap) runlock() {
-	p.mutex.RUnlock()
-}
-
-//
-//
-// read/write locked user id map
-type svUserMap struct {
-	// user name -> user uuid
-	UMap  map[string]string
-	mutex sync.RWMutex
-}
-
-func (u *svUserMap) insert(name, uuid string) {
-	u.lock()
-	defer u.unlock()
-	u.UMap[name] = uuid
-}
-
-func (u *svUserMap) remove(name string) {
-	u.lock()
-	defer u.unlock()
-	delete(u.UMap, name)
-}
-
-func (u *svUserMap) get(name string) (string, bool) {
-	u.rlock()
-	defer u.runlock()
-	uuid, ok := u.UMap[name]
-	return uuid, ok
-}
-
-func (u *svUserMap) lock() {
-	u.mutex.Lock()
-}
-
-func (u *svUserMap) rlock() {
-	u.mutex.RLock()
-}
-
-func (u *svUserMap) unlock() {
-	u.mutex.Unlock()
-}
-
-func (u *svUserMap) runlock() {
-	u.mutex.RUnlock()
-}
-
-//
-//
-// read/write locked team map
-type svTeamMap struct {
+// read/write locked map[string]string
+type svLockMap struct {
 	// user uuid -> team uuid
-	TMap  map[string]string
-	mutex sync.RWMutex
+	LockMap map[string]string
+	mutex   sync.RWMutex
 }
 
-func (t *svTeamMap) insert(team, uuid string) {
-	t.lock()
-	defer t.unlock()
-	t.TMap[team] = uuid
+func (slm *svLockMap) insert(key, value string) {
+	slm.lock()
+	defer slm.unlock()
+	slm.LockMap[key] = value
 }
 
-func (t *svTeamMap) remove(team string) {
-	t.lock()
-	defer t.unlock()
-	delete(t.TMap, team)
+func (slm *svLockMap) remove(key string) {
+	slm.lock()
+	defer slm.unlock()
+	delete(slm.LockMap, key)
 }
 
-func (t *svTeamMap) get(team string) (string, bool) {
-	t.rlock()
-	defer t.runlock()
-	uuid, ok := t.TMap[team]
-	return uuid, ok
+func (slm *svLockMap) get(key string) (string, bool) {
+	slm.rlock()
+	defer slm.runlock()
+	value, ok := slm.LockMap[key]
+	return value, ok
 }
 
-func (t *svTeamMap) lock() {
-	t.mutex.Lock()
+func (slm *svLockMap) lock() {
+	slm.mutex.Lock()
 }
 
-func (t *svTeamMap) rlock() {
-	t.mutex.RLock()
+func (slm *svLockMap) rlock() {
+	slm.mutex.RLock()
 }
 
-func (t *svTeamMap) unlock() {
-	t.mutex.Unlock()
+func (slm *svLockMap) unlock() {
+	slm.mutex.Unlock()
 }
 
-func (t *svTeamMap) runlock() {
-	t.mutex.RUnlock()
+func (slm *svLockMap) runlock() {
+	slm.mutex.RUnlock()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

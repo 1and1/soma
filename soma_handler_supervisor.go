@@ -54,9 +54,10 @@ type supervisor struct {
 	credentials         svCredMap
 	global_permissions  svPermMapGlobal
 	limited_permissions svPermMapLimited
-	id_user             svUserMap
-	id_team             svTeamMap
-	id_permission       svPermMap
+	id_user             svLockMap
+	id_team             svLockMap
+	id_permission       svLockMap
+	id_userteam         svLockMap
 	stmt_FToken         *sql.Stmt
 	stmt_FindUser       *sql.Stmt
 }
@@ -69,9 +70,10 @@ func (s *supervisor) run() {
 	auth.KexExpirySeconds = s.kexExpiry
 
 	// initialize maps
-	s.id_user = s.newUserIdMap()
-	s.id_team = s.newTeamIdMap()
-	s.id_permission = s.newPermIdMap()
+	s.id_user = s.newLockMap()
+	s.id_team = s.newLockMap()
+	s.id_permission = s.newLockMap()
+	s.id_userteam = s.newLockMap()
 	s.tokens = s.newTokenMap()
 	s.credentials = s.newCredentialMap()
 	s.kex = s.newKexMap()
@@ -152,22 +154,10 @@ func (s *supervisor) newKexMap() svKexMap {
 	return m
 }
 
-func (s *supervisor) newUserIdMap() svUserMap {
-	u := svUserMap{}
-	u.UMap = make(map[string]string)
-	return u
-}
-
-func (s *supervisor) newTeamIdMap() svTeamMap {
-	t := svTeamMap{}
-	t.TMap = make(map[string]string)
-	return t
-}
-
-func (s *supervisor) newPermIdMap() svPermMap {
-	p := svPermMap{}
-	p.PMap = make(map[string]string)
-	return p
+func (s *supervisor) newLockMap() svLockMap {
+	l := svLockMap{}
+	l.LockMap = make(map[string]string)
+	return l
 }
 
 func (s *supervisor) newGlobalPermMap() svPermMapGlobal {
