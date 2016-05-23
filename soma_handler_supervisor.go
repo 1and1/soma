@@ -37,23 +37,28 @@ import (
 )
 
 type supervisor struct {
-	input           chan msg.Request
-	shutdown        chan bool
-	conn            *sql.DB
-	seed            []byte
-	key             []byte
-	readonly        bool
-	tokenExpiry     uint64
-	kexExpiry       uint64
-	credExpiry      uint64
-	activation      string
-	root_disabled   bool
-	root_restricted bool
-	kex             svKexMap
-	tokens          svTokenMap
-	credentials     svCredMap
-	stmt_FToken     *sql.Stmt
-	stmt_FindUser   *sql.Stmt
+	input               chan msg.Request
+	shutdown            chan bool
+	conn                *sql.DB
+	seed                []byte
+	key                 []byte
+	readonly            bool
+	tokenExpiry         uint64
+	kexExpiry           uint64
+	credExpiry          uint64
+	activation          string
+	root_disabled       bool
+	root_restricted     bool
+	kex                 svKexMap
+	tokens              svTokenMap
+	credentials         svCredMap
+	global_permissions  svPermMapGlobal
+	limited_permissions svPermMapLimited
+	id_user             svUserMap
+	id_team             svTeamMap
+	id_permission       svPermMap
+	stmt_FToken         *sql.Stmt
+	stmt_FindUser       *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -64,9 +69,14 @@ func (s *supervisor) run() {
 	auth.KexExpirySeconds = s.kexExpiry
 
 	// initialize maps
+	s.id_user = s.newUserIdMap()
+	s.id_team = s.newTeamIdMap()
+	s.id_permission = s.newPermIdMap()
 	s.tokens = s.newTokenMap()
 	s.credentials = s.newCredentialMap()
 	s.kex = s.newKexMap()
+	s.global_permissions = s.newGlobalPermMap()
+	s.limited_permissions = s.newLimitedPermMap()
 
 	// load from datbase
 	s.startupLoad()
@@ -138,6 +148,36 @@ func (s *supervisor) newKexMap() svKexMap {
 	m := svKexMap{}
 	m.KMap = make(map[string]auth.Kex)
 	return m
+}
+
+func (s *supervisor) newUserIdMap() svUserMap {
+	u := svUserMap{}
+	u.UMap = make(map[string]string)
+	return u
+}
+
+func (s *supervisor) newTeamIdMap() svTeamMap {
+	t := svTeamMap{}
+	t.TMap = make(map[string]string)
+	return t
+}
+
+func (s *supervisor) newPermIdMap() svPermMap {
+	p := svPermMap{}
+	p.PMap = make(map[string]string)
+	return p
+}
+
+func (s *supervisor) newGlobalPermMap() svPermMapGlobal {
+	g := svPermMapGlobal{}
+	g.GMap = make(map[string]map[string]bool)
+	return g
+}
+
+func (s *supervisor) newLimitedPermMap() svPermMapLimited {
+	l := svPermMapLimited{}
+	l.LMap = make(map[string]map[string][]string)
+	return l
 }
 
 func (s *supervisor) fetchTokenFromDB(token string) bool {
