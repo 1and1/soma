@@ -117,6 +117,8 @@ func (s *supervisor) process(q *msg.Request) {
 		s.issue_token(q)
 	case `activate_user`:
 		s.activate_user(q)
+	case `authorize`:
+		s.authorize(q)
 	}
 }
 

@@ -10,14 +10,20 @@ package msg
 
 
 type Supervisor struct {
-	Verdict        uint16
-	RemoteAddr     string
-	KexId          string
-	Data           []byte
-	Kex            auth.Kex
+	Verdict    uint16
+	RemoteAddr string
+	// Fields for encrypted requests
+	KexId string
+	Data  []byte
+	Kex   auth.Kex
+	// Fields for basic authentication requests
 	BasicAuthUser  string
 	BasicAuthToken string
 	Restricted     bool
+	// Fields for permission authorization requests
+	PermAction     string
+	PermUser       string
+	PermRepository string
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
