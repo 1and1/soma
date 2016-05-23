@@ -472,6 +472,12 @@ func (slm *svLockMap) get(key string) (string, bool) {
 	return value, ok
 }
 
+// load is an unlocked insert for bulk loading at startup. The
+// bulk loading mechanism must handle the locking itself
+func (slm *svLockMap) load(key, value string) {
+	slm.LockMap[key] = value
+}
+
 func (slm *svLockMap) lock() {
 	slm.mutex.Lock()
 }

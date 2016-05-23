@@ -9,9 +9,12 @@
 package stmt
 
 const LoadUserTeamMapping = `
-SELECT user_id,
-       user_uid,
-       organizational_team_id
-FROM   inventory.users;`
+SELECT iu.user_id,
+       iu.user_uid,
+       iu.organizational_team_id,
+       iot.organizational_team_name
+FROM   inventory.users iu
+JOIN   inventory.organizational_teams iot
+ON     iu.organizational_team_id = iot.organizational_team_id;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

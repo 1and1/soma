@@ -39,6 +39,9 @@ func (s *supervisor) startupLoad() {
 
 	s.startupRoot()
 
+	s.startupUsersAndTeams()
+	s.startupPermissions()
+
 	if !s.readonly {
 		s.startupCredentials()
 	}
@@ -176,6 +179,78 @@ func (s *supervisor) startupTokens() {
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(`supervisor/load-tokens,next: `, err)
+	}
+}
+
+func (s *supervisor) startupUsersAndTeams() {
+	var (
+		err                                    error
+		userUUID, userName, teamUUID, teamName string
+		rows                                   *sql.Rows
+	)
+
+	rows, err = s.conn.Query(stmt.LoadUserTeamMapping)
+	if err != nil {
+		log.Fatal(`supervisor/load-user-team-mapping,query: `, err)
+	}
+	defer rows.Close()
+
+	// reduce lock overhead by locking here once and then using the
+	// unlocked bulk interface
+	s.id_user.lock()
+	defer s.id_user.unlock()
+	s.id_team.lock()
+	defer s.id_team.unlock()
+	s.id_userteam.lock()
+	defer s.id_userteam.unlock()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&userUUID,
+			&userName,
+			&teamUUID,
+			&teamName,
+		); err != nil {
+			log.Fatal(`supervisor/load-user-team-mapping,scan: `, err)
+		}
+		s.id_user.load(userName, userUUID)
+		s.id_team.load(teamName, teamUUID)
+		s.id_userteam.load(userUUID, teamUUID)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(`supervisor/load-user-team-mapping,next: `, err)
+	}
+}
+
+func (s *supervisor) startupPermissions() {
+	var (
+		err                error
+		permUUID, permName string
+		rows               *sql.Rows
+	)
+
+	rows, err = s.conn.Query(stmt.LoadUserTeamMapping)
+	if err != nil {
+		log.Fatal(`supervisor/load-permissions,query: `, err)
+	}
+	defer rows.Close()
+
+	// reduce lock overhead by locking here once and then using the
+	// unlocked bulk interface
+	s.id_permission.lock()
+	defer s.id_permission.unlock()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&permUUID,
+			&permName,
+		); err != nil {
+			log.Fatal(`supervisor/load-permissions,scan: `, err)
+		}
+		s.id_permission.load(permName, permUUID)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(`supervisor/load-permissions,next: `, err)
 	}
 }
 
