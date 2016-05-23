@@ -113,6 +113,12 @@ func (s *supervisor) activate_user(q *msg.Request) {
 				result.Unauthorized(nil)
 				goto dispatch
 			}
+			// fail activation if local password is the same as the
+			// upstream password
+			if token.Token == token.Password {
+				result.Unauthorized(fmt.Errorf("User %s denied: matching local/upstream passwords", token.UserName))
+				goto dispatch
+			}
 		case `token`: // TODO
 			result.ServerError(fmt.Errorf(`Not implemented`))
 			goto dispatch
