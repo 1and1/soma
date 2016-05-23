@@ -37,6 +37,12 @@ func validateLdapCredentials(user, password string) (bool, error) {
 		conf := &tls.Config{
 			InsecureSkipVerify: SomaCfg.Ldap.SkipVerify,
 			ServerName:         SomaCfg.Ldap.Address,
+			MinVersion:         tls.VersionTLS12,
+			MaxVersion:         tls.VersionTLS12,
+			CipherSuites: []uint16{
+				// TODO this should probably be configurable
+				tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+			},
 		}
 		if SomaCfg.Ldap.Cert != "" {
 			if pem, err = ioutil.ReadFile(SomaCfg.Ldap.Cert); err != nil {
