@@ -34,7 +34,10 @@ func validateLdapCredentials(user, password string) (bool, error) {
 	)
 
 	if SomaCfg.Ldap.Tls {
-		conf := &tls.Config{InsecureSkipVerify: SomaCfg.Ldap.SkipVerify}
+		conf := &tls.Config{
+			InsecureSkipVerify: SomaCfg.Ldap.SkipVerify,
+			ServerName:         SomaCfg.Ldap.Address,
+		}
 		if SomaCfg.Ldap.Cert != "" {
 			if pem, err = ioutil.ReadFile(SomaCfg.Ldap.Cert); err != nil {
 				return false, err
