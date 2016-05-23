@@ -36,6 +36,8 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+//
+//
 // supervisor internal storage format for tokens
 type svToken struct {
 	validFrom    time.Time
@@ -121,6 +123,8 @@ func (t *svTokenMap) runlock() {
 	t.mutex.RUnlock()
 }
 
+//
+//
 // supervisor internal storage format for credentials
 type svCredential struct {
 	id          uuid.UUID
@@ -246,6 +250,111 @@ func (k *svKexMap) unlock() {
 // release readlock
 func (k *svKexMap) runlock() {
 	k.mutex.RUnlock()
+}
+
+//
+//
+// read/write locked map of global permissions
+type svPermMapGlobal struct {
+	// user(uuid.string) -> permission(uuid.string) -> true
+	GMap  map[string]map[string]bool
+	mutex sync.RWMutex
+}
+
+func (g *svPermMapGlobal) lock() {
+}
+
+func (g *svPermMapGlobal) rlock() {
+}
+
+func (g *svPermMapGlobal) unlock() {
+}
+
+func (g *svPermMapGlobal) runlock() {
+}
+
+//
+//
+// read/write locked map of limited permissions
+type svPermMapLimited struct {
+	// user(uuid.string) -> permission(uuid.string) -> repository(uuid.string)
+	LMap  map[string]map[string][]string
+	mutex sync.RWMutex
+}
+
+func (l *svPermMapLimited) lock() {
+}
+
+func (l *svPermMapLimited) rlock() {
+}
+
+func (l *svPermMapLimited) unlock() {
+}
+
+func (l *svPermMapLimited) runlock() {
+}
+
+//
+//
+// read/write locked permission id map
+type svPermMap struct {
+	// permission name -> permission uuid
+	PMap  map[string]string
+	mutex sync.RWMutex
+}
+
+func (p *svPermMap) lock() {
+}
+
+func (p *svPermMap) rlock() {
+}
+
+func (p *svPermMap) unlock() {
+}
+
+func (p *svPermMap) runlock() {
+}
+
+//
+//
+// read/write locked user id map
+type svUserMap struct {
+	// user name -> user uuid
+	UMap  map[string]string
+	mutex sync.RWMutex
+}
+
+func (u *svUserMap) lock() {
+}
+
+func (u *svUserMap) rlock() {
+}
+
+func (u *svUserMap) unlock() {
+}
+
+func (u *svUserMap) runlock() {
+}
+
+//
+//
+// read/write locked team map
+type svTeamMap struct {
+	// user uuid -> team uuid
+	TMap  map[string]string
+	mutex sync.RWMutex
+}
+
+func (t *svTeamMap) lock() {
+}
+
+func (t *svTeamMap) rlock() {
+}
+
+func (t *svTeamMap) unlock() {
+}
+
+func (t *svTeamMap) runlock() {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
