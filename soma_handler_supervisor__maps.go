@@ -497,16 +497,39 @@ type svUserMap struct {
 	mutex sync.RWMutex
 }
 
+func (u *svUserMap) insert(name, uuid string) {
+	u.lock()
+	defer u.unlock()
+	u.UMap[name] = uuid
+}
+
+func (u *svUserMap) remove(name string) {
+	u.lock()
+	defer u.unlock()
+	delete(u.UMap, name)
+}
+
+func (u *svUserMap) get(name string) (string, bool) {
+	u.rlock()
+	defer u.runlock()
+	uuid, ok := u.UMap[name]
+	return uuid, ok
+}
+
 func (u *svUserMap) lock() {
+	u.mutex.Lock()
 }
 
 func (u *svUserMap) rlock() {
+	u.mutex.RLock()
 }
 
 func (u *svUserMap) unlock() {
+	u.mutex.Unlock()
 }
 
 func (u *svUserMap) runlock() {
+	u.mutex.RUnlock()
 }
 
 //
