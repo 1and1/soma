@@ -24,6 +24,9 @@ type Supervisor struct {
 	PermAction     string
 	PermUser       string
 	PermRepository string
+	// Fields for map update notifications
+	Action string
+	Object string
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

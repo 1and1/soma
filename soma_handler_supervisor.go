@@ -121,6 +121,8 @@ func (s *supervisor) process(q *msg.Request) {
 		s.activate_user(q)
 	case `authorize`:
 		s.authorize(q)
+	case `update_map`:
+		s.update_map(q)
 	}
 }
 

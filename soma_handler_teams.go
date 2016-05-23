@@ -194,10 +194,14 @@ runloop:
 
 func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 	var (
-		res sql.Result
-		err error
+		res    sql.Result
+		err    error
+		super  supervisor
+		notify msg.Request
 	)
 	result := somaResult{}
+	super = handlerMap[`supervisor`].(supervisor)
+	notify = msg.Request{Type: `supervisor`, Action: `update_map`, Super: &msg.Supervisor{Object: `team`}}
 
 	switch q.action {
 	case "add":
@@ -210,11 +214,13 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 			q.Team.IsSystem,
 		)
 		q.Team.Id = id.String()
+		notify.Super.Action = `add`
 	case "delete":
 		log.Printf("R: team/del for %s", q.Team.Id)
 		res, err = w.del_stmt.Exec(
 			q.Team.Id,
 		)
+		notify.Super.Action = `delete`
 	default:
 		log.Printf("R: unimplemented team/%s", q.action)
 		result.SetNotImplemented()
@@ -237,6 +243,8 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 		result.Append(nil, &somaTeamResult{
 			Team: q.Team,
 		})
+		// send update to supervisor
+		super.input <- notify
 	}
 	q.reply <- result
 }
