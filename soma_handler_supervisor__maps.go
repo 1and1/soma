@@ -341,16 +341,107 @@ type svPermMapLimited struct {
 	mutex sync.RWMutex
 }
 
+func (l *svPermMapLimited) grant(user, permission, repository string) {
+	l.lock()
+	defer l.unlock()
+
+	// zero value for maps is nil
+	if m, ok := l.LMap[user]; !ok {
+		l.LMap[user] = make(map[string][]string)
+	} else if m == nil {
+		l.LMap[user] = make(map[string][]string)
+	}
+
+	// zero value for slices is nil
+	s := l.LMap[user][permission]
+	if s == nil {
+		l.LMap[user][permission] = []string{repository}
+	} else {
+		s = append(s, repository)
+		l.LMap[user][permission] = s
+	}
+}
+
+func (l *svPermMapLimited) revoke(user, permission, repository string) {
+	l.lock()
+	defer l.unlock()
+
+	// initialize to remove a future nilptr-dereference hazard, but
+	// return early since the user did not have the permission in the
+	// first place
+	if m, ok := l.LMap[user]; !ok {
+		l.LMap[user] = make(map[string][]string)
+		return
+	} else if m == nil {
+		l.LMap[user] = make(map[string][]string)
+		return
+	}
+
+	// resolve this nilptr-deref hazard as well before returning
+	s := l.LMap[user][permission]
+	if s == nil {
+		l.LMap[user][permission] = []string{}
+		return
+	}
+
+repoloop:
+	for i, _ := range s {
+		if s[i] == repository {
+			s = append(s[:i], s[i+1:]...)
+			break repoloop
+		}
+	}
+	l.LMap[user][permission] = s
+}
+
+// ATTENTION: named return parameter
+func (l *svPermMapLimited) assess(user, permission, repository string) (verdict bool) {
+	l.rlock()
+	defer l.runlock()
+	defer func() {
+		if r := recover(); r != nil {
+			verdict = false
+		}
+	}()
+	verdict = false
+
+	if m, ok := l.LMap[user]; !ok {
+		l.LMap[user] = make(map[string][]string)
+		return
+	} else if m == nil {
+		l.LMap[user] = make(map[string][]string)
+		return
+	}
+
+	s := l.LMap[user][permission]
+	if s == nil {
+		l.LMap[user][permission] = []string{}
+		return
+	}
+
+	for _, p := range s {
+		if p == repository {
+			verdict = true
+			return
+		}
+	}
+	return
+}
+
 func (l *svPermMapLimited) lock() {
+	l.mutex.Lock()
 }
 
 func (l *svPermMapLimited) rlock() {
+	l.mutex.RLock()
 }
 
 func (l *svPermMapLimited) unlock() {
+	l.mutex.Unlock()
 }
 
 func (l *svPermMapLimited) runlock() {
+	l.mutex.RUnlock()
 }
 
 //
