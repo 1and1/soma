@@ -261,16 +261,75 @@ type svPermMapGlobal struct {
 	mutex sync.RWMutex
 }
 
+func (g *svPermMapGlobal) grant(user, permission string) {
+	g.lock()
+	defer g.unlock()
+
+	// zero value for maps is nil
+	if m, ok := g.GMap[user]; !ok {
+		g.GMap[user] = make(map[string]bool)
+	} else if m == nil {
+		g.GMap[user] = make(map[string]bool)
+	}
+
+	// grant permission
+	g.GMap[user][permission] = true
+}
+
+func (g *svPermMapGlobal) revoke(user, permission string) {
+	g.lock()
+	defer g.unlock()
+
+	// user has no permissions
+	if m, ok := g.GMap[user]; !ok {
+		return
+	} else if m == nil {
+		return
+	}
+
+	// revoke permission
+	delete(g.GMap[user], permission)
+}
+
+// ATTENTION: named return parameter
+func (g *svPermMapGlobal) assess(user, permission string) (verdict bool) {
+	g.rlock()
+	defer g.runlock()
+	// map[]map[] is volatile
+	defer func() {
+		if r := recover(); r != nil {
+			verdict = false
+		}
+	}()
+	verdict = false
+
+	if m, ok := g.GMap[user]; !ok {
+		g.GMap[user] = make(map[string]bool)
+		return
+	} else if m == nil {
+		g.GMap[user] = make(map[string]bool)
+		return
+	}
+
+	// let zero value `false` work for us
+	verdict = g.GMap[user][permission]
+	return
+}
+
 func (g *svPermMapGlobal) lock() {
+	g.mutex.Lock()
 }
 
 func (g *svPermMapGlobal) rlock() {
+	g.mutex.RLock()
 }
 
 func (g *svPermMapGlobal) unlock() {
+	g.mutex.Unlock()
 }
 
 func (g *svPermMapGlobal) runlock() {
+	g.mutex.RUnlock()
 }
 
 //
