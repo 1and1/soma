@@ -1,6 +1,7 @@
 package proto
 
 type Permission struct {
+	Id       string             `json:"id,omitempty"`
 	Name     string             `json:"name,omitempty"`
 	Category string             `json:"category,omitempty"`
 	Grants   string             `json:"grants,omitempty"`
