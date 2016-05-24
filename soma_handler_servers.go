@@ -13,6 +13,7 @@ import (
 type somaServerRequest struct {
 	action string
 	Server proto.Server
+	Filter proto.Filter
 	reply  chan somaResult
 }
 
@@ -39,12 +40,13 @@ type somaServerReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	snam_stmt *sql.Stmt
+	sass_stmt *sql.Stmt
 }
 
 func (r *somaServerReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: server/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT server_id,
        server_name,
@@ -58,7 +60,34 @@ AND    NOT server_id = '00000000-0000-0000-0000-000000000000';`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: server/show")
+	// server_name + server_online => unique
+	if r.snam_stmt, err = r.conn.Prepare(`
+SELECT server_id,
+       server_name,
+       server_asset_id
+FROM   inventory.servers
+WHERE  server_online
+AND    NOT server_deleted
+AND    NOT server_id = '00000000-0000-0000-0000-000000000000'
+AND    server_name = $1::varchar;`); err != nil {
+		log.Fatal("server/search-name: ", err)
+	}
+	defer r.snam_stmt.Close()
+
+	// server_asset_id => unique
+	if r.sass_stmt, err = r.conn.Prepare(`
+SELECT server_id,
+       server_name,
+       server_asset_id
+FROM   inventory.servers
+WHERE  server_online
+AND    NOT server_deleted
+AND    NOT server_id = '00000000-0000-0000-0000-000000000000'
+AND    server_asset_id = $1::numeric;`); err != nil {
+		log.Fatal("server/search-asset: ", err)
+	}
+	defer r.sass_stmt.Close()
+
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT server_id,
        server_asset_id,
@@ -110,6 +139,44 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 		for rows.Next() {
 			err := rows.Scan(&serverId, &serverName, &serverAsset)
 			result.Append(err, &somaServerResult{
+				Server: proto.Server{
+					Id:      serverId,
+					Name:    serverName,
+					AssetId: uint64(serverAsset),
+				},
+			})
+		}
+	case `search/name`:
+		log.Printf("R: server/search-name for %s", q.Filter.Server.Name)
+		if err = r.snam_stmt.QueryRow(q.Filter.Server.Name).Scan(
+			&serverId,
+			&serverName,
+			&serverAsset,
+		); err == sql.ErrNoRows {
+			result.SetNotFound()
+		} else if err != nil {
+			_ = result.SetRequestError(err)
+		} else {
+			result.Append(nil, &somaServerResult{
+				Server: proto.Server{
+					Id:      serverId,
+					Name:    serverName,
+					AssetId: uint64(serverAsset),
+				},
+			})
+		}
+	case `search/asset`:
+		log.Printf("R: server/search-asset for %d", q.Filter.Server.AssetId)
+		if err = r.sass_stmt.QueryRow(q.Filter.Server.AssetId).Scan(
+			&serverId,
+			&serverName,
+			&serverAsset,
+		); err == sql.ErrNoRows {
+			result.SetNotFound()
+		} else if err != nil {
+			_ = result.SetRequestError(err)
+		} else {
+			result.Append(nil, &somaServerResult{
 				Server: proto.Server{
 					Id:      serverId,
 					Name:    serverName,
