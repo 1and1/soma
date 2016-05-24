@@ -48,7 +48,7 @@ func (d *DB) EnsureBuckets() error {
 		return fmt.Errorf("DB is not open")
 	}
 
-	for _, buck := range []string{"jobs", "tokens"} {
+	for _, buck := range []string{"jobs", "tokens", "idcache"} {
 		err := d.db.Update(func(tx *bolt.Tx) error {
 			if _, err := tx.CreateBucketIfNotExists([]byte(buck)); err != nil {
 				return fmt.Errorf("Failed to create DB bucket: %s", err)
@@ -63,6 +63,17 @@ func (d *DB) EnsureBuckets() error {
 					return fmt.Errorf("Failed to create DB bucket: %s", err)
 				}
 				if _, err := b.CreateBucketIfNotExists([]byte(`data`)); err != nil {
+					return fmt.Errorf("Failed to create DB bucket: %s", err)
+				}
+			case `idcache`:
+				b := tx.Bucket([]byte(buck))
+				if _, err := b.CreateBucketIfNotExists([]byte(`team`)); err != nil {
+					return fmt.Errorf("Failed to create DB bucket: %s", err)
+				}
+				if _, err := b.CreateBucketIfNotExists([]byte(`servername`)); err != nil {
+					return fmt.Errorf("Failed to create DB bucket: %s", err)
+				}
+				if _, err := b.CreateBucketIfNotExists([]byte(`serverasset`)); err != nil {
 					return fmt.Errorf("Failed to create DB bucket: %s", err)
 				}
 			}
