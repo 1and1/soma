@@ -155,6 +155,12 @@ func (s *supervisor) process(q *msg.Request) {
 		} else {
 			go func() { s.permission_category(q) }()
 		}
+	case `permission`:
+		if q.Super.Action == `add` || q.Super.Action == `delete` {
+			s.permission(q)
+		} else {
+			go func() { s.permission(q) }()
+		}
 	}
 }
 

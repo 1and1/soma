@@ -16,8 +16,9 @@ type Result struct {
 	Error  error
 	JobId  string
 
-	Super    *Supervisor
-	Category []proto.Category
+	Super      *Supervisor
+	Category   []proto.Category
+	Permission []proto.Permission
 }
 
 func (r *Result) SetError(err error) {

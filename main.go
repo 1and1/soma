@@ -194,6 +194,8 @@ func main() {
 
 	router.GET(`/category/`, BasicAuth(ListCategory))
 	router.GET(`/category/:category`, BasicAuth(ShowCategory))
+	router.GET(`/permission/`, BasicAuth(ListPermission))
+	router.GET(`/permission/:permission`, BasicAuth(ShowPermission))
 
 	router.GET("/validity/", BasicAuth(ListValidity))
 	router.GET("/validity/:property", BasicAuth(ShowValidity))
@@ -310,6 +312,8 @@ func main() {
 
 		router.POST(`/category/`, BasicAuth(AddCategory))
 		router.DELETE(`/category/:category`, BasicAuth(DeleteCategory))
+		router.POST(`/permission/`, BasicAuth(AddPermission))
+		router.DELETE(`/permission/:permission`, BasicAuth(DeletePermission))
 
 		router.POST("/validity/", BasicAuth(AddValidity))
 		router.DELETE("/validity/:property", BasicAuth(DeleteValidity))
