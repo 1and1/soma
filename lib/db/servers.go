@@ -15,7 +15,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-func (d *DB) CacheServer(name, id, assetid string) error {
+func (d *DB) Server(name, id, assetid string) error {
 	return d.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(`idcache`))
 		n, err := b.CreateBucketIfNotExists([]byte(`servername`))
