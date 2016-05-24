@@ -472,6 +472,17 @@ func (slm *svLockMap) get(key string) (string, bool) {
 	return value, ok
 }
 
+func (slm *svLockMap) scan(value string) (string, bool) {
+	slm.rlock()
+	defer slm.runlock()
+	for key, _ := range slm.LockMap {
+		if slm.LockMap[key] == value {
+			return key, true
+		}
+	}
+	return "", false
+}
+
 // load is an unlocked insert for bulk loading at startup. The
 // bulk loading mechanism must handle the locking itself
 func (slm *svLockMap) load(key, value string) {
