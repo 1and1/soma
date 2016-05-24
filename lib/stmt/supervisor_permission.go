@@ -34,7 +34,7 @@ FROM   soma.permission_types spt:`
 const ShowPermissionCategory = `
 SELECT spt.permission_type,
        iu.user_uid,
-       spt.created_by
+       spt.created_at
 FROM   soma.permission_types spt
 JOIN   inventory.users iu
 ON     spt.created_by = iu.user_id
