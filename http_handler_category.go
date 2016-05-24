@@ -43,7 +43,7 @@ func ShowCategory(w http.ResponseWriter, r *http.Request,
 		Super: &msg.Supervisor{
 			Action: `show`,
 		},
-		Category: &proto.Category{
+		Category: proto.Category{
 			Name: params.ByName(`category`),
 		},
 	}
@@ -76,7 +76,7 @@ func AddCategory(w http.ResponseWriter, r *http.Request,
 		Super: &msg.Supervisor{
 			Action: `add`,
 		},
-		Category: &proto.Category{
+		Category: proto.Category{
 			Name: cReq.Category.Name,
 		},
 	}
@@ -99,7 +99,7 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request,
 		Super: &msg.Supervisor{
 			Action: `delete`,
 		},
-		Category: &proto.Category{
+		Category: proto.Category{
 			Name: params.ByName(`category`),
 		},
 	}

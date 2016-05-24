@@ -125,7 +125,7 @@ func (s *supervisor) permission_category_write(q *msg.Request) {
 		result.Category = []proto.Category{}
 	case rowCnt == 1:
 		result.OK()
-		result.Category = []proto.Category{*q.Category}
+		result.Category = []proto.Category{q.Category}
 	default:
 		result.ServerError(fmt.Errorf("Too many rows affected: %d", rowCnt))
 		result.Category = []proto.Category{}
