@@ -20,6 +20,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 	"soma": map[int]func(int, string, bool) int{
 		201605060001: upgrade_soma_to_201605210001,
 		201605210001: upgrade_soma_to_201605240001,
+		201605240001: upgrade_soma_to_201605240002,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -148,7 +149,7 @@ func upgrade_soma_to_201605240001(curr int, tool string, printOnly bool) int {
 	}
 	stmts := []string{
 		`ALTER TABLE soma.permission_types ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
-		`ALTER TABLE soma.permission_types ADD COLUMN created_at varchar(256) NOT NULL;`,
+		`ALTER TABLE soma.permission_types ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
 	}
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605240001, 'Upgrade - somadbctl %s');", tool),
@@ -157,6 +158,23 @@ func upgrade_soma_to_201605240001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201605240001
+}
+
+func upgrade_soma_to_201605240002(curr int, tool string, printOnly bool) int {
+	if curr != 201605240001 {
+		return 0
+	}
+	stmts := []string{
+		`ALTER TABLE soma.permissions ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.permissions ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605240002, 'Upgrade - somadbctl %s');", tool),
+	)
+
+	executeUpgrades(stmts, printOnly)
+
+	return 201605240002
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {

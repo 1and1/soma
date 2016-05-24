@@ -28,6 +28,8 @@ create table if not exists soma.permissions (
     permission_id               uuid            PRIMARY KEY,
     permission_name             varchar(128)    NOT NULL,
     permission_type             varchar(32)     NOT NULL REFERENCES soma.permission_types ( permission_type ) DEFERRABLE,
+    created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
     UNIQUE ( permission_name ),
     UNIQUE ( permission_id, permission_type ),
     -- only omnipotence is type omnipotence
