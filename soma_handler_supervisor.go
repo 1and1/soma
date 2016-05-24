@@ -55,6 +55,7 @@ type supervisor struct {
 	global_permissions  svPermMapGlobal
 	limited_permissions svPermMapLimited
 	id_user             svLockMap
+	id_user_rev         svLockMap
 	id_team             svLockMap
 	id_permission       svLockMap
 	id_userteam         svLockMap
@@ -71,6 +72,7 @@ func (s *supervisor) run() {
 
 	// initialize maps
 	s.id_user = s.newLockMap()
+	s.id_user_rev = s.newLockMap()
 	s.id_team = s.newLockMap()
 	s.id_permission = s.newLockMap()
 	s.id_userteam = s.newLockMap()

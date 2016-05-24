@@ -199,6 +199,8 @@ func (s *supervisor) startupUsersAndTeams() {
 	// unlocked bulk interface
 	s.id_user.lock()
 	defer s.id_user.unlock()
+	s.id_user_rev.lock()
+	defer s.id_user_rev.unlock()
 	s.id_team.lock()
 	defer s.id_team.unlock()
 	s.id_userteam.lock()
@@ -214,6 +216,7 @@ func (s *supervisor) startupUsersAndTeams() {
 			log.Fatal(`supervisor/load-user-team-mapping,scan: `, err)
 		}
 		s.id_user.load(userUUID, userName)
+		s.id_user_rev.load(userName, userUUID)
 		s.id_team.load(teamUUID, teamName)
 		s.id_userteam.load(userUUID, teamUUID)
 	}
