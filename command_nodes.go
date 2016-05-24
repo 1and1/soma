@@ -179,7 +179,7 @@ func cmdNodeAdd(c *cli.Context) error {
 		req.Node.IsOnline = true
 	}
 	if utl.SliceContainsString("server", optional) {
-		req.Node.ServerId = utl.TryGetServerByUUIDOrName(Client, options["server"])
+		req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, options["server"])
 	}
 	req.Node.AssetId, _ = strconv.ParseUint(options["assetid"], 10, 64)
 	req.Node.Name = options["name"]
