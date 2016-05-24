@@ -8,6 +8,7 @@ const (
 	StatusUnauthorized   = 401
 	StatusForbidden      = 403
 	StatusNotFound       = 404
+	StatusConflict       = 406
 	StatusError          = 500
 	StatusNotImplemented = 501
 	StatusGatewayTimeout = 504
@@ -22,6 +23,7 @@ var DisplayStatus = map[int]string{
 	401: "Unauthorized",
 	403: "Forbidden",
 	404: "Not found",
+	406: "Readonly instance",
 	500: "Server error",
 	501: "Not implemented",
 	504: "Gateway timeout",
@@ -82,6 +84,11 @@ func (r *Result) Error(err error) bool {
 		return true
 	}
 	return false
+}
+
+func (r *Result) Conflict() {
+	r.StatusCode = StatusConflict
+	r.StatusText = DisplayStatus[StatusConflict]
 }
 
 func (r *Result) NotImplemented() {
