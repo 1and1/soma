@@ -9,7 +9,8 @@ type Permission struct {
 }
 
 type PermissionDetails struct {
-	DetailsCreation
+	CreatedAt string `json:"createdAt,omitempty"`
+	CreatedBy string `json:"createdBy,omitempty"`
 }
 
 func NewPermissionRequest() Request {

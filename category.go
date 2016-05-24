@@ -6,7 +6,8 @@ type Category struct {
 }
 
 type CategoryDetails struct {
-	DetailsCreation
+	CreatedAt string `json:"createdAt,omitempty"`
+	CreatedBy string `json:"createdBy,omitempty"`
 }
 
 func NewCategoryRequest() Request {
