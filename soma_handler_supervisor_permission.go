@@ -110,6 +110,7 @@ func (s *supervisor) permission_write(q *msg.Request) {
 	var (
 		res sql.Result
 		err error
+		id  string
 	)
 
 	switch q.Super.Action {
@@ -122,8 +123,12 @@ func (s *supervisor) permission_write(q *msg.Request) {
 			userUUID,
 		)
 	case `delete`:
+		if id, ok = s.id_permission.scan(q.Permission.Name); !ok {
+			result.NotFound(fmt.Errorf(`Supervisor: unknown`))
+			goto dispatch
+		}
 		res, err = s.stmt_DelPermission.Exec(
-			q.Permission.Id,
+			id,
 		)
 	}
 	if err != nil {
@@ -138,7 +143,7 @@ func (s *supervisor) permission_write(q *msg.Request) {
 		case `add`:
 			s.id_permission.insert(q.Permission.Id, q.Permission.Name)
 		case `delete`:
-			s.id_permission.remove(q.Permission.Id)
+			s.id_permission.remove(id)
 		}
 	}
 
