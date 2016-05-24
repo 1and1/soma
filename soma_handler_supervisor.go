@@ -61,6 +61,10 @@ type supervisor struct {
 	id_userteam         svLockMap
 	stmt_FToken         *sql.Stmt
 	stmt_FindUser       *sql.Stmt
+	stmt_AddCategory    *sql.Stmt
+	stmt_DelCategory    *sql.Stmt
+	stmt_ListCategory   *sql.Stmt
+	stmt_ShowCategory   *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -96,15 +100,35 @@ func (s *supervisor) run() {
 	}
 	defer s.stmt_FindUser.Close()
 
+	if s.stmt_ListCategory, err = s.conn.Prepare(stmt.ListPermissionCategory); err != nil {
+		log.Fatal(`supervisor/list-category: `, err)
+	}
+	defer s.stmt_ListCategory.Close()
+
+	if s.stmt_ShowCategory, err = s.conn.Prepare(stmt.ShowPermissionCategory); err != nil {
+		log.Fatal(`supervisor/show-category: `, err)
+	}
+	defer s.stmt_ShowCategory.Close()
+
+	if !s.readonly {
+		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {
+			log.Fatal(`supervisor/list-category: `, err)
+		}
+		defer s.stmt_AddCategory.Close()
+
+		if s.stmt_DelCategory, err = s.conn.Prepare(stmt.DeletePermissionCategory); err != nil {
+			log.Fatal(`supervisor/delete-category: `, err)
+		}
+		defer s.stmt_DelCategory.Close()
+	}
+
 runloop:
 	for {
 		select {
 		case <-s.shutdown:
 			break runloop
 		case req := <-s.input:
-			go func() {
-				s.process(&req)
-			}()
+			s.process(&req)
 		}
 	}
 }
@@ -112,19 +136,25 @@ runloop:
 func (s *supervisor) process(q *msg.Request) {
 	switch q.Action {
 	case `kex_init`:
-		s.kexInit(q)
+		go func() { s.kexInit(q) }()
 	case `bootstrap_root`:
 		s.bootstrapRoot(q)
 	case `basic_auth`:
-		s.validate_basic_auth(q)
+		go func() { s.validate_basic_auth(q) }()
 	case `request_token`:
-		s.issue_token(q)
+		go func() { s.issue_token(q) }()
 	case `activate_user`:
-		s.activate_user(q)
+		go func() { s.activate_user(q) }()
 	case `authorize`:
-		s.authorize(q)
+		go func() { s.authorize(q) }()
 	case `update_map`:
-		s.update_map(q)
+		go func() { s.update_map(q) }()
+	case `category`:
+		if q.Super.Action == `add` || q.Super.Action == `delete` {
+			s.permission_category(q)
+		} else {
+			go func() { s.permission_category(q) }()
+		}
 	}
 }
 

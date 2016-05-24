@@ -40,7 +40,7 @@ const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// SOMA version
-	SomaVersion string = `0.7.21`
+	SomaVersion string = `0.7.22`
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
@@ -192,6 +192,9 @@ func main() {
 	router.GET("/property/service/team/:team/:service", ShowProperty)
 	router.POST("/filter/property/service/team/:team/", ListProperty)
 
+	router.GET(`/category/`, BasicAuth(ListCategory))
+	router.GET(`/category/:category`, BasicAuth(ShowCategory))
+
 	router.GET("/validity/", ListValidity)
 	router.GET("/validity/:property", ShowValidity)
 
@@ -304,6 +307,9 @@ func main() {
 
 		router.POST("/property/service/team/:team/", BasicAuth(AddProperty))
 		router.DELETE("/property/service/team/:team/:service", BasicAuth(DeleteProperty))
+
+		router.POST(`/category/`, BasicAuth(AddCategory))
+		router.DELETE(`/category/:category`, BasicAuth(DeleteCategory))
 
 		router.POST("/validity/", BasicAuth(AddValidity))
 		router.DELETE("/validity/:property", BasicAuth(DeleteValidity))
