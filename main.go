@@ -147,7 +147,7 @@ func main() {
 
 	router.GET("/servers/", ListServer)
 	router.GET("/servers/:server", ShowServer)
-	router.POST("/filter/servers/", ListServer)
+	router.POST("/filter/servers/", SearchServer)
 
 	router.GET("/units/", ListUnit)
 	router.GET("/units/:unit", ShowUnit)

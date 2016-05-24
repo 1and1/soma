@@ -22,33 +22,6 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 	}
 	result := <-returnChannel
 
-	// declare here since goto does not jump over declarations
-	cReq := proto.NewServerFilter()
-	if result.Failure() {
-		goto skip
-	}
-
-	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Server.Name != "" {
-		filtered := make([]somaServerResult, 0)
-		for _, i := range result.Servers {
-			if i.Server.Name == cReq.Filter.Server.Name {
-				filtered = append(filtered, i)
-			}
-		}
-		result.Servers = filtered
-	}
-	if cReq.Filter.Server.AssetId != 0 {
-		filtered := make([]somaServerResult, 0)
-		for _, i := range result.Servers {
-			if i.Server.AssetId == cReq.Filter.Server.AssetId {
-				filtered = append(filtered, i)
-			}
-		}
-		result.Servers = filtered
-	}
-
-skip:
 	SendServerReply(&w, &result)
 }
 
@@ -66,6 +39,36 @@ func ShowServer(w http.ResponseWriter, r *http.Request,
 		},
 	}
 	result := <-returnChannel
+	SendServerReply(&w, &result)
+}
+
+func SearchServer(w http.ResponseWriter, r *http.Request,
+	_ httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	ssr := somaServerRequest{
+		reply: returnChannel,
+	}
+	cReq := proto.NewServerFilter()
+	_ = DecodeJsonBody(r, &cReq)
+	if cReq.Filter.Server.Name != "" {
+		ssr.action = "search/name"
+		ssr.Filter = proto.Filter{Server: &proto.ServerFilter{
+			Name: cReq.Filter.Server.Name,
+		}}
+	}
+	if cReq.Filter.Server.AssetId != 0 {
+		ssr.action = "search/asset"
+		ssr.Filter = proto.Filter{Server: &proto.ServerFilter{
+			AssetId: cReq.Filter.Server.AssetId,
+		}}
+	}
+
+	handler.input <- ssr
+	result := <-returnChannel
+
 	SendServerReply(&w, &result)
 }
 
