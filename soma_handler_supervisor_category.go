@@ -47,22 +47,26 @@ func (s *supervisor) permission_category_read(q *msg.Request) {
 	switch q.Super.Action {
 	case `list`:
 		result.Category = []proto.Category{}
-		rows, err = s.stmt_ListCategory.Query()
-		if err != nil {
+		if rows, err = s.stmt_ListCategory.Query(); err != nil {
 			result.ServerError(err)
-		} else {
-			for rows.Next() {
-				if err = rows.Scan(
-					&category,
-				); err != nil {
-					result.ServerError(err)
-				} else {
-					result.Category = append(result.Category, proto.Category{Name: category})
-				}
-			}
-			if err = rows.Err(); err != nil {
+			goto dispatch
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			if err = rows.Scan(
+				&category,
+			); err != nil {
 				result.ServerError(err)
+				result.Clear(q.Action)
+				goto dispatch
 			}
+			result.Category = append(result.Category,
+				proto.Category{Name: category})
+		}
+		if err = rows.Err(); err != nil {
+			result.ServerError(err)
+			result.Clear(q.Action)
 		}
 	case `show`:
 		if err = s.stmt_ShowCategory.QueryRow(q.Category.Name).Scan(
@@ -71,20 +75,21 @@ func (s *supervisor) permission_category_read(q *msg.Request) {
 			&ts,
 		); err == sql.ErrNoRows {
 			result.NotFound(err)
+			goto dispatch
 		} else if err != nil {
 			result.ServerError(err)
-		} else {
-			result.Category = []proto.Category{proto.Category{
-				Name: category,
-				Details: &proto.CategoryDetails{
-					DetailsCreation: proto.DetailsCreation{
-						CreatedAt: ts.Format(rfc3339Milli),
-						CreatedBy: user,
-					},
-				},
-			}}
+			goto dispatch
 		}
+		result.Category = []proto.Category{proto.Category{
+			Name: category,
+			Details: &proto.CategoryDetails{
+				CreatedAt: ts.Format(rfc3339Milli),
+				CreatedBy: user,
+			},
+		}}
 	}
+
+dispatch:
 	q.Reply <- result
 }
 
@@ -96,9 +101,8 @@ func (s *supervisor) permission_category_write(q *msg.Request) {
 	}
 
 	var (
-		res    sql.Result
-		err    error
-		rowCnt int64
+		res sql.Result
+		err error
 	)
 
 	switch q.Super.Action {
@@ -117,18 +121,8 @@ func (s *supervisor) permission_category_write(q *msg.Request) {
 		goto dispatch
 	}
 
-	rowCnt, _ = res.RowsAffected()
-	switch {
-	case rowCnt == 0:
-		result.OK()
-		result.SetError(fmt.Errorf(`No rows affected`))
-		result.Category = []proto.Category{}
-	case rowCnt == 1:
-		result.OK()
+	if result.RowCnt(res.RowsAffected()) {
 		result.Category = []proto.Category{q.Category}
-	default:
-		result.ServerError(fmt.Errorf("Too many rows affected: %d", rowCnt))
-		result.Category = []proto.Category{}
 	}
 
 dispatch:

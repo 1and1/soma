@@ -65,6 +65,10 @@ type supervisor struct {
 	stmt_DelCategory    *sql.Stmt
 	stmt_ListCategory   *sql.Stmt
 	stmt_ShowCategory   *sql.Stmt
+	stmt_AddPermission  *sql.Stmt
+	stmt_DelPermission  *sql.Stmt
+	stmt_ListPermission *sql.Stmt
+	stmt_ShowPermission *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -110,9 +114,19 @@ func (s *supervisor) run() {
 	}
 	defer s.stmt_ShowCategory.Close()
 
+	if s.stmt_ListPermission, err = s.conn.Prepare(stmt.ListPermission); err != nil {
+		log.Fatal(`supervisor/list-permission: `, err)
+	}
+	defer s.stmt_ListPermission.Close()
+
+	if s.stmt_ShowPermission, err = s.conn.Prepare(stmt.ShowPermission); err != nil {
+		log.Fatal(`supervisor/show-permission: `, err)
+	}
+	defer s.stmt_ShowPermission.Close()
+
 	if !s.readonly {
 		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {
-			log.Fatal(`supervisor/list-category: `, err)
+			log.Fatal(`supervisor/add-category: `, err)
 		}
 		defer s.stmt_AddCategory.Close()
 
@@ -120,6 +134,16 @@ func (s *supervisor) run() {
 			log.Fatal(`supervisor/delete-category: `, err)
 		}
 		defer s.stmt_DelCategory.Close()
+
+		if s.stmt_AddPermission, err = s.conn.Prepare(stmt.AddPermission); err != nil {
+			log.Fatal(`supervisor/add-permission: `, err)
+		}
+		defer s.stmt_AddPermission.Close()
+
+		if s.stmt_DelPermission, err = s.conn.Prepare(stmt.DeletePermission); err != nil {
+			log.Fatal(`supervisor/delete-permission: `, err)
+		}
+		defer s.stmt_DelPermission.Close()
 	}
 
 runloop:

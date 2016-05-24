@@ -8,6 +8,10 @@
 
 package msg
 
+import (
+	"fmt"
+
+)
 
 type Result struct {
 	Type   string
@@ -19,6 +23,33 @@ type Result struct {
 	Super      *Supervisor
 	Category   []proto.Category
 	Permission []proto.Permission
+}
+
+func (r *Result) RowCnt(i int64, err error) bool {
+	if err != nil {
+		r.ServerError(err)
+		return false
+	}
+	switch i {
+	case 0:
+		r.OK()
+		r.SetError(fmt.Errorf(`No rows affected`))
+	case 1:
+		r.OK()
+		return true
+	default:
+		r.ServerError(fmt.Errorf("Too many rows affected: %d", i))
+	}
+	return false
+}
+
+func (r *Result) Clear(s string) {
+	switch s {
+	case `category`:
+		r.Category = []proto.Category{}
+	case `permission`:
+		r.Permission = []proto.Permission{}
+	}
 }
 
 func (r *Result) SetError(err error) {

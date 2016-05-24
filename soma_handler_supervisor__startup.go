@@ -250,7 +250,7 @@ func (s *supervisor) startupPermissions() {
 		); err != nil {
 			log.Fatal(`supervisor/load-permissions,scan: `, err)
 		}
-		s.id_permission.load(permName, permUUID)
+		s.id_permission.load(permUUID, permName)
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(`supervisor/load-permissions,next: `, err)
