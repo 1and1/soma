@@ -68,6 +68,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if SomaCfg.OpenInstance, err = strconv.ParseBoot(SomaCfg.OpenDoorPolicy); err != nil {
+		log.Fatal(err)
+	}
 
 	/*
 	 * Construct listen address
