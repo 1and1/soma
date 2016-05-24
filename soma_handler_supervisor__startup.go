@@ -229,7 +229,7 @@ func (s *supervisor) startupPermissions() {
 		rows               *sql.Rows
 	)
 
-	rows, err = s.conn.Query(stmt.LoadUserTeamMapping)
+	rows, err = s.conn.Query(stmt.LoadPermissions)
 	if err != nil {
 		log.Fatal(`supervisor/load-permissions,query: `, err)
 	}
