@@ -10,7 +10,9 @@ func createTablesPermissions(printOnly bool, verbose bool) {
 
 	queryMap["createTablePermissionTypes"] = `
 create table if not exists soma.permission_types (
-    permission_type             varchar(32)     PRIMARY KEY
+    permission_type             varchar(32)     PRIMARY KEY,
+    created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW()
     -- omnipotence
     -- grant_system
     -- system
