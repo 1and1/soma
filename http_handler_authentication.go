@@ -63,7 +63,7 @@ func AuthenticationKex(w http.ResponseWriter, r *http.Request,
 		Action: `kex_init`,
 		Reply:  returnChannel,
 		Super: &msg.Supervisor{
-			RemoteAddr: r.RemoteAddr,
+			RemoteAddr: extractAddress(r.RemoteAddr),
 			Kex: auth.Kex{
 				Public:               kex.Public,
 				InitializationVector: kex.InitializationVector,
@@ -110,7 +110,7 @@ func AuthenticationEncryptedData(w *http.ResponseWriter, r *http.Request,
 		Action: action,
 		Reply:  returnChannel,
 		Super: &msg.Supervisor{
-			RemoteAddr: r.RemoteAddr,
+			RemoteAddr: extractAddress(r.RemoteAddr),
 			KexId:      params.ByName(`uuid`),
 			Data:       data,
 			Restricted: false,
