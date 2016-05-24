@@ -8,13 +8,16 @@
 
 package msg
 
+
 type Result struct {
 	Type   string
 	Action string
 	Code   uint16
 	Error  error
+	JobId  string
 
-	Super *Supervisor
+	Super    *Supervisor
+	Category []proto.Category
 }
 
 func (r *Result) SetError(err error) {
@@ -25,6 +28,16 @@ func (r *Result) SetError(err error) {
 
 func (r *Result) OK() {
 	r.Code = 200
+	r.Error = nil
+}
+
+func (r *Result) Accepted() {
+	r.Code = 202
+	r.Error = nil
+}
+
+func (r *Result) Partial() {
+	r.Code = 206
 	r.Error = nil
 }
 

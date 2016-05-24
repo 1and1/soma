@@ -8,12 +8,16 @@
 
 package msg
 
-type Request struct {
-	Type   string
-	Action string
-	Reply  chan Result
 
-	Super *Supervisor
+type Request struct {
+	Type       string
+	Action     string
+	RemoteAddr string
+	User       string
+	Reply      chan Result
+
+	Super    *Supervisor
+	Category *proto.Category
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
