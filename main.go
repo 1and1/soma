@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/asaskevich/govalidator"
@@ -67,9 +66,6 @@ func main() {
 	}
 	err = SomaCfg.readConfigFile(configFile)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if SomaCfg.OpenInstance, err = strconv.ParseBool(SomaCfg.OpenDoorPolicy); err != nil {
 		log.Fatal(err)
 	}
 
