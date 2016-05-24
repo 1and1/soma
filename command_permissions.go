@@ -17,35 +17,28 @@ func registerPermissions(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for permissions",
 				Subcommands: []cli.Command{
 					{
-						Name:  "type",
-						Usage: "SUBCOMMANDS for permission types",
+						Name:  "category",
+						Usage: "SUBCOMMANDS for permission categories",
 						Subcommands: []cli.Command{
 							{
 								Name:   "add",
-								Usage:  "Register a new permission type",
-								Action: runtime(cmdPermissionTypeAdd),
+								Usage:  "Register a new permission category",
+								Action: runtime(cmdPermissionCategoryAdd),
 							},
 							{
 								Name:   "remove",
-								Usage:  "Remove an existing permission type",
-								Action: runtime(cmdPermissionTypeDel),
+								Usage:  "Remove an existing permission category",
+								Action: runtime(cmdPermissionCategoryDel),
 							},
-							/*
-								{
-									Name:   "rename",
-									Usage:  "Rename an existing permission type",
-									Action: runtime(cmdPermissionTypeRename),
-								},
-							*/
 							{
 								Name:   "list",
-								Usage:  "List all permission types",
-								Action: runtime(cmdPermissionTypeList),
+								Usage:  "List all permission categories",
+								Action: runtime(cmdPermissionCategoryList),
 							},
 							{
 								Name:   "show",
-								Usage:  "Show details for a permission type",
-								Action: runtime(cmdPermissionTypeShow),
+								Usage:  "Show details for a permission category",
+								Action: runtime(cmdPermissionCategoryShow),
 							},
 						}, // end permissions type
 					},
@@ -128,152 +121,84 @@ func registerPermissions(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdPermissionTypeAdd(c *cli.Context) error {
+func cmdPermissionCategoryAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	permissionType := c.Args().First()
 
-	var req proto.Request
-	req.Permission = &proto.Permission{}
-	req.Permission.Category = permissionType
+	req := proto.NewCategoryRequest()
+	req.Category.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/permission/types/")
+	resp := utl.PostRequestWithBody(Client, req, `/category/`)
 	fmt.Println(resp)
 	return nil
 }
 
-func cmdPermissionTypeDel(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-
+func cmdPermissionCategoryDel(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	permissionType := c.Args().First()
-	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
-	log.Printf("Command: delete permission type [%s]", permissionType)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
+	path := fmt.Sprintf("/category/%s", c.Args().First())
+
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
-func cmdPermissionTypeRename(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to") // starts args counting at 1
-	permissionType := c.Args().Get(0)
-	newPermissionType := c.Args().Get(2)
-	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
-
-	var req proto.Request
-	req.Permission = &proto.Permission{}
-	req.Permission.Category = newPermissionType
-
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Patch(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	return nil
-}
-
-func cmdPermissionTypeList(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-	url.Path = "/permissions/types"
-
+func cmdPermissionCategoryList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	// TODO display list result
+	resp := utl.GetRequest(Client, `/category/`)
+	fmt.Println(resp)
 	return nil
 }
 
-func cmdPermissionTypeShow(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-
+func cmdPermissionCategoryShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	permissionType := c.Args().Get(0)
-	url.Path = fmt.Sprintf("/permissions/types/%s", permissionType)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	// TODO display show result
+	path := fmt.Sprintf("/category/%s", c.Args().First())
+
+	resp := utl.GetRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdPermissionAdd(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-	url.Path = "/permissions"
+	utl.ValidateCliMinArgumentCount(c, 3)
+	multiple := []string{}
+	unique := []string{`category`, `grants`}
+	required := []string{`category`}
 
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "type")
-	permission := c.Args().Get(0)
-	permissionType := c.Args().Get(2)
+	opts := utl.ParseVariadicArguments(
+		multiple,
+		unique,
+		required,
+		c.Args().Tail())
 
-	var req proto.Request
-	req.Permission = &proto.Permission{}
-	req.Permission.Name = permission
-	req.Permission.Category = permissionType
-
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	if err != nil {
-		log.Fatal(err)
+	req := proto.NewPermissionRequest()
+	req.Permission.Name = c.Args().First()
+	req.Permission.Category = opts[`category`][0]
+	if sl, ok := opts[`grants`]; ok && len(sl) > 0 {
+		req.Permission.Grants = opts[`grants`][0]
 	}
+
+	resp := utl.PostRequestWithBody(Client, req, `/permission/`)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdPermissionDel(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-
 	utl.ValidateCliArgumentCount(c, 1)
-	permission := c.Args().Get(0)
-	url.Path = fmt.Sprintf("/permissions/%s", permission)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
+	path := fmt.Sprintf("/permission/%s", c.Args().First())
+
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
 func cmdPermissionList(c *cli.Context) error {
-	url := Cfg.Run.SomaAPI
-	url.Path = "/permissions"
-
 	utl.ValidateCliArgumentCount(c, 0)
 
-	_, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	// TODO list permissions
+	resp := utl.GetRequest(Client, `/permission/`)
+	fmt.Println(resp)
 	return nil
 }
 
