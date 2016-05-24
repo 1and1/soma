@@ -201,7 +201,12 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 	)
 	result := somaResult{}
 	super = handlerMap[`supervisor`].(supervisor)
-	notify = msg.Request{Type: `supervisor`, Action: `update_map`, Super: &msg.Supervisor{Object: `team`}}
+	notify = msg.Request{Type: `supervisor`, Action: `update_map`,
+		Super: &msg.Supervisor{
+			Object: `team`,
+			Team:   q.Team,
+		},
+	}
 
 	switch q.action {
 	case "add":

@@ -8,6 +8,8 @@
 
 package msg
 
+import (
+)
 
 type Supervisor struct {
 	Verdict    uint16
@@ -27,6 +29,8 @@ type Supervisor struct {
 	// Fields for map update notifications
 	Action string
 	Object string
+	User   proto.User
+	Team   proto.Team
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

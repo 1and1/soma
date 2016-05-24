@@ -213,8 +213,8 @@ func (s *supervisor) startupUsersAndTeams() {
 		); err != nil {
 			log.Fatal(`supervisor/load-user-team-mapping,scan: `, err)
 		}
-		s.id_user.load(userName, userUUID)
-		s.id_team.load(teamName, teamUUID)
+		s.id_user.load(userUUID, userName)
+		s.id_team.load(teamUUID, teamName)
 		s.id_userteam.load(userUUID, teamUUID)
 	}
 	if err = rows.Err(); err != nil {

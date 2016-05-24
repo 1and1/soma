@@ -241,10 +241,19 @@ runloop:
 
 func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 	var (
-		res sql.Result
-		err error
+		res    sql.Result
+		err    error
+		super  supervisor
+		notify msg.Request
 	)
 	result := somaResult{}
+	super = handlerMap[`supervisor`].(supervisor)
+	notify = msg.Request{Type: `supervisor`, Action: `update_map`,
+		Super: &msg.Supervisor{
+			Object: `user`,
+			User:   q.User,
+		},
+	}
 
 	switch q.action {
 	case "add":
@@ -263,11 +272,13 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 			q.User.TeamId,
 		)
 		q.User.Id = id.String()
+		notify.Super.Action = `add`
 	case "delete":
 		log.Printf("R: users/delete for %s", q.User.Id)
 		res, err = w.del_stmt.Exec(
 			q.User.Id,
 		)
+		notify.Super.Action = `delete`
 	case "purge":
 		log.Printf("R: user/purge for %s", q.User.Id)
 		res, err = w.prg_stmt.Exec(
@@ -295,6 +306,8 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 		result.Append(nil, &somaUserResult{
 			User: q.User,
 		})
+		// send update to supervisor
+		super.input <- notify
 	}
 	q.reply <- result
 }
