@@ -234,7 +234,7 @@ checksloop:
 							panic(`Matched instances loaded for different ConstraintValHash`)
 						}
 						delete(ten.loadedInstances[i], ldInstId)
-						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrainted=%t",
+						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 							repoName,
 							`ComputeInstance`,
 							`node`,
@@ -272,7 +272,7 @@ checksloop:
 					inst.Version = 0
 					inst.InstanceId = uuid.NewV4()
 				}
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrainted=%t",
+				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 					repoName,
 					`ComputeInstance`,
 					`node`,
@@ -389,7 +389,7 @@ checksloop:
 							// be equal, since InstanceSvcCfgHash is
 							// equal
 							delete(ten.loadedInstances[i], ldInstId)
-							log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrainted=%t",
+							log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 								repoName,
 								`ComputeInstance`,
 								`node`,
@@ -425,7 +425,7 @@ checksloop:
 						inst.Version = 0
 						inst.InstanceId = uuid.NewV4()
 					}
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrainted=%t",
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 						repoName,
 						`ComputeInstance`,
 						`node`,
