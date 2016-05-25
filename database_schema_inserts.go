@@ -54,9 +54,11 @@ INSERT INTO inventory.users (
 
 	queryMap["insertCategoryOmnipotence"] = `
 INSERT INTO soma.permission_types (
-            permission_type
+            permission_type,
+            created_by
 ) VALUES (
-            'omnipotence'
+            'omnipotence',
+            '00000000-0000-0000-0000-000000000000'
 );`
 	queries[idx] = "insertCategoryOmnipotence"
 	idx++
@@ -65,11 +67,13 @@ INSERT INTO soma.permission_types (
 INSERT INTO soma.permissions (
             permission_id,
             permission_name,
-            permission_type
+            permission_type,
+            created_by
 ) VALUES (
             '00000000-0000-0000-0000-000000000000',
             'omnipotence',
-            'omnipotence'
+            'omnipotence',
+            '00000000-0000-0000-0000-000000000000'
 );`
 	queries[idx] = "insertPermissionOmnipotence"
 	idx++

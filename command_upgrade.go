@@ -115,11 +115,6 @@ func upgrade_soma_to_201605210001(curr int, tool string, printOnly bool) int {
 		return 0
 	}
 	stmts := []string{
-		`INSERT INTO soma.permission_types ( permission_type ) VALUES ( 'omnipotence' );`,
-		`INSERT INTO soma.permissions (permission_id, permission_name, permission_type )
-		 VALUES ( '00000000-0000-0000-0000-000000000000','omnipotence', 'omnipotence' );`,
-		`INSERT INTO soma.global_authorizations ( user_id, permission_id, permission_type )
-		 VALUES ( '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'omnipotence' );`,
 		`ALTER TABLE soma.permissions ADD CHECK  ( permission_type != 'omnipotence' OR permission_name = 'omnipotence' );`,
 		`ALTER TABLE soma.global_authorizations DROP CONSTRAINT "global_authorizations_permission_type_check";`,
 		`ALTER TABLE soma.repo_authorizations DROP CONSTRAINT "repo_authorizations_permission_type_check";`,
@@ -150,6 +145,7 @@ func upgrade_soma_to_201605240001(curr int, tool string, printOnly bool) int {
 	stmts := []string{
 		`ALTER TABLE soma.permission_types ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
 		`ALTER TABLE soma.permission_types ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`INSERT INTO soma.permission_types ( permission_type, created_by ) VALUES ( 'omnipotence', '00000000-0000-0000-0000-000000000000' );`,
 	}
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605240001, 'Upgrade - somadbctl %s');", tool),
@@ -167,6 +163,10 @@ func upgrade_soma_to_201605240002(curr int, tool string, printOnly bool) int {
 	stmts := []string{
 		`ALTER TABLE soma.permissions ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
 		`ALTER TABLE soma.permissions ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`INSERT INTO soma.permissions (permission_id, permission_name, permission_type, created_by )
+		 VALUES ( '00000000-0000-0000-0000-000000000000','omnipotence', 'omnipotence', '00000000-0000-0000-0000-000000000000' );`,
+		`INSERT INTO soma.global_authorizations ( user_id, permission_id, permission_type )
+		 VALUES ( '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'omnipotence' );`,
 	}
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605240002, 'Upgrade - somadbctl %s');", tool),
