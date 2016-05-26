@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/codegangsta/cli"
 )
@@ -53,6 +54,9 @@ func cmdViewsAdd(c *cli.Context) {
 	req := proto.Request{}
 	req.View = &proto.View{}
 	req.View.Name = c.Args().First()
+	if strings.Contains(req.View.Name, `.`) {
+		utl.Abort(`Views must not contain the character '.'`)
+	}
 
 	resp := utl.PostRequestWithBody(req, "/views/")
 	fmt.Println(resp)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/codegangsta/cli"
 )
@@ -60,6 +61,9 @@ func cmdMonitoringCreate(c *cli.Context) {
 	req.Monitoring.Mode = opts["mode"][0]
 	req.Monitoring.Contact = utl.TryGetUserByUUIDOrName(opts["contact"][0])
 	req.Monitoring.TeamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	if strings.Contains(req.Monitoring.Name, `.`) {
+		utl.Abort(`Monitoring system names must not contain the character '.'`)
+	}
 
 	// optional arguments
 	if _, ok := opts["callback"]; ok {
