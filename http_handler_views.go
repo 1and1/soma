@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -50,6 +52,10 @@ func AddView(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+	if strings.Contains(cReq.View.Name, `.`) {
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid view name containing . character`))
 		return
 	}
 
