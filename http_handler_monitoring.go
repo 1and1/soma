@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -69,6 +71,10 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+	if strings.Contains(cReq.Monitoring.Name, `.`) {
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid monitoring system name containing . character`))
 		return
 	}
 
