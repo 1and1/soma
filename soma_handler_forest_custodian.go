@@ -119,6 +119,11 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 					team = action.Repository.TeamId
 				}
 			case "attached":
+			default:
+				log.Printf("R: Unhandled action during tree creation: %s", q.action)
+				result.SetNotImplemented()
+				q.reply <- result
+				return
 			}
 		}
 	default:
@@ -140,6 +145,9 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
 			&somaRepositoryResult{})
 	default:
+		if team == "" {
+			panic(fmt.Sprintf("Team has not been set prior to spawning TreeKeeper for repo: %s", q.Repository.Name))
+		}
 		result.Append(nil, &somaRepositoryResult{
 			Repository: q.Repository,
 		})
