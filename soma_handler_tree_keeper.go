@@ -1030,8 +1030,16 @@ func (tk *treeKeeper) process(q *treeRequest) {
 				if constr.Service.TeamId != tk.team {
 					err = fmt.Errorf("Service constraint has mismatched TeamID values: %s/%s",
 						tk.team, constr.Service.TeamId)
+					fmt.Println(err)
 					break constrloop
 				}
+				log.Printf(`SQL: tkStmtCreateCheckConfigurationConstraintService:
+CheckConfig ID: %s
+Team ID:        %s
+Service Name:   %s%s`,
+					q.CheckConfig.CheckConfig.Id,
+					tk.team,
+					constr.Service.Name, "\n")
 				if _, err = txStmtCreateCheckConfigurationConstraintService.Exec(
 					q.CheckConfig.CheckConfig.Id,
 					tk.team,
@@ -1566,6 +1574,25 @@ Children Only:         %t%s`,
 						break actionloop
 					}
 				case "service":
+					log.Printf(`SQL: tkStmtClusterPropertyServiceCreate:
+Instance ID:           %s
+Source Instance ID:    %s
+Cluster ID:            %s
+View:                  %s
+Service Name:          %s
+Service TeamId:        %s
+Repository ID:         %s
+Inheritance Enabled:   %t
+Children Only:         %t%s`,
+						a.Property.InstanceId,
+						a.Property.SourceInstanceId,
+						a.Cluster.Id,
+						a.Property.View,
+						a.Property.Service.Name,
+						a.Property.Service.TeamId,
+						a.Property.RepositoryId,
+						a.Property.Inheritance,
+						a.Property.ChildrenOnly, "\n")
 					if _, err = txStmtClusterPropertyServiceCreate.Exec(
 						a.Property.InstanceId,
 						a.Property.SourceInstanceId,
