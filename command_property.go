@@ -310,6 +310,7 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 	req.Property = &proto.Property{}
 	req.Property.Service = &proto.PropertyService{}
 	req.Property.Service.Name = c.Args().First()
+	utl.ValidateRuneCount(req.Property.Service.Name, 128)
 	req.Property.Service.Attributes = make([]proto.ServiceAttribute, 0, 16)
 	if c.Command.Name == "service" {
 		req.Property.Type = `service`
@@ -327,6 +328,8 @@ attrConversionLoop:
 			continue attrConversionLoop
 		}
 		for _, oVal := range opts[oName] {
+			utl.ValidateRuneCount(oName, 128)
+			utl.ValidateRuneCount(oVal, 512)
 			req.Property.Service.Attributes = append(req.Property.Service.Attributes,
 				proto.ServiceAttribute{
 					Name:  oName,

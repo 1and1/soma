@@ -67,6 +67,7 @@ func cmdAttributeCreate(c *cli.Context) {
 			Cardinality: opts["cardinality"][0],
 		},
 	}
+	utl.ValidateRuneCount(req.Attribute.Name, 128)
 
 	resp := utl.PostRequestWithBody(req, "/attributes/")
 	fmt.Println(resp)
