@@ -40,7 +40,17 @@ func (u SomaUtil) GetNodeConfigById(node string) *proto.NodeConfig {
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)
 	resp := u.GetRequest(path)
-	nodeResult := u.DecodeResultFromResponse(resp)
+	nodeResult := u.UnfilteredResultFromResponse(resp)
+	if nodeResult.StatusCode == 404 {
+		u.Abort(`Node is not assigned to a configuration repository yet.`)
+	} else if nodeResult.StatusCode > 299 {
+		s := fmt.Sprintf("Request failed: %d - %s", nodeResult.StatusCode, nodeResult.StatusText)
+		msgs := []string{s}
+		if nodeResult.Errors != nil {
+			msgs = append(msgs, *nodeResult.Errors...)
+		}
+		u.Abort(msgs...)
+	}
 	return (*nodeResult.Nodes)[0].Config
 }
 

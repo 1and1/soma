@@ -25,6 +25,14 @@ func (u SomaUtil) DecodeResultFromResponse(resp *resty.Response) *proto.Result {
 	return &res
 }
 
+func (u SomaUtil) UnfilteredResultFromResponse(resp *resty.Response) *proto.Result {
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
+	res := proto.Result{}
+	err := decoder.Decode(&res)
+	u.AbortOnError(err, "Error decoding server response body")
+	return &res
+}
+
 func (u SomaUtil) VerifyEnvironment(env string) {
 	resp := u.GetRequest("/environments/")
 	res := u.DecodeResultFromResponse(resp)
