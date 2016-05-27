@@ -341,6 +341,12 @@ func cmdNodeAssign(c *cli.Context) {
 	repoId := utl.GetRepositoryIdForBucket(bucketId)
 	nodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
 
+	bucketTeamId := utl.TeamIdForBucket(bucketId)
+	nodeTeamId := utl.TeamIdForNode(nodeId)
+	if bucketTeamId != nodeTeamId {
+		utl.Abort(`Cannot assign node since node and bucket belong to different teams.`)
+	}
+
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 	req.Node.Id = nodeId

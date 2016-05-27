@@ -44,6 +44,16 @@ func (u SomaUtil) GetNodeConfigById(node string) *proto.NodeConfig {
 	return (*nodeResult.Nodes)[0].Config
 }
 
+func (u SomaUtil) TeamIdForNode(node string) string {
+	nodeId := u.TryGetNodeByUUIDOrName(node)
+	resp := u.GetRequest(fmt.Sprintf("/nodes/%s", nodeId))
+	res := u.DecodeResultFromResponse(resp)
+	if (*res.Nodes)[0].Id != nodeId {
+		u.Abort(`Received result for incorrect node`)
+	}
+	return (*res.Nodes)[0].TeamId
+}
+
 func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
