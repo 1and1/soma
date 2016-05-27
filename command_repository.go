@@ -122,6 +122,7 @@ func cmdRepositoryCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/repository/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryDelete(c *cli.Context) {
@@ -129,7 +130,8 @@ func cmdRepositoryDelete(c *cli.Context) {
 	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryRestore(c *cli.Context) {
@@ -145,6 +147,7 @@ func cmdRepositoryRestore(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryPurge(c *cli.Context) {
@@ -160,6 +163,7 @@ func cmdRepositoryPurge(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryClear(c *cli.Context) {
@@ -175,6 +179,7 @@ func cmdRepositoryClear(c *cli.Context) {
 
 	resp := utl.PutRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryRename(c *cli.Context) {
@@ -189,6 +194,7 @@ func cmdRepositoryRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryRepossess(c *cli.Context) {
@@ -204,6 +210,7 @@ func cmdRepositoryRepossess(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryClone(c *cli.Context) {
@@ -223,6 +230,7 @@ func cmdRepositoryActivate(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryWipe(c *cli.Context) {
@@ -233,6 +241,7 @@ func cmdRepositoryList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest("/repository/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryShow(c *cli.Context) {
@@ -242,6 +251,7 @@ func cmdRepositoryShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositorySystemPropertyAdd(c *cli.Context) {
@@ -292,6 +302,7 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdRepositoryServicePropertyAdd(c *cli.Context) {
@@ -341,6 +352,7 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/repository/%s/property/service/", repositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

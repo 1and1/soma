@@ -220,6 +220,7 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertySystemCreate(c *cli.Context) {
@@ -234,6 +235,7 @@ func cmdPropertySystemCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/property/system/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyNativeCreate(c *cli.Context) {
@@ -248,6 +250,7 @@ func cmdPropertyNativeCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/property/native/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyServiceCreate(c *cli.Context) {
@@ -343,6 +346,7 @@ attrConversionLoop:
 	}
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 /* DELETE
@@ -367,6 +371,7 @@ func cmdPropertyCustomDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertySystemDelete(c *cli.Context) {
@@ -375,6 +380,7 @@ func cmdPropertySystemDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyNativeDelete(c *cli.Context) {
@@ -383,6 +389,7 @@ func cmdPropertyNativeDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyServiceDelete(c *cli.Context) {
@@ -394,6 +401,7 @@ func cmdPropertyServiceDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyTemplateDelete(c *cli.Context) {
@@ -403,6 +411,7 @@ func cmdPropertyTemplateDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 /*
@@ -441,6 +450,7 @@ func cmdPropertyCustomShow(c *cli.Context) {
 		propId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 
 }
 
@@ -449,6 +459,7 @@ func cmdPropertySystemShow(c *cli.Context) {
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyNativeShow(c *cli.Context) {
@@ -456,6 +467,7 @@ func cmdPropertyNativeShow(c *cli.Context) {
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyServiceShow(c *cli.Context) {
@@ -467,6 +479,7 @@ func cmdPropertyServiceShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyTemplateShow(c *cli.Context) {
@@ -475,6 +488,7 @@ func cmdPropertyTemplateShow(c *cli.Context) {
 	path := fmt.Sprintf("/property/service/global/%s", propId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyCustomList(c *cli.Context) {
@@ -486,18 +500,21 @@ func cmdPropertyCustomList(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertySystemList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest("/property/system/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyNativeList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest("/property/native/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyServiceList(c *cli.Context) {
@@ -509,6 +526,7 @@ func cmdPropertyServiceList(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdPropertyTemplateList(c *cli.Context) {
@@ -516,6 +534,7 @@ func cmdPropertyTemplateList(c *cli.Context) {
 
 	resp := utl.GetRequest("/property/service/global/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

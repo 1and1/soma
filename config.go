@@ -12,12 +12,13 @@ import (
 )
 
 type Config struct {
-	Timeout string     `json:"timeout"`
-	Api     string     `json:"api"`
-	JobDb   string     `json:"jobdb"`
-	LogDir  string     `json:"logdir"`
-	Auth    AuthConfig `json:"auth"`
-	Run     RunTimeConfig
+	Timeout   string     `json:"timeout"`
+	Api       string     `json:"api"`
+	JobDb     string     `json:"jobdb"`
+	LogDir    string     `json:"logdir"`
+	AsyncWait bool       `json:"async.wait,string"`
+	Auth      AuthConfig `json:"auth"`
+	Run       RunTimeConfig
 }
 
 type AuthConfig struct {

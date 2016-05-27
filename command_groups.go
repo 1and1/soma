@@ -140,6 +140,7 @@ func cmdGroupCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/groups/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupDelete(c *cli.Context) {
@@ -157,7 +158,8 @@ func cmdGroupDelete(c *cli.Context) {
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupRename(c *cli.Context) {
@@ -179,13 +181,15 @@ func cmdGroupRename(c *cli.Context) {
 	req.Group = &proto.Group{}
 	req.Group.Name = opts["to"][0]
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupList(c *cli.Context) {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest("/groups/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupShow(c *cli.Context) {
@@ -205,6 +209,7 @@ func cmdGroupShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberAddGroup(c *cli.Context) {
@@ -236,6 +241,7 @@ func cmdGroupMemberAddGroup(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberAddCluster(c *cli.Context) {
@@ -267,6 +273,7 @@ func cmdGroupMemberAddCluster(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberAddNode(c *cli.Context) {
@@ -296,6 +303,7 @@ func cmdGroupMemberAddNode(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) {
@@ -318,7 +326,8 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mGroupId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberDeleteCluster(c *cli.Context) {
@@ -341,7 +350,8 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mClusterId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberDeleteNode(c *cli.Context) {
@@ -362,7 +372,8 @@ func cmdGroupMemberDeleteNode(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mNodeId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupMemberList(c *cli.Context) {
@@ -383,6 +394,7 @@ func cmdGroupMemberList(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupSystemPropertyAdd(c *cli.Context) {
@@ -432,6 +444,7 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/property/system/", groupId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdGroupServicePropertyAdd(c *cli.Context) {
@@ -480,6 +493,7 @@ func cmdGroupServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/groups/%s/property/service/", groupId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

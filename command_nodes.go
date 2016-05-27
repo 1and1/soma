@@ -188,6 +188,7 @@ func cmdNodeAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/nodes/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeDel(c *cli.Context) {
@@ -197,6 +198,7 @@ func cmdNodeDel(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodePurge(c *cli.Context) {
@@ -221,6 +223,7 @@ func cmdNodePurge(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeRestore(c *cli.Context) {
@@ -245,6 +248,7 @@ func cmdNodeRestore(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeRename(c *cli.Context) {
@@ -259,6 +263,7 @@ func cmdNodeRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeRepo(c *cli.Context) {
@@ -276,6 +281,7 @@ func cmdNodeRepo(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeMove(c *cli.Context) {
@@ -293,6 +299,7 @@ func cmdNodeMove(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeOnline(c *cli.Context) {
@@ -306,6 +313,7 @@ func cmdNodeOnline(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeOffline(c *cli.Context) {
@@ -319,6 +327,7 @@ func cmdNodeOffline(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeAssign(c *cli.Context) {
@@ -342,6 +351,7 @@ func cmdNodeAssign(c *cli.Context) {
 	path := fmt.Sprintf("/nodes/%s/config", nodeId)
 	resp := utl.PutRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeList(c *cli.Context) {
@@ -349,6 +359,7 @@ func cmdNodeList(c *cli.Context) {
 
 	resp := utl.GetRequest("/nodes/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeShow(c *cli.Context) {
@@ -358,6 +369,7 @@ func cmdNodeShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeConfig(c *cli.Context) {
@@ -367,6 +379,7 @@ func cmdNodeConfig(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeSystemPropertyAdd(c *cli.Context) {
@@ -418,6 +431,7 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/nodes/%s/property/system/", nodeId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdNodeServicePropertyAdd(c *cli.Context) {
@@ -469,6 +483,7 @@ func cmdNodeServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/nodes/%s/property/service/", nodeId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

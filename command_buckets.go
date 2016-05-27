@@ -116,6 +116,7 @@ func cmdBucketCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/buckets/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketDelete(c *cli.Context) {
@@ -129,6 +130,7 @@ func cmdBucketDelete(c *cli.Context) {
 
 	resp := utl.DeleteRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketRestore(c *cli.Context) {
@@ -148,6 +150,7 @@ func cmdBucketRestore(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketPurge(c *cli.Context) {
@@ -167,6 +170,7 @@ func cmdBucketPurge(c *cli.Context) {
 
 	resp := utl.DeleteRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketFreeze(c *cli.Context) {
@@ -186,6 +190,7 @@ func cmdBucketFreeze(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketThaw(c *cli.Context) {
@@ -205,6 +210,7 @@ func cmdBucketThaw(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketRename(c *cli.Context) {
@@ -225,6 +231,7 @@ func cmdBucketRename(c *cli.Context) {
 
 	resp := utl.PatchRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketList(c *cli.Context) {
@@ -232,6 +239,7 @@ func cmdBucketList(c *cli.Context) {
 
 	resp := utl.GetRequest("/buckets/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketShow(c *cli.Context) {
@@ -241,6 +249,7 @@ func cmdBucketShow(c *cli.Context) {
 	path := fmt.Sprintf("/buckets/%s", bucketId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketSystemPropertyAdd(c *cli.Context) {
@@ -287,6 +296,7 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdBucketServicePropertyAdd(c *cli.Context) {
@@ -335,6 +345,7 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/buckets/%s/property/service/", bucketId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

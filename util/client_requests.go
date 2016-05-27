@@ -29,6 +29,17 @@ func (u SomaUtil) GetRequestWithBody(body interface{}, p string) *resty.Response
 }
 
 // PUT
+func (u SomaUtil) PutRequest(p string) *resty.Response {
+	u.ApiUrl.Path = p
+	resp, err := resty.New().
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
+		R().
+		Put(u.ApiUrl.String())
+	u.AbortOnError(err)
+	u.CheckRestyResponse(resp)
+	return resp
+}
+
 func (u SomaUtil) PutRequestWithBody(body interface{}, p string) *resty.Response {
 	u.ApiUrl.Path = p
 	resp, err := resty.New().

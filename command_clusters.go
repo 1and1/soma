@@ -108,6 +108,7 @@ func cmdClusterCreate(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, "/clusters/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterDelete(c *cli.Context) {
@@ -125,7 +126,8 @@ func cmdClusterDelete(c *cli.Context) {
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterRename(c *cli.Context) {
@@ -147,7 +149,8 @@ func cmdClusterRename(c *cli.Context) {
 	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = opts["to"][0]
 
-	_ = utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(req, path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterList(c *cli.Context) {
@@ -168,6 +171,7 @@ func cmdClusterList(c *cli.Context) {
 	*/
 	resp := utl.GetRequest("/clusters/")
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterShow(c *cli.Context) {
@@ -187,6 +191,7 @@ func cmdClusterShow(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterMemberAdd(c *cli.Context) {
@@ -222,6 +227,7 @@ func cmdClusterMemberAdd(c *cli.Context) {
 
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterMemberDelete(c *cli.Context) {
@@ -242,7 +248,8 @@ func cmdClusterMemberDelete(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s/members/%s", clusterId,
 		nodeId)
 
-	_ = utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(path)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterMemberList(c *cli.Context) {
@@ -262,6 +269,7 @@ func cmdClusterMemberList(c *cli.Context) {
 
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterSystemPropertyAdd(c *cli.Context) {
@@ -311,6 +319,7 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s/property/system/", clusterId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdClusterServicePropertyAdd(c *cli.Context) {
@@ -359,6 +368,7 @@ func cmdClusterServicePropertyAdd(c *cli.Context) {
 	path := fmt.Sprintf("/clusters/%s/property/service/", clusterId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

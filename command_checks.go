@@ -93,6 +93,7 @@ func cmdCheckAdd(c *cli.Context) {
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
 	resp := utl.PostRequestWithBody(req, path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdCheckList(c *cli.Context) {
@@ -112,6 +113,7 @@ func cmdCheckList(c *cli.Context) {
 	path := fmt.Sprintf("/checks/%s/", repoId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 func cmdCheckShow(c *cli.Context) {
@@ -132,6 +134,7 @@ func cmdCheckShow(c *cli.Context) {
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
 	resp := utl.GetRequest(path)
 	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, resp)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
