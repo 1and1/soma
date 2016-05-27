@@ -141,7 +141,7 @@ create table if not exists soma.constraints_native_property (
 create table if not exists soma.constraints_service_property (
     configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
     organizational_team_id      uuid            NOT NULL,
-    service_property            varchar(64)     NOT NULL,
+    service_property            varchar(128)    NOT NULL,
     FOREIGN KEY( organizational_team_id, service_property ) REFERENCES soma.team_service_properties ( organizational_team_id, service_property ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConstraintsServiceProperty"
@@ -150,8 +150,8 @@ create table if not exists soma.constraints_service_property (
 	queryMap["createTableCheckConstraintsServiceAttributes"] = `
 create table if not exists soma.constraints_service_attribute (
     configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
-    service_property_attribute  varchar(64)     NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ) DEFERRABLE,
-    attribute_value             varchar(64)
+    service_property_attribute  varchar(128)    NOT NULL REFERENCES soma.service_property_attributes ( service_property_attribute ) DEFERRABLE,
+    attribute_value             varchar(512)
 );`
 	queries[idx] = "createTableCheckConstraintsServiceAttributes"
 	idx++

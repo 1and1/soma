@@ -21,6 +21,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201605060001: upgrade_soma_to_201605210001,
 		201605210001: upgrade_soma_to_201605240001,
 		201605240001: upgrade_soma_to_201605240002,
+		201605240002: upgrade_soma_to_201605270001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -175,6 +176,33 @@ func upgrade_soma_to_201605240002(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201605240002
+}
+
+func upgrade_soma_to_201605270001(curr int, tool string, printOnly bool) int {
+	if curr != 201605240002 {
+		return 0
+	}
+	stmts := []string{
+		`ALTER TABLE soma.service_properties ALTER COLUMN service_property TYPE varchar(128);`,
+		`ALTER TABLE soma.service_property_attributes ALTER COLUMN service_property_attribute TYPE varchar(128);`,
+		`ALTER TABLE soma.service_property_values ALTER COLUMN service_property TYPE varchar(128);`,
+		`ALTER TABLE soma.service_property_values ALTER COLUMN service_property_attribute TYPE varchar(128);`,
+		`ALTER TABLE soma.service_property_values ALTER COLUMN value TYPE varchar(512);`,
+		`ALTER TABLE soma.team_service_properties ALTER COLUMN service_property TYPE varchar(128);`,
+		`ALTER TABLE soma.team_service_property_values ALTER COLUMN service_property TYPE varchar(128);`,
+		`ALTER TABLE soma.team_service_property_values ALTER COLUMN service_property_attribute TYPE varchar(128);`,
+		`ALTER TABLE soma.team_service_property_values ALTER COLUMN value TYPE varchar(512);`,
+		`ALTER TABLE soma.constraints_service_property ALTER COLUMN service_property TYPE varchar(128);`,
+		`ALTER TABLE soma.constraints_service_attribute ALTER COLUMN service_property_attribute TYPE varchar(128);`,
+		`ALTER TABLE soma.constraints_service_attribute ALTER COLUMN attribute_value TYPE varchar(512);`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605270001, 'Upgrade - somadbctl %s');", tool),
+	)
+
+	executeUpgrades(stmts, printOnly)
+
+	return 201605270001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
