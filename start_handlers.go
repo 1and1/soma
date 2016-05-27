@@ -39,6 +39,7 @@ func startHandlers() {
 	spawnHostDeploymentHandler()
 
 	if !SomaCfg.ReadOnly {
+		spawnJobDelay()
 		spawnViewWriteHandler()
 		spawnEnvironmentWriteHandler()
 		spawnObjectStateWriteHandler()
@@ -572,6 +573,15 @@ func spawnSupervisorHandler() {
 	supervisorHandler.activation = SomaCfg.Auth.Activation
 	handlerMap[`supervisor`] = supervisorHandler
 	go supervisorHandler.run()
+}
+
+func spawnJobDelay() {
+	var handler jobDelay
+	handler.input = make(chan waitSpec, 128)
+	handler.shutdown = make(chan bool)
+	handler.notify = make(chan string, 256)
+	handlerMap[`jobDelay`] = handler
+	go handler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

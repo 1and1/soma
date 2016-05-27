@@ -90,6 +90,7 @@ runloop:
 			break runloop
 		case req := <-tk.input:
 			tk.process(&req)
+			handlerMap[`jobDelay`].(jobDelay).notify <- req.JobId.String()
 			if !tk.frozen {
 				tk.buildDeploymentDetails()
 				tk.orderDeploymentDetails()
