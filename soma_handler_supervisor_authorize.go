@@ -43,7 +43,7 @@ func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
 			return 200, false
 		}
 	}
-	return 403
+	return 403, false
 }
 
 func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool) {
