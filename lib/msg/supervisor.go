@@ -12,8 +12,9 @@ import (
 )
 
 type Supervisor struct {
-	Verdict    uint16
-	RemoteAddr string
+	Verdict     uint16
+	VerictAdmin bool
+	RemoteAddr  string
 	// Fields for encrypted requests
 	KexId string
 	Data  []byte
