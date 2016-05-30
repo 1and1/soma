@@ -11,6 +11,11 @@ import (
 func ListPermission(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`permission_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
@@ -31,6 +36,11 @@ func ListPermission(w http.ResponseWriter, r *http.Request,
 func ShowPermission(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`permission_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
@@ -57,6 +67,11 @@ func ShowPermission(w http.ResponseWriter, r *http.Request,
 func AddPermission(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`permission_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -89,6 +104,11 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 func DeletePermission(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`permission_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
