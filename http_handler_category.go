@@ -11,6 +11,10 @@ import (
 func ListCategory(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`category_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
@@ -31,6 +35,10 @@ func ListCategory(w http.ResponseWriter, r *http.Request,
 func ShowCategory(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`category_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
@@ -57,6 +65,10 @@ func ShowCategory(w http.ResponseWriter, r *http.Request,
 func AddCategory(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`category_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -87,6 +99,10 @@ func AddCategory(w http.ResponseWriter, r *http.Request,
 func DeleteCategory(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`category_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
