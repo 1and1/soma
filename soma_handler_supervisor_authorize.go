@@ -37,7 +37,7 @@ func (s *supervisor) authorize_global(q *msg.Request) uint16 {
 	return 403
 }
 
-func IsAuthorized(user, action, repository, monitoring string) bool {
+func IsAuthorized(user, action, repository, monitoring, node string) bool {
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
@@ -50,6 +50,7 @@ func IsAuthorized(user, action, repository, monitoring string) bool {
 			PermAction:     action,
 			PermRepository: repository,
 			PermMonitoring: monitoring,
+			PermNode:       node,
 		},
 	}
 	result := <-returnChannel
