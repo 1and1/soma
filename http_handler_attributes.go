@@ -10,8 +10,12 @@ import (
 /*Read functions
  */
 func ListAttribute(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`attributes_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["attributeReadHandler"].(somaAttributeReadHandler)
@@ -26,6 +30,10 @@ func ListAttribute(w http.ResponseWriter, r *http.Request,
 func ShowAttribute(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`attributes_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["attributeReadHandler"].(somaAttributeReadHandler)
@@ -43,8 +51,12 @@ func ShowAttribute(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddAttribute(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`attributes_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -70,6 +82,10 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`attributes_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["attributeWriteHandler"].(somaAttributeWriteHandler)
