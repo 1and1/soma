@@ -10,8 +10,13 @@ import (
 /*Read functions
  */
 func ListPredicate(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`predicates_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["predicateReadHandler"].(somaPredicateReadHandler)
@@ -26,6 +31,11 @@ func ListPredicate(w http.ResponseWriter, r *http.Request,
 func ShowPredicate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`predicates_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["predicateReadHandler"].(somaPredicateReadHandler)
@@ -43,8 +53,13 @@ func ShowPredicate(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddPredicate(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`predicates_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewPredicateRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -69,6 +84,11 @@ func AddPredicate(w http.ResponseWriter, r *http.Request,
 func DeletePredicate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`predicates_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["predicateWriteHandler"].(somaPredicateWriteHandler)
