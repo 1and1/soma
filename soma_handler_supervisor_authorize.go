@@ -1,14 +1,16 @@
 package main
 
+import (
+	"strings"
+
+)
 
 func (s *supervisor) authorize(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `verdict`}
+	result := msg.Result{Type: `supervisor`, Action: `verdict`, Super: &msg.Supervisor{}}
 
 	switch svPermissionActionScopeMap[q.Super.PermAction] {
 	case `global`:
-		result.Super = &msg.Supervisor{
-			Verdict: s.authorize_global(q),
-		}
+		result.Super.Verdict, result.Super.VerdictAdmin = s.authorize_global(q)
 	case `repository`:
 	case `team`:
 	default:
@@ -18,26 +20,33 @@ func (s *supervisor) authorize(q *msg.Request) {
 	return
 
 unauthorized:
-	result.Super = &msg.Supervisor{Verdict: 403}
+	result.Super.Verdict = 403
 	q.Reply <- result
 }
 
-func (s *supervisor) authorize_global(q *msg.Request) uint16 {
+func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
+	if s.global_permissions.assess(userUUID, `00000000-0000-0000-0000-000000000000`) {
+		// omnipotence
+		return 200, true
+	}
 	for _, perm := range svGlobalRequiredPermission[q.Super.PermAction] {
 		if userUUID, ok := s.id_user_rev.get(q.User); !ok {
-			return 403
+			return 403, false
 		}
 		if permUUID, ok := s.id_permission.get(perm); !ok {
-			return 403
+			return 403, false
 		}
 		if s.global_permissions.assess(userUUID, permUUID) {
-			return 200
+			if strings.HasPrefix(perm, `system_`) {
+				return 200, true
+			}
+			return 200, false
 		}
 	}
 	return 403
 }
 
-func IsAuthorized(user, action, repository, monitoring, node string) bool {
+func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool) {
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
@@ -55,10 +64,15 @@ func IsAuthorized(user, action, repository, monitoring, node string) bool {
 	}
 	result := <-returnChannel
 	if result.Super.Verdict == 200 {
-		return true
+		if result.Super.VerdictAdmin {
+			// authorized, admin access
+			return true, true
+		}
+		// authorized, non-admin access
+		return true, false
 	}
-
-	return false
+	// not authorized
+	return false, false
 }
 
 var svGlobalRequiredPermission = map[string][]string{
