@@ -24,7 +24,7 @@ unauthorized:
 
 func (s *supervisor) authorize_global(q *msg.Request) uint16 {
 	for _, perm := range svGlobalRequiredPermission[q.Super.PermAction] {
-		if userUUID, ok := s.id_user_rev.get(q.Super.PermUser); !ok {
+		if userUUID, ok := s.id_user_rev.get(q.User); !ok {
 			return 403
 		}
 		if permUUID, ok := s.id_permission.get(perm); !ok {
@@ -35,6 +35,29 @@ func (s *supervisor) authorize_global(q *msg.Request) uint16 {
 		}
 	}
 	return 403
+}
+
+func IsAuthorized(user, action, repository, monitoring string) bool {
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:   `supervisor`,
+		Action: `authorize`,
+		User:   user,
+		Reply:  returnChannel,
+		Super: &msg.Supervisor{
+			Action:         `authorize`,
+			PermAction:     action,
+			PermRepository: repository,
+			PermMonitoring: monitoring,
+		},
+	}
+	result := <-returnChannel
+	if result.Super.Verdict == 200 {
+		return true
+	}
+
+	return false
 }
 
 var svGlobalRequiredPermission = map[string][]string{

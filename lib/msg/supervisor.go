@@ -24,8 +24,8 @@ type Supervisor struct {
 	Restricted     bool
 	// Fields for permission authorization requests
 	PermAction     string
-	PermUser       string
 	PermRepository string
+	PermMonitoring string
 	// Fields for map update notifications
 	Action string
 	Object string
