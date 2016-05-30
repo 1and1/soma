@@ -15,6 +15,7 @@ func ListDatacenters(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`datacenters_list`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -64,6 +65,7 @@ func ShowDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Pa
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`datacenters_show`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -124,6 +126,7 @@ func AddDatacenter(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`datacenters_create`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	cReq := proto.Request{}
@@ -211,6 +214,7 @@ func DeleteDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`datacenters_delete`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -292,6 +296,7 @@ func RenameDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`datacenters_rename`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	cReq := proto.Request{}

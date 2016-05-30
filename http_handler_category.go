@@ -14,6 +14,7 @@ func ListCategory(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`category_list`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan msg.Result)
@@ -38,6 +39,7 @@ func ShowCategory(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`category_show`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan msg.Result)
@@ -68,6 +70,7 @@ func AddCategory(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`category_create`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	cReq := proto.Request{}
@@ -102,6 +105,7 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`category_delete`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan msg.Result)

@@ -15,6 +15,7 @@ func ListAttribute(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`attributes_list`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -33,6 +34,7 @@ func ShowAttribute(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`attributes_show`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -56,6 +58,7 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`attributes_create`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	cReq := proto.Request{}
@@ -85,6 +88,7 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`attributes_delete`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
