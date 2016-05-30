@@ -10,7 +10,14 @@ import (
 /*
  * Read functions
  */
-func ListEnvironments(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListEnvironments(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`environments_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
 	handler := handlerMap["environmentReadHandler"].(somaEnvironmentReadHandler)
@@ -34,7 +41,14 @@ func ListEnvironments(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	w.Write(json)
 }
 
-func ShowEnvironment(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowEnvironment(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`environments_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
 	handler := handlerMap["environmentReadHandler"].(somaEnvironmentReadHandler)
@@ -66,7 +80,14 @@ func ShowEnvironment(w http.ResponseWriter, r *http.Request, params httprouter.P
 	w.Write(json)
 }
 
-func AddEnvironment(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddEnvironment(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`environments_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
 	// read POST body
@@ -117,7 +138,14 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	w.Write(json)
 }
 
-func DeleteEnvironment(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func DeleteEnvironment(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`environments_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
 	handler := handlerMap["environmentWriteHandler"].(somaEnvironmentWriteHandler)
@@ -147,7 +175,14 @@ func DeleteEnvironment(w http.ResponseWriter, r *http.Request, params httprouter
 	w.Write(json)
 }
 
-func RenameEnvironment(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func RenameEnvironment(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`environments_rename`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
 	// read POST body
