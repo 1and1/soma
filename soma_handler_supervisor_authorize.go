@@ -25,21 +25,30 @@ unauthorized:
 }
 
 func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
-	if s.global_permissions.assess(userUUID, `00000000-0000-0000-0000-000000000000`) {
-		// omnipotence
+	var (
+		userUUID, permUUID string
+		ok                 bool
+	)
+	// unknown user
+	if userUUID, ok = s.id_user_rev.get(q.User); !ok {
+		return 403, false
+	}
+	// user has omnipotence
+	if s.global_permissions.assess(userUUID,
+		`00000000-0000-0000-0000-000000000000`) {
 		return 200, true
 	}
 	for _, perm := range svGlobalRequiredPermission[q.Super.PermAction] {
-		if userUUID, ok := s.id_user_rev.get(q.User); !ok {
-			return 403, false
-		}
-		if permUUID, ok := s.id_permission.get(perm); !ok {
+		// incomplete permission schema -> denied
+		if permUUID, ok = s.id_permission.get(perm); !ok {
 			return 403, false
 		}
 		if s.global_permissions.assess(userUUID, permUUID) {
+			// has system permission (ordered + checked first)
 			if strings.HasPrefix(perm, `system_`) {
 				return 200, true
 			}
+			// has limited permission
 			return 200, false
 		}
 	}
