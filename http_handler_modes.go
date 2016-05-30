@@ -10,8 +10,13 @@ import (
 /*Read functions
  */
 func ListMode(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`modes_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["modeReadHandler"].(somaModeReadHandler)
@@ -26,6 +31,11 @@ func ListMode(w http.ResponseWriter, r *http.Request,
 func ShowMode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`modes_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["modeReadHandler"].(somaModeReadHandler)
@@ -43,8 +53,13 @@ func ShowMode(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddMode(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`modes_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewModeRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -69,6 +84,11 @@ func AddMode(w http.ResponseWriter, r *http.Request,
 func DeleteMode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`modes_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["modeWriteHandler"].(somaModeWriteHandler)
