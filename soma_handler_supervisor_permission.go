@@ -123,7 +123,7 @@ func (s *supervisor) permission_write(q *msg.Request) {
 			userUUID,
 		)
 	case `delete`:
-		if id, ok = s.id_permission.scan(q.Permission.Name); !ok {
+		if id, ok = s.id_permission.get(q.Permission.Name); !ok {
 			result.NotFound(fmt.Errorf(`Supervisor: unknown`))
 			goto dispatch
 		}
@@ -141,9 +141,9 @@ func (s *supervisor) permission_write(q *msg.Request) {
 		// keep lookup maps in sync
 		switch q.Super.Action {
 		case `add`:
-			s.id_permission.insert(q.Permission.Id, q.Permission.Name)
+			s.id_permission.insert(q.Permission.Name, q.Permission.Id)
 		case `delete`:
-			s.id_permission.remove(id)
+			s.id_permission.remove(q.Permission.Name)
 		}
 	}
 
