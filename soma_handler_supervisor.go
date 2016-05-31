@@ -53,6 +53,7 @@ type supervisor struct {
 	tokens              svTokenMap
 	credentials         svCredMap
 	global_permissions  svPermMapGlobal
+	global_grants       svGrantMapGlobal
 	limited_permissions svPermMapLimited
 	id_user             svLockMap
 	id_user_rev         svLockMap
@@ -88,6 +89,7 @@ func (s *supervisor) run() {
 	s.credentials = s.newCredentialMap()
 	s.kex = s.newKexMap()
 	s.global_permissions = s.newGlobalPermMap()
+	s.global_grants = s.newGlobalGrantMap()
 	s.limited_permissions = s.newLimitedPermMap()
 
 	// load from datbase
@@ -233,6 +235,12 @@ func (s *supervisor) newLockMap() svLockMap {
 func (s *supervisor) newGlobalPermMap() svPermMapGlobal {
 	g := svPermMapGlobal{}
 	g.GMap = make(map[string]map[string]bool)
+	return g
+}
+
+func (s *supervisor) newGlobalGrantMap() svGrantMapGlobal {
+	g := svGrantMapGlobal{}
+	g.GMap = make(map[string][]string)
 	return g
 }
 

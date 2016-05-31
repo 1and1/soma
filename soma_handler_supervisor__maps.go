@@ -334,6 +334,69 @@ func (g *svPermMapGlobal) runlock() {
 
 //
 //
+// read/write locked map of global grants
+type svGrantMapGlobal struct {
+	// grant(uuid.string) -> user(uuid.string) -> permission(uuid.string)
+	GMap  map[string][]string
+	mutex sync.RWMutex
+}
+
+func (g *svGrantMapGlobal) record(user, permission, id string) {
+	g.lock()
+	defer g.unlock()
+
+	// zero value for slices is nil
+	if m, ok := g.GMap[id]; !ok {
+		g.GMap[id] = make([]string, 0)
+	} else if m == nil {
+		g.GMap[id] = make([]string, 0)
+	}
+
+	// record grant
+	g.GMap[id] = []string{user, permission}
+}
+
+func (g *svGrantMapGlobal) delete(id string) {
+	g.lock()
+	defer g.unlock()
+
+	// unknown grant
+	if m, ok := g.GMap[id]; !ok {
+		return
+	} else if m == nil {
+		return
+	}
+
+	// delete grant
+	delete(g.GMap, id)
+}
+
+func (g *svGrantMapGlobal) get(id string) []string {
+	g.rlock()
+	defer g.runlock()
+
+	// it is okay to return nil
+	return g.GMap[id]
+}
+
+func (g *svGrantMapGlobal) lock() {
+	g.mutex.Lock()
+}
+
+func (g *svGrantMapGlobal) rlock() {
+	g.mutex.RLock()
+}
+
+func (g *svGrantMapGlobal) unlock() {
+	g.mutex.Unlock()
+}
+
+func (g *svGrantMapGlobal) runlock() {
+	g.mutex.RUnlock()
+}
+
+//
+//
 // read/write locked map of limited permissions
 type svPermMapLimited struct {
 	// user(uuid.string) -> permission(uuid.string) -> repository(uuid.string)
