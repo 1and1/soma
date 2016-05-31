@@ -73,7 +73,7 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	cReq := proto.Request{}
+	cReq := proto.NewPermissionRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
