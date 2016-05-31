@@ -243,6 +243,8 @@ func upgrade_soma_to_201605310001(curr int, tool string, printOnly bool) int {
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605310001, 'Upgrade - somadbctl %s');", tool),
 	)
 
+	executeUpgrades(stmts, printOnly)
+
 	return 201605310001
 }
 
