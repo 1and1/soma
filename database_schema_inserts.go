@@ -79,14 +79,18 @@ INSERT INTO soma.permissions (
 	idx++
 
 	queryMap["grantOmnipotence"] = `
-INSERT INTO soma.global_authorizations (
+INSERT INTO soma.authorizations_global (
+            grant_id,
             user_id,
             permission_id,
-            permission_type
+            permission_type,
+            created_by
 ) VALUES (
             '00000000-0000-0000-0000-000000000000',
             '00000000-0000-0000-0000-000000000000',
-            'omnipotence'
+            '00000000-0000-0000-0000-000000000000',
+            'omnipotence',
+            '00000000-0000-0000-0000-000000000000'
 );`
 	queries[idx] = "grantOmnipotence"
 	idx++
@@ -211,7 +215,7 @@ INSERT INTO public.schema_versions (
             description
 ) VALUES (
             'soma',
-            201605270001,
+            201605310001,
             'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertSomaSchemaVersion"] = somaString

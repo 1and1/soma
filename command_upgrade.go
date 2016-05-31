@@ -22,6 +22,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201605210001: upgrade_soma_to_201605240001,
 		201605240001: upgrade_soma_to_201605240002,
 		201605240002: upgrade_soma_to_201605270001,
+		201605270001: upgrade_soma_to_201605310001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -203,6 +204,46 @@ func upgrade_soma_to_201605270001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201605270001
+}
+
+func upgrade_soma_to_201605310001(curr int, tool string, printOnly bool) int {
+	if curr != 201605270001 {
+		return 0
+	}
+	stmts := []string{
+		`DELETE FROM soma.global_authorizations;`,
+		`ALTER TABLE soma.global_authorizations ADD COLUMN grant_id uuid PRIMARY KEY;`,
+		`ALTER TABLE soma.global_authorizations ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.global_authorizations ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`INSERT INTO soma.global_authorizations ( grant_id, user_id, permission_id, permission_type, created_by )
+		 VALUES ( '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'omnipotence', '00000000-0000-0000-0000-000000000000' );`,
+		`ALTER TABLE soma.global_authorizations RENAME TO authorizations_global;`,
+		`DELETE FROM soma.repo_authorizations;`,
+		`ALTER TABLE soma.repo_authorizations ADD COLUMN grant_id uuid PRIMARY KEY;`,
+		`ALTER TABLE soma.repo_authorizations ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.repo_authorizations ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.repo_authorizations RENAME TO authorizations_repository;`,
+		`DELETE FROM soma.bucket_authorizations;`,
+		`ALTER TABLE soma.bucket_authorizations ADD COLUMN grant_id uuid PRIMARY KEY;`,
+		`ALTER TABLE soma.bucket_authorizations ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.bucket_authorizations ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.bucket_authorizations RENAME TO authorizations_bucket;`,
+		`DELETE FROM soma.group_authorizations;`,
+		`ALTER TABLE soma.group_authorizations ADD COLUMN grant_id uuid PRIMARY KEY;`,
+		`ALTER TABLE soma.group_authorizations ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.group_authorizations ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.group_authorizations RENAME TO authorizations_group;`,
+		`DELETE FROM soma.cluster_authorizations;`,
+		`ALTER TABLE soma.cluster_authorizations ADD COLUMN grant_id uuid PRIMARY KEY;`,
+		`ALTER TABLE soma.cluster_authorizations ADD COLUMN created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.cluster_authorizations ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.cluster_authorizations RENAME TO authorizations_cluster;`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201605310001, 'Upgrade - somadbctl %s');", tool),
+	)
+
+	return 201605310001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
