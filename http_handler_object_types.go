@@ -9,7 +9,14 @@ import (
 /*
  * Read functions
  */
-func ListObjectTypes(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListObjectTypes(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`types_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
 	handler := handlerMap["objectTypeReadHandler"].(somaObjectTypeReadHandler)
@@ -33,7 +40,14 @@ func ListObjectTypes(w http.ResponseWriter, r *http.Request, _ httprouter.Params
 	w.Write(json)
 }
 
-func ShowObjectType(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowObjectType(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`types_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
 	handler := handlerMap["objectTypeReadHandler"].(somaObjectTypeReadHandler)
@@ -66,7 +80,14 @@ func ShowObjectType(w http.ResponseWriter, r *http.Request, params httprouter.Pa
 	w.Write(json)
 }
 
-func AddObjectType(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddObjectType(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`types_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
 	// read POST body
@@ -117,7 +138,14 @@ func AddObjectType(w http.ResponseWriter, r *http.Request, _ httprouter.Params) 
 	w.Write(json)
 }
 
-func DeleteObjectType(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func DeleteObjectType(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`types_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
 	handler := handlerMap["objectTypeWriteHandler"].(somaObjectTypeWriteHandler)
@@ -160,6 +188,12 @@ func DeleteObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 }
 
 func RenameObjectType(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`types_rename`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
 	// read POST body
