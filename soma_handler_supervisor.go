@@ -234,7 +234,7 @@ func (s *supervisor) newLockMap() svLockMap {
 
 func (s *supervisor) newGlobalPermMap() svPermMapGlobal {
 	g := svPermMapGlobal{}
-	g.GMap = make(map[string]map[string]bool)
+	g.GMap = make(map[string]map[string]string)
 	return g
 }
 

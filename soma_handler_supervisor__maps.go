@@ -256,24 +256,24 @@ func (k *svKexMap) runlock() {
 //
 // read/write locked map of global permissions
 type svPermMapGlobal struct {
-	// user(uuid.string) -> permission(uuid.string) -> true
-	GMap  map[string]map[string]bool
+	// user(uuid.string) -> permission(uuid.string) -> grant(uuid.string)
+	GMap  map[string]map[string]string
 	mutex sync.RWMutex
 }
 
-func (g *svPermMapGlobal) grant(user, permission string) {
+func (g *svPermMapGlobal) grant(user, permission, id string) {
 	g.lock()
 	defer g.unlock()
 
 	// zero value for maps is nil
 	if m, ok := g.GMap[user]; !ok {
-		g.GMap[user] = make(map[string]bool)
+		g.GMap[user] = make(map[string]string)
 	} else if m == nil {
-		g.GMap[user] = make(map[string]bool)
+		g.GMap[user] = make(map[string]string)
 	}
 
 	// grant permission
-	g.GMap[user][permission] = true
+	g.GMap[user][permission] = id
 }
 
 func (g *svPermMapGlobal) revoke(user, permission string) {
@@ -304,15 +304,15 @@ func (g *svPermMapGlobal) assess(user, permission string) (verdict bool) {
 	verdict = false
 
 	if m, ok := g.GMap[user]; !ok {
-		g.GMap[user] = make(map[string]bool)
+		g.GMap[user] = make(map[string]string)
 		return
 	} else if m == nil {
-		g.GMap[user] = make(map[string]bool)
+		g.GMap[user] = make(map[string]string)
 		return
 	}
 
 	// let zero value `false` work for us
-	verdict = g.GMap[user][permission]
+	verdict = (g.GMap[user][permission] != "")
 	return
 }
 
