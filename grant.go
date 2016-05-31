@@ -1,9 +1,11 @@
 package proto
 
 type Grant struct {
+	Id            string        `json:"id"`
 	RecipientType string        `json:"recipientType"` //user,team,tool
 	RecipientId   string        `json:"recipientId"`
 	Permission    string        `json:"permission"`
+	Category      string        `json:"category"`
 	RepositoryId  string        `json:"repositoryId"`
 	ObjectType    string        `json:"objectType"`
 	ObjectId      string        `json:"objectId"`
@@ -11,7 +13,8 @@ type Grant struct {
 }
 
 type GrantDetails struct {
-	DetailsCreation
+	CreatedAt string `json:"createdAt,omitempty"`
+	CreatedBy string `json:"createdBy,omitempty"`
 }
 
 func NewGrantRequest() Request {
