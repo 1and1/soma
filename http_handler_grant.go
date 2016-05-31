@@ -38,7 +38,8 @@ func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &crq)
 	// check body is consistent with URI
 	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
-		crq.Grant.RecipientId != params.ByName(`rid`) {
+		crq.Grant.RecipientId != params.ByName(`rid`) ||
+		crq.Grant.Category != `global` {
 		DispatchBadRequest(&w, err)
 		return
 	}
@@ -117,7 +118,8 @@ func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &crq)
 	// check body is consistent with URI
 	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
-		crq.Grant.RecipientId != params.ByName(`rid`) {
+		crq.Grant.RecipientId != params.ByName(`rid`) ||
+		crq.Grant.Category != `limited` {
 		DispatchBadRequest(&w, err)
 		return
 	}
@@ -199,7 +201,8 @@ func GrantSystemRight(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &crq)
 	// check body is consistent with URI
 	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
-		crq.Grant.RecipientId != params.ByName(`rid`) {
+		crq.Grant.RecipientId != params.ByName(`rid`) ||
+		crq.Grant.Category != `system` {
 		DispatchBadRequest(&w, err)
 		return
 	}
