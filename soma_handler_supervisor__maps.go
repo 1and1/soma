@@ -356,7 +356,7 @@ func (g *svGrantMapGlobal) record(user, permission, id string) {
 	g.GMap[id] = []string{user, permission}
 }
 
-func (g *svGrantMapGlobal) delete(id string) {
+func (g *svGrantMapGlobal) discard(id string) {
 	g.lock()
 	defer g.unlock()
 

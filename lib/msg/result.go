@@ -23,6 +23,7 @@ type Result struct {
 	Super      *Supervisor
 	Category   []proto.Category
 	Permission []proto.Permission
+	Grant      []proto.Grant
 }
 
 func (r *Result) RowCnt(i int64, err error) bool {
