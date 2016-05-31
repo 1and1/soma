@@ -70,6 +70,8 @@ type supervisor struct {
 	stmt_DelPermission  *sql.Stmt
 	stmt_ListPermission *sql.Stmt
 	stmt_ShowPermission *sql.Stmt
+	stmt_GrantSysGlUser *sql.Stmt
+	stmt_RevkSysGlUser  *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -146,6 +148,16 @@ func (s *supervisor) run() {
 			log.Fatal(`supervisor/delete-permission: `, err)
 		}
 		defer s.stmt_DelPermission.Close()
+
+		if s.stmt_GrantSysGlUser, err = s.conn.Prepare(stmt.GrantGlobalOrSystemToUser); err != nil {
+			log.Fatal(`supervisor/grant-user-global-system: `, err)
+		}
+		defer s.stmt_GrantSysGlUser.Close()
+
+		if s.stmt_RevkSysGlUser, err = s.conn.Prepare(stmt.RevokeGlobalOrSystemFromUser); err != nil {
+			log.Fatal(`supervisor/revoke-user-global-system: `, err)
+		}
+		defer s.stmt_RevkSysGlUser.Close()
 	}
 
 runloop:
