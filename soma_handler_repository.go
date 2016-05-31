@@ -40,26 +40,12 @@ type somaRepositoryReadHandler struct {
 func (r *somaRepositoryReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: repository/list")
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT repository_id,
-       repository_name
-FROM   soma.repositories;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllRepositories); err != nil {
 		log.Fatal("repository/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: repository/show")
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT repository_id,
-       repository_name,
-       repository_active,
-       organizational_team_id
-FROM   soma.repositories
-WHERE  repository_id = $1
-AND    NOT repository_deleted;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowRepository); err != nil {
 		log.Fatal("repository/show: ", err)
 	}
 	defer r.show_stmt.Close()
