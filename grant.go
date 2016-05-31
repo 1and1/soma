@@ -4,7 +4,7 @@ type Grant struct {
 	Id            string        `json:"id"`
 	RecipientType string        `json:"recipientType"` //user,team,tool
 	RecipientId   string        `json:"recipientId"`
-	Permission    string        `json:"permission"`
+	PermissionId  string        `json:"permissionId"`
 	Category      string        `json:"category"`
 	RepositoryId  string        `json:"repositoryId"`
 	ObjectType    string        `json:"objectType"`
