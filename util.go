@@ -160,6 +160,14 @@ func DispatchInternalError(w *http.ResponseWriter, err error) {
 	http.Error(*w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
+func DispatchNotImplemented(w *http.ResponseWriter, err error) {
+	if err != nil {
+		http.Error(*w, err.Error(), http.StatusNotImplemented)
+		return
+	}
+	http.Error(*w, http.StatusText(http.StatusNotImplemented), http.StatusNotImplemented)
+}
+
 func DispatchJsonReply(w *http.ResponseWriter, b *[]byte) {
 	(*w).Header().Set("Content-Type", "application/json")
 	(*w).WriteHeader(http.StatusOK)
