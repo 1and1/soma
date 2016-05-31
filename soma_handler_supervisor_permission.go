@@ -11,7 +11,7 @@ import (
 )
 
 func (s *supervisor) permission(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `category`}
+	result := msg.Result{Type: `supervisor`, Action: `permission`}
 
 	log.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
 
