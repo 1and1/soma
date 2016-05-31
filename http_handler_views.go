@@ -10,8 +10,13 @@ import (
 /* Read functions
  */
 func ListView(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`view_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewReadHandler"].(somaViewReadHandler)
@@ -26,6 +31,11 @@ func ListView(w http.ResponseWriter, r *http.Request,
 func ShowView(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`view_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewReadHandler"].(somaViewReadHandler)
@@ -43,8 +53,13 @@ func ShowView(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddView(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`view_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewViewRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -69,6 +84,11 @@ func AddView(w http.ResponseWriter, r *http.Request,
 func DeleteView(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`view_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
@@ -86,6 +106,11 @@ func DeleteView(w http.ResponseWriter, r *http.Request,
 func RenameView(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`view_rename`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewViewRequest()
 	err := DecodeJsonBody(r, &cReq)
