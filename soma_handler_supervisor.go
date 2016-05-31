@@ -185,6 +185,12 @@ func (s *supervisor) process(q *msg.Request) {
 		} else {
 			go func() { s.permission(q) }()
 		}
+	case `right`:
+		if q.Super.Action == `grant` || q.Super.Action == `revoke` {
+			s.right(q)
+		} else {
+			go func() { s.right(q) }()
+		}
 	}
 }
 
