@@ -312,8 +312,18 @@ func main() {
 
 		router.POST(`/category/`, BasicAuth(AddCategory))
 		router.DELETE(`/category/:category`, BasicAuth(DeleteCategory))
+
 		router.POST(`/permission/`, BasicAuth(AddPermission))
 		router.DELETE(`/permission/:permission`, BasicAuth(DeletePermission))
+
+		router.POST(`/grant/global/:rtyp/:rid/`, BasicAuth(GrantGlobalRight))
+		router.DELETE(`/grant/global/:rtyp/:rid/:grant`, BasicAuth(RevokeGlobalRight))
+
+		router.POST(`/grant/limited/:rtyp/:rid/:scope/:uuid/`, BasicAuth(GrantLimitedRight))
+		router.DELETE(`/grant/limited/:rtyp/:rid/:scope/:uuid/:grant`, BasicAuth(RevokeLimitedRight))
+
+		router.POST(`/grant/system/:rtyp/:rid/`, BasicAuth(GrantSystemRight))
+		router.DELETE(`/grant/system/:rtyp/:rid/:grant`, BasicAuth(RevokeSystemRight))
 
 		router.POST("/validity/", BasicAuth(AddValidity))
 		router.DELETE("/validity/:property", BasicAuth(DeleteValidity))

@@ -1,0 +1,243 @@
+// +build ignore
+
+package main
+
+/* Read functions
+ */
+func ListRights(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+}
+
+func ListUserRights(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+}
+
+func ListUserRepoRights(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+}
+
+/* GLOBAL RIGHTS
+ */
+func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`grant_global_right`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	crq := proto.NewGrantRequest()
+	err := DecodeJsonBody(r, &crq)
+	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) || crq.Grant.RecipientId != prams.ByName(`rid`) {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action: `grant`,
+		},
+		Grant: &proto.Grant{
+			RecipientType: crq.Grant.RecipientType,
+			RecipientId:   crq.Grant.RecipientId,
+			PermissionId:  crq.Grant.PermissionId,
+			Category:      crq.Grant.Category,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+func RevokeGlobalRight(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`revoke_global_right`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action:  `revoke`,
+			GrantId: params.ByName(`grant`),
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+/* LIMITED RIGHTS
+ */
+func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	scope := params.ByName(`scope`)
+	obj := params.ByName(`uuid`)
+	switch scope {
+	case `repository`:
+	default:
+		DispatchNotImplemented(&w, nil)
+		return
+	}
+
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`grant_limited_right`, obj, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	crq := proto.NewGrantRequest()
+	err := DecodeJsonBody(r, &crq)
+	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) || crq.Grant.RecipientId != prams.ByName(`rid`) {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action: `grant`,
+		},
+		Grant: &proto.Grant{
+			RecipientType: crq.Grant.RecipientType,
+			RecipientId:   crq.Grant.RecipientId,
+			PermissionId:  crq.Grant.PermissionId,
+			Category:      crq.Grant.Category,
+			RepositoryId:  crq.Grant.RepositoryId,
+			ObjectType:    crq.Grant.ObjectType,
+			ObjectId:      crq.Grant.ObjectId,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+func RevokeLimitedRight(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	scope := params.ByName(`scope`)
+	obj := params.ByName(`uuid`)
+	switch scope {
+	case `repository`:
+	default:
+		DispatchNotImplemented(&w, nil)
+		return
+	}
+
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`revoke_limited_right`, obj, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action:  `revoke`,
+			GrantId: params.ByName(`grant`),
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+/* SYSTEM RIGHTS
+ */
+func GrantSystemRight(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`grant_system_right`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	crq := proto.NewGrantRequest()
+	err := DecodeJsonBody(r, &crq)
+	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) || crq.Grant.RecipientId != prams.ByName(`rid`) {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action: `grant`,
+		},
+		Grant: &proto.Grant{
+			RecipientType: crq.Grant.RecipientType,
+			RecipientId:   crq.Grant.RecipientId,
+			PermissionId:  crq.Grant.PermissionId,
+			Category:      crq.Grant.Category,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+func RevokeSystemRight(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`revoke_system_right`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`supervisor`].(supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action:  `revoke`,
+			GrantId: params.ByName(`grant`),
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

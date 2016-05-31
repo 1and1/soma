@@ -19,6 +19,7 @@ type Request struct {
 	Super      *Supervisor
 	Category   proto.Category
 	Permission proto.Permission
+	Grant      proto.Grant
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
