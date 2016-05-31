@@ -1,6 +1,10 @@
-// +build ignore
-
 package main
+
+import (
+	"net/http"
+
+	"github.com/julienschmidt/httprouter"
+)
 
 /* Read functions
  */
@@ -32,12 +36,14 @@ func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
 
 	crq := proto.NewGrantRequest()
 	err := DecodeJsonBody(r, &crq)
-	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) || crq.Grant.RecipientId != prams.ByName(`rid`) {
+	// check body is consistent with URI
+	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
+		crq.Grant.RecipientId != params.ByName(`rid`) {
 		DispatchBadRequest(&w, err)
 		return
 	}
 
-	returnChannel := make(chan somaResult)
+	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
@@ -48,7 +54,7 @@ func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
 		Super: &msg.Supervisor{
 			Action: `grant`,
 		},
-		Grant: &proto.Grant{
+		Grant: proto.Grant{
 			RecipientType: crq.Grant.RecipientType,
 			RecipientId:   crq.Grant.RecipientId,
 			PermissionId:  crq.Grant.PermissionId,
@@ -68,7 +74,7 @@ func RevokeGlobalRight(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	returnChannel := make(chan somaResult)
+	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
@@ -96,6 +102,7 @@ func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
 	switch scope {
 	case `repository`:
 	default:
+		// only implement repository for now
 		DispatchNotImplemented(&w, nil)
 		return
 	}
@@ -108,12 +115,14 @@ func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
 
 	crq := proto.NewGrantRequest()
 	err := DecodeJsonBody(r, &crq)
-	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) || crq.Grant.RecipientId != prams.ByName(`rid`) {
+	// check body is consistent with URI
+	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
+		crq.Grant.RecipientId != params.ByName(`rid`) {
 		DispatchBadRequest(&w, err)
 		return
 	}
 
-	returnChannel := make(chan somaResult)
+	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
@@ -124,7 +133,7 @@ func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
 		Super: &msg.Supervisor{
 			Action: `grant`,
 		},
-		Grant: &proto.Grant{
+		Grant: proto.Grant{
 			RecipientType: crq.Grant.RecipientType,
 			RecipientId:   crq.Grant.RecipientId,
 			PermissionId:  crq.Grant.PermissionId,
@@ -147,6 +156,7 @@ func RevokeLimitedRight(w http.ResponseWriter, r *http.Request,
 	switch scope {
 	case `repository`:
 	default:
+		// only implement repository for now
 		DispatchNotImplemented(&w, nil)
 		return
 	}
@@ -157,7 +167,7 @@ func RevokeLimitedRight(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	returnChannel := make(chan somaResult)
+	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
@@ -187,12 +197,14 @@ func GrantSystemRight(w http.ResponseWriter, r *http.Request,
 
 	crq := proto.NewGrantRequest()
 	err := DecodeJsonBody(r, &crq)
-	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) || crq.Grant.RecipientId != prams.ByName(`rid`) {
+	// check body is consistent with URI
+	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
+		crq.Grant.RecipientId != params.ByName(`rid`) {
 		DispatchBadRequest(&w, err)
 		return
 	}
 
-	returnChannel := make(chan somaResult)
+	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
@@ -203,7 +215,7 @@ func GrantSystemRight(w http.ResponseWriter, r *http.Request,
 		Super: &msg.Supervisor{
 			Action: `grant`,
 		},
-		Grant: &proto.Grant{
+		Grant: proto.Grant{
 			RecipientType: crq.Grant.RecipientType,
 			RecipientId:   crq.Grant.RecipientId,
 			PermissionId:  crq.Grant.PermissionId,
@@ -223,7 +235,7 @@ func RevokeSystemRight(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	returnChannel := make(chan somaResult)
+	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
