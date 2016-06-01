@@ -64,6 +64,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			result = proto.NewCategoryResult()
 			*result.Categories = append(*result.Categories, r.Category...)
 			goto UnmaskedReply
+		case `permission`:
+			result = proto.NewPermissionResult()
+			*result.Permissions = append(*result.Permissions, r.Permission...)
+			goto UnmaskedReply
 		case `right`:
 			result = proto.NewGrantResult()
 			*result.Grants = append(*result.Grants, r.Grant...)
