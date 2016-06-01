@@ -23,7 +23,7 @@ type SomaConfig struct {
 type SomaDbConfig struct {
 	Host    string `json:"host"`
 	User    string `json:"user"`
-	Name    string `json:"name"`
+	Name    string `json:"database"`
 	Port    string `json:"port"`
 	Pass    string `json:"password"`
 	Timeout string `json:"timeout"`
