@@ -40,7 +40,7 @@ dispatch:
 }
 
 func (s *supervisor) permission_read(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `permission`}
+	result := msg.Result{Type: `supervisor`, Action: `permission`, Super: &msg.Supervisor{}}
 	var (
 		rows                     *sql.Rows
 		err                      error
@@ -55,8 +55,10 @@ func (s *supervisor) permission_read(q *msg.Request) {
 		result.Permission = []proto.Permission{}
 		switch q.Super.Action {
 		case `list`:
+			result.Super.Action = `list`
 			rows, err = s.stmt_ListPermission.Query()
 		case `search/name`:
+			result.Super.Action = `search/name`
 			rows, err = s.stmt_SearchPerm.Query(q.Permission.Name)
 		}
 		if err != nil {
@@ -83,6 +85,7 @@ func (s *supervisor) permission_read(q *msg.Request) {
 		}
 		result.OK()
 	case `show`:
+		result.Super.Action = `show`
 		if err = s.stmt_ShowPermission.QueryRow(q.Permission.Name).Scan(
 			&id,
 			&name,
@@ -113,7 +116,7 @@ dispatch:
 }
 
 func (s *supervisor) permission_write(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `permission`}
+	result := msg.Result{Type: `supervisor`, Action: `permission`, Super: &msg.Supervisor{}}
 	userUUID, ok := s.id_user_rev.get(q.User)
 	if !ok {
 		userUUID = `00000000-0000-0000-0000-000000000000`
@@ -127,6 +130,7 @@ func (s *supervisor) permission_write(q *msg.Request) {
 
 	switch q.Super.Action {
 	case `add`:
+		result.Super.Action = `add`
 		q.Permission.Id = uuid.NewV4().String()
 		res, err = s.stmt_AddPermission.Exec(
 			q.Permission.Id,
@@ -135,6 +139,7 @@ func (s *supervisor) permission_write(q *msg.Request) {
 			userUUID,
 		)
 	case `delete`:
+		result.Super.Action = `delete`
 		if id, ok = s.id_permission.get(q.Permission.Name); !ok {
 			result.NotFound(fmt.Errorf(`Supervisor: unknown`))
 			goto dispatch
