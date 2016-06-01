@@ -47,7 +47,7 @@ func initCommon(c *cli.Context) {
 
 	// setup our REST client
 	Client = resty.New().SetRESTMode().
-		SetTimeout(Cfg.Run.TimeoutResty).
+		//SetTimeout(Cfg.Run.TimeoutResty). XXX Bad client setting?
 		SetDisableWarn(true).
 		SetHeader(`User-Agent`, `somaadm 0.4.8`).
 		SetHostURL(Cfg.Run.SomaAPI.String())
