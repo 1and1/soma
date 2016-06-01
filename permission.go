@@ -13,10 +13,22 @@ type PermissionDetails struct {
 	CreatedBy string `json:"createdBy,omitempty"`
 }
 
+type PermissionFilter struct {
+	Name string `json:"name,omitempty"`
+}
+
 func NewPermissionRequest() Request {
 	return Request{
 		Flags:      &Flags{},
 		Permission: &Permission{},
+	}
+}
+
+func NewPermissionFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Permission: &PermissionFilter{},
+		},
 	}
 }
 

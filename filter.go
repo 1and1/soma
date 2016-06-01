@@ -11,6 +11,7 @@ type Filter struct {
 	Monitoring  *MonitoringFilter  `json:"monitoring,omitempty"`
 	Node        *NodeFilter        `json:"node,omitempty"`
 	Oncall      *OncallFilter      `json:"oncall,omitempty"`
+	Permission  *PermissionFilter  `json:"permission,omitempty"`
 	Property    *PropertyFilter    `json:"property,omitempty"`
 	Provider    *ProviderFilter    `json:"provider,omitempty"`
 	Repository  *RepositoryFilter  `json:"repository,omitempty"`
