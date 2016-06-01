@@ -42,7 +42,6 @@ type somaValidityReadHandler struct {
 func (r *somaValidityReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: validity/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT system_property,
        object_type
@@ -52,7 +51,6 @@ FROM   soma.system_property_validity;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: validity/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT system_property,
        object_type,
@@ -184,7 +182,6 @@ type somaValidityWriteHandler struct {
 func (w *somaValidityWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: validity/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.system_property_validity (
 	system_property,
@@ -205,7 +202,6 @@ WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: validity/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.system_property_validity
 WHERE       system_property = $1::varchar;`)

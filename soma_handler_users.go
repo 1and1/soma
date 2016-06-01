@@ -45,7 +45,6 @@ type somaUserReadHandler struct {
 func (r *somaUserReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: user/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT user_id,
        user_uid
@@ -55,7 +54,6 @@ FROM   inventory.users;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: user/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT user_id,
        user_uid,
@@ -181,7 +179,6 @@ type somaUserWriteHandler struct {
 func (w *somaUserWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: user/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO inventory.users (
 	user_id,
@@ -207,7 +204,6 @@ WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: user/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE inventory.users
 SET    user_is_deleted = 'yes',
@@ -218,7 +214,6 @@ WHERE  user_id = $1::uuid;`)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: user/purge")
 	w.prg_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.users
 WHERE  user_id = $1::uuid

@@ -43,7 +43,6 @@ type somaModeReadHandler struct {
 func (r *somaModeReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: mode/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT monitoring_system_mode
 FROM   soma.monitoring_system_modes; `)
@@ -52,7 +51,6 @@ FROM   soma.monitoring_system_modes; `)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: mode/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT monitoring_system_mode
 FROM   soma.monitoring_system_modes
@@ -140,7 +138,6 @@ type somaModeWriteHandler struct {
 func (w *somaModeWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: mode/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.monitoring_system_modes (
 	monitoring_system_mode)
@@ -153,7 +150,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: mode/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.monitoring_system_modes
 WHERE  monitoring_system_mode = $1;`)

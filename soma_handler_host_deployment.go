@@ -44,13 +44,11 @@ type somaHostDeploymentHandler struct {
 func (self *somaHostDeploymentHandler) run() {
 	var err error
 
-	log.Println("Prepare: hostdeployment/get-for-node")
 	if self.geti_stmt, err = self.conn.Prepare(stmtGetInstancesForNode); err != nil {
 		log.Fatal("hostdeployment/get-for-node: ", err)
 	}
 	defer self.geti_stmt.Close()
 
-	log.Println("Prepare: hostdeployment/last-version")
 	if self.last_stmt, err = self.conn.Prepare(stmtGetLastInstanceVersion); err != nil {
 		log.Fatal("hostdeployment/last-version: ", err)
 	}

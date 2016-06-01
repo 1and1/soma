@@ -42,7 +42,6 @@ type somaMetricReadHandler struct {
 func (r *somaMetricReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: metric/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT metric
 FROM   soma.metrics;`)
@@ -51,7 +50,6 @@ FROM   soma.metrics;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: metric/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT metric,
        metric_unit,
@@ -147,7 +145,6 @@ type somaMetricWriteHandler struct {
 func (w *somaMetricWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: metric/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.metrics (
 	metric,
@@ -162,7 +159,6 @@ SELECT $1::varchar, $2::varchar, $3::text WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: metric/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.metrics
 WHERE  metric = $1::varchar;`)
@@ -171,7 +167,6 @@ WHERE  metric = $1::varchar;`)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: metric/package-add")
 	w.pkg_add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.metric_packages (
 	metric,
@@ -187,7 +182,6 @@ SELECT $1::varchar, $2::varchar, $3::varchar WHERE NOT EXISTS (
 	}
 	defer w.pkg_add_stmt.Close()
 
-	log.Println("Prepare: metric/package-del")
 	w.pkg_del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.metric_packages
 WHERE  metric = $1::varchar;`)

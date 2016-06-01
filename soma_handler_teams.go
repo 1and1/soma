@@ -44,7 +44,6 @@ type somaTeamReadHandler struct {
 func (r *somaTeamReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: team/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT organizational_team_id,
        organizational_team_name 
@@ -54,7 +53,6 @@ FROM   inventory.organizational_teams;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: team/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT organizational_team_id,
        organizational_team_name,
@@ -154,7 +152,6 @@ type somaTeamWriteHandler struct {
 func (w *somaTeamWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: team/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO inventory.organizational_teams (
 	organizational_team_id,
@@ -172,7 +169,6 @@ SELECT $1::uuid, $2::varchar, $3::numeric, $4 WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: team/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.organizational_teams
 WHERE organizational_team_id = $1;`)

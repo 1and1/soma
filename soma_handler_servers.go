@@ -236,7 +236,6 @@ type somaServerWriteHandler struct {
 func (w *somaServerWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: server/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO inventory.servers (
 	server_id,
@@ -257,7 +256,6 @@ WHERE	NOT EXISTS(
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: server/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE inventory.servers
 SET    server_deleted = 'yes',
@@ -269,7 +267,6 @@ AND    server_id != '00000000-0000-0000-0000-000000000000';`)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: server/purge")
 	w.prg_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.servers
 WHERE  server_id = $1::uuid

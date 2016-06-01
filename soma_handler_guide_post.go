@@ -28,7 +28,6 @@ type guidePost struct {
 func (g *guidePost) run() {
 	var err error
 
-	log.Println("Prepare: guide/job-save")
 	g.jbsv_stmt, err = g.conn.Prepare(`
 INSERT INTO soma.jobs (
 	job_id,
@@ -52,7 +51,6 @@ SELECT	$1::uuid,
 	}
 	defer g.jbsv_stmt.Close()
 
-	log.Println("Prepare: guide/repo-by-bucket")
 	g.repo_stmt, err = g.conn.Prepare(`
 SELECT	sb.repository_id,
 		sr.repository_name
@@ -65,7 +63,6 @@ WHERE	sb.bucket_id = $1::uuid;`)
 	}
 	defer g.repo_stmt.Close()
 
-	log.Println("Prepare: guide/load-node-details")
 	g.node_stmt, err = g.conn.Prepare(`
 SELECT    sn.node_asset_id,
 	      sn.node_name,
@@ -85,7 +82,6 @@ AND       sn.node_id = $1::uuid;`)
 	}
 	defer g.node_stmt.Close()
 
-	log.Println("Prepare: guide/repo-by-id")
 	g.name_stmt, err = g.conn.Prepare(`
 SELECT repository_name
 FROM   soma.repositories
@@ -95,7 +91,6 @@ WHERE  repository_id = $1::uuid;`)
 	}
 	defer g.name_stmt.Close()
 
-	log.Println("Prepare: guide/service-lookup")
 	g.serv_stmt, err = g.conn.Prepare(`
 SELECT stsp.service_property
 FROM   soma.repositories sr
@@ -109,7 +104,6 @@ AND    sr.organizational_team_id = $3::uuid;`)
 	}
 	defer g.serv_stmt.Close()
 
-	log.Println("Prepare: guide/populate-service-attributes")
 	g.attr_stmt, err = g.conn.Prepare(`
 SELECT stspv.service_property_attribute,
        stspv.value
@@ -127,7 +121,6 @@ AND    sr.organizational_team_id = $3::uuid;`)
 	}
 	defer g.attr_stmt.Close()
 
-	log.Println("Prepare: guide/capability-threshold-lookup")
 	g.cthr_stmt, err = g.conn.Prepare(`
 SELECT threshold_amount
 FROM   soma.monitoring_capabilities

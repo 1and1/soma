@@ -42,7 +42,6 @@ type somaProviderReadHandler struct {
 func (r *somaProviderReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: provider/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT metric_provider
 FROM   soma.metric_providers;`)
@@ -51,7 +50,6 @@ FROM   soma.metric_providers;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: provider/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT metric_provider
 FROM   soma.metric_providers
@@ -139,7 +137,6 @@ type somaProviderWriteHandler struct {
 func (w *somaProviderWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: provider/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.metric_providers (
 	metric_provider)
@@ -152,7 +149,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: provider/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.metric_providers
 WHERE  metric_provider = $1::varchar;`)

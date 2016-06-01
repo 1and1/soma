@@ -42,7 +42,6 @@ type somaStatusReadHandler struct {
 func (r *somaStatusReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: status/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT status
 FROM   soma.check_instance_status;`)
@@ -138,7 +137,6 @@ type somaStatusWriteHandler struct {
 func (w *somaStatusWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: status/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.check_instance_status (
 	status)
@@ -151,7 +149,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: status/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.check_instance_status
 WHERE  status = $1;`)

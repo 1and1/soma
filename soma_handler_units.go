@@ -42,7 +42,6 @@ type somaUnitReadHandler struct {
 func (r *somaUnitReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: unit/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT metric_unit
 FROM   soma.metric_units;`)
@@ -51,7 +50,6 @@ FROM   soma.metric_units;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: unit/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT metric_unit,
        metric_unit_long_name
@@ -146,7 +144,6 @@ type somaUnitWriteHandler struct {
 func (w *somaUnitWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: unit/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.metric_units (
 	metric_unit,
@@ -161,7 +158,6 @@ SELECT $1::varchar, $2::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: unit/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.metric_units
 WHERE  metric_unit = $1::varchar;`)

@@ -42,7 +42,6 @@ type somaLevelReadHandler struct {
 func (r *somaLevelReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: level/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT level_name,
        level_shortname
@@ -52,7 +51,6 @@ FROM   soma.notification_levels;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: level/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT level_name,
        level_shortname,
@@ -148,7 +146,6 @@ type somaLevelWriteHandler struct {
 func (w *somaLevelWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: level/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.notification_levels (
 	level_name,
@@ -165,7 +162,6 @@ SELECT $1::varchar, $2::varchar, $3::smallint WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: level/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.notification_levels
 WHERE  level_name = $1;`)

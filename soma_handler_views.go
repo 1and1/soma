@@ -44,7 +44,6 @@ type somaViewReadHandler struct {
 func (r *somaViewReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: view/list")
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT view
 FROM   soma.views;`)
@@ -53,7 +52,6 @@ FROM   soma.views;`)
 	}
 	defer r.list_stmt.Close()
 
-	log.Println("Prepare: view/show")
 	r.show_stmt, err = r.conn.Prepare(`
 SELECT view
 FROM   soma.views
@@ -146,7 +144,6 @@ type somaViewWriteHandler struct {
 func (w *somaViewWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: view/add")
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.views (
 	view)
@@ -159,7 +156,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_stmt.Close()
 
-	log.Println("Prepare: view/delete")
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.views
 WHERE  view = $1::varchar;`)
@@ -168,7 +164,6 @@ WHERE  view = $1::varchar;`)
 	}
 	defer w.del_stmt.Close()
 
-	log.Println("Prepare: view/rename")
 	w.ren_stmt, err = w.conn.Prepare(`
 UPDATE soma.views
 SET    view = $1::varchar

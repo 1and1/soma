@@ -58,7 +58,6 @@ type somaPropertyReadHandler struct {
 func (r *somaPropertyReadHandler) run() {
 	var err error
 
-	log.Println("Prepare: property/list-system")
 	r.list_sys_stmt, err = r.conn.Prepare(`
 SELECT system_property
 FROM   soma.system_properties;`)
@@ -67,7 +66,6 @@ FROM   soma.system_properties;`)
 	}
 	defer r.list_sys_stmt.Close()
 
-	log.Println("Prepare: property/list-service")
 	r.list_srv_stmt, err = r.conn.Prepare(`
 SELECT service_property,
        organizational_team_id
@@ -77,7 +75,6 @@ FROM soma.team_service_properties;`)
 	}
 	defer r.list_srv_stmt.Close()
 
-	log.Println("Prepare: property/list-native")
 	r.list_nat_stmt, err = r.conn.Prepare(`
 SELECT native_property
 FROM   soma.native_properties;`)
@@ -86,7 +83,6 @@ FROM   soma.native_properties;`)
 	}
 	defer r.list_nat_stmt.Close()
 
-	log.Println("Prepare: property/list-service-template")
 	r.list_tpl_stmt, err = r.conn.Prepare(`
 SELECT service_property
 FROM   soma.service_properties;`)
@@ -95,7 +91,6 @@ FROM   soma.service_properties;`)
 	}
 	defer r.list_tpl_stmt.Close()
 
-	log.Println("Prepare: property/list-custom")
 	r.list_cst_stmt, err = r.conn.Prepare(`
 SELECT custom_property_id,
        repository_id,
@@ -106,7 +101,6 @@ FROM   soma.custom_properties;`)
 	}
 	defer r.list_cst_stmt.Close()
 
-	log.Println("Prepare: property/show-system")
 	r.show_sys_stmt, err = r.conn.Prepare(`
 SELECT system_property
 FROM   soma.system_properties
@@ -116,7 +110,6 @@ WHERE  system_property = $1::varchar;`)
 	}
 	defer r.show_sys_stmt.Close()
 
-	log.Println("Prepare: property/show-native")
 	r.show_nat_stmt, err = r.conn.Prepare(`
 SELECT native_property
 FROM   soma.native_properties
@@ -126,7 +119,6 @@ WHERE  native_property = $1::varchar;`)
 	}
 	defer r.show_nat_stmt.Close()
 
-	log.Println("Prepare: property/show-custom")
 	r.show_cst_stmt, err = r.conn.Prepare(`
 SELECT custom_property_id,
        repository_id,
@@ -139,7 +131,6 @@ AND    repository_id = $2::uuid;`)
 	}
 	defer r.show_cst_stmt.Close()
 
-	log.Println("Prepare: property/show-service")
 	r.show_srv_stmt, err = r.conn.Prepare(`
 SELECT tsp.service_property,
        tsp.organizational_team_id,
@@ -155,7 +146,6 @@ AND    tsp.organizational_team_id = $2::uuid;`)
 	}
 	defer r.show_srv_stmt.Close()
 
-	log.Println("Prepare: property/show-service-template")
 	r.show_tpl_stmt, err = r.conn.Prepare(`
 SELECT sp.service_property,
 	   spv.service_property_attribute,
@@ -415,7 +405,6 @@ type somaPropertyWriteHandler struct {
 func (w *somaPropertyWriteHandler) run() {
 	var err error
 
-	log.Println("Prepare: property/add-system")
 	w.add_sys_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.system_properties (
 	system_property)
@@ -428,7 +417,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_sys_stmt.Close()
 
-	log.Println("Prepare: property/add-native")
 	w.add_nat_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.native_properties (
 	native_property)
@@ -441,7 +429,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_nat_stmt.Close()
 
-	log.Println("Prepare: property/add-custom")
 	w.add_cst_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.custom_properties (
 	custom_property_id,
@@ -457,7 +444,6 @@ SELECT $1::uuid, $2::uuid, $3::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_cst_stmt.Close()
 
-	log.Println("Prepare: property/add-service")
 	w.add_srv_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.team_service_properties (
 	organizational_team_id,
@@ -472,7 +458,6 @@ SELECT $1::uuid, $2::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_srv_stmt.Close()
 
-	log.Println("Prepare: property/add-service-attribute")
 	w.add_srv_attr_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.team_service_property_values (
 	organizational_team_id,
@@ -485,7 +470,6 @@ SELECT $1::uuid, $2::varchar, $3::varchar, $4::varchar;`)
 	}
 	defer w.add_srv_attr_stmt.Close()
 
-	log.Println("Prepare: property/add-service-template")
 	w.add_tpl_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.service_properties (
 	service_property)
@@ -498,7 +482,6 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	}
 	defer w.add_tpl_stmt.Close()
 
-	log.Println("Prepare: property/add-service-template-attribute")
 	w.add_tpl_attr_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.service_property_values (
 	service_property,
@@ -510,7 +493,6 @@ SELECT $1::varchar, $2::varchar, $3::varchar;`)
 	}
 	defer w.add_tpl_attr_stmt.Close()
 
-	log.Println("Prepare: property/delete-system")
 	w.del_sys_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.system_properties
 WHERE  system_property = $1::varchar;`)
@@ -519,7 +501,6 @@ WHERE  system_property = $1::varchar;`)
 	}
 	defer w.del_sys_stmt.Close()
 
-	log.Println("Prepare: property/delete-native")
 	w.del_nat_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.native_properties
 WHERE  native_property = $1::varchar;`)
@@ -528,7 +509,6 @@ WHERE  native_property = $1::varchar;`)
 	}
 	defer w.del_nat_stmt.Close()
 
-	log.Println("Prepare: property/delete-custom")
 	w.del_cst_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.custom_properties
 WHERE  repository_id = $1::uuid
@@ -538,7 +518,6 @@ AND    custom_property_id = $2::uuid;`)
 	}
 	defer w.del_cst_stmt.Close()
 
-	log.Println("Prepare: property/delete-service")
 	w.del_srv_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.team_service_properties
 WHERE  organizational_team_id = $1::uuid
@@ -548,7 +527,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer w.del_srv_stmt.Close()
 
-	log.Println("Prepare: property/delete-service-attributes")
 	w.del_srv_attr_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
@@ -558,7 +536,6 @@ AND    service_property = $2::varchar;`)
 	}
 	defer w.del_srv_attr_stmt.Close()
 
-	log.Println("Prepare: property/delete-service-template")
 	w.del_tpl_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.service_properties
 WHERE  service_property = $1::varchar;`)
@@ -567,7 +544,6 @@ WHERE  service_property = $1::varchar;`)
 	}
 	defer w.del_tpl_stmt.Close()
 
-	log.Println("Prepare: property/delete-service-template-attributes")
 	w.del_tpl_attr_stmt, err = w.conn.Prepare(`
 DELETE FROM soma.service_property_values
 WHERE  service_property = $1::varchar;`)
