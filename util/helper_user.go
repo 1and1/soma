@@ -15,25 +15,16 @@ func (u *SomaUtil) TryGetUserByUUIDOrName(c *resty.Client, s string) string {
 }
 
 func (u *SomaUtil) GetUserIdByName(c *resty.Client, user string) string {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			User: &proto.UserFilter{
-				UserName: user,
-			},
-		},
-	}
+	req := proto.NewUserFilter()
+	req.Filter.User.UserName = user
 
 	resp := u.PostRequestWithBody(c, req, "/filter/users/")
-	userResult := u.DecodeProtoResultUserFromResponse(resp)
+	res := u.DecodeResultFromResponse(resp)
 
-	if user != (*userResult.Users)[0].UserName {
+	if user != (*res.Users)[0].UserName {
 		u.Abort("Received result set for incorrect user")
 	}
-	return (*userResult.Users)[0].Id
-}
-
-func (u *SomaUtil) DecodeProtoResultUserFromResponse(resp *resty.Response) *proto.Result {
-	return u.DecodeResultFromResponse(resp)
+	return (*res.Users)[0].Id
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
