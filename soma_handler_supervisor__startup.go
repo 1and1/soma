@@ -48,6 +48,7 @@ func (s *supervisor) startupLoad() {
 
 	s.startupTokens()
 
+	s.startupGrants()
 }
 
 func (s *supervisor) startupRoot() {
@@ -254,6 +255,42 @@ func (s *supervisor) startupPermissions() {
 	}
 	if err = rows.Err(); err != nil {
 		log.Fatal(`supervisor/load-permissions,next: `, err)
+	}
+}
+
+func (s *supervisor) startupGrants() {
+	var (
+		err                           error
+		grantUUID, permUUID, userUUID string
+		rows                          *sql.Rows
+	)
+
+	rows, err = s.conn.Query(stmt.LoadGlobalOrSystemUserGrants)
+	if err != nil {
+		log.Fatal(`supervisor/load-user-systemglobal-grants,query: `, err)
+	}
+	defer rows.Close()
+
+	// reduce lock overhead by locking here once and then using the
+	// unlocked load method
+	s.global_permissions.lock()
+	defer s.global_permissions.unlock()
+	s.global_grants.lock()
+	defer s.global_grants.unlock()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&grantUUID,
+			&userUUID,
+			&permUUID,
+		); err != nil {
+			log.Fatal(`supervisor/load-user-systemglobal-grants,scan: `, err)
+		}
+		s.global_permissions.load(userUUID, permUUID, grantUUID)
+		s.global_grants.load(userUUID, permUUID, grantUUID)
+	}
+	if err = rows.Err(); err != nil {
+		log.Fatal(`supervisor/load-user-systemglobal-grants,next: `, err)
 	}
 }
 

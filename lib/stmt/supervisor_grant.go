@@ -28,6 +28,12 @@ const RevokeGlobalOrSystemFromUser = `
 DELETE FROM soma.authorizations_global
 WHERE grant_id = $1::uuid;`
 
+const LoadGlobalOrSystemUserGrants = `
+SELECT grant_id,
+       user_id,
+       permission_id
+FROM   soma.authorizations_global;`
+
 const GrantLimitedRepoToUser = `
 INSERT INTO soma.authorizations_repository (
 	grant_id,

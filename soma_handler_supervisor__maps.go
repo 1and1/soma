@@ -265,6 +265,10 @@ func (g *svPermMapGlobal) grant(user, permission, id string) {
 	g.lock()
 	defer g.unlock()
 
+	g.load(user, permission, id)
+}
+
+func (g *svPermMapGlobal) load(user, permission, id string) {
 	// zero value for maps is nil
 	if m, ok := g.GMap[user]; !ok {
 		g.GMap[user] = make(map[string]string)
@@ -344,6 +348,11 @@ type svGrantMapGlobal struct {
 func (g *svGrantMapGlobal) record(user, permission, id string) {
 	g.lock()
 	defer g.unlock()
+
+	g.load(user, permission, id)
+}
+
+func (g *svGrantMapGlobal) load(user, permission, id string) {
 
 	// zero value for slices is nil
 	if m, ok := g.GMap[id]; !ok {
