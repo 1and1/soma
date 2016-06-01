@@ -4,24 +4,44 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"strconv"
 
 	"github.com/codegangsta/cli"
-	"github.com/howeyc/gopass"
+	"github.com/mitchellh/go-homedir"
+	"github.com/peterh/liner"
 )
 
 func configSetup(c *cli.Context) error {
-	log.Print("Starting runtime config initialization")
+	var (
+		configFile, home, wd string
+		err                  error
+	)
+
+	if home, err = homedir.Dir(); err != nil {
+		log.Fatal(err)
+	}
+	if wd, err = os.Getwd(); err != nil {
+		log.Fatal(err)
+	}
 
 	// try loading a configuration file
-	configFile := os.ExpandEnv(c.GlobalString("config"))
-	err := Cfg.populateFromFile(configFile)
-	if err != nil {
-		if c.GlobalIsSet("config") {
+	if c.GlobalIsSet(`config`) {
+		if path.IsAbs(c.GlobalString(`config`)) {
+			configFile = c.GlobalString(`config`)
+		} else {
+			configFile = path.Join(wd, c.GlobalString(`config`))
+		}
+	} else {
+		configFile = path.Join(home, `.soma`, `dbctl`, `somadbctl.conf`)
+	}
+
+	if err = Cfg.populateFromFile(configFile); err != nil {
+		if c.GlobalIsSet(`config`) {
 			// missing cli argument file is fatal error
 			log.Fatal(err)
 		}
-		log.Print(fmt.Sprintf("No configuration file found: %s", c.GlobalString("config")))
+		log.Print(fmt.Sprintf("No configuration file found: %s", configFile))
 	}
 
 	// finish setting up runtime configuration
@@ -83,17 +103,22 @@ func configSetup(c *cli.Context) error {
 	}
 
 	// prompt for password if the cli flag was set
-	if c.GlobalBool("password") {
-		fmt.Printf("Enter password: ")
-		pass, err := gopass.GetPasswd()
-		if err != nil {
-			return err
+	if c.GlobalBool(`password`) || Cfg.Database.Pass == "" {
+		line := liner.NewLiner()
+		defer line.Close()
+		line.SetCtrlCAborts(true)
+
+		Cfg.Database.Pass, err = line.PasswordPrompt(`Enter database password: `)
+		if err == liner.ErrPromptAborted {
+			os.Exit(0)
+		} else if err != nil {
+			log.Fatal(err)
 		}
-		Cfg.Database.Pass = string(pass)
 	}
+
 	// abort if we have no connection password at this point
 	if Cfg.Database.Pass == "" {
-		log.Fatal("Can not continue without database connection password")
+		log.Fatal(`Can not continue without database connection password`)
 	}
 	return nil
 }

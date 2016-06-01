@@ -45,9 +45,9 @@ func registerFlags(app cli.App) *cli.App {
 			Usage: "print SQL statements",
 		},
 		cli.StringFlag{
-			Name:  "config, c",
-			Value: "${HOME}/.soma/somadbctl.conf",
-			Usage: "configuration file location",
+			Name:   "config, c",
+			Usage:  "configuration file location",
+			EnvVar: "SOMA_DBCTL_CONFIG",
 		},
 	}
 	return &app

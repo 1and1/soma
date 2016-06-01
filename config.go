@@ -3,9 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/nahanni/go-ucl"
 	"io/ioutil"
 	"log"
+
+	"github.com/nahanni/go-ucl"
 )
 
 type Config struct {
@@ -18,7 +19,7 @@ type Config struct {
 type DbConfig struct {
 	Host string `json:"host"`
 	User string `json:"user"`
-	Name string `json:"name"`
+	Name string `json:"dbname"`
 	Port string `json:"port"`
 	Pass string `json:"password"`
 }
@@ -28,8 +29,6 @@ func (c *Config) populateFromFile(fname string) error {
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Loading configuration from %s", fname)
 
 	// UCL parses into map[string]interface{}
 	fileBytes := bytes.NewBuffer([]byte(file))
