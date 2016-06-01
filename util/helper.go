@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 
 	"gopkg.in/resty.v0"
 )
@@ -23,7 +24,7 @@ func (u *SomaUtil) SliceContainsString(s string, sl []string) bool {
 
 func (u *SomaUtil) CheckStringNotAKeyword(s string, keys []string) {
 	if u.SliceContainsString(s, keys) {
-		u.Log.Fatal("Syntax error, back-to-back keywords")
+		log.Fatal(`Syntax error, back-to-back keywords`)
 	}
 }
 

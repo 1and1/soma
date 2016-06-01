@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -95,7 +96,7 @@ func (u SomaUtil) GetServerAssetIdByName(c *resty.Client, serverName string) uin
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
 	if serverName != (*serverResult.Servers)[0].Name {
-		u.Log.Fatal("Received result set for incorrect server")
+		log.Fatal("Received result set for incorrect server")
 	}
 	return (*serverResult.Servers)[0].AssetId
 }

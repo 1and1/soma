@@ -1,6 +1,8 @@
 package util
 
 import (
+	"log"
+
 	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
@@ -27,7 +29,7 @@ func (u SomaUtil) GetTeamIdByName(c *resty.Client, teamName string) string {
 	teamResult := u.DecodeProtoResultTeamFromResponse(resp)
 
 	if teamName != (*teamResult.Teams)[0].Name {
-		u.Log.Fatal("Received result set for incorrect team")
+		log.Fatal("Received result set for incorrect team")
 	}
 	return (*teamResult.Teams)[0].Id
 }
