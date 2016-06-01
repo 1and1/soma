@@ -297,7 +297,7 @@ func cmdPermissionGrantEnable(c *cli.Context) error {
 		Grant: &proto.Grant{
 			RecipientType: "user",
 			RecipientId:   userId,
-			Permission:    "global_grant_limited",
+			PermissionId:  "global_grant_limited",
 		},
 	}, path,
 	)
