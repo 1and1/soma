@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
 )
 
 func registerPermissions(app cli.App) *cli.App {
@@ -58,62 +56,69 @@ func registerPermissions(app cli.App) *cli.App {
 						Action: runtime(cmdPermissionList),
 					},
 					{
-						Name:  "show",
-						Usage: "SUBCOMMANDS for permission show",
-						Subcommands: []cli.Command{
-							{
-								Name:   "user",
-								Usage:  "Show permissions of a user",
-								Action: runtime(cmdPermissionShowUser),
-							},
-							{
-								Name:   "team",
-								Usage:  "Show permissions of a team",
-								Action: runtime(cmdPermissionShowTeam),
-							},
-							{
-								Name:   "tool",
-								Usage:  "Show permissions of a tool account",
-								Action: runtime(cmdPermissionShowTool),
-							},
-							{
-								Name:   "permission",
-								Usage:  "Show details about a permission",
-								Action: runtime(cmdPermissionShowPermission),
-							},
-						},
-					}, // end permissions show
-					{
-						Name:   "audit",
-						Usage:  "Show all limited permissions associated with a repository",
-						Action: runtime(cmdPermissionAudit),
+						Name:   "show",
+						Usage:  "Show details for a permission",
+						Action: runtime(cmdPermissionShow),
 					},
-					{
-						Name:  "grant",
-						Usage: "SUBCOMMANDS for permission grant",
-						Subcommands: []cli.Command{
-							{
-								Name:   "enable",
-								Usage:  "Enable a useraccount to receive GRANT permissions",
-								Action: runtime(cmdPermissionGrantEnable),
+					/*
+						{
+							Name:  "show",
+							Usage: "SUBCOMMANDS for permission show",
+							Subcommands: []cli.Command{
+								{
+									Name:   "user",
+									Usage:  "Show permissions of a user",
+									Action: runtime(cmdPermissionShowUser),
+								},
+								{
+									Name:   "team",
+									Usage:  "Show permissions of a team",
+									Action: runtime(cmdPermissionShowTeam),
+								},
+								{
+									Name:   "tool",
+									Usage:  "Show permissions of a tool account",
+									Action: runtime(cmdPermissionShowTool),
+								},
+								{
+									Name:   "permission",
+									Usage:  "Show details about a permission",
+									Action: runtime(cmdPermissionShowPermission),
+								},
 							},
-							{
-								Name:   "global",
-								Usage:  "Grant a global permission",
-								Action: runtime(cmdPermissionGrantGlobal),
-							},
-							{
-								Name:   "limited",
-								Usage:  "Grant a limited permission",
-								Action: runtime(cmdPermissionGrantLimited),
-							},
-							{
-								Name:   "system",
-								Usage:  "Grant a system permission",
-								Action: runtime(cmdPermissionGrantSystem),
-							},
+						}, // end permissions show
+						{
+							Name:   "audit",
+							Usage:  "Show all limited permissions associated with a repository",
+							Action: runtime(cmdPermissionAudit),
 						},
-					}, // end permissions grant
+						{
+							Name:  "grant",
+							Usage: "SUBCOMMANDS for permission grant",
+							Subcommands: []cli.Command{
+								{
+									Name:   "enable",
+									Usage:  "Enable a useraccount to receive GRANT permissions",
+									Action: runtime(cmdPermissionGrantEnable),
+								},
+								{
+									Name:   "global",
+									Usage:  "Grant a global permission",
+									Action: runtime(cmdPermissionGrantGlobal),
+								},
+								{
+									Name:   "limited",
+									Usage:  "Grant a limited permission",
+									Action: runtime(cmdPermissionGrantLimited),
+								},
+								{
+									Name:   "system",
+									Usage:  "Grant a system permission",
+									Action: runtime(cmdPermissionGrantSystem),
+								},
+							},
+						}, // end permissions grant
+					*/
 				},
 			}, // end permissions
 		}...,
@@ -202,6 +207,17 @@ func cmdPermissionList(c *cli.Context) error {
 	return nil
 }
 
+func cmdPermissionShow(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
+
+	path := fmt.Sprintf("/permission/%s", c.Args().First())
+
+	resp := utl.GetRequest(Client, path)
+	fmt.Println(resp)
+	return nil
+}
+
+/*
 func cmdPermissionShowGeneric(c *cli.Context, objType string) {
 	url := Cfg.Run.SomaAPI
 	var (
@@ -306,7 +322,6 @@ func cmdPermissionGrantEnable(c *cli.Context) error {
 }
 
 func cmdPermissionGrantGlobal(c *cli.Context) error {
-	/*
 		url := getApiUrl()
 		var objType string
 
@@ -334,12 +349,10 @@ func cmdPermissionGrantGlobal(c *cli.Context) error {
 		if err != nil {
 			Slog.Fatal(err)
 		}
-	*/
 	return nil
 }
 
 func cmdPermissionGrantLimited(c *cli.Context) error {
-	/*
 		url := getApiUrl()
 		keys := [...]string{"repository", "bucket", "group", "cluster"}
 		keySlice := make([]string, 0)
@@ -405,12 +418,12 @@ func cmdPermissionGrantLimited(c *cli.Context) error {
 		if err != nil {
 			Slog.Fatal(err)
 		}
-	*/
 	return nil
 }
 
 func cmdPermissionGrantSystem(c *cli.Context) error {
 	return nil
 }
+*/
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
