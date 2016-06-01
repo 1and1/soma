@@ -73,6 +73,7 @@ type supervisor struct {
 	stmt_SearchPerm     *sql.Stmt
 	stmt_GrantSysGlUser *sql.Stmt
 	stmt_RevkSysGlUser  *sql.Stmt
+	stmt_SrchGlSysGrant *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -133,6 +134,11 @@ func (s *supervisor) run() {
 		log.Fatal(`supervisor/search-permission: `, err)
 	}
 	defer s.stmt_SearchPerm.Close()
+
+	if s.stmt_SrchGlSysGrant, err = s.conn.Prepare(stmt.SearchGlobalSystemGrant); err != nil {
+		log.Fatal(`supervisor/search-grant: `, err)
+	}
+	defer s.stmt_SrchGlSysGrant.Close()
 
 	if !s.readonly {
 		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {

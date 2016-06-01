@@ -117,6 +117,39 @@ dispatch:
 }
 
 func (s *supervisor) right_globalsystem_read(q *msg.Request) {
+	result := msg.Result{Type: `supervisor`, Action: `right`}
+
+	var (
+		grantId string
+		err     error
+	)
+
+	switch q.Super.Action {
+	case `search`:
+		if err = s.stmt_SrchGlSysGrant.QueryRow(
+			q.Grant.PermissionId,
+			q.Grant.Category,
+			q.Grant.RecipientId,
+		).Scan(grantId); err == sql.ErrNoRows {
+			result.NotFound(err)
+			goto dispatch
+		} else if err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+		result.Grant = []proto.Grant{proto.Grant{
+			Id:            grantId,
+			PermissionId:  q.Grant.PermissionId,
+			Category:      q.Grant.Category,
+			RecipientId:   q.Grant.RecipientId,
+			RecipientType: q.Grant.RecipientType,
+		}}
+	default:
+		result.ServerError(nil)
+	}
+
+dispatch:
+	q.Reply <- result
 }
 
 func (s *supervisor) right_limited_modify(q *msg.Request) {

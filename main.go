@@ -199,6 +199,8 @@ func main() {
 	router.GET(`/permission/:permission`, BasicAuth(ShowPermission))
 	router.POST(`/filter/permission/`, BasicAuth(SearchPermission))
 
+	router.POST(`/filter/grant/`, BasicAuth(SearchGrant))
+
 	router.GET("/validity/", BasicAuth(ListValidity))
 	router.GET("/validity/:property", BasicAuth(ShowValidity))
 

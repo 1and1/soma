@@ -50,4 +50,13 @@ const RevokeLimitedRepoFromUser = `
 DELETE FROM soma.authorizations_repository
 WHERE grant_id = $1::uuid;`
 
+const SearchGlobalSystemGrant = `
+SELECT grant_id
+FROM   soma.authorizations_global
+WHERE  permission_id = $1::uuid
+  AND  permission_type = $2::varchar
+  AND  (   admin_id = $3::uuid
+        OR user_id  = $3::uuid
+		OR tool_id  = $3::uuid);`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

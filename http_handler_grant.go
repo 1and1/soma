@@ -23,6 +23,41 @@ func ListUserRepoRights(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 }
 
+func SearchGrant(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`grant_search`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	crq := proto.NewGrantFilter()
+	_ = DecodeJsonBody(r, &crq)
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(supervisor)
+	mr := msg.Request{
+		Type:       `supervisor`,
+		Action:     `right`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action: `search`,
+		},
+		Grant: proto.Grant{
+			RecipientType: crq.Filter.Grant.RecipientType,
+			RecipientId:   crq.Filter.Grant.RecipientId,
+			PermissionId:  crq.Filter.Grant.PermissionId,
+			Category:      crq.Filter.Grant.Category,
+		},
+	}
+
+	handler.input <- mr
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
 /* GLOBAL RIGHTS
  */
 func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
