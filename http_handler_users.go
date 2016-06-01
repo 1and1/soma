@@ -12,8 +12,13 @@ import (
 /* Read functions
  */
 func ListUser(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`users_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["userReadHandler"].(somaUserReadHandler)
@@ -47,6 +52,11 @@ skip:
 func ShowUser(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`users_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["userReadHandler"].(somaUserReadHandler)
@@ -64,8 +74,13 @@ func ShowUser(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddUser(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`users_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewUserRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -102,6 +117,11 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 func DeleteUser(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`users_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	action := "delete"
 
 	cReq := proto.NewUserRequest()

@@ -10,8 +10,13 @@ import (
 /* Read functions
  */
 func ListProvider(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`providers_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["providerReadHandler"].(somaProviderReadHandler)
@@ -26,6 +31,11 @@ func ListProvider(w http.ResponseWriter, r *http.Request,
 func ShowProvider(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`providers_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["providerReadHandler"].(somaProviderReadHandler)
@@ -43,8 +53,13 @@ func ShowProvider(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddProvider(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`providers_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -69,6 +84,11 @@ func AddProvider(w http.ResponseWriter, r *http.Request,
 func DeleteProvider(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`providers_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["providerWriteHandler"].(somaProviderWriteHandler)

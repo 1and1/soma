@@ -11,8 +11,13 @@ import (
  * Read functions
  */
 func ListTeam(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`team_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
@@ -46,6 +51,11 @@ skip:
 func ShowTeam(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`team_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
@@ -63,8 +73,13 @@ func ShowTeam(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddTeam(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`team_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewTeamRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -91,6 +106,11 @@ func AddTeam(w http.ResponseWriter, r *http.Request,
 func DeleteTeam(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`team_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)

@@ -63,42 +63,57 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		case `category`:
 			result = proto.NewCategoryResult()
 			*result.Categories = append(*result.Categories, r.Category...)
-			switch r.Code {
-			case 200:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
-				if r.Error != nil {
-					result.Error(r.Error)
-				}
-				result.OK()
-			case 202:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 202)
-				result.JobId = r.JobId
-				result.Accepted()
-			case 400:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 400)
-				DispatchBadRequest(w, nil)
-			case 403:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 403)
-				DispatchForbidden(w, r.Error)
-			case 404:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
-				result.NotFound()
-			case 406:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 406)
-				DispatchConflict(w, r.Error)
-			case 500:
-				log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 500)
-				result.Error(r.Error)
-			default:
-				DispatchInternalError(w, nil)
-			}
-			goto buildJSON
+			goto UnmaskedReply
+		case `permission`:
+			result = proto.NewPermissionResult()
+			*result.Permissions = append(*result.Permissions, r.Permission...)
+			goto UnmaskedReply
+		case `right`:
+			result = proto.NewGrantResult()
+			*result.Grants = append(*result.Grants, r.Grant...)
+			goto UnmaskedReply
 		default:
+			// supervisor as auth-lord has special default to avoid
+			// accidental leakage
 			DispatchUnauthorized(w, nil)
+			return
+		} // end supervisor
+	default:
+		DispatchInternalError(w, nil)
+		return
+	}
+
+UnmaskedReply:
+	switch r.Code {
+	case 200:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
+		if r.Error != nil {
+			result.Error(r.Error)
 		}
+		result.OK()
+	case 202:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 202)
+		result.JobId = r.JobId
+		result.Accepted()
+	case 400:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 400)
+		DispatchBadRequest(w, nil)
+	case 403:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 403)
+		DispatchForbidden(w, r.Error)
+	case 404:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
+		result.NotFound()
+	case 406:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 406)
+		DispatchConflict(w, r.Error)
+	case 500:
+		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 500)
+		result.Error(r.Error)
 	default:
 		DispatchInternalError(w, nil)
 	}
+	goto buildJSON
 
 dispatchOCTET:
 	DispatchOctetReply(w, &r.Super.Data)

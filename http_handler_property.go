@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -13,13 +14,24 @@ import (
 func ListProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	pa := fmt.Sprintf("property_%s_list", prType)
+	switch prType {
+	case `custom`:
+	case `service`:
+	default:
+		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+			pa, ``, ``, ``); !ok {
+			DispatchForbidden(&w, nil)
+			return
+		}
+	}
 
 	returnChannel := make(chan somaResult)
 	req := somaPropertyRequest{
 		action: "list",
 		reply:  returnChannel,
 	}
-	prType, _ := GetPropertyTypeFromUrl(r.URL)
 	switch prType {
 	case "native":
 		req.prType = prType
@@ -95,13 +107,24 @@ skip:
 func ShowProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	pa := fmt.Sprintf("property_%s_show", prType)
+	switch prType {
+	case `custom`:
+	case `service`:
+	default:
+		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+			pa, ``, ``, ``); !ok {
+			DispatchForbidden(&w, nil)
+			return
+		}
+	}
 
 	returnChannel := make(chan somaResult)
 	req := somaPropertyRequest{
 		action: "show",
 		reply:  returnChannel,
 	}
-	prType, _ := GetPropertyTypeFromUrl(r.URL)
 	switch prType {
 	case "native":
 		req.prType = prType
@@ -135,6 +158,18 @@ func ShowProperty(w http.ResponseWriter, r *http.Request,
 func AddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	pa := fmt.Sprintf("property_%s_create", prType)
+	switch prType {
+	case `custom`:
+	case `service`:
+	default:
+		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+			pa, ``, ``, ``); !ok {
+			DispatchForbidden(&w, nil)
+			return
+		}
+	}
 
 	cReq := proto.NewPropertyRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -147,7 +182,6 @@ func AddProperty(w http.ResponseWriter, r *http.Request,
 		action: "add",
 		reply:  returnChannel,
 	}
-	prType, _ := GetPropertyTypeFromUrl(r.URL)
 	switch prType {
 	case "native":
 		req.prType = prType
@@ -187,13 +221,24 @@ func AddProperty(w http.ResponseWriter, r *http.Request,
 func DeleteProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	prType, _ := GetPropertyTypeFromUrl(r.URL)
+	pa := fmt.Sprintf("property_%s_delete", prType)
+	switch prType {
+	case `custom`:
+	case `service`:
+	default:
+		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+			pa, ``, ``, ``); !ok {
+			DispatchForbidden(&w, nil)
+			return
+		}
+	}
 
 	returnChannel := make(chan somaResult)
 	req := somaPropertyRequest{
 		action: "delete",
 		reply:  returnChannel,
 	}
-	prType, _ := GetPropertyTypeFromUrl(r.URL)
 	switch prType {
 	case "native":
 		req.prType = prType

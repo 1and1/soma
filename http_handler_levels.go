@@ -10,8 +10,13 @@ import (
 /* Read functions
  */
 func ListLevel(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`levels_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["levelReadHandler"].(somaLevelReadHandler)
@@ -46,6 +51,11 @@ skip:
 func ShowLevel(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`levels_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["levelReadHandler"].(somaLevelReadHandler)
@@ -63,8 +73,13 @@ func ShowLevel(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddLevel(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`levels_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -91,6 +106,11 @@ func AddLevel(w http.ResponseWriter, r *http.Request,
 func DeleteLevel(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`levels_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["levelWriteHandler"].(somaLevelWriteHandler)

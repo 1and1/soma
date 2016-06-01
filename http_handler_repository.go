@@ -64,8 +64,13 @@ func ShowRepository(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddRepository(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`repository_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewRepositoryRequest()
 	err := DecodeJsonBody(r, &cReq)

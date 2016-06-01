@@ -10,8 +10,13 @@ import (
 /* Read functions
  */
 func ListStatus(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`status_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusReadHandler"].(somaStatusReadHandler)
@@ -26,6 +31,11 @@ func ListStatus(w http.ResponseWriter, r *http.Request,
 func ShowStatus(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`status_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusReadHandler"].(somaStatusReadHandler)
@@ -43,8 +53,13 @@ func ShowStatus(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddStatus(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`status_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -69,6 +84,11 @@ func AddStatus(w http.ResponseWriter, r *http.Request,
 func DeleteStatus(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`status_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)

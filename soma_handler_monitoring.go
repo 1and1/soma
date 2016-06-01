@@ -44,25 +44,12 @@ type somaMonitoringReadHandler struct {
 func (r *somaMonitoringReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT monitoring_id,
-       monitoring_name
-FROM   soma.monitoring_systems;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllMonitoringSystems); err != nil {
 		log.Fatal("monitoring/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT monitoring_id,
-       monitoring_name,
-       monitoring_system_mode,
-	   monitoring_contact,
-	   monitoring_owner_team,
-	   monitoring_callback_uri
-FROM   soma.monitoring_systems
-WHERE  monitoring_id = $1::uuid;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowMonitoringSystem); err != nil {
 		log.Fatal("monitoring/show: ", err)
 	}
 	defer r.show_stmt.Close()

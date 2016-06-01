@@ -10,8 +10,13 @@ import (
  * Read functions
  */
 func ListDatacenters(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`datacenters_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
@@ -57,6 +62,11 @@ func ListDatacenterGroups(w http.ResponseWriter, r *http.Request, _ httprouter.P
 
 func ShowDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`datacenters_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
@@ -110,8 +120,14 @@ func ShowDatacenterGroup(w http.ResponseWriter, r *http.Request, params httprout
 /*
  * Write Functions
  */
-func AddDatacenter(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddDatacenter(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`datacenters_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	if err := DecodeJsonBody(r, &cReq); err != nil {
@@ -195,6 +211,11 @@ func AddDatacenterToGroup(w http.ResponseWriter, r *http.Request, params httprou
 
 func DeleteDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`datacenters_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["datacenterWriteHandler"].(somaDatacenterWriteHandler)
@@ -272,6 +293,11 @@ func DeleteDatacenterFromGroup(w http.ResponseWriter, r *http.Request, params ht
 
 func RenameDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`datacenters_rename`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	if err := DecodeJsonBody(r, &cReq); err != nil {

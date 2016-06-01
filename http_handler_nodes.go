@@ -80,8 +80,13 @@ func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddNode(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`node_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewNodeRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -138,6 +143,11 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 func DeleteNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`node_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	action := "delete"
 
 	cReq := proto.NewNodeRequest()

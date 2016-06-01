@@ -12,8 +12,9 @@ import (
 )
 
 type Supervisor struct {
-	Verdict    uint16
-	RemoteAddr string
+	Verdict      uint16
+	VerdictAdmin bool
+	RemoteAddr   string
 	// Fields for encrypted requests
 	KexId string
 	Data  []byte
@@ -24,13 +25,16 @@ type Supervisor struct {
 	Restricted     bool
 	// Fields for permission authorization requests
 	PermAction     string
-	PermUser       string
 	PermRepository string
+	PermMonitoring string
+	PermNode       string
 	// Fields for map update notifications
 	Action string
 	Object string
 	User   proto.User
 	Team   proto.Team
+	// Fields for Grant revocation
+	GrantId string
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

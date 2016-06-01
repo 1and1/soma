@@ -10,8 +10,13 @@ import (
 /* Read functions
  */
 func ListOncall(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`oncall_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["oncallReadHandler"].(somaOncallReadHandler)
@@ -45,6 +50,11 @@ skip:
 func ShowOncall(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`oncall_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["oncallReadHandler"].(somaOncallReadHandler)
@@ -62,8 +72,13 @@ func ShowOncall(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddOncall(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`oncall_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -89,6 +104,11 @@ func AddOncall(w http.ResponseWriter, r *http.Request,
 func UpdateOncall(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`oncall_update`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
@@ -115,6 +135,11 @@ func UpdateOncall(w http.ResponseWriter, r *http.Request,
 func DeleteOncall(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`oncall_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)

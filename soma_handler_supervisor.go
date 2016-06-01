@@ -53,6 +53,7 @@ type supervisor struct {
 	tokens              svTokenMap
 	credentials         svCredMap
 	global_permissions  svPermMapGlobal
+	global_grants       svGrantMapGlobal
 	limited_permissions svPermMapLimited
 	id_user             svLockMap
 	id_user_rev         svLockMap
@@ -61,6 +62,18 @@ type supervisor struct {
 	id_userteam         svLockMap
 	stmt_FToken         *sql.Stmt
 	stmt_FindUser       *sql.Stmt
+	stmt_AddCategory    *sql.Stmt
+	stmt_DelCategory    *sql.Stmt
+	stmt_ListCategory   *sql.Stmt
+	stmt_ShowCategory   *sql.Stmt
+	stmt_AddPermission  *sql.Stmt
+	stmt_DelPermission  *sql.Stmt
+	stmt_ListPermission *sql.Stmt
+	stmt_ShowPermission *sql.Stmt
+	stmt_SearchPerm     *sql.Stmt
+	stmt_GrantSysGlUser *sql.Stmt
+	stmt_RevkSysGlUser  *sql.Stmt
+	stmt_SrchGlSysGrant *sql.Stmt
 }
 
 func (s *supervisor) run() {
@@ -80,6 +93,7 @@ func (s *supervisor) run() {
 	s.credentials = s.newCredentialMap()
 	s.kex = s.newKexMap()
 	s.global_permissions = s.newGlobalPermMap()
+	s.global_grants = s.newGlobalGrantMap()
 	s.limited_permissions = s.newLimitedPermMap()
 
 	// load from datbase
@@ -96,15 +110,75 @@ func (s *supervisor) run() {
 	}
 	defer s.stmt_FindUser.Close()
 
+	if s.stmt_ListCategory, err = s.conn.Prepare(stmt.ListPermissionCategory); err != nil {
+		log.Fatal(`supervisor/list-category: `, err)
+	}
+	defer s.stmt_ListCategory.Close()
+
+	if s.stmt_ShowCategory, err = s.conn.Prepare(stmt.ShowPermissionCategory); err != nil {
+		log.Fatal(`supervisor/show-category: `, err)
+	}
+	defer s.stmt_ShowCategory.Close()
+
+	if s.stmt_ListPermission, err = s.conn.Prepare(stmt.ListPermission); err != nil {
+		log.Fatal(`supervisor/list-permission: `, err)
+	}
+	defer s.stmt_ListPermission.Close()
+
+	if s.stmt_ShowPermission, err = s.conn.Prepare(stmt.ShowPermission); err != nil {
+		log.Fatal(`supervisor/show-permission: `, err)
+	}
+	defer s.stmt_ShowPermission.Close()
+
+	if s.stmt_SearchPerm, err = s.conn.Prepare(stmt.SearchPermissionByName); err != nil {
+		log.Fatal(`supervisor/search-permission: `, err)
+	}
+	defer s.stmt_SearchPerm.Close()
+
+	if s.stmt_SrchGlSysGrant, err = s.conn.Prepare(stmt.SearchGlobalSystemGrant); err != nil {
+		log.Fatal(`supervisor/search-grant: `, err)
+	}
+	defer s.stmt_SrchGlSysGrant.Close()
+
+	if !s.readonly {
+		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {
+			log.Fatal(`supervisor/add-category: `, err)
+		}
+		defer s.stmt_AddCategory.Close()
+
+		if s.stmt_DelCategory, err = s.conn.Prepare(stmt.DeletePermissionCategory); err != nil {
+			log.Fatal(`supervisor/delete-category: `, err)
+		}
+		defer s.stmt_DelCategory.Close()
+
+		if s.stmt_AddPermission, err = s.conn.Prepare(stmt.AddPermission); err != nil {
+			log.Fatal(`supervisor/add-permission: `, err)
+		}
+		defer s.stmt_AddPermission.Close()
+
+		if s.stmt_DelPermission, err = s.conn.Prepare(stmt.DeletePermission); err != nil {
+			log.Fatal(`supervisor/delete-permission: `, err)
+		}
+		defer s.stmt_DelPermission.Close()
+
+		if s.stmt_GrantSysGlUser, err = s.conn.Prepare(stmt.GrantGlobalOrSystemToUser); err != nil {
+			log.Fatal(`supervisor/grant-user-global-system: `, err)
+		}
+		defer s.stmt_GrantSysGlUser.Close()
+
+		if s.stmt_RevkSysGlUser, err = s.conn.Prepare(stmt.RevokeGlobalOrSystemFromUser); err != nil {
+			log.Fatal(`supervisor/revoke-user-global-system: `, err)
+		}
+		defer s.stmt_RevkSysGlUser.Close()
+	}
+
 runloop:
 	for {
 		select {
 		case <-s.shutdown:
 			break runloop
 		case req := <-s.input:
-			go func() {
-				s.process(&req)
-			}()
+			s.process(&req)
 		}
 	}
 }
@@ -112,19 +186,37 @@ runloop:
 func (s *supervisor) process(q *msg.Request) {
 	switch q.Action {
 	case `kex_init`:
-		s.kexInit(q)
+		go func() { s.kexInit(q) }()
 	case `bootstrap_root`:
 		s.bootstrapRoot(q)
 	case `basic_auth`:
-		s.validate_basic_auth(q)
+		go func() { s.validate_basic_auth(q) }()
 	case `request_token`:
-		s.issue_token(q)
+		go func() { s.issue_token(q) }()
 	case `activate_user`:
-		s.activate_user(q)
+		go func() { s.activate_user(q) }()
 	case `authorize`:
-		s.authorize(q)
+		go func() { s.authorize(q) }()
 	case `update_map`:
-		s.update_map(q)
+		go func() { s.update_map(q) }()
+	case `category`:
+		if q.Super.Action == `add` || q.Super.Action == `delete` {
+			s.permission_category(q)
+		} else {
+			go func() { s.permission_category(q) }()
+		}
+	case `permission`:
+		if q.Super.Action == `add` || q.Super.Action == `delete` {
+			s.permission(q)
+		} else {
+			go func() { s.permission(q) }()
+		}
+	case `right`:
+		if q.Super.Action == `grant` || q.Super.Action == `revoke` {
+			s.right(q)
+		} else {
+			go func() { s.right(q) }()
+		}
 	}
 }
 
@@ -166,7 +258,13 @@ func (s *supervisor) newLockMap() svLockMap {
 
 func (s *supervisor) newGlobalPermMap() svPermMapGlobal {
 	g := svPermMapGlobal{}
-	g.GMap = make(map[string]map[string]bool)
+	g.GMap = make(map[string]map[string]string)
+	return g
+}
+
+func (s *supervisor) newGlobalGrantMap() svGrantMapGlobal {
+	g := svGrantMapGlobal{}
+	g.GMap = make(map[string][]string)
 	return g
 }
 

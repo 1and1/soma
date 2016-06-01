@@ -40,7 +40,7 @@ const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// SOMA version
-	SomaVersion string = `0.7.24`
+	SomaVersion string = `0.7.25`
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
@@ -104,121 +104,130 @@ func main() {
 
 	router.HEAD("/", Ping)
 
-	router.GET("/views", ListView)
-	router.GET("/views/:view", ShowView)
+	router.GET("/views", BasicAuth(ListView))
+	router.GET("/views/:view", BasicAuth(ShowView))
 
-	router.GET("/environments", ListEnvironments)
-	router.GET("/environments/:environment", ShowEnvironment)
+	router.GET("/environments", BasicAuth(ListEnvironments))
+	router.GET("/environments/:environment", BasicAuth(ShowEnvironment))
 
-	router.GET("/objstates", ListObjectStates)
-	router.GET("/objstates/:state", ShowObjectState)
+	router.GET("/objstates", BasicAuth(ListObjectStates))
+	router.GET("/objstates/:state", BasicAuth(ShowObjectState))
 
-	router.GET("/objtypes", ListObjectTypes)
-	router.GET("/objtypes/:type", ShowObjectType)
+	router.GET("/objtypes", BasicAuth(ListObjectTypes))
+	router.GET("/objtypes/:type", BasicAuth(ShowObjectType))
 
-	router.GET("/datacenters", ListDatacenters)
-	router.GET("/datacenters/:datacenter", ShowDatacenter)
+	router.GET("/datacenters", BasicAuth(ListDatacenters))
+	router.GET("/datacenters/:datacenter", BasicAuth(ShowDatacenter))
 
-	router.GET("/datacentergroups", ListDatacenterGroups)
-	router.GET("/datacentergroups/:datacentergroup", ShowDatacenterGroup)
+	router.GET("/datacentergroups", BasicAuth(ListDatacenterGroups))
+	router.GET("/datacentergroups/:datacentergroup", BasicAuth(ShowDatacenterGroup))
 
-	router.GET("/levels/", ListLevel)
-	router.GET("/levels/:level", ShowLevel)
-	router.POST("/filter/levels/", ListLevel)
+	router.GET("/levels/", BasicAuth(ListLevel))
+	router.GET("/levels/:level", BasicAuth(ShowLevel))
+	router.POST("/filter/levels/", BasicAuth(ListLevel))
 
-	router.GET("/predicates/", ListPredicate)
-	router.GET("/predicates/:predicate", ShowPredicate)
+	router.GET("/predicates/", BasicAuth(ListPredicate))
+	router.GET("/predicates/:predicate", BasicAuth(ShowPredicate))
 
-	router.GET("/status/", ListStatus)
-	router.GET("/status/:status", ShowStatus)
+	router.GET("/status/", BasicAuth(ListStatus))
+	router.GET("/status/:status", BasicAuth(ShowStatus))
 
-	router.GET("/oncall/", ListOncall)
-	router.GET("/oncall/:oncall", ShowOncall)
-	router.POST("/filter/oncall/", ListOncall)
+	router.GET("/oncall/", BasicAuth(ListOncall))
+	router.GET("/oncall/:oncall", BasicAuth(ShowOncall))
+	router.POST("/filter/oncall/", BasicAuth(ListOncall))
 
-	router.GET("/teams/", ListTeam)
-	router.GET("/teams/:team", ShowTeam)
-	router.POST("/filter/teams/", ListTeam)
+	router.GET("/teams/", BasicAuth(ListTeam))
+	router.GET("/teams/:team", BasicAuth(ShowTeam))
+	router.POST("/filter/teams/", BasicAuth(ListTeam))
 
-	router.GET("/nodes/", ListNode)
-	router.GET("/nodes/:node", ShowNode)
-	router.GET("/nodes/:node/config", ShowNodeConfig)
-	router.POST("/filter/nodes/", ListNode)
+	router.GET("/nodes/", BasicAuth(ListNode))
+	router.GET("/nodes/:node", BasicAuth(ShowNode))
+	router.GET("/nodes/:node/config", BasicAuth(ShowNodeConfig))
+	router.POST("/filter/nodes/", BasicAuth(ListNode))
 
-	router.GET("/servers/", ListServer)
-	router.GET("/servers/:server", ShowServer)
-	router.POST("/filter/servers/", SearchServer)
+	router.GET("/servers/", BasicAuth(ListServer))
+	router.GET("/servers/:server", BasicAuth(ShowServer))
+	router.POST("/filter/servers/", BasicAuth(SearchServer))
 
-	router.GET("/units/", ListUnit)
-	router.GET("/units/:unit", ShowUnit)
+	router.GET("/units/", BasicAuth(ListUnit))
+	router.GET("/units/:unit", BasicAuth(ShowUnit))
 
-	router.GET("/providers/", ListProvider)
-	router.GET("/providers/:provider", ShowProvider)
+	router.GET("/providers/", BasicAuth(ListProvider))
+	router.GET("/providers/:provider", BasicAuth(ShowProvider))
 
-	router.GET("/metrics/", ListMetric)
-	router.GET("/metrics/:metric", ShowMetric)
+	router.GET("/metrics/", BasicAuth(ListMetric))
+	router.GET("/metrics/:metric", BasicAuth(ShowMetric))
 
-	router.GET("/modes/", ListMode)
-	router.GET("/modes/:mode", ShowMode)
+	router.GET("/modes/", BasicAuth(ListMode))
+	router.GET("/modes/:mode", BasicAuth(ShowMode))
 
-	router.GET("/users/", ListUser)
-	router.GET("/users/:user", ShowUser)
-	router.POST("/filter/users/", ListUser)
+	router.GET("/users/", BasicAuth(ListUser))
+	router.GET("/users/:user", BasicAuth(ShowUser))
+	router.POST("/filter/users/", BasicAuth(ListUser))
 
-	router.GET("/monitoring/", ListMonitoring)
-	router.GET("/monitoring/:monitoring", ShowMonitoring)
-	router.POST("/filter/monitoring/", ListMonitoring)
+	router.GET("/monitoring/", BasicAuth(ListMonitoring))
+	router.GET("/monitoring/:monitoring", BasicAuth(ShowMonitoring))
+	router.POST("/filter/monitoring/", BasicAuth(ListMonitoring))
 
-	router.GET("/capability/", ListCapability)
-	router.GET("/capability/:capability", ShowCapability)
-	router.POST("/filter/capability/", ListCapability)
+	router.GET("/capability/", BasicAuth(ListCapability))
+	router.GET("/capability/:capability", BasicAuth(ShowCapability))
+	router.POST("/filter/capability/", BasicAuth(ListCapability))
 
-	router.GET("/property/native/", ListProperty)
-	router.GET("/property/native/:native", ShowProperty)
+	router.GET("/property/native/", BasicAuth(ListProperty))
+	router.GET("/property/native/:native", BasicAuth(ShowProperty))
 
-	router.GET("/property/system/", ListProperty)
-	router.GET("/property/system/:system", ShowProperty)
-	router.POST("/filter/property/system/", ListProperty)
+	router.GET("/property/system/", BasicAuth(ListProperty))
+	router.GET("/property/system/:system", BasicAuth(ShowProperty))
+	router.POST("/filter/property/system/", BasicAuth(ListProperty))
 
-	router.GET("/property/custom/:repository/", ListProperty)
-	router.GET("/property/custom/:repository/:custom", ShowProperty)
-	router.POST("/filter/property/custom/:repository/", ListProperty)
+	router.GET("/property/custom/:repository/", BasicAuth(ListProperty))
+	router.GET("/property/custom/:repository/:custom", BasicAuth(ShowProperty))
+	router.POST("/filter/property/custom/:repository/", BasicAuth(ListProperty))
 
-	router.GET("/property/service/global/", ListProperty)
-	router.GET("/property/service/global/:service", ShowProperty)
-	router.POST("/filter/property/service/global/", ListProperty)
+	router.GET("/property/service/global/", BasicAuth(ListProperty))
+	router.GET("/property/service/global/:service", BasicAuth(ShowProperty))
+	router.POST("/filter/property/service/global/", BasicAuth(ListProperty))
 
-	router.GET("/property/service/team/:team/", ListProperty)
-	router.GET("/property/service/team/:team/:service", ShowProperty)
-	router.POST("/filter/property/service/team/:team/", ListProperty)
+	router.GET("/property/service/team/:team/", BasicAuth(ListProperty))
+	router.GET("/property/service/team/:team/:service", BasicAuth(ShowProperty))
+	router.POST("/filter/property/service/team/:team/", BasicAuth(ListProperty))
 
-	router.GET("/validity/", ListValidity)
-	router.GET("/validity/:property", ShowValidity)
+	router.GET(`/category/`, BasicAuth(ListCategory))
+	router.GET(`/category/:category`, BasicAuth(ShowCategory))
 
-	router.GET("/attributes/", ListAttribute)
-	router.GET("/attributes/:attribute", ShowAttribute)
+	router.GET(`/permission/`, BasicAuth(ListPermission))
+	router.GET(`/permission/:permission`, BasicAuth(ShowPermission))
+	router.POST(`/filter/permission/`, BasicAuth(SearchPermission))
 
-	router.GET("/repository/", ListRepository)
-	router.GET("/repository/:repository", ShowRepository)
-	router.POST("/filter/repository/", ListRepository)
+	router.POST(`/filter/grant/`, BasicAuth(SearchGrant))
 
-	router.GET("/buckets/", ListBucket)
-	router.GET("/buckets/:bucket", ShowBucket)
-	router.POST("/filter/buckets/", ListBucket)
+	router.GET("/validity/", BasicAuth(ListValidity))
+	router.GET("/validity/:property", BasicAuth(ShowValidity))
 
-	router.GET("/groups/", ListGroup)
-	router.GET("/groups/:group", ShowGroup)
-	router.GET("/groups/:group/members/", ListGroupMembers)
-	router.POST("/filter/groups/", ListGroup)
+	router.GET("/attributes/", BasicAuth(ListAttribute))
+	router.GET("/attributes/:attribute", BasicAuth(ShowAttribute))
 
-	router.GET("/clusters/", ListCluster)
-	router.GET("/clusters/:cluster", ShowCluster)
-	router.GET("/clusters/:cluster/members/", ListClusterMembers)
-	router.POST("/filter/clusters/", ListCluster)
+	router.GET("/repository/", BasicAuth(ListRepository))
+	router.GET("/repository/:repository", BasicAuth(ShowRepository))
+	router.POST("/filter/repository/", BasicAuth(ListRepository))
 
-	router.GET("/checks/:repository/", ListCheckConfiguration)
-	router.GET("/checks/:repository/:check", ShowCheckConfiguration)
-	router.POST("/filter/checks/:repository/", ListCheckConfiguration)
+	router.GET("/buckets/", BasicAuth(ListBucket))
+	router.GET("/buckets/:bucket", BasicAuth(ShowBucket))
+	router.POST("/filter/buckets/", BasicAuth(ListBucket))
+
+	router.GET("/groups/", BasicAuth(ListGroup))
+	router.GET("/groups/:group", BasicAuth(ShowGroup))
+	router.GET("/groups/:group/members/", BasicAuth(ListGroupMembers))
+	router.POST("/filter/groups/", BasicAuth(ListGroup))
+
+	router.GET("/clusters/", BasicAuth(ListCluster))
+	router.GET("/clusters/:cluster", BasicAuth(ShowCluster))
+	router.GET("/clusters/:cluster/members/", BasicAuth(ListClusterMembers))
+	router.POST("/filter/clusters/", BasicAuth(ListCluster))
+
+	router.GET("/checks/:repository/", BasicAuth(ListCheckConfiguration))
+	router.GET("/checks/:repository/:check", BasicAuth(ShowCheckConfiguration))
+	router.POST("/filter/checks/:repository/", BasicAuth(ListCheckConfiguration))
 
 	router.GET("/hostdeployment/:system/:assetid", GetHostDeployment)
 	router.POST("/hostdeployment/:system/:assetid", AssembleHostUpdate)
@@ -306,6 +315,21 @@ func main() {
 
 		router.POST("/property/service/team/:team/", BasicAuth(AddProperty))
 		router.DELETE("/property/service/team/:team/:service", BasicAuth(DeleteProperty))
+
+		router.POST(`/category/`, BasicAuth(AddCategory))
+		router.DELETE(`/category/:category`, BasicAuth(DeleteCategory))
+
+		router.POST(`/permission/`, BasicAuth(AddPermission))
+		router.DELETE(`/permission/:permission`, BasicAuth(DeletePermission))
+
+		router.POST(`/grant/global/:rtyp/:rid/`, BasicAuth(GrantGlobalRight))
+		router.DELETE(`/grant/global/:rtyp/:rid/:grant`, BasicAuth(RevokeGlobalRight))
+
+		router.POST(`/grant/limited/:rtyp/:rid/:scope/:uuid/`, BasicAuth(GrantLimitedRight))
+		router.DELETE(`/grant/limited/:rtyp/:rid/:scope/:uuid/:grant`, BasicAuth(RevokeLimitedRight))
+
+		router.POST(`/grant/system/:rtyp/:rid/`, BasicAuth(GrantSystemRight))
+		router.DELETE(`/grant/system/:rtyp/:rid/:grant`, BasicAuth(RevokeSystemRight))
 
 		router.POST("/validity/", BasicAuth(AddValidity))
 		router.DELETE("/validity/:property", BasicAuth(DeleteValidity))

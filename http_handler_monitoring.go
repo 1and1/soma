@@ -64,8 +64,13 @@ func ShowMonitoring(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddMonitoring(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`monitoring_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewMonitoringRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -98,6 +103,11 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 func DeleteMonitoring(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`monitoring_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["monitoringWriteHandler"].(somaMonitoringWriteHandler)

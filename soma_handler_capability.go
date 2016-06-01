@@ -44,32 +44,12 @@ type somaCapabilityReadHandler struct {
 func (r *somaCapabilityReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT    mc.capability_id,
-          mc.capability_monitoring,
-	      mc.capability_metric,
-	      mc.capability_view,
-	      ms.monitoring_name
-FROM      soma.monitoring_capabilities mc
-LEFT JOIN soma.monitoring_systems ms
-ON        mc.capability_monitoring = ms.monitoring_id;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllCapabilities); err != nil {
 		log.Fatal("capability/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT    mc.capability_id,
-          mc.capability_monitoring,
-          mc.capability_metric,
-	      mc.capability_view,
-	      mc.threshold_amount,
-	      ms.monitoring_name
-FROM      soma.monitoring_capabilities mc
-LEFT JOIN soma.monitoring_systems ms
-ON        mc.capability_monitoring = ms.monitoring_id
-WHERE     mc.capability_id = $1::uuid;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowCapability); err != nil {
 		log.Fatal("capability/show: ", err)
 	}
 	defer r.show_stmt.Close()

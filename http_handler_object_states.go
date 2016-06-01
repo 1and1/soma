@@ -9,7 +9,14 @@ import (
 /*
  * Read functions
  */
-func ListObjectStates(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ListObjectStates(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`states_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectStateResult)
 
 	handler := handlerMap["objectStateReadHandler"].(somaObjectStateReadHandler)
@@ -33,7 +40,14 @@ func ListObjectStates(w http.ResponseWriter, r *http.Request, _ httprouter.Param
 	w.Write(json)
 }
 
-func ShowObjectState(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func ShowObjectState(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`states_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectStateResult)
 
 	handler := handlerMap["objectStateReadHandler"].(somaObjectStateReadHandler)
@@ -65,7 +79,14 @@ func ShowObjectState(w http.ResponseWriter, r *http.Request, params httprouter.P
 	w.Write(json)
 }
 
-func AddObjectState(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func AddObjectState(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`states_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectStateResult)
 
 	// read POST body
@@ -116,7 +137,14 @@ func AddObjectState(w http.ResponseWriter, r *http.Request, _ httprouter.Params)
 	w.Write(json)
 }
 
-func DeleteObjectState(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func DeleteObjectState(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`states_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectStateResult)
 
 	handler := handlerMap["objectStateWriteHandler"].(somaObjectStateWriteHandler)
@@ -158,7 +186,14 @@ func DeleteObjectState(w http.ResponseWriter, r *http.Request, params httprouter
 	w.Write(json)
 }
 
-func RenameObjectState(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+func RenameObjectState(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`states_rename`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 	returnChannel := make(chan []somaObjectStateResult)
 
 	// read POST body

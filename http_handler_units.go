@@ -10,8 +10,13 @@ import (
 /* Read functions
  */
 func ListUnit(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`units_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["unitReadHandler"].(somaUnitReadHandler)
@@ -26,6 +31,11 @@ func ListUnit(w http.ResponseWriter, r *http.Request,
 func ShowUnit(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`units_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["unitReadHandler"].(somaUnitReadHandler)
@@ -43,8 +53,13 @@ func ShowUnit(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddUnit(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`units_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewUnitRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -70,6 +85,11 @@ func AddUnit(w http.ResponseWriter, r *http.Request,
 func DeleteUnit(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`units_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["unitWriteHandler"].(somaUnitWriteHandler)

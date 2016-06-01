@@ -11,8 +11,13 @@ import (
 /* Read functions
  */
 func ListServer(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
@@ -28,6 +33,11 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 func ShowServer(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
@@ -43,8 +53,13 @@ func ShowServer(w http.ResponseWriter, r *http.Request,
 }
 
 func SearchServer(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_search`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
@@ -75,8 +90,13 @@ func SearchServer(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddServer(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewServerRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -107,6 +127,11 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 	action := "delete"
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_delete`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewServerRequest()
 	_ = DecodeJsonBody(r, &cReq)
@@ -130,6 +155,11 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewServerRequest()
 	err := DecodeJsonBody(r, &cReq)
