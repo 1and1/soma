@@ -23,6 +23,8 @@ func (s *supervisor) permission(q *msg.Request) {
 	switch q.Super.Action {
 	case `list`:
 		fallthrough
+	case `search/name`:
+		fallthrough
 	case `show`:
 		s.permission_read(q)
 		return
@@ -48,8 +50,16 @@ func (s *supervisor) permission_read(q *msg.Request) {
 
 	switch q.Super.Action {
 	case `list`:
+		fallthrough
+	case `search/name`:
 		result.Permission = []proto.Permission{}
-		if rows, err = s.stmt_ListPermission.Query(); err != nil {
+		switch q.Super.Action {
+		case `list`:
+			rows, err = s.stmt_ListPermission.Query()
+		case `search/name`:
+			rows, err = s.stmt_SearchPerm.Query(q.Permission.Name)
+		}
+		if err != nil {
 			result.ServerError(err)
 			goto dispatch
 		}

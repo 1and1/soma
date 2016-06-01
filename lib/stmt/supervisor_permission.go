@@ -77,4 +77,10 @@ JOIN   inventory.users iu
 ON     sp.created_by = iu.user_id
 WHERE  sp.permission_name = $1::varchar;`
 
+const SearchPermissionByName = `
+SELECT permission_id,
+       permission_name
+FROM   soma.permissions
+WHERE  permission_name = $1::varchar;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

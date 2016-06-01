@@ -70,6 +70,7 @@ type supervisor struct {
 	stmt_DelPermission  *sql.Stmt
 	stmt_ListPermission *sql.Stmt
 	stmt_ShowPermission *sql.Stmt
+	stmt_SearchPerm     *sql.Stmt
 	stmt_GrantSysGlUser *sql.Stmt
 	stmt_RevkSysGlUser  *sql.Stmt
 }
@@ -127,6 +128,11 @@ func (s *supervisor) run() {
 		log.Fatal(`supervisor/show-permission: `, err)
 	}
 	defer s.stmt_ShowPermission.Close()
+
+	if s.stmt_SearchPerm, err = s.conn.Prepare(stmt.SearchPermissionByName); err != nil {
+		log.Fatal(`supervisor/search-permission: `, err)
+	}
+	defer s.stmt_SearchPerm.Close()
 
 	if !s.readonly {
 		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {

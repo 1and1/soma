@@ -194,8 +194,10 @@ func main() {
 
 	router.GET(`/category/`, BasicAuth(ListCategory))
 	router.GET(`/category/:category`, BasicAuth(ShowCategory))
+
 	router.GET(`/permission/`, BasicAuth(ListPermission))
 	router.GET(`/permission/:permission`, BasicAuth(ShowPermission))
+	router.POST(`/filter/permission/`, BasicAuth(SearchPermission))
 
 	router.GET("/validity/", BasicAuth(ListValidity))
 	router.GET("/validity/:property", BasicAuth(ShowValidity))

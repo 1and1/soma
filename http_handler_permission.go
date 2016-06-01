@@ -61,6 +61,38 @@ func ShowPermission(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+func SearchPermission(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`permission_search`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	crq := proto.NewPermissionFilter()
+	_ = DecodeJsonBody(r, &crq)
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(supervisor)
+	mr := msg.Request{
+		Type:       `supervisor`,
+		Action:     `permission`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Super: &msg.Supervisor{
+			Action: `search/name`,
+		},
+		Permission: proto.Permission{
+			Name: crq.Filter.Permission.Name,
+		},
+	}
+
+	handler.input <- mr
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
 /* Write functions
  */
 
