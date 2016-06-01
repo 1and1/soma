@@ -5,6 +5,7 @@ type Filter struct {
 	Capability  *CapabilityFilter  `json:"capability,omitempty"`
 	CheckConfig *CheckConfigFilter `json:"checkConfig,omitempty"`
 	Cluster     *ClusterFilter     `json:"cluster,omitempty"`
+	Grant       *GrantFilter       `json:"grant,omitempty"`
 	Group       *GroupFilter       `json:"group,omitempty"`
 	Level       *LevelFilter       `json:"level,omitempty"`
 	Metric      *MetricFilter      `json:"metric,omitempty"`

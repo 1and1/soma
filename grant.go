@@ -17,10 +17,25 @@ type GrantDetails struct {
 	CreatedBy string `json:"createdBy,omitempty"`
 }
 
+type GrantFilter struct {
+	RecipientType string `json:"recipientType"`
+	RecipientId   string `json:"recipientId"`
+	PermissionId  string `json:"permissionId"`
+	Category      string `json:"category"`
+}
+
 func NewGrantRequest() Request {
 	return Request{
 		Flags: &Flags{},
 		Grant: &Grant{},
+	}
+}
+
+func NewGrantFilter() Request {
+	return Request{
+		Filter: &Filter{
+			Grant: &GrantFilter{},
+		},
 	}
 }
 
