@@ -29,7 +29,7 @@ WHERE permission_type = $1::varchar;`
 
 const ListPermissionCategory = `
 SELECT spt.permission_type
-FROM   soma.permission_types spt:`
+FROM   soma.permission_types spt;`
 
 const ShowPermissionCategory = `
 SELECT spt.permission_type,
@@ -49,7 +49,7 @@ INSERT INTO soma.permissions (
 )
 SELECT $1::uuid,
        $2::varchar,
-       #3::varchar,
+       $3::varchar,
        $4::uuid
 WHERE NOT EXISTS (
       SELECT permission_name
