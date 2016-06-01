@@ -12,14 +12,13 @@ func registerLevels(app cli.App) *cli.App {
 		[]cli.Command{
 			// levels
 			{
-				Name:   "levels",
-				Usage:  "SUBCOMMANDS for notification levels",
-				Before: runtimePreCmd,
+				Name:  "levels",
+				Usage: "SUBCOMMANDS for notification levels",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new notification level",
-						Action: cmdLevelCreate,
+						Action: runtime(cmdLevelCreate),
 						BashComplete: func(c *cli.Context) {
 							switch {
 							case c.NArg() == 0:
@@ -34,17 +33,17 @@ func registerLevels(app cli.App) *cli.App {
 					{
 						Name:   "delete",
 						Usage:  "Delete a notification level",
-						Action: cmdLevelDelete,
+						Action: runtime(cmdLevelDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List notification levels",
-						Action: cmdLevelList,
+						Action: runtime(cmdLevelList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a notification level",
-						Action: cmdLevelShow,
+						Action: runtime(cmdLevelShow),
 					},
 				},
 			}, // end levels
@@ -53,7 +52,7 @@ func registerLevels(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdLevelCreate(c *cli.Context) {
+func cmdLevelCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}
 
@@ -70,31 +69,35 @@ func cmdLevelCreate(c *cli.Context) {
 	utl.AbortOnError(err, "Syntax error, numeric argument not numeric")
 	req.Level.Numeric = uint16(l)
 
-	resp := utl.PostRequestWithBody(req, "/levels/")
+	resp := utl.PostRequestWithBody(Client, req, "/levels/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdLevelDelete(c *cli.Context) {
+func cmdLevelDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdLevelList(c *cli.Context) {
-	resp := utl.GetRequest("/levels/")
+func cmdLevelList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/levels/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdLevelShow(c *cli.Context) {
+func cmdLevelShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

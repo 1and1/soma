@@ -7,25 +7,25 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetBucketByUUIDOrName(b string, r string) string {
+func (u SomaUtil) TryGetBucketByUUIDOrName(c *resty.Client, b string, r string) string {
 	id, err := uuid.FromString(b)
 	if err != nil {
 		// aborts on failure
-		return u.GetBucketIdByName(b, r)
+		return u.GetBucketIdByName(c, b, r)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) BucketByUUIDOrName(b string) string {
+func (u SomaUtil) BucketByUUIDOrName(c *resty.Client, b string) string {
 	id, err := uuid.FromString(b)
 	if err != nil {
 		// aborts on failure
-		return u.BucketIdByName(b)
+		return u.BucketIdByName(c, b)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
+func (u SomaUtil) GetBucketIdByName(c *resty.Client, bucket string, repoId string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Bucket: &proto.BucketFilter{
@@ -35,7 +35,7 @@ func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/buckets/")
+	resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if bucket != (*repoResult.Buckets)[0].Name {
@@ -44,7 +44,7 @@ func (u SomaUtil) GetBucketIdByName(bucket string, repoId string) string {
 	return (*repoResult.Buckets)[0].Id
 }
 
-func (u SomaUtil) BucketIdByName(bucket string) string {
+func (u SomaUtil) BucketIdByName(c *resty.Client, bucket string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Bucket: &proto.BucketFilter{
@@ -53,7 +53,7 @@ func (u SomaUtil) BucketIdByName(bucket string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/buckets/")
+	resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if bucket != (*repoResult.Buckets)[0].Name {
@@ -62,7 +62,7 @@ func (u SomaUtil) BucketIdByName(bucket string) string {
 	return (*repoResult.Buckets)[0].Id
 }
 
-func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
+func (u SomaUtil) GetRepositoryIdForBucket(c *resty.Client, bucket string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Bucket: &proto.BucketFilter{},
@@ -78,7 +78,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 		req.Filter.Bucket.Id = id.String()
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/buckets/")
+	resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if receivedUuidArgument {
@@ -92,13 +92,13 @@ func (u SomaUtil) GetRepositoryIdForBucket(bucket string) string {
 	}
 
 	path := fmt.Sprintf("/buckets/%s", (*bucketResult.Buckets)[0].Id)
-	resp = u.GetRequest(path)
+	resp = u.GetRequest(c, path)
 	bucketResult = u.DecodeProtoResultBucketFromResponse(resp)
 
 	return (*bucketResult.Buckets)[0].RepositoryId
 }
 
-func (u SomaUtil) TeamIdForBucket(bucket string) string {
+func (u SomaUtil) TeamIdForBucket(c *resty.Client, bucket string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Bucket: &proto.BucketFilter{},
@@ -114,7 +114,7 @@ func (u SomaUtil) TeamIdForBucket(bucket string) string {
 		req.Filter.Bucket.Id = id.String()
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/buckets/")
+	resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if receivedUuidArgument {
@@ -128,7 +128,7 @@ func (u SomaUtil) TeamIdForBucket(bucket string) string {
 	}
 
 	path := fmt.Sprintf("/buckets/%s", (*bucketResult.Buckets)[0].Id)
-	resp = u.GetRequest(path)
+	resp = u.GetRequest(c, path)
 	bucketResult = u.DecodeProtoResultBucketFromResponse(resp)
 
 	return (*bucketResult.Buckets)[0].TeamId

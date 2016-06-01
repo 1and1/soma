@@ -12,9 +12,8 @@ func registerProperty(app cli.App) *cli.App {
 		[]cli.Command{
 			// property
 			{
-				Name:   "property",
-				Usage:  "SUBCOMMANDS for property",
-				Before: runtimePreCmd,
+				Name:  "property",
+				Usage: "SUBCOMMANDS for property",
 				Subcommands: []cli.Command{
 					{
 						Name:  "create",
@@ -23,27 +22,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "Create a new per-team service property",
-								Action: cmdPropertyServiceCreate,
+								Action: runtime(cmdPropertyServiceCreate),
 							},
 							{
 								Name:   "system",
 								Usage:  "Create a new global system property",
-								Action: cmdPropertySystemCreate,
+								Action: runtime(cmdPropertySystemCreate),
 							},
 							{
 								Name:   "native",
 								Usage:  "Create a new global native property",
-								Action: cmdPropertyNativeCreate,
+								Action: runtime(cmdPropertyNativeCreate),
 							},
 							{
 								Name:   "custom",
 								Usage:  "Create a new per-repo custom property",
-								Action: cmdPropertyCustomCreate,
+								Action: runtime(cmdPropertyCustomCreate),
 							},
 							{
 								Name:   "template",
 								Usage:  "Create a new global service template",
-								Action: cmdPropertyServiceCreate,
+								Action: runtime(cmdPropertyServiceCreate),
 							},
 						},
 					}, // end property create
@@ -54,27 +53,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "Delete a team service property",
-								Action: cmdPropertyServiceDelete,
+								Action: runtime(cmdPropertyServiceDelete),
 							},
 							{
 								Name:   "system",
 								Usage:  "Delete a system property",
-								Action: cmdPropertySystemDelete,
+								Action: runtime(cmdPropertySystemDelete),
 							},
 							{
 								Name:   "native",
 								Usage:  "Delete a native property",
-								Action: cmdPropertyNativeDelete,
+								Action: runtime(cmdPropertyNativeDelete),
 							},
 							{
 								Name:   "custom",
 								Usage:  "Delete a repository custom property",
-								Action: cmdPropertyCustomDelete,
+								Action: runtime(cmdPropertyCustomDelete),
 							},
 							{
 								Name:   "template",
 								Usage:  "Delete a global service property template",
-								Action: cmdPropertyTemplateDelete,
+								Action: runtime(cmdPropertyTemplateDelete),
 							},
 						},
 					}, // end property delete
@@ -131,27 +130,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "Show a service property",
-								Action: cmdPropertyServiceShow,
+								Action: runtime(cmdPropertyServiceShow),
 							},
 							{
 								Name:   "custom",
 								Usage:  "Show a custom property",
-								Action: cmdPropertyCustomShow,
+								Action: runtime(cmdPropertyCustomShow),
 							},
 							{
 								Name:   "system",
 								Usage:  "Show a system property",
-								Action: cmdPropertySystemShow,
+								Action: runtime(cmdPropertySystemShow),
 							},
 							{
 								Name:   "native",
 								Usage:  "Show a native property",
-								Action: cmdPropertyNativeShow,
+								Action: runtime(cmdPropertyNativeShow),
 							},
 							{
 								Name:   "template",
 								Usage:  "Show a service property template",
-								Action: cmdPropertyTemplateShow,
+								Action: runtime(cmdPropertyTemplateShow),
 							},
 						},
 					}, // end property show
@@ -162,27 +161,27 @@ func registerProperty(app cli.App) *cli.App {
 							{
 								Name:   "service",
 								Usage:  "List service properties",
-								Action: cmdPropertyServiceList,
+								Action: runtime(cmdPropertyServiceList),
 							},
 							{
 								Name:   "custom",
 								Usage:  "List custom properties",
-								Action: cmdPropertyCustomList,
+								Action: runtime(cmdPropertyCustomList),
 							},
 							{
 								Name:   "system",
 								Usage:  "List system properties",
-								Action: cmdPropertySystemList,
+								Action: runtime(cmdPropertySystemList),
 							},
 							{
 								Name:   "native",
 								Usage:  "List native properties",
-								Action: cmdPropertyNativeList,
+								Action: runtime(cmdPropertyNativeList),
 							},
 							{
 								Name:   "template",
 								Usage:  "List service property templates",
-								Action: cmdPropertyTemplateList,
+								Action: runtime(cmdPropertyTemplateList),
 							},
 						},
 					}, // end property list
@@ -195,7 +194,7 @@ func registerProperty(app cli.App) *cli.App {
 
 /* CREATE
  */
-func cmdPropertyCustomCreate(c *cli.Context) {
+func cmdPropertyCustomCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"repository"}
@@ -206,7 +205,7 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 		unique,
 		required,
 		c.Args().Tail())
-	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
 	req := proto.Request{}
 	req.Property = &proto.Property{}
@@ -218,12 +217,13 @@ func cmdPropertyCustomCreate(c *cli.Context) {
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertySystemCreate(c *cli.Context) {
+func cmdPropertySystemCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -233,12 +233,14 @@ func cmdPropertySystemCreate(c *cli.Context) {
 	req.Property.System = &proto.PropertySystem{}
 	req.Property.System.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/property/system/")
+	resp := utl.PostRequestWithBody(Client, req, "/property/system/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyNativeCreate(c *cli.Context) {
+func cmdPropertyNativeCreate(c *cli.Context) error {
+
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -248,16 +250,17 @@ func cmdPropertyNativeCreate(c *cli.Context) {
 	req.Property.Native = &proto.PropertyNative{}
 	req.Property.Native.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/property/native/")
+	resp := utl.PostRequestWithBody(Client, req, "/property/native/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyServiceCreate(c *cli.Context) {
+func cmdPropertyServiceCreate(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 
 	// fetch list of possible service attributes from SOMA
-	attrResponse := utl.GetRequest("/attributes/")
+	attrResponse := utl.GetRequest(Client, "/attributes/")
 	attrs := proto.Result{}
 	err := json.Unmarshal(attrResponse.Body(), &attrs)
 	if err != nil {
@@ -302,7 +305,7 @@ func cmdPropertyServiceCreate(c *cli.Context) {
 	// team lookup only for service
 	var teamId string
 	if c.Command.Name == "service" {
-		teamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+		teamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	}
 
 	// construct request body
@@ -347,14 +350,15 @@ attrConversionLoop:
 	case `template`:
 		path = `/property/service/global/`
 	}
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 /* DELETE
  */
-func cmdPropertyCustomDelete(c *cli.Context) {
+func cmdPropertyCustomDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"repository"}
@@ -366,55 +370,60 @@ func cmdPropertyCustomDelete(c *cli.Context) {
 		required,
 		c.Args().Tail())
 
-	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
-	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().First(),
+	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(),
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId, propId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertySystemDelete(c *cli.Context) {
+func cmdPropertySystemDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyNativeDelete(c *cli.Context) {
+func cmdPropertyNativeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyServiceDelete(c *cli.Context) {
+func cmdPropertyServiceDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId)
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
+	propId := utl.TryGetServicePropertyByUUIDOrName(Client, c.Args().Get(0), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyTemplateDelete(c *cli.Context) {
+func cmdPropertyTemplateDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	propId := utl.TryGetTemplatePropertyByUUIDOrName(c.Args().Get(0))
+	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
 	path := fmt.Sprintf("/property/service/global/%s", propId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 /*
@@ -443,101 +452,110 @@ func cmdPropertyTemplateRename(c *cli.Context) {
 }
 */
 
-func cmdPropertyCustomShow(c *cli.Context) {
+func cmdPropertyCustomShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetCustomPropertyByUUIDOrName(c.Args().Get(0),
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/", repoId,
 		propId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
-
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertySystemShow(c *cli.Context) {
+func cmdPropertySystemShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyNativeShow(c *cli.Context) {
+func cmdPropertyNativeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyServiceShow(c *cli.Context) {
+func cmdPropertyServiceShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
-	propId := utl.TryGetServicePropertyByUUIDOrName(c.Args().Get(0), teamId)
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
+	propId := utl.TryGetServicePropertyByUUIDOrName(Client, c.Args().Get(0), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyTemplateShow(c *cli.Context) {
+func cmdPropertyTemplateShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	propId := utl.TryGetTemplatePropertyByUUIDOrName(c.Args().Get(0))
+	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
 	path := fmt.Sprintf("/property/service/global/%s", propId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyCustomList(c *cli.Context) {
+func cmdPropertyCustomList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertySystemList(c *cli.Context) {
+func cmdPropertySystemList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest("/property/system/")
+	resp := utl.GetRequest(Client, "/property/system/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyNativeList(c *cli.Context) {
+func cmdPropertyNativeList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest("/property/native/")
+	resp := utl.GetRequest(Client, "/property/native/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyServiceList(c *cli.Context) {
+func cmdPropertyServiceList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 2)
 	utl.ValidateCliArgument(c, 1, "team")
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(1))
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(1))
 
 	path := fmt.Sprintf("/property/service/team/%s/", teamId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdPropertyTemplateList(c *cli.Context) {
+func cmdPropertyTemplateList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/property/service/global/")
+	resp := utl.GetRequest(Client, "/property/service/global/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

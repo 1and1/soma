@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/codegangsta/cli"
 )
@@ -12,24 +14,23 @@ func registerUsers(app cli.App) *cli.App {
 		[]cli.Command{
 			// users
 			{
-				Name:   "users",
-				Usage:  "SUBCOMMANDS for users",
-				Before: runtimePreCmd,
+				Name:  "users",
+				Usage: "SUBCOMMANDS for users",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new user",
-						Action: cmdUserAdd,
+						Action: runtime(cmdUserAdd),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark a user as deleted",
-						Action: cmdUserMarkDeleted,
+						Action: runtime(cmdUserMarkDeleted),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Purge a user marked as deleted",
-						Action: cmdUserPurgeDeleted,
+						Action: runtime(cmdUserPurgeDeleted),
 						Flags: []cli.Flag{
 							cli.BoolFlag{
 								Name:  "all, a",
@@ -59,18 +60,24 @@ func registerUsers(app cli.App) *cli.App {
 							Usage:  "Change a user's username",
 							Action: cmdUserRename,
 						},
-						{
-							Name:   "activate",
-							Usage:  "Activate a deativated user",
-							Action: cmdUserActivate,
+					*/
+					{
+						Name:   "activate",
+						Usage:  "Activate a deativated user",
+						Action: cmdUserActivate,
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "force, f",
+								Usage: "Apply administrative force to the activation",
+							},
 						},
+					},
+					/*
 						{
 							Name:   "deactivate",
 							Usage:  "Deactivate a user account",
 							Action: cmdUserDeactivate,
 						},
-					*/
-					/*
 						{
 							Name:  "password",
 							Usage: "SUBCOMMANDS for user passwords",
@@ -96,12 +103,12 @@ func registerUsers(app cli.App) *cli.App {
 					{
 						Name:   "list",
 						Usage:  "List all registered users",
-						Action: cmdUserList,
+						Action: runtime(cmdUserList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific user",
-						Action: cmdUserShow,
+						Action: runtime(cmdUserShow),
 					},
 				},
 			}, // end users
@@ -110,7 +117,7 @@ func registerUsers(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdUserAdd(c *cli.Context) {
+func cmdUserAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 11)
 	multiple := []string{}
 	unique := []string{"firstname", "lastname", "employeenr",
@@ -134,7 +141,7 @@ func cmdUserAdd(c *cli.Context) {
 	req.User.UserName = c.Args().First()
 	req.User.FirstName = opts["firstname"][0]
 	req.User.LastName = opts["lastname"][0]
-	req.User.TeamId = utl.TryGetTeamByUUIDOrName(opts["team"][0])
+	req.User.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = false
@@ -154,24 +161,26 @@ func cmdUserAdd(c *cli.Context) {
 		req.User.IsSystem = false
 	}
 
-	resp := utl.PostRequestWithBody(req, "/users/")
+	resp := utl.PostRequestWithBody(Client, req, "/users/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUserMarkDeleted(c *cli.Context) {
+func cmdUserMarkDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUserPurgeDeleted(c *cli.Context) {
+func cmdUserPurgeDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	userId := utl.TryGetUserByUUIDOrName(c.Args().First())
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
 
 	req := proto.Request{
@@ -180,8 +189,9 @@ func cmdUserPurgeDeleted(c *cli.Context) {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(Client, req, path)
 	fmt.Println(resp)
+	return nil
 }
 
 /*
@@ -212,7 +222,7 @@ func cmdUserRestoreDeleted(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.Restore = true
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 
 func cmdUserUpdate(c *cli.Context) {
@@ -260,7 +270,7 @@ func cmdUserUpdate(c *cli.Context) {
 		}
 	}
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 
 func cmdUserRename(c *cli.Context) {
@@ -290,20 +300,98 @@ func cmdUserRename(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.User.UserName = newName
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
+}
+*/
+
+func cmdUserActivate(c *cli.Context) error {
+	// administrative use, full runtime is available
+	if c.GlobalIsSet(`admin`) {
+		utl.ValidateCliArgumentCount(c, 1)
+		return runtime(cmdUserActivateAdmin)(c)
+	}
+	// user trying to activate the account for the first
+	// time, reduced runtime
+	utl.ValidateCliArgumentCount(c, 0)
+	return boottime(cmdUserActivateUser)(c)
 }
 
-func cmdUserActivate(c *cli.Context) {
-	url := getApiUrl()
-	id := utl.UserIdByUuidOrName(c)
-	url.Path = fmt.Sprintf("/users/%s", id.String())
+func cmdUserActivateUser(c *cli.Context) error {
+	var err error
+	var password string
+	var passKey string
+	var happy bool
+	var cred *auth.Token
 
-	var req somaproto.ProtoRequestUser
-	req.User.IsActive = true
+	if Cfg.Auth.User == "" {
+		fmt.Println(`Please specify which account to activate.`)
+		if Cfg.Auth.User, err = adm.Read(`user`); err != nil {
+			return err
+		}
+	} else {
+		fmt.Printf("Starting with activation of account '%s' in 2 seconds.\n", Cfg.Auth.User)
+		fmt.Printf(`Use --user flag to activate a different account.`)
+		time.Sleep(2 * time.Second)
+	}
+	if strings.Contains(Cfg.Auth.User, `:`) {
+		return fmt.Errorf(`Usernames must not contain : character.`)
+	}
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	fmt.Printf("\nPlease provide the password you want to use.")
+password_read:
+	password = adm.ReadVerified(`password`)
+
+	if happy, err = adm.EvaluatePassword(3, password, Cfg.Auth.User, `soma`); err != nil {
+		return err
+	} else if !happy {
+		password = ""
+		goto password_read
+	}
+
+	fmt.Printf("\nTo confirm that this is your account, an additional credential is required" +
+		" this once.\n")
+
+	switch Cfg.Activation {
+	case `ldap`:
+		fmt.Println(`Please provide your LDAP password to establish ownership.`)
+		passKey = adm.ReadVerified(`password`)
+	case `mailtoken`:
+		fmt.Println(`Please provide the token you received via email.`)
+		passKey = adm.ReadVerified(`token`)
+	default:
+		return fmt.Errorf(`Unknown activation mode`)
+	}
+
+	if cred, err = adm.ActivateAccount(Client, &auth.Token{
+		UserName: Cfg.Auth.User,
+		Password: password,
+		Token:    passKey,
+	}); err != nil {
+		return err
+	}
+
+	// validate received token
+	if err = adm.ValidateToken(Client, Cfg.Auth.User, cred.Token); err != nil {
+		return err
+	}
+	// save received token. store is opened in initCommon
+	defer store.Close()
+	if err = store.SaveToken(
+		Cfg.Auth.User,
+		cred.ValidFrom,
+		cred.ExpiresAt,
+		cred.Token,
+	); err != nil {
+		return err
+	}
+	return nil
 }
 
+func cmdUserActivateAdmin(c *cli.Context) error {
+	return nil
+}
+
+/*
 func cmdUserDeactivate(c *cli.Context) {
 	url := getApiUrl()
 	id := utl.UserIdByUuidOrName(c)
@@ -312,22 +400,24 @@ func cmdUserDeactivate(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.User.IsActive = false
 
-	_ = utl.PatchRequestWithBody(req, url.String())
+	_ = utl.PatchRequestWithBody(Client, req, url.String())
 }
 */
 
-func cmdUserList(c *cli.Context) {
-	resp := utl.GetRequest("/users/")
+func cmdUserList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/users/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdUserShow(c *cli.Context) {
+func cmdUserShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetUserByUUIDOrName(c.Args().First())
+	id := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 /*
@@ -339,7 +429,7 @@ func cmdUserPasswordUpdate(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.Credentials.Password = pass
 
-	_ = utl.PutRequestWithBody(req, path)
+	_ = utl.PutRequestWithBody(Client, req, path)
 }
 
 func cmdUserPasswordReset(c *cli.Context) {
@@ -349,7 +439,7 @@ func cmdUserPasswordReset(c *cli.Context) {
 	var req somaproto.ProtoRequestUser
 	req.Credentials.Reset = true
 
-	_ = utl.PutRequestWithBody(req, path)
+	_ = utl.PutRequestWithBody(Client, req, path)
 }
 
 func cmdUserPasswordForce(c *cli.Context) {
@@ -361,7 +451,7 @@ func cmdUserPasswordForce(c *cli.Context) {
 	req.Credentials.Force = true
 	req.Credentials.Password = pass
 
-	_ = utl.PutRequestWithBody(req, path)
+	_ = utl.PutRequestWithBody(Client, req, path)
 }
 */
 

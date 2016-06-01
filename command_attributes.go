@@ -11,29 +11,28 @@ func registerAttributes(app cli.App) *cli.App {
 		[]cli.Command{
 			// attributes
 			{
-				Name:   "attributes",
-				Usage:  "SUBCOMMANDS for service attributes",
-				Before: runtimePreCmd,
+				Name:  "attributes",
+				Usage: "SUBCOMMANDS for service attributes",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new service attribute",
-						Action: cmdAttributeCreate,
+						Action: runtime(cmdAttributeCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a service attribute",
-						Action: cmdAttributeDelete,
+						Action: runtime(cmdAttributeDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List service attributes",
-						Action: cmdAttributeList,
+						Action: runtime(cmdAttributeList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a service attribute",
-						Action: cmdAttributeShow,
+						Action: runtime(cmdAttributeShow),
 					},
 				},
 			}, // end attributes
@@ -42,7 +41,7 @@ func registerAttributes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdAttributeCreate(c *cli.Context) {
+func cmdAttributeCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"cardinality"}
@@ -69,31 +68,35 @@ func cmdAttributeCreate(c *cli.Context) {
 	}
 	utl.ValidateRuneCount(req.Attribute.Name, 128)
 
-	resp := utl.PostRequestWithBody(req, "/attributes/")
+	resp := utl.PostRequestWithBody(Client, req, "/attributes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdAttributeDelete(c *cli.Context) {
+func cmdAttributeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdAttributeList(c *cli.Context) {
-	resp := utl.GetRequest("/attributes/")
+func cmdAttributeList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/attributes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdAttributeShow(c *cli.Context) {
+func cmdAttributeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

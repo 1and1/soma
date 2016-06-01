@@ -12,34 +12,33 @@ func registerViews(app cli.App) *cli.App {
 		[]cli.Command{
 			// views
 			{
-				Name:   "views",
-				Usage:  "SUBCOMMANDS for views",
-				Before: runtimePreCmd,
+				Name:  "views",
+				Usage: "SUBCOMMANDS for views",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Register a new view",
-						Action: cmdViewsAdd,
+						Action: runtime(cmdViewsAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing view",
-						Action: cmdViewsRemove,
+						Action: runtime(cmdViewsRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing view",
-						Action: cmdViewsRename,
+						Action: runtime(cmdViewsRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all registered views",
-						Action: cmdViewsList,
+						Action: runtime(cmdViewsList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific view",
-						Action: cmdViewsShow,
+						Action: runtime(cmdViewsShow),
 					},
 				},
 			}, // end views
@@ -48,7 +47,7 @@ func registerViews(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdViewsAdd(c *cli.Context) {
+func cmdViewsAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
@@ -58,20 +57,22 @@ func cmdViewsAdd(c *cli.Context) {
 		utl.Abort(`Views must not contain the character '.'`)
 	}
 
-	resp := utl.PostRequestWithBody(req, "/views/")
+	resp := utl.PostRequestWithBody(Client, req, "/views/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdViewsRemove(c *cli.Context) {
+func cmdViewsRemove(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdViewsRename(c *cli.Context) {
+func cmdViewsRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"to"}
 
@@ -86,22 +87,25 @@ func cmdViewsRename(c *cli.Context) {
 	req.View.Name = opts["to"][0]
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdViewsList(c *cli.Context) {
-	resp := utl.GetRequest("/views/")
+func cmdViewsList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/views/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdViewsShow(c *cli.Context) {
+func cmdViewsShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

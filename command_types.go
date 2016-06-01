@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/codegangsta/cli"
-	"gopkg.in/resty.v0"
-	"log"
-	"net/url"
 )
 
 func registerTypes(app cli.App) *cli.App {
@@ -13,34 +11,33 @@ func registerTypes(app cli.App) *cli.App {
 		[]cli.Command{
 			// types
 			{
-				Name:   "types",
-				Usage:  "SUBCOMMANDS for object types",
-				Before: runtimePreCmd,
+				Name:  "types",
+				Usage: "SUBCOMMANDS for object types",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
 						Usage:  "Add a new object type",
-						Action: cmdObjectTypesAdd,
+						Action: runtime(cmdObjectTypesAdd),
 					},
 					{
 						Name:   "remove",
 						Usage:  "Remove an existing object type",
-						Action: cmdObjectTypesRemove,
+						Action: runtime(cmdObjectTypesRemove),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing object type",
-						Action: cmdObjectTypesRename,
+						Action: runtime(cmdObjectTypesRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all object types",
-						Action: cmdObjectTypesList,
+						Action: runtime(cmdObjectTypesList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific object type",
-						Action: cmdObjectTypesShow,
+						Action: runtime(cmdObjectTypesShow),
 					},
 				},
 			}, // end types
@@ -49,138 +46,58 @@ func registerTypes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdObjectTypesAdd(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/objtypes"
+func cmdObjectTypesAdd(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	objectType := a.First()
-	if objectType == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: add objectType [%s]", objectType)
+	req := proto.NewEntityRequest()
+	req.Entity.Name = c.Args().First()
 
-	var req proto.Request
-	req.Entity = &proto.Entity{}
-	req.Entity.Name = objectType
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Post(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.PostRequestWithBody(Client, req, "/objtypes/")
+	fmt.Println(resp)
+	return nil
 }
 
-func cmdObjectTypesRemove(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+func cmdObjectTypesRemove(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	objectType := a.First()
-	if objectType == "" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: remove objectType [%s]", objectType)
-	url.Path = fmt.Sprintf("/objtypes/%s", objectType)
+	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Delete(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
+	return nil
 }
 
-func cmdObjectTypesRename(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+func cmdObjectTypesRename(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 3)
+	key := []string{`to`}
 
-	a := c.Args()
-	// we expected exactly 3 arguments
-	if len(a) != 3 {
-		log.Fatal("Syntax error")
-	}
-	// second arg must be `to`
-	if a.Get(1) != "to" {
-		log.Fatal("Syntax error")
-	}
-	log.Printf("Command: rename objectType [%s] to [%s]", a.Get(0), a.Get(2))
+	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
-	var req proto.Request
-	req.Entity = &proto.Entity{}
-	req.Entity.Name = a.Get(2)
-	url.Path = fmt.Sprintf("/objtypes/%s", a.Get(0))
+	req := proto.NewEntityRequest()
+	req.Entity.Name = opts[`to`][0]
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		SetBody(req).
-		Put(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
+
+	resp := utl.PutRequestWithBody(Client, req, path)
+	fmt.Println(resp)
+	return nil
 }
 
-func cmdObjectTypesList(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
-	url.Path = "/objtypes"
-
-	a := c.Args()
-	if len(a) != 0 {
-		log.Fatal("Syntax error")
-	}
-
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+func cmdObjectTypesList(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, "/objtypes/")
+	fmt.Println(resp)
+	return nil
 }
 
-func cmdObjectTypesShow(c *cli.Context) {
-	url, err := url.Parse(Cfg.Api)
-	if err != nil {
-		log.Fatal(err)
-	}
+func cmdObjectTypesShow(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
 
-	a := c.Args()
-	if len(a) != 1 {
-		log.Fatal("Syntax error")
-	}
-	objectType := a.First()
-	if objectType == "" {
-		log.Fatal("Syntax error")
-	}
-	url.Path = fmt.Sprintf("/objtypes/%s", objectType)
+	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
 
-	resp, err := resty.New().
-		SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-		R().
-		Get(url.String())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Response: %s\n", resp.Status())
+	resp := utl.GetRequest(Client, path)
+	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

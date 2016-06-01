@@ -7,16 +7,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetOncallByUUIDOrName(s string) string {
+func (u SomaUtil) TryGetOncallByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetOncallIdByName(s)
+		return u.GetOncallIdByName(c, s)
 	}
 	return id.String()
 }
 
-func (u SomaUtil) GetOncallIdByName(oncall string) string {
+func (u SomaUtil) GetOncallIdByName(c *resty.Client, oncall string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Oncall: &proto.OncallFilter{
@@ -25,7 +25,7 @@ func (u SomaUtil) GetOncallIdByName(oncall string) string {
 		},
 	}
 
-	resp := u.PostRequestWithBody(req, "/filter/oncall/")
+	resp := u.PostRequestWithBody(c, req, "/filter/oncall/")
 	oncallResult := u.DecodeProtoResultOncallFromResponse(resp)
 
 	if oncall != (*oncallResult.Oncalls)[0].Name {

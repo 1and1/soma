@@ -11,29 +11,28 @@ func registerModes(app cli.App) *cli.App {
 		[]cli.Command{
 			// modes
 			{
-				Name:   "modes",
-				Usage:  "SUBCOMMANDS for monitoring system modes",
-				Before: runtimePreCmd,
+				Name:  "modes",
+				Usage: "SUBCOMMANDS for monitoring system modes",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new monitoring system mode",
-						Action: cmdModeCreate,
+						Action: runtime(cmdModeCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a monitoring system mode",
-						Action: cmdModeDelete,
+						Action: runtime(cmdModeDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List monitoring system modes",
-						Action: cmdModeList,
+						Action: runtime(cmdModeList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a monitoring mode",
-						Action: cmdModeShow,
+						Action: runtime(cmdModeShow),
 					},
 				},
 			}, // end modes
@@ -42,38 +41,42 @@ func registerModes(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdModeCreate(c *cli.Context) {
+func cmdModeCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
 	req.Mode = &proto.Mode{}
 	req.Mode.Mode = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/modes/")
+	resp := utl.PostRequestWithBody(Client, req, "/modes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdModeDelete(c *cli.Context) {
+func cmdModeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdModeList(c *cli.Context) {
-	resp := utl.GetRequest("/modes/")
+func cmdModeList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/modes/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdModeShow(c *cli.Context) {
+func cmdModeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

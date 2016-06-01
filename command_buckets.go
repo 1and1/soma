@@ -12,54 +12,53 @@ func registerBuckets(app cli.App) *cli.App {
 		[]cli.Command{
 			// buckets
 			{
-				Name:   "buckets",
-				Usage:  "SUBCOMMANDS for buckets",
-				Before: runtimePreCmd,
+				Name:  "buckets",
+				Usage: "SUBCOMMANDS for buckets",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new bucket inside a repository",
-						Action: cmdBucketCreate,
+						Action: runtime(cmdBucketCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark an existing bucket as deleted",
-						Action: cmdBucketDelete,
+						Action: runtime(cmdBucketDelete),
 					},
 					{
 						Name:   "restore",
 						Usage:  "Restore a bucket marked as deleted",
-						Action: cmdBucketRestore,
+						Action: runtime(cmdBucketRestore),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Remove a deleted bucket",
-						Action: cmdBucketPurge,
+						Action: runtime(cmdBucketPurge),
 					},
 					{
 						Name:   "freeze",
 						Usage:  "Freeze a bucket",
-						Action: cmdBucketFreeze,
+						Action: runtime(cmdBucketFreeze),
 					},
 					{
 						Name:   "thaw",
 						Usage:  "Thaw a frozen bucket",
-						Action: cmdBucketThaw,
+						Action: runtime(cmdBucketThaw),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing bucket",
-						Action: cmdBucketRename,
+						Action: runtime(cmdBucketRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List existing buckets",
-						Action: cmdBucketList,
+						Action: runtime(cmdBucketList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific bucket",
-						Action: cmdBucketShow,
+						Action: runtime(cmdBucketShow),
 					},
 					{
 						Name:  "property",
@@ -72,12 +71,12 @@ func registerBuckets(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a bucket",
-										Action: cmdBucketSystemPropertyAdd,
+										Action: runtime(cmdBucketSystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a bucket",
-										Action: cmdBucketServicePropertyAdd,
+										Action: runtime(cmdBucketServicePropertyAdd),
 									},
 								},
 							},
@@ -90,7 +89,7 @@ func registerBuckets(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdBucketCreate(c *cli.Context) {
+func cmdBucketCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"repository", "environment"}
 	uniqKeys := []string{}
@@ -100,11 +99,11 @@ func cmdBucketCreate(c *cli.Context) {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	repoId := utl.TryGetRepositoryByUUIDOrName(opts["repository"][0])
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
 	// fetch list of environments from SOMA to check if a valid
 	// environment was requested
-	utl.VerifyEnvironment(opts["environment"][0])
+	utl.VerifyEnvironment(Client, opts["environment"][0])
 
 	req := proto.Request{
 		Bucket: &proto.Bucket{
@@ -114,30 +113,32 @@ func cmdBucketCreate(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PostRequestWithBody(req, "/buckets/")
+	resp := utl.PostRequestWithBody(Client, req, "/buckets/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketDelete(c *cli.Context) {
+func cmdBucketDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	buckId := utl.TryGetBucketByUUIDOrName(
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketRestore(c *cli.Context) {
+func cmdBucketRestore(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	buckId := utl.TryGetBucketByUUIDOrName(
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
@@ -148,16 +149,17 @@ func cmdBucketRestore(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketPurge(c *cli.Context) {
+func cmdBucketPurge(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	buckId := utl.TryGetBucketByUUIDOrName(
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
@@ -168,16 +170,17 @@ func cmdBucketPurge(c *cli.Context) {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketFreeze(c *cli.Context) {
+func cmdBucketFreeze(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	buckId := utl.TryGetBucketByUUIDOrName(
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
@@ -188,16 +191,17 @@ func cmdBucketFreeze(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketThaw(c *cli.Context) {
+func cmdBucketThaw(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(2))
-	buckId := utl.TryGetBucketByUUIDOrName(
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
@@ -208,17 +212,18 @@ func cmdBucketThaw(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketRename(c *cli.Context) {
+func cmdBucketRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	utl.ValidateCliArgument(c, 2, "to")
 	utl.ValidateCliArgument(c, 4, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(c.Args().Get(4))
-	buckId := utl.TryGetBucketByUUIDOrName(
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(4))
+	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
@@ -229,30 +234,33 @@ func cmdBucketRename(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketList(c *cli.Context) {
+func cmdBucketList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest("/buckets/")
+	resp := utl.GetRequest(Client, "/buckets/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketShow(c *cli.Context) {
+func cmdBucketShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	bucketId := utl.BucketByUUIDOrName(c.Args().First())
+	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketSystemPropertyAdd(c *cli.Context) {
+func cmdBucketSystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "value", "view"}
@@ -262,8 +270,8 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for buckets, since they are global objects. Ignoring.")
 	}
 
-	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
-	utl.CheckStringIsSystemProperty(c.Args().First())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
+	utl.CheckStringIsSystemProperty(Client, c.Args().First())
 
 	prop := proto.Property{
 		Type: "system",
@@ -294,12 +302,13 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdBucketServicePropertyAdd(c *cli.Context) {
+func cmdBucketServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	required := []string{"to", "view"}
@@ -309,8 +318,8 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	if _, ok := opts["in"]; ok {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for buckets, since they are global objects. Ignoring.")
 	}
-	bucketId := utl.BucketByUUIDOrName(opts["to"][0])
-	teamId := utl.TeamIdForBucket(bucketId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
+	teamId := utl.TeamIdForBucket(Client, bucketId)
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
 	prop := proto.Property{
@@ -343,9 +352,10 @@ func cmdBucketServicePropertyAdd(c *cli.Context) {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/service/", bucketId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

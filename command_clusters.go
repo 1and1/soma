@@ -11,34 +11,33 @@ func registerClusters(app cli.App) *cli.App {
 		[]cli.Command{
 			// clusters
 			{
-				Name:   "clusters",
-				Usage:  "SUBCOMMANDS for clusters",
-				Before: runtimePreCmd,
+				Name:  "clusters",
+				Usage: "SUBCOMMANDS for clusters",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new cluster",
-						Action: cmdClusterCreate,
+						Action: runtime(cmdClusterCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a cluster",
-						Action: cmdClusterDelete,
+						Action: runtime(cmdClusterDelete),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename a cluster",
-						Action: cmdClusterRename,
+						Action: runtime(cmdClusterRename),
 					},
 					{
 						Name:   "list",
 						Usage:  "List all clusters",
-						Action: cmdClusterList,
+						Action: runtime(cmdClusterList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a cluster",
-						Action: cmdClusterShow,
+						Action: runtime(cmdClusterShow),
 					},
 					{
 						Name:  "members",
@@ -47,17 +46,17 @@ func registerClusters(app cli.App) *cli.App {
 							{
 								Name:   "add",
 								Usage:  "Add a node to a cluster",
-								Action: cmdClusterMemberAdd,
+								Action: runtime(cmdClusterMemberAdd),
 							},
 							{
 								Name:   "delete",
 								Usage:  "Delete a node from a cluster",
-								Action: cmdClusterMemberDelete,
+								Action: runtime(cmdClusterMemberDelete),
 							},
 							{
 								Name:   "list",
 								Usage:  "List members of a cluster",
-								Action: cmdClusterMemberList,
+								Action: runtime(cmdClusterMemberList),
 							},
 						},
 					},
@@ -72,12 +71,12 @@ func registerClusters(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a cluster",
-										Action: cmdClusterSystemPropertyAdd,
+										Action: runtime(cmdClusterSystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a cluster",
-										Action: cmdClusterServicePropertyAdd,
+										Action: runtime(cmdClusterServicePropertyAdd),
 									},
 								},
 							},
@@ -90,7 +89,7 @@ func registerClusters(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdClusterCreate(c *cli.Context) {
+func cmdClusterCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -99,19 +98,20 @@ func cmdClusterCreate(c *cli.Context) {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
 
 	var req proto.Request
 	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = c.Args().First()
 	req.Cluster.BucketId = bucketId
 
-	resp := utl.PostRequestWithBody(req, "/clusters/")
+	resp := utl.PostRequestWithBody(Client, req, "/clusters/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterDelete(c *cli.Context) {
+func cmdClusterDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -120,17 +120,18 @@ func cmdClusterDelete(c *cli.Context) {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	resp := utl.DeleteRequest(path)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	resp := utl.DeleteRequest(Client, path)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterRename(c *cli.Context) {
+func cmdClusterRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -139,8 +140,8 @@ func cmdClusterRename(c *cli.Context) {
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
@@ -149,11 +150,12 @@ func cmdClusterRename(c *cli.Context) {
 	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(req, path)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	resp := utl.PatchRequestWithBody(Client, req, path)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterList(c *cli.Context) {
+func cmdClusterList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 	/*
 			multKeys := []string{"bucket"}
@@ -166,15 +168,16 @@ func cmdClusterList(c *cli.Context) {
 
 			req := somaproto.ProtoRequestCluster{}
 			req.Filter = &somaproto.ProtoClusterFilter{}
-			req.Filter.BucketId = utl.BucketByUUIDOrName(opts["bucket"][0])
+			req.Filter.BucketId = utl.BucketByUUIDOrName(Client, opts["bucket"][0])
 		resp := utl.GetRequestWithBody(req, "/clusters/")
 	*/
-	resp := utl.GetRequest("/clusters/")
+	resp := utl.GetRequest(Client, "/clusters/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterShow(c *cli.Context) {
+func cmdClusterShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -183,18 +186,19 @@ func cmdClusterShow(c *cli.Context) {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterMemberAdd(c *cli.Context) {
+func cmdClusterMemberAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
 
@@ -203,10 +207,10 @@ func cmdClusterMemberAdd(c *cli.Context) {
 		multKeys,
 		c.Args().Tail())
 
-	nodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	//TODO: get bucketId via node
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		opts["to"][0], bucketId)
 
 	req := proto.Request{}
@@ -225,12 +229,13 @@ func cmdClusterMemberAdd(c *cli.Context) {
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterMemberDelete(c *cli.Context) {
+func cmdClusterMemberDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "bucket"}
 
@@ -239,20 +244,21 @@ func cmdClusterMemberDelete(c *cli.Context) {
 		multKeys,
 		c.Args().Tail())
 
-	nodeId := utl.TryGetNodeByUUIDOrName(c.Args().First())
+	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	//TODO: get bucketId via node
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		opts["from"][0], bucketId)
 
 	path := fmt.Sprintf("/clusters/%s/members/%s", clusterId,
 		nodeId)
 
-	resp := utl.DeleteRequest(path)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	resp := utl.DeleteRequest(Client, path)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterMemberList(c *cli.Context) {
+func cmdClusterMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"bucket"}
 
@@ -261,27 +267,28 @@ func cmdClusterMemberList(c *cli.Context) {
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(opts["bucket"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(
+	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(), bucketId)
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterSystemPropertyAdd(c *cli.Context) {
+func cmdClusterSystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 9)
 	multiple := []string{}
 	required := []string{"to", "in", "value", "view"}
 	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
 
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(opts["to"][0], bucketId)
-	utl.CheckStringIsSystemProperty(c.Args().First())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts["to"][0], bucketId)
+	utl.CheckStringIsSystemProperty(Client, c.Args().First())
 
 	sprop := proto.PropertySystem{
 		Name:  c.Args().First(),
@@ -317,21 +324,22 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) {
 	}
 
 	path := fmt.Sprintf("/clusters/%s/property/system/", clusterId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdClusterServicePropertyAdd(c *cli.Context) {
+func cmdClusterServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "in", "view"}
 	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
 
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(opts["to"][0], bucketId)
-	teamId := utl.TeamIdForBucket(bucketId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts["to"][0], bucketId)
+	teamId := utl.TeamIdForBucket(Client, bucketId)
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
@@ -366,9 +374,10 @@ func cmdClusterServicePropertyAdd(c *cli.Context) {
 	}
 
 	path := fmt.Sprintf("/clusters/%s/property/service/", clusterId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

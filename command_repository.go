@@ -12,44 +12,43 @@ func registerRepository(app cli.App) *cli.App {
 		[]cli.Command{
 			// repository
 			{
-				Name:   "repository",
-				Usage:  "SUBCOMMANDS for repository",
-				Before: runtimePreCmd,
+				Name:  "repository",
+				Usage: "SUBCOMMANDS for repository",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new repository",
-						Action: cmdRepositoryCreate,
+						Action: runtime(cmdRepositoryCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Mark an existing repository as deleted",
-						Action: cmdRepositoryDelete,
+						Action: runtime(cmdRepositoryDelete),
 					},
 					{
 						Name:   "restore",
 						Usage:  "Restore a repository marked as deleted",
-						Action: cmdRepositoryRestore,
+						Action: runtime(cmdRepositoryRestore),
 					},
 					{
 						Name:   "purge",
 						Usage:  "Remove an unreferenced deleted repository",
-						Action: cmdRepositoryPurge,
+						Action: runtime(cmdRepositoryPurge),
 					},
 					{
 						Name:   "clear",
 						Usage:  "Clear all check instances for this repository",
-						Action: cmdRepositoryClear,
+						Action: runtime(cmdRepositoryClear),
 					},
 					{
 						Name:   "rename",
 						Usage:  "Rename an existing repository",
-						Action: cmdRepositoryRename,
+						Action: runtime(cmdRepositoryRename),
 					},
 					{
 						Name:   "repossess",
 						Usage:  "Change the owner of a repository",
-						Action: cmdRepositoryRepossess,
+						Action: runtime(cmdRepositoryRepossess),
 					},
 					/*
 						{
@@ -61,7 +60,7 @@ func registerRepository(app cli.App) *cli.App {
 					{
 						Name:   "activate",
 						Usage:  "Activate a cloned repository",
-						Action: cmdRepositoryActivate,
+						Action: runtime(cmdRepositoryActivate),
 					},
 					/*
 						{
@@ -73,12 +72,12 @@ func registerRepository(app cli.App) *cli.App {
 					{
 						Name:   "list",
 						Usage:  "List all existing repositories",
-						Action: cmdRepositoryList,
+						Action: runtime(cmdRepositoryList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show information about a specific repository",
-						Action: cmdRepositoryShow,
+						Action: runtime(cmdRepositoryShow),
 					},
 					{
 						Name:  "property",
@@ -91,12 +90,12 @@ func registerRepository(app cli.App) *cli.App {
 									{
 										Name:   "system",
 										Usage:  "Add a system property to a repository",
-										Action: cmdRepositorySystemPropertyAdd,
+										Action: runtime(cmdRepositorySystemPropertyAdd),
 									},
 									{
 										Name:   "service",
 										Usage:  "Add a service property to a repository",
-										Action: cmdRepositoryServicePropertyAdd,
+										Action: runtime(cmdRepositoryServicePropertyAdd),
 									},
 								},
 							},
@@ -109,34 +108,37 @@ func registerRepository(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdRepositoryCreate(c *cli.Context) {
+func cmdRepositoryCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "team")
 
-	teamId := utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
+	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
 	req.Repository.Name = c.Args().Get(0)
 	req.Repository.TeamId = teamId
 
-	resp := utl.PostRequestWithBody(req, "/repository/")
+	resp := utl.PostRequestWithBody(Client, req, "/repository/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryDelete(c *cli.Context) {
+func cmdRepositoryDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	resp := utl.DeleteRequest(path)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryRestore(c *cli.Context) {
+func cmdRepositoryRestore(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -145,14 +147,15 @@ func cmdRepositoryRestore(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryPurge(c *cli.Context) {
+func cmdRepositoryPurge(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -161,14 +164,15 @@ func cmdRepositoryPurge(c *cli.Context) {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(req, path)
+	resp := utl.DeleteRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryClear(c *cli.Context) {
+func cmdRepositoryClear(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -177,49 +181,53 @@ func cmdRepositoryClear(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PutRequestWithBody(req, path)
+	resp := utl.PutRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryRename(c *cli.Context) {
+func cmdRepositoryRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
 	req.Repository.Name = c.Args().Get(2)
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryRepossess(c *cli.Context) {
+func cmdRepositoryRepossess(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
-	_ = utl.TryGetTeamByUUIDOrName(c.Args().Get(2))
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	_ = utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
 	path := fmt.Sprintf("/repository/%s", id)
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
 	req.Repository.TeamId = c.Args().Get(2)
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryClone(c *cli.Context) {
+func cmdRepositoryClone(c *cli.Context) error {
 	utl.NotImplemented()
+	return nil
 }
 
-func cmdRepositoryActivate(c *cli.Context) {
+func cmdRepositoryActivate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -228,33 +236,37 @@ func cmdRepositoryActivate(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(req, path)
+	resp := utl.PatchRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryWipe(c *cli.Context) {
+func cmdRepositoryWipe(c *cli.Context) error {
 	utl.NotImplemented()
+	return nil
 }
 
-func cmdRepositoryList(c *cli.Context) {
+func cmdRepositoryList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest("/repository/")
+	resp := utl.GetRequest(Client, "/repository/")
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryShow(c *cli.Context) {
+func cmdRepositoryShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
-	id := utl.TryGetRepositoryByUUIDOrName(c.Args().First())
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositorySystemPropertyAdd(c *cli.Context) {
+func cmdRepositorySystemPropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	required := []string{"to", "value", "view"}
@@ -264,8 +276,8 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for repositories, since they are global objects. Ignoring.")
 	}
 
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(opts["to"][0])
-	utl.CheckStringIsSystemProperty(c.Args().First())
+	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts["to"][0])
+	utl.CheckStringIsSystemProperty(Client, c.Args().First())
 
 	sprop := proto.PropertySystem{
 		Name:  c.Args().First(),
@@ -300,12 +312,13 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdRepositoryServicePropertyAdd(c *cli.Context) {
+func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	required := []string{"to", "view"}
@@ -315,8 +328,8 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for repositories, since they are global objects. Ignoring.")
 	}
 
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(opts["to"][0])
-	teamId := utl.GetTeamIdByRepositoryId(repositoryId)
+	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts["to"][0])
+	teamId := utl.GetTeamIdByRepositoryId(Client, repositoryId)
 
 	// no reason to fill out the attributes, client-provided
 	// attributes are discarded by the server
@@ -350,9 +363,10 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/service/", repositoryId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

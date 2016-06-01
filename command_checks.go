@@ -10,24 +10,23 @@ func registerChecks(app cli.App) *cli.App {
 	app.Commands = append(app.Commands,
 		[]cli.Command{
 			{
-				Name:   "checks",
-				Usage:  "SUBCOMMANDS for check configurations",
-				Before: runtimePreCmd,
+				Name:  "checks",
+				Usage: "SUBCOMMANDS for check configurations",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Create a new check configuration",
-						Action: cmdCheckAdd,
+						Action: runtime(cmdCheckAdd),
 					},
 					{
 						Name:   "list",
 						Usage:  "List check configurations",
-						Action: cmdCheckList,
+						Action: runtime(cmdCheckList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a check configuration",
-						Action: cmdCheckShow,
+						Action: runtime(cmdCheckShow),
 					},
 				},
 			},
@@ -36,7 +35,7 @@ func registerChecks(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdCheckAdd(c *cli.Context) {
+func cmdCheckAdd(c *cli.Context) error {
 	utl.ValidateCliMinArgumentCount(c, 8)
 
 	opts, constraints, thresholds := utl.ParseVariadicCheckArguments(c.Args().Tail())
@@ -45,13 +44,14 @@ func cmdCheckAdd(c *cli.Context) {
 	req.CheckConfig = &proto.CheckConfig{
 		Name:         utl.ValidateRuneCount(c.Args().First(), 256),
 		Interval:     utl.GetValidatedUint64(opts["interval"][0], 1),
-		BucketId:     utl.BucketByUUIDOrName(opts["in"][0]),
-		CapabilityId: utl.TryGetCapabilityByUUIDOrName(opts["with"][0]),
+		BucketId:     utl.BucketByUUIDOrName(Client, opts["in"][0]),
+		CapabilityId: utl.TryGetCapabilityByUUIDOrName(Client, opts["with"][0]),
 		ObjectType:   opts["on/type"][0],
 	}
 	req.CheckConfig.RepositoryId = utl.GetRepositoryIdForBucket(
-		req.CheckConfig.BucketId)
+		Client, req.CheckConfig.BucketId)
 	req.CheckConfig.ObjectId = utl.GetObjectIdForCheck(
+		Client,
 		opts["on/type"][0],
 		opts["on/object"][0],
 		req.CheckConfig.BucketId)
@@ -82,21 +82,23 @@ func cmdCheckAdd(c *cli.Context) {
 		req.CheckConfig.ExternalId = utl.ValidateRuneCount(ex[0], 64)
 	}
 
-	teamId := utl.GetTeamIdByRepositoryId(req.CheckConfig.RepositoryId)
+	teamId := utl.GetTeamIdByRepositoryId(Client, req.CheckConfig.RepositoryId)
 
-	req.CheckConfig.Thresholds = utl.CleanThresholds(thresholds)
+	req.CheckConfig.Thresholds = utl.CleanThresholds(Client, thresholds)
 	req.CheckConfig.Constraints = utl.CleanConstraints(
+		Client,
 		constraints,
 		req.CheckConfig.RepositoryId,
 		teamId)
 
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
-	resp := utl.PostRequestWithBody(req, path)
+	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdCheckList(c *cli.Context) {
+func cmdCheckList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 2)
 	multiple := []string{}
 	unique := []string{"in"}
@@ -107,16 +109,17 @@ func cmdCheckList(c *cli.Context) {
 		unique,
 		required,
 		c.Args())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	repoId := utl.GetRepositoryIdForBucket(bucketId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 
 	path := fmt.Sprintf("/checks/%s/", repoId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
-func cmdCheckShow(c *cli.Context) {
+func cmdCheckShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"in"}
@@ -127,14 +130,15 @@ func cmdCheckShow(c *cli.Context) {
 		unique,
 		required,
 		c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(opts["in"][0])
-	repoId := utl.GetRepositoryIdForBucket(bucketId)
-	checkId := utl.TryGetCheckByUUIDOrName(c.Args().First(), repoId)
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
+	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, resp)
+	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

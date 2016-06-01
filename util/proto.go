@@ -33,8 +33,8 @@ func (u SomaUtil) UnfilteredResultFromResponse(resp *resty.Response) *proto.Resu
 	return &res
 }
 
-func (u SomaUtil) VerifyEnvironment(env string) {
-	resp := u.GetRequest("/environments/")
+func (u SomaUtil) VerifyEnvironment(c *resty.Client, env string) {
+	resp := u.GetRequest(c, "/environments/")
 	res := u.DecodeResultFromResponse(resp)
 	for _, e := range *res.Environments {
 		if e.Name == env {
@@ -44,14 +44,14 @@ func (u SomaUtil) VerifyEnvironment(env string) {
 	u.Abort(fmt.Sprintf("Invalid environment specified: %s", env))
 }
 
-func (u SomaUtil) AsyncWait(enabled bool, resp *resty.Response) {
+func (u SomaUtil) AsyncWait(enabled bool, c *resty.Client, resp *resty.Response) {
 	if !enabled {
 		return
 	}
 	r := u.DecodeResultFromResponse(resp)
 	if r.StatusCode == 202 && r.JobId != "" {
 		fmt.Fprintf(os.Stderr, "Waiting for job: %s\n", r.JobId)
-		u.PutRequest(fmt.Sprintf("/jobs/%s", r.JobId))
+		u.PutRequest(c, fmt.Sprintf("/jobs/%s", r.JobId))
 	}
 }
 

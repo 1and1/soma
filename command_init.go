@@ -7,12 +7,10 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/mitchellh/go-homedir"
-	"github.com/syndtr/goleveldb/leveldb"
-	"github.com/syndtr/goleveldb/leveldb/opt"
 )
 
 // This command runs before the config file exists
-func cmdClientInit(c *cli.Context) {
+func cmdClientInit(c *cli.Context) error {
 	// get user home directory
 	home, err := homedir.Dir()
 	if err != nil {
@@ -20,15 +18,23 @@ func cmdClientInit(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	// create ~/.somaadm/ directory
-	somaPath := path.Join(home, ".somaadm")
+	// create ~/.soma/ directory
+	somaPath := path.Join(home, ".soma")
 	err = os.MkdirAll(somaPath, 0700)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating path %s: %s\n", somaPath, err.Error())
 		os.Exit(1)
 	}
 
-	// create ~/.somaadm/logs directory
+	// create ~/.soma/adm/ directory
+	somaPath = path.Join(somaPath, "adm")
+	err = os.MkdirAll(somaPath, 0700)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating path %s: %s\n", somaPath, err.Error())
+		os.Exit(1)
+	}
+
+	// create ~/.soma/adm/logs directory
 	var (
 		logsPath string
 	)
@@ -43,21 +49,19 @@ func cmdClientInit(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	// create LevelDB
+	// create ~/.soma/adm/db directory
 	var (
-		ldbPath string
-		ldbOpt  opt.Options
+		dbPath string
 	)
-	if c.GlobalIsSet("jobdb") {
-		ldbPath = path.Join(somaPath, c.GlobalString("jobdb"))
+	if c.GlobalIsSet("dbdir") {
+		dbPath = path.Join(somaPath, c.GlobalString("dbdir"))
 	} else {
-		ldbPath = path.Join(somaPath, "jobs")
+		dbPath = path.Join(somaPath, "db")
 	}
-	ldbOpt.ErrorIfExist = true
-	db, err := leveldb.OpenFile(ldbPath, &ldbOpt)
+	err = os.MkdirAll(dbPath, 0700)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating LevelDB at %s: %s\n", ldbPath, err.Error())
+		fmt.Fprintf(os.Stderr, "Error creating path %s: %s\n", dbPath, err.Error())
 		os.Exit(1)
 	}
-	defer db.Close()
+	return nil
 }

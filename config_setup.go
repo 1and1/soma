@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"github.com/mitchellh/go-homedir"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
+	"time"
+
+	"github.com/codegangsta/cli"
+	"github.com/mitchellh/go-homedir"
 )
 
 func configSetup(c *cli.Context) error {
@@ -18,9 +21,9 @@ func configSetup(c *cli.Context) error {
 	}
 	var confPath string
 	if c.GlobalIsSet("config") {
-		confPath = path.Join(home, ".somaadm", c.GlobalString("config"))
+		confPath = path.Join(home, ".soma", "adm", c.GlobalString("config"))
 	} else {
-		confPath = path.Join(home, ".somaadm", "somaadm.conf")
+		confPath = path.Join(home, ".soma", "adm", "somaadm.conf")
 	}
 
 	// try loading a configuration file
@@ -33,59 +36,78 @@ func configSetup(c *cli.Context) error {
 		}
 	}
 
+	// check account activation mode
+	if Cfg.Activation == `` {
+		Cfg.Activation = `ldap`
+	} else if Cfg.Activation != `ldap` && Cfg.Activation != `mailtoken` {
+		fmt.Fprintln(os.Stderr, `Config setting activation.mode must be 'ldap' or 'mailtoken'.`)
+	}
+
 	// finish setting up runtime configuration
-	params := []string{"api", "timeout", "user", "logdir", "jobdb"}
+	params := []string{"api", "timeout", "user", "logdir", "dbdir"}
 
 	for p := range params {
 		// update configuration with cli argument overrides
 		if c.GlobalIsSet(params[p]) {
 			switch params[p] {
-			case "api":
-				Cfg.Api = c.GlobalString(params[p])
-			case "timeout":
-				Cfg.Timeout = strconv.Itoa(c.GlobalInt(params[p]))
 			case "user":
 				Cfg.Auth.User = c.GlobalString(params[p])
+			case "timeout":
+				Cfg.Timeout = uint(c.GlobalInt(params[p]))
+			case "host":
+				Cfg.Api = c.GlobalString(params[p])
+			case "dbdir":
+				Cfg.BoltDB.Path = c.GlobalString(params[p])
 			case "logdir":
 				Cfg.LogDir = c.GlobalString(params[p])
-			case "jobdb":
-				Cfg.JobDb = c.GlobalString(params[p])
 			}
 			continue
 		}
 		// set default values for unset configuration parameters
 		switch params[p] {
-		case "api":
-			if Cfg.Api == "" {
-				Cfg.Api = "http://localhost.my.domain:9876/"
-			}
 		case "timeout":
-			if Cfg.Timeout == "" {
-				Cfg.Timeout = strconv.Itoa(5)
-			}
-		case "user":
-			if Cfg.Auth.User == "" {
-				Cfg.Auth.User = "admin_fooname"
+			if Cfg.Timeout == 0 {
+				Cfg.Timeout = 2
 			}
 		case "logdir":
 			if Cfg.LogDir == "" {
 				Cfg.LogDir = "logs"
 			}
-		case "jobdb":
-			if Cfg.JobDb == "" {
-				Cfg.JobDb = "jobs"
+		case "dbdir":
+			if Cfg.BoltDB.Path == "" {
+				Cfg.BoltDB.Path = "db"
 			}
 		}
 	}
 
-	Cfg.Run.PathLogs = path.Join(home, ".somaadm", Cfg.LogDir)
-	Cfg.Run.PathLevelDB = path.Join(home, ".somaadm", Cfg.JobDb)
+	Cfg.Run.PathLogs = path.Join(home, ".soma", "adm",
+		Cfg.LogDir)
 
-	// TODO prompt for Password
-	if Cfg.Auth.Pass == "" {
-		fmt.Fprintf(os.Stderr, "Password required")
-		os.Exit(1)
+	Cfg.Run.PathBoltDB = path.Join(home, ".soma", "adm",
+		Cfg.BoltDB.Path, Cfg.BoltDB.File)
+	Cfg.Run.ModeBoltDB, err = strconv.ParseUint(Cfg.BoltDB.Mode, 8, 32)
+	if err != nil {
+		return fmt.Errorf(
+			"Failed to parse configuration field boltdb.mode: "+
+				"%s\n", err.Error())
 	}
+	Cfg.Run.TimeoutBoltDB = time.Duration(Cfg.BoltDB.Timeout) * time.Second
+	Cfg.Run.TimeoutResty = time.Duration(Cfg.Timeout) * time.Second
+
+	Cfg.Run.SomaAPI, err = url.Parse(Cfg.Api)
+	if err != nil {
+		return fmt.Errorf(
+			"Failed to parse SOMA API address: %s\n", err.Error())
+	}
+
+	if Cfg.Run.SomaAPI.Scheme == `https` {
+		if Cfg.Cert == "" {
+			return fmt.Errorf(
+				"HTTPS API endpoint requires configured CA file.")
+		}
+		Cfg.Run.CertPath = path.Join(home, ".soma", "adm", Cfg.Cert)
+	}
+
 	return nil
 }
 

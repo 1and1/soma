@@ -12,30 +12,29 @@ func registerCapability(app cli.App) *cli.App {
 		[]cli.Command{
 			// capability
 			{
-				Name:   "capabilities",
-				Usage:  "SUBCOMMANDS for monitoring capability declarations",
-				Before: runtimePreCmd,
+				Name:  "capabilities",
+				Usage: "SUBCOMMANDS for monitoring capability declarations",
 				Subcommands: []cli.Command{
 					{
 						Name:        "declare",
 						Usage:       "Declare a new monitoring system capability",
 						Description: help.CmdCapabilityDeclare,
-						Action:      cmdCapabilityDeclare,
+						Action:      runtime(cmdCapabilityDeclare),
 					},
 					{
 						Name:   "revoke",
 						Usage:  "Revoke a monitoring system capability",
-						Action: cmdCapabilityRevoke,
+						Action: runtime(cmdCapabilityRevoke),
 					},
 					{
 						Name:   "list",
 						Usage:  "List monitoring system capabilities",
-						Action: cmdCapabilityList,
+						Action: runtime(cmdCapabilityList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a monitoring system capability",
-						Action: cmdCapabilityShow,
+						Action: runtime(cmdCapabilityShow),
 					},
 				},
 			}, // end capability
@@ -44,7 +43,7 @@ func registerCapability(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdCapabilityDeclare(c *cli.Context) {
+func cmdCapabilityDeclare(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{"metric", "view", "thresholds"}
@@ -61,7 +60,7 @@ func cmdCapabilityDeclare(c *cli.Context) {
 
 	req := proto.Request{
 		Capability: &proto.Capability{
-			MonitoringId: utl.TryGetMonitoringByUUIDOrName(
+			MonitoringId: utl.TryGetMonitoringByUUIDOrName(Client,
 				c.Args().First(),
 			),
 			Metric:     opts["metric"][0],
@@ -70,33 +69,37 @@ func cmdCapabilityDeclare(c *cli.Context) {
 		},
 	}
 
-	resp := utl.PostRequestWithBody(req, "/capability/")
+	resp := utl.PostRequestWithBody(Client, req, "/capability/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCapabilityRevoke(c *cli.Context) {
+func cmdCapabilityRevoke(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	id := utl.TryGetCapabilityByUUIDOrName(c.Args().First())
+	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/capability/%s", id)
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCapabilityList(c *cli.Context) {
-	resp := utl.GetRequest("/capability/")
+func cmdCapabilityList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/capability/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdCapabilityShow(c *cli.Context) {
+func cmdCapabilityShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	id := utl.TryGetCapabilityByUUIDOrName(c.Args().First())
+	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/capability/%s", id)
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

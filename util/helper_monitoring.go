@@ -5,16 +5,16 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetMonitoringByUUIDOrName(s string) string {
+func (u *SomaUtil) TryGetMonitoringByUUIDOrName(c *resty.Client, s string) string {
 	id, err := uuid.FromString(s)
 	if err != nil {
 		// aborts on failure
-		return u.GetMonitoringIdByName(s)
+		return u.GetMonitoringIdByName(c, s)
 	}
 	return id.String()
 }
 
-func (u *SomaUtil) GetMonitoringIdByName(monitoring string) string {
+func (u *SomaUtil) GetMonitoringIdByName(c *resty.Client, monitoring string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Monitoring: &proto.MonitoringFilter{
@@ -22,7 +22,7 @@ func (u *SomaUtil) GetMonitoringIdByName(monitoring string) string {
 			},
 		},
 	}
-	resp := u.PostRequestWithBody(req, "/filter/monitoring/")
+	resp := u.PostRequestWithBody(c, req, "/filter/monitoring/")
 	monitoringResult := u.DecodeProtoResultMonitoringFromResponse(resp)
 
 	if monitoring != (*monitoringResult.Monitorings)[0].Name {

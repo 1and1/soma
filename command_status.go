@@ -11,29 +11,28 @@ func registerStatus(app cli.App) *cli.App {
 		[]cli.Command{
 			// status
 			{
-				Name:   "status",
-				Usage:  "SUBCOMMANDS for check instance status",
-				Before: runtimePreCmd,
+				Name:  "status",
+				Usage: "SUBCOMMANDS for check instance status",
 				Subcommands: []cli.Command{
 					{
 						Name:   "create",
 						Usage:  "Add a check instance status",
-						Action: cmdStatusCreate,
+						Action: runtime(cmdStatusCreate),
 					},
 					{
 						Name:   "delete",
 						Usage:  "Delete a check instance status",
-						Action: cmdStatusDelete,
+						Action: runtime(cmdStatusDelete),
 					},
 					{
 						Name:   "list",
 						Usage:  "List check instance status",
-						Action: cmdStatusList,
+						Action: runtime(cmdStatusList),
 					},
 					{
 						Name:   "show",
 						Usage:  "Show details about a check instance status",
-						Action: cmdStatusShow,
+						Action: runtime(cmdStatusShow),
 					},
 				},
 			}, // end status
@@ -42,38 +41,42 @@ func registerStatus(app cli.App) *cli.App {
 	return &app
 }
 
-func cmdStatusCreate(c *cli.Context) {
+func cmdStatusCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	req := proto.Request{}
 	req.Status = &proto.Status{}
 	req.Status.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(req, "/status/")
+	resp := utl.PostRequestWithBody(Client, req, "/status/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdStatusDelete(c *cli.Context) {
+func cmdStatusDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(path)
+	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdStatusList(c *cli.Context) {
-	resp := utl.GetRequest("/status/")
+func cmdStatusList(c *cli.Context) error {
+	resp := utl.GetRequest(Client, "/status/")
 	fmt.Println(resp)
+	return nil
 }
 
-func cmdStatusShow(c *cli.Context) {
+func cmdStatusShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
-	resp := utl.GetRequest(path)
+	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

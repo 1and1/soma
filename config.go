@@ -4,21 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/nahanni/go-ucl"
-	"github.com/syndtr/goleveldb/leveldb"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
+	"time"
+
+	"github.com/nahanni/go-ucl"
 )
 
 type Config struct {
-	Timeout   string     `json:"timeout"`
-	Api       string     `json:"api"`
-	JobDb     string     `json:"jobdb"`
-	LogDir    string     `json:"logdir"`
-	AsyncWait bool       `json:"async.wait,string"`
-	Auth      AuthConfig `json:"auth"`
-	Run       RunTimeConfig
+	Api        string       `json:"api"`
+	Cert       string       `json:"cert"`
+	LogDir     string       `json:"logdir"`
+	Timeout    uint         `json:"timeout,string"`
+	Activation string       `json:"activation.mode"`
+	AsyncWait  bool         `json:"async.wait,string"`
+	Auth       AuthConfig   `json:"auth"`
+	AdminAuth  AuthConfig   `json:"admin.auth"`
+	BoltDB     ConfigBoltDB `json:"boltdb"`
+	Run        RunTimeConfig
 }
 
 type AuthConfig struct {
@@ -26,11 +31,22 @@ type AuthConfig struct {
 	Pass string `json:"pass"`
 }
 
+type ConfigBoltDB struct {
+	Path    string `json:"path"`
+	File    string `json:"file"`
+	Mode    string `json:"mode"`
+	Timeout uint   `json:"open.timeout,string"`
+}
+
 type RunTimeConfig struct {
-	LevelDB     *leveldb.DB
-	PathLevelDB string
-	PathLogs    string
-	Logger      *log.Logger
+	SomaAPI       *url.URL      `json:"-"`
+	PathLogs      string        `json:"-"`
+	PathBoltDB    string        `json:"-"`
+	ModeBoltDB    uint64        `json:"-"`
+	CertPath      string        `json:"-"`
+	TimeoutBoltDB time.Duration `json:"-"`
+	TimeoutResty  time.Duration `json:"-"`
+	Logger        *log.Logger   `json:"-"`
 }
 
 func (c *Config) populateFromFile(fname string) error {
