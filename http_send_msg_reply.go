@@ -27,7 +27,7 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		case `kex_reply`:
 			k = r.Super.Kex
 			if bjson, err = json.Marshal(&k); err != nil {
-				log.Printf(LogStrErr, r.Type, r.Action, r.Code, err)
+				log.Printf(LogStrErr, r.Type, r.Action, r.Code, err.Error())
 				DispatchInternalError(w, nil)
 				return
 			}
@@ -73,12 +73,14 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			*result.Grants = append(*result.Grants, r.Grant...)
 			goto UnmaskedReply
 		default:
+			log.Printf(LogStrErr, r.Type, r.Action, 0, `Unhandled supervisor action`)
 			// supervisor as auth-lord has special default to avoid
 			// accidental leakage
 			DispatchUnauthorized(w, nil)
 			return
 		} // end supervisor
 	default:
+		log.Printf(LogStrErr, r.Type, ``, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)
 		return
 	}
@@ -114,6 +116,7 @@ UnmaskedReply:
 		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 500)
 		result.Error(r.Error)
 	default:
+		log.Printf(LogStrErr, r.Type, r.Action, r.Code, `Unhandled internal result code`)
 		DispatchInternalError(w, nil)
 		return
 	}
