@@ -98,20 +98,24 @@ UnmaskedReply:
 	case 400:
 		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 400)
 		DispatchBadRequest(w, nil)
+		return
 	case 403:
 		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 403)
 		DispatchForbidden(w, r.Error)
+		return
 	case 404:
 		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
 		result.NotFound()
 	case 406:
 		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 406)
 		DispatchConflict(w, r.Error)
+		return
 	case 500:
 		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 500)
 		result.Error(r.Error)
 	default:
 		DispatchInternalError(w, nil)
+		return
 	}
 	goto buildJSON
 
