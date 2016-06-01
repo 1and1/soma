@@ -81,6 +81,7 @@ func (s *supervisor) permission_read(q *msg.Request) {
 			result.ServerError(err)
 			result.Clear(q.Action)
 		}
+		result.OK()
 	case `show`:
 		if err = s.stmt_ShowPermission.QueryRow(q.Permission.Name).Scan(
 			&id,
@@ -104,6 +105,7 @@ func (s *supervisor) permission_read(q *msg.Request) {
 				CreatedBy: user,
 			},
 		}}
+		result.OK()
 	}
 
 dispatch:
