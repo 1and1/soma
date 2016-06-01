@@ -79,10 +79,26 @@ func cmdRightGrant(c *cli.Context, cat string) error {
 }
 
 func cmdRightRevokeGlobal(c *cli.Context) error {
-	return nil
+	return cmdRightRevoke(c, `global`)
 }
 
 func cmdRightRevokeSystem(c *cli.Context) error {
+	return cmdRightRevoke(c, `system`)
+}
+
+func cmdRightRevoke(c *cli.Context, cat string) error {
+	utl.ValidateCliArgumentCount(c, 3)
+	opts := utl.ParseVariadicArguments(
+		[]string{}, []string{`user`},
+		[]string{`user`}, c.Args().Tail())
+
+	permId := utl.TryGetPermissionByUUIDOrName(Client, c.Args().First())
+	userId := utl.TryGetUserByUUIDOrName(Client, opts[`user`][0])
+	grantId := utl.TryResolveGrantId(Client, `user`, userId, permId, cat)
+
+	path := fmt.Sprintf("/grant/%s/%s/%s/%s", cat, `user`, userId, grantId)
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
 	return nil
 }
 
