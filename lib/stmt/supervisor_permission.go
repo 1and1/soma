@@ -75,6 +75,6 @@ SELECT sp.permission_id,
 FROM   soma.permissions sp
 JOIN   inventory.users iu
 ON     sp.created_by = iu.user_id
-WHERE  sp.permission_id = $1::uuid;`
+WHERE  sp.permission_name = $1::varchar;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

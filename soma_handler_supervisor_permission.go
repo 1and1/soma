@@ -72,7 +72,7 @@ func (s *supervisor) permission_read(q *msg.Request) {
 			result.Clear(q.Action)
 		}
 	case `show`:
-		if err = s.stmt_ShowPermission.QueryRow(q.Permission.Id).Scan(
+		if err = s.stmt_ShowPermission.QueryRow(q.Permission.Name).Scan(
 			&id,
 			&name,
 			&category,
