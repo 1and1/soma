@@ -36,7 +36,7 @@ dispatch:
 }
 
 func (s *supervisor) permission_category_read(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `category`}
+	result := msg.Result{Type: `supervisor`, Action: `category`, Super: &msg.Supervisor{Action: q.Super.Action}}
 	var (
 		rows           *sql.Rows
 		err            error
@@ -94,7 +94,7 @@ dispatch:
 }
 
 func (s *supervisor) permission_category_write(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `category`}
+	result := msg.Result{Type: `supervisor`, Action: `category`, Super: &msg.Supervisor{Action: q.Super.Action}}
 	userUUID, ok := s.id_user_rev.get(q.User)
 	if !ok {
 		userUUID = `00000000-0000-0000-0000-000000000000`
