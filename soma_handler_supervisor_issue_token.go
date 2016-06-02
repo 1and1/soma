@@ -30,6 +30,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 )
@@ -84,6 +85,9 @@ func (s *supervisor) issue_token(q *msg.Request) {
 			fmt.Errorf(`Root token requested on unrestricted endpoint`))
 		goto dispatch
 	}
+
+	log.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", `authenticate`, q.Action), token.UserName, q.Super.RemoteAddr)
+
 	if cred = s.credentials.read(token.UserName); cred == nil {
 		result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))
 		goto dispatch
