@@ -38,6 +38,7 @@ func initCommon(c *cli.Context) {
 		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
 		os.Exit(1)
 	}
+	defer store.Close()
 
 	// ensure database content structure is in place
 	if err = store.EnsureBuckets(); err != nil {
