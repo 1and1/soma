@@ -36,11 +36,15 @@ func (d *DB) Open(f string, m os.FileMode, opt *bolt.Options) error {
 }
 
 func (d *DB) Close() error {
+	var err error
 	if !d.open {
 		return nil
 	}
 
-	return d.db.Close()
+	if err = d.db.Close(); err == nil {
+		d.open = false
+	}
+	return err
 }
 
 func (d *DB) EnsureBuckets() error {
