@@ -339,7 +339,7 @@ func cmdUserActivateUser(c *cli.Context) error {
 		return fmt.Errorf(`Usernames must not contain : character.`)
 	}
 
-	fmt.Printf("\nPlease provide the password you want to use.")
+	fmt.Printf("\nPlease provide the password you want to use.\n")
 password_read:
 	password = adm.ReadVerified(`password`)
 
