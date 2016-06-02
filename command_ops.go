@@ -23,6 +23,11 @@ func registerOps(app cli.App) *cli.App {
 						Usage:  "Bootstrap authenticate to a new installation",
 						Action: boottime(cmdOpsBootstrap),
 					},
+					{
+						Name:   "dumptoken",
+						Usage:  "Print the currently active token for a user",
+						Action: runtime(cmdOpsDumpToken),
+					},
 					// -> tree suspend/resume/start/stop
 					// -> settings loglevel/opendoor/...
 					// -> metrics?
@@ -189,6 +194,25 @@ Suggested next steps:
 	- switch to using your user instead of root
 	`)
 
+	return nil
+}
+
+func cmdOpsDumpToken(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+
+	if err := store.Open(
+		Cfg.Run.PathBoltDB,
+		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
+		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
+	); err != nil {
+		return err
+	}
+	defer store.Close()
+
+	// this is running wrapped in runtime(), there _is_ a token
+	token, _ := store.GetActiveToken(Cfg.Auth.User)
+	fmt.Println(token)
+	store.Close()
 	return nil
 }
 
