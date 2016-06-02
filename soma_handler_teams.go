@@ -183,7 +183,9 @@ runloop:
 		case <-w.shutdown:
 			break runloop
 		case req := <-w.input:
-			w.process(&req)
+			go func() {
+				w.process(&req)
+			}()
 		}
 	}
 }
