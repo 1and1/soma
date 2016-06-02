@@ -30,6 +30,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/mjolnir42/scrypth64"
@@ -37,7 +38,8 @@ import (
 )
 
 func (s *supervisor) activate_user(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `activate_user`}
+	result := msg.Result{Type: `supervisor`, Action: `activate_user`, Super: &msg.Supervisor{Action: ``}}
+
 	var (
 		timer                               *time.Timer
 		plain                               []byte
@@ -86,6 +88,9 @@ func (s *supervisor) activate_user(q *msg.Request) {
 		result.ServerError(err)
 		goto dispatch
 	}
+	// request has been decrypted, log it
+	log.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
+
 	// -> check token.UserName != `root`
 	if token.UserName == `root` {
 		//    --> reply 401
@@ -207,10 +212,8 @@ func (s *supervisor) activate_user(q *msg.Request) {
 		goto dispatch
 	}
 	// -> send sdata reply
-	result.Super = &msg.Supervisor{
-		Verdict: 200,
-		Data:    data,
-	}
+	result.Super.Verdict = 200
+	result.Super.Data = data
 	result.OK()
 
 dispatch:
