@@ -83,6 +83,9 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	}
 	json.Unmarshal([]byte(uclJson), &c)
 
+	if c.Auth.Activation == `ldap` && !c.Ldap.Tls {
+		log.Println(`Account activation via LDAP configured, but LDAP/TLS disabled!`)
+	}
 	return nil
 }
 

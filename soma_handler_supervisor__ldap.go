@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"strings"
 
 	"gopkg.in/ldap.v2"
@@ -53,6 +54,7 @@ func validateLdapCredentials(user, password string) (bool, error) {
 		}
 		conn, err = ldap.DialTLS(`tcp`, addr, conf)
 	} else {
+		log.Println(`REALLY?!! Using unencrypted LDAP connection. Grudgingly.`)
 		conn, err = ldap.Dial(`tcp`, addr)
 	}
 	if err != nil {
