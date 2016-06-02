@@ -75,7 +75,7 @@ func RequestToken(c *resty.Client, a *auth.Token) (*auth.Token, error) {
 	if err = kex.DecodeAndDecrypt(&body, plain); err != nil {
 		return nil, err
 	}
-	if err = json.Unmarshal(*plain, *cred); err != nil {
+	if err = json.Unmarshal(*plain, cred); err != nil {
 		return nil, err
 	}
 
