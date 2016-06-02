@@ -29,23 +29,6 @@ func initCommon(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	// open database
-	if err = store.Open(
-		Cfg.Run.PathBoltDB,
-		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
-	); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
-		os.Exit(1)
-	}
-	defer store.Close()
-
-	// ensure database content structure is in place
-	if err = store.EnsureBuckets(); err != nil {
-		fmt.Fprintf(os.Stderr, "Database bucket error: %s\n", err)
-		os.Exit(1)
-	}
-
 	// setup our REST client
 	Client = resty.New().SetRESTMode().
 		//SetTimeout(Cfg.Run.TimeoutResty). XXX Bad client setting?
@@ -95,6 +78,24 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 	return func(c *cli.Context) error {
 		initCommon(c)
 
+		// open database
+		if err := store.Open(
+			Cfg.Run.PathBoltDB,
+			os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
+			&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
+		); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
+			os.Exit(1)
+		}
+		defer store.Close()
+
+		// ensure database content structure is in place
+		if err := store.EnsureBuckets(); err != nil {
+			fmt.Fprintf(os.Stderr, "Database bucket error: %s\n", err)
+			return err
+		}
+		store.Close()
+
 		return action(c)
 	}
 }
@@ -118,36 +119,51 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 			}
 		}
 
-		// load token
-		token, err = store.GetActiveToken(Cfg.Auth.User)
-		if err == bolt.ErrBucketNotFound {
-			// no token in cache
-			for Cfg.Auth.Pass == "" {
-				if Cfg.Auth.Pass, err = adm.Read(`password`); err == liner.ErrPromptAborted {
-					os.Exit(0)
-				} else if err != nil {
-					return err
-				}
-			}
-			// request new token (validated)
-			if cred, err = adm.RequestToken(Client, &auth.Token{
-				UserName: Cfg.Auth.User,
-				Password: Cfg.Auth.Pass,
-			}); err != nil {
-				return err
-			}
-			// save token
-			if err = store.SaveToken(
-				cred.UserName,
-				cred.ValidFrom,
-				cred.ExpiresAt,
-				cred.Token,
+		// no staticly configured token
+		if Cfg.Auth.Token == "" {
+			// load token from BoltDB
+			if err = store.Open(
+				Cfg.Run.PathBoltDB,
+				os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
+				&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
 			); err != nil {
 				return err
 			}
-			token = cred.Token
-		} else if err != nil {
-			return err
+			defer store.Close()
+
+			token, err = store.GetActiveToken(Cfg.Auth.User)
+			if err == bolt.ErrBucketNotFound {
+				// no token in cache
+				for Cfg.Auth.Pass == "" {
+					if Cfg.Auth.Pass, err = adm.Read(`password`); err == liner.ErrPromptAborted {
+						os.Exit(0)
+					} else if err != nil {
+						return err
+					}
+				}
+				// request new token (validated)
+				if cred, err = adm.RequestToken(Client, &auth.Token{
+					UserName: Cfg.Auth.User,
+					Password: Cfg.Auth.Pass,
+				}); err != nil {
+					return err
+				}
+				// save token
+				if err = store.SaveToken(
+					cred.UserName,
+					cred.ValidFrom,
+					cred.ExpiresAt,
+					cred.Token,
+				); err != nil {
+					return err
+				}
+				token = cred.Token
+			} else if err != nil {
+				return err
+			}
+			store.Close()
+		} else {
+			token = Cfg.Auth.Token
 		}
 
 		// set token for basic auth
