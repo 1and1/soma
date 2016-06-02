@@ -1,21 +1,15 @@
 package util
 
 import (
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetClusterByUUIDOrName(c *resty.Client, cl string, b string) string {
-	var id string
-	bId := u.BucketByUUIDOrName(c, b)
-
-	cId, err := uuid.FromString(cl)
-	if err != nil {
-		id = u.GetClusterIdByName(c, cl, bId)
-	} else {
-		id = cId.String()
+	if u.IsUUID(cl) {
+		return cl
 	}
-	return id
+	bId := u.BucketByUUIDOrName(c, b)
+	return u.GetClusterIdByName(c, cl, bId)
 }
 
 func (u SomaUtil) GetClusterIdByName(c *resty.Client, cl string, bId string) string {

@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"net/mail"
+	"regexp"
 	"strconv"
 	"unicode/utf8"
 
@@ -97,6 +98,14 @@ func (u *SomaUtil) ValidateUnitExists(c *resty.Client, s string) {
 		}
 	}
 	u.Abort(fmt.Sprintf("Referenced unit %s is not registered with SOMA, see `somaadm units help create`", s))
+}
+
+func (u *SomaUtil) IsUUID(s string) bool {
+	const reUUID string = `^[[:xdigit:]]{8}-[[:xdigit:]]{4}-[1-5][[:xdigit:]]{3}-[[:xdigit:]]{4}-[[:xdigit:]]{12}$`
+	const reUNIL string = `^0{8}-0{4}-0{4}-0{4}-0{12}$`
+	re := regexp.MustCompile(fmt.Sprintf("%s|%s", reUUID, reUNIL))
+
+	return re.MatchString(s)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

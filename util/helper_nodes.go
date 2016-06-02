@@ -3,17 +3,14 @@ package util
 import (
 	"fmt"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetNodeByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetNodeIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetNodeIdByName(c, s)
 }
 
 func (u SomaUtil) GetNodeIdByName(c *resty.Client, node string) string {
@@ -35,7 +32,7 @@ func (u SomaUtil) GetNodeIdByName(c *resty.Client, node string) string {
 }
 
 func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeConfig {
-	if _, err := uuid.FromString(node); err != nil {
+	if !u.IsUUID(node) {
 		node = u.GetNodeIdByName(c, node)
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)

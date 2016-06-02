@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
@@ -21,24 +20,26 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 }
 
 func (u SomaUtil) TryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		if aid, err := strconv.ParseUint(s, 10, 64); err != nil {
-			if m, err := cache.ServerByName(s); err != nil {
-				// aborts on failure
-				return u.GetServerIdByName(cache, c, s)
-			} else {
-				return m[`id`]
-			}
+	if u.IsUUID(s) {
+		return s
+	}
+	var (
+		aid uint64
+		err error
+		m   map[string]string
+	)
+	if aid, err = strconv.ParseUint(s, 10, 64); err != nil {
+		if m, err := cache.ServerByName(s); err != nil {
+			// aborts on failure
+			return u.GetServerIdByName(cache, c, s)
 		} else {
-			if m, err := cache.ServerByAsset(s); err != nil {
-				return u.GetServerIdByAssetId(cache, c, aid)
-			} else {
-				return m[`id`]
-			}
+			return m[`id`]
 		}
 	}
-	return id.String()
+	if m, err = cache.ServerByAsset(s); err != nil {
+		return u.GetServerIdByAssetId(cache, c, aid)
+	}
+	return m[`id`]
 }
 
 func (u SomaUtil) GetServerIdByAssetId(cache *db.DB, c *resty.Client, aid uint64) string {
@@ -60,13 +61,8 @@ func (u SomaUtil) GetServerIdByAssetId(cache *db.DB, c *resty.Client, aid uint64
 }
 
 func (u SomaUtil) GetServerIdByName(cache *db.DB, c *resty.Client, server string) string {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			Server: &proto.ServerFilter{
-				Name: server,
-			},
-		},
-	}
+	req := proto.NewServerFilter()
+	req.Filter.Server.Name = server
 
 	resp := u.PostRequestWithBody(c, req, "/filter/servers/")
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
@@ -83,14 +79,9 @@ func (u SomaUtil) GetServerIdByName(cache *db.DB, c *resty.Client, server string
 }
 
 func (u SomaUtil) GetServerAssetIdByName(c *resty.Client, serverName string) uint64 {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			Server: &proto.ServerFilter{
-				Name:     serverName,
-				IsOnline: true,
-			},
-		},
-	}
+	req := proto.NewServerFilter()
+	req.Filter.Server.Name = serverName
+	req.Filter.Server.IsOnline = true
 
 	resp := u.PostRequestWithBody(c, req, "/filter/servers/")
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)

@@ -3,17 +3,14 @@ package util
 import (
 	"log"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetTeamByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetTeamIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetTeamIdByName(c, s)
 }
 
 func (u SomaUtil) GetTeamIdByName(c *resty.Client, teamName string) string {

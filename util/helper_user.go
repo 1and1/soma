@@ -1,17 +1,14 @@
 package util
 
 import (
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u *SomaUtil) TryGetUserByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetUserIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetUserIdByName(c, s)
 }
 
 func (u *SomaUtil) GetUserIdByName(c *resty.Client, user string) string {

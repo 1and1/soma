@@ -3,17 +3,14 @@ package util
 import (
 	"strings"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u *SomaUtil) TryGetCapabilityByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetCapabilityIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetCapabilityIdByName(c, s)
 }
 
 func (u *SomaUtil) GetCapabilityIdByName(c *resty.Client, capability string) string {

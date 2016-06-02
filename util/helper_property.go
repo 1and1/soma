@@ -3,44 +3,35 @@ package util
 import (
 	"fmt"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetPropertyIdByName(c, "custom", s, r)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetPropertyIdByName(c, "custom", s, r)
 }
 
 func (u SomaUtil) TryGetServicePropertyByUUIDOrName(c *resty.Client, s string, t string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetPropertyIdByName(c, "service", s, t)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetPropertyIdByName(c, "service", s, t)
 }
 
 func (u SomaUtil) TryGetSystemPropertyByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetPropertyIdByName(c, "system", s, "none")
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetPropertyIdByName(c, "system", s, "none")
 }
 
 func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetPropertyIdByName(c, "template", s, "none")
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetPropertyIdByName(c, "template", s, "none")
 }
 
 func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string, ctx string) string {

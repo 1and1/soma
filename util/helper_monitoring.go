@@ -1,17 +1,14 @@
 package util
 
 import (
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u *SomaUtil) TryGetMonitoringByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetMonitoringIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetMonitoringIdByName(c, s)
 }
 
 func (u *SomaUtil) GetMonitoringIdByName(c *resty.Client, monitoring string) string {

@@ -33,7 +33,7 @@ func initCommon(c *cli.Context) {
 	Client = resty.New().SetRESTMode().
 		//SetTimeout(Cfg.Run.TimeoutResty). XXX Bad client setting?
 		SetDisableWarn(true).
-		SetHeader(`User-Agent`, `somaadm 0.5.1`).
+		SetHeader(`User-Agent`, `somaadm 0.5.2`).
 		SetHostURL(Cfg.Run.SomaAPI.String())
 
 	if Cfg.Run.SomaAPI.Scheme == `https` {

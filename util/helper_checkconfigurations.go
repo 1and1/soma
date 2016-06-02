@@ -3,9 +3,7 @@ package util
 import (
 	"fmt"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
-
 )
 
 func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b string) string {
@@ -97,11 +95,10 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 }
 
 func (u *SomaUtil) TryGetCheckByUUIDOrName(c *resty.Client, ck string, r string) string {
-	id, err := uuid.FromString(ck)
-	if err != nil {
-		return u.GetCheckByName(c, ck, r)
+	if u.IsUUID(ck) {
+		return ck
 	}
-	return id.String()
+	return u.GetCheckByName(c, ck, r)
 }
 
 func (u *SomaUtil) GetCheckByName(c *resty.Client, ck string, r string) string {

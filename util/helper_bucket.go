@@ -3,26 +3,21 @@ package util
 import (
 	"fmt"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetBucketByUUIDOrName(c *resty.Client, b string, r string) string {
-	id, err := uuid.FromString(b)
-	if err != nil {
-		// aborts on failure
-		return u.GetBucketIdByName(c, b, r)
+	if u.IsUUID(b) {
+		return b
 	}
-	return id.String()
+	return u.GetBucketIdByName(c, b, r)
 }
 
 func (u SomaUtil) BucketByUUIDOrName(c *resty.Client, b string) string {
-	id, err := uuid.FromString(b)
-	if err != nil {
-		// aborts on failure
-		return u.BucketIdByName(c, b)
+	if u.IsUUID(b) {
+		return b
 	}
-	return id.String()
+	return u.BucketIdByName(c, b)
 }
 
 func (u SomaUtil) GetBucketIdByName(c *resty.Client, bucket string, repoId string) string {
@@ -63,73 +58,47 @@ func (u SomaUtil) BucketIdByName(c *resty.Client, bucket string) string {
 }
 
 func (u SomaUtil) GetRepositoryIdForBucket(c *resty.Client, bucket string) string {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			Bucket: &proto.BucketFilter{},
-		},
-	}
-	receivedUuidArgument := false
+	req := proto.NewBucketFilter()
+	var b string
 
-	id, err := uuid.FromString(bucket)
-	if err != nil {
+	if !u.IsUUID(bucket) {
 		req.Filter.Bucket.Name = bucket
-	} else {
-		receivedUuidArgument = true
-		req.Filter.Bucket.Id = id.String()
-	}
-
-	resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
-	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
-
-	if receivedUuidArgument {
-		if bucket != (*bucketResult.Buckets)[0].Id {
-			u.Abort("Received result set for incorrect bucket")
-		}
-	} else {
+		resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
+		bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 		if bucket != (*bucketResult.Buckets)[0].Name {
 			u.Abort("Received result set for incorrect bucket")
 		}
+		b = (*bucketResult.Buckets)[0].Id
+	} else {
+		b = bucket
 	}
 
-	path := fmt.Sprintf("/buckets/%s", (*bucketResult.Buckets)[0].Id)
-	resp = u.GetRequest(c, path)
-	bucketResult = u.DecodeProtoResultBucketFromResponse(resp)
+	path := fmt.Sprintf("/buckets/%s", b)
+	resp := u.GetRequest(c, path)
+	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	return (*bucketResult.Buckets)[0].RepositoryId
 }
 
 func (u SomaUtil) TeamIdForBucket(c *resty.Client, bucket string) string {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			Bucket: &proto.BucketFilter{},
-		},
-	}
-	receivedUuidArgument := false
+	req := proto.NewBucketFilter()
+	var b string
 
-	id, err := uuid.FromString(bucket)
-	if err != nil {
+	if !u.IsUUID(bucket) {
 		req.Filter.Bucket.Name = bucket
-	} else {
-		receivedUuidArgument = true
-		req.Filter.Bucket.Id = id.String()
-	}
-
-	resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
-	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
-
-	if receivedUuidArgument {
-		if bucket != (*bucketResult.Buckets)[0].Id {
-			u.Abort("Received result set for incorrect bucket")
-		}
-	} else {
+		resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
+		bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 		if bucket != (*bucketResult.Buckets)[0].Name {
 			u.Abort("Received result set for incorrect bucket")
 		}
+		b = (*bucketResult.Buckets)[0].Id
+	} else {
+		b = bucket
 	}
 
-	path := fmt.Sprintf("/buckets/%s", (*bucketResult.Buckets)[0].Id)
-	resp = u.GetRequest(c, path)
-	bucketResult = u.DecodeProtoResultBucketFromResponse(resp)
+	path := fmt.Sprintf("/buckets/%s", b)
+	resp := u.GetRequest(c, path)
+	bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	return (*bucketResult.Buckets)[0].TeamId
 }

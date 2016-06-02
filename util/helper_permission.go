@@ -1,17 +1,14 @@
 package util
 
 import (
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u *SomaUtil) TryGetPermissionByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetPermissionIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetPermissionIdByName(c, s)
 }
 
 func (u *SomaUtil) GetPermissionIdByName(c *resty.Client, perm string) string {

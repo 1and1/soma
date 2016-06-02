@@ -1,21 +1,15 @@
 package util
 
 import (
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetGroupByUUIDOrName(c *resty.Client, g string, b string) string {
-	var id string
-	bId := u.BucketByUUIDOrName(c, b)
-
-	gId, err := uuid.FromString(g)
-	if err != nil {
-		id = u.GetGroupIdByName(c, g, bId)
-	} else {
-		id = gId.String()
+	if u.IsUUID(g) {
+		return g
 	}
-	return id
+	bId := u.BucketByUUIDOrName(c, b)
+	return u.GetGroupIdByName(c, g, bId)
 }
 
 func (u SomaUtil) GetGroupIdByName(c *resty.Client, g string, bId string) string {

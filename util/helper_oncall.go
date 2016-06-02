@@ -3,17 +3,14 @@ package util
 import (
 	"strconv"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetOncallByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetOncallIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetOncallIdByName(c, s)
 }
 
 func (u SomaUtil) GetOncallIdByName(c *resty.Client, oncall string) string {

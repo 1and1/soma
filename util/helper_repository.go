@@ -3,17 +3,14 @@ package util
 import (
 	"fmt"
 
-	"github.com/satori/go.uuid"
 	"gopkg.in/resty.v0"
 )
 
 func (u SomaUtil) TryGetRepositoryByUUIDOrName(c *resty.Client, s string) string {
-	id, err := uuid.FromString(s)
-	if err != nil {
-		// aborts on failure
-		return u.GetRepositoryIdByName(c, s)
+	if u.IsUUID(s) {
+		return s
 	}
-	return id.String()
+	return u.GetRepositoryIdByName(c, s)
 }
 
 func (u SomaUtil) GetRepositoryIdByName(c *resty.Client, repo string) string {
