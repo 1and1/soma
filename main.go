@@ -104,22 +104,22 @@ func main() {
 
 	router.HEAD("/", Ping)
 
-	router.GET("/views", BasicAuth(ListView))
+	router.GET("/views/", BasicAuth(ListView))
 	router.GET("/views/:view", BasicAuth(ShowView))
 
-	router.GET("/environments", BasicAuth(ListEnvironments))
+	router.GET("/environments/", BasicAuth(ListEnvironments))
 	router.GET("/environments/:environment", BasicAuth(ShowEnvironment))
 
-	router.GET("/objstates", BasicAuth(ListObjectStates))
+	router.GET("/objstates/", BasicAuth(ListObjectStates))
 	router.GET("/objstates/:state", BasicAuth(ShowObjectState))
 
-	router.GET("/objtypes", BasicAuth(ListObjectTypes))
+	router.GET("/objtypes/", BasicAuth(ListObjectTypes))
 	router.GET("/objtypes/:type", BasicAuth(ShowObjectType))
 
-	router.GET("/datacenters", BasicAuth(ListDatacenters))
+	router.GET("/datacenters/", BasicAuth(ListDatacenters))
 	router.GET("/datacenters/:datacenter", BasicAuth(ShowDatacenter))
 
-	router.GET("/datacentergroups", BasicAuth(ListDatacenterGroups))
+	router.GET("/datacentergroups/", BasicAuth(ListDatacenterGroups))
 	router.GET("/datacentergroups/:datacentergroup", BasicAuth(ShowDatacenterGroup))
 
 	router.GET("/levels/", BasicAuth(ListLevel))
@@ -245,15 +245,15 @@ func main() {
 		router.DELETE("/environments/:environment", BasicAuth(DeleteEnvironment))
 		router.PUT("/environments/:environment", BasicAuth(RenameEnvironment))
 
-		router.POST("/objstates", BasicAuth(AddObjectState))
+		router.POST("/objstates/", BasicAuth(AddObjectState))
 		router.DELETE("/objstates/:state", BasicAuth(DeleteObjectState))
 		router.PUT("/objstates/:state", BasicAuth(RenameObjectState))
 
-		router.POST("/objtypes", BasicAuth(AddObjectType))
+		router.POST("/objtypes/", BasicAuth(AddObjectType))
 		router.DELETE("/objtypes/:type", BasicAuth(DeleteObjectType))
 		router.PUT("/objtypes/:type", BasicAuth(RenameObjectType))
 
-		router.POST("/datacenters", BasicAuth(AddDatacenter))
+		router.POST("/datacenters/", BasicAuth(AddDatacenter))
 		router.DELETE("/datacenters/:datacenter", BasicAuth(DeleteDatacenter))
 		router.PUT("/datacenters/:datacenter", BasicAuth(RenameDatacenter))
 
