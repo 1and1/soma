@@ -19,8 +19,8 @@ var Client *resty.Client
 // initCommon provides common startup initialization
 func initCommon(c *cli.Context) {
 	var (
-		err     error
-		resp    *resty.Response
+		err error
+		//resp    *resty.Response
 		session tls.ClientSessionCache
 	)
 	if err = configSetup(c); err != nil {
@@ -69,22 +69,24 @@ func initCommon(c *cli.Context) {
 		}).SetRootCertificate(Cfg.Run.CertPath)
 	}
 
-	// check configured API
-	if resp, err = Client.R().Head(`/`); err != nil {
-		fmt.Fprintf(os.Stderr, "Error tasting the API endpoint: %s\n",
-			err.Error())
-	} else if resp.StatusCode() != 204 {
-		fmt.Fprintf(os.Stderr, "Error, API Url returned %d instead of 204."+
-			" Sure this is SOMA?\n", resp.StatusCode())
-		os.Exit(1)
-	}
+	/*
+		// check configured API
+		if resp, err = Client.R().Head(`/`); err != nil {
+			fmt.Fprintf(os.Stderr, "Error tasting the API endpoint: %s\n",
+				err.Error())
+		} else if resp.StatusCode() != 204 {
+			fmt.Fprintf(os.Stderr, "Error, API Url returned %d instead of 204."+
+				" Sure this is SOMA?\n", resp.StatusCode())
+			os.Exit(1)
+		}
 
-	// check who we talked to
-	if resp.Header().Get(`X-Powered-By`) != `SOMA Configuration System` {
-		fmt.Fprintf(os.Stderr, `Just FYI, at the end of that API URL`+
-			` is not SOMA`)
-		os.Exit(1)
-	}
+		// check who we talked to
+		if resp.Header().Get(`X-Powered-By`) != `SOMA Configuration System` {
+			fmt.Fprintf(os.Stderr, `Just FYI, at the end of that API URL`+
+				` is not SOMA`)
+			os.Exit(1)
+		}
+	*/
 }
 
 // boottime is the pre-run target for bootstrapping SOMA
