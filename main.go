@@ -17,7 +17,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "somaadm"
 	app.Usage = "SOMA Administrative Interface"
-	app.Version = "0.5.0"
+	app.Version = "0.5.1"
 	app.EnableBashCompletion = true
 
 	app = registerCommands(*app)
