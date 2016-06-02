@@ -85,8 +85,8 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 }
 
 var svGlobalRequiredPermission = map[string][]string{
-	`attribute_create`:         []string{`system_all`},
-	`attribute_delete`:         []string{`system_all`},
+	`attributes_create`:        []string{`system_all`},
+	`attributes_delete`:        []string{`system_all`},
 	`attributes_list`:          []string{`system_all`, `global_schema`},
 	`attributes_show`:          []string{`system_all`, `global_schema`},
 	`category_create`:          []string{`system_all`},
@@ -207,8 +207,8 @@ var svGlobalRequiredPermission = map[string][]string{
 }
 
 var svPermissionActionScopeMap = map[string]string{
-	`attribute_create`:               `global`,
-	`attribute_delete`:               `global`,
+	`attributes_create`:              `global`,
+	`attributes_delete`:              `global`,
 	`attributes_list`:                `global`,
 	`attributes_show`:                `global`,
 	`category_create`:                `global`,
