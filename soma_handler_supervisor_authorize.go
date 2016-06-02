@@ -81,6 +81,7 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 		return true, false
 	}
 	// not authorized
+	log.Printf(LogStrErr, `supervisor`, `authorize`, result.Super.Verdict, fmt.Sprintf("Forbidden: %s, %s", user, action))
 	return false, false
 }
 
