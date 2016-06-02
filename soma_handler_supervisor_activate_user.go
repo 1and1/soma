@@ -115,7 +115,7 @@ func (s *supervisor) activate_user(q *msg.Request) {
 				result.ServerError(err)
 				goto dispatch
 			} else if !ok {
-				result.Unauthorized(nil)
+				result.Unauthorized(fmt.Errorf(`Invalid LDAP credentials`))
 				goto dispatch
 			}
 			// fail activation if local password is the same as the
