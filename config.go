@@ -27,8 +27,9 @@ type Config struct {
 }
 
 type AuthConfig struct {
-	User string `json:"user"`
-	Pass string `json:"pass"`
+	User  string `json:"user"`
+	Pass  string `json:"pass"`
+	Token string `json:"token"`
 }
 
 type ConfigBoltDB struct {
