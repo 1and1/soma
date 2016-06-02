@@ -10,7 +10,7 @@ import (
 )
 
 func (s *supervisor) right(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `right`}
+	result := msg.Result{Type: `supervisor`, Action: `right`, Super: &msg.Supervisor{Action: q.Super.Action}}
 
 	log.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
 
@@ -55,7 +55,7 @@ dispatch:
 }
 
 func (s *supervisor) right_globalsystem_modify(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `right`}
+	result := msg.Result{Type: `supervisor`, Action: `right`, Super: &msg.Supervisor{Action: q.Super.Action}}
 	userUUID, ok := s.id_user_rev.get(q.User)
 	if !ok {
 		userUUID = `00000000-0000-0000-0000-000000000000`
@@ -117,7 +117,7 @@ dispatch:
 }
 
 func (s *supervisor) right_globalsystem_read(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `right`}
+	result := msg.Result{Type: `supervisor`, Action: `right`, Super: &msg.Supervisor{Action: q.Super.Action}}
 
 	var (
 		grantId string
