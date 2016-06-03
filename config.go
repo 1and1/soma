@@ -20,6 +20,7 @@ type Config struct {
 	Timeout    uint         `json:"timeout,string"`
 	Activation string       `json:"activation.mode"`
 	AsyncWait  bool         `json:"async.wait,string"`
+	JobSave    bool         `json:"save.jobs,string"`
 	Auth       AuthConfig   `json:"auth"`
 	AdminAuth  AuthConfig   `json:"admin.auth"`
 	BoltDB     ConfigBoltDB `json:"boltdb"`
