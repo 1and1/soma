@@ -72,14 +72,22 @@ func initCommon(c *cli.Context) {
 		}
 	*/
 
+	// embed configuration in boltdb wrapper
 	store.Configure(
 		Cfg.Run.PathBoltDB,
 		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
 		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
 	)
+
+	// configure adm client library
+	adm.ConfigureClient(Client)
+	adm.ActivateAsyncWait(Cfg.AsyncWait)
+	adm.AutomaticJobSave(Cfg.JobSave)
+	adm.ConfigureCache(&store)
 }
 
-// boottime is the pre-run target for bootstrapping SOMA
+// boottime is the pre-run target for bootstrapping SOMA or user
+// accounts
 func boottime(action cli.ActionFunc) cli.ActionFunc {
 	return func(c *cli.Context) error {
 		initCommon(c)
