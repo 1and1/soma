@@ -480,6 +480,7 @@ func (g *guidePost) process(q *treeRequest) {
 
 	handler.input <- *q
 	result.JobId = q.JobId.String()
+	result.JobType = q.Action
 
 	switch q.RequestType {
 	case "repository":

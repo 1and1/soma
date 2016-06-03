@@ -1,7 +1,7 @@
 package main
 
 type ErrorMarker interface {
-	ErrorMark(err error, imp bool, found bool, length int, jobid string) bool
+	ErrorMark(err error, imp bool, found bool, length int, jobid, jobtype string) bool
 }
 
 type SomaAppender interface {
@@ -15,6 +15,7 @@ type somaResult struct {
 	NotImplemented  bool
 	Accepted        bool
 	JobId           string
+	JobType         string
 	Attributes      []somaAttributeResult
 	Buckets         []somaBucketResult
 	Capabilities    []somaCapabilityResult
@@ -76,7 +77,7 @@ func (r *somaResult) Append(err error, res SomaAppender) {
 
 func (r *somaResult) MarkErrors(reply ErrorMarker) bool {
 	return reply.ErrorMark(r.RequestError, r.NotImplemented, r.NotFound,
-		ResultLength(r, reply), r.JobId)
+		ResultLength(r, reply), r.JobId, r.JobType)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
