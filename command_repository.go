@@ -119,9 +119,11 @@ func cmdRepositoryCreate(c *cli.Context) error {
 	req.Repository.Name = c.Args().Get(0)
 	req.Repository.TeamId = teamId
 
-	resp := utl.PostRequestWithBody(Client, req, "/repository/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/repository/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -130,9 +132,11 @@ func cmdRepositoryDelete(c *cli.Context) error {
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -147,9 +151,11 @@ func cmdRepositoryRestore(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -164,9 +170,11 @@ func cmdRepositoryPurge(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -181,9 +189,11 @@ func cmdRepositoryClear(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -197,9 +207,11 @@ func cmdRepositoryRename(c *cli.Context) error {
 	req.Repository = &proto.Repository{}
 	req.Repository.Name = c.Args().Get(2)
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -214,9 +226,11 @@ func cmdRepositoryRepossess(c *cli.Context) error {
 	req.Repository = &proto.Repository{}
 	req.Repository.TeamId = c.Args().Get(2)
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -236,9 +250,11 @@ func cmdRepositoryActivate(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -249,9 +265,11 @@ func cmdRepositoryWipe(c *cli.Context) error {
 
 func cmdRepositoryList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest(Client, "/repository/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq("/repository/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -260,9 +278,11 @@ func cmdRepositoryShow(c *cli.Context) error {
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -312,9 +332,11 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -363,9 +385,11 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/service/", repositoryId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
