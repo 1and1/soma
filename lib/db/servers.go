@@ -16,6 +16,11 @@ import (
 )
 
 func (d *DB) Server(name, id, assetid string) error {
+	if err := d.Open(); err != nil {
+		return err
+	}
+	defer d.Close()
+
 	return d.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(`idcache`))
 		n, err := b.CreateBucketIfNotExists([]byte(`servername`))
@@ -39,6 +44,11 @@ func (d *DB) Server(name, id, assetid string) error {
 }
 
 func (d *DB) ServerByName(name string) (map[string]string, error) {
+	if err := d.Open(); err != nil {
+		return nil, err
+	}
+	defer d.Close()
+
 	serverinfo := make(map[string]string)
 	if err := d.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(`idcache`)).Bucket([]byte(`servername`))
@@ -66,6 +76,11 @@ func (d *DB) ServerByName(name string) (map[string]string, error) {
 }
 
 func (d *DB) ServerByAsset(asset string) (map[string]string, error) {
+	if err := d.Open(); err != nil {
+		return nil, err
+	}
+	defer d.Close()
+
 	serverinfo := make(map[string]string)
 	if err := d.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(`idcache`)).Bucket([]byte(`serverasset`))

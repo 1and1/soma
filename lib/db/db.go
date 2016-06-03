@@ -18,18 +18,32 @@ import (
 const rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 
 type DB struct {
-	db     *bolt.DB
-	open   bool
-	ensure bool
+	db         *bolt.DB
+	open       bool
+	ensure     bool
+	configured bool
+	Path       string
+	Mode       os.FileMode
+	Options    *bolt.Options
 }
 
-func (d *DB) Open(f string, m os.FileMode, opt *bolt.Options) error {
+func (d *DB) Configure(p string, m os.FileMode, o *bolt.Options) {
+	d.Path = p
+	d.Mode = m
+	d.Options = o
+	d.configured = true
+}
+
+func (d *DB) Open() error {
 	var err error
 	if d.open {
 		return nil
 	}
+	if !d.configured {
+		return fmt.Errorf(`DB is not configured`)
+	}
 
-	if d.db, err = bolt.Open(f, m, opt); err == nil {
+	if d.db, err = bolt.Open(d.Path, d.Mode, d.Options); err == nil {
 		d.open = true
 	}
 	return err
@@ -48,9 +62,10 @@ func (d *DB) Close() error {
 }
 
 func (d *DB) EnsureBuckets() error {
-	if !d.open {
-		return fmt.Errorf("DB is not open")
+	if err := d.Open(); err != nil {
+		return err
 	}
+	defer d.Close()
 
 	for _, buck := range []string{"jobs", "tokens", "idcache"} {
 		err := d.db.Update(func(tx *bolt.Tx) error {

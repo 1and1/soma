@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
 )
 
@@ -377,16 +375,6 @@ password_read:
 		return err
 	}
 	// save received token
-	if err = store.Open(
-		Cfg.Run.PathBoltDB,
-		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
-	); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
-		fmt.Fprintln(os.Stderr, `Failed to save received token`)
-		return err
-	}
-	defer store.Close()
 	if err = store.SaveToken(
 		Cfg.Auth.User,
 		cred.ValidFrom,

@@ -16,6 +16,11 @@ import (
 )
 
 func (d *DB) SaveToken(user, valid, expires, token string) error {
+	if err := d.Open(); err != nil {
+		return err
+	}
+	defer d.Close()
+
 	return d.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(`tokens`))
 		u, err := b.CreateBucketIfNotExists([]byte(user))
@@ -33,6 +38,11 @@ func (d *DB) SaveToken(user, valid, expires, token string) error {
 }
 
 func (d *DB) GetActiveToken(user string) (string, error) {
+	if err := d.Open(); err != nil {
+		return ``, err
+	}
+	defer d.Close()
+
 	var token string
 	if err := d.db.View(func(tx *bolt.Tx) error {
 		// build cursor seek position

@@ -33,7 +33,7 @@ func initCommon(c *cli.Context) {
 	Client = resty.New().SetRESTMode().
 		//SetTimeout(Cfg.Run.TimeoutResty). XXX Bad client setting?
 		SetDisableWarn(true).
-		SetHeader(`User-Agent`, `somaadm 0.5.2`).
+		SetHeader(`User-Agent`, `somaadm 0.5.3`).
 		SetHostURL(Cfg.Run.SomaAPI.String())
 
 	if Cfg.Run.SomaAPI.Scheme == `https` {
@@ -71,23 +71,18 @@ func initCommon(c *cli.Context) {
 			os.Exit(1)
 		}
 	*/
+
+	store.Configure(
+		Cfg.Run.PathBoltDB,
+		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
+		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
+	)
 }
 
 // boottime is the pre-run target for bootstrapping SOMA
 func boottime(action cli.ActionFunc) cli.ActionFunc {
 	return func(c *cli.Context) error {
 		initCommon(c)
-
-		// open database
-		if err := store.Open(
-			Cfg.Run.PathBoltDB,
-			os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-			&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
-		); err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
-			os.Exit(1)
-		}
-		defer store.Close()
 
 		// ensure database content structure is in place
 		if err := store.EnsureBuckets(); err != nil {
@@ -122,15 +117,6 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 		// no staticly configured token
 		if Cfg.Auth.Token == "" {
 			// load token from BoltDB
-			if err = store.Open(
-				Cfg.Run.PathBoltDB,
-				os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-				&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
-			); err != nil {
-				return err
-			}
-			defer store.Close()
-
 			token, err = store.GetActiveToken(Cfg.Auth.User)
 			if err == bolt.ErrBucketNotFound {
 				// no token in cache

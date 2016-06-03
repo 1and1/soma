@@ -7,7 +7,6 @@ import (
 
 	"gopkg.in/resty.v0"
 
-	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
 )
 
@@ -161,16 +160,6 @@ Alright. Let's sully that pristine database. Here we go!  `)
 		os.Exit(1)
 	}
 
-	if err = store.Open(
-		Cfg.Run.PathBoltDB,
-		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
-	); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to open database: %s\n", err)
-		fmt.Fprintln(os.Stderr, `Failed to save received token`)
-		os.Exit(1)
-	}
-	defer store.Close()
 	fmt.Printf(`Writing token to local cache: `)
 	if err = store.SaveToken(
 		`root`,
@@ -199,15 +188,6 @@ Suggested next steps:
 
 func cmdOpsDumpToken(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-
-	if err := store.Open(
-		Cfg.Run.PathBoltDB,
-		os.FileMode(uint32(Cfg.Run.ModeBoltDB)),
-		&bolt.Options{Timeout: Cfg.Run.TimeoutBoltDB},
-	); err != nil {
-		return err
-	}
-	defer store.Close()
 
 	// this is running wrapped in runtime(), there _is_ a token
 	token, _ := store.GetActiveToken(Cfg.Auth.User)
