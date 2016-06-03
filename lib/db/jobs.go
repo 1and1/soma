@@ -53,6 +53,7 @@ func (d *DB) GetActiveJobs() ([][]string, error) {
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
+			count++
 			r := []string{bots(k)}
 			r = append(r, strings.Split(string(v), `|`)...)
 			jobs = append(jobs, r)
