@@ -217,9 +217,11 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -233,9 +235,11 @@ func cmdPropertySystemCreate(c *cli.Context) error {
 	req.Property.System = &proto.PropertySystem{}
 	req.Property.System.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/property/system/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/property/system/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -250,9 +254,11 @@ func cmdPropertyNativeCreate(c *cli.Context) error {
 	req.Property.Native = &proto.PropertyNative{}
 	req.Property.Native.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/property/native/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/property/native/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -350,9 +356,11 @@ attrConversionLoop:
 	case `template`:
 		path = `/property/service/global/`
 	}
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -376,9 +384,11 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId, propId)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -386,9 +396,11 @@ func cmdPropertySystemDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -396,9 +408,11 @@ func cmdPropertyNativeDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -409,9 +423,11 @@ func cmdPropertyServiceDelete(c *cli.Context) error {
 	propId := utl.TryGetServicePropertyByUUIDOrName(Client, c.Args().Get(0), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -420,9 +436,11 @@ func cmdPropertyTemplateDelete(c *cli.Context) error {
 	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
 	path := fmt.Sprintf("/property/service/global/%s", propId)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -460,27 +478,33 @@ func cmdPropertyCustomShow(c *cli.Context) error {
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/", repoId,
 		propId)
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdPropertySystemShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdPropertyNativeShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -491,9 +515,11 @@ func cmdPropertyServiceShow(c *cli.Context) error {
 	propId := utl.TryGetServicePropertyByUUIDOrName(Client, c.Args().Get(0), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -501,9 +527,11 @@ func cmdPropertyTemplateShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
 	path := fmt.Sprintf("/property/service/global/%s", propId)
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -514,25 +542,31 @@ func cmdPropertyCustomList(c *cli.Context) error {
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdPropertySystemList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest(Client, "/property/system/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq("/property/system/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdPropertyNativeList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest(Client, "/property/native/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq("/property/native/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -543,18 +577,22 @@ func cmdPropertyServiceList(c *cli.Context) error {
 
 	path := fmt.Sprintf("/property/service/team/%s/", teamId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdPropertyTemplateList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest(Client, "/property/service/global/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq("/property/service/global/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
