@@ -43,6 +43,11 @@ func PutReq(p string) (*resty.Response, error) {
 	return handleRequestOptions(client.R().Put(p))
 }
 
+func PutReqBody(body interface{}, p string) (*resty.Response, error) {
+	return handleRequestOptions(
+		client.R().SetBody(body).SetContentLength(true).Put(p))
+}
+
 // Private functions
 
 func handleRequestOptions(resp *resty.Response, err error) (*resty.Response, error) {
