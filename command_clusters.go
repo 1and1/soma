@@ -105,9 +105,11 @@ func cmdClusterCreate(c *cli.Context) error {
 	req.Cluster.Name = c.Args().First()
 	req.Cluster.BucketId = bucketId
 
-	resp := utl.PostRequestWithBody(Client, req, "/clusters/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/clusters/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -126,8 +128,11 @@ func cmdClusterDelete(c *cli.Context) error {
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	resp := utl.DeleteRequest(Client, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -150,30 +155,21 @@ func cmdClusterRename(c *cli.Context) error {
 	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdClusterList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	/*
-			multKeys := []string{"bucket"}
-			uniqKeys := []string{}
-
-			opts := utl.ParseVariadicArguments(multKeys,
-				uniqKeys,
-				uniqKeys,
-				c.Args())
-
-			req := somaproto.ProtoRequestCluster{}
-			req.Filter = &somaproto.ProtoClusterFilter{}
-			req.Filter.BucketId = utl.BucketByUUIDOrName(Client, opts["bucket"][0])
-		resp := utl.GetRequestWithBody(req, "/clusters/")
-	*/
-	resp := utl.GetRequest(Client, "/clusters/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(`/clusters/`); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -192,9 +188,11 @@ func cmdClusterShow(c *cli.Context) error {
 		bucketId)
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -229,9 +227,11 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -253,8 +253,11 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 	path := fmt.Sprintf("/clusters/%s/members/%s", clusterId,
 		nodeId)
 
-	resp := utl.DeleteRequest(Client, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -273,9 +276,11 @@ func cmdClusterMemberList(c *cli.Context) error {
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -324,9 +329,11 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/clusters/%s/property/system/", clusterId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -374,9 +381,11 @@ func cmdClusterServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/clusters/%s/property/service/", clusterId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
