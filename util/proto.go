@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"gopkg.in/resty.v0"
 )
@@ -42,17 +41,6 @@ func (u SomaUtil) VerifyEnvironment(c *resty.Client, env string) {
 		}
 	}
 	u.Abort(fmt.Sprintf("Invalid environment specified: %s", env))
-}
-
-func (u SomaUtil) AsyncWait(enabled bool, c *resty.Client, resp *resty.Response) {
-	if !enabled {
-		return
-	}
-	r := u.DecodeResultFromResponse(resp)
-	if r.StatusCode == 202 && r.JobId != "" {
-		fmt.Fprintf(os.Stderr, "Waiting for job: %s\n", r.JobId)
-		u.PutRequest(c, fmt.Sprintf("/jobs/%s", r.JobId))
-	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
