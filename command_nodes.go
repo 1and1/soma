@@ -185,9 +185,11 @@ func cmdNodeAdd(c *cli.Context) error {
 	req.Node.Name = options["name"]
 	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, options["team"])
 
-	resp := utl.PostRequestWithBody(Client, req, "/nodes/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/nodes/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -196,9 +198,11 @@ func cmdNodeDel(c *cli.Context) error {
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -222,9 +226,11 @@ func cmdNodePurge(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -248,9 +254,11 @@ func cmdNodeRestore(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -264,9 +272,11 @@ func cmdNodeRename(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.Name = c.Args().Get(2)
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -283,9 +293,11 @@ func cmdNodeRepo(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.TeamId = team
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -302,9 +314,11 @@ func cmdNodeMove(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.ServerId = server
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -317,9 +331,11 @@ func cmdNodeOnline(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.IsOnline = true
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -332,9 +348,11 @@ func cmdNodeOffline(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.IsOnline = false
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -363,18 +381,22 @@ func cmdNodeAssign(c *cli.Context) error {
 	req.Node.Config.BucketId = bucketId
 
 	path := fmt.Sprintf("/nodes/%s/config", nodeId)
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdNodeList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest(Client, "/nodes/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq("/nodes/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -383,9 +405,11 @@ func cmdNodeShow(c *cli.Context) error {
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -394,9 +418,11 @@ func cmdNodeConfig(c *cli.Context) error {
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/config", id)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -447,9 +473,11 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/nodes/%s/property/system/", nodeId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -500,9 +528,11 @@ func cmdNodeServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/nodes/%s/property/service/", nodeId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
