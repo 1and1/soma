@@ -137,9 +137,11 @@ func cmdGroupCreate(c *cli.Context) error {
 	req.Group.Name = c.Args().First()
 	req.Group.BucketId = bucketId
 
-	resp := utl.PostRequestWithBody(Client, req, "/groups/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/groups/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -158,8 +160,11 @@ func cmdGroupDelete(c *cli.Context) error {
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	resp := utl.DeleteRequest(Client, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -182,16 +187,21 @@ func cmdGroupRename(c *cli.Context) error {
 	req.Group = &proto.Group{}
 	req.Group.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdGroupList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest(Client, "/groups/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq("/groups/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -210,9 +220,11 @@ func cmdGroupShow(c *cli.Context) error {
 		bucketId)
 	path := fmt.Sprintf("/groups/%s", groupId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -243,9 +255,11 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -276,9 +290,11 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -307,9 +323,11 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -333,8 +351,11 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mGroupId)
 
-	resp := utl.DeleteRequest(Client, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -358,8 +379,11 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mClusterId)
 
-	resp := utl.DeleteRequest(Client, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -381,8 +405,11 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mNodeId)
 
-	resp := utl.DeleteRequest(Client, path)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -402,9 +429,11 @@ func cmdGroupMemberList(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -453,9 +482,11 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s/property/system/", groupId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -503,9 +534,11 @@ func cmdGroupServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s/property/service/", groupId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
