@@ -92,9 +92,11 @@ func cmdCheckAdd(c *cli.Context) error {
 		teamId)
 
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -113,9 +115,11 @@ func cmdCheckList(c *cli.Context) error {
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 
 	path := fmt.Sprintf("/checks/%s/", repoId)
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -135,9 +139,11 @@ func cmdCheckShow(c *cli.Context) error {
 	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
