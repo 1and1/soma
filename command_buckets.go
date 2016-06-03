@@ -113,9 +113,11 @@ func cmdBucketCreate(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/buckets/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, "/buckets/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -128,9 +130,11 @@ func cmdBucketDelete(c *cli.Context) error {
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -149,9 +153,11 @@ func cmdBucketRestore(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -170,9 +176,11 @@ func cmdBucketPurge(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -191,9 +199,11 @@ func cmdBucketFreeze(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -212,9 +222,11 @@ func cmdBucketThaw(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -234,18 +246,22 @@ func cmdBucketRename(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
 func cmdBucketList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest(Client, "/buckets/")
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(`/buckets/`); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -254,9 +270,11 @@ func cmdBucketShow(c *cli.Context) error {
 	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -302,9 +320,11 @@ func cmdBucketSystemPropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
@@ -352,9 +372,11 @@ func cmdBucketServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/service/", bucketId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	utl.AsyncWait(Cfg.AsyncWait, Client, resp)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
 	return nil
 }
 
