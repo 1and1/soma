@@ -97,7 +97,6 @@ func boottime(action cli.ActionFunc) cli.ActionFunc {
 			fmt.Fprintf(os.Stderr, "Database bucket error: %s\n", err)
 			return err
 		}
-		store.Close()
 
 		return action(c)
 	}
@@ -155,7 +154,6 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 			} else if err != nil {
 				return err
 			}
-			store.Close()
 		} else {
 			token = Cfg.Auth.Token
 		}
