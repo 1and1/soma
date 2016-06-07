@@ -59,6 +59,10 @@ func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
 
 func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool) {
 	returnChannel := make(chan msg.Result)
+	// honour request for sandbox environment
+	if SomaCfg.OpenInstance {
+		return true, true
+	}
 	handler := handlerMap[`supervisor`].(supervisor)
 	handler.input <- msg.Request{
 		Type:   `supervisor`,
