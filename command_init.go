@@ -5,12 +5,21 @@ import (
 	"os"
 	"path"
 
+
 	"github.com/codegangsta/cli"
 	"github.com/mitchellh/go-homedir"
 )
 
 // This command runs before the config file exists
 func cmdClientInit(c *cli.Context) error {
+	const (
+		skelConf = `/usr/share/somaadm/skel/somaadm.conf`
+		skelCert = `/usr/share/somaadm/skel/ca.cert.pem`
+		defConf  = `somaadm.conf`
+		defCert  = `ca.cert.pem`
+	)
+	var conf, cert bool
+
 	// get user home directory
 	home, err := homedir.Dir()
 	if err != nil {
@@ -63,5 +72,38 @@ func cmdClientInit(c *cli.Context) error {
 		fmt.Fprintf(os.Stderr, "Error creating path %s: %s\n", dbPath, err.Error())
 		os.Exit(1)
 	}
+
+	// if we find skeleton files in /usr/share we copy them to
+	if _, err = os.Stat(`/usr/share/somaadm/skel/somaadm.conf`); err != nil && !os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "Error testing for skeleton config: %s\n", err.Error())
+		os.Exit(1)
+	} else {
+		if _, err = adm.CopyFile(path.Join(somaPath, defConf), skelConf); err != nil && !os.IsExist(err) {
+			fmt.Fprintf(os.Stderr, "Error copying skeleton config: %s\n", err.Error())
+			os.Exit(1)
+		}
+		conf = true
+	}
+
+	if _, err = os.Stat(skelCert); err != nil && !os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "Error testing for skeleton certificate: %s\n", err.Error())
+		os.Exit(1)
+	} else {
+		if _, err = adm.CopyFile(path.Join(somaPath, defCert), skelCert); err != nil && !os.IsExist(err) {
+			fmt.Fprintf(os.Stderr, "Error copying skeleton certificate: %s\n", err.Error())
+			os.Exit(1)
+		}
+		cert = true
+	}
+
+	if conf && cert {
+		return boottime(cmdDummyInit)(c)
+	}
 	return nil
 }
+
+func cmdDummyInit(c *cli.Context) error {
+	return nil
+}
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
