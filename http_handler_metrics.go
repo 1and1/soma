@@ -56,7 +56,7 @@ func AddMetric(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`metric_create`, ``, ``, ``); !ok {
+		`metrics_create`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -83,7 +83,7 @@ func DeleteMetric(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`metric_delete`, ``, ``, ``); !ok {
+		`metrics_delete`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
 		return
 	}
