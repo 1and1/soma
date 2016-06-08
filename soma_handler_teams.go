@@ -87,11 +87,11 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 	case "list":
 		log.Printf("R: team/list")
 		rows, err = r.list_stmt.Query()
-		defer rows.Close()
 		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
+		defer rows.Close()
 
 		for rows.Next() {
 			err := rows.Scan(&teamId, &teamName)
