@@ -139,6 +139,7 @@ func main() {
 	router.GET("/teams/", BasicAuth(ListTeam))
 	router.GET("/teams/:team", BasicAuth(ShowTeam))
 	router.POST("/filter/teams/", BasicAuth(ListTeam))
+	router.GET(`/sync/teams/`, BasicAuth(SyncTeam))
 
 	router.GET("/nodes/", BasicAuth(ListNode))
 	router.GET("/nodes/:node", BasicAuth(ShowNode))

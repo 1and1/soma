@@ -39,31 +39,26 @@ type somaTeamReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	sync_stmt *sql.Stmt
 }
 
 func (r *somaTeamReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT organizational_team_id,
-       organizational_team_name 
-FROM   inventory.organizational_teams;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListTeams); err != nil {
 		log.Fatal("team/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT organizational_team_id,
-       organizational_team_name,
-       organizational_team_ldap_id,
-       organizational_team_system
-FROM   inventory.organizational_teams
-WHERE  organizational_team_id = $1;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowTeams); err != nil {
 		log.Fatal("team/show: ", err)
 	}
 	defer r.show_stmt.Close()
+
+	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncTeams); err != nil {
+		log.Fatal("team/sync: ", err)
+	}
+	defer r.sync_stmt.Close()
 
 runloop:
 	for {
@@ -104,6 +99,32 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 				Team: proto.Team{
 					Id:   teamId,
 					Name: teamName,
+				},
+			})
+		}
+	case `sync`:
+		log.Printf("R: team/sync")
+		rows, err = r.sync_stmt.Query()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			err := rows.Scan(
+				&teamId,
+				&teamName,
+				&ldapId,
+				&systemFlag,
+			)
+
+			result.Append(err, &somaTeamResult{
+				Team: proto.Team{
+					Id:       teamId,
+					Name:     teamName,
+					LdapId:   strconv.Itoa(ldapId),
+					IsSystem: systemFlag,
 				},
 			})
 		}

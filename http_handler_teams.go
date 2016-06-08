@@ -70,6 +70,26 @@ func ShowTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
+func SyncTeam(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`team_sync`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
+	handler.input <- somaTeamRequest{
+		action: "sync",
+		reply:  returnChannel,
+	}
+	result := <-returnChannel
+
+	SendTeamReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddTeam(w http.ResponseWriter, r *http.Request,
