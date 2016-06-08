@@ -58,7 +58,7 @@ func (r *somaServerReadHandler) run() {
 	}
 	defer r.show_stmt.Close()
 
-	if r.sync_stmt, err = r.conn.Prepare(stmt.ListSyncServers); err != nil {
+	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncServers); err != nil {
 		log.Fatal("server/sync-list: ", err)
 	}
 	defer r.sync_stmt.Close()

@@ -8,7 +8,7 @@
 
 package stmt
 
-const ListSyncServers = `
+const SyncServers = `
 SELECT server_id,
        server_asset_id,
        server_datacenter_name,
@@ -17,7 +17,7 @@ SELECT server_id,
        server_online,
        server_deleted
 FROM   inventory.servers
-WHERE  server_id = '00000000-0000-0000-0000-000000000000';`
+WHERE  server_id != '00000000-0000-0000-0000-000000000000';`
 
 const ListServers = `
 SELECT server_id,
