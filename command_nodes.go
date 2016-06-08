@@ -84,6 +84,11 @@ func registerNodes(app cli.App) *cli.App {
 						Action: runtime(cmdNodeList),
 					},
 					{
+						Name:   "synclist",
+						Usage:  "List all nodes suitable for sync",
+						Action: runtime(cmdNodeSync),
+					},
+					{
 						Name:   "show",
 						Usage:  "Show details about a node",
 						Action: runtime(cmdNodeShow),
@@ -406,6 +411,17 @@ func cmdNodeShow(c *cli.Context) error {
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdNodeSync(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+
+	if resp, err := adm.GetReq(`/sync/nodes/`); err != nil {
 		return err
 	} else {
 		fmt.Println(resp)
