@@ -71,6 +71,25 @@ func ShowUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
+func SyncUser(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`users_sync`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["userReadHandler"].(somaUserReadHandler)
+	handler.input <- somaUserRequest{
+		action: `sync`,
+		reply:  returnChannel,
+	}
+	result := <-returnChannel
+	SendUserReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddUser(w http.ResponseWriter, r *http.Request,

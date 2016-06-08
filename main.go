@@ -168,6 +168,7 @@ func main() {
 	router.GET("/users/", BasicAuth(ListUser))
 	router.GET("/users/:user", BasicAuth(ShowUser))
 	router.POST("/filter/users/", BasicAuth(ListUser))
+	router.GET(`/sync/users/`, BasicAuth(SyncUser))
 
 	router.GET("/monitoring/", BasicAuth(ListMonitoring))
 	router.GET("/monitoring/:monitoring", BasicAuth(ShowMonitoring))

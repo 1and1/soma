@@ -40,37 +40,26 @@ type somaUserReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	sync_stmt *sql.Stmt
 }
 
 func (r *somaUserReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT user_id,
-       user_uid
-FROM   inventory.users;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListUsers); err != nil {
 		log.Fatal("user/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT user_id,
-       user_uid,
-       user_first_name,
-	   user_last_name,
-	   user_employee_number,
-	   user_mail_address,
-	   user_is_active,
-	   user_is_system,
-	   user_is_deleted,
-	   organizational_team_id
-FROM   inventory.users
-WHERE  user_id = $1::uuid;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowUsers); err != nil {
 		log.Fatal("user/show: ", err)
 	}
 	defer r.show_stmt.Close()
+
+	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncUsers); err != nil {
+		log.Fatal("user/sync: ", err)
+	}
+	defer r.sync_stmt.Close()
 
 runloop:
 	for {
@@ -99,11 +88,11 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 	case "list":
 		log.Printf("R: users/list")
 		rows, err = r.list_stmt.Query()
-		defer rows.Close()
 		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
+		defer rows.Close()
 
 		for rows.Next() {
 			err := rows.Scan(
@@ -114,6 +103,44 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 				User: proto.User{
 					Id:       userId,
 					UserName: userName,
+				},
+			})
+		}
+		if err = rows.Err(); err != nil {
+			result.Append(err, &somaUserResult{})
+			err = nil
+		}
+	case `sync`:
+		log.Printf(`R: users/sync`)
+		rows, err = r.sync_stmt.Query()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			err := rows.Scan(
+				&userId,
+				&userName,
+				&firstName,
+				&lastName,
+				&employeeNr,
+				&mailAddr,
+				&isDeleted,
+				&team,
+			)
+
+			result.Append(err, &somaUserResult{
+				User: proto.User{
+					Id:             userId,
+					UserName:       userName,
+					FirstName:      firstName,
+					LastName:       lastName,
+					EmployeeNumber: strconv.Itoa(employeeNr),
+					MailAddress:    mailAddr,
+					IsDeleted:      isDeleted,
+					TeamId:         team,
 				},
 			})
 		}
