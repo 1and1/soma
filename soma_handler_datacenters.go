@@ -104,6 +104,11 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 	result := somaResult{}
 
 	switch q.action {
+	case `sync`:
+		log.Printf("R: datacenter/sync")
+		// right now, sync and list are the same. This allows to later
+		// change the sync result if required without disturbing list
+		fallthrough
 	case "list":
 		log.Printf("R: datacenter/list")
 		rows, err = r.list_stmt.Query()

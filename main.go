@@ -118,6 +118,7 @@ func main() {
 
 	router.GET("/datacenters/", BasicAuth(ListDatacenters))
 	router.GET("/datacenters/:datacenter", BasicAuth(ShowDatacenter))
+	router.GET(`/sync/datacenters/`, BasicAuth(SyncDatacenters))
 
 	router.GET("/datacentergroups/", BasicAuth(ListDatacenterGroups))
 	router.GET("/datacentergroups/:datacentergroup", BasicAuth(ShowDatacenterGroup))

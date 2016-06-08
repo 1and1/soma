@@ -28,6 +28,25 @@ func ListDatacenters(w http.ResponseWriter, r *http.Request,
 	SendDatacenterReply(&w, &result)
 }
 
+func SyncDatacenters(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`datacenters_sync`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
+	handler.input <- somaDatacenterRequest{
+		action: `sync`,
+		reply:  returnChannel,
+	}
+	result := <-returnChannel
+	SendDatacenterReply(&w, &result)
+}
+
 func ListDatacenterGroups(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	/*
 		returnChannel := make(chan []somaDatacenterResult)
