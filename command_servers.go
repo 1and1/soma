@@ -37,11 +37,14 @@ func registerServers(app cli.App) *cli.App {
 								},
 							},
 						},
-						{
-							Name:   "update",
-							Usage:  "Full update of server attributes (replace, not merge)",
-							Action: runtime(cmdServerUpdate),
-						},
+					*/
+					{
+						Name:        "update",
+						Usage:       "Full update of server attributes (replace, not merge)",
+						Description: help.CmdServerUpdate,
+						Action:      runtime(cmdServerUpdate),
+					},
+					/*
 						{
 							Name:   "rename",
 							Usage:  "Rename an existing server",
@@ -149,6 +152,32 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 }
 
 func cmdServerUpdate(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 13)
+
+	if !utl.IsUUID(c.Args().First()) {
+		utl.Abort(
+			fmt.Sprintf("Server to update not referenced by UUID: %s",
+				c.Args().First()))
+	}
+
+	multiple := []string{}
+	unique := []string{`name`, `assetid`, `datacenter`, `location`, `online`, `deleted`}
+	required := []string{`name`, `assetid`, `datacenter`, `location`, `online`, `deleted`}
+	opts := utl.ParseVariadicArguments(multiple, unique, required,
+		c.Args().Tail())
+
+	req := proto.NewServerRequest()
+	req.Server.Id = c.Args().First()
+	req.Server.Name = opts[`name`][0]
+	req.Server.AssetId = utl.GetValidatedUint64(opts[`assetid`][0], 1)
+	req.Server.Datacenter = opts[`datacenter`][0]
+	req.Server.Location = opts[`location`][0]
+	req.Server.IsOnline = utl.GetValidatedBool(opts[`online`][0])
+	req.Server.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
+
+	path := fmt.Sprintf("/servers/%s", c.Args().First())
+	resp := utl.PutRequestWithBody(Client, req, path)
+	fmt.Println(resp)
 	return nil
 }
 
@@ -216,7 +245,7 @@ func cmdServerNull(c *cli.Context) error {
 	req.Server.Id = "00000000-0000-0000-0000-000000000000"
 	req.Server.Datacenter = opts["datacenter"][0]
 
-	resp := utl.PutRequestWithBody(Client, req, "/servers/null")
+	resp := utl.PostRequestWithBody(Client, req, "/servers/null")
 	fmt.Println(resp)
 	return nil
 }
