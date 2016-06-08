@@ -39,6 +39,11 @@ func registerDatacenters(app cli.App) *cli.App {
 						Usage:  "Show information about a specific datacenter",
 						Action: runtime(cmdDatacentersShow),
 					},
+					{
+						Name:   "synclist",
+						Usage:  "List all datacenters suitable for sync",
+						Action: runtime(cmdDatacentersSync),
+					},
 					/*
 						{
 							Name:   "groupadd",
@@ -180,6 +185,13 @@ func cmdDatacentersRename(c *cli.Context) error {
 func cmdDatacentersList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest(Client, `/datacenters/`)
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdDatacentersSync(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, `/sync/datacenters/`)
 	fmt.Println(resp)
 	return nil
 }
