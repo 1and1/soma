@@ -41,6 +41,11 @@ func registerTeams(app cli.App) *cli.App {
 						Action: runtime(cmdTeamList),
 					},
 					{
+						Name:   "synclist",
+						Usage:  "Export a list of all teams suitable for sync",
+						Action: runtime(cmdTeamSync),
+					},
+					{
 						Name:   "show",
 						Usage:  "Show information about a team",
 						Action: runtime(cmdTeamShow),
@@ -123,7 +128,21 @@ func cmdTeamMigrate(c *cli.Context) error {
 func cmdTeamList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 0)
 
-	resp := utl.GetRequest(Client, "/teams/")
+	resp, err := adm.GetReq(`/teams/`)
+	if err != nil {
+		return err
+	}
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdTeamSync(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+
+	resp, err := adm.GetReq(`/sync/teams/`)
+	if err != nil {
+		return err
+	}
 	fmt.Println(resp)
 	return nil
 }
@@ -134,7 +153,10 @@ func cmdTeamShow(c *cli.Context) error {
 	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
-	resp := utl.GetRequest(Client, path)
+	resp, err := adm.GetReq(path)
+	if err != nil {
+		return err
+	}
 	fmt.Println(resp)
 	return nil
 }
