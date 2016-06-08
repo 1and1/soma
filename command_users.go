@@ -110,6 +110,11 @@ func registerUsers(app cli.App) *cli.App {
 						Usage:  "Show information about a specific user",
 						Action: runtime(cmdUserShow),
 					},
+					{
+						Name:   "synclist",
+						Usage:  "List all registered users suitable for sync",
+						Action: runtime(cmdUserSync),
+					},
 				},
 			}, // end users
 		}...,
@@ -404,7 +409,15 @@ func cmdUserDeactivate(c *cli.Context) {
 */
 
 func cmdUserList(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
 	resp := utl.GetRequest(Client, "/users/")
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdUserSync(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, `/sync/users/`)
 	fmt.Println(resp)
 	return nil
 }
