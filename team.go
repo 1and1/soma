@@ -4,7 +4,7 @@ type Team struct {
 	Id       string       `json:"id,omitempty"`
 	Name     string       `json:"name,omitempty"`
 	LdapId   string       `json:"ldapId,omitempty"`
-	IsSystem bool         `json:"isSystem"`
+	IsSystem bool         `json:"isSystem,omitempty"`
 	Details  *TeamDetails `json:"details,omitempty"`
 }
 
