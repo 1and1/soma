@@ -69,6 +69,11 @@ func registerServers(app cli.App) *cli.App {
 						Action: runtime(cmdServerList),
 					},
 					{
+						Name:   "synclist",
+						Usage:  "Export a list of all servers suitable for sync",
+						Action: runtime(cmdServerSync),
+					},
+					{
 						Name:   "show",
 						Usage:  "Show details about a specific server",
 						Action: runtime(cmdServerShow),
@@ -164,7 +169,23 @@ func cmdServerMove(c *cli.Context) error {
 }
 
 func cmdServerList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/servers/")
+	utl.ValidateCliArgumentCount(c, 0)
+
+	resp, err := adm.GetReq(`/servers/`)
+	if err != nil {
+		return err
+	}
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdServerSync(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+
+	resp, err := adm.GetReq(`/sync/servers/`)
+	if err != nil {
+		return err
+	}
 	fmt.Println(resp)
 	return nil
 }
