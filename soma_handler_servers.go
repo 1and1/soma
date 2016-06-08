@@ -235,51 +235,31 @@ type somaServerWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	prg_stmt *sql.Stmt
+	upd_stmt *sql.Stmt
 }
 
 func (w *somaServerWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO inventory.servers (
-	server_id,
-	server_asset_id,
-	server_datacenter_name,
-	server_datacenter_location,
-	server_name,
-	server_online,
-	server_deleted)
-SELECT	$1::uuid, $2::numeric, $3, $4, $5, $6, $7
-WHERE	NOT EXISTS(
-	SELECT server_id
-	FROM   inventory.servers
-	WHERE  server_id = $1::uuid
-	OR     server_asset_id = $2::numeric);`)
-	if err != nil {
+	if w.add_stmt, err = w.conn.Prepare(stmt.AddServers); err != nil {
 		log.Fatal("server/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	w.del_stmt, err = w.conn.Prepare(`
-UPDATE inventory.servers
-SET    server_deleted = 'yes',
-       server_online = 'no'
-WHERE  server_id = $1::uuid
-AND    server_id != '00000000-0000-0000-0000-000000000000';`)
-	if err != nil {
+	if w.del_stmt, err = w.conn.Prepare(stmt.DeleteServers); err != nil {
 		log.Fatal("server/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
-	w.prg_stmt, err = w.conn.Prepare(`
-DELETE FROM inventory.servers
-WHERE  server_id = $1::uuid
-AND    server_deleted
-AND    server_id != '00000000-0000-0000-0000-000000000000';`)
-	if err != nil {
+	if w.prg_stmt, err = w.conn.Prepare(stmt.PurgeServers); err != nil {
 		log.Fatal("server/purge: ", err)
 	}
 	defer w.prg_stmt.Close()
+
+	if w.upd_stmt, err = w.conn.Prepare(stmt.UpdateServers); err != nil {
+		log.Fatal(`server/update: `, err)
+	}
+	defer w.upd_stmt.Close()
 
 runloop:
 	for {
@@ -324,6 +304,17 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 		log.Printf("R: server/purge for %s", q.Server.Id)
 		res, err = w.del_stmt.Exec(
 			q.Server.Id,
+		)
+	case `update`:
+		log.Printf("R: server/update for %s", q.Server.Id)
+		res, err = w.upd_stmt.Exec(
+			q.Server.Id,
+			q.Server.AssetId,
+			q.Server.Datacenter,
+			q.Server.Location,
+			q.Server.Name,
+			q.Server.IsOnline,
+			q.Server.IsDeleted,
 		)
 	case "insert-null":
 		log.Printf("R: server/insert-null")

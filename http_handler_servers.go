@@ -172,6 +172,46 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
+func UpdateServer(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_update`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.NewServerRequest()
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if cReq.Server.Id != params.ByName(`server`) {
+		DispatchBadRequest(&w, errors.New(`Mismatching server UUIDs`))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler.input <- somaServerRequest{
+		action: "update",
+		reply:  returnChannel,
+		Server: proto.Server{
+			Id:         cReq.Server.Id,
+			AssetId:    cReq.Server.AssetId,
+			Datacenter: cReq.Server.Datacenter,
+			Location:   cReq.Server.Location,
+			Name:       cReq.Server.Name,
+			IsOnline:   cReq.Server.IsOnline,
+			IsDeleted:  cReq.Server.IsDeleted,
+		},
+	}
+	result := <-returnChannel
+	SendServerReply(&w, &result)
+}
+
 func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

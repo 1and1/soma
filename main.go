@@ -40,7 +40,7 @@ const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// SOMA version
-	SomaVersion string = `0.7.31`
+	SomaVersion string = `0.7.32`
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
@@ -280,7 +280,8 @@ func main() {
 
 		router.POST("/servers/", BasicAuth(AddServer))
 		router.DELETE("/servers/:server", BasicAuth(DeleteServer))
-		router.PUT("/servers/:server", BasicAuth(InsertNullServer))
+		router.PUT("/servers/:server", BasicAuth(UpdateServer))
+		router.POST("/servers/:server", BasicAuth(InsertNullServer))
 
 		router.POST("/units/", BasicAuth(AddUnit))
 		router.DELETE("/units/:unit", BasicAuth(DeleteUnit))
