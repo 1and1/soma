@@ -40,6 +40,7 @@ type somaServerReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	sync_stmt *sql.Stmt
 	snam_stmt *sql.Stmt
 	sass_stmt *sql.Stmt
 }
@@ -47,61 +48,32 @@ type somaServerReadHandler struct {
 func (r *somaServerReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT server_id,
-       server_name,
-       server_asset_id
-FROM   inventory.servers
-WHERE  server_online
-AND    NOT server_deleted
-AND    NOT server_id = '00000000-0000-0000-0000-000000000000';`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListServers); err != nil {
 		log.Fatal("server/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowServers); err != nil {
+		log.Fatal("server/show: ", err)
+	}
+	defer r.show_stmt.Close()
+
+	if r.sync_stmt, err = r.conn.Prepare(stmt.ListSyncServers); err != nil {
+		log.Fatal("server/sync-list: ", err)
+	}
+	defer r.sync_stmt.Close()
+
 	// server_name + server_online => unique
-	if r.snam_stmt, err = r.conn.Prepare(`
-SELECT server_id,
-       server_name,
-       server_asset_id
-FROM   inventory.servers
-WHERE  server_online
-AND    NOT server_deleted
-AND    NOT server_id = '00000000-0000-0000-0000-000000000000'
-AND    server_name = $1::varchar;`); err != nil {
+	if r.snam_stmt, err = r.conn.Prepare(stmt.SearchServerByName); err != nil {
 		log.Fatal("server/search-name: ", err)
 	}
 	defer r.snam_stmt.Close()
 
 	// server_asset_id => unique
-	if r.sass_stmt, err = r.conn.Prepare(`
-SELECT server_id,
-       server_name,
-       server_asset_id
-FROM   inventory.servers
-WHERE  server_online
-AND    NOT server_deleted
-AND    NOT server_id = '00000000-0000-0000-0000-000000000000'
-AND    server_asset_id = $1::numeric;`); err != nil {
+	if r.sass_stmt, err = r.conn.Prepare(stmt.SearchServerByAssetId); err != nil {
 		log.Fatal("server/search-asset: ", err)
 	}
 	defer r.sass_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT server_id,
-       server_asset_id,
-       server_datacenter_name,
-       server_datacenter_location,
-       server_name,
-       server_online,
-       server_deleted
-FROM   inventory.servers
-WHERE  server_id = $1;`)
-	if err != nil {
-		log.Fatal("server/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -143,6 +115,38 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 					Id:      serverId,
 					Name:    serverName,
 					AssetId: uint64(serverAsset),
+				},
+			})
+		}
+	case `sync`:
+		log.Printf("R: server/sync")
+		rows, err = r.sync_stmt.Query()
+		defer rows.Close()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+
+		for rows.Next() {
+			err := rows.Scan(
+				&serverId,
+				&serverAsset,
+				&serverDc,
+				&serverDcLoc,
+				&serverName,
+				&serverOnline,
+				&serverDeleted,
+			)
+
+			result.Append(err, &somaServerResult{
+				Server: proto.Server{
+					Id:         serverId,
+					AssetId:    uint64(serverAsset),
+					Datacenter: serverDc,
+					Location:   serverDcLoc,
+					Name:       serverName,
+					IsOnline:   serverOnline,
+					IsDeleted:  serverDeleted,
 				},
 			})
 		}

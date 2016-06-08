@@ -30,6 +30,26 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
+func SyncServer(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`servers_sync`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	handler.input <- somaServerRequest{
+		action: "sync",
+		reply:  returnChannel,
+	}
+	result := <-returnChannel
+
+	SendServerReply(&w, &result)
+}
+
 func ShowServer(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

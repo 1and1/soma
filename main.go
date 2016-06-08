@@ -149,6 +149,7 @@ func main() {
 	router.GET("/servers/", BasicAuth(ListServer))
 	router.GET("/servers/:server", BasicAuth(ShowServer))
 	router.POST("/filter/servers/", BasicAuth(SearchServer))
+	router.GET(`/sync/servers/`, BasicAuth(SyncServer))
 
 	router.GET("/units/", BasicAuth(ListUnit))
 	router.GET("/units/:unit", BasicAuth(ShowUnit))
