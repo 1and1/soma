@@ -40,49 +40,31 @@ type somaNodeReadHandler struct {
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
 	conf_stmt *sql.Stmt
+	sync_stmt *sql.Stmt
 }
 
 func (r *somaNodeReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT node_id,
-       node_name
-FROM   soma.nodes
-WHERE  node_online;`)
-	if err != nil {
+	if r.list_stmt, err = r.conn.Prepare(stmt.ListNodes); err != nil {
 		log.Fatal("node/list: ", err)
 	}
+	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT node_id,
-       node_asset_id,
-       node_name,
-       organizational_team_id,
-       server_id,
-       object_state,
-       node_online,
-       node_deleted
-FROM   soma.nodes
-WHERE  node_id = $1;`)
-	if err != nil {
+	if r.show_stmt, err = r.conn.Prepare(stmt.ShowNodes); err != nil {
 		log.Fatal("node/show: ", err)
 	}
+	defer r.show_stmt.Close()
 
-	r.conf_stmt, err = r.conn.Prepare(`
-SELECT nodes.node_id,
-       nodes.node_name,
-       buckets.bucket_id,
-       buckets.repository_id
-FROM   soma.nodes
-JOIN   soma.node_bucket_assignment
-  ON   nodes.node_id = node_bucket_assignment.node_id
-JOIN   soma.buckets
-  ON   node_bucket_assignment.bucket_id = buckets.bucket_id
-WHERE  nodes.node_id = $1;`)
-	if err != nil {
+	if r.conf_stmt, err = r.conn.Prepare(stmt.ShowConfigNodes); err != nil {
 		log.Fatal("node/get-config: ", err)
 	}
+	defer r.conf_stmt.Close()
+
+	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncNodes); err != nil {
+		log.Fatal("node/sync: ", err)
+	}
+	defer r.sync_stmt.Close()
 
 runloop:
 	for {
@@ -109,11 +91,11 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 	case "list":
 		log.Printf("R: node/list")
 		rows, err = r.list_stmt.Query()
-		defer rows.Close()
 		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
+		defer rows.Close()
 
 		for rows.Next() {
 			err := rows.Scan(&nodeId, &nodeName)
@@ -121,6 +103,43 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 				Node: proto.Node{
 					Id:   nodeId,
 					Name: nodeName,
+				},
+			})
+		}
+	case `sync`:
+		log.Printf(`R: node/sync`)
+		rows, err = r.sync_stmt.Query()
+		if result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			err := rows.Scan(
+				&nodeId,
+				&nodeAsset,
+				&nodeName,
+				&nodeTeam,
+				&nodeServer,
+				&nodeOnline,
+				&nodeDeleted,
+			)
+			result.Append(err, &somaNodeResult{
+				Node: proto.Node{
+					Id:   nodeId,
+					Name: nodeName,
+				},
+			})
+			result.Append(err, &somaNodeResult{
+				Node: proto.Node{
+					Id:        nodeId,
+					AssetId:   uint64(nodeAsset),
+					Name:      nodeName,
+					TeamId:    nodeTeam,
+					ServerId:  nodeServer,
+					IsOnline:  nodeOnline,
+					IsDeleted: nodeDeleted,
 				},
 			})
 		}

@@ -77,6 +77,25 @@ func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+func SyncNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`node_sync`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
+	handler.input <- somaNodeRequest{
+		action: `sync`,
+		reply:  returnChannel,
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
 /* Write functions
  */
 func AddNode(w http.ResponseWriter, r *http.Request,

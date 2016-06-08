@@ -146,6 +146,7 @@ func main() {
 	router.GET("/nodes/:node", BasicAuth(ShowNode))
 	router.GET("/nodes/:node/config", BasicAuth(ShowNodeConfig))
 	router.POST("/filter/nodes/", BasicAuth(ListNode))
+	router.GET(`/sync/nodes/`, BasicAuth(SyncNode))
 
 	router.GET("/servers/", BasicAuth(ListServer))
 	router.GET("/servers/:server", BasicAuth(ShowServer))
