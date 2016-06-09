@@ -40,7 +40,7 @@ const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// SOMA version
-	SomaVersion string = `0.7.33`
+	SomaVersion string = `0.7.34`
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
@@ -246,7 +246,7 @@ func main() {
 		router.DELETE("/views/:view", BasicAuth(DeleteView))
 		router.PATCH("/views/:view", BasicAuth(RenameView))
 
-		router.POST("/environments", BasicAuth(AddEnvironment))
+		router.POST("/environments/", BasicAuth(AddEnvironment))
 		router.DELETE("/environments/:environment", BasicAuth(DeleteEnvironment))
 		router.PUT("/environments/:environment", BasicAuth(RenameEnvironment))
 

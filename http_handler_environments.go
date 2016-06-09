@@ -29,16 +29,25 @@ func ListEnvironments(w http.ResponseWriter, r *http.Request,
 	results := <-returnChannel
 	res := proto.NewEnvironmentResult()
 	for _, env := range results {
+		if res.Error(env.err) {
+			goto dispatch
+		}
 		*res.Environments = append(*res.Environments, proto.Environment{Name: env.environment})
 	}
-	res.OK()
-	json, err := json.Marshal(res)
+	if len(*res.Environments) == 0 {
+		res.NotFound()
+	} else {
+		res.OK()
+	}
+
+dispatch:
+	jsonB, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Write(jsonB)
 }
 
 func ShowEnvironment(w http.ResponseWriter, r *http.Request,
@@ -60,24 +69,30 @@ func ShowEnvironment(w http.ResponseWriter, r *http.Request,
 	results := <-returnChannel
 	res := proto.NewEnvironmentResult()
 	if len(results) == 0 {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
+		res.NotFound()
+		goto dispatch
 	}
 	if len(results) != 1 {
-		http.Error(w, "Not found", http.StatusInternalServerError)
-		return
+		res.NotFound()
+		goto dispatch
+	}
+	if results[0].environment == `` {
+		res.NotFound()
+		goto dispatch
 	}
 	*res.Environments = append(*res.Environments, proto.Environment{
 		Name: results[0].environment,
 	})
 	res.OK()
-	json, err := json.Marshal(res)
+
+dispatch:
+	jsonB, err := json.Marshal(res)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Write(jsonB)
 }
 
 func AddEnvironment(w http.ResponseWriter, r *http.Request,
@@ -92,7 +107,7 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request,
 
 	// read POST body
 	decoder := json.NewDecoder(r.Body)
-	var clientRequest proto.Request
+	clientRequest := proto.NewEnvironmentRequest()
 	err := decoder.Decode(&clientRequest)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotAcceptable)
@@ -120,22 +135,25 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request,
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(proto.Result{
-			StatusCode: 500,
-			StatusText: "Internal Server Error",
-			Errors:     &[]string{result.err.Error()},
+		jsonB, _ := json.Marshal(&proto.Result{
+			StatusCode:   500,
+			StatusText:   "Internal Server Error",
+			Errors:       &[]string{result.err.Error()},
+			Environments: &[]proto.Environment{},
 		})
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
+		w.Write(jsonB)
 		return
 	}
 
-	json, _ := json.Marshal(proto.Result{
-		StatusCode: 200,
-		StatusText: "OK",
+	jsonB, _ := json.Marshal(&proto.Result{
+		StatusCode:   200,
+		StatusText:   "OK",
+		Errors:       &[]string{},
+		Environments: &[]proto.Environment{proto.Environment{Name: clientRequest.Environment.Name}},
 	})
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Write(jsonB)
 }
 
 func DeleteEnvironment(w http.ResponseWriter, r *http.Request,
@@ -167,12 +185,12 @@ func DeleteEnvironment(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	json, _ := json.Marshal(proto.Result{
+	jsonB, _ := json.Marshal(proto.Result{
 		StatusCode: 200,
 		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Write(jsonB)
 }
 
 func RenameEnvironment(w http.ResponseWriter, r *http.Request,
@@ -204,34 +222,34 @@ func RenameEnvironment(w http.ResponseWriter, r *http.Request,
 
 	results := <-returnChannel
 	if len(results) != 1 {
-		json, _ := json.Marshal(proto.Result{
+		jsonB, _ := json.Marshal(proto.Result{
 			StatusCode: 500,
 			StatusText: "Internal Server Error",
 			Errors:     &[]string{"Database statement returned no/wrong number of results"},
 		})
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
+		w.Write(jsonB)
 		return
 	}
 
 	result := results[0]
 	if result.err != nil {
-		json, _ := json.Marshal(proto.Result{
+		jsonB, _ := json.Marshal(proto.Result{
 			StatusCode: 500,
 			StatusText: "Internal Server Error",
 			Errors:     &[]string{result.err.Error()},
 		})
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
+		w.Write(jsonB)
 		return
 	}
 
-	json, _ := json.Marshal(proto.Result{
+	jsonB, _ := json.Marshal(proto.Result{
 		StatusCode: 200,
 		StatusText: "OK",
 	})
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(json)
+	w.Write(jsonB)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

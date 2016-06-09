@@ -92,7 +92,7 @@ func (r *somaEnvironmentReadHandler) process(q *somaEnvironmentRequest) {
 		if err != nil {
 			result = append(result, somaEnvironmentResult{
 				err:         err,
-				environment: q.environment,
+				environment: ``,
 			})
 			q.reply <- result
 			return
