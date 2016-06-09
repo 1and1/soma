@@ -127,12 +127,6 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			)
 			result.Append(err, &somaNodeResult{
 				Node: proto.Node{
-					Id:   nodeId,
-					Name: nodeName,
-				},
-			})
-			result.Append(err, &somaNodeResult{
-				Node: proto.Node{
 					Id:        nodeId,
 					AssetId:   uint64(nodeAsset),
 					Name:      nodeName,
