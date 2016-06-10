@@ -167,6 +167,9 @@ checksloop:
 			// service that bound all attribute constraints
 			if len(serviceC) > 0 {
 				hasServiceConstraint = true
+			} else {
+				// found no services that fulfilled all constraints
+				hasBrokenConstraint = true
 			}
 		}
 		if hasBrokenConstraint {
