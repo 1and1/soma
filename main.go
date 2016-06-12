@@ -280,6 +280,7 @@ func main() {
 
 		router.POST("/teams/", BasicAuth(AddTeam))
 		router.DELETE("/teams/:team", BasicAuth(DeleteTeam))
+		router.PUT("/teams/:team", BasicAuth(UpdateTeam))
 
 		router.POST("/servers/", BasicAuth(AddServer))
 		router.DELETE("/servers/:server", BasicAuth(DeleteServer))

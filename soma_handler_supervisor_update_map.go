@@ -8,6 +8,8 @@ func (s *supervisor) update_map(q *msg.Request) {
 		switch q.Super.Action {
 		case `add`:
 			s.id_team.insert(q.Super.Team.Id, q.Super.Team.Name)
+		case `update`:
+			s.id_team.insert(q.Super.Team.Id, q.Super.Team.Name)
 		case `delete`:
 			s.id_team.remove(q.Super.Team.Id)
 		}

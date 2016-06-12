@@ -123,6 +123,38 @@ func AddTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
+func UpdateTeam(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`team_update`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.NewTeamRequest()
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)
+	handler.input <- somaTeamRequest{
+		action: `update`,
+		reply:  returnChannel,
+		Team: proto.Team{
+			Id:       params.ByName(`team`),
+			Name:     cReq.Team.Name,
+			LdapId:   cReq.Team.LdapId,
+			IsSystem: cReq.Team.IsSystem,
+		},
+	}
+	result := <-returnChannel
+	SendTeamReply(&w, &result)
+}
+
 func DeleteTeam(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

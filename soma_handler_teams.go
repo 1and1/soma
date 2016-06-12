@@ -168,6 +168,7 @@ type somaTeamWriteHandler struct {
 	conn     *sql.DB
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
+	upd_stmt *sql.Stmt
 }
 
 func (w *somaTeamWriteHandler) run() {
@@ -189,6 +190,16 @@ SELECT $1::uuid, $2::varchar, $3::numeric, $4 WHERE NOT EXISTS (
 		log.Fatal("team/add: ", err)
 	}
 	defer w.add_stmt.Close()
+
+	if w.upd_stmt, err = w.conn.Prepare(`
+UPDATE inventory.organizational_teams
+SET    organizational_team_name = $1::varchar,
+       organizational_team_ldap_id = $2::numeric,
+       organizational_team_system = $3::boolean
+WHERE  organizational_team_id = $4::uuid;`); err != nil {
+		log.Fatal(`team/update: `, err)
+	}
+	defer w.upd_stmt.Close()
 
 	w.del_stmt, err = w.conn.Prepare(`
 DELETE FROM inventory.organizational_teams
@@ -239,6 +250,15 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 		)
 		q.Team.Id = id.String()
 		notify.Super.Action = `add`
+	case `update`:
+		log.Printf("R: team/update for %s", q.Team.Name)
+		res, err = w.upd_stmt.Exec(
+			q.Team.Name,
+			q.Team.LdapId,
+			q.Team.IsSystem,
+			q.Team.Id,
+		)
+		notify.Super.Action = `update`
 	case "delete":
 		log.Printf("R: team/del for %s", q.Team.Id)
 		res, err = w.del_stmt.Exec(
