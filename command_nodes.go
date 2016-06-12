@@ -49,6 +49,11 @@ func registerNodes(app cli.App) *cli.App {
 						},
 					},
 					{
+						Name:   `update`,
+						Usage:  `Update a node's information`,
+						Action: runtime(cmdNodeUpdate),
+					},
+					{
 						Name:   "rename",
 						Usage:  "Rename a node",
 						Action: runtime(cmdNodeRename),
@@ -191,6 +196,34 @@ func cmdNodeAdd(c *cli.Context) error {
 	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, options["team"])
 
 	if resp, err := adm.PostReqBody(req, "/nodes/"); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdNodeUpdate(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 13)
+	multiple := []string{}
+	unique := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
+	required := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
+
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
+	req := proto.NewNodeRequest()
+	if !utl.IsUUID(c.Args().First()) {
+		return fmt.Errorf(`Node/update command requires UUID as first argument`)
+	}
+	req.Node.Id = c.Args().First()
+	req.Node.Name = opts[`name`][0]
+	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	req.Node.IsOnline = utl.GetValidatedBool(opts[`online`][0])
+	req.Node.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
+	req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, opts[`server`][0])
+	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
+	path := fmt.Sprintf("/nodes/%s", req.Node.Id)
+	if resp, err := adm.PutReqBody(req, path); err != nil {
 		return err
 	} else {
 		fmt.Println(resp)
