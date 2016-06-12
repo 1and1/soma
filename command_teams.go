@@ -50,6 +50,11 @@ func registerTeams(app cli.App) *cli.App {
 						Usage:  "Show information about a team",
 						Action: runtime(cmdTeamShow),
 					},
+					{
+						Name:   "update",
+						Usage:  "Update team information",
+						Action: runtime(cmdTeamUpdate),
+					},
 				},
 			}, // end teams
 		}...,
@@ -88,6 +93,27 @@ func cmdTeamAdd(c *cli.Context) error {
 	}
 
 	resp := utl.PostRequestWithBody(Client, req, "/teams/")
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdTeamUpdate(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 5)
+	multi := []string{`system`}
+	unique := []string{`name`, `ldap`}
+	required := []string{`name`, `ldap`}
+
+	opts := utl.ParseVariadicArguments(multi, unique, required, c.Args().Tail())
+
+	teamid := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
+	req := proto.NewTeamRequest()
+	req.Team.Name = opts[`name`][0]
+	req.Team.LdapId = opts[`ldap`][0]
+	if len(opts[`system`]) > 0 {
+		req.Team.IsSystem = utl.GetValidatedBool(opts[`system`][0])
+	}
+	path := fmt.Sprintf("/teams/%s", teamid)
+	resp := utl.PutRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
 }
