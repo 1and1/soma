@@ -134,6 +134,41 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+func UpdateNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`node_update`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.NewNodeRequest()
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["nodeWriteHandler"].(somaNodeWriteHandler)
+	handler.input <- somaNodeRequest{
+		action: `update`,
+		reply:  returnChannel,
+		Node: proto.Node{
+			Id:        cReq.Node.Id,
+			AssetId:   cReq.Node.AssetId,
+			Name:      cReq.Node.Name,
+			TeamId:    cReq.Node.TeamId,
+			ServerId:  cReq.Node.ServerId,
+			IsOnline:  cReq.Node.IsOnline,
+			IsDeleted: cReq.Node.IsDeleted,
+		},
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
 func AssignNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

@@ -360,6 +360,7 @@ func main() {
 
 		router.POST("/nodes/", BasicAuth(AddNode))
 		router.DELETE("/nodes/:node", BasicAuth(DeleteNode))
+		router.PUT(`/nodes/:node`, BasicAuth(UpdateNode))
 		router.PUT("/nodes/:node/config", BasicAuth(AssignNode))
 		router.POST("/nodes/:node/property/:type/", BasicAuth(AddPropertyToNode))
 

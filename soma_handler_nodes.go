@@ -215,6 +215,7 @@ type somaNodeWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	prg_stmt *sql.Stmt
+	upd_stmt *sql.Stmt
 }
 
 func (w *somaNodeWriteHandler) run() {
@@ -241,6 +242,19 @@ WHERE NOT EXISTS (
 		log.Fatal("node/add: ", err)
 	}
 	defer w.add_stmt.Close()
+
+	if w.upd_stmt, err = w.conn.Prepare(`
+UPDATE soma.nodes
+SET    node_asset_id = $1::numeric,
+       node_name = $2::varchar,
+       organizational_team_id = $3::uuid,
+       server_id = $4::uuid,
+       node_online = $5::boolean,
+       node_deleted = $6::boolean
+WHERE  node_id = $7::uuid;`); err != nil {
+		log.Fatal(`node/update: `, err)
+	}
+	defer w.upd_stmt.Close()
 
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE soma.nodes
@@ -297,6 +311,18 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 			false,
 		)
 		q.Node.Id = id.String()
+	case `update`:
+		log.Printf("R: node/update for %s", q.Node.Id)
+		res, err = w.upd_stmt.Exec(
+			q.Node.AssetId,
+			q.Node.Name,
+			q.Node.TeamId,
+			q.Node.ServerId,
+			q.Node.IsOnline,
+			q.Node.IsDeleted,
+			q.Node.Id,
+		)
+		// TODO what has to be done for this undeployment?
 	case "delete":
 		log.Printf("R: node/delete for %s", q.Node.Id)
 		res, err = w.del_stmt.Exec(
