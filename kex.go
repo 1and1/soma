@@ -309,7 +309,12 @@ func (k *Kex) SetIPAddress(r *http.Request) {
 
 // SetIPAddressString records the client's IP address
 func (k *Kex) SetIPAddressString(addr string) {
-	k.sourceIP = net.ParseIP(extractAddress(addr))
+	k.SetIPAddressExtractedString(extractAddress(addr))
+}
+
+// SetIPAddressExtractedString records the client's IP address
+func (k *Kex) SetIPAddressExtractedString(addr string) {
+	k.sourceIP = net.ParseIP(addr)
 }
 
 // DecodeAndDecrypt takes a base64 encoded message and decrypts it
