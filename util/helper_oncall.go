@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strconv"
 
 	"gopkg.in/resty.v0"
@@ -29,6 +30,17 @@ func (u SomaUtil) GetOncallIdByName(c *resty.Client, oncall string) string {
 		u.Abort("Received result set for incorrect oncall duty")
 	}
 	return (*oncallResult.Oncalls)[0].Id
+}
+
+func (u SomaUtil) GetOncallDetailsById(c *resty.Client, oncallid string) (string, string) {
+	path := fmt.Sprintf("/oncall/%s", oncallid)
+	resp := u.GetRequest(c, path)
+	res := u.DecodeResultFromResponse(resp)
+
+	if oncallid != (*res.Oncalls)[0].Id {
+		u.Abort(`Received result set for incorrect oncall duty`)
+	}
+	return (*res.Oncalls)[0].Name, (*res.Oncalls)[0].Number
 }
 
 func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *proto.Result {

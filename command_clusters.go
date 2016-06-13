@@ -78,6 +78,11 @@ func registerClusters(app cli.App) *cli.App {
 										Usage:  "Add a service property to a cluster",
 										Action: runtime(cmdClusterServicePropertyAdd),
 									},
+									{
+										Name:   `oncall`,
+										Usage:  `Add an oncall property to a cluster`,
+										Action: runtime(cmdClusterOncallPropertyAdd),
+									},
 								},
 							},
 						},
@@ -381,6 +386,59 @@ func cmdClusterServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/clusters/%s/property/service/", clusterId)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdClusterOncallPropertyAdd(c *cli.Context) error {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	required := []string{"to", "in", "view"}
+	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts["to"][0], bucketId)
+
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+	oprop := proto.PropertyOncall{
+		Id: oncallId,
+	}
+	oprop.Name, oprop.Number = utl.GetOncallDetailsById(Client, oncallId)
+
+	tprop := proto.Property{
+		Type:   `oncall`,
+		View:   opts["view"][0],
+		Oncall: &oprop,
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	propList := []proto.Property{tprop}
+
+	cluster := proto.Cluster{
+		Id:         clusterId,
+		BucketId:   bucketId,
+		Properties: &propList,
+	}
+
+	req := proto.Request{
+		Cluster: &cluster,
+	}
+
+	path := fmt.Sprintf("/clusters/%s/property/oncall/", clusterId)
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {

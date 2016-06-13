@@ -110,6 +110,11 @@ func registerGroups(app cli.App) *cli.App {
 										Usage:  "Add a service property to a group",
 										Action: runtime(cmdGroupServicePropertyAdd),
 									},
+									{
+										Name:   `oncall`,
+										Usage:  `Add an oncall property to a group`,
+										Action: runtime(cmdGroupOncallPropertyAdd),
+									},
 								},
 							},
 						},
@@ -534,6 +539,59 @@ func cmdGroupServicePropertyAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s/property/service/", groupId)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdGroupOncallPropertyAdd(c *cli.Context) error {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	required := []string{"to", "in", "view"}
+	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts["to"][0], bucketId)
+
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+	oprop := proto.PropertyOncall{
+		Id: oncallId,
+	}
+	oprop.Name, oprop.Number = utl.GetOncallDetailsById(Client, oncallId)
+
+	tprop := proto.Property{
+		Type:   `oncall`,
+		View:   opts["view"][0],
+		Oncall: &oprop,
+	}
+	if _, ok := opts["inheritance"]; ok {
+		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
+	} else {
+		tprop.Inheritance = true
+	}
+	if _, ok := opts["childrenonly"]; ok {
+		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
+	} else {
+		tprop.ChildrenOnly = false
+	}
+
+	propList := []proto.Property{tprop}
+
+	group := proto.Group{
+		Id:         groupId,
+		BucketId:   bucketId,
+		Properties: &propList,
+	}
+
+	req := proto.Request{
+		Group: &group,
+	}
+
+	path := fmt.Sprintf("/groups/%s/property/oncall/", groupId)
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
