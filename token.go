@@ -174,7 +174,12 @@ func (t *Token) SetIPAddress(r *http.Request) {
 
 // SetIPAddressString records the client's IP address
 func (t *Token) SetIPAddressString(addr string) {
-	t.SourceIP = net.ParseIP(extractAddress(addr))
+	t.SetIPAddressExtractedString(extractAddress(addr))
+}
+
+// SetIPAddressExtractedString records the client's IP address
+func (t *Token) SetIPAddressExtractedString(addr string) {
+	t.SourceIP = net.ParseIP(addr)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
