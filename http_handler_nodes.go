@@ -126,7 +126,7 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 			TeamId:    cReq.Node.TeamId,
 			ServerId:  cReq.Node.ServerId,
 			State:     "unassigned",
-			IsOnline:  true,
+			IsOnline:  cReq.Node.IsOnline,
 			IsDeleted: false,
 		},
 	}
