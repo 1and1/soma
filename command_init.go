@@ -77,7 +77,7 @@ func cmdClientInit(c *cli.Context) error {
 	if _, err = os.Stat(`/usr/share/somaadm/skel/somaadm.conf`); err != nil && !os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "Error testing for skeleton config: %s\n", err.Error())
 		os.Exit(1)
-	} else {
+	} else if !os.IsNotExist(err) {
 		if _, err = adm.CopyFile(path.Join(somaPath, defConf), skelConf); err != nil && !os.IsExist(err) {
 			fmt.Fprintf(os.Stderr, "Error copying skeleton config: %s\n", err.Error())
 			os.Exit(1)
@@ -88,7 +88,7 @@ func cmdClientInit(c *cli.Context) error {
 	if _, err = os.Stat(skelCert); err != nil && !os.IsNotExist(err) {
 		fmt.Fprintf(os.Stderr, "Error testing for skeleton certificate: %s\n", err.Error())
 		os.Exit(1)
-	} else {
+	} else if !os.IsNotExist(err) {
 		if _, err = adm.CopyFile(path.Join(somaPath, defCert), skelCert); err != nil && !os.IsExist(err) {
 			fmt.Fprintf(os.Stderr, "Error copying skeleton certificate: %s\n", err.Error())
 			os.Exit(1)
