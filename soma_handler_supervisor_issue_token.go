@@ -64,7 +64,7 @@ func (s *supervisor) issue_token(q *msg.Request) {
 		goto dispatch
 	}
 	// check kex.SameSource
-	if !kex.IsSameSourceString(q.Super.RemoteAddr) {
+	if !kex.IsSameSourceExtractedString(q.Super.RemoteAddr) {
 		result.NotFound(fmt.Errorf(`Key exchange not found`))
 		goto dispatch
 	}
@@ -102,7 +102,7 @@ func (s *supervisor) issue_token(q *msg.Request) {
 		goto dispatch
 	}
 	// generate token
-	token.SetIPAddressString(q.Super.RemoteAddr)
+	token.SetIPAddressExtractedString(q.Super.RemoteAddr)
 	if err = token.Generate(cred.cryptMCF, s.key, s.seed); err != nil {
 		result.ServerError(err)
 		goto dispatch

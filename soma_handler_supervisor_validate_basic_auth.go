@@ -70,7 +70,7 @@ func (s *supervisor) validate_basic_auth(q *msg.Request) {
 		goto unauthorized
 	}
 
-	if auth.Verify(q.Super.BasicAuthUser, q.Super.RemoteAddr, tok.binToken, s.key,
+	if auth.VerifyExtracted(q.Super.BasicAuthUser, q.Super.RemoteAddr, tok.binToken, s.key,
 		s.seed, tok.binExpiresAt, tok.salt) {
 		// valid token
 		result.Super = &msg.Supervisor{Verdict: 200}

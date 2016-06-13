@@ -564,8 +564,14 @@ func spawnSupervisorHandler() {
 	if supervisorHandler.seed, err = hex.DecodeString(SomaCfg.Auth.TokenSeed); err != nil {
 		panic(err)
 	}
+	if len(supervisorHandler.seed) == 0 {
+		panic(`token.seed has length 0`)
+	}
 	if supervisorHandler.key, err = hex.DecodeString(SomaCfg.Auth.TokenKey); err != nil {
 		panic(err)
+	}
+	if len(supervisorHandler.key) == 0 {
+		panic(`token.key has length 0`)
 	}
 	supervisorHandler.tokenExpiry = SomaCfg.Auth.TokenExpirySeconds
 	supervisorHandler.kexExpiry = SomaCfg.Auth.KexExpirySeconds
