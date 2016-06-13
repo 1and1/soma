@@ -171,6 +171,43 @@ func cmdUserAdd(c *cli.Context) error {
 	return nil
 }
 
+func cmdUserUpdate(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 15)
+	multiple := []string{}
+	unique := []string{`username`, "firstname", "lastname", "employeenr",
+		"mailaddr", "team", `deleted`}
+	required := []string{`username`, "firstname", "lastname", "employeenr",
+		"mailaddr", "team", `deleted`}
+
+	opts := utl.ParseVariadicArguments(
+		multiple,
+		unique,
+		required,
+		c.Args().Tail())
+
+	// validate
+	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])
+	utl.ValidateStringAsMailAddress(opts["mailaddr"][0])
+	if !utl.IsUUID(c.Args().First()) {
+		return fmt.Errorf(`users update requiress UUID as first argument`)
+	}
+
+	req := proto.NewUserRequest()
+	req.User.Id = c.Args().First()
+	req.User.UserName = opts[`username`][0]
+	req.User.FirstName = opts["firstname"][0]
+	req.User.LastName = opts["lastname"][0]
+	req.User.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
+	req.User.MailAddress = opts["mailaddr"][0]
+	req.User.EmployeeNumber = opts["employeenr"][0]
+	req.User.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
+
+	path := fmt.Sprintf("/users/%s", req.User.Id)
+	resp := utl.PutRequestWithBody(Client, req, path)
+	fmt.Println(resp)
+	return nil
+}
+
 func cmdUserMarkDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
