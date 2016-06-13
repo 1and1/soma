@@ -3,8 +3,8 @@ package proto
 type Validity struct {
 	SystemProperty string           `json:"systemProperty,omitempty"`
 	ObjectType     string           `json:"objectType,omitempty"`
-	Direct         bool             `json:"direct, string"`
-	Inherited      bool             `json:"inherited, string"`
+	Direct         bool             `json:"direct,string,omitempty"`
+	Inherited      bool             `json:"inherited,string,omitempty"`
 	Details        *ValidityDetails `json:"details,omitempty"`
 }
 

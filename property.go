@@ -6,8 +6,8 @@ type Property struct {
 	BucketId         string           `json:"bucketId,omitempty"`
 	InstanceId       string           `json:"instanceId,omitempty"`
 	View             string           `json:"view,omitempty"`
-	Inheritance      bool             `json:"inheritance"`
-	ChildrenOnly     bool             `json:"childrenOnly"`
+	Inheritance      bool             `json:"inheritance,omitempty"`
+	ChildrenOnly     bool             `json:"childrenOnly,omitempty"`
 	IsInherited      bool             `json:"isInherited,omitempty"`
 	SourceInstanceId string           `json:"sourceInstanceId,omitempty"`
 	SourceType       string           `json:"sourceType,omitempty"`
