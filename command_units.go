@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/codegangsta/cli"
 )
@@ -59,7 +60,8 @@ func cmdUnitCreate(c *cli.Context) error {
 func cmdUnitDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	path := fmt.Sprintf("/units/%s", c.Args().First())
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/units/%s", esc)
 
 	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
@@ -75,7 +77,8 @@ func cmdUnitList(c *cli.Context) error {
 func cmdUnitShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	path := fmt.Sprintf("/units/%s", c.Args().First())
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/units/%s", esc)
 
 	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)
