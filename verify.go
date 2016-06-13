@@ -50,4 +50,23 @@ func Verify(name, addr string, token, key, seed, expires, salt []byte) bool {
 	return hmac.Equal(token, calculated)
 }
 
+// VerifyExtracted checks a user supplied username and token pair
+func VerifyExtracted(name, addr string, token, key, seed, expires, salt []byte) bool {
+	bname := []byte(name)
+	bip := []byte(net.ParseIP(addr).String())
+
+	// whiteout unstable subsecond timestamp part with "random" value
+	copy(expires[9:], []byte{0xde, 0xad, 0xca, 0xfe})
+
+	calculated := computeToken(
+		bname,
+		key,
+		seed,
+		expires,
+		salt,
+		bip,
+	)
+	return hmac.Equal(token, calculated)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
