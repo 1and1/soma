@@ -133,6 +133,50 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
+func UpdateUser(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`users_update`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.NewUserRequest()
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	if strings.Contains(cReq.User.UserName, `:`) {
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid username containing : character`))
+		return
+	}
+	if params.ByName(`user`) != cReq.User.Id {
+		DispatchBadRequest(&w, fmt.Errorf(`Mismatching user UUIDs in body and URL`))
+		return
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["userWriteHandler"].(somaUserWriteHandler)
+	handler.input <- somaUserRequest{
+		action: "update",
+		reply:  returnChannel,
+		User: proto.User{
+			Id:             cReq.User.Id,
+			UserName:       cReq.User.UserName,
+			FirstName:      cReq.User.FirstName,
+			LastName:       cReq.User.LastName,
+			EmployeeNumber: cReq.User.EmployeeNumber,
+			MailAddress:    cReq.User.MailAddress,
+			IsDeleted:      cReq.User.IsDeleted,
+			TeamId:         cReq.User.TeamId,
+		},
+	}
+	result := <-returnChannel
+	SendUserReply(&w, &result)
+}
+
 func DeleteUser(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

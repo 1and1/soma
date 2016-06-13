@@ -201,6 +201,7 @@ type somaUserWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	prg_stmt *sql.Stmt
+	upd_stmt *sql.Stmt
 }
 
 func (w *somaUserWriteHandler) run() {
@@ -230,6 +231,20 @@ WHERE NOT EXISTS (
 		log.Fatal("user/add: ", err)
 	}
 	defer w.add_stmt.Close()
+
+	if w.upd_stmt, err = w.conn.Prepare(`
+UPDATE inventory.users
+SET    user_uid = $1::varchar,
+       user_first_name = $2::varchar,
+       user_last_name = $3::varchar,
+       user_employee_number = $4::numeric,
+       user_mail_address = $5::text,
+       user_is_deleted = $6::boolean,
+       organizational_team_id = $7::uuid
+WHERE  user_id = $8::uuid;`); err != nil {
+		log.Fatal(`user/update: `, err)
+	}
+	defer w.upd_stmt.Close()
 
 	w.del_stmt, err = w.conn.Prepare(`
 UPDATE inventory.users
@@ -297,6 +312,19 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 		)
 		q.User.Id = id.String()
 		notify.Super.Action = `add`
+	case `update`:
+		log.Printf("R: users/update for %s", q.User.Id)
+		res, err = w.upd_stmt.Exec(
+			q.User.UserName,
+			q.User.FirstName,
+			q.User.LastName,
+			q.User.EmployeeNumber,
+			q.User.MailAddress,
+			q.User.IsDeleted,
+			q.User.TeamId,
+			q.User.Id,
+		)
+		notify.Super.Action = `update`
 	case "delete":
 		log.Printf("R: users/delete for %s", q.User.Id)
 		res, err = w.del_stmt.Exec(
