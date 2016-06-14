@@ -83,6 +83,7 @@ func cmdClientInit(c *cli.Context) error {
 			os.Exit(1)
 		}
 		conf = true
+		os.Chmod(path.Join(somaPath, defConf), 0600)
 	}
 
 	if _, err = os.Stat(skelCert); err != nil && !os.IsNotExist(err) {
@@ -94,6 +95,7 @@ func cmdClientInit(c *cli.Context) error {
 			os.Exit(1)
 		}
 		cert = true
+		os.Chmod(path.Join(somaPath, defCert), 0444)
 	}
 
 	if conf && cert {
