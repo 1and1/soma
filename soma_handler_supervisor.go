@@ -62,6 +62,7 @@ type supervisor struct {
 	id_userteam         svLockMap
 	stmt_FToken         *sql.Stmt
 	stmt_FindUser       *sql.Stmt
+	stmt_CheckUser      *sql.Stmt
 	stmt_AddCategory    *sql.Stmt
 	stmt_DelCategory    *sql.Stmt
 	stmt_ListCategory   *sql.Stmt
@@ -170,6 +171,11 @@ func (s *supervisor) run() {
 			log.Fatal(`supervisor/revoke-user-global-system: `, err)
 		}
 		defer s.stmt_RevkSysGlUser.Close()
+
+		if s.stmt_CheckUser, err = s.conn.Prepare(stmt.CheckUserActive); err != nil {
+			log.Fatal(`supervisor/check-user-active: `, err)
+		}
+		defer s.stmt_CheckUser.Close()
 	}
 
 runloop:

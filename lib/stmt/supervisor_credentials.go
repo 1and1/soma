@@ -29,6 +29,12 @@ FROM   inventory.users
 WHERE  user_uid = $1::varchar
 AND    NOT user_is_deleted;`
 
+const CheckUserActive = `
+SELECT user_is_active
+FROM   inventory.users
+WHERE  user_id = $1::uuid
+AND    NOT user_is_deleted;`
+
 const SetUserCredential = `
 INSERT INTO auth.user_authentication (
             user_id,

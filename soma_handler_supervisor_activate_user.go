@@ -49,7 +49,7 @@ func (s *supervisor) activate_user(q *msg.Request) {
 		token                               auth.Token
 		userId                              string
 		userUUID                            uuid.UUID
-		ok                                  bool
+		ok, active                          bool
 		mcf                                 scrypth64.Mcf
 		tx                                  *sql.Tx
 	)
@@ -106,6 +106,16 @@ func (s *supervisor) activate_user(q *msg.Request) {
 		result.ServerError(err)
 	}
 	userUUID, _ = uuid.FromString(userId)
+
+	// check the user is not already active
+	if err = s.stmt_CheckUser.QueryRow(userId).Scan(&active); err == sql.ErrNoRows {
+		result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))
+		goto dispatch
+	}
+	if active {
+		result.Conflict(fmt.Errorf("User %s (%s) is already active", token.UserName, userId))
+		goto dispatch
+	}
 
 	// no account ownership verification in open mode
 	if !SomaCfg.OpenInstance {
