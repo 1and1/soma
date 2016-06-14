@@ -39,6 +39,10 @@ func registerFlags(app cli.App) *cli.App {
 			Name:  "json, J",
 			Usage: "output reply as JSON",
 		},
+		cli.BoolFlag{
+			Name:  "volatile, o",
+			Usage: "Do not ensure that the BoltDB structure exists",
+		},
 	}
 	return &app
 }
