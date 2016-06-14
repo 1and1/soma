@@ -3,6 +3,7 @@ package adm
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"gopkg.in/resty.v0"
 )
@@ -41,7 +42,7 @@ func ActivateAccount(c *resty.Client, a *auth.Token) (*auth.Token, error) {
 			"/authenticate/activate/%s", kex.Request.String())); err != nil {
 		return nil, err
 	} else if resp.StatusCode() != 200 {
-		return nil, fmt.Errorf("Activation failed with status code: %d", resp.StatusCode())
+		return nil, fmt.Errorf("Activation failed: %s[%d], %s", http.StatusText(resp.StatusCode()), resp.StatusCode(), resp.String())
 	}
 
 	// decrypt reply
