@@ -119,6 +119,8 @@ func cmdRepositoryCreate(c *cli.Context) error {
 	req.Repository.Name = c.Args().Get(0)
 	req.Repository.TeamId = teamId
 
+	utl.ValidateRuneCountRange(req.Repository.Name, 4, 128)
+
 	if resp, err := adm.PostReqBody(req, "/repository/"); err != nil {
 		return err
 	} else {

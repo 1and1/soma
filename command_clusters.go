@@ -110,6 +110,8 @@ func cmdClusterCreate(c *cli.Context) error {
 	req.Cluster.Name = c.Args().First()
 	req.Cluster.BucketId = bucketId
 
+	utl.ValidateRuneCountRange(req.Cluster.Name, 4, 256)
+
 	if resp, err := adm.PostReqBody(req, "/clusters/"); err != nil {
 		return err
 	} else {

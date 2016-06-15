@@ -34,6 +34,13 @@ func (u *SomaUtil) ValidateRuneCount(s string, l int) string {
 	return s
 }
 
+func (u *SomaUtil) ValidateRuneCountRange(s string, lower, higher int) {
+	if utf8.RuneCountInString(s) < lower || utf8.RuneCountInString(s) > higher {
+		u.Abort(fmt.Sprintf("Error, invalid string length (%d < length < %d)",
+			lower, higher))
+	}
+}
+
 func (u *SomaUtil) GetValidatedUint64(s string, min uint64) uint64 {
 	i, err := strconv.ParseUint(s, 10, 64)
 	u.AbortOnError(err)
