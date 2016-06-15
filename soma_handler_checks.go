@@ -239,7 +239,6 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		}
 
 		chkConfig.Constraints = make([]proto.CheckConfigConstraint, 0)
-	constraintloop:
 		for _, tp := range []string{"custom", "system", "native", "service", "attribute", "oncall"} {
 			var (
 				err                                           error
@@ -249,16 +248,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 
 			switch tp {
 			case "custom":
-				if rows, err = r.show_constr_custom.Query(q.CheckConfig.Id); err != nil {
-					if err == sql.ErrNoRows {
-						continue constraintloop
-					} else {
-						if result.SetRequestError(err) {
-							q.reply <- result
-							return
-						}
-						panic("Guess what? This should not happen")
-					}
+				rows, err = r.show_constr_custom.Query(q.CheckConfig.Id)
+				if result.SetRequestError(err) {
+					q.reply <- result
+					return
 				}
 				defer rows.Close()
 
@@ -282,16 +275,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
 				}
 			case "system":
-				if rows, err = r.show_constr_system.Query(q.CheckConfig.Id); err != nil {
-					if err == sql.ErrNoRows {
-						continue constraintloop
-					} else {
-						if result.SetRequestError(err) {
-							q.reply <- result
-							return
-						}
-						panic("Guess what? This should not happen")
-					}
+				rows, err = r.show_constr_system.Query(q.CheckConfig.Id)
+				if result.SetRequestError(err) {
+					q.reply <- result
+					return
 				}
 				defer rows.Close()
 
@@ -311,16 +298,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
 				}
 			case "native":
-				if rows, err = r.show_constr_native.Query(q.CheckConfig.Id); err != nil {
-					if err == sql.ErrNoRows {
-						continue constraintloop
-					} else {
-						if result.SetRequestError(err) {
-							q.reply <- result
-							return
-						}
-						panic("Guess what? This should not happen")
-					}
+				rows, err = r.show_constr_native.Query(q.CheckConfig.Id)
+				if result.SetRequestError(err) {
+					q.reply <- result
+					return
 				}
 				defer rows.Close()
 
@@ -340,16 +321,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
 				}
 			case "service":
-				if rows, err = r.show_constr_service.Query(q.CheckConfig.Id); err != nil {
-					if err == sql.ErrNoRows {
-						continue constraintloop
-					} else {
-						if result.SetRequestError(err) {
-							q.reply <- result
-							return
-						}
-						panic("Guess what? This should not happen")
-					}
+				rows, err = r.show_constr_service.Query(q.CheckConfig.Id)
+				if result.SetRequestError(err) {
+					q.reply <- result
+					return
 				}
 				defer rows.Close()
 
@@ -369,16 +344,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
 				}
 			case "attribute":
-				if rows, err = r.show_constr_attribute.Query(q.CheckConfig.Id); err != nil {
-					if err == sql.ErrNoRows {
-						continue constraintloop
-					} else {
-						if result.SetRequestError(err) {
-							q.reply <- result
-							return
-						}
-						panic("Guess what? This should not happen")
-					}
+				rows, err = r.show_constr_attribute.Query(q.CheckConfig.Id)
+				if result.SetRequestError(err) {
+					q.reply <- result
+					return
 				}
 				defer rows.Close()
 
@@ -398,16 +367,10 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
 				}
 			case "oncall":
-				if rows, err = r.show_constr_oncall.Query(q.CheckConfig.Id); err != nil {
-					if err == sql.ErrNoRows {
-						continue constraintloop
-					} else {
-						if result.SetRequestError(err) {
-							q.reply <- result
-							return
-						}
-						panic("Guess what? This should not happen")
-					}
+				rows, err = r.show_constr_oncall.Query(q.CheckConfig.Id)
+				if result.SetRequestError(err) {
+					q.reply <- result
+					return
 				}
 				defer rows.Close()
 
