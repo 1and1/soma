@@ -12,13 +12,21 @@ import (
 /* Read functions
  */
 func ListMonitoring(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+	var ok, admin bool
+	if ok, admin = IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`monitoring_list`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["monitoringReadHandler"].(somaMonitoringReadHandler)
 	handler.input <- somaMonitoringRequest{
 		action: "list",
+		admin:  admin,
+		user:   params.ByName(`AuthenticatedUser`),
 		reply:  returnChannel,
 	}
 	result := <-returnChannel
@@ -47,6 +55,11 @@ skip:
 func ShowMonitoring(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`monitoring_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["monitoringReadHandler"].(somaMonitoringReadHandler)

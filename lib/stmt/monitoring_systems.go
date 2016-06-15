@@ -21,7 +21,15 @@ JOIN   soma.monitoring_system_users smsu
   ON   iu.organizational_team_id = smsu.organizational_team_id
 JOIN   soma.monitoring_systems sms
   ON   smsu.monitoring_id = sms.monitoring_id
-WHERE  iu.user_id = $1::uuid
+WHERE  iu.user_uid = $1::varchar
+  AND  sms.monitoring_system_mode = 'private'
+UNION
+SELECT sms.monitoring_id,
+       sms.monitoring_name
+FROM   inventory.users iu
+JOIN   soma.monitoring_systems sms
+  ON   iu.organizational_team_id = sms.monitoring_owner_team
+WHERE  iu.user_uid = $1::varchar
   AND  sms.monitoring_system_mode = 'private'
 UNION
 SELECT sms.monitoring_id,

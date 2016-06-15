@@ -12,6 +12,8 @@ import (
 
 type somaMonitoringRequest struct {
 	action     string
+	admin      bool
+	user       string
 	Monitoring proto.Monitoring
 	reply      chan somaResult
 }
@@ -39,6 +41,7 @@ type somaMonitoringReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	scli_stmt *sql.Stmt
 }
 
 func (r *somaMonitoringReadHandler) run() {
@@ -53,6 +56,11 @@ func (r *somaMonitoringReadHandler) run() {
 		log.Fatal("monitoring/show: ", err)
 	}
 	defer r.show_stmt.Close()
+
+	if r.scli_stmt, err = r.conn.Prepare(stmt.ListScopedMonitoringSystems); err != nil {
+		log.Fatal("monitoring/scoped-list: ", err)
+	}
+	defer r.scli_stmt.Close()
 
 runloop:
 	for {
@@ -79,13 +87,18 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: monitorings/list")
-		rows, err = r.list_stmt.Query()
-		defer rows.Close()
+		if q.admin {
+			log.Printf("R: monitorings/list")
+			rows, err = r.list_stmt.Query()
+		} else {
+			log.Printf("R: monitorings/scoped-list for %s", q.user)
+			rows, err = r.list_stmt.Query(q.user)
+		}
 		if result.SetRequestError(err) {
 			q.reply <- result
 			return
 		}
+		defer rows.Close()
 
 		for rows.Next() {
 			err := rows.Scan(
