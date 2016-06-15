@@ -15,6 +15,8 @@ create table if not exists soma.repositories (
     repository_deleted          boolean         NOT NULL DEFAULT 'no',
     repository_active           boolean         NOT NULL DEFAULT 'yes',
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    created_by                  uuid            NOT NULL REFERENCES REFERENCES inventory.users ( user_id ) DEFAULT '00000000-0000-0000-0000-000000000000' DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
     UNIQUE( repository_id, organizational_team_id )
 );`
 	queries[idx] = "createTableRepositories"

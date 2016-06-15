@@ -23,6 +23,13 @@ create table if not exists soma.buckets (
 	queries[idx] = "createTableBuckets"
 	idx++
 
+	queryMap[`singletonDefaultBucket`] = `
+create unique index _singleton_default_bucket
+    on soma.buckets ( organizational_team_id, environment )
+    where environment = 'default';`
+	queries[idx] = `singletonDefaultBucket`
+	idx++
+
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
 
