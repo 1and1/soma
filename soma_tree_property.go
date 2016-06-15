@@ -509,7 +509,7 @@ type PropertyOncall struct {
 }
 
 func (p *PropertyOncall) GetType() string {
-	return "return oncall"
+	return "oncall"
 }
 
 func (p *PropertyOncall) GetID() string {
