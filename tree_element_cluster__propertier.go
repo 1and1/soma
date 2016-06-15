@@ -13,10 +13,12 @@ func (tec *SomaTreeElemCluster) SetProperty(p SomaTreeProperty) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := tec.checkDuplicate(p); dupe && !deleteOK {
+		log.Printf("cluster.SetProperty() detected hard duplicate")
 		return // TODO: error out via FaultElement
 	} else if dupe && deleteOK {
 		// TODO delete inherited value
 		// tec.DelProperty(prop)
+		log.Printf("cluster.SetProperty() detected soft duplicate")
 		return
 	}
 	p.SetId(p.GetInstanceId(tec.Type, tec.Id))

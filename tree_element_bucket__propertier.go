@@ -13,10 +13,12 @@ func (teb *SomaTreeElemBucket) SetProperty(p SomaTreeProperty) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := teb.checkDuplicate(p); dupe && !deleteOK {
+		log.Printf("bucket.SetProperty() detected hard duplicate")
 		return // TODO: error out via FaultElement
 	} else if dupe && deleteOK {
 		// TODO delete inherited value
 		// teb.DelProperty(prop)
+		log.Printf("bucket.SetProperty() detected soft duplicate")
 		return
 	}
 	p.SetId(p.GetInstanceId(teb.Type, teb.Id))

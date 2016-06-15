@@ -13,6 +13,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && !deleteOK {
+		log.Printf("group.SetProperty() detected hard duplicate")
 		return // TODO: error out via FaultElement
 	} else if dupe && deleteOK {
 		// TODO delete inherited value
@@ -23,6 +24,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 		//    - same SourceType
 		//    - same InheritedFrom
 		// TODO braucht dupeSrcID?
+		log.Printf("group.SetProperty() detected soft duplicate")
 		return
 	}
 	p.SetId(p.GetInstanceId(teg.Type, teg.Id))

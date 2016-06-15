@@ -12,10 +12,12 @@ func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && !deleteOK {
+		log.Printf("node.SetProperty() detected hard duplicate")
 		return // TODO: error out via FaultElement
 	} else if dupe && deleteOK {
 		// TODO delete inherited value
 		// ten.DelProperty(prop)
+		log.Printf("node.SetProperty() detected soft duplicate")
 		return
 	}
 	p.SetId(p.GetInstanceId(ten.Type, ten.Id))
