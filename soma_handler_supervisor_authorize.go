@@ -167,7 +167,7 @@ var svGlobalRequiredPermission = map[string][]string{
 	`providers_delete`:         []string{`system_all`},
 	`providers_list`:           []string{`system_all`, `global_schema`},
 	`providers_show`:           []string{`system_all`, `global_schema`},
-	`repository_create`:        []string{`system_all`},
+	`repository_create`:        []string{`system_all`, `global_schema`},
 	`repository_delete`:        []string{`system_all`},
 	`revoke_global_right`:      []string{`system_all`},
 	`revoke_limited_right`:     []string{`system_all`},
