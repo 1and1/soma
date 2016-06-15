@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -90,6 +91,12 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	nameLen := utf8.RuneCountInString(cReq.Cluster.Name)
+	if nameLen < 4 || nameLen > 256 {
+		DispatchBadRequest(&w, fmt.Errorf(`Illegal cluster name length (4 < x <= 256)`))
 		return
 	}
 

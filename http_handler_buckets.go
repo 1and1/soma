@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -75,6 +76,12 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	nameLen := utf8.RuneCountInString(cReq.Bucket.Name)
+	if nameLen < 4 || nameLen > 512 {
+		DispatchBadRequest(&w, fmt.Errorf(`Illegal bucket name length (4 < x <= 512)`))
 		return
 	}
 

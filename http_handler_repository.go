@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"unicode/utf8"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -76,6 +77,12 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	nameLen := utf8.RuneCountInString(cReq.Repository.Name)
+	if nameLen < 4 || nameLen > 128 {
+		DispatchBadRequest(&w, fmt.Errorf(`Illegal repository name length (4 < x <= 128)`))
 		return
 	}
 
