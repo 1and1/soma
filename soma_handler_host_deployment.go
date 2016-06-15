@@ -77,7 +77,7 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 
 	switch q.action {
 	case "get":
-		log.Printf("R: hostdeployment/get-for-node for %s", q.assetid)
+		log.Printf("R: hostdeployment/get-for-node for %d", q.assetid)
 		if idList, err = self.geti_stmt.Query(
 			q.assetid,
 			q.system,
@@ -144,7 +144,7 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 		}
 	case "assemble":
 		idMap := map[string]bool{}
-		log.Printf("R: hostdeployment/get-for-node for %s", q.assetid)
+		log.Printf("R: hostdeployment/get-for-node for %d", q.assetid)
 		if idList, err = self.geti_stmt.Query(
 			q.assetid,
 			q.system,
