@@ -109,7 +109,7 @@ idloop:
 		case "awaiting_rollout":
 			nextNG = "rollout_in_progress"
 		default:
-			panic(`lifeCycle.unblock() unhandled next_status`)
+			log.Println(`lifeCycle.unblock() unhandled next_status`)
 		}
 		if _, err = txUpdate.Exec(
 			next,

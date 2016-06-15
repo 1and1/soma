@@ -146,7 +146,11 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 			&somaRepositoryResult{})
 	default:
 		if team == "" {
-			panic(fmt.Sprintf("Team has not been set prior to spawning TreeKeeper for repo: %s", q.Repository.Name))
+			result.SetRequestError(
+				fmt.Errorf("Team has not been set prior to spawning TreeKeeper for repo: %s", q.Repository.Name),
+			)
+			q.reply <- result
+			return
 		}
 		result.Append(nil, &somaRepositoryResult{
 			Repository: q.Repository,

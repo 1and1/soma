@@ -193,7 +193,11 @@ func (g *guidePost) process(q *treeRequest) {
 
 	case "add_node_to_cluster":
 		if q.Cluster.Cluster.BucketId != q.Cluster.Cluster.Members[0].Config.BucketId {
-			panic("This should not happen.")
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: node and cluster are in different buckets`),
+			)
+			q.reply <- result
+			return
 		}
 		fallthrough
 	case "create_cluster":
@@ -293,7 +297,11 @@ func (g *guidePost) process(q *treeRequest) {
 
 	// XXX
 	if repoName == "" {
-		panic(`Have no repository name`)
+		result.SetRequestError(
+			fmt.Errorf(`GuidePost: unable find repository for request`),
+		)
+		q.reply <- result
+		return
 	}
 
 	if q.Action == `create_bucket` {
