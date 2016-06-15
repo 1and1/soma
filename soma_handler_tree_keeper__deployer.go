@@ -508,7 +508,6 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch oncall information if the property is set,
 			// otherwise cleanup detail.Oncall
-			detail.Oncall = &proto.Oncall{}
 			err = stmt_NodeOncall.QueryRow(detail.Node.Id, detail.View).Scan(
 				&detail.Oncall.Id,
 				&detail.Oncall.Name,
