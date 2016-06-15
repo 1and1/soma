@@ -1,6 +1,10 @@
 package somatree
 
-import "github.com/satori/go.uuid"
+import (
+	"unicode/utf8"
+
+	"github.com/satori/go.uuid"
+)
 
 func specRepoCheck(spec RepositorySpec) bool {
 	switch {
@@ -9,6 +13,13 @@ func specRepoCheck(spec RepositorySpec) bool {
 	case spec.Name == "":
 		return false
 	case spec.Team == "":
+		return false
+	}
+	l := utf8.RuneCountInString(spec.Name)
+	switch {
+	case l < 4:
+		return false
+	case l > 128:
 		return false
 	}
 	if _, err := uuid.FromString(spec.Id); err != nil {
@@ -33,6 +44,13 @@ func specBucketCheck(spec BucketSpec) bool {
 	case spec.Repository == "":
 		return false
 	}
+	l := utf8.RuneCountInString(spec.Name)
+	switch {
+	case l < 4:
+		return false
+	case l > 512:
+		return false
+	}
 	if _, err := uuid.FromString(spec.Id); err != nil {
 		return false
 	}
@@ -54,6 +72,13 @@ func specGroupCheck(spec GroupSpec) bool {
 	case spec.Team == "":
 		return false
 	}
+	l := utf8.RuneCountInString(spec.Name)
+	switch {
+	case l < 4:
+		return false
+	case l > 256:
+		return false
+	}
 	if _, err := uuid.FromString(spec.Id); err != nil {
 		return false
 	}
@@ -70,6 +95,13 @@ func specClusterCheck(spec ClusterSpec) bool {
 	case spec.Name == "":
 		return false
 	case spec.Team == "":
+		return false
+	}
+	l := utf8.RuneCountInString(spec.Name)
+	switch {
+	case l < 4:
+		return false
+	case l > 256:
 		return false
 	}
 	if _, err := uuid.FromString(spec.Id); err != nil {
@@ -90,6 +122,13 @@ func specNodeCheck(spec NodeSpec) bool {
 	case spec.Team == "":
 		return false
 	case spec.ServerId == "":
+		return false
+	}
+	l := utf8.RuneCountInString(spec.Name)
+	switch {
+	case l < 4:
+		return false
+	case l > 256:
 		return false
 	}
 	if _, err := uuid.FromString(spec.Id); err != nil {
