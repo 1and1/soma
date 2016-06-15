@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 
 	"gopkg.in/resty.v0"
@@ -88,7 +89,7 @@ func asyncWait(result *proto.Result) {
 	if result.StatusCode == 202 && result.JobId != "" {
 		fmt.Fprintf(os.Stderr, "Waiting for job: %s\n", result.JobId)
 		_, err := PutReq(fmt.Sprintf("/jobs/%s", result.JobId))
-		if err != nil {
+		if err != nil && err != io.EOF {
 			fmt.Fprintf(os.Stderr, "Wait error: %s\n", err.Error())
 		}
 	}
