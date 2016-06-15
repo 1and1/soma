@@ -296,6 +296,16 @@ func (g *guidePost) process(q *treeRequest) {
 		panic(`Have no repository name`)
 	}
 
+	if q.Action == `create_bucket` {
+		if !strings.HasPrefix(q.Bucket.Bucket.Name, fmt.Sprintf("%s_", repoName)) {
+			result.SetRequestError(
+				fmt.Errorf(`Illegal bucket name format, requires reponame_ prefix`),
+			)
+			q.reply <- result
+			return
+		}
+	}
+
 	// check we have a treekeeper for that repository
 	keeper = fmt.Sprintf("repository_%s", repoName)
 	if _, ok := handlerMap[keeper].(*treeKeeper); !ok {
