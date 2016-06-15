@@ -8,6 +8,8 @@ import (
 
 type somaRepositoryRequest struct {
 	action     string
+	remoteAddr string
+	user       string
 	Repository proto.Repository
 	reply      chan somaResult
 }

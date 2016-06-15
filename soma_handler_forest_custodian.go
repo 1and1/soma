@@ -26,9 +26,12 @@ INSERT INTO soma.repositories (
 	repository_name,
 	repository_active,
 	repository_deleted,
-	organizational_team_id)
-SELECT $1::uuid, $2::varchar, $3::boolean, $4::boolean, $5::uuid
-WHERE NOT EXISTS (
+	organizational_team_id,
+	created_by)
+SELECT $1::uuid, $2::varchar, $3::boolean, $4::boolean, $5::uuid, user_id
+FROM inventory.users iu
+WHERE iu.user_uid = $6::varchar
+AND   NOT EXISTS (
 	SELECT repository_id
 	FROM   soma.repositories
 	WHERE  repository_id = $1::uuid
@@ -76,7 +79,11 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: repository/add for %s", q.Repository.Name)
+		log.Printf(LogStrReq,
+			`ForestCustodian`,
+			fmt.Sprintf("%s/%s", `CreateRepository`, q.Repository.Name),
+			q.user, q.remoteAddr,
+		)
 		actionChan = make(chan *somatree.Action, 1024000)
 		errChan = make(chan *somatree.Error, 1024000)
 
@@ -115,6 +122,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 						action.Repository.IsActive,
 						false,
 						action.Repository.TeamId,
+						q.user,
 					)
 					team = action.Repository.TeamId
 				}

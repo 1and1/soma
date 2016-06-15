@@ -89,8 +89,10 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["forestCustodian"].(forestCustodian)
 	handler.input <- somaRepositoryRequest{
-		action: "add",
-		reply:  returnChannel,
+		action:     "add",
+		reply:      returnChannel,
+		remoteAddr: extractAddress(r.RemoteAddr),
+		user:       params.ByName(`AuthenticatedUser`),
 		Repository: proto.Repository{
 			Name:      cReq.Repository.Name,
 			TeamId:    cReq.Repository.TeamId,
