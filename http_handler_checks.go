@@ -97,6 +97,28 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	SendCheckConfigurationReply(&w, &result)
 }
 
+func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: `check`,
+		Action:      `remove_check`,
+		reply:       returnChannel,
+		CheckConfig: somaCheckConfigRequest{
+			action: `check_configuration_delete`,
+			CheckConfig: proto.CheckConfig{
+				Id:           params.ByName(`check`),
+				RepositoryId: params.ByName(`repository`),
+			},
+		},
+	}
+	result := <-returnChannel
+	SendCheckConfigurationReply(&w, &result)
+}
+
 /* Utility
  */
 func SendCheckConfigurationReply(w *http.ResponseWriter, r *somaResult) {
