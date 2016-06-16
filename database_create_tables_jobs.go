@@ -39,6 +39,7 @@ create table if not exists soma.jobs (
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     user_id                     uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    job_error                   text            NOT NULL DEFAULT '',
     job_queued                  timestamptz(3)  NOT NULL DEFAULT NOW()::timestamptz(3),
     job_started                 timestamptz(3),
     job_finished                timestamptz(3),

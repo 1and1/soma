@@ -153,7 +153,12 @@ INSERT INTO soma.job_types (
             ( 'add_check_to_bucket' ),
             ( 'add_check_to_group' ),
             ( 'add_check_to_cluster' ),
-            ( 'add_check_to_node' )
+            ( 'add_check_to_node' ),
+            ( 'remove_check_from_repository' ),
+            ( 'remove_check_from_bucket' ),
+            ( 'remove_check_from_group' ),
+            ( 'remove_check_from_cluster' ),
+            ( 'remove_check_from_node' )
 ;`
 	queries[idx] = "insertJobTypes"
 	idx++
@@ -215,7 +220,7 @@ INSERT INTO public.schema_versions (
             description
 ) VALUES (
             'soma',
-            201606150001,
+            201606160001,
             'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertSomaSchemaVersion"] = somaString
