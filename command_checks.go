@@ -16,13 +16,15 @@ func registerChecks(app cli.App) *cli.App {
 					{
 						Name:         "create",
 						Usage:        "Create a new check configuration",
+						Description:  help.CmdCheckAdd,
 						Action:       runtime(cmdCheckAdd),
 						BashComplete: cmdCheckAddBashComp,
 					},
 					{
-						Name:   `delete`,
-						Usage:  "Delete a check configuration",
-						Action: runtime(cmdCheckDelete),
+						Name:        `delete`,
+						Usage:       "Delete a check configuration",
+						Description: help.CmdCheckDelete,
+						Action:      runtime(cmdCheckDelete),
 						BashComplete: func(c *cli.Context) {
 							switch {
 							case (c.NArg() % 2) == 1:
@@ -33,9 +35,10 @@ func registerChecks(app cli.App) *cli.App {
 						},
 					},
 					{
-						Name:   "list",
-						Usage:  "List check configurations",
-						Action: runtime(cmdCheckList),
+						Name:        "list",
+						Usage:       "List check configurations",
+						Description: help.CmdCheckList,
+						Action:      runtime(cmdCheckList),
 						BashComplete: func(c *cli.Context) {
 							switch {
 							case (c.NArg() % 2) == 0:
@@ -46,9 +49,10 @@ func registerChecks(app cli.App) *cli.App {
 						},
 					},
 					{
-						Name:   "show",
-						Usage:  "Show details about a check configuration",
-						Action: runtime(cmdCheckShow),
+						Name:        "show",
+						Usage:       "Show details about a check configuration",
+						Description: help.CmdCheckShow,
+						Action:      runtime(cmdCheckShow),
 						BashComplete: func(c *cli.Context) {
 							switch {
 							case (c.NArg() % 2) == 1:
