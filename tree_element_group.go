@@ -351,6 +351,12 @@ func (teg *SomaTreeElemGroup) actionCheckNew(a Action) {
 	teg.actionDispatch("check_new", a)
 }
 
+func (teg *SomaTreeElemGroup) actionCheckRemoved(a Action) {
+	a.Check.RepositoryId = teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = teg.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	teg.actionDispatch(`check_removed`, a)
+}
+
 func (teg *SomaTreeElemGroup) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }

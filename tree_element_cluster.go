@@ -352,6 +352,12 @@ func (tec *SomaTreeElemCluster) actionCheckNew(a Action) {
 	tec.actionDispatch("check_new", a)
 }
 
+func (tec *SomaTreeElemCluster) actionCheckRemoved(a Action) {
+	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	tec.actionDispatch(`check_removed`, a)
+}
+
 func (tec *SomaTreeElemCluster) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }

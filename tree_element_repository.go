@@ -316,6 +316,16 @@ func (ter *SomaTreeElemRepository) actionCheckNew(a Action) {
 	ter.Action <- &a
 }
 
+func (ter *SomaTreeElemRepository) actionCheckRemoved(a Action) {
+	a.Action = `check_removed`
+	a.Type = ter.Type
+	a.Repository = ter.export()
+	a.Check.RepositoryId = ter.Id.String()
+	a.Check.BucketId = ""
+
+	ter.Action <- &a
+}
+
 func (ter *SomaTreeElemRepository) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 	/*

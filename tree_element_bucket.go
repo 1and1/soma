@@ -278,6 +278,16 @@ func (teb *SomaTreeElemBucket) actionCheckNew(a Action) {
 	teb.Action <- &a
 }
 
+func (teb *SomaTreeElemBucket) actionCheckRemoved(a Action) {
+	a.Action = `check_removed`
+	a.Type = teb.Type
+	a.Bucket = teb.export()
+	a.Check.RepositoryId = teb.Repository.String()
+	a.Check.BucketId = teb.Id.String()
+
+	teb.Action <- &a
+}
+
 func (teb *SomaTreeElemBucket) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }

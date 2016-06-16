@@ -279,6 +279,12 @@ func (ten *SomaTreeElemNode) actionCheckNew(a Action) {
 	ten.actionDispatch("check_new", a)
 }
 
+func (ten *SomaTreeElemNode) actionCheckRemoved(a Action) {
+	a.Check.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
+	a.Check.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
+	ten.actionDispatch(`check_removed`, a)
+}
+
 func (ten *SomaTreeElemNode) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }
