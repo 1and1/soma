@@ -366,6 +366,7 @@ func main() {
 		router.POST("/nodes/:node/property/:type/", BasicAuth(AddPropertyToNode))
 
 		router.POST("/checks/:repository/", BasicAuth(AddCheckConfiguration))
+		router.DELETE(`/checks/:repository/:check`, BasicAuth(DeleteCheckConfiguration))
 
 		router.GET("/deployments/id/:uuid", DeliverDeploymentDetails)
 		router.GET("/deployments/monitoring/:uuid", DeliverMonitoringDeployments)
