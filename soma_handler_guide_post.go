@@ -23,6 +23,7 @@ type guidePost struct {
 	serv_stmt *sql.Stmt
 	attr_stmt *sql.Stmt
 	cthr_stmt *sql.Stmt
+	cdel_stmt *sql.Stmt
 }
 
 func (g *guidePost) run() {
@@ -130,6 +131,11 @@ WHERE  capability_id = $1::uuid;`)
 	}
 	defer g.cthr_stmt.Close()
 
+	if g.cdel_stmt, err = g.conn.Prepare(stmt.CheckDetailsForDelete); err != nil {
+		log.Fatal("guide/get-details-for-delete-check: ", err)
+	}
+	defer g.cdel_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -220,6 +226,8 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_check_to_cluster":
 		fallthrough
 	case "add_check_to_node":
+		fallthrough
+	case `remove_check`:
 		repoId = q.CheckConfig.CheckConfig.RepositoryId
 
 	case "assign_node":
@@ -448,6 +456,28 @@ func (g *guidePost) process(q *treeRequest) {
 
 		// generate configuration_id
 		q.CheckConfig.CheckConfig.Id = uuid.NewV4().String()
+	}
+
+	// if the request is a check deletion, populate required IDs
+	if q.Action == `remove_check` {
+		var delObjId, delObjTyp, delSrcChkId string
+
+		if err = g.cdel_stmt.QueryRow(q.CheckConfig.CheckConfig.Id, q.CheckConfig.CheckConfig.RepositoryId).
+			Scan(&delObjId, &delObjTyp, &delSrcChkId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(fmt.Errorf(
+					"Failed to find source check for config %s",
+					q.CheckConfig.CheckConfig.Id))
+			} else {
+				result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+		q.CheckConfig.CheckConfig.ObjectId = delObjId
+		q.CheckConfig.CheckConfig.ObjectType = delObjTyp
+		q.CheckConfig.CheckConfig.ExternalId = delSrcChkId
+		q.Action = fmt.Sprintf("remove_check_from_%s", delObjTyp)
 	}
 
 	// store job in database
