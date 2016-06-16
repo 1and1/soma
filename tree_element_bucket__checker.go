@@ -25,13 +25,13 @@ func (teb *SomaTreeElemBucket) SetCheck(c Check) {
 	f := c.clone()
 	f.Inherited = true
 	f.Id = uuid.Nil
-	teb.inheritCheckDeep(f)
+	teb.setCheckOnChildren(f)
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
-	teb.storeCheck(c)
+	teb.addCheck(c)
 }
 
-func (teb *SomaTreeElemBucket) inheritCheck(c Check) {
+func (teb *SomaTreeElemBucket) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(teb.Type, teb.Id)
@@ -39,26 +39,26 @@ func (teb *SomaTreeElemBucket) inheritCheck(c Check) {
 		f.Id = uuid.NewV4()
 	}
 	f.Items = nil
-	teb.storeCheck(f)
+	teb.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
-	teb.inheritCheckDeep(c)
+	teb.setCheckOnChildren(c)
 }
 
-func (teb *SomaTreeElemBucket) inheritCheckDeep(c Check) {
+func (teb *SomaTreeElemBucket) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		ch := child
 		go func(stc Check) {
 			defer wg.Done()
-			teb.Children[ch].(Checker).inheritCheck(stc)
+			teb.Children[ch].(Checker).setCheckInherited(stc)
 		}(c)
 	}
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) storeCheck(c Check) {
+func (teb *SomaTreeElemBucket) addCheck(c Check) {
 	teb.Checks[c.Id.String()] = c
 	teb.actionCheckNew(teb.setupCheckAction(c))
 }
@@ -109,7 +109,7 @@ func (teb *SomaTreeElemBucket) syncCheck(childId string) {
 		f := Check{}
 		f = teb.Checks[check]
 		f.Inherited = true
-		teb.Children[childId].(Checker).inheritCheck(f)
+		teb.Children[childId].(Checker).setCheckInherited(f)
 	}
 }
 

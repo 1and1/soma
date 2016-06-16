@@ -16,9 +16,9 @@ type Checker interface {
 	LoadInstance(i CheckInstance)
 	DeleteCheck(c Check)
 
-	inheritCheck(c Check)
-	inheritCheckDeep(c Check)
-	storeCheck(c Check)
+	setCheckInherited(c Check)
+	setCheckOnChildren(c Check)
+	addCheck(c Check)
 
 	deleteCheckInherited(c Check)
 	deleteCheckOnChildren(c Check)

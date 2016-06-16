@@ -5,13 +5,13 @@ package somatree
 func (tef *SomaTreeElemFault) SetCheck(c Check) {
 }
 
-func (tef *SomaTreeElemFault) inheritCheck(c Check) {
+func (tef *SomaTreeElemFault) setCheckInherited(c Check) {
 }
 
-func (tef *SomaTreeElemFault) inheritCheckDeep(c Check) {
+func (tef *SomaTreeElemFault) setCheckOnChildren(c Check) {
 }
 
-func (tef *SomaTreeElemFault) storeCheck(c Check) {
+func (tef *SomaTreeElemFault) addCheck(c Check) {
 }
 
 func (tef *SomaTreeElemFault) DeleteCheck(c Check) {

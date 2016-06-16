@@ -25,13 +25,13 @@ func (tec *SomaTreeElemCluster) SetCheck(c Check) {
 	f := c.clone()
 	f.Inherited = true
 	f.Id = uuid.Nil
-	tec.inheritCheckDeep(f)
+	tec.setCheckOnChildren(f)
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
-	tec.storeCheck(c)
+	tec.addCheck(c)
 }
 
-func (tec *SomaTreeElemCluster) inheritCheck(c Check) {
+func (tec *SomaTreeElemCluster) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(tec.Type, tec.Id)
@@ -39,26 +39,26 @@ func (tec *SomaTreeElemCluster) inheritCheck(c Check) {
 		f.Id = uuid.NewV4()
 	}
 	f.Items = nil
-	tec.storeCheck(f)
+	tec.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
-	tec.inheritCheckDeep(c)
+	tec.setCheckOnChildren(c)
 }
 
-func (tec *SomaTreeElemCluster) inheritCheckDeep(c Check) {
+func (tec *SomaTreeElemCluster) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
 		ch := child
 		go func(stc Check) {
 			defer wg.Done()
-			tec.Children[ch].(Checker).inheritCheck(stc)
+			tec.Children[ch].(Checker).setCheckInherited(stc)
 		}(c)
 	}
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) storeCheck(c Check) {
+func (tec *SomaTreeElemCluster) addCheck(c Check) {
 	tec.Checks[c.Id.String()] = c
 	tec.actionCheckNew(tec.setupCheckAction(c))
 }
@@ -109,7 +109,7 @@ func (tec *SomaTreeElemCluster) syncCheck(childId string) {
 		f := Check{}
 		f = tec.Checks[check]
 		f.Inherited = true
-		tec.Children[childId].(Checker).inheritCheck(f)
+		tec.Children[childId].(Checker).setCheckInherited(f)
 	}
 }
 

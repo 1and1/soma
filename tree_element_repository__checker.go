@@ -24,13 +24,13 @@ func (ter *SomaTreeElemRepository) SetCheck(c Check) {
 	f := c.clone()
 	f.Inherited = true
 	f.Id = uuid.Nil
-	ter.inheritCheckDeep(f)
+	ter.setCheckOnChildren(f)
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
-	ter.storeCheck(c)
+	ter.addCheck(c)
 }
 
-func (ter *SomaTreeElemRepository) inheritCheck(c Check) {
+func (ter *SomaTreeElemRepository) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(ter.Type, ter.Id)
@@ -38,26 +38,26 @@ func (ter *SomaTreeElemRepository) inheritCheck(c Check) {
 		f.Id = uuid.NewV4()
 	}
 	f.Items = nil
-	ter.storeCheck(f)
+	ter.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
-	ter.inheritCheckDeep(c)
+	ter.setCheckOnChildren(c)
 }
 
-func (ter *SomaTreeElemRepository) inheritCheckDeep(c Check) {
+func (ter *SomaTreeElemRepository) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
 		ch := child
 		go func(stc Check) {
 			defer wg.Done()
-			ter.Children[ch].(Checker).inheritCheck(stc)
+			ter.Children[ch].(Checker).setCheckInherited(stc)
 		}(c)
 	}
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) storeCheck(c Check) {
+func (ter *SomaTreeElemRepository) addCheck(c Check) {
 	ter.Checks[c.Id.String()] = c
 	ter.actionCheckNew(c.MakeAction())
 }
@@ -108,7 +108,7 @@ func (ter *SomaTreeElemRepository) syncCheck(childId string) {
 		f := Check{}
 		f = ter.Checks[check]
 		f.Inherited = true
-		ter.Children[childId].(Checker).inheritCheck(f)
+		ter.Children[childId].(Checker).setCheckInherited(f)
 	}
 }
 

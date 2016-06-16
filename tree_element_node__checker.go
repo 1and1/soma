@@ -19,9 +19,9 @@ func (ten *SomaTreeElemNode) SetCheck(c Check) {
 	c.SourceType = ten.Type
 	// scrub checkitem startup information prior to storing
 	c.Items = nil
-	ten.storeCheck(c)
+	ten.addCheck(c)
 }
-func (ten *SomaTreeElemNode) inheritCheck(c Check) {
+func (ten *SomaTreeElemNode) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(ten.Type, ten.Id)
@@ -29,13 +29,13 @@ func (ten *SomaTreeElemNode) inheritCheck(c Check) {
 		f.Id = uuid.NewV4()
 	}
 	f.Items = nil
-	ten.storeCheck(f)
+	ten.addCheck(f)
 }
 
-func (ten *SomaTreeElemNode) inheritCheckDeep(c Check) {
+func (ten *SomaTreeElemNode) setCheckOnChildren(c Check) {
 }
 
-func (ten *SomaTreeElemNode) storeCheck(c Check) {
+func (ten *SomaTreeElemNode) addCheck(c Check) {
 	ten.Checks[c.Id.String()] = c
 	ten.actionCheckNew(ten.setupCheckAction(c))
 }
