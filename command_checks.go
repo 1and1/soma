@@ -19,6 +19,11 @@ func registerChecks(app cli.App) *cli.App {
 						Action: runtime(cmdCheckAdd),
 					},
 					{
+						Name:   `delete`,
+						Usage:  "Delete a check configuration",
+						Action: runtime(cmdCheckDelete),
+					},
+					{
 						Name:   "list",
 						Usage:  "List check configurations",
 						Action: runtime(cmdCheckList),
@@ -93,6 +98,30 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
 	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdCheckDelete(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 3)
+	multiple := []string{}
+	unique := []string{"in"}
+	required := []string{"in"}
+
+	opts := utl.ParseVariadicArguments(
+		multiple,
+		unique,
+		required,
+		c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
+	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
+
+	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
+	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
 		fmt.Println(resp)
