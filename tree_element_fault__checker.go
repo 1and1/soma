@@ -14,6 +14,18 @@ func (tef *SomaTreeElemFault) inheritCheckDeep(c Check) {
 func (tef *SomaTreeElemFault) storeCheck(c Check) {
 }
 
+func (tef *SomaTreeElemFault) DeleteCheck(c Check) {
+}
+
+func (tef *SomaTreeElemFault) deleteCheckInherited(c Check) {
+}
+
+func (tef *SomaTreeElemFault) deleteCheckOnChildren(c Check) {
+}
+
+func (tef *SomaTreeElemFault) rmCheck(c Check) {
+}
+
 func (tef *SomaTreeElemFault) syncCheck(childId string) {
 }
 

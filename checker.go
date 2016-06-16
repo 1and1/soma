@@ -14,10 +14,16 @@ import (
 type Checker interface {
 	SetCheck(c Check)
 	LoadInstance(i CheckInstance)
+	DeleteCheck(c Check)
 
 	inheritCheck(c Check)
 	inheritCheckDeep(c Check)
 	storeCheck(c Check)
+
+	deleteCheckInherited(c Check)
+	deleteCheckOnChildren(c Check)
+	rmCheck(c Check)
+
 	syncCheck(childId string)
 	checkCheck(checkId string) bool
 }

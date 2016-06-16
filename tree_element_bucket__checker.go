@@ -6,8 +6,11 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Implementation of the `Checker` interface
+
 //
-// Interface: Checker
+// Checker:> Add Check
+
 func (teb *SomaTreeElemBucket) SetCheck(c Check) {
 	c.Id = c.GetItemId(teb.Type, teb.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
@@ -59,6 +62,44 @@ func (teb *SomaTreeElemBucket) storeCheck(c Check) {
 	teb.Checks[c.Id.String()] = c
 	teb.actionCheckNew(teb.setupCheckAction(c))
 }
+
+//
+// Checker:> Remove Check
+
+func (teb *SomaTreeElemBucket) DeleteCheck(c Check) {
+	teb.rmCheck(c)
+	teb.deleteCheckOnChildren(c)
+}
+
+func (teb *SomaTreeElemBucket) deleteCheckInherited(c Check) {
+	teb.rmCheck(c)
+	teb.deleteCheckOnChildren(c)
+}
+
+func (teb *SomaTreeElemBucket) deleteCheckOnChildren(c Check) {
+	var wg sync.WaitGroup
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		go func(stc Check, ch string) {
+			defer wg.Done()
+			teb.Children[ch].(Checker).deleteCheckInherited(stc)
+		}(c, child)
+	}
+	wg.Wait()
+}
+
+func (teb *SomaTreeElemBucket) rmCheck(c Check) {
+	for id, _ := range teb.Checks {
+		if uuid.Equal(teb.Checks[id].SourceId, c.SourceId) {
+			teb.actionCheckRemoved(teb.setupCheckAction(teb.Checks[id]))
+			delete(teb.Checks, id)
+			return
+		}
+	}
+}
+
+//
+// Checker:> Meta
 
 func (teb *SomaTreeElemBucket) syncCheck(childId string) {
 	for check, _ := range teb.Checks {

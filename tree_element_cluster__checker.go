@@ -6,8 +6,11 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Implementation of the `Checker` interface
+
 //
-// Interface: Checker
+// Checker:> Add Check
+
 func (tec *SomaTreeElemCluster) SetCheck(c Check) {
 	c.Id = c.GetItemId(tec.Type, tec.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
@@ -60,6 +63,44 @@ func (tec *SomaTreeElemCluster) storeCheck(c Check) {
 	tec.actionCheckNew(tec.setupCheckAction(c))
 }
 
+//
+// Checker:> Remove Check
+
+func (tec *SomaTreeElemCluster) DeleteCheck(c Check) {
+	tec.rmCheck(c)
+	tec.deleteCheckOnChildren(c)
+}
+
+func (tec *SomaTreeElemCluster) deleteCheckInherited(c Check) {
+	tec.rmCheck(c)
+	tec.deleteCheckOnChildren(c)
+}
+
+func (tec *SomaTreeElemCluster) deleteCheckOnChildren(c Check) {
+	var wg sync.WaitGroup
+	for child, _ := range tec.Children {
+		wg.Add(1)
+		go func(stc Check, ch string) {
+			defer wg.Done()
+			tec.Children[ch].(Checker).deleteCheckInherited(stc)
+		}(c, child)
+	}
+	wg.Wait()
+}
+
+func (tec *SomaTreeElemCluster) rmCheck(c Check) {
+	for id, _ := range tec.Checks {
+		if uuid.Equal(tec.Checks[id].SourceId, c.SourceId) {
+			tec.actionCheckRemoved(tec.setupCheckAction(tec.Checks[id]))
+			delete(tec.Checks, id)
+			return
+		}
+	}
+}
+
+//
+// Checker:> Meta
+
 func (tec *SomaTreeElemCluster) syncCheck(childId string) {
 	for check, _ := range tec.Checks {
 		if !tec.Checks[check].Inheritance {
@@ -79,7 +120,6 @@ func (tec *SomaTreeElemCluster) checkCheck(checkId string) bool {
 	return false
 }
 
-//
 func (tec *SomaTreeElemCluster) LoadInstance(i CheckInstance) {
 	ckId := i.CheckId.String()
 	ckInstId := i.InstanceId.String()

@@ -6,8 +6,10 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Implementation of the `Checker` interface
+
 //
-// Interface: Checker
+// Checker:> Add Check
 func (ter *SomaTreeElemRepository) SetCheck(c Check) {
 	c.Id = c.GetItemId(ter.Type, ter.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
@@ -59,6 +61,44 @@ func (ter *SomaTreeElemRepository) storeCheck(c Check) {
 	ter.Checks[c.Id.String()] = c
 	ter.actionCheckNew(c.MakeAction())
 }
+
+//
+// Checker:> Remove Check
+
+func (ter *SomaTreeElemRepository) DeleteCheck(c Check) {
+	ter.rmCheck(c)
+	ter.deleteCheckOnChildren(c)
+}
+
+func (ter *SomaTreeElemRepository) deleteCheckInherited(c Check) {
+	ter.rmCheck(c)
+	ter.deleteCheckOnChildren(c)
+}
+
+func (ter *SomaTreeElemRepository) deleteCheckOnChildren(c Check) {
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		go func(stc Check, ch string) {
+			defer wg.Done()
+			ter.Children[ch].(Checker).deleteCheckInherited(stc)
+		}(c, child)
+	}
+	wg.Wait()
+}
+
+func (ter *SomaTreeElemRepository) rmCheck(c Check) {
+	for id, _ := range ter.Checks {
+		if uuid.Equal(ter.Checks[id].SourceId, c.SourceId) {
+			ter.actionCheckRemoved(ter.setupCheckAction(ter.Checks[id]))
+			delete(ter.Checks, id)
+			return
+		}
+	}
+}
+
+//
+// Checker:> Meta
 
 func (ter *SomaTreeElemRepository) syncCheck(childId string) {
 	for check, _ := range ter.Checks {
