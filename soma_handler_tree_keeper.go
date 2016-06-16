@@ -171,6 +171,8 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		txStmtCreateCheck                                 *sql.Stmt
 		txStmtCreateCheckInstance                         *sql.Stmt
 		txStmtCreateCheckInstanceConfiguration            *sql.Stmt
+		txStmtDeleteCheck                                 *sql.Stmt
+		txStmtDeleteCheckInstance                         *sql.Stmt
 	)
 	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 	if err != nil {
@@ -237,13 +239,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Repository.Repository.Properties)[0].Custom.Name,
 			Value:        (*q.Repository.Repository.Properties)[0].Custom.Value,
 		})
-	case "add_check_to_repository":
-		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(somatree.FindRequest{
-				ElementType: q.CheckConfig.CheckConfig.ObjectType,
-				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
-			}, true).SetCheck(*treeCheck)
-		}
 
 	//
 	// BUCKET MANIPULATION REQUESTS
@@ -316,13 +311,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Bucket.Bucket.Properties)[0].Custom.Name,
 			Value:        (*q.Bucket.Bucket.Properties)[0].Custom.Value,
 		})
-	case "add_check_to_bucket":
-		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(somatree.FindRequest{
-				ElementType: q.CheckConfig.CheckConfig.ObjectType,
-				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
-			}, true).SetCheck(*treeCheck)
-		}
 
 	//
 	// GROUP MANIPULATION REQUESTS
@@ -409,13 +397,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Group.Group.Properties)[0].Custom.Name,
 			Value:        (*q.Group.Group.Properties)[0].Custom.Value,
 		})
-	case "add_check_to_group":
-		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(somatree.FindRequest{
-				ElementType: q.CheckConfig.CheckConfig.ObjectType,
-				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
-			}, true).SetCheck(*treeCheck)
-		}
 
 	//
 	// CLUSTER MANIPULATION REQUESTS
@@ -502,13 +483,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Cluster.Cluster.Properties)[0].Custom.Name,
 			Value:        (*q.Cluster.Cluster.Properties)[0].Custom.Value,
 		})
-	case "add_check_to_cluster":
-		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(somatree.FindRequest{
-				ElementType: q.CheckConfig.CheckConfig.ObjectType,
-				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
-			}, true).SetCheck(*treeCheck)
-		}
 
 	//
 	// NODE MANIPULATION REQUESTS
@@ -608,14 +582,41 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Node.Node.Properties)[0].Custom.Name,
 			Value:        (*q.Node.Node.Properties)[0].Custom.Value,
 		})
-	case "add_check_to_node":
+
+	//
+	// CHECK MANIPULATION REQUESTS
+	case `add_check_to_repository`:
+		fallthrough
+	case `add_check_to_bucket`:
+		fallthrough
+	case `add_check_to_group`:
+		fallthrough
+	case `add_check_to_cluster`:
+		fallthrough
+	case `add_check_to_node`:
 		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
 			tk.tree.Find(somatree.FindRequest{
 				ElementType: q.CheckConfig.CheckConfig.ObjectType,
 				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
 			}, true).SetCheck(*treeCheck)
 		}
+	case `remove_check_from_repository`:
+		fallthrough
+	case `remove_check_from_bucket`:
+		fallthrough
+	case `remove_check_from_group`:
+		fallthrough
+	case `remove_check_from_cluster`:
+		fallthrough
+	case `remove_check_from_node`:
+		if treeCheck, err = tk.convertCheckForDelete(&q.CheckConfig.CheckConfig); err != nil {
+			tk.tree.Find(somatree.FindRequest{
+				ElementType: q.CheckConfig.CheckConfig.ObjectType,
+				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
+			}, true).DeleteCheck(*treeCheck)
+		}
 	}
+
 	// check if we accumulated an error in one of the switch cases
 	if err != nil {
 		goto bailout
@@ -702,6 +703,16 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		goto bailout
 	}
 	defer txStmtCreateCheckInstanceConfiguration.Close()
+
+	if txStmtDeleteCheck, err = tx.Prepare(stmt.TxMarkCheckDeleted); err != nil {
+		log.Println("Failed to prepare: txStmtDeleteCheck")
+		goto bailout
+	}
+
+	if txStmtDeleteCheckInstance, err = tx.Prepare(stmt.TxMarkCheckInstanceDeleted); err != nil {
+		log.Println("Failed to prepare: txStmtDeleteCheckInstance")
+		goto bailout
+	}
 
 	//
 	// REPOSITORY
@@ -1063,6 +1074,13 @@ Service Name:   %s%s`,
 		}
 	}
 
+	// mark the check configuration as deleted
+	if strings.HasPrefix(q.Action, `remove_check_from_`) {
+		if _, err = tx.Exec(stmt.TxMarkCheckConfigDeleted, q.CheckConfig.CheckConfig.Id); err != nil {
+			goto bailout
+		}
+	}
+
 actionloop:
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
@@ -1153,6 +1171,13 @@ actionloop:
 					a.Check.CapabilityId,
 					a.Repository.Id,
 					"repository",
+				); err != nil {
+					break actionloop
+				}
+			case `check_removed`:
+				if _, err = txStmtDeleteCheck.Exec(
+					a.Check.CheckId,
+					q.CheckConfig.CheckConfig.Id,
 				); err != nil {
 					break actionloop
 				}
@@ -1284,6 +1309,13 @@ Children Only:         %t%s`,
 					a.Check.CapabilityId,
 					a.Bucket.Id,
 					"bucket",
+				); err != nil {
+					break actionloop
+				}
+			case `check_removed`:
+				if _, err = txStmtDeleteCheck.Exec(
+					a.Check.CheckId,
+					q.CheckConfig.CheckConfig.Id,
 				); err != nil {
 					break actionloop
 				}
@@ -1456,6 +1488,12 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
+			case `check_removed`:
+				if _, err = txStmtDeleteCheck.Exec(
+					a.Check.CheckId,
+				); err != nil {
+					break actionloop
+				}
 			case "check_instance_create":
 				if _, err = txStmtCreateCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -1485,6 +1523,11 @@ Children Only:         %t%s`,
 				}
 			case "check_instance_update":
 			case "check_instance_delete":
+				if _, err = txStmtDeleteCheckInstance.Exec(
+					a.CheckInstance.InstanceId,
+				); err != nil {
+					break actionloop
+				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1636,6 +1679,12 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
+			case `check_removed`:
+				if _, err = txStmtDeleteCheck.Exec(
+					a.Check.CheckId,
+				); err != nil {
+					break actionloop
+				}
 			case "check_instance_create":
 				if _, err = txStmtCreateCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -1665,6 +1714,11 @@ Children Only:         %t%s`,
 				}
 			case "check_instance_update":
 			case "check_instance_delete":
+				if _, err = txStmtDeleteCheckInstance.Exec(
+					a.CheckInstance.InstanceId,
+				); err != nil {
+					break actionloop
+				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1816,6 +1870,12 @@ Node ID:             %s%s`,
 				); err != nil {
 					break actionloop
 				}
+			case `check_removed`:
+				if _, err = tx.Exec(stmt.TxMarkCheckDeleted,
+					a.Check.CheckId,
+				); err != nil {
+					break actionloop
+				}
 			case "check_instance_create":
 				if _, err = txStmtCreateCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -1845,6 +1905,11 @@ Node ID:             %s%s`,
 				}
 			case "check_instance_update":
 			case "check_instance_delete":
+				if _, err = txStmtDeleteCheck.Exec(
+					a.CheckInstance.InstanceId,
+				); err != nil {
+					break actionloop
+				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -1907,6 +1972,21 @@ bailout:
 		log.Printf("Cleaned message: %s\n", string(jB))
 	}
 	return
+}
+
+func (tk *treeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*somatree.Check, error) {
+	var err error
+	treechk := &somatree.Check{
+		Id:            uuid.Nil,
+		InheritedFrom: uuid.Nil,
+	}
+	if treechk.SourceId, err = uuid.FromString(conf.ExternalId); err != nil {
+		return nil, err
+	}
+	if treechk.ConfigId, err = uuid.FromString(conf.Id); err != nil {
+		return nil, err
+	}
+	return treechk, nil
 }
 
 func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*somatree.Check, error) {
