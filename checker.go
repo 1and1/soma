@@ -54,10 +54,53 @@ type Check struct {
 	Items         []CheckItem
 }
 
+func (c *Check) Clone() Check {
+	ng := Check{
+		SourceType:   c.SourceType,
+		Inherited:    c.Inherited,
+		Inheritance:  c.Inheritance,
+		ChildrenOnly: c.ChildrenOnly,
+		View:         c.View,
+		Interval:     c.Interval,
+	}
+	ng.Id, _ = uuid.FromString(c.Id.String())
+	ng.SourceId, _ = uuid.FromString(c.SourceId.String())
+	ng.InheritedFrom, _ = uuid.FromString(c.InheritedFrom.String())
+	ng.CapabilityId, _ = uuid.FromString(c.CapabilityId.String())
+	ng.ConfigId, _ = uuid.FromString(c.ConfigId.String())
+
+	ng.Thresholds = make([]CheckThreshold, len(c.Thresholds))
+	for i, _ := range c.Thresholds {
+		ng.Thresholds[i] = c.Thresholds[i].Clone()
+	}
+
+	ng.Constraints = make([]CheckConstraint, len(c.Constraints))
+	for i, _ := range c.Constraints {
+		ng.Constraints[i] = c.Constraints[i].Clone()
+	}
+
+	ng.Items = make([]CheckItem, len(c.Items))
+	for i, _ := range c.Items {
+		ng.Items[i] = c.Items[i].Clone()
+	}
+
+	return ng
+}
+
 type CheckItem struct {
 	ObjectId   uuid.UUID
 	ObjectType string
 	ItemId     uuid.UUID
+}
+
+func (ci *CheckItem) Clone() CheckItem {
+	oid, _ := uuid.FromString(ci.ObjectId.String())
+	iid, _ := uuid.FromString(ci.ItemId.String())
+	return CheckItem{
+		ObjectId:   oid,
+		ObjectType: ci.ObjectType,
+		ItemId:     iid,
+	}
 }
 
 type CheckThreshold struct {
@@ -66,10 +109,26 @@ type CheckThreshold struct {
 	Value     int64
 }
 
+func (ct *CheckThreshold) Clone() CheckThreshold {
+	return CheckThreshold{
+		Predicate: ct.Predicate,
+		Level:     ct.Level,
+		Value:     ct.Value,
+	}
+}
+
 type CheckConstraint struct {
 	Type  string
 	Key   string
 	Value string
+}
+
+func (cc *CheckConstraint) Clone() CheckConstraint {
+	return CheckConstraint{
+		Type:  cc.Type,
+		Key:   cc.Key,
+		Value: cc.Value,
+	}
 }
 
 type CheckInstance struct {
