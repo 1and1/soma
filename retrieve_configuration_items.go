@@ -72,7 +72,7 @@ func RetrieveConfigurationItems(w http.ResponseWriter, r *http.Request, params h
 			return
 		}
 		c := ConfigurationItem{}
-		if err = json.Unmarshal([]byte(config), c); err != nil {
+		if err = json.Unmarshal([]byte(config), &c); err != nil {
 			dispatchInternalServerError(&w, err.Error())
 			return
 		}
