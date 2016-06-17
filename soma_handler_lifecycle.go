@@ -334,7 +334,7 @@ bearloop:
 	for mon, idList := range pokeIDs {
 		for _, id := range idList {
 			if _, err = cl.R().
-				SetBody(PokeMessage{Uuid: id, Path: "/deployments/id/"}).
+				SetBody(PokeMessage{Uuid: id, Path: "/deployments/id"}).
 				Post(callbacks[mon]); err != nil {
 				log.Println(err)
 				continue bearloop
