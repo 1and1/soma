@@ -239,6 +239,10 @@ func main() {
 
 	router.GET("/authenticate/validate/", BasicAuth(AuthenticationValidate))
 
+	router.GET(`/jobs/`, BasicAuth(ListJobs))
+	router.GET(`/jobs/:jobid`, BasicAuth(ShowJob))
+	router.POST(`/filter/jobs/`, BasicAuth(SearchJob))
+
 	if !SomaCfg.ReadOnly {
 		router.PUT(`/jobs/:jobid`, BasicAuth(JobDelay))
 
