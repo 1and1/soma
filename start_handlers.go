@@ -37,6 +37,7 @@ func startHandlers() {
 	spawnClusterReadHandler()
 	spawnCheckConfigurationReadHandler()
 	spawnHostDeploymentHandler()
+	spawnJobReadHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnJobDelay()
@@ -587,6 +588,15 @@ func spawnJobDelay() {
 	handler.shutdown = make(chan bool)
 	handler.notify = make(chan string, 256)
 	handlerMap[`jobDelay`] = handler
+	go handler.run()
+}
+
+func spawnJobReadHandler() {
+	var handler jobsRead
+	handler.input = make(chan msg.Request, 256)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handlerMap[`jobs_r`] = handler
 	go handler.run()
 }
 
