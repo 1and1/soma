@@ -16,19 +16,10 @@ func registerLevels(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for notification levels",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new notification level",
-						Action: runtime(cmdLevelCreate),
-						BashComplete: func(c *cli.Context) {
-							switch {
-							case c.NArg() == 0:
-								fmt.Println("$name**string")
-							case (c.NArg() % 2) == 1:
-								for _, t := range []string{"shortname", "numeric"} {
-									fmt.Println(t)
-								}
-							}
-						},
+						Name:         "create",
+						Usage:        "Create a new notification level",
+						Action:       runtime(cmdLevelCreate),
+						BashComplete: cmpl.LevelCreate,
 					},
 					{
 						Name:   "delete",
