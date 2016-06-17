@@ -9,6 +9,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -53,6 +54,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 	soma, _ = url.Parse(Eye.Soma.url.String())
 	soma.Path = fmt.Sprintf("%s/%s", msg.Path, msg.Uuid)
 	client = resty.New().SetTimeout(500 * time.Millisecond)
+	log.Printf("Fetching deployment: %s\n", soma.String())
 	if resp, err = client.R().Get(soma.String()); err != nil || resp.StatusCode() > 299 {
 		if err == nil {
 			err = fmt.Errorf(resp.Status())
