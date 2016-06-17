@@ -1941,6 +1941,7 @@ Node ID:             %s%s`,
 		q.JobId.String(),
 		time.Now().UTC(),
 		"success",
+		``, // empty error field
 	); err != nil {
 		goto bailout
 	}
@@ -1965,6 +1966,7 @@ bailout:
 		q.JobId.String(),
 		time.Now().UTC(),
 		"failed",
+		err.Error(),
 	)
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
