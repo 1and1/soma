@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"time"
 
 
@@ -52,7 +53,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 	}
 
 	soma, _ = url.Parse(Eye.Soma.url.String())
-	soma.Path = fmt.Sprintf("%s/%s", msg.Path, msg.Uuid)
+	soma.Path = strings.Replace(fmt.Sprintf("%s/%s", msg.Path, msg.Uuid), `//`, `/`, -1)
 	client = resty.New().SetTimeout(500 * time.Millisecond)
 	log.Printf("Fetching deployment: %s\n", soma.String())
 	if resp, err = client.R().Get(soma.String()); err != nil || resp.StatusCode() > 299 {
