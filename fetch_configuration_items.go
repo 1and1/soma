@@ -37,7 +37,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		res    proto.Result
 	)
 	dec = json.NewDecoder(r.Body)
-	if err = dec.Decode(msg); err != nil {
+	if err = dec.Decode(&msg); err != nil {
 		dispatchBadRequest(&w, err.Error())
 		return
 	}
@@ -60,7 +60,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		dispatchPrecondition(&w, err.Error())
 		return
 	}
-	if err = json.Unmarshal(resp.Body(), res); err != nil {
+	if err = json.Unmarshal(resp.Body(), &res); err != nil {
 		dispatchUnprocessable(&w, err.Error())
 		return
 	}
