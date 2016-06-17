@@ -101,13 +101,23 @@ func (c *CheckConfigThreshold) DeepCompare(a *CheckConfigThreshold) bool {
 }
 
 type CheckConfigDetails struct {
-	DetailsCreation
+	CreatedAt string              `json:"createdAt,omitempty"`
+	CreatedBy string              `json:"createdBy,omitempty"`
+	Instances []CheckInstanceInfo `json:"instances,omitempty"`
 }
 
 type CheckConfigFilter struct {
 	Id           string `json:"id,omitempty"`
 	Name         string `json:"name,omitempty"`
 	CapabilityId string `json:"capabilityId,omitempty"`
+}
+
+type CheckInstanceInfo struct {
+	Id            string `json:"id,omitempty"`
+	ObjectId      string `json:"objectId,omitempty"`
+	ObjectType    string `json:"objectType,omitempty"`
+	CurrentStatus string `json:"currentStatus,omitempty"`
+	NextStatus    string `json:"nextStatus,omitempty"`
 }
 
 func (c *CheckConfig) DeepCompare(a *CheckConfig) bool {
