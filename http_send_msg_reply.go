@@ -14,6 +14,7 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		err    error
 		k      auth.Kex
 		result proto.Result
+		action string
 	)
 
 	// this is central error command, proceeding to log
@@ -79,6 +80,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			DispatchUnauthorized(w, nil)
 			return
 		} // end supervisor
+	case `job`:
+		result = proto.NewJobResult()
+		*result.Jobs = append(*result.Jobs, r.Job...)
+		goto UnmaskedReply
 	default:
 		log.Printf(LogStrErr, r.Type, ``, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)
@@ -86,37 +91,47 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 	}
 
 UnmaskedReply:
+	switch r.Type {
+	case `supervisor`:
+		action = fmt.Sprintf("%s/%s", r.Action, r.Super.Action)
+	default:
+		action = r.Action
+	}
+
 	switch r.Code {
 	case 200:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 200)
 		if r.Error != nil {
 			result.Error(r.Error)
 		}
 		result.OK()
 	case 202:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 202)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 202)
 		result.JobId = r.JobId
 		result.Accepted()
 	case 400:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 400)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 400)
 		DispatchBadRequest(w, nil)
 		return
 	case 403:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 403)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 403)
 		DispatchForbidden(w, r.Error)
 		return
 	case 404:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 200)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 200)
 		result.NotFound()
 	case 406:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 406)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 406)
 		DispatchConflict(w, r.Error)
 		return
 	case 500:
-		log.Printf(LogStrOK, r.Type, fmt.Sprintf("%s/%s", r.Action, r.Super.Action), r.Code, 500)
+		log.Printf(LogStrOK, r.Type, action, r.Code, 500)
 		result.Error(r.Error)
+	case 501:
+		log.Printf(LogStrOK, r.Type, action, r.Code, 501)
+		result.NotImplemented()
 	default:
-		log.Printf(LogStrErr, r.Type, r.Action, r.Code, `Unhandled internal result code`)
+		log.Printf(LogStrErr, r.Type, action, r.Code, `Unhandled internal result code`)
 		DispatchInternalError(w, nil)
 		return
 	}
