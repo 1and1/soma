@@ -43,6 +43,7 @@ type somaCheckConfigurationReadHandler struct {
 	show_constr_service   *sql.Stmt
 	show_constr_attribute *sql.Stmt
 	show_constr_oncall    *sql.Stmt
+	show_instance_info    *sql.Stmt
 }
 
 func (r *somaCheckConfigurationReadHandler) run() {
@@ -93,6 +94,11 @@ func (r *somaCheckConfigurationReadHandler) run() {
 	}
 	defer r.show_constr_oncall.Close()
 
+	if r.show_instance_info, err = r.conn.Prepare(stmtCheckConfigInstanceInfo); err != nil {
+		log.Fatal("checkconfig/show-instance-info: ", err)
+	}
+	defer r.show_instance_info.Close()
+
 runloop:
 	for {
 		select {
@@ -116,6 +122,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		bucketId                                                                            sql.NullString
 	)
 	result := somaResult{}
+	instanceInfo := true
 
 	switch q.action {
 	case "list":
@@ -392,6 +399,45 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 					chkConfig.Constraints = append(chkConfig.Constraints, constr)
 				}
 			} // switch tp
+		}
+
+		if instanceInfo {
+			instances := make([]proto.CheckInstanceInfo, 0)
+			var (
+				err                                                      error
+				rows                                                     *sql.Rows
+				instanceId, instObjId, instObjType, instStatus, instNext string
+			)
+
+			rows, err = r.show_instance_info.Query(q.CheckConfig.Id)
+			if result.SetRequestError(err) {
+				q.reply <- result
+				return
+			}
+
+			for rows.Next() {
+				_ = rows.Scan(
+					&instanceId,
+					&instObjId,
+					&instObjType,
+					&instStatus,
+					&instNext,
+				)
+				info := proto.CheckInstanceInfo{
+					Id:            instanceId,
+					ObjectId:      instObjId,
+					ObjectType:    instObjType,
+					CurrentStatus: instStatus,
+					NextStatus:    instNext,
+				}
+				instances = append(instances, info)
+			}
+			rows.Close()
+			if len(instances) > 0 {
+				chkConfig.Details = &proto.CheckConfigDetails{
+					Instances: instances,
+				}
+			}
 		}
 	default:
 		result.SetNotImplemented()

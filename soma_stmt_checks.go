@@ -101,4 +101,19 @@ JOIN   inventory.oncall_duty_teams iodt
 ON     scop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  scc.configuration_id = $1::uuid;`
 
+const stmtCheckConfigInstanceInfo = `
+SELECT sci.check_instance_id,
+       sc.object_id,
+       sc.object_type,
+       scic.status,
+       scic.next_status
+FROM   soma.check_configurations scc
+JOIN   soma.check_instances sci
+  ON   scc.configuration_id = sci.check_configuration_id
+JOIN   soma.checks sc
+  ON   sci.check_id = sc.check_id
+JOIN   soma.check_instance_configurations scic
+  ON   sci.current_instance_config_id = scic.check_instance_config_id
+WHERE  scc.configuration_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
