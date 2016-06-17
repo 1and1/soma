@@ -69,7 +69,7 @@ func Itemize(details *proto.Deployment) (string, *ConfigurationItem, error) {
 	}
 
 	// set oncall duty if available
-	if details.Oncall.Id != "" {
+	if details.Oncall != nil && details.Oncall.Id != "" {
 		item.Oncall = fmt.Sprintf("%s (%s)", details.Oncall.Name, details.Oncall.Number)
 	}
 
