@@ -24,6 +24,7 @@ type Result struct {
 	Category   []proto.Category
 	Permission []proto.Permission
 	Grant      []proto.Grant
+	Job        []proto.Job
 }
 
 func (r *Result) RowCnt(i int64, err error) bool {
@@ -50,6 +51,8 @@ func (r *Result) Clear(s string) {
 		r.Category = []proto.Category{}
 	case `permission`:
 		r.Permission = []proto.Permission{}
+	case `job`:
+		r.Job = []proto.Job{}
 	}
 }
 
@@ -100,6 +103,11 @@ func (r *Result) Conflict(err error) {
 }
 
 func (r *Result) ServerError(err error) {
+	r.Code = 500
+	r.SetError(err)
+}
+
+func (r *Result) NotImplemented(err error) {
 	r.Code = 500
 	r.SetError(err)
 }

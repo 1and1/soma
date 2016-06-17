@@ -14,12 +14,20 @@ type Request struct {
 	Action     string
 	RemoteAddr string
 	User       string
+	IsAdmin    bool
 	Reply      chan Result
+	Search     Filter
 
 	Super      *Supervisor
 	Category   proto.Category
 	Permission proto.Permission
 	Grant      proto.Grant
+	Job        proto.Job
+}
+
+type Filter struct {
+	IsDetailed bool
+	Job        proto.JobFilter
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
