@@ -96,6 +96,7 @@ func (c *EyeConfig) readConfigFile(fname string) error {
 		return err
 	}
 	c.Soma.url, _ = url.Parse(c.Soma.Address)
+	log.Printf("Configured SOMA base address: %s\n", c.Soma.url.String())
 	return nil
 }
 
