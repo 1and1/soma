@@ -91,6 +91,7 @@ func addItem(item *ConfigurationItem, lookupID string) error {
 		return err
 	}
 
+lookupcheck:
 	err = Eye.run.check_lookup.QueryRow(lookupID).Scan(&look)
 	if err == sql.ErrNoRows {
 		if _, err = Eye.run.insert_lookup.Exec(
@@ -100,6 +101,7 @@ func addItem(item *ConfigurationItem, lookupID string) error {
 		); err != nil {
 			return err
 		}
+		goto lookupcheck
 	} else if err != nil {
 		return err
 	}
