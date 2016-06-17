@@ -33,6 +33,7 @@ type JobDetails struct {
 
 func NewJobFilter() Request {
 	return Request{
+		Flags: &Flags{},
 		Filter: &Filter{
 			Job: &JobFilter{},
 		},
