@@ -56,6 +56,7 @@ type Result struct {
 	Grants           *[]Grant           `json:"grants,omitempty"`
 	Groups           *[]Group           `json:"groups,omitempty"`
 	HostDeployments  *[]HostDeployment  `json:"hostDeployments,omitempty"`
+	Jobs             *[]Job             `json:"jobs,omitempty"`
 	Levels           *[]Level           `json:"levels,omitempty"`
 	Metrics          *[]Metric          `json:"metrics,omitempty"`
 	Modes            *[]Mode            `json:"modes,omitempty"`

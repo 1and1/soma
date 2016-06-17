@@ -7,6 +7,7 @@ type Filter struct {
 	Cluster     *ClusterFilter     `json:"cluster,omitempty"`
 	Grant       *GrantFilter       `json:"grant,omitempty"`
 	Group       *GroupFilter       `json:"group,omitempty"`
+	Job         *JobFilter         `json:"job,omitempty"`
 	Level       *LevelFilter       `json:"level,omitempty"`
 	Metric      *MetricFilter      `json:"metric,omitempty"`
 	Monitoring  *MonitoringFilter  `json:"monitoring,omitempty"`
