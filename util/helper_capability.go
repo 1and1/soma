@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"strings"
 
 	"gopkg.in/resty.v0"
@@ -14,27 +15,42 @@ func (u *SomaUtil) TryGetCapabilityByUUIDOrName(c *resty.Client, s string) strin
 }
 
 func (u *SomaUtil) GetCapabilityIdByName(c *resty.Client, capability string) string {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			Capability: &proto.CapabilityFilter{},
-		},
-	}
+	req := proto.NewCapabilityFilter()
 
 	split := strings.SplitN(capability, ".", 3)
 	if len(split) != 3 {
-		u.Abort("Split failed, Capability name invalid")
+		u.Abort("Capability split failed, name invalid")
 	}
 	req.Filter.Capability.MonitoringId = u.TryGetMonitoringByUUIDOrName(c, split[0])
 	req.Filter.Capability.View = split[1]
 	req.Filter.Capability.Metric = split[2]
 
-	resp := u.PostRequestWithBody(c, req, "/filter/capability/")
-	capabilityResult := u.DecodeProtoResultCapabilityFromResponse(resp)
-
-	if capability != (*capabilityResult.Capabilities)[0].Name {
-		u.Abort("Received result set for incorrect capability")
+	resp, err := adm.PostReqBody(req, `/filter/capability/`)
+	if err != nil {
+		u.Abort(fmt.Sprintf("Capability lookup request error: %s", err.Error()))
 	}
-	return (*capabilityResult.Capabilities)[0].Id
+	result, err := u.ResultFromResponse(resp)
+	if se, ok := err.(SomaError); ok {
+		if se.RequestError() {
+			u.Abort(fmt.Sprintf("Capability lookup request error: %s", se.Error()))
+		}
+		if se.Code() == 404 {
+			u.Abort(fmt.Sprintf(
+				"Could not find capability with name %s",
+				capability,
+			))
+		}
+		u.Abort(fmt.Sprintf("Capability lookup application error: %s", err.Error()))
+	}
+
+	if capability != (*result.Capabilities)[0].Name {
+		u.Abort(fmt.Sprintf(
+			"Capability lookup failed. Wanted %s, received %s",
+			capability,
+			(*result.Capabilities)[0].Name,
+		))
+	}
+	return (*result.Capabilities)[0].Id
 }
 
 func (u *SomaUtil) DecodeProtoResultCapabilityFromResponse(resp *resty.Response) *proto.Result {
