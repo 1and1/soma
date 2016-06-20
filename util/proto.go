@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"gopkg.in/resty.v0"
 )
@@ -48,6 +49,42 @@ func (u SomaUtil) UnfilteredResultFromResponse(resp *resty.Response) *proto.Resu
 	err := decoder.Decode(&res)
 	u.AbortOnError(err, "Error decoding server response body")
 	return &res
+}
+
+func (u SomaUtil) ResultFromResponse(resp *resty.Response) (*proto.Result, error) {
+	if resp.StatusCode() > 299 {
+		return nil, SomaError{
+			code: resp.StatusCode(),
+			text: fmt.Sprintf("Received HTTP statuscode %d", resp.StatusCode()),
+		}
+	}
+	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
+	res := proto.Result{}
+	err := decoder.Decode(&res)
+	if err != nil {
+		return nil, SomaError{
+			code:     resp.StatusCode(),
+			somaCode: 500,
+			text:     fmt.Sprintf("somaadm: %s", err.Error()),
+		}
+	}
+	if res.StatusCode > 299 {
+		txt := fmt.Sprintf("SOMA returned internal code %d: %s",
+			res.StatusCode,
+			res.StatusText,
+		)
+		if res.Errors != nil && len(*res.Errors) > 0 {
+			a := []string{txt}
+			a = append(a, *res.Errors...)
+			txt = strings.Join(a, `,`)
+		}
+		return nil, SomaError{
+			code:     resp.StatusCode(),
+			somaCode: res.StatusCode,
+			text:     txt,
+		}
+	}
+	return &res, nil
 }
 
 func (u SomaUtil) VerifyEnvironment(c *resty.Client, env string) {
