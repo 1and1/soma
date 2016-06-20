@@ -8,6 +8,24 @@ import (
 	"gopkg.in/resty.v0"
 )
 
+type SomaError struct {
+	code     int
+	somaCode uint16
+	text     string
+}
+
+func (e SomaError) Error() string {
+	return e.text
+}
+
+func (e SomaError) RequestError() bool {
+	return e.code > 299
+}
+
+func (e SomaError) Code() uint16 {
+	return e.somaCode
+}
+
 func (u SomaUtil) DecodeResultFromResponse(resp *resty.Response) *proto.Result {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	res := proto.Result{}
