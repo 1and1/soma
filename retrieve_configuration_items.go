@@ -29,6 +29,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -44,6 +45,8 @@ func RetrieveConfigurationItems(w http.ResponseWriter, r *http.Request, params h
 	)
 
 	lookup = params.ByName("lookup")
+	log.Printf("%s", lookup)
+
 	// lookup is supposed to be a sha256 hash
 	if len(lookup) != 64 {
 		dispatchBadRequest(&w, "Invalid lookup id format")
