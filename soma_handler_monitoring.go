@@ -92,7 +92,7 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 			rows, err = r.list_stmt.Query()
 		} else {
 			log.Printf("R: monitorings/scoped-list for %s", q.user)
-			rows, err = r.list_stmt.Query(q.user)
+			rows, err = r.scli_stmt.Query(q.user)
 		}
 		if result.SetRequestError(err) {
 			q.reply <- result
