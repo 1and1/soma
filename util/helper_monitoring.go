@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+
 	"gopkg.in/resty.v0"
 )
 
@@ -12,20 +14,35 @@ func (u *SomaUtil) TryGetMonitoringByUUIDOrName(c *resty.Client, s string) strin
 }
 
 func (u *SomaUtil) GetMonitoringIdByName(c *resty.Client, monitoring string) string {
-	req := proto.Request{
-		Filter: &proto.Filter{
-			Monitoring: &proto.MonitoringFilter{
-				Name: monitoring,
-			},
-		},
-	}
-	resp := u.PostRequestWithBody(c, req, "/filter/monitoring/")
-	monitoringResult := u.DecodeProtoResultMonitoringFromResponse(resp)
+	req := proto.NewMonitoringFilter()
+	req.Filter.Monitoring.Name = monitoring
 
-	if monitoring != (*monitoringResult.Monitorings)[0].Name {
-		u.Abort("Received result set for incorrect monitoring system")
+	resp, err := adm.PostReqBody(req, `/filter/monitoring/`)
+	if err != nil {
+		u.Abort(fmt.Sprintf("Monitoring lookup request error: %s", err.Error()))
 	}
-	return (*monitoringResult.Monitorings)[0].Id
+	result, err := u.ResultFromResponse(resp)
+	if se, ok := err.(SomaError); ok {
+		if se.RequestError() {
+			u.Abort(fmt.Sprintf("Monitoring lookup request error: %s", se.Error()))
+		}
+		if se.Code() == 404 {
+			u.Abort(fmt.Sprintf(
+				"Could not find monitoring system with name %s",
+				monitoring,
+			))
+		}
+		u.Abort(fmt.Sprintf("Monitoring lookup application error: %s", err.Error()))
+	}
+
+	if monitoring != (*result.Monitorings)[0].Name {
+		u.Abort(fmt.Sprintf(
+			"Monitoring system ID lookup failed. Wanted %s, received %s",
+			monitoring,
+			(*result.Monitorings)[0].Name,
+		))
+	}
+	return (*result.Monitorings)[0].Id
 }
 
 func (u *SomaUtil) DecodeProtoResultMonitoringFromResponse(resp *resty.Response) *proto.Result {
