@@ -43,6 +43,11 @@ func registerJobs(app cli.App) *cli.App {
 								Usage:  `List all locally cached jobs`,
 								Action: runtime(cmdJobLocalList),
 							},
+							{
+								Name:   `prune`,
+								Usage:  `Delete completed jobs from local cache`,
+								Action: runtime(cmdJobLocalPrune),
+							},
 						},
 					},
 				},
@@ -95,6 +100,10 @@ func cmdJobLocalUpdate(c *cli.Context) error {
 }
 
 func cmdJobLocalList(c *cli.Context) error {
+	return nil
+}
+
+func cmdJobLocalPrune(c *cli.Context) error {
 	return nil
 }
 
