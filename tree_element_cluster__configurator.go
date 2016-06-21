@@ -9,8 +9,8 @@ import (
 func (tec *SomaTreeElemCluster) updateCheckInstances() {
 	repoName := tec.GetRepositoryName()
 
-	// object has no checks
-	if len(tec.Checks) == 0 {
+	// object may have no checks, but there could be instances to mop up
+	if len(tec.Checks) == 0 && len(tec.Instances) == 0 {
 		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
 			repoName,
 			`UpdateCheckInstances`,
@@ -26,6 +26,32 @@ func (tec *SomaTreeElemCluster) updateCheckInstances() {
 	startupLoad := false
 	if len(tec.loadedInstances) > 0 {
 		startupLoad = true
+	}
+
+	// scan over all current checkinstances if their check still exists.
+	// If not the check has been deleted and the spawned instances need
+	// a good deletion
+	for ck, _ := range tec.CheckInstances {
+		if _, ok := tec.Checks[ck]; ok {
+			// check still exists
+			continue
+		}
+
+		// check no longer exists -> cleanup
+		inst := tec.CheckInstances[ck]
+		for _, i := range inst {
+			tec.actionCheckInstanceDelete(tec.Instances[i].MakeAction())
+			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+				repoName,
+				`CleanupInstance`,
+				`cluster`,
+				tec.Id.String(),
+				ck,
+				i,
+			)
+			delete(tec.Instances, i)
+		}
+		delete(tec.CheckInstances, ck)
 	}
 
 	// process checks
