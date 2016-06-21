@@ -1178,7 +1178,6 @@ actionloop:
 			case `check_removed`:
 				if _, err = txStmtDeleteCheck.Exec(
 					a.Check.CheckId,
-					q.CheckConfig.CheckConfig.Id,
 				); err != nil {
 					break actionloop
 				}
@@ -1316,7 +1315,6 @@ Children Only:         %t%s`,
 			case `check_removed`:
 				if _, err = txStmtDeleteCheck.Exec(
 					a.Check.CheckId,
-					q.CheckConfig.CheckConfig.Id,
 				); err != nil {
 					break actionloop
 				}
