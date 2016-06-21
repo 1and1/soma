@@ -6,7 +6,8 @@ SELECT configuration_id,
        bucket_id,
 	   configuration_name
 FROM   soma.check_configurations
-WHERE  repository_id = $1::uuid;`
+WHERE  repository_id = $1::uuid
+AND    NOT deleted;`
 
 const stmtCheckConfigShowBase = `
 SELECT configuration_id,
