@@ -138,6 +138,30 @@ func (d *DB) FinishedJobs() ([]proto.Job, error) {
 	return nil, bolt.ErrBucketNotFound
 }
 
+func (d *DB) PruneFinishedJobs() error {
+	if err := d.Open(); err != nil {
+		return err
+	}
+	defer d.Close()
+
+	return d.db.Update(func(tx *bolt.Tx) error {
+		bF := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`finished`))
+		bD := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`data`))
+		c := bF.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if err := bD.Delete(v); err != nil {
+				return err
+			}
+
+			if err := c.Delete(); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func uitob(v uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, v)

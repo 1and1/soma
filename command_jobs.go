@@ -113,7 +113,7 @@ func cmdJobLocalList(c *cli.Context) error {
 }
 
 func cmdJobLocalPrune(c *cli.Context) error {
-	return nil
+	return store.PruneFinishedJobs()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
