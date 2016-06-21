@@ -87,7 +87,16 @@ func cmdJobLocalOutstanding(c *cli.Context) error {
 		return err
 	}
 
-	if enc, err := json.Marshal(&jobs); err != nil {
+	pj := []proto.Job{}
+	for _, iArray := range jobs {
+		pj = append(pj, proto.Job{
+			Id:       iArray[1],
+			TsQueued: iArray[2],
+			Type:     iArray[3],
+		})
+	}
+
+	if enc, err := json.Marshal(&pj); err != nil {
 		return err
 	} else {
 		fmt.Println(string(enc))
