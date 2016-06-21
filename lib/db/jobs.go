@@ -10,10 +10,12 @@ package db
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
+
 
 	"github.com/boltdb/bolt"
 )
@@ -32,6 +34,37 @@ func (d *DB) SaveJob(jid, jtype string) error {
 			uitob(id),
 			[]byte(fmt.Sprintf("%s|%s|%s", jid, now, jtype)),
 		)
+	})
+}
+
+func (d *DB) FinishJob(id uint64, job *proto.Job) error {
+	if err := d.Open(); err != nil {
+		return err
+	}
+	defer d.Close()
+
+	jid := job.Id
+	data, err := json.Marshal(job)
+	if err != nil {
+		return err
+	}
+
+	return d.db.Update(func(tx *bolt.Tx) error {
+		// delete from active list
+		bActive := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`active`))
+		if err := bActive.Delete(uitob(id)); err != nil {
+			return err
+		}
+
+		// insert into finished list
+		bFinished := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`finished`))
+		if err := bFinished.Put(uitob(id), []byte(jid)); err != nil {
+			return err
+		}
+
+		// save job data
+		bData := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`data`))
+		return bData.Put([]byte(jid), data)
 	})
 }
 
