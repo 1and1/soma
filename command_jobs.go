@@ -110,6 +110,31 @@ func cmdJobLocalUpdate(c *cli.Context) error {
 }
 
 func cmdJobLocalList(c *cli.Context) error {
+	active, err := store.ActiveJobs()
+	if err != nil && err != bolt.ErrBucketNotFound {
+		return err
+	}
+
+	jobs := []proto.Job{}
+	for _, iArray := range active {
+		jobs = append(jobs, proto.Job{
+			Id:       iArray[1],
+			TsQueued: iArray[2],
+			Type:     iArray[3],
+		})
+	}
+
+	finished, err := store.FinishedJobs()
+	if err != nil && err != bolt.ErrBucketNotFound {
+		return err
+	}
+
+	jobs = append(jobs, finished...)
+	if enc, err := json.Marshal(&jobs); err != nil {
+		return err
+	} else {
+		fmt.Println(string(enc))
+	}
 	return nil
 }
 
