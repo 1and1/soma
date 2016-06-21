@@ -118,6 +118,21 @@ func Itemize(details *proto.Deployment) (string, *ConfigurationItem, error) {
 	return lookupID, item, nil
 }
 
+func GetServiceAttributeValue(details *proto.Deployment, attribute string) string {
+	if details.Service == nil {
+		return ``
+	}
+	if len(details.Service.Attributes) == 0 {
+		return ``
+	}
+	for _, attr := range details.Service.Attributes {
+		if attr.Name == attribute {
+			return attr.Value
+		}
+	}
+	return ``
+}
+
 func abortOnError(err error) {
 	if err != nil {
 		log.Fatal(err)
