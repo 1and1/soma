@@ -93,7 +93,7 @@ func SearchJob(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`jobs_r`].(jobsRead)
 	handler.input <- msg.Request{
-		Type:       `jobs`,
+		Type:       `job`,
 		Action:     `search/idlist`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
