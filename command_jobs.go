@@ -17,12 +17,12 @@ func registerJobs(app cli.App) *cli.App {
 				Subcommands: []cli.Command{
 					{
 						Name:   `list`,
-						Usage:  `List outstanding jobs`,
+						Usage:  `List outstanding jobs (remote)`,
 						Action: runtime(cmdJobList),
 					},
 					{
 						Name:   `show`,
-						Usage:  `Show details about a job`,
+						Usage:  `Show details about a job (remote)`,
 						Action: runtime(cmdJobShow),
 					},
 					{
