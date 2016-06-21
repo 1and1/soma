@@ -101,6 +101,43 @@ func (d *DB) ActiveJobs() ([][]string, error) {
 	return nil, bolt.ErrBucketNotFound
 }
 
+func (d *DB) FinishedJobs() ([]proto.Job, error) {
+	if err := d.Open(); err != nil {
+		return nil, err
+	}
+	defer d.Close()
+
+	count := 0
+	jobs := []proto.Job{}
+	if err := d.db.View(func(tx *bolt.Tx) error {
+		bF := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`finished`))
+		bD := tx.Bucket([]byte(`jobs`)).Bucket([]byte(`data`))
+		c := bF.Cursor()
+
+		// iterate over index bucket jobs.finished
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			// jobs.data bucket key == jobs.finished value
+			val := bD.Get(v)
+			if val == nil {
+				continue
+			}
+			count++
+			j := proto.Job{}
+			if err := json.Unmarshal(val, &j); err != nil {
+				return err
+			}
+			jobs = append(jobs, j)
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return jobs, nil
+	}
+	return nil, bolt.ErrBucketNotFound
+}
+
 func uitob(v uint64) []byte {
 	b := make([]byte, 8)
 	binary.BigEndian.PutUint64(b, v)
