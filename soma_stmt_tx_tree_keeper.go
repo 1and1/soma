@@ -22,7 +22,7 @@ UPDATE soma.jobs
 SET    job_finished = $2::timestamptz,
        job_status = 'processed',
        job_result = $3::varchar,
-       job_error = $4::text,
+       job_error = $4::text
 WHERE  job_id = $1::uuid;`
 
 /*
