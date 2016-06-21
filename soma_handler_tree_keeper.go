@@ -16,6 +16,7 @@ import (
 type treeRequest struct {
 	RequestType string
 	Action      string
+	User        string
 	JobId       uuid.UUID
 	reply       chan somaResult
 	Repository  somaRepositoryRequest

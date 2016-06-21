@@ -84,7 +84,7 @@ func ListClusterMembers(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddCluster(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	cReq := proto.Request{}
@@ -105,6 +105,7 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      "create_cluster",
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  "add",
@@ -131,6 +132,7 @@ func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      "add_node_to_cluster",
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  "member",
@@ -179,6 +181,7 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      fmt.Sprintf("add_%s_property_to_cluster", params.ByName("type")),
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  fmt.Sprintf("%s_property_new", params.ByName("type")),

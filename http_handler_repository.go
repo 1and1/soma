@@ -142,6 +142,7 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "repository",
 		Action:      fmt.Sprintf("add_%s_property_to_repository", params.ByName("type")),
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Repository: somaRepositoryRequest{
 			action:     fmt.Sprintf("%s_property_new", params.ByName("type")),

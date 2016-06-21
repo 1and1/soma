@@ -87,6 +87,7 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "check",
 		Action:      fmt.Sprintf("add_check_to_%s", cReq.CheckConfig.ObjectType),
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		CheckConfig: somaCheckConfigRequest{
 			action:      "check_configuration_new",
@@ -106,6 +107,7 @@ func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: `check`,
 		Action:      `remove_check`,
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		CheckConfig: somaCheckConfigRequest{
 			action: `check_configuration_delete`,

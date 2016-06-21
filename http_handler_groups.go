@@ -82,7 +82,7 @@ func ListGroupMembers(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddGroup(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	cReq := proto.Request{}
@@ -103,6 +103,7 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      "create_group",
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: "add",
@@ -138,6 +139,7 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      rAct,
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: "member",
@@ -186,6 +188,7 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      fmt.Sprintf("add_%s_property_to_group", params.ByName("type")),
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: fmt.Sprintf("%s_property_new", params.ByName("type")),

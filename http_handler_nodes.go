@@ -184,6 +184,7 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "node",
 		Action:      "assign_node",
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Node: somaNodeRequest{
 			action: "assign",
@@ -265,6 +266,7 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "node",
 		Action:      fmt.Sprintf("add_%s_property_to_node", params.ByName("type")),
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Node: somaNodeRequest{
 			action: fmt.Sprintf("%s_property_new", params.ByName("type")),

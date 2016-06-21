@@ -69,7 +69,7 @@ func ShowBucket(w http.ResponseWriter, r *http.Request,
 /* Write functions
  */
 func AddBucket(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	cReq := proto.Request{}
@@ -90,6 +90,7 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "bucket",
 		Action:      "create_bucket",
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Bucket: somaBucketRequest{
 			action: "add",
@@ -138,6 +139,7 @@ func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "bucket",
 		Action:      fmt.Sprintf("add_%s_property_to_bucket", params.ByName("type")),
+		User:        params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Bucket: somaBucketRequest{
 			action: fmt.Sprintf("%s_property_new", params.ByName("type")),

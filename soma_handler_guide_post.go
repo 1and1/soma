@@ -44,9 +44,11 @@ SELECT	$1::uuid,
 		$3::varchar,
 		$4::varchar,
 		$5::uuid,
-		$6::uuid,
-		$7::uuid,
-		$8::jsonb;`)
+		iu.user_id,
+		iu.organizational_team_id,
+		$7::jsonb
+FROM    inventory.users iu
+WHERE   iu.user_uid = $6::varchar;`)
 	if err != nil {
 		log.Fatal("guide/job-save: ", err)
 	}
@@ -490,8 +492,7 @@ func (g *guidePost) process(q *treeRequest) {
 		"pending",
 		q.Action,
 		repoId,
-		"00000000-0000-0000-0000-000000000000", // XXX user uuid
-		"00000000-0000-0000-0000-000000000000", // XXX team uuid
+		q.User,
 		string(j),
 	)
 	if result.SetRequestError(err) {
