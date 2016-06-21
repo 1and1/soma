@@ -68,6 +68,23 @@ func Itemize(details *proto.Deployment) (string, *ConfigurationItem, error) {
 		return "", nil, err
 	}
 
+	switch item.Metric {
+	case `disk.write.per.second`:
+		fallthrough
+	case `disk.read.per.second`:
+		fallthrough
+	case `disk.free`:
+		fallthrough
+	case `disk.usage.percent`:
+		mpt := GetServiceAttributeValue(details, `filesystem`)
+		if mpt == `` {
+			return ``, nil, fmt.Errorf(`Disk metric is missing filesystem service attribute`)
+		}
+		item.Metric = fmt.Sprintf("%s:%s", item.Metric, mpt)
+		// recalculate lookupID
+		lookupID = CalculateLookupId(details.Node.AssetId, item.Metric)
+	}
+
 	// set oncall duty if available
 	if details.Oncall != nil && details.Oncall.Id != "" {
 		item.Oncall = fmt.Sprintf("%s (%s)", details.Oncall.Name, details.Oncall.Number)
