@@ -111,7 +111,7 @@ func Itemize(details *proto.Deployment) (string, *ConfigurationItem, error) {
 	}
 
 	govalidator.SetFieldsRequiredByDefault(true)
-	if ok, err := govalidator.ValidateStruct(err); !ok {
+	if ok, err := govalidator.ValidateStruct(item); !ok {
 		log.Println(err)
 		return "", nil, err
 	}
