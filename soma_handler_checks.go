@@ -154,7 +154,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: checkconfig/list for %s", q.CheckConfig.Id)
+		log.Printf("R: checkconfig/show for %s", q.CheckConfig.Id)
 		if err = r.show_base.QueryRow(q.CheckConfig.Id).Scan(
 			&configId,
 			&repoId,
@@ -439,6 +439,9 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 				}
 			}
 		}
+		result.Append(err, &somaCheckConfigResult{
+			CheckConfig: chkConfig,
+		})
 	default:
 		result.SetNotImplemented()
 	}
