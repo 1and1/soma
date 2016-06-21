@@ -610,7 +610,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case `remove_check_from_cluster`:
 		fallthrough
 	case `remove_check_from_node`:
-		if treeCheck, err = tk.convertCheckForDelete(&q.CheckConfig.CheckConfig); err != nil {
+		if treeCheck, err = tk.convertCheckForDelete(&q.CheckConfig.CheckConfig); err == nil {
 			tk.tree.Find(somatree.FindRequest{
 				ElementType: q.CheckConfig.CheckConfig.ObjectType,
 				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
