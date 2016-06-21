@@ -73,7 +73,7 @@ func (d *DB) FinishJob(id uint64, job *proto.Job) error {
 // 1: JobID
 // 2: Timestamp
 // 3: JobType
-func (d *DB) GetActiveJobs() ([][]string, error) {
+func (d *DB) ActiveJobs() ([][]string, error) {
 	if err := d.Open(); err != nil {
 		return nil, err
 	}
