@@ -1904,7 +1904,7 @@ Node ID:             %s%s`,
 				}
 			case "check_instance_update":
 			case "check_instance_delete":
-				if _, err = txStmtDeleteCheck.Exec(
+				if _, err = txStmtDeleteCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
 				); err != nil {
 					break actionloop
