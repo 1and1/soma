@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
@@ -38,6 +39,12 @@ func registerJobs(app cli.App) *cli.App {
 								Name:   `update`,
 								Usage:  `Check and update status of oustanding locally cached jobs`,
 								Action: runtime(cmdJobLocalUpdate),
+								Flags: []cli.Flag{
+									cli.BoolFlag{
+										Name:  "verbose, v",
+										Usage: "Include full raw job request (admin only)",
+									},
+								},
 							},
 							{
 								Name:   `list`,
@@ -106,6 +113,48 @@ func cmdJobLocalOutstanding(c *cli.Context) error {
 }
 
 func cmdJobLocalUpdate(c *cli.Context) error {
+	jobs, err := store.ActiveJobs()
+	if err != nil && err != bolt.ErrBucketNotFound {
+		return err
+	} else if err == bolt.ErrBucketNotFound {
+		// nothing found
+		return nil
+	}
+
+	req := proto.NewJobFilter()
+	req.Flags.Detailed = c.Bool(`verbose`)
+	jobMap := map[string]string{}
+	for _, v := range jobs {
+		// jobID -> storeID
+		jobMap[v[1]] = v[0]
+		req.Filter.Job.IdList = append(req.Filter.Job.IdList, v[1])
+	}
+	resp, err := adm.PostReqBody(req, `/filter/jobs/`)
+	if err != nil {
+		return fmt.Errorf("Job update request error: %s", err)
+	}
+	res, err := utl.ResultFromResponse(resp)
+	if se, ok := err.(util.SomaError); ok {
+		if se.RequestError() {
+			return fmt.Errorf("Job update request error: %s", se.Error())
+		}
+		if se.Code() == 404 {
+			return fmt.Errorf(`Could not find requested Job IDs`)
+		}
+		return fmt.Errorf("Job update application error: %s", err.Error())
+	}
+	for _, j := range *res.Jobs {
+		if j.Status != `processed` {
+			// only finish Jobs in DB that actually finished
+			continue
+		}
+		strID := jobMap[j.Id]
+		storeID, _ := strconv.ParseUint(strID, 10, 64)
+		if err := store.FinishJob(storeID, &j); err != nil {
+			return fmt.Errorf("somaadm: Job update cache error: %s", err.Error())
+		}
+	}
+	fmt.Println(resp)
 	return nil
 }
 
