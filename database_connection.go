@@ -45,8 +45,8 @@ func connectToDatabase() {
 	// required schema versions
 	required := map[string]int64{
 		"inventory": 201605060001,
-		"root":      201605150001,
-		"auth":      201605150002,
+		"root":      201605160001,
+		"auth":      201605190001,
 		"soma":      201606160001,
 	}
 
@@ -66,8 +66,8 @@ GROUP  BY schema;`); err != nil {
 			log.Fatal("Schema check: ", err)
 		}
 		if rsv, ok := required[schema]; ok {
-			if rsv != required[schema] {
-				log.Fatal("Incompatible schema: ", schema, schemaVer)
+			if rsv != schemaVer {
+				log.Fatalf("Incompatible schema %s: %d != %d", schema, rsv, schemaVer)
 			} else {
 				log.Printf("DB Schema %s, version: %d", schema, schemaVer)
 				delete(required, schema)
