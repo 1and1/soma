@@ -220,7 +220,7 @@ INSERT INTO public.schema_versions (
             description
 ) VALUES (
             'soma',
-            201606160001,
+            201606210001,
             'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertSomaSchemaVersion"] = somaString

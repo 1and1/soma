@@ -32,7 +32,7 @@ func createTablesChecks(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 15)
+	queries := make([]string, 25)
 
 	queryMap["createTableConfigurationPredicates"] = `
 create table if not exists soma.configuration_predicates (
@@ -69,14 +69,21 @@ create table if not exists soma.check_configurations (
     deleted                     boolean         NOT NULL DEFAULT 'no',
     -- required for custom property constraint foreign key
     UNIQUE ( configuration_id, repository_id ) DEFERRABLE,
-    -- otherwise they are really hard to find via cli
-    UNIQUE ( repository_id, configuration_name ) DEFERRABLE,
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE,
     CHECK ( configuration_object_type != 'server' ),
     CHECK ( external_id = 'none' OR configuration_object_type != 'template' ),
     CHECK ( interval > 0 )
 );`
 	queries[idx] = "createTableCheckConfigurations"
+	idx++
+
+	queryMap[`createSingletonCheckNameIndex`] = `
+create unique index _singleton_undeleted_checkconfig_name
+    on soma.check_configurations (
+        repository_id,
+        configuration_name)
+    WHERE NOT deleted;`
+	queries[idx] = `createSingletonCheckNameIndex`
 	idx++
 
 	queryMap["createTableChecks"] = `

@@ -25,6 +25,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201605270001: upgrade_soma_to_201605310001,
 		201605310001: upgrade_soma_to_201606150001,
 		201606150001: upgrade_soma_to_201606160001,
+		201606160001: upgrade_soma_to_201606210001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -286,6 +287,23 @@ func upgrade_soma_to_201606160001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201606160001
+}
+
+func upgrade_soma_to_201606210001(curr int, tool string, printOnly bool) int {
+	if curr != 201606160001 {
+		return 0
+	}
+	stmts := []string{
+		`ALTER TABLE soma.check_configurations DROP CONSTRAINT check_configurations_repository_id_configuration_name_key;`,
+		`CREATE UNIQUE INDEX _singleton_undeleted_checkconfig_name ON soma.check_configurations ( repository_id, configuration_name ) WHERE NOT deleted;`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201606210001, 'Upgrade - somadbctl %s');", tool),
+	)
+
+	executeUpgrades(stmts, printOnly)
+
+	return 201606210001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
