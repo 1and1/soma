@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
 )
 
@@ -82,8 +83,8 @@ func cmdJobShow(c *cli.Context) error {
 }
 
 func cmdJobLocalOutstanding(c *cli.Context) error {
-	jobs, err := store.GetActiveJobs()
-	if err != nil {
+	jobs, err := store.ActiveJobs()
+	if err != nil && err != bolt.ErrBucketNotFound {
 		return err
 	}
 
