@@ -13,7 +13,8 @@ SELECT check_id,
 FROM   soma.checks
 WHERE  repository_id = $1::uuid
 AND    check_id = source_check_id
-AND    source_object_type = $2::varchar;`
+AND    source_object_type = $2::varchar
+AND    NOT deleted;`
 
 const tkStmtLoadInheritedChecks = `
 SELECT check_id,
@@ -22,14 +23,16 @@ SELECT check_id,
 FROM   soma.checks
 WHERE  repository_id = $1::uuid
 AND    source_check_id = $2::uuid
-AND    source_check_id != check_id;`
+AND    source_check_id != check_id
+AND    NOT deleted;`
 
 const tkStmtLoadChecksForType = `
 SELECT check_id,
        object_id
 FROM   soma.checks
 WHERE  repository_id = $1::uuid
-AND    object_type = $2::varchar;`
+AND    object_type = $2::varchar
+AND    NOT deleted;`
 
 const tkStmtLoadCheckConfiguration = `
 SELECT bucket_id,
@@ -45,7 +48,8 @@ SELECT bucket_id,
        external_id
 FROM   soma.check_configurations
 WHERE  configuration_id = $1::uuid
-AND    repository_id = $2::uuid;`
+AND    repository_id = $2::uuid
+AND    NOT deleted;`
 
 const tkStmtLoadCheckThresholds = `
 SELECT sct.predicate,
