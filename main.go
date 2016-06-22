@@ -44,7 +44,7 @@ const (
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrArg = `Subsystem=%s, Request=%s, User=%s, Addr=%s, Arg=%s`
-	LogStrOK  = `Subsystem=%s, Request=%s, InternalCode=%d, ExternalCode=%d`
+	LogStrOK  = `Subsystem=%s, Result=%s, InternalCode=%d, ExternalCode=%d`
 	LogStrErr = `Subsystem=%s, Action=%s, InternalCode=%d, Error=%s`
 )
 
