@@ -72,6 +72,7 @@ type Result struct {
 	States           *[]State           `json:"states,omitempty"`
 	Status           *[]Status          `json:"status,omitempty"`
 	Teams            *[]Team            `json:"teams,omitempty"`
+	Tree             *Repository        `json:"tree,omitempty"`
 	Units            *[]Unit            `json:"units,omitempty"`
 	Users            *[]User            `json:"users,omitempty"`
 	Validities       *[]Validity        `json:"validities,omitempty"`
