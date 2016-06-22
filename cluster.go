@@ -1,24 +1,20 @@
 package proto
 
 type Cluster struct {
-	Id          string          `json:"id,omitempty"`
-	Name        string          `json:"name,omitempty"`
-	BucketId    string          `json:"bucketId,omitempty"`
-	ObjectState string          `json:"objectState,omitempty"`
-	TeamId      string          `json:"teamId,omitempty"`
-	Members     []Node          `json:"members,omitempty"`
-	Details     *ClusterDetails `json:"details,omitempty"`
-	Properties  *[]Property     `json:"properties,omitempty"`
+	Id          string      `json:"id,omitempty"`
+	Name        string      `json:"name,omitempty"`
+	BucketId    string      `json:"bucketId,omitempty"`
+	ObjectState string      `json:"objectState,omitempty"`
+	TeamId      string      `json:"teamId,omitempty"`
+	Members     *[]Node     `json:"members,omitempty"`
+	Details     *Details    `json:"details,omitempty"`
+	Properties  *[]Property `json:"properties,omitempty"`
 }
 
 type ClusterFilter struct {
 	Name     string `json:"name,omitempty"`
 	BucketId string `json:"bucketid,omitempty"`
 	TeamId   string `json:"teamId,omitempty"`
-}
-
-type ClusterDetails struct {
-	DetailsCreation
 }
 
 //
@@ -36,9 +32,9 @@ func (c *Cluster) DeepCompare(a *Cluster) bool {
 	}
 
 member:
-	for i, _ := range c.Members {
-		for j, _ := range a.Members {
-			if c.Members[i].Id == a.Members[j].Id {
+	for i, _ := range *c.Members {
+		for j, _ := range *a.Members {
+			if (*c.Members)[i].Id == (*a.Members)[j].Id {
 				continue member
 			}
 		}
