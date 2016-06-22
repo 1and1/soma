@@ -1,18 +1,18 @@
 package proto
 
 type Bucket struct {
-	Id             string         `json:"id,omitempty"`
-	Name           string         `json:"name,omitempty"`
-	RepositoryId   string         `json:"repositoryId,omitempty"`
-	TeamId         string         `json:"teamId,omitempty"`
-	Environment    string         `json:"environment,omitempty"`
-	IsDeleted      bool           `json:"isDeleted,omitempty"`
-	IsFrozen       bool           `json:"isFrozen,omitempty"`
-	MemberGroups   []Group        `json:"memberGroups,omitempty"`
-	MemberClusters []Cluster      `json:"memberClusters,omitempty"`
-	MemberNodes    []Node         `json:"memberNodes,omitempty"`
-	Details        *BucketDetails `json:"details,omitempty"`
-	Properties     *[]Property    `json:"properties,omitempty"`
+	Id             string      `json:"id,omitempty"`
+	Name           string      `json:"name,omitempty"`
+	RepositoryId   string      `json:"repositoryId,omitempty"`
+	TeamId         string      `json:"teamId,omitempty"`
+	Environment    string      `json:"environment,omitempty"`
+	IsDeleted      bool        `json:"isDeleted,omitempty"`
+	IsFrozen       bool        `json:"isFrozen,omitempty"`
+	MemberGroups   *[]Group    `json:"memberGroups,omitempty"`
+	MemberClusters *[]Cluster  `json:"memberClusters,omitempty"`
+	MemberNodes    *[]Node     `json:"memberNodes,omitempty"`
+	Details        *Details    `json:"details,omitempty"`
+	Properties     *[]Property `json:"properties,omitempty"`
 }
 
 type BucketFilter struct {
@@ -21,10 +21,6 @@ type BucketFilter struct {
 	RepositoryId string `json:"repositoryId,omitempty"`
 	IsDeleted    bool   `json:"isDeleted,omitempty"`
 	IsFrozen     bool   `json:"isFrozen,omitempty"`
-}
-
-type BucketDetails struct {
-	DetailsCreation
 }
 
 func NewBucketRequest() Request {
