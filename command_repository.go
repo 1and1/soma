@@ -80,6 +80,11 @@ func registerRepository(app cli.App) *cli.App {
 						Action: runtime(cmdRepositoryShow),
 					},
 					{
+						Name:   `tree`,
+						Usage:  `Display the repository as tree`,
+						Action: runtime(cmdRepositoryTree),
+					},
+					{
 						Name:  "property",
 						Usage: "SUBCOMMANDS for properties",
 						Subcommands: []cli.Command{
@@ -279,6 +284,19 @@ func cmdRepositoryShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
+
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdRepositoryTree(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
+	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	path := fmt.Sprintf("/repository/%s/tree", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
 		return err

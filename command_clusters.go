@@ -40,6 +40,11 @@ func registerClusters(app cli.App) *cli.App {
 						Action: runtime(cmdClusterShow),
 					},
 					{
+						Name:   "tree",
+						Usage:  "Display the cluster as tree",
+						Action: runtime(cmdClusterTree),
+					},
+					{
 						Name:  "members",
 						Usage: "SUBCOMMANDS for cluster members",
 						Subcommands: []cli.Command{
@@ -203,6 +208,29 @@ func cmdClusterShow(c *cli.Context) error {
 	return nil
 }
 
+func cmdClusterTree(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 3)
+	multKeys := []string{"in"}
+
+	opts := utl.ParseVariadicArguments(multKeys,
+		multKeys,
+		multKeys,
+		c.Args().Tail())
+
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	clusterId := utl.TryGetClusterByUUIDOrName(Client,
+		c.Args().First(),
+		bucketId)
+	path := fmt.Sprintf("/clusters/%s/tree/tree", clusterId)
+
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		adm.FormatOut(c, resp, `tree`)
+	}
+	return nil
+}
+
 func cmdClusterMemberAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
@@ -230,7 +258,7 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 		Id:       clusterId,
 		BucketId: bucketId,
 	}
-	req.Cluster.Members = append(req.Cluster.Members, node)
+	*req.Cluster.Members = append(*req.Cluster.Members, node)
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 

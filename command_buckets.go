@@ -61,6 +61,11 @@ func registerBuckets(app cli.App) *cli.App {
 						Action: runtime(cmdBucketShow),
 					},
 					{
+						Name:   `tree`,
+						Usage:  `Display the bucket as tree`,
+						Action: runtime(cmdBucketTree),
+					},
+					{
 						Name:  "property",
 						Usage: "SUBCOMMANDS for properties",
 						Subcommands: []cli.Command{
@@ -276,6 +281,19 @@ func cmdBucketShow(c *cli.Context) error {
 		return err
 	} else {
 		fmt.Println(resp)
+	}
+	return nil
+}
+
+func cmdBucketTree(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
+	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
+
+	path := fmt.Sprintf("/buckets/%s/tree", bucketId)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		adm.FormatOut(c, resp, `tree`)
 	}
 	return nil
 }

@@ -40,6 +40,11 @@ func registerGroups(app cli.App) *cli.App {
 						Action: runtime(cmdGroupShow),
 					},
 					{
+						Name:   `tree`,
+						Usage:  `Display the group as tree`,
+						Action: runtime(cmdGroupTree),
+					},
+					{
 						Name:  "members",
 						Usage: "SUBCOMMANDS for members",
 						Subcommands: []cli.Command{
@@ -235,6 +240,29 @@ func cmdGroupShow(c *cli.Context) error {
 	return nil
 }
 
+func cmdGroupTree(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 3)
+	multKeys := []string{"in"}
+
+	opts := utl.ParseVariadicArguments(multKeys,
+		multKeys,
+		multKeys,
+		c.Args().Tail())
+
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client,
+		c.Args().First(),
+		bucketId)
+	path := fmt.Sprintf("/groups/%s/tree/tree", groupId)
+
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		adm.FormatOut(c, resp, `tree`)
+	}
+	return nil
+}
+
 func cmdGroupMemberAddGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "bucket"}
@@ -258,7 +286,7 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
-	req.Group.MemberGroups = append(req.Group.MemberGroups, group)
+	*req.Group.MemberGroups = append(*req.Group.MemberGroups, group)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
@@ -293,7 +321,7 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
-	req.Group.MemberClusters = append(req.Group.MemberClusters, cluster)
+	*req.Group.MemberClusters = append(*req.Group.MemberClusters, cluster)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
@@ -326,7 +354,7 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
-	req.Group.MemberNodes = append(req.Group.MemberNodes, node)
+	*req.Group.MemberNodes = append(*req.Group.MemberNodes, node)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
 
