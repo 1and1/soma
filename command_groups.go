@@ -128,14 +128,14 @@ func registerGroups(app cli.App) *cli.App {
 
 func cmdGroupCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	multKeys := []string{"bucket"}
+	multKeys := []string{"in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 
 	var req proto.Request
 	req.Group = &proto.Group{}
@@ -154,14 +154,14 @@ func cmdGroupCreate(c *cli.Context) error {
 
 func cmdGroupDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	multKeys := []string{"bucket"}
+	multKeys := []string{"in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -177,14 +177,14 @@ func cmdGroupDelete(c *cli.Context) error {
 
 func cmdGroupRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"to", "bucket"}
+	multKeys := []string{"to", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -214,14 +214,14 @@ func cmdGroupList(c *cli.Context) error {
 
 func cmdGroupShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	multKeys := []string{"bucket"}
+	multKeys := []string{"in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -237,14 +237,14 @@ func cmdGroupShow(c *cli.Context) error {
 
 func cmdGroupMemberAddGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"to", "bucket"}
+	multKeys := []string{"to", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -272,14 +272,14 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 
 func cmdGroupMemberAddCluster(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"to", "bucket"}
+	multKeys := []string{"to", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -307,14 +307,14 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 
 func cmdGroupMemberAddNode(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"to", "bucket"}
+	multKeys := []string{"to", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["to"][0],
@@ -340,14 +340,14 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"from", "bucket"}
+	multKeys := []string{"from", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -368,14 +368,14 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 
 func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"from", "bucket"}
+	multKeys := []string{"from", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -396,14 +396,14 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 
 func cmdGroupMemberDeleteNode(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"from", "bucket"}
+	multKeys := []string{"from", "in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["from"][0],
@@ -422,14 +422,14 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 
 func cmdGroupMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	multKeys := []string{"bucket"}
+	multKeys := []string{"in"}
 
 	opts := utl.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["bucket"][0])
+	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
