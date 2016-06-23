@@ -21,6 +21,7 @@ type Result struct {
 	JobId  string
 
 	Super      *Supervisor
+	Tree       proto.Tree
 	Category   []proto.Category
 	Permission []proto.Permission
 	Grant      []proto.Grant
