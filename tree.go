@@ -10,4 +10,11 @@ type Tree struct {
 	Node       *Node       `json:"node,omitempty"`
 }
 
+func NewTreeResult() Result {
+	return Result{
+		Errors: &[]string{},
+		Tree:   &Tree{},
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
