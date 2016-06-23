@@ -84,6 +84,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		result = proto.NewJobResult()
 		*result.Jobs = append(*result.Jobs, r.Job...)
 		goto UnmaskedReply
+	case `tree`:
+		result = proto.NewTreeResult()
+		*result.Tree = r.Tree
+		goto UnmaskedReply
 	default:
 		log.Printf(LogStrErr, r.Type, ``, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)

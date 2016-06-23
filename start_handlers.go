@@ -38,6 +38,7 @@ func startHandlers() {
 	spawnCheckConfigurationReadHandler()
 	spawnHostDeploymentHandler()
 	spawnJobReadHandler()
+	spawnOutputTreeHandler()
 
 	if !SomaCfg.ReadOnly {
 		spawnJobDelay()
@@ -597,6 +598,15 @@ func spawnJobReadHandler() {
 	handler.shutdown = make(chan bool)
 	handler.conn = conn
 	handlerMap[`jobs_r`] = handler
+	go handler.run()
+}
+
+func spawnOutputTreeHandler() {
+	var handler outputTree
+	handler.input = make(chan msg.Request, 128)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handlerMap[`tree_r`] = handler
 	go handler.run()
 }
 
