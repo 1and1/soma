@@ -1503,6 +1503,8 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
+				fallthrough
+			case "check_instance_update":
 				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
 					a.CheckInstance.InstanceConfigId,
 					a.CheckInstance.Version,
@@ -1520,7 +1522,6 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
-			case "check_instance_update":
 			case "check_instance_delete":
 				if _, err = txStmtDeleteCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -1694,6 +1695,8 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
+				fallthrough
+			case "check_instance_update":
 				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
 					a.CheckInstance.InstanceConfigId,
 					a.CheckInstance.Version,
@@ -1711,7 +1714,6 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
-			case "check_instance_update":
 			case "check_instance_delete":
 				if _, err = txStmtDeleteCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -1885,6 +1887,8 @@ Node ID:             %s%s`,
 				); err != nil {
 					break actionloop
 				}
+				fallthrough
+			case "check_instance_update":
 				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
 					a.CheckInstance.InstanceConfigId,
 					a.CheckInstance.Version,
@@ -1902,7 +1906,6 @@ Node ID:             %s%s`,
 				); err != nil {
 					break actionloop
 				}
-			case "check_instance_update":
 			case "check_instance_delete":
 				if _, err = txStmtDeleteCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
