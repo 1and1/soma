@@ -76,6 +76,7 @@ SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar
 FROM   soma.check_instances sci
 WHERE  scic.check_instance_id = sci.check_instance_id
+AND    scic.status = 'awaiting_rollout'
 AND    sci.deleted
 AND    sci.update_available;`
 
