@@ -338,7 +338,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case "add_group_to_group":
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "group",
-			ElementId:   q.Group.Group.MemberGroups[0].Id,
+			ElementId:   (*q.Group.Group.MemberGroups)[0].Id,
 		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
@@ -424,7 +424,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case "add_cluster_to_group":
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "cluster",
-			ElementId:   q.Group.Group.MemberClusters[0].Id,
+			ElementId:   (*q.Group.Group.MemberClusters)[0].Id,
 		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
@@ -514,7 +514,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case "add_node_to_group":
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "node",
-			ElementId:   q.Group.Group.MemberNodes[0].Id,
+			ElementId:   (*q.Group.Group.MemberNodes)[0].Id,
 		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
@@ -523,7 +523,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case "add_node_to_cluster":
 		tk.tree.Find(somatree.FindRequest{
 			ElementType: "node",
-			ElementId:   q.Cluster.Cluster.Members[0].Id,
+			ElementId:   (*q.Cluster.Cluster.Members)[0].Id,
 		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "cluster",

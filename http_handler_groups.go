@@ -129,11 +129,11 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap["guidePost"].(guidePost)
 	var rAct string
 	switch {
-	case len(cReq.Group.MemberGroups) > 0:
+	case len(*cReq.Group.MemberGroups) > 0:
 		rAct = "add_group_to_group"
-	case len(cReq.Group.MemberClusters) > 0:
+	case len(*cReq.Group.MemberClusters) > 0:
 		rAct = "add_cluster_to_group"
-	case len(cReq.Group.MemberNodes) > 0:
+	case len(*cReq.Group.MemberNodes) > 0:
 		rAct = "add_node_to_group"
 	}
 	handler.input <- treeRequest{

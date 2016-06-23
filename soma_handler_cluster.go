@@ -162,7 +162,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			err := rows.Scan(&mNodeId, &mNodeName, &clusterName)
 			if err == nil {
 				resC.Name = clusterName
-				resC.Members = append(resC.Members, proto.Node{
+				*resC.Members = append(*resC.Members, proto.Node{
 					Id:   mNodeId,
 					Name: mNodeName,
 				})
