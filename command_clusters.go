@@ -180,7 +180,7 @@ func cmdClusterList(c *cli.Context) error {
 	if resp, err := adm.GetReq(`/clusters/`); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `list`)
 	}
 	return nil
 }
@@ -203,7 +203,7 @@ func cmdClusterShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `show`)
 	}
 	return nil
 }

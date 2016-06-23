@@ -443,7 +443,7 @@ func cmdNodeList(c *cli.Context) error {
 	if resp, err := adm.GetReq("/nodes/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `list`)
 	}
 	return nil
 }
@@ -456,7 +456,7 @@ func cmdNodeShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `list`)
 	}
 	return nil
 }

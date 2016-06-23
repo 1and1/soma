@@ -267,7 +267,7 @@ func cmdBucketList(c *cli.Context) error {
 	if resp, err := adm.GetReq(`/buckets/`); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `list`)
 	}
 	return nil
 }
@@ -280,7 +280,7 @@ func cmdBucketShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `show`)
 	}
 	return nil
 }

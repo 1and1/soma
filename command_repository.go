@@ -275,7 +275,7 @@ func cmdRepositoryList(c *cli.Context) error {
 	if resp, err := adm.GetReq("/repository/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `list`)
 	}
 	return nil
 }
@@ -288,7 +288,7 @@ func cmdRepositoryShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `show`)
 	}
 	return nil
 }
@@ -301,7 +301,7 @@ func cmdRepositoryTree(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `tree`)
 	}
 	return nil
 }

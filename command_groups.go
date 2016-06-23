@@ -212,7 +212,7 @@ func cmdGroupList(c *cli.Context) error {
 	if resp, err := adm.GetReq("/groups/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `list`)
 	}
 	return nil
 }
@@ -235,7 +235,7 @@ func cmdGroupShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		adm.FormatOut(c, resp, `show`)
 	}
 	return nil
 }
