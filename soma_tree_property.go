@@ -6,7 +6,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeProperty interface {
+type Property interface {
 	GetID() string
 	GetInstanceId(objType string, objId uuid.UUID) uuid.UUID
 	GetIsInherited() bool
@@ -24,7 +24,7 @@ type SomaTreeProperty interface {
 	SetSourceId(id uuid.UUID)
 	SetSourceType(s string)
 
-	Clone() SomaTreeProperty
+	Clone() Property
 	Equal(id uuid.UUID) bool
 	MakeAction() Action
 
@@ -153,7 +153,7 @@ func (p *PropertyCustom) SetSourceType(s string) {
 	p.SourceType = s
 }
 
-func (p PropertyCustom) Clone() SomaTreeProperty {
+func (p PropertyCustom) Clone() Property {
 	cl := PropertyCustom{
 		SourceType:   p.SourceType,
 		Inherited:    p.Inherited,
@@ -297,7 +297,7 @@ func (p *PropertyService) SetSourceType(s string) {
 	p.SourceType = s
 }
 
-func (p PropertyService) Clone() SomaTreeProperty {
+func (p PropertyService) Clone() Property {
 	cl := PropertyService{
 		SourceType:   p.SourceType,
 		Inherited:    p.Inherited,
@@ -452,7 +452,7 @@ func (p *PropertySystem) SetSourceType(s string) {
 	p.SourceType = s
 }
 
-func (p PropertySystem) Clone() SomaTreeProperty {
+func (p PropertySystem) Clone() Property {
 	cl := PropertySystem{
 		SourceType:   p.SourceType,
 		Inherited:    p.Inherited,
@@ -593,7 +593,7 @@ func (p *PropertyOncall) SetSourceType(s string) {
 	p.SourceType = s
 }
 
-func (p PropertyOncall) Clone() SomaTreeProperty {
+func (p PropertyOncall) Clone() Property {
 	cl := PropertyOncall{
 		SourceType:   p.SourceType,
 		Inherited:    p.Inherited,
@@ -634,9 +634,9 @@ func (p *PropertyOncall) MakeAction() Action {
 	}
 }
 
-func isDupe(o, n SomaTreeProperty) (bool, bool, SomaTreeProperty) {
+func isDupe(o, n Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
-	var prop SomaTreeProperty
+	var prop Property
 
 	if o.GetKey() == n.GetKey() {
 		// not allowed to replace view any with a more
