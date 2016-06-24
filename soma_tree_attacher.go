@@ -1,7 +1,7 @@
 package somatree
 
 type SomaTreeAttacher interface {
-	SomaTreePropertier
+	Propertier
 	Checker
 
 	Attach(a AttachRequest)

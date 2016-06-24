@@ -9,7 +9,7 @@ import (
 
 //
 // Interface: SomaTreePropertier
-func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
+func (teg *SomaTreeElemGroup) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && !deleteOK {
@@ -59,7 +59,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p SomaTreeProperty) {
 	teg.actionPropertyNew(p.MakeAction())
 }
 
-func (teg *SomaTreeElemGroup) inheritProperty(p SomaTreeProperty) {
+func (teg *SomaTreeElemGroup) inheritProperty(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(teg.Type, teg.Id))
 	if f.Equal(uuid.Nil) {
@@ -84,37 +84,37 @@ func (teg *SomaTreeElemGroup) inheritProperty(p SomaTreeProperty) {
 }
 
 func (teg *SomaTreeElemGroup) inheritPropertyDeep(
-	p SomaTreeProperty) {
+	p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		c := child
-		go func(stp SomaTreeProperty) {
+		go func(stp Property) {
 			defer wg.Done()
-			teg.Children[c].inheritProperty(stp)
+			teg.Children[c].setPropertyInherited(stp)
 		}(p)
 	}
 	wg.Wait()
 }
 
 func (teg *SomaTreeElemGroup) setCustomProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	teg.PropertyCustom[p.GetID()] = p
 }
 
 func (teg *SomaTreeElemGroup) setServiceProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	teg.PropertyService[p.GetID()] = p
 }
 
 func (teg *SomaTreeElemGroup) setSystemProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	teg.PropertySystem[p.GetID()] = p
 }
 
 func (teg *SomaTreeElemGroup) setOncallProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	teg.PropertyOncall[p.GetID()] = p
 }
 
@@ -131,7 +131,7 @@ customloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teg.Children[childId].inheritProperty(f)
+		teg.Children[childId].setPropertyInherited(f)
 	}
 oncallloop:
 	for prop, _ := range teg.PropertyOncall {
@@ -142,7 +142,7 @@ oncallloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teg.Children[childId].inheritProperty(f)
+		teg.Children[childId].setPropertyInherited(f)
 	}
 serviceloop:
 	for prop, _ := range teg.PropertyService {
@@ -153,7 +153,7 @@ serviceloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teg.Children[childId].inheritProperty(f)
+		teg.Children[childId].setPropertyInherited(f)
 	}
 systemloop:
 	for prop, _ := range teg.PropertySystem {
@@ -164,7 +164,7 @@ systemloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teg.Children[childId].inheritProperty(f)
+		teg.Children[childId].setPropertyInherited(f)
 	}
 }
 
@@ -196,10 +196,10 @@ func (teg *SomaTreeElemGroup) checkProperty(
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (teg *SomaTreeElemGroup) checkDuplicate(p SomaTreeProperty) (
-	bool, bool, SomaTreeProperty) {
+func (teg *SomaTreeElemGroup) checkDuplicate(p Property) (
+	bool, bool, Property) {
 	var dupe, deleteOK bool
-	var prop SomaTreeProperty
+	var prop Property
 
 propswitch:
 	switch p.GetType() {

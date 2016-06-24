@@ -9,7 +9,7 @@ import (
 
 //
 // Interface: SomaTreePropertier
-func (ter *SomaTreeElemRepository) SetProperty(p SomaTreeProperty) {
+func (ter *SomaTreeElemRepository) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := ter.checkDuplicate(p); dupe && !deleteOK {
@@ -53,7 +53,7 @@ func (ter *SomaTreeElemRepository) SetProperty(p SomaTreeProperty) {
 	ter.actionPropertyNew(p.MakeAction())
 }
 
-func (ter *SomaTreeElemRepository) inheritProperty(p SomaTreeProperty) {
+func (ter *SomaTreeElemRepository) inheritProperty(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(ter.Type, ter.Id))
 	if f.Equal(uuid.Nil) {
@@ -78,37 +78,37 @@ func (ter *SomaTreeElemRepository) inheritProperty(p SomaTreeProperty) {
 }
 
 func (ter *SomaTreeElemRepository) inheritPropertyDeep(
-	p SomaTreeProperty) {
+	p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range ter.Children {
 		wg.Add(1)
 		c := child
-		go func(stp SomaTreeProperty) {
+		go func(stp Property) {
 			defer wg.Done()
-			ter.Children[c].inheritProperty(stp)
+			ter.Children[c].setPropertyInherited(stp)
 		}(p)
 	}
 	wg.Wait()
 }
 
 func (ter *SomaTreeElemRepository) setCustomProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ter.PropertyCustom[p.GetID()] = p
 }
 
 func (ter *SomaTreeElemRepository) setServiceProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ter.PropertyService[p.GetID()] = p
 }
 
 func (ter *SomaTreeElemRepository) setSystemProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ter.PropertySystem[p.GetID()] = p
 }
 
 func (ter *SomaTreeElemRepository) setOncallProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ter.PropertyOncall[p.GetID()] = p
 }
 
@@ -125,7 +125,7 @@ customloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		ter.Children[childId].inheritProperty(f)
+		ter.Children[childId].setPropertyInherited(f)
 	}
 oncallloop:
 	for prop, _ := range ter.PropertyOncall {
@@ -136,7 +136,7 @@ oncallloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		ter.Children[childId].inheritProperty(f)
+		ter.Children[childId].setPropertyInherited(f)
 	}
 serviceloop:
 	for prop, _ := range ter.PropertyService {
@@ -147,7 +147,7 @@ serviceloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		ter.Children[childId].inheritProperty(f)
+		ter.Children[childId].setPropertyInherited(f)
 	}
 systemloop:
 	for prop, _ := range ter.PropertySystem {
@@ -158,7 +158,7 @@ systemloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		ter.Children[childId].inheritProperty(f)
+		ter.Children[childId].setPropertyInherited(f)
 	}
 }
 
@@ -190,10 +190,10 @@ func (ter *SomaTreeElemRepository) checkProperty(
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (ter *SomaTreeElemRepository) checkDuplicate(p SomaTreeProperty) (
-	bool, bool, SomaTreeProperty) {
+func (ter *SomaTreeElemRepository) checkDuplicate(p Property) (
+	bool, bool, Property) {
 	var dupe, deleteOK bool
-	var prop SomaTreeProperty
+	var prop Property
 
 propswitch:
 	switch p.GetType() {

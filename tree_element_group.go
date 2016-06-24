@@ -18,10 +18,10 @@ type SomaTreeElemGroup struct {
 	Parent          SomaTreeGroupReceiver `json:"-"`
 	Fault           *SomaTreeElemFault    `json:"-"`
 	Action          chan *Action          `json:"-"`
-	PropertyOncall  map[string]SomaTreeProperty
-	PropertyService map[string]SomaTreeProperty
-	PropertySystem  map[string]SomaTreeProperty
-	PropertyCustom  map[string]SomaTreeProperty
+	PropertyOncall  map[string]Property
+	PropertyService map[string]Property
+	PropertySystem  map[string]Property
+	PropertyCustom  map[string]Property
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
@@ -51,10 +51,10 @@ func NewGroup(spec GroupSpec) *SomaTreeElemGroup {
 	teg.State = "floating"
 	teg.Parent = nil
 	teg.Children = make(map[string]SomaTreeGroupAttacher)
-	teg.PropertyOncall = make(map[string]SomaTreeProperty)
-	teg.PropertyService = make(map[string]SomaTreeProperty)
-	teg.PropertySystem = make(map[string]SomaTreeProperty)
-	teg.PropertyCustom = make(map[string]SomaTreeProperty)
+	teg.PropertyOncall = make(map[string]Property)
+	teg.PropertyService = make(map[string]Property)
+	teg.PropertySystem = make(map[string]Property)
+	teg.PropertyCustom = make(map[string]Property)
 	teg.Checks = make(map[string]Check)
 	teg.CheckInstances = make(map[string][]string)
 	teg.Instances = make(map[string]CheckInstance)
@@ -77,25 +77,25 @@ func (teg SomaTreeElemGroup) Clone() *SomaTreeElemGroup {
 	}
 	cl.Children = f
 
-	pO := make(map[string]SomaTreeProperty)
+	pO := make(map[string]Property)
 	for k, prop := range teg.PropertyOncall {
 		pO[k] = prop.Clone()
 	}
 	cl.PropertyOncall = pO
 
-	pSv := make(map[string]SomaTreeProperty)
+	pSv := make(map[string]Property)
 	for k, prop := range teg.PropertyService {
 		pSv[k] = prop.Clone()
 	}
 	cl.PropertyService = pSv
 
-	pSy := make(map[string]SomaTreeProperty)
+	pSy := make(map[string]Property)
 	for k, prop := range teg.PropertySystem {
 		pSy[k] = prop.Clone()
 	}
 	cl.PropertySystem = pSy
 
-	pC := make(map[string]SomaTreeProperty)
+	pC := make(map[string]Property)
 	for k, prop := range teg.PropertyCustom {
 		pC[k] = prop.Clone()
 	}
@@ -340,7 +340,7 @@ func (teg *SomaTreeElemGroup) actionPropertyNew(a Action) {
 }
 
 //
-func (teg *SomaTreeElemGroup) setupPropertyAction(p SomaTreeProperty) Action {
+func (teg *SomaTreeElemGroup) setupPropertyAction(p Property) Action {
 	return p.MakeAction()
 }
 

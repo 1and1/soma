@@ -1,31 +1,31 @@
 package somatree
 
 func (tef *SomaTreeElemFault) SetProperty(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) inheritProperty(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) inheritPropertyDeep(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) setCustomProperty(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) setServiceProperty(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) setSystemProperty(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) setOncallProperty(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (tef *SomaTreeElemFault) syncProperty(
@@ -37,8 +37,8 @@ func (tef *SomaTreeElemFault) checkProperty(
 	return false
 }
 
-func (tef *SomaTreeElemFault) checkDuplicate(p SomaTreeProperty) (
-	bool, bool, SomaTreeProperty) {
+func (tef *SomaTreeElemFault) checkDuplicate(p Property) (
+	bool, bool, Property) {
 	return true, false, nil
 }
 

@@ -21,10 +21,10 @@ type SomaTreeElemNode struct {
 	Parent          SomaTreeNodeReceiver `json:"-"`
 	Fault           *SomaTreeElemFault   `json:"-"`
 	Action          chan *Action         `json:"-"`
-	PropertyOncall  map[string]SomaTreeProperty
-	PropertyService map[string]SomaTreeProperty
-	PropertySystem  map[string]SomaTreeProperty
-	PropertyCustom  map[string]SomaTreeProperty
+	PropertyOncall  map[string]Property
+	PropertyService map[string]Property
+	PropertySystem  map[string]Property
+	PropertyCustom  map[string]Property
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
@@ -60,10 +60,10 @@ func NewNode(spec NodeSpec) *SomaTreeElemNode {
 	ten.Type = "node"
 	ten.State = "floating"
 	ten.Parent = nil
-	ten.PropertyOncall = make(map[string]SomaTreeProperty)
-	ten.PropertyService = make(map[string]SomaTreeProperty)
-	ten.PropertySystem = make(map[string]SomaTreeProperty)
-	ten.PropertyCustom = make(map[string]SomaTreeProperty)
+	ten.PropertyOncall = make(map[string]Property)
+	ten.PropertyService = make(map[string]Property)
+	ten.PropertySystem = make(map[string]Property)
+	ten.PropertyCustom = make(map[string]Property)
 	ten.Checks = make(map[string]Check)
 	ten.CheckInstances = make(map[string][]string)
 	ten.Instances = make(map[string]CheckInstance)
@@ -85,25 +85,25 @@ func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
 	cl.Team, _ = uuid.FromString(ten.Team.String())
 	cl.ServerId, _ = uuid.FromString(ten.ServerId.String())
 
-	pO := make(map[string]SomaTreeProperty)
+	pO := make(map[string]Property)
 	for k, prop := range ten.PropertyOncall {
 		pO[k] = prop.Clone()
 	}
 	cl.PropertyOncall = pO
 
-	pSv := make(map[string]SomaTreeProperty)
+	pSv := make(map[string]Property)
 	for k, prop := range ten.PropertyService {
 		pSv[k] = prop.Clone()
 	}
 	cl.PropertyService = pSv
 
-	pSy := make(map[string]SomaTreeProperty)
+	pSy := make(map[string]Property)
 	for k, prop := range ten.PropertySystem {
 		pSy[k] = prop.Clone()
 	}
 	cl.PropertySystem = pSy
 
-	pC := make(map[string]SomaTreeProperty)
+	pC := make(map[string]Property)
 	for k, prop := range ten.PropertyCustom {
 		pC[k] = prop.Clone()
 	}
@@ -268,7 +268,7 @@ func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
 }
 
 //
-func (ten *SomaTreeElemNode) setupPropertyAction(p SomaTreeProperty) Action {
+func (ten *SomaTreeElemNode) setupPropertyAction(p Property) Action {
 	return p.MakeAction()
 }
 

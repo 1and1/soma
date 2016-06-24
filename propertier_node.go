@@ -8,7 +8,7 @@ import (
 
 //
 // Interface: SomaTreePropertier
-func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
+func (ten *SomaTreeElemNode) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && !deleteOK {
@@ -52,7 +52,7 @@ func (ten *SomaTreeElemNode) SetProperty(p SomaTreeProperty) {
 	ten.actionPropertyNew(p.MakeAction())
 }
 
-func (ten *SomaTreeElemNode) inheritProperty(p SomaTreeProperty) {
+func (ten *SomaTreeElemNode) inheritProperty(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(ten.Type, ten.Id))
 	if f.Equal(uuid.Nil) {
@@ -77,26 +77,26 @@ func (ten *SomaTreeElemNode) inheritProperty(p SomaTreeProperty) {
 
 // noop, satisfy interface
 func (ten *SomaTreeElemNode) inheritPropertyDeep(
-	p SomaTreeProperty) {
+	p Property) {
 }
 
 func (ten *SomaTreeElemNode) setCustomProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ten.PropertyCustom[p.GetID()] = p
 }
 
 func (ten *SomaTreeElemNode) setServiceProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ten.PropertyService[p.GetID()] = p
 }
 
 func (ten *SomaTreeElemNode) setSystemProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ten.PropertySystem[p.GetID()] = p
 }
 
 func (ten *SomaTreeElemNode) setOncallProperty(
-	p SomaTreeProperty) {
+	p Property) {
 	ten.PropertyOncall[p.GetID()] = p
 }
 
@@ -114,10 +114,10 @@ func (ten *SomaTreeElemNode) checkProperty(
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (ten *SomaTreeElemNode) checkDuplicate(p SomaTreeProperty) (
-	bool, bool, SomaTreeProperty) {
+func (ten *SomaTreeElemNode) checkDuplicate(p Property) (
+	bool, bool, Property) {
 	var dupe, deleteOK bool
-	var prop SomaTreeProperty
+	var prop Property
 
 propswitch:
 	switch p.GetType() {

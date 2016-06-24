@@ -18,10 +18,10 @@ type SomaTreeElemCluster struct {
 	Parent          SomaTreeClusterReceiver `json:"-"`
 	Fault           *SomaTreeElemFault      `json:"-"`
 	Action          chan *Action            `json:"-"`
-	PropertyOncall  map[string]SomaTreeProperty
-	PropertyService map[string]SomaTreeProperty
-	PropertySystem  map[string]SomaTreeProperty
-	PropertyCustom  map[string]SomaTreeProperty
+	PropertyOncall  map[string]Property
+	PropertyService map[string]Property
+	PropertySystem  map[string]Property
+	PropertyCustom  map[string]Property
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
@@ -51,10 +51,10 @@ func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
 	tec.State = "floating"
 	tec.Parent = nil
 	tec.Children = make(map[string]SomaTreeClusterAttacher)
-	tec.PropertyOncall = make(map[string]SomaTreeProperty)
-	tec.PropertyService = make(map[string]SomaTreeProperty)
-	tec.PropertySystem = make(map[string]SomaTreeProperty)
-	tec.PropertyCustom = make(map[string]SomaTreeProperty)
+	tec.PropertyOncall = make(map[string]Property)
+	tec.PropertyService = make(map[string]Property)
+	tec.PropertySystem = make(map[string]Property)
+	tec.PropertyCustom = make(map[string]Property)
 	tec.Checks = make(map[string]Check)
 	tec.CheckInstances = make(map[string][]string)
 	tec.Instances = make(map[string]CheckInstance)
@@ -78,25 +78,25 @@ func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
 	}
 	cl.Children = f
 
-	pO := make(map[string]SomaTreeProperty)
+	pO := make(map[string]Property)
 	for k, prop := range tec.PropertyOncall {
 		pO[k] = prop.Clone()
 	}
 	cl.PropertyOncall = pO
 
-	pSv := make(map[string]SomaTreeProperty)
+	pSv := make(map[string]Property)
 	for k, prop := range tec.PropertyService {
 		pSv[k] = prop.Clone()
 	}
 	cl.PropertyService = pSv
 
-	pSy := make(map[string]SomaTreeProperty)
+	pSy := make(map[string]Property)
 	for k, prop := range tec.PropertySystem {
 		pSy[k] = prop.Clone()
 	}
 	cl.PropertySystem = pSy
 
-	pC := make(map[string]SomaTreeProperty)
+	pC := make(map[string]Property)
 	for k, prop := range tec.PropertyCustom {
 		pC[k] = prop.Clone()
 	}
@@ -341,7 +341,7 @@ func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
 }
 
 //
-func (tec *SomaTreeElemCluster) setupPropertyAction(p SomaTreeProperty) Action {
+func (tec *SomaTreeElemCluster) setupPropertyAction(p Property) Action {
 	return p.MakeAction()
 }
 

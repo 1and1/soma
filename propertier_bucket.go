@@ -40,7 +40,7 @@ func (teb *SomaTreeElemBucket) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	teb.inheritPropertyDeep(f)
+	teb.setPropertyOnChildren(f)
 	// scrub instance startup information prior to storing
 	p.clearInstances()
 	teb.addProperty(p)
@@ -58,7 +58,7 @@ func (teb *SomaTreeElemBucket) setPropertyInherited(p Property) {
 
 	teb.addProperty(f)
 	p.SetId(uuid.UUID{})
-	teb.inheritPropertyDeep(p)
+	teb.setPropertyOnChildren(p)
 	teb.actionPropertyNew(f.MakeAction())
 }
 
@@ -70,7 +70,7 @@ func (teb *SomaTreeElemBucket) setPropertyOnChildren(p Property) {
 		c := child
 		go func(stp Property) {
 			defer wg.Done()
-			teb.Children[c].inheritProperty(stp)
+			teb.Children[c].setPropertyInherited(stp)
 		}(p)
 	}
 	wg.Wait()
@@ -126,7 +126,7 @@ func (teb *SomaTreeElemBucket) updatePropertyOnChildren(p Property) {
 }
 
 func (teb *SomaTreeElemBucket) switchProperty(p Property) {
-	updId, _ = uuid.FromString(teb.findIdForSource(
+	updId, _ := uuid.FromString(teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	))
@@ -168,7 +168,7 @@ func (teb *SomaTreeElemBucket) deletePropertyOnChildren(p Property) {
 }
 
 func (teb *SomaTreeElemBucket) rmProperty(p Property) {
-	delId, _ = uuid.FromString(teb.findIdForSource(
+	delId, _ := uuid.FromString(teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	))
@@ -219,32 +219,32 @@ func (teb *SomaTreeElemBucket) verifySourceInstance(id, prop string) bool {
 }
 
 //
-func (teb *SomaTreeElemBucket) findIdForSource(id, prop string) string {
+func (teb *SomaTreeElemBucket) findIdForSource(source, prop string) string {
 	switch prop {
 	case `custom`:
 		for id, _ := range teb.PropertyCustom {
-			if teb.PropertyCustom[id].GetSourceInstance() != p.GetSourceInstance() {
+			if teb.PropertyCustom[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `system`:
 		for id, _ := range teb.PropertyService {
-			if teb.PropertyService[id].GetSourceInstance() != p.GetSourceInstance() {
+			if teb.PropertyService[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `service`:
 		for id, _ := range teb.PropertySystem {
-			if teb.PropertySystem[id].GetSourceInstance() != p.GetSourceInstance() {
+			if teb.PropertySystem[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `oncall`:
 		for id, _ := range teb.PropertyOncall {
-			if teb.PropertyOncall[id].GetSourceInstance() != p.GetSourceInstance() {
+			if teb.PropertyOncall[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
@@ -265,7 +265,7 @@ customloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teb.Children[childId].inheritProperty(f)
+		teb.Children[childId].setPropertyInherited(f)
 	}
 oncallloop:
 	for prop, _ := range teb.PropertyOncall {
@@ -276,7 +276,7 @@ oncallloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teb.Children[childId].inheritProperty(f)
+		teb.Children[childId].setPropertyInherited(f)
 	}
 serviceloop:
 	for prop, _ := range teb.PropertyService {
@@ -287,7 +287,7 @@ serviceloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teb.Children[childId].inheritProperty(f)
+		teb.Children[childId].setPropertyInherited(f)
 	}
 systemloop:
 	for prop, _ := range teb.PropertySystem {
@@ -298,7 +298,7 @@ systemloop:
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
-		teb.Children[childId].inheritProperty(f)
+		teb.Children[childId].setPropertyInherited(f)
 	}
 }
 

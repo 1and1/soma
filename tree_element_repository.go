@@ -20,10 +20,10 @@ type SomaTreeElemRepository struct {
 	State           string
 	Parent          SomaTreeRepositoryReceiver `json:"-"`
 	Fault           *SomaTreeElemFault         `json:"-"`
-	PropertyOncall  map[string]SomaTreeProperty
-	PropertyService map[string]SomaTreeProperty
-	PropertySystem  map[string]SomaTreeProperty
-	PropertyCustom  map[string]SomaTreeProperty
+	PropertyOncall  map[string]Property
+	PropertyService map[string]Property
+	PropertySystem  map[string]Property
+	PropertyCustom  map[string]Property
 	Checks          map[string]Check
 	Children        map[string]SomaTreeRepositoryAttacher // `json:"-"`
 	Action          chan *Action                          `json:"-"`
@@ -55,10 +55,10 @@ func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
 	ter.Deleted = spec.Deleted
 	ter.Active = spec.Active
 	ter.Children = make(map[string]SomaTreeRepositoryAttacher)
-	ter.PropertyOncall = make(map[string]SomaTreeProperty)
-	ter.PropertyService = make(map[string]SomaTreeProperty)
-	ter.PropertySystem = make(map[string]SomaTreeProperty)
-	ter.PropertyCustom = make(map[string]SomaTreeProperty)
+	ter.PropertyOncall = make(map[string]Property)
+	ter.PropertyService = make(map[string]Property)
+	ter.PropertySystem = make(map[string]Property)
+	ter.PropertyCustom = make(map[string]Property)
 	ter.Checks = make(map[string]Check)
 
 	// return new repository with attached fault handler
@@ -88,25 +88,25 @@ func (ter SomaTreeElemRepository) Clone() SomaTreeElemRepository {
 	}
 	cl.Children = f
 
-	pO := make(map[string]SomaTreeProperty)
+	pO := make(map[string]Property)
 	for k, prop := range ter.PropertyOncall {
 		pO[k] = prop.Clone()
 	}
 	cl.PropertyOncall = pO
 
-	pSv := make(map[string]SomaTreeProperty)
+	pSv := make(map[string]Property)
 	for k, prop := range ter.PropertyService {
 		pSv[k] = prop.Clone()
 	}
 	cl.PropertyService = pSv
 
-	pSy := make(map[string]SomaTreeProperty)
+	pSy := make(map[string]Property)
 	for k, prop := range ter.PropertySystem {
 		pSy[k] = prop.Clone()
 	}
 	cl.PropertySystem = pSy
 
-	pC := make(map[string]SomaTreeProperty)
+	pC := make(map[string]Property)
 	for k, prop := range ter.PropertyCustom {
 		pC[k] = prop.Clone()
 	}
@@ -301,7 +301,7 @@ func (ter *SomaTreeElemRepository) actionPropertyNew(a Action) {
 	ter.Action <- &a
 }
 
-func (ter *SomaTreeElemRepository) setupPropertyAction(p SomaTreeProperty) Action {
+func (ter *SomaTreeElemRepository) setupPropertyAction(p Property) Action {
 	return p.MakeAction()
 }
 
