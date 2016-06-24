@@ -81,9 +81,9 @@ func (teb *SomaTreeElemBucket) addProperty(p Property) {
 	case `custom`:
 		teb.PropertyCustom[p.GetID()] = p
 	case `system`:
-		teb.PropertyService[p.GetID()] = p
-	case `service`:
 		teb.PropertySystem[p.GetID()] = p
+	case `service`:
+		teb.PropertyService[p.GetID()] = p
 	case `oncall`:
 		teb.PropertyOncall[p.GetID()] = p
 	}
