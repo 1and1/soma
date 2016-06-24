@@ -17,7 +17,7 @@ type Propertier interface {
 	rmProperty(p Property)
 
 	verifySourceInstance(id, prop string)
-	findIdForSource(id string) string
+	findIdForSource(source, prop string) string
 	syncProperty(childId string)
 	checkProperty(propType string, propId string) bool
 	checkDuplicate(p Property) (bool, bool, Property)
