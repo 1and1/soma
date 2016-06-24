@@ -326,7 +326,25 @@ func (tec *SomaTreeElemCluster) actionMemberRemoved(a Action) {
 	tec.Action <- &a
 }
 
+//
 func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
+	a.Action = `property_new`
+	tec.actionProperty(a)
+}
+
+func (tec *SomaTreeElemCluster) actionPropertyUpdate(a Action) {
+	a.Action = `property_update`
+	tec.actionProperty(a)
+}
+
+func (tec *SomaTreeElemCluster) actionPropertyDelete(a Action) {
+	a.Action = `property_delete`
+	tec.actionProperty(a)
+}
+
+func (tec *SomaTreeElemCluster) actionProperty(a Action) {
+	a.Type = tec.Type
+	a.Cluster = tec.export()
 	a.Property.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
@@ -337,7 +355,7 @@ func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
 		a.Property.Service.TeamId = tec.Team.String()
 	}
 
-	tec.actionDispatch("property_new", a)
+	tec.Action <- &a
 }
 
 //
