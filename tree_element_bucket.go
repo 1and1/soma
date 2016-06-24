@@ -21,10 +21,10 @@ type SomaTreeElemBucket struct {
 	Team            uuid.UUID
 	Parent          SomaTreeBucketReceiver `json:"-"`
 	Fault           *SomaTreeElemFault     `json:"-"`
-	PropertyOncall  map[string]SomaTreeProperty
-	PropertyService map[string]SomaTreeProperty
-	PropertySystem  map[string]SomaTreeProperty
-	PropertyCustom  map[string]SomaTreeProperty
+	PropertyOncall  map[string]Property
+	PropertyService map[string]Property
+	PropertySystem  map[string]Property
+	PropertyCustom  map[string]Property
 	Checks          map[string]Check
 	Children        map[string]SomaTreeBucketAttacher //`json:"-"`
 	Action          chan *Action                      `json:"-"`
@@ -60,10 +60,10 @@ func NewBucket(spec BucketSpec) *SomaTreeElemBucket {
 	teb.State = "floating"
 	teb.Parent = nil
 	teb.Children = make(map[string]SomaTreeBucketAttacher)
-	teb.PropertyOncall = make(map[string]SomaTreeProperty)
-	teb.PropertyService = make(map[string]SomaTreeProperty)
-	teb.PropertySystem = make(map[string]SomaTreeProperty)
-	teb.PropertyCustom = make(map[string]SomaTreeProperty)
+	teb.PropertyOncall = make(map[string]Property)
+	teb.PropertyService = make(map[string]Property)
+	teb.PropertySystem = make(map[string]Property)
+	teb.PropertyCustom = make(map[string]Property)
 	teb.Checks = make(map[string]Check)
 
 	return teb
@@ -88,25 +88,25 @@ func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
 	}
 	cl.Children = f
 
-	pO := make(map[string]SomaTreeProperty)
+	pO := make(map[string]Property)
 	for k, prop := range teb.PropertyOncall {
 		pO[k] = prop.Clone()
 	}
 	cl.PropertyOncall = pO
 
-	pSv := make(map[string]SomaTreeProperty)
+	pSv := make(map[string]Property)
 	for k, prop := range teb.PropertyService {
 		pSv[k] = prop.Clone()
 	}
 	cl.PropertyService = pSv
 
-	pSy := make(map[string]SomaTreeProperty)
+	pSy := make(map[string]Property)
 	for k, prop := range teb.PropertySystem {
 		pSy[k] = prop.Clone()
 	}
 	cl.PropertySystem = pSy
 
-	pC := make(map[string]SomaTreeProperty)
+	pC := make(map[string]Property)
 	for k, prop := range teb.PropertyCustom {
 		pC[k] = prop.Clone()
 	}
@@ -246,25 +246,36 @@ func (teb *SomaTreeElemBucket) actionAssignNode(a Action) {
 	teb.Action <- &a
 }
 
+//
 func (teb *SomaTreeElemBucket) actionPropertyNew(a Action) {
 	a.Action = "property_new"
+	teb.actionProperty(a)
+}
+
+func (teb *SomaTreeElemBucket) actionPropertyUpdate(a Action) {
+	a.Action = `property_update`
+	teb.actionProperty(a)
+}
+
+func (teb *SomaTreeElemBucket) actionPropertyDelete(a Action) {
+	a.Action = `property_delete`
+	teb.actionProperty(a)
+}
+
+func (teb *SomaTreeElemBucket) actionProperty(a Action) {
 	a.Type = teb.Type
 	a.Bucket = teb.export()
 
 	a.Property.RepositoryId = teb.Repository.String()
 	a.Property.BucketId = teb.Id.String()
 	switch a.Property.Type {
-	case "custom":
+	case `custom`:
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
-	case "service":
+	case `service`:
 		a.Property.Service.TeamId = teb.Team.String()
 	}
 
 	teb.Action <- &a
-}
-
-func (teb *SomaTreeElemBucket) setupPropertyAction(p SomaTreeProperty) Action {
-	return p.MakeAction()
 }
 
 //
