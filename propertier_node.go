@@ -69,6 +69,19 @@ func (ten *Node) setPropertyInherited(p Property) {
 			Action: `node.setPropertyInherited on inherited=false`}
 		return
 	}
+	if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && deleteOK {
+		// we received an inherited SetProperty from above us in the
+		// tree for a property that is duplicate, but we are not the
+		// source of the duplicate -> corrupt tree
+		ten.Fault.Error <- &Error{
+			Action: `node.setPropertyInherited corruption detected`}
+		return
+	} else if dupe && !deleteOK {
+		// we received an inherited SetProperty from above us in the
+		// tree for a property that is duplicate; we have a locally
+		// set property -> stop inheritance, no error
+		return
+	}
 	ten.addProperty(f)
 	// no inheritPropertyDeep(), nodes have no children
 	ten.actionPropertyNew(f.MakeAction())

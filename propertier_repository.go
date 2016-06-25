@@ -73,6 +73,19 @@ func (ter *Repository) setPropertyInherited(p Property) {
 			Action: `repository.setPropertyInherited on inherited=false`}
 		return
 	}
+	if dupe, deleteOK, _ := ter.checkDuplicate(p); dupe && deleteOK {
+		// we received an inherited SetProperty from above us in the
+		// tree for a property that is duplicate, but we are not the
+		// source of the duplicate -> corrupt tree
+		ter.Fault.Error <- &Error{
+			Action: `repository.setPropertyInherited corruption detected`}
+		return
+	} else if dupe && !deleteOK {
+		// we received an inherited SetProperty from above us in the
+		// tree for a property that is duplicate; we have a locally
+		// set property -> stop inheritance, no error
+		return
+	}
 	ter.addProperty(f)
 	p.SetId(uuid.UUID{})
 	ter.setPropertyOnChildren(p)

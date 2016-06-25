@@ -73,6 +73,19 @@ func (teg *Group) setPropertyInherited(p Property) {
 			Action: `group.setPropertyInherited on inherited=false`}
 		return
 	}
+	if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && deleteOK {
+		// we received an inherited SetProperty from above us in the
+		// tree for a property that is duplicate, but we are not the
+		// source of the duplicate -> corrupt tree
+		teg.Fault.Error <- &Error{
+			Action: `group.setPropertyInherited corruption detected`}
+		return
+	} else if dupe && !deleteOK {
+		// we received an inherited SetProperty from above us in the
+		// tree for a property that is duplicate; we have a locally
+		// set property -> stop inheritance, no error
+		return
+	}
 	teg.addProperty(f)
 	p.SetId(uuid.UUID{})
 	teg.setPropertyOnChildren(p)
