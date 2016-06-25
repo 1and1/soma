@@ -1,6 +1,6 @@
 package somatree
 
-type SomaTreeFinder interface {
+type Finder interface {
 	Find(f FindRequest, b bool) Attacher
 }
 

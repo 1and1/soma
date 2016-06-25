@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeFinder
+// Interface: Finder
 func (ten *Node) Find(f FindRequest, b bool) Attacher {
 	if findRequestCheck(f, ten) {
 		return ten

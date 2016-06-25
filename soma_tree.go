@@ -153,7 +153,7 @@ func (st *Tree) unlinkRepository(u UnlinkRequest) {
 	}
 }
 
-// Interface: SomaTreeFinder
+// Interface: Finder
 func (st *Tree) Find(f FindRequest, b bool) Attacher {
 	if !b {
 		panic(`Tree.Find: root element can never inherit a Find request`)

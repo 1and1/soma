@@ -3,7 +3,7 @@ package somatree
 import "sync"
 
 //
-// Interface: SomaTreeFinder
+// Interface: Finder
 func (teb *Bucket) Find(f FindRequest, b bool) Attacher {
 	if findRequestCheck(f, teb) {
 		return teb
@@ -21,7 +21,7 @@ func (teb *Bucket) Find(f FindRequest, b bool) Attacher {
 		c := child
 		go func(fr FindRequest, bl bool) {
 			defer wg.Done()
-			rawResult <- teb.Children[c].(SomaTreeFinder).Find(fr, bl)
+			rawResult <- teb.Children[c].(Finder).Find(fr, bl)
 		}(f, false)
 	}
 	wg.Wait()

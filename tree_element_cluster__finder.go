@@ -3,7 +3,7 @@ package somatree
 import "sync"
 
 //
-// Interface: SomaTreeFinder
+// Interface: Finder
 func (tec *Cluster) Find(f FindRequest, b bool) Attacher {
 	if findRequestCheck(f, tec) {
 		return tec
@@ -33,7 +33,7 @@ func (tec *Cluster) Find(f FindRequest, b bool) Attacher {
 		c := child
 		go func(fr FindRequest, bl bool) {
 			defer wg.Done()
-			rawResult <- tec.Children[c].(SomaTreeFinder).Find(fr, bl)
+			rawResult <- tec.Children[c].(Finder).Find(fr, bl)
 		}(f, false)
 	}
 	wg.Wait()
