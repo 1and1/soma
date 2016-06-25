@@ -26,6 +26,7 @@ func (ter *Repository) receiveBucket(r ReceiveRequest) {
 			ter.Children[r.Bucket.GetID()] = r.Bucket
 			r.Bucket.setParent(ter)
 			r.Bucket.setAction(ter.Action)
+			r.Bucket.setFault(ter.Fault)
 		default:
 			panic(`Repository.receiveBucket`)
 		}
