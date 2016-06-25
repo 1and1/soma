@@ -128,6 +128,10 @@ func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {
 		Group:      teg,
 	})
 
+	if teg.Parent == nil {
+		a.Root.(*SomaTree).AttachError(Error{Action: `attach_group`})
+		return
+	}
 	teg.actionCreate()
 }
 
@@ -142,6 +146,10 @@ func (teg *SomaTreeElemGroup) attachToGroup(a AttachRequest) {
 		Group:      teg,
 	})
 
+	if teg.Parent == nil {
+		a.Root.(*SomaTree).AttachError(Error{Action: `attach_group`})
+		return
+	}
 	teg.actionCreate()
 }
 

@@ -128,6 +128,10 @@ func (tec *SomaTreeElemCluster) attachToBucket(a AttachRequest) {
 		Cluster:    tec,
 	})
 
+	if tec.Parent == nil {
+		a.Root.(*SomaTree).AttachError(Error{Action: `attach_cluster`})
+		return
+	}
 	tec.actionCreate()
 }
 
@@ -142,6 +146,10 @@ func (tec *SomaTreeElemCluster) attachToGroup(a AttachRequest) {
 		Cluster:    tec,
 	})
 
+	if tec.Parent == nil {
+		a.Root.(*SomaTree).AttachError(Error{Action: `attach_cluster`})
+		return
+	}
 	tec.actionCreate()
 }
 

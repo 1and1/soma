@@ -114,6 +114,10 @@ func (teb *SomaTreeElemBucket) attachToRepository(a AttachRequest) {
 		Bucket:     teb,
 	})
 
+	if teb.Parent == nil {
+		a.Root.(*SomaTree).AttachError(Error{Action: `attach_bucket`})
+		return
+	}
 	teb.actionCreate()
 }
 

@@ -58,6 +58,12 @@ func (st *SomaTree) Commit() {
 	st.Snap = nil
 }
 
+func (st *SomaTree) AttachError(err Error) {
+	if st.Child != nil {
+		st.Child.Fault.Error <- &err
+	}
+}
+
 //
 // Interface: SomaTreeBuilder
 func (st *SomaTree) GetID() string {
