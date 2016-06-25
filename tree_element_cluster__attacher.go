@@ -25,7 +25,7 @@ func (tec *Cluster) Attach(a AttachRequest) {
 
 func (tec *Cluster) ReAttach(a AttachRequest) {
 	if tec.Parent == nil {
-		panic(`SomaTreeElemGroup.ReAttach: not attached`)
+		panic(`Group.ReAttach: not attached`)
 	}
 	// XXX: destroy all inherited properties before unlinking
 	// tec.(SomaTreePropertier).destroyInheritedProperties()
@@ -50,7 +50,7 @@ func (tec *Cluster) ReAttach(a AttachRequest) {
 	)
 
 	if tec.Parent == nil {
-		panic(`SomaTreeElemGroup.ReAttach: not reattached`)
+		panic(`Group.ReAttach: not reattached`)
 	}
 	tec.actionUpdate()
 	tec.Parent.(Propertier).syncProperty(tec.Id.String())

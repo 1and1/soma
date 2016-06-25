@@ -27,7 +27,7 @@ func (ter *Repository) Destroy() {
 	// XXX: destroy all properties before unlinking
 	// ter.(SomaTreePropertier).nukeAllProperties()
 
-	// the Destroy handler of SomaTreeElemFault calls
+	// the Destroy handler of Fault calls
 	// updateFaultRecursive(nil) on us
 	ter.Fault.Destroy()
 

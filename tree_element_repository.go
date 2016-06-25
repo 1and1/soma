@@ -142,7 +142,7 @@ func (ter *Repository) setParent(p SomaTreeReceiver) {
 		ter.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
-		panic(`SomaTreeElemBucket.setParent`)
+		panic(`Bucket.setParent`)
 	}
 }
 
