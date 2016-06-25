@@ -122,7 +122,7 @@ func (teb Bucket) CloneRepository() RepositoryAttacher {
 }
 
 //
-// Interface: SomaTreeBuilder
+// Interface: Builder
 func (teb *Bucket) GetID() string {
 	return teb.Id.String()
 }

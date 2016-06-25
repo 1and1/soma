@@ -122,7 +122,7 @@ func (ter Repository) Clone() Repository {
 }
 
 //
-// Interface: SomaTreeBuilder
+// Interface: Builder
 func (ter *Repository) GetID() string {
 	return ter.Id.String()
 }

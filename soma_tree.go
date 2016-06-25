@@ -65,7 +65,7 @@ func (st *Tree) AttachError(err Error) {
 }
 
 //
-// Interface: SomaTreeBuilder
+// Interface: Builder
 func (st *Tree) GetID() string {
 	return st.Id.String()
 }

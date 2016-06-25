@@ -40,7 +40,7 @@ func (tef *Fault) getErrors() []error {
 }
 
 //
-// Interface: SomaTreeBuilder
+// Interface: Builder
 func (tef *Fault) GetID() string {
 	return tef.Id.String()
 }
