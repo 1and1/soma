@@ -16,10 +16,10 @@ type Propertier interface {
 	deletePropertyOnChildren(p Property)
 	rmProperty(p Property)
 
-	verifySourceInstance(id, prop string)
+	verifySourceInstance(id, prop string) bool
 	findIdForSource(source, prop string) string
 	syncProperty(childId string)
-	checkProperty(propType string, propId string) bool
+	checkProperty(propType, propId string) bool
 	checkDuplicate(p Property) (bool, bool, Property)
 }
 
