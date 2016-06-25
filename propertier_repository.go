@@ -56,6 +56,9 @@ func (ter *Repository) setPropertyInherited(p Property) {
 	}
 	f.clearInstances()
 
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	ter.addProperty(f)
 	p.SetId(uuid.UUID{})
 	ter.setPropertyOnChildren(p)
@@ -108,6 +111,9 @@ func (ter *Repository) UpdateProperty(p Property) {
 func (ter *Repository) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	ter.switchProperty(f)
 	ter.updatePropertyOnChildren(p)
 }

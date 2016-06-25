@@ -62,6 +62,9 @@ func (teg *Group) setPropertyInherited(p Property) {
 	}
 	f.clearInstances()
 
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	teg.addProperty(p)
 	p.SetId(uuid.UUID{})
 	teg.setPropertyOnChildren(p)
@@ -114,6 +117,9 @@ func (teg *Group) UpdateProperty(p Property) {
 func (teg *Group) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	teg.switchProperty(f)
 	teg.updatePropertyOnChildren(p)
 }

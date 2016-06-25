@@ -56,6 +56,9 @@ func (tec *Cluster) setPropertyInherited(p Property) {
 	}
 	f.clearInstances()
 
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	tec.addProperty(p)
 	p.SetId(uuid.UUID{})
 	tec.setPropertyOnChildren(p)
@@ -108,6 +111,9 @@ func (tec *Cluster) UpdateProperty(p Property) {
 func (tec *Cluster) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	tec.switchProperty(f)
 	tec.updatePropertyOnChildren(p)
 }

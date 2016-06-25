@@ -55,6 +55,9 @@ func (ten *Node) setPropertyInherited(p Property) {
 	}
 	f.clearInstances()
 
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	ten.addProperty(p)
 	// no inheritPropertyDeep(), nodes have no children
 	ten.actionPropertyNew(f.MakeAction())
@@ -97,6 +100,9 @@ func (ten *Node) UpdateProperty(p Property) {
 func (ten *Node) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	ten.switchProperty(f)
 	ten.updatePropertyOnChildren(p)
 }

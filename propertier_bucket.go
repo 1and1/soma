@@ -56,6 +56,9 @@ func (teb *Bucket) setPropertyInherited(p Property) {
 	}
 	f.clearInstances()
 
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	teb.addProperty(f)
 	p.SetId(uuid.UUID{})
 	teb.setPropertyOnChildren(p)
@@ -108,6 +111,9 @@ func (teb *Bucket) UpdateProperty(p Property) {
 func (teb *Bucket) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
+	if !f.GetIsInherited() {
+		panic(`not inherited`)
+	}
 	teb.switchProperty(f)
 	teb.updatePropertyOnChildren(p)
 }
