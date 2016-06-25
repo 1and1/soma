@@ -124,8 +124,9 @@ func (teb *Bucket) UpdateProperty(p Property) {
 	p.SetInherited(true)
 	f := p.Clone()
 	f.SetInherited(false)
-	teb.switchProperty(f)
-	teb.updatePropertyOnChildren(p)
+	if teb.switchProperty(f) {
+		teb.updatePropertyOnChildren(p)
+	}
 }
 
 func (teb *Bucket) updatePropertyInherited(p Property) {
@@ -136,8 +137,9 @@ func (teb *Bucket) updatePropertyInherited(p Property) {
 			Action: `bucket.updatePropertyInherited on inherited=false`}
 		return
 	}
-	teb.switchProperty(f)
-	teb.updatePropertyOnChildren(p)
+	if teb.switchProperty(f) {
+		teb.updatePropertyOnChildren(p)
+	}
 }
 
 func (teb *Bucket) updatePropertyOnChildren(p Property) {
@@ -152,14 +154,29 @@ func (teb *Bucket) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teb *Bucket) switchProperty(p Property) {
-	updId, _ := uuid.FromString(teb.findIdForSource(
+func (teb *Bucket) switchProperty(p Property) bool {
+	uid := teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
+	)
+	if uid == `` {
+		// we do not have the property for which we received an update
+		if dupe, deleteOK, _ := teb.checkDuplicate(p); dupe && !deleteOK {
+			// the update is duplicate to an property for which we
+			// have the source instance, ie we just received an update
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+		teb.Fault.Error <- &Error{
+			Action: `bucket.switchProperty property not found`}
+		return false
+	}
+	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
 	teb.addProperty(p)
 	teb.actionPropertyUpdate(p.MakeAction())
+	return true
 }
 
 //

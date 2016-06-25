@@ -111,8 +111,9 @@ func (ten *Node) UpdateProperty(p Property) {
 	p.SetInherited(true)
 	f := p.Clone()
 	f.SetInherited(false)
-	ten.switchProperty(f)
-	ten.updatePropertyOnChildren(p)
+	if ten.switchProperty(f) {
+		ten.updatePropertyOnChildren(p)
+	}
 }
 
 func (ten *Node) updatePropertyInherited(p Property) {
@@ -123,22 +124,38 @@ func (ten *Node) updatePropertyInherited(p Property) {
 			Action: `node.updatePropertyInherited on inherited=false`}
 		return
 	}
-	ten.switchProperty(f)
-	ten.updatePropertyOnChildren(p)
+	if ten.switchProperty(f) {
+		ten.updatePropertyOnChildren(p)
+	}
 }
 
 func (ten *Node) updatePropertyOnChildren(p Property) {
 	// noop, satisfy interface
 }
 
-func (ten *Node) switchProperty(p Property) {
-	updId, _ := uuid.FromString(ten.findIdForSource(
+func (ten *Node) switchProperty(p Property) bool {
+	uid := ten.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
+	)
+	if uid == `` {
+		// we do not have the property for which we received an update
+		if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && !deleteOK {
+			// the update is duplicate to an property for which we
+			// have the source instance, ie we just received an update
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+		ten.Fault.Error <- &Error{
+			Action: `node.switchProperty property not found`}
+		return false
+	}
+	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
 	ten.addProperty(p)
 	ten.actionPropertyUpdate(p.MakeAction())
+	return true
 }
 
 //

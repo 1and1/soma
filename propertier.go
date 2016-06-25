@@ -9,7 +9,7 @@ type Propertier interface {
 	UpdateProperty(p Property)
 	updatePropertyInherited(p Property)
 	updatePropertyOnChildren(p Property)
-	switchProperty(p Property)
+	switchProperty(p Property) bool
 
 	DeleteProperty(p Property)
 	deletePropertyInherited(p Property)

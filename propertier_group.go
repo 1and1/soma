@@ -124,8 +124,9 @@ func (teg *Group) UpdateProperty(p Property) {
 	p.SetInherited(true)
 	f := p.Clone()
 	f.SetInherited(false)
-	teg.switchProperty(f)
-	teg.updatePropertyOnChildren(p)
+	if teg.switchProperty(f) {
+		teg.updatePropertyOnChildren(p)
+	}
 }
 
 func (teg *Group) updatePropertyInherited(p Property) {
@@ -136,8 +137,9 @@ func (teg *Group) updatePropertyInherited(p Property) {
 			Action: `group.updatePropertyInherited on inherited=false`}
 		return
 	}
-	teg.switchProperty(f)
-	teg.updatePropertyOnChildren(p)
+	if teg.switchProperty(f) {
+		teg.updatePropertyOnChildren(p)
+	}
 }
 
 func (teg *Group) updatePropertyOnChildren(p Property) {
@@ -152,14 +154,29 @@ func (teg *Group) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teg *Group) switchProperty(p Property) {
-	updId, _ := uuid.FromString(teg.findIdForSource(
+func (teg *Group) switchProperty(p Property) bool {
+	uid := teg.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
+	)
+	if uid == `` {
+		// we do not have the property for which we received an update
+		if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && !deleteOK {
+			// the update is duplicate to an property for which we
+			// have the source instance, ie we just received an update
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+		teg.Fault.Error <- &Error{
+			Action: `group.switchProperty property not found`}
+		return false
+	}
+	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
 	teg.addProperty(p)
 	teg.actionPropertyUpdate(p.MakeAction())
+	return true
 }
 
 //

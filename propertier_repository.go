@@ -124,8 +124,9 @@ func (ter *Repository) UpdateProperty(p Property) {
 	p.SetInherited(true)
 	f := p.Clone()
 	f.SetInherited(false)
-	ter.switchProperty(f)
-	ter.updatePropertyOnChildren(p)
+	if ter.switchProperty(f) {
+		ter.updatePropertyOnChildren(p)
+	}
 }
 
 func (ter *Repository) updatePropertyInherited(p Property) {
@@ -136,8 +137,9 @@ func (ter *Repository) updatePropertyInherited(p Property) {
 			Action: `repository.updatePropertyInherited on inherited=false`}
 		return
 	}
-	ter.switchProperty(f)
-	ter.updatePropertyOnChildren(p)
+	if ter.switchProperty(f) {
+		ter.updatePropertyOnChildren(p)
+	}
 }
 
 func (ter *Repository) updatePropertyOnChildren(p Property) {
@@ -152,14 +154,29 @@ func (ter *Repository) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (ter *Repository) switchProperty(p Property) {
-	updId, _ := uuid.FromString(ter.findIdForSource(
+func (ter *Repository) switchProperty(p Property) bool {
+	uid := ter.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
+	)
+	if uid == `` {
+		// we do not have the property for which we received an update
+		if dupe, deleteOK, _ := ter.checkDuplicate(p); dupe && !deleteOK {
+			// the update is duplicate to an property for which we
+			// have the source instance, ie we just received an update
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+		ter.Fault.Error <- &Error{
+			Action: `repository.switchProperty property not found`}
+		return false
+	}
+	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
 	ter.addProperty(p)
 	ter.actionPropertyUpdate(p.MakeAction())
+	return true
 }
 
 //

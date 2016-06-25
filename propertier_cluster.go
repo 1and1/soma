@@ -124,8 +124,9 @@ func (tec *Cluster) UpdateProperty(p Property) {
 	p.SetInherited(true)
 	f := p.Clone()
 	f.SetInherited(false)
-	tec.switchProperty(f)
-	tec.updatePropertyOnChildren(p)
+	if tec.switchProperty(f) {
+		tec.updatePropertyOnChildren(p)
+	}
 }
 
 func (tec *Cluster) updatePropertyInherited(p Property) {
@@ -136,8 +137,9 @@ func (tec *Cluster) updatePropertyInherited(p Property) {
 			Action: `cluster.updatePropertyInherited on inherited=false`}
 		return
 	}
-	tec.switchProperty(f)
-	tec.updatePropertyOnChildren(p)
+	if tec.switchProperty(f) {
+		tec.updatePropertyOnChildren(p)
+	}
 }
 
 func (tec *Cluster) updatePropertyOnChildren(p Property) {
@@ -152,14 +154,29 @@ func (tec *Cluster) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (tec *Cluster) switchProperty(p Property) {
-	updId, _ := uuid.FromString(tec.findIdForSource(
+func (tec *Cluster) switchProperty(p Property) bool {
+	uid := tec.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
+	)
+	if uid == `` {
+		// we do not have the property for which we received an update
+		if dupe, deleteOK, _ := tec.checkDuplicate(p); dupe && !deleteOK {
+			// the update is duplicate to an property for which we
+			// have the source instance, ie we just received an update
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+		tec.Fault.Error <- &Error{
+			Action: `cluster.switchProperty property not found`}
+		return false
+	}
+	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
 	tec.addProperty(p)
 	tec.actionPropertyUpdate(p.MakeAction())
+	return true
 }
 
 //

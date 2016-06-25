@@ -21,7 +21,8 @@ func (tef *Fault) updatePropertyInherited(p Property) {
 func (tef *Fault) updatePropertyOnChildren(p Property) {
 }
 
-func (tef *Fault) switchProperty(p Property) {
+func (tef *Fault) switchProperty(p Property) bool {
+	return false
 }
 
 func (tef *Fault) DeleteProperty(p Property) {
