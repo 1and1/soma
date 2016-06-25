@@ -58,7 +58,7 @@ func (ten *Node) setPropertyInherited(p Property) {
 	if !f.GetIsInherited() {
 		panic(`not inherited`)
 	}
-	ten.addProperty(p)
+	ten.addProperty(f)
 	// no inheritPropertyDeep(), nodes have no children
 	ten.actionPropertyNew(f.MakeAction())
 }

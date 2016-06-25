@@ -65,7 +65,7 @@ func (teg *Group) setPropertyInherited(p Property) {
 	if !f.GetIsInherited() {
 		panic(`not inherited`)
 	}
-	teg.addProperty(p)
+	teg.addProperty(f)
 	p.SetId(uuid.UUID{})
 	teg.setPropertyOnChildren(p)
 	teg.actionPropertyNew(f.MakeAction())

@@ -59,7 +59,7 @@ func (tec *Cluster) setPropertyInherited(p Property) {
 	if !f.GetIsInherited() {
 		panic(`not inherited`)
 	}
-	tec.addProperty(p)
+	tec.addProperty(f)
 	p.SetId(uuid.UUID{})
 	tec.setPropertyOnChildren(p)
 	tec.actionPropertyNew(f.MakeAction())
