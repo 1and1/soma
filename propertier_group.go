@@ -15,20 +15,29 @@ import (
 func (teg *Group) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
-	if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && !deleteOK {
-		log.Printf("group.SetProperty() detected hard duplicate")
-		return // TODO: error out via FaultElement
-	} else if dupe && deleteOK {
-		// TODO delete inherited value
-		//teg.DelProperty(prop)
-		// -> passed down deleteProperty(prop) can identify by:
-		//    - Inherited true
-		//    - same SourceId
-		//    - same SourceType
-		//    - same InheritedFrom
-		// TODO braucht dupeSrcID?
-		log.Printf("group.SetProperty() detected soft duplicate")
+	if dupe, deleteOK, prop := teg.checkDuplicate(p); dupe && !deleteOK {
+		teg.Fault.Error <- &Error{Action: `duplicate_set_property`}
 		return
+	} else if dupe && deleteOK {
+		srcUUID, _ := uuid.FromString(prop.GetSourceInstance())
+		switch prop.GetType() {
+		case `custom`:
+			teg.deletePropertyInherited(&PropertyCustom{
+				SourceId: srcUUID,
+			})
+		case `service`:
+			teg.deletePropertyInherited(&PropertyService{
+				SourceId: srcUUID,
+			})
+		case `system`:
+			teg.deletePropertyInherited(&PropertySystem{
+				SourceId: srcUUID,
+			})
+		case `oncall`:
+			teg.deletePropertyInherited(&PropertyOncall{
+				SourceId: srcUUID,
+			})
+		}
 	}
 	p.SetId(p.GetInstanceId(teg.Type, teg.Id))
 	if p.Equal(uuid.Nil) {

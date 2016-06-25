@@ -14,14 +14,29 @@ import (
 func (ten *Node) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
-	if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && !deleteOK {
-		log.Printf("node.SetProperty() detected hard duplicate")
-		return // TODO: error out via FaultElement
-	} else if dupe && deleteOK {
-		// TODO delete inherited value
-		// ten.DelProperty(prop)
-		log.Printf("node.SetProperty() detected soft duplicate")
+	if dupe, deleteOK, prop := ten.checkDuplicate(p); dupe && !deleteOK {
+		ten.Fault.Error <- &Error{Action: `duplicate_set_property`}
 		return
+	} else if dupe && deleteOK {
+		srcUUID, _ := uuid.FromString(prop.GetSourceInstance())
+		switch prop.GetType() {
+		case `custom`:
+			ten.deletePropertyInherited(&PropertyCustom{
+				SourceId: srcUUID,
+			})
+		case `service`:
+			ten.deletePropertyInherited(&PropertyService{
+				SourceId: srcUUID,
+			})
+		case `system`:
+			ten.deletePropertyInherited(&PropertySystem{
+				SourceId: srcUUID,
+			})
+		case `oncall`:
+			ten.deletePropertyInherited(&PropertyOncall{
+				SourceId: srcUUID,
+			})
+		}
 	}
 	p.SetId(p.GetInstanceId(ten.Type, ten.Id))
 	if p.Equal(uuid.Nil) {

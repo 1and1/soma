@@ -15,14 +15,29 @@ import (
 func (ter *Repository) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
-	if dupe, deleteOK, _ := ter.checkDuplicate(p); dupe && !deleteOK {
-		log.Printf("repository.SetProperty() detected hard duplicate")
-		return // TODO: error out via FaultElement
-	} else if dupe && deleteOK {
-		// TODO delete inherited value
-		// ter.DelProperty(prop)
-		log.Printf("repository.SetProperty() detected soft duplicate")
+	if dupe, deleteOK, prop := ter.checkDuplicate(p); dupe && !deleteOK {
+		ter.Fault.Error <- &Error{Action: `duplicate_set_property`}
 		return
+	} else if dupe && deleteOK {
+		srcUUID, _ := uuid.FromString(prop.GetSourceInstance())
+		switch prop.GetType() {
+		case `custom`:
+			ter.deletePropertyInherited(&PropertyCustom{
+				SourceId: srcUUID,
+			})
+		case `service`:
+			ter.deletePropertyInherited(&PropertyService{
+				SourceId: srcUUID,
+			})
+		case `system`:
+			ter.deletePropertyInherited(&PropertySystem{
+				SourceId: srcUUID,
+			})
+		case `oncall`:
+			ter.deletePropertyInherited(&PropertyOncall{
+				SourceId: srcUUID,
+			})
+		}
 	}
 	p.SetId(p.GetInstanceId(ter.Type, ter.Id))
 	if p.Equal(uuid.Nil) {

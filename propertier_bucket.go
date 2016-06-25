@@ -15,14 +15,29 @@ import (
 func (teb *Bucket) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
-	if dupe, deleteOK, _ := teb.checkDuplicate(p); dupe && !deleteOK {
-		log.Printf("bucket.SetProperty() detected hard duplicate")
-		return // TODO: error out via FaultElement
-	} else if dupe && deleteOK {
-		// TODO delete inherited value
-		// teb.DelProperty(prop)
-		log.Printf("bucket.SetProperty() detected soft duplicate")
+	if dupe, deleteOK, prop := teb.checkDuplicate(p); dupe && !deleteOK {
+		teb.Fault.Error <- &Error{Action: `duplicate_set_property`}
 		return
+	} else if dupe && deleteOK {
+		srcUUID, _ := uuid.FromString(prop.GetSourceInstance())
+		switch prop.GetType() {
+		case `custom`:
+			teb.deletePropertyInherited(&PropertyCustom{
+				SourceId: srcUUID,
+			})
+		case `service`:
+			teb.deletePropertyInherited(&PropertyService{
+				SourceId: srcUUID,
+			})
+		case `system`:
+			teb.deletePropertyInherited(&PropertySystem{
+				SourceId: srcUUID,
+			})
+		case `oncall`:
+			teb.deletePropertyInherited(&PropertyOncall{
+				SourceId: srcUUID,
+			})
+		}
 	}
 	p.SetId(p.GetInstanceId(teb.Type, teb.Id))
 	if p.Equal(uuid.Nil) {
