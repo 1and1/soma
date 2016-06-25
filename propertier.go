@@ -14,7 +14,7 @@ type Propertier interface {
 	DeleteProperty(p Property)
 	deletePropertyInherited(p Property)
 	deletePropertyOnChildren(p Property)
-	rmProperty(p Property)
+	rmProperty(p Property) bool
 
 	verifySourceInstance(id, prop string) bool
 	findIdForSource(source, prop string) string

@@ -22,19 +22,37 @@ func (ter *Repository) SetProperty(p Property) {
 		switch prop.GetType() {
 		case `custom`:
 			ter.deletePropertyInherited(&PropertyCustom{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `service`:
+			// GetValue for serviceproperty returns the uuid to never
+			// match, we do not set it
 			ter.deletePropertyInherited(&PropertyService{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Service:   prop.GetKey(),
 			})
 		case `system`:
 			ter.deletePropertyInherited(&PropertySystem{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `oncall`:
+			// GetValue for oncallproperty returns the uuid to never
+			// match, we do not set it
 			ter.deletePropertyInherited(&PropertyOncall{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Name:      prop.GetKey(),
 			})
 		}
 	}
@@ -204,13 +222,17 @@ func (ter *Repository) DeleteProperty(p Property) {
 		return
 	}
 
-	ter.rmProperty(p)
-	ter.deletePropertyOnChildren(p)
+	p.SetInherited(false)
+	if ter.rmProperty(p) {
+		p.SetInherited(true)
+		ter.deletePropertyOnChildren(p)
+	}
 }
 
 func (ter *Repository) deletePropertyInherited(p Property) {
-	ter.rmProperty(p)
-	ter.deletePropertyOnChildren(p)
+	if ter.rmProperty(p) {
+		ter.deletePropertyOnChildren(p)
+	}
 }
 
 func (ter *Repository) deletePropertyOnChildren(p Property) {
@@ -225,15 +247,24 @@ func (ter *Repository) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (ter *Repository) rmProperty(p Property) {
+func (ter *Repository) rmProperty(p Property) bool {
 	delId := ter.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
 	if delId == `` {
+		// we do not have the property for which we received a delete
+		if dupe, deleteOK, _ := ter.checkDuplicate(p); dupe && !deleteOK {
+			// the delete is duplicate to a property for which we
+			// have the source instance, ie we just received a delete
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+
 		ter.Fault.Error <- &Error{
 			Action: `repository.rmProperty property not found`}
-		return
+		return false
 	}
 
 	switch p.GetType() {
@@ -259,7 +290,9 @@ func (ter *Repository) rmProperty(p Property) {
 		delete(ter.PropertyOncall, delId)
 	default:
 		ter.Fault.Error <- &Error{Action: `repository.rmProperty unknown type`}
+		return false
 	}
+	return true
 }
 
 //

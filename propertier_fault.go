@@ -34,7 +34,8 @@ func (tef *Fault) deletePropertyInherited(p Property) {
 func (tef *Fault) deletePropertyOnChildren(p Property) {
 }
 
-func (tef *Fault) rmProperty(p Property) {
+func (tef *Fault) rmProperty(p Property) bool {
+	return false
 }
 
 func (tef *Fault) verifySourceInstance(id, prop string) bool {

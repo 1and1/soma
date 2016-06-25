@@ -22,19 +22,37 @@ func (tec *Cluster) SetProperty(p Property) {
 		switch prop.GetType() {
 		case `custom`:
 			tec.deletePropertyInherited(&PropertyCustom{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `service`:
+			// GetValue for serviceproperty returns the uuid to never
+			// match, we do not set it
 			tec.deletePropertyInherited(&PropertyService{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Service:   prop.GetKey(),
 			})
 		case `system`:
 			tec.deletePropertyInherited(&PropertySystem{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `oncall`:
+			// GetValue for oncallproperty returns the uuid to never
+			// match, we do not set it
 			tec.deletePropertyInherited(&PropertyOncall{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Name:      prop.GetKey(),
 			})
 		}
 	}
@@ -204,13 +222,17 @@ func (tec *Cluster) DeleteProperty(p Property) {
 		return
 	}
 
-	tec.rmProperty(p)
-	tec.deletePropertyOnChildren(p)
+	p.SetInherited(false)
+	if tec.rmProperty(p) {
+		p.SetInherited(true)
+		tec.deletePropertyOnChildren(p)
+	}
 }
 
 func (tec *Cluster) deletePropertyInherited(p Property) {
-	tec.rmProperty(p)
-	tec.deletePropertyOnChildren(p)
+	if tec.rmProperty(p) {
+		tec.deletePropertyOnChildren(p)
+	}
 }
 
 func (tec *Cluster) deletePropertyOnChildren(p Property) {
@@ -225,15 +247,24 @@ func (tec *Cluster) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (tec *Cluster) rmProperty(p Property) {
+func (tec *Cluster) rmProperty(p Property) bool {
 	delId := tec.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
 	if delId == `` {
+		// we do not have the property for which we received a delete
+		if dupe, deleteOK, _ := tec.checkDuplicate(p); dupe && !deleteOK {
+			// the delete is duplicate to a property for which we
+			// have the source instance, ie we just received a delete
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+
 		tec.Fault.Error <- &Error{
 			Action: `cluster.rmProperty property not found`}
-		return
+		return false
 	}
 
 	switch p.GetType() {
@@ -259,7 +290,9 @@ func (tec *Cluster) rmProperty(p Property) {
 		delete(tec.PropertyOncall, delId)
 	default:
 		tec.Fault.Error <- &Error{Action: `cluster.rmProperty unknown type`}
+		return false
 	}
+	return true
 }
 
 //

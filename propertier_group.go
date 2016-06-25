@@ -22,19 +22,37 @@ func (teg *Group) SetProperty(p Property) {
 		switch prop.GetType() {
 		case `custom`:
 			teg.deletePropertyInherited(&PropertyCustom{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `service`:
+			// GetValue for serviceproperty returns the uuid to never
+			// match, we do not set it
 			teg.deletePropertyInherited(&PropertyService{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Service:   prop.GetKey(),
 			})
 		case `system`:
 			teg.deletePropertyInherited(&PropertySystem{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `oncall`:
+			// GetValue for oncallproperty returns the uuid to never
+			// match, we do not set it
 			teg.deletePropertyInherited(&PropertyOncall{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Name:      prop.GetKey(),
 			})
 		}
 	}
@@ -204,13 +222,17 @@ func (teg *Group) DeleteProperty(p Property) {
 		return
 	}
 
-	teg.rmProperty(p)
-	teg.deletePropertyOnChildren(p)
+	p.SetInherited(false)
+	if teg.rmProperty(p) {
+		p.SetInherited(true)
+		teg.deletePropertyOnChildren(p)
+	}
 }
 
 func (teg *Group) deletePropertyInherited(p Property) {
-	teg.rmProperty(p)
-	teg.deletePropertyOnChildren(p)
+	if teg.rmProperty(p) {
+		teg.deletePropertyOnChildren(p)
+	}
 }
 
 func (teg *Group) deletePropertyOnChildren(p Property) {
@@ -225,15 +247,24 @@ func (teg *Group) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teg *Group) rmProperty(p Property) {
+func (teg *Group) rmProperty(p Property) bool {
 	delId := teg.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
 	if delId == `` {
+		// we do not have the property for which we received a delete
+		if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && !deleteOK {
+			// the delete is duplicate to a property for which we
+			// have the source instance, ie we just received a delete
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+
 		teg.Fault.Error <- &Error{
 			Action: `group.rmProperty property not found`}
-		return
+		return false
 	}
 
 	switch p.GetType() {
@@ -259,7 +290,9 @@ func (teg *Group) rmProperty(p Property) {
 		delete(teg.PropertyOncall, delId)
 	default:
 		teg.Fault.Error <- &Error{Action: `group.rmProperty unknown type`}
+		return false
 	}
+	return true
 }
 
 //

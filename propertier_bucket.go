@@ -22,19 +22,37 @@ func (teb *Bucket) SetProperty(p Property) {
 		switch prop.GetType() {
 		case `custom`:
 			teb.deletePropertyInherited(&PropertyCustom{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `service`:
+			// GetValue for serviceproperty returns the uuid to never
+			// match, we do not set it
 			teb.deletePropertyInherited(&PropertyService{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Service:   prop.GetKey(),
 			})
 		case `system`:
 			teb.deletePropertyInherited(&PropertySystem{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `oncall`:
+			// GetValue for oncallproperty returns the uuid to never
+			// match, we do not set it
 			teb.deletePropertyInherited(&PropertyOncall{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Name:      prop.GetKey(),
 			})
 		}
 	}
@@ -204,13 +222,17 @@ func (teb *Bucket) DeleteProperty(p Property) {
 		return
 	}
 
-	teb.rmProperty(p)
-	teb.deletePropertyOnChildren(p)
+	p.SetInherited(false)
+	if teb.rmProperty(p) {
+		p.SetInherited(true)
+		teb.deletePropertyOnChildren(p)
+	}
 }
 
 func (teb *Bucket) deletePropertyInherited(p Property) {
-	teb.rmProperty(p)
-	teb.deletePropertyOnChildren(p)
+	if teb.rmProperty(p) {
+		teb.deletePropertyOnChildren(p)
+	}
 }
 
 func (teb *Bucket) deletePropertyOnChildren(p Property) {
@@ -225,15 +247,24 @@ func (teb *Bucket) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teb *Bucket) rmProperty(p Property) {
+func (teb *Bucket) rmProperty(p Property) bool {
 	delId := teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
 	if delId == `` {
+		// we do not have the property for which we received a delete
+		if dupe, deleteOK, _ := teb.checkDuplicate(p); dupe && !deleteOK {
+			// the delete is duplicate to a property for which we
+			// have the source instance, ie we just received a delete
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+
 		teb.Fault.Error <- &Error{
 			Action: `bucket.rmProperty property not found`}
-		return
+		return false
 	}
 
 	switch p.GetType() {
@@ -259,7 +290,9 @@ func (teb *Bucket) rmProperty(p Property) {
 		delete(teb.PropertyOncall, delId)
 	default:
 		teb.Fault.Error <- &Error{Action: `bucket.rmProperty unknown type`}
+		return false
 	}
+	return true
 }
 
 //

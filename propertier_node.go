@@ -18,19 +18,37 @@ func (ten *Node) SetProperty(p Property) {
 		switch prop.GetType() {
 		case `custom`:
 			ten.deletePropertyInherited(&PropertyCustom{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `service`:
+			// GetValue for serviceproperty returns the uuid to never
+			// match, we do not set it
 			ten.deletePropertyInherited(&PropertyService{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Service:   prop.GetKey(),
 			})
 		case `system`:
 			ten.deletePropertyInherited(&PropertySystem{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Key:       prop.GetKey(),
+				Value:     prop.GetValue(),
 			})
 		case `oncall`:
+			// GetValue for oncallproperty returns the uuid to never
+			// match, we do not set it
 			ten.deletePropertyInherited(&PropertyOncall{
-				SourceId: srcUUID,
+				SourceId:  srcUUID,
+				View:      prop.GetView(),
+				Inherited: true,
+				Name:      prop.GetKey(),
 			})
 		}
 	}
@@ -183,28 +201,41 @@ func (ten *Node) DeleteProperty(p Property) {
 		return
 	}
 
-	ten.rmProperty(p)
-	ten.deletePropertyOnChildren(p)
+	p.SetInherited(false)
+	if ten.rmProperty(p) {
+		p.SetInherited(true)
+		ten.deletePropertyOnChildren(p)
+	}
 }
 
 func (ten *Node) deletePropertyInherited(p Property) {
-	ten.rmProperty(p)
-	ten.deletePropertyOnChildren(p)
+	if ten.rmProperty(p) {
+		ten.deletePropertyOnChildren(p)
+	}
 }
 
 func (ten *Node) deletePropertyOnChildren(p Property) {
 	// noop, satisfy interface
 }
 
-func (ten *Node) rmProperty(p Property) {
+func (ten *Node) rmProperty(p Property) bool {
 	delId := ten.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
 	if delId == `` {
+		// we do not have the property for which we received a delete
+		if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && !deleteOK {
+			// the delete is duplicate to a property for which we
+			// have the source instance, ie we just received a delete
+			// for which we have an overwrite. Ignore it and do not
+			// inherit it further down
+			return false
+		}
+
 		ten.Fault.Error <- &Error{
 			Action: `node.rmProperty property not found`}
-		return
+		return false
 	}
 
 	switch p.GetType() {
@@ -230,7 +261,9 @@ func (ten *Node) rmProperty(p Property) {
 		delete(ten.PropertyOncall, delId)
 	default:
 		ten.Fault.Error <- &Error{Action: `node.rmProperty unknown type`}
+		return false
 	}
+	return true
 }
 
 //
