@@ -115,7 +115,7 @@ func (teb *Bucket) attachToRepository(a AttachRequest) {
 	})
 
 	if teb.Parent == nil {
-		a.Root.(*SomaTree).AttachError(Error{Action: `attach_bucket`})
+		a.Root.(*Tree).AttachError(Error{Action: `attach_bucket`})
 		return
 	}
 	teb.actionCreate()

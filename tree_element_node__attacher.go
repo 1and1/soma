@@ -117,7 +117,7 @@ func (ten *Node) attachToBucket(a AttachRequest) {
 	})
 
 	if ten.Parent == nil {
-		a.Root.(*SomaTree).AttachError(Error{Action: `attach_node`})
+		a.Root.(*Tree).AttachError(Error{Action: `attach_node`})
 		return
 	}
 	ten.actionUpdate()
@@ -135,7 +135,7 @@ func (ten *Node) attachToGroup(a AttachRequest) {
 	})
 
 	if ten.Parent == nil {
-		a.Root.(*SomaTree).AttachError(Error{Action: `attach_node`})
+		a.Root.(*Tree).AttachError(Error{Action: `attach_node`})
 		return
 	}
 	ten.actionUpdate()
@@ -153,7 +153,7 @@ func (ten *Node) attachToCluster(a AttachRequest) {
 	})
 
 	if ten.Parent == nil {
-		a.Root.(*SomaTree).AttachError(Error{Action: `attach_node`})
+		a.Root.(*Tree).AttachError(Error{Action: `attach_node`})
 		return
 	}
 	ten.actionUpdate()

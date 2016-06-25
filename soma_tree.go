@@ -6,7 +6,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTree struct {
+type Tree struct {
 	Id     uuid.UUID
 	Name   string
 	Type   string
@@ -21,8 +21,8 @@ type TreeSpec struct {
 	Action chan *Action
 }
 
-func New(spec TreeSpec) *SomaTree {
-	st := new(SomaTree)
+func New(spec TreeSpec) *Tree {
+	st := new(Tree)
 	st.Id, _ = uuid.FromString(spec.Id)
 	st.Name = spec.Name
 	st.Action = spec.Action
@@ -30,7 +30,7 @@ func New(spec TreeSpec) *SomaTree {
 	return st
 }
 
-func (st *SomaTree) Begin() {
+func (st *Tree) Begin() {
 	t := st.Child.Clone()
 	st.Snap = &t
 	st.Snap.updateParentRecursive(st)
@@ -44,7 +44,7 @@ func (st *SomaTree) Begin() {
 	)
 }
 
-func (st *SomaTree) Rollback() {
+func (st *Tree) Rollback() {
 	err := st.Child.Fault.Error
 	ac := st.Child.Action
 
@@ -54,11 +54,11 @@ func (st *SomaTree) Rollback() {
 	st.Child.setError(err)
 }
 
-func (st *SomaTree) Commit() {
+func (st *Tree) Commit() {
 	st.Snap = nil
 }
 
-func (st *SomaTree) AttachError(err Error) {
+func (st *Tree) AttachError(err Error) {
 	if st.Child != nil {
 		st.Child.Fault.Error <- &err
 	}
@@ -66,26 +66,26 @@ func (st *SomaTree) AttachError(err Error) {
 
 //
 // Interface: SomaTreeBuilder
-func (st *SomaTree) GetID() string {
+func (st *Tree) GetID() string {
 	return st.Id.String()
 }
 
-func (st *SomaTree) GetName() string {
+func (st *Tree) GetName() string {
 	return st.Name
 }
 
-func (st *SomaTree) GetType() string {
+func (st *Tree) GetType() string {
 	return st.Type
 }
 
 //
-func (st *SomaTree) SetError(c chan *Error) {
+func (st *Tree) SetError(c chan *Error) {
 	if st.Child != nil {
 		st.Child.setError(c)
 	}
 }
 
-func (st *SomaTree) GetErrors() []error {
+func (st *Tree) GetErrors() []error {
 	if st.Child != nil {
 		return st.Child.getErrors()
 	}
@@ -93,7 +93,7 @@ func (st *SomaTree) GetErrors() []error {
 }
 
 // Interface: SomaTreeReceiver
-func (st *SomaTree) Receive(r ReceiveRequest) {
+func (st *Tree) Receive(r ReceiveRequest) {
 	switch {
 	case r.ParentType == "root" &&
 		r.ParentId == st.Id.String() &&
@@ -109,7 +109,7 @@ func (st *SomaTree) Receive(r ReceiveRequest) {
 }
 
 // Interface: SomaTreeUnlinker
-func (st *SomaTree) Unlink(u UnlinkRequest) {
+func (st *Tree) Unlink(u UnlinkRequest) {
 	switch {
 	case u.ParentType == "root" &&
 		(u.ParentId == st.Id.String() ||
@@ -127,7 +127,7 @@ func (st *SomaTree) Unlink(u UnlinkRequest) {
 }
 
 // Interface: SomaTreeRepositoryReceiver
-func (st *SomaTree) receiveRepository(r ReceiveRequest) {
+func (st *Tree) receiveRepository(r ReceiveRequest) {
 	switch {
 	case r.ParentType == "root" &&
 		r.ParentId == st.Id.String() &&
@@ -141,7 +141,7 @@ func (st *SomaTree) receiveRepository(r ReceiveRequest) {
 }
 
 // Interface: SomaTreeRepositoryUnlinker
-func (st *SomaTree) unlinkRepository(u UnlinkRequest) {
+func (st *Tree) unlinkRepository(u UnlinkRequest) {
 	switch {
 	case u.ParentType == "root" &&
 		u.ParentId == st.Id.String() &&
@@ -154,9 +154,9 @@ func (st *SomaTree) unlinkRepository(u UnlinkRequest) {
 }
 
 // Interface: SomaTreeFinder
-func (st *SomaTree) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (st *Tree) Find(f FindRequest, b bool) SomaTreeAttacher {
 	if !b {
-		panic(`SomaTree.Find: root element can never inherit a Find request`)
+		panic(`Tree.Find: root element can never inherit a Find request`)
 	}
 
 	res := st.Child.Find(f, false)
@@ -167,12 +167,12 @@ func (st *SomaTree) Find(f FindRequest, b bool) SomaTreeAttacher {
 }
 
 //
-func (st *SomaTree) ComputeCheckInstances() {
+func (st *Tree) ComputeCheckInstances() {
 	if st.Child == nil {
-		panic(`SomaTree.ComputeCheckInstances: no repository registered`)
+		panic(`Tree.ComputeCheckInstances: no repository registered`)
 	}
 
-	log.Printf("SomaTree[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+	log.Printf("Tree[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
 		st.Name,
 		`ComputeCheckInstances`,
 		`tree`,
@@ -183,9 +183,9 @@ func (st *SomaTree) ComputeCheckInstances() {
 }
 
 //
-func (st *SomaTree) ClearLoadInfo() {
+func (st *Tree) ClearLoadInfo() {
 	if st.Child == nil {
-		panic(`SomaTree.ClearLoadInfo: no repository registered`)
+		panic(`Tree.ClearLoadInfo: no repository registered`)
 	}
 
 	st.Child.ClearLoadInfo()
