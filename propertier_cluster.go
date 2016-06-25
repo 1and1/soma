@@ -267,32 +267,37 @@ func (tec *Cluster) rmProperty(p Property) bool {
 		return false
 	}
 
+	hasInheritance := false
 	switch p.GetType() {
 	case `custom`:
 		tec.actionPropertyDelete(
 			tec.PropertyCustom[delId].MakeAction(),
 		)
+		hasInheritance = tec.PropertyCustom[delId].hasInheritance()
 		delete(tec.PropertyCustom, delId)
 	case `service`:
 		tec.actionPropertyDelete(
 			tec.PropertyService[delId].MakeAction(),
 		)
+		hasInheritance = tec.PropertyService[delId].hasInheritance()
 		delete(tec.PropertyService, delId)
 	case `system`:
 		tec.actionPropertyDelete(
 			tec.PropertySystem[delId].MakeAction(),
 		)
+		hasInheritance = tec.PropertySystem[delId].hasInheritance()
 		delete(tec.PropertySystem, delId)
 	case `oncall`:
 		tec.actionPropertyDelete(
 			tec.PropertyOncall[delId].MakeAction(),
 		)
+		hasInheritance = tec.PropertyOncall[delId].hasInheritance()
 		delete(tec.PropertyOncall, delId)
 	default:
 		tec.Fault.Error <- &Error{Action: `cluster.rmProperty unknown type`}
 		return false
 	}
-	return true
+	return hasInheritance
 }
 
 //

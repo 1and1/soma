@@ -267,32 +267,37 @@ func (teb *Bucket) rmProperty(p Property) bool {
 		return false
 	}
 
+	hasInheritance := false
 	switch p.GetType() {
 	case `custom`:
 		teb.actionPropertyDelete(
 			teb.PropertyCustom[delId].MakeAction(),
 		)
+		hasInheritance = teb.PropertyCustom[delId].hasInheritance()
 		delete(teb.PropertyCustom, delId)
 	case `service`:
 		teb.actionPropertyDelete(
 			teb.PropertyService[delId].MakeAction(),
 		)
+		hasInheritance = teb.PropertyService[delId].hasInheritance()
 		delete(teb.PropertyService, delId)
 	case `system`:
 		teb.actionPropertyDelete(
 			teb.PropertySystem[delId].MakeAction(),
 		)
+		hasInheritance = teb.PropertySystem[delId].hasInheritance()
 		delete(teb.PropertySystem, delId)
 	case `oncall`:
 		teb.actionPropertyDelete(
 			teb.PropertyOncall[delId].MakeAction(),
 		)
+		hasInheritance = teb.PropertyOncall[delId].hasInheritance()
 		delete(teb.PropertyOncall, delId)
 	default:
 		teb.Fault.Error <- &Error{Action: `bucket.rmProperty unknown type`}
 		return false
 	}
-	return true
+	return hasInheritance
 }
 
 //

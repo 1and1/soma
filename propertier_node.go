@@ -238,32 +238,37 @@ func (ten *Node) rmProperty(p Property) bool {
 		return false
 	}
 
+	hasInheritance := false
 	switch p.GetType() {
 	case `custom`:
 		ten.actionPropertyDelete(
 			ten.PropertyCustom[delId].MakeAction(),
 		)
+		hasInheritance = ten.PropertyCustom[delId].hasInheritance()
 		delete(ten.PropertyCustom, delId)
 	case `service`:
 		ten.actionPropertyDelete(
 			ten.PropertyService[delId].MakeAction(),
 		)
+		hasInheritance = ten.PropertyService[delId].hasInheritance()
 		delete(ten.PropertyService, delId)
 	case `system`:
 		ten.actionPropertyDelete(
 			ten.PropertySystem[delId].MakeAction(),
 		)
+		hasInheritance = ten.PropertySystem[delId].hasInheritance()
 		delete(ten.PropertySystem, delId)
 	case `oncall`:
 		ten.actionPropertyDelete(
 			ten.PropertyOncall[delId].MakeAction(),
 		)
+		hasInheritance = ten.PropertyOncall[delId].hasInheritance()
 		delete(ten.PropertyOncall, delId)
 	default:
 		ten.Fault.Error <- &Error{Action: `node.rmProperty unknown type`}
 		return false
 	}
-	return true
+	return hasInheritance
 }
 
 //

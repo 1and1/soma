@@ -267,32 +267,37 @@ func (ter *Repository) rmProperty(p Property) bool {
 		return false
 	}
 
+	hasInheritance := false
 	switch p.GetType() {
 	case `custom`:
 		ter.actionPropertyDelete(
 			ter.PropertyCustom[delId].MakeAction(),
 		)
+		hasInheritance = ter.PropertyCustom[delId].hasInheritance()
 		delete(ter.PropertyCustom, delId)
 	case `service`:
 		ter.actionPropertyDelete(
 			ter.PropertyService[delId].MakeAction(),
 		)
+		hasInheritance = ter.PropertyService[delId].hasInheritance()
 		delete(ter.PropertyService, delId)
 	case `system`:
 		ter.actionPropertyDelete(
 			ter.PropertySystem[delId].MakeAction(),
 		)
+		hasInheritance = ter.PropertySystem[delId].hasInheritance()
 		delete(ter.PropertySystem, delId)
 	case `oncall`:
 		ter.actionPropertyDelete(
 			ter.PropertyOncall[delId].MakeAction(),
 		)
+		hasInheritance = ter.PropertyOncall[delId].hasInheritance()
 		delete(ter.PropertyOncall, delId)
 	default:
 		ter.Fault.Error <- &Error{Action: `repository.rmProperty unknown type`}
 		return false
 	}
-	return true
+	return hasInheritance
 }
 
 //

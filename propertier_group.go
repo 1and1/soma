@@ -267,32 +267,37 @@ func (teg *Group) rmProperty(p Property) bool {
 		return false
 	}
 
+	hasInheritance := false
 	switch p.GetType() {
 	case `custom`:
 		teg.actionPropertyDelete(
 			teg.PropertyCustom[delId].MakeAction(),
 		)
+		hasInheritance = teg.PropertyCustom[delId].hasInheritance()
 		delete(teg.PropertyCustom, delId)
 	case `service`:
 		teg.actionPropertyDelete(
 			teg.PropertyService[delId].MakeAction(),
 		)
+		hasInheritance = teg.PropertyService[delId].hasInheritance()
 		delete(teg.PropertyService, delId)
 	case `system`:
 		teg.actionPropertyDelete(
 			teg.PropertySystem[delId].MakeAction(),
 		)
+		hasInheritance = teg.PropertySystem[delId].hasInheritance()
 		delete(teg.PropertySystem, delId)
 	case `oncall`:
 		teg.actionPropertyDelete(
 			teg.PropertyOncall[delId].MakeAction(),
 		)
+		hasInheritance = teg.PropertyOncall[delId].hasInheritance()
 		delete(teg.PropertyOncall, delId)
 	default:
 		teg.Fault.Error <- &Error{Action: `group.rmProperty unknown type`}
 		return false
 	}
-	return true
+	return hasInheritance
 }
 
 //
