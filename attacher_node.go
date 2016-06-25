@@ -27,8 +27,8 @@ func (ten *Node) ReAttach(a AttachRequest) {
 	if ten.Parent == nil {
 		panic(`Node.ReAttach: not attached`)
 	}
-	// XXX: destroy all inherited properties before unlinking
-	// ten.(Propertier).destroyInheritedProperties()
+	ten.deletePropertyAllInherited()
+	// TODO delete all inherited checks + check instances
 
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(Builder).GetType(),
@@ -60,7 +60,12 @@ func (ten *Node) Destroy() {
 	if ten.Parent == nil {
 		panic(`Node.Destroy called without Parent to unlink from`)
 	}
+	// call before unlink since it requires tec.Parent.*
 	ten.actionDelete()
+	ten.deletePropertyAllLocal()
+	ten.deletePropertyAllInherited()
+	// TODO delete all checks + check instances
+	// TODO delete all inherited checks + check instances
 
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(Builder).GetType(),
@@ -80,8 +85,10 @@ func (ten *Node) Detach() {
 	if ten.Parent == nil {
 		panic(`Node.Detach called without Parent to detach from`)
 	}
-
 	bucket := ten.Parent.(Bucketeer).GetBucket()
+
+	ten.deletePropertyAllInherited()
+	// TODO delete all inherited checks + check instances
 
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(Builder).GetType(),
@@ -103,6 +110,7 @@ func (ten *Node) Detach() {
 	)
 
 	ten.actionUpdate()
+	ten.Parent.(Propertier).syncProperty(ten.Id.String())
 }
 
 //

@@ -27,8 +27,8 @@ func (teg *Group) ReAttach(a AttachRequest) {
 	if teg.Parent == nil {
 		panic(`Group.ReAttach: not attached`)
 	}
-	// XXX: destroy all inherited properties before unlinking
-	// teg.(Propertier).destroyInheritedProperties()
+	teg.deletePropertyAllInherited()
+	// TODO delete all inherited checks + check instances
 
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(Builder).GetType(),
@@ -61,19 +61,22 @@ func (teg *Group) Destroy() {
 		panic(`Group.Destroy called without Parent to unlink from`)
 	}
 
+	// call before unlink since it requires teg.Parent.*
+	teg.actionDelete()
+	teg.deletePropertyAllLocal()
+	teg.deletePropertyAllInherited()
+	// TODO delete all checks + check instances
+	// TODO delete all inherited checks + check instances
+
 	wg := new(sync.WaitGroup)
 	for child, _ := range teg.Children {
 		wg.Add(1)
-		c := child
-		go func() {
+		go func(c string) {
 			defer wg.Done()
 			teg.Children[c].Destroy()
-		}()
+		}(child)
 	}
 	wg.Wait()
-
-	// call before unlink since it requires teg.Parent.*
-	teg.actionDelete()
 
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(Builder).GetType(),
@@ -95,6 +98,9 @@ func (teg *Group) Detach() {
 	}
 	bucket := teg.Parent.(Bucketeer).GetBucket()
 
+	teg.deletePropertyAllInherited()
+	// TODO delete all inherited checks + check instances
+
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(Builder).GetType(),
 		ParentId:   teg.Parent.(Builder).GetID(),
@@ -115,6 +121,7 @@ func (teg *Group) Detach() {
 	)
 
 	teg.actionUpdate()
+	teg.Parent.(Propertier).syncProperty(teg.Id.String())
 }
 
 //

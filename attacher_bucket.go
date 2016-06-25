@@ -29,8 +29,20 @@ func (teb *Bucket) Destroy() {
 	if teb.Parent == nil {
 		panic(`Bucket.Destroy called without Parent to unlink from`)
 	}
-	// XXX: destroy all inherited properties before unlinking
-	// teb.(Propertier).destroyInheritedProperties()
+	teb.deletePropertyAllLocal()
+	teb.deletePropertyAllInherited()
+	// TODO delete all checks + check instances
+	// TODO delete all inherited checks + check instances
+
+	wg := new(sync.WaitGroup)
+	for child, _ := range teb.Children {
+		wg.Add(1)
+		go func(c string) {
+			defer wg.Done()
+			teb.Children[c].Destroy()
+		}(child)
+	}
+	wg.Wait()
 
 	teb.Parent.Unlink(UnlinkRequest{
 		ParentType: teb.Parent.(Builder).GetType(),

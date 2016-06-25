@@ -25,10 +25,10 @@ func (tec *Cluster) Attach(a AttachRequest) {
 
 func (tec *Cluster) ReAttach(a AttachRequest) {
 	if tec.Parent == nil {
-		panic(`Group.ReAttach: not attached`)
+		panic(`Cluster.ReAttach: not attached`)
 	}
-	// XXX: destroy all inherited properties before unlinking
-	// tec.(Propertier).destroyInheritedProperties()
+	tec.deletePropertyAllInherited()
+	// TODO delete all inherited checks + check instances
 
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(Builder).GetType(),
@@ -61,19 +61,22 @@ func (tec *Cluster) Destroy() {
 		panic(`Cluster.Destroy called without Parent to unlink from`)
 	}
 
+	// call before unlink since it requires tec.Parent.*
+	tec.actionDelete()
+	tec.deletePropertyAllLocal()
+	tec.deletePropertyAllInherited()
+	// TODO delete all checks + check instances
+	// TODO delete all inherited checks + check instances
+
 	wg := new(sync.WaitGroup)
 	for child, _ := range tec.Children {
 		wg.Add(1)
-		c := child
-		go func() {
+		go func(c string) {
 			defer wg.Done()
 			tec.Children[c].Destroy()
-		}()
+		}(child)
 	}
 	wg.Wait()
-
-	// call before unlink since it requires tec.Parent.*
-	tec.actionDelete()
 
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(Builder).GetType(),
@@ -95,6 +98,9 @@ func (tec *Cluster) Detach() {
 	}
 	bucket := tec.Parent.(Bucketeer).GetBucket()
 
+	tec.deletePropertyAllInherited()
+	// TODO delete all inherited checks + check instances
+
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(Builder).GetType(),
 		ParentId:   tec.Parent.(Builder).GetID(),
@@ -115,6 +121,7 @@ func (tec *Cluster) Detach() {
 	)
 
 	tec.actionUpdate()
+	tec.Parent.(Propertier).syncProperty(tec.Id.String())
 }
 
 //

@@ -1,5 +1,7 @@
 package tree
 
+import "sync"
+
 //
 // Interface: Attacher
 func (ter *Repository) Attach(a AttachRequest) {
@@ -24,8 +26,22 @@ func (ter *Repository) Destroy() {
 	if ter.Parent == nil {
 		panic(`Repository.Destroy called without Parent to unlink from`)
 	}
-	// XXX: destroy all properties before unlinking
-	// ter.(Propertier).nukeAllProperties()
+	// call before unlink since it requires tec.Parent.*
+	ter.actionDelete()
+	ter.deletePropertyAllLocal()
+	ter.deletePropertyAllInherited()
+	// TODO delete all checks + check instances
+	// TODO delete all inherited checks + check instances
+
+	wg := new(sync.WaitGroup)
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		go func(c string) {
+			defer wg.Done()
+			ter.Children[c].Destroy()
+		}(child)
+	}
+	wg.Wait()
 
 	// the Destroy handler of Fault calls
 	// updateFaultRecursive(nil) on us
@@ -41,12 +57,7 @@ func (ter *Repository) Destroy() {
 	},
 	)
 
-	ter.actionDelete()
 	ter.setAction(nil)
-	ter.PropertyOncall = nil
-	ter.PropertyService = nil
-	ter.PropertySystem = nil
-	ter.PropertyCustom = nil
 }
 
 func (ter *Repository) Detach() {
