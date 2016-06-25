@@ -491,6 +491,7 @@ propswitch:
 		}
 	default:
 		// trigger error path
+		tec.Fault.Error <- &Error{Action: `cluster.checkDuplicate unknown type`}
 		dupe = true
 		deleteOK = false
 	}

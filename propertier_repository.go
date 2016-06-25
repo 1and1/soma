@@ -490,6 +490,7 @@ propswitch:
 		}
 	default:
 		// trigger error path
+		ter.Fault.Error <- &Error{Action: `repository.checkDuplicate unknown type`}
 		dupe = true
 		deleteOK = false
 	}

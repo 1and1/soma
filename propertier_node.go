@@ -397,6 +397,7 @@ propswitch:
 		}
 	default:
 		// trigger error path
+		ten.Fault.Error <- &Error{Action: `node.checkDuplicate unknown type`}
 		dupe = true
 		deleteOK = false
 	}

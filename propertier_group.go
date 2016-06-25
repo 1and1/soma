@@ -491,6 +491,7 @@ propswitch:
 		}
 	default:
 		// trigger error path
+		teg.Fault.Error <- &Error{Action: `group.checkDuplicate unknown type`}
 		dupe = true
 		deleteOK = false
 	}

@@ -491,6 +491,7 @@ propswitch:
 		}
 	default:
 		// trigger error path
+		teb.Fault.Error <- &Error{Action: `bucket.checkDuplicate unknown type`}
 		dupe = true
 		deleteOK = false
 	}
