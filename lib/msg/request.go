@@ -23,6 +23,7 @@ type Request struct {
 	Permission proto.Permission
 	Grant      proto.Grant
 	Job        proto.Job
+	Tree       proto.Tree
 }
 
 type Filter struct {

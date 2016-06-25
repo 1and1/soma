@@ -200,7 +200,7 @@ func (g *guidePost) process(q *treeRequest) {
 		bucketId = q.Group.Group.BucketId
 
 	case "add_node_to_cluster":
-		if q.Cluster.Cluster.BucketId != q.Cluster.Cluster.Members[0].Config.BucketId {
+		if q.Cluster.Cluster.BucketId != (*q.Cluster.Cluster.Members)[0].Config.BucketId {
 			result.SetRequestError(
 				fmt.Errorf(`GuidePost: node and cluster are in different buckets`),
 			)

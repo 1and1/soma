@@ -197,7 +197,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			err := rows.Scan(&mGroupId, &mGroupName, &groupName)
 			if err == nil {
 				resG.Name = groupName
-				resG.MemberGroups = append(resG.MemberGroups, proto.Group{
+				*resG.MemberGroups = append(*resG.MemberGroups, proto.Group{
 					Id:   mGroupId,
 					Name: mGroupName,
 				})
@@ -214,7 +214,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		for rows.Next() {
 			err := rows.Scan(&mClusterId, &mClusterName, &groupName)
 			if err == nil {
-				resG.MemberClusters = append(resG.MemberClusters, proto.Cluster{
+				*resG.MemberClusters = append(*resG.MemberClusters, proto.Cluster{
 					Id:   mClusterId,
 					Name: mClusterName,
 				})
@@ -231,7 +231,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		for rows.Next() {
 			err = rows.Scan(&mNodeId, &mNodeName, &groupName)
 			if err == nil {
-				resG.MemberNodes = append(resG.MemberNodes, proto.Node{
+				*resG.MemberNodes = append(*resG.MemberNodes, proto.Node{
 					Id:   mNodeId,
 					Name: mNodeName,
 				})
