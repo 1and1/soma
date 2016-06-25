@@ -284,13 +284,28 @@ func (ter *SomaTreeElemRepository) actionDelete() {
 	}
 }
 
+//
 func (ter *SomaTreeElemRepository) actionPropertyNew(a Action) {
 	a.Action = "property_new"
+	ter.actionProperty(a)
+}
+
+func (ter *SomaTreeElemRepository) actionPropertyUpdate(a Action) {
+	a.Action = "property_update"
+	ter.actionProperty(a)
+}
+
+func (ter *SomaTreeElemRepository) actionPropertyDelete(a Action) {
+	a.Action = "property_delete"
+	ter.actionProperty(a)
+}
+
+func (ter *SomaTreeElemRepository) actionProperty(a Action) {
 	a.Type = ter.Type
 	a.Repository = ter.export()
-
 	a.Property.RepositoryId = ter.Id.String()
 	a.Property.BucketId = ""
+
 	switch a.Property.Type {
 	case "custom":
 		a.Property.Custom.RepositoryId = a.Property.RepositoryId
@@ -299,10 +314,6 @@ func (ter *SomaTreeElemRepository) actionPropertyNew(a Action) {
 	}
 
 	ter.Action <- &a
-}
-
-func (ter *SomaTreeElemRepository) setupPropertyAction(p Property) Action {
-	return p.MakeAction()
 }
 
 //

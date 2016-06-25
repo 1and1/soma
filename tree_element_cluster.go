@@ -359,11 +359,6 @@ func (tec *SomaTreeElemCluster) actionProperty(a Action) {
 }
 
 //
-func (tec *SomaTreeElemCluster) setupPropertyAction(p Property) Action {
-	return p.MakeAction()
-}
-
-//
 func (tec *SomaTreeElemCluster) actionCheckNew(a Action) {
 	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()

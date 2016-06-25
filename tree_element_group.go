@@ -325,7 +325,25 @@ func (teg *SomaTreeElemGroup) actionMemberRemoved(a Action) {
 	teg.Action <- &a
 }
 
+//
 func (teg *SomaTreeElemGroup) actionPropertyNew(a Action) {
+	a.Action = `property_new`
+	teg.actionProperty(a)
+}
+
+func (teg *SomaTreeElemGroup) actionPropertyUpdate(a Action) {
+	a.Action = `property_update`
+	teg.actionProperty(a)
+}
+
+func (teg *SomaTreeElemGroup) actionPropertyDelete(a Action) {
+	a.Action = `property_delete`
+	teg.actionProperty(a)
+}
+
+func (teg *SomaTreeElemGroup) actionProperty(a Action) {
+	a.Type = teg.Type
+	a.Group = teg.export()
 	a.Property.RepositoryId = teg.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = teg.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
@@ -336,12 +354,7 @@ func (teg *SomaTreeElemGroup) actionPropertyNew(a Action) {
 		a.Property.Service.TeamId = teg.Team.String()
 	}
 
-	teg.actionDispatch("property_new", a)
-}
-
-//
-func (teg *SomaTreeElemGroup) setupPropertyAction(p Property) Action {
-	return p.MakeAction()
+	teg.Action <- &a
 }
 
 //

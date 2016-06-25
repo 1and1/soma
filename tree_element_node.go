@@ -253,7 +253,25 @@ func (ten *SomaTreeElemNode) actionDelete() {
 	}
 }
 
+//
 func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
+	a.Action = `property_new`
+	ten.actionProperty(a)
+}
+
+func (ten *SomaTreeElemNode) actionPropertyUpdate(a Action) {
+	a.Action = `property_update`
+	ten.actionProperty(a)
+}
+
+func (ten *SomaTreeElemNode) actionPropertyDelete(a Action) {
+	a.Action = `property_delete`
+	ten.actionProperty(a)
+}
+
+func (ten *SomaTreeElemNode) actionProperty(a Action) {
+	a.Type = ten.Type
+	a.Node = ten.export()
 	a.Property.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Property.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 
@@ -264,12 +282,7 @@ func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
 		a.Property.Service.TeamId = ten.Team.String()
 	}
 
-	ten.actionDispatch("property_new", a)
-}
-
-//
-func (ten *SomaTreeElemNode) setupPropertyAction(p Property) Action {
-	return p.MakeAction()
+	ten.Action <- &a
 }
 
 //
