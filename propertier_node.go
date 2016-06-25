@@ -71,7 +71,9 @@ func (ten *Node) setPropertyInherited(p Property) {
 	f.clearInstances()
 
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		ten.Fault.Error <- &Error{
+			Action: `node.setPropertyInherited on inherited=false`}
+		return
 	}
 	ten.addProperty(f)
 	// no inheritPropertyDeep(), nodes have no children
@@ -92,6 +94,8 @@ func (ten *Node) addProperty(p Property) {
 		ten.PropertyService[p.GetID()] = p
 	case `oncall`:
 		ten.PropertyOncall[p.GetID()] = p
+	default:
+		ten.Fault.Error <- &Error{Action: `node.addProperty unknown type`}
 	}
 }
 
@@ -103,7 +107,8 @@ func (ten *Node) UpdateProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		ten.Fault.Error <- &Error{Action: `update_property_on_non_source`}
+		return
 	}
 
 	// keep a copy for ourselves, no shared pointers
@@ -120,7 +125,9 @@ func (ten *Node) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		ten.Fault.Error <- &Error{
+			Action: `node.updatePropertyInherited on inherited=false`}
+		return
 	}
 	ten.switchProperty(f)
 	ten.updatePropertyOnChildren(p)
@@ -148,7 +155,8 @@ func (ten *Node) DeleteProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		ten.Fault.Error <- &Error{Action: `node.DeleteProperty on !source`}
+		return
 	}
 
 	ten.rmProperty(p)
@@ -169,6 +177,11 @@ func (ten *Node) rmProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
+	if delId == `` {
+		ten.Fault.Error <- &Error{
+			Action: `node.rmProperty property not found`}
+		return
+	}
 
 	switch p.GetType() {
 	case `custom`:
@@ -191,6 +204,8 @@ func (ten *Node) rmProperty(p Property) {
 			ten.PropertyOncall[delId].MakeAction(),
 		)
 		delete(ten.PropertyOncall, delId)
+	default:
+		ten.Fault.Error <- &Error{Action: `node.rmProperty unknown type`}
 	}
 }
 

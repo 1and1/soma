@@ -72,7 +72,9 @@ func (ter *Repository) setPropertyInherited(p Property) {
 	f.clearInstances()
 
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		ter.Fault.Error <- &Error{
+			Action: `repository.setPropertyInherited on inherited=false`}
+		return
 	}
 	ter.addProperty(f)
 	p.SetId(uuid.UUID{})
@@ -103,6 +105,8 @@ func (ter *Repository) addProperty(p Property) {
 		ter.PropertyService[p.GetID()] = p
 	case `oncall`:
 		ter.PropertyOncall[p.GetID()] = p
+	default:
+		ter.Fault.Error <- &Error{Action: `repository.addProperty unknown type`}
 	}
 }
 
@@ -114,7 +118,8 @@ func (ter *Repository) UpdateProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		ter.Fault.Error <- &Error{Action: `update_property_on_non_source`}
+		return
 	}
 
 	// keep a copy for ourselves, no shared pointers
@@ -131,7 +136,9 @@ func (ter *Repository) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		ter.Fault.Error <- &Error{
+			Action: `repository.updatePropertyInherited on inherited=false`}
+		return
 	}
 	ter.switchProperty(f)
 	ter.updatePropertyOnChildren(p)
@@ -167,7 +174,8 @@ func (ter *Repository) DeleteProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		ter.Fault.Error <- &Error{Action: `repository.DeleteProperty on !source`}
+		return
 	}
 
 	ter.rmProperty(p)
@@ -196,6 +204,11 @@ func (ter *Repository) rmProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
+	if delId == `` {
+		ter.Fault.Error <- &Error{
+			Action: `repository.rmProperty property not found`}
+		return
+	}
 
 	switch p.GetType() {
 	case `custom`:
@@ -218,6 +231,8 @@ func (ter *Repository) rmProperty(p Property) {
 			ter.PropertyOncall[delId].MakeAction(),
 		)
 		delete(ter.PropertyOncall, delId)
+	default:
+		ter.Fault.Error <- &Error{Action: `repository.rmProperty unknown type`}
 	}
 }
 

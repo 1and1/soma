@@ -72,7 +72,9 @@ func (teb *Bucket) setPropertyInherited(p Property) {
 	f.clearInstances()
 
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		teb.Fault.Error <- &Error{
+			Action: `bucket.setPropertyInherited on inherited=false`}
+		return
 	}
 	teb.addProperty(f)
 	p.SetId(uuid.UUID{})
@@ -103,6 +105,8 @@ func (teb *Bucket) addProperty(p Property) {
 		teb.PropertyService[p.GetID()] = p
 	case `oncall`:
 		teb.PropertyOncall[p.GetID()] = p
+	default:
+		teb.Fault.Error <- &Error{Action: `bucket.addProperty unknown type`}
 	}
 }
 
@@ -114,7 +118,8 @@ func (teb *Bucket) UpdateProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		teb.Fault.Error <- &Error{Action: `update_property_on_non_source`}
+		return
 	}
 
 	// keep a copy for ourselves, no shared pointers
@@ -131,7 +136,9 @@ func (teb *Bucket) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		teb.Fault.Error <- &Error{
+			Action: `bucket.updatePropertyInherited on inherited=false`}
+		return
 	}
 	teb.switchProperty(f)
 	teb.updatePropertyOnChildren(p)
@@ -167,7 +174,8 @@ func (teb *Bucket) DeleteProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		teb.Fault.Error <- &Error{Action: `bucket.DeleteProperty on !source`}
+		return
 	}
 
 	teb.rmProperty(p)
@@ -196,6 +204,11 @@ func (teb *Bucket) rmProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
+	if delId == `` {
+		teb.Fault.Error <- &Error{
+			Action: `bucket.rmProperty property not found`}
+		return
+	}
 
 	switch p.GetType() {
 	case `custom`:
@@ -218,6 +231,8 @@ func (teb *Bucket) rmProperty(p Property) {
 			teb.PropertyOncall[delId].MakeAction(),
 		)
 		delete(teb.PropertyOncall, delId)
+	default:
+		teb.Fault.Error <- &Error{Action: `bucket.rmProperty unknown type`}
 	}
 }
 

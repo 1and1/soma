@@ -72,7 +72,9 @@ func (tec *Cluster) setPropertyInherited(p Property) {
 	f.clearInstances()
 
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		tec.Fault.Error <- &Error{
+			Action: `cluster.setPropertyInherited on inherited=false`}
+		return
 	}
 	tec.addProperty(f)
 	p.SetId(uuid.UUID{})
@@ -103,6 +105,8 @@ func (tec *Cluster) addProperty(p Property) {
 		tec.PropertyService[p.GetID()] = p
 	case `oncall`:
 		tec.PropertyOncall[p.GetID()] = p
+	default:
+		tec.Fault.Error <- &Error{Action: `cluster.addProperty unknown type`}
 	}
 }
 
@@ -114,7 +118,8 @@ func (tec *Cluster) UpdateProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		tec.Fault.Error <- &Error{Action: `update_property_on_non_source`}
+		return
 	}
 
 	// keep a copy for ourselves, no shared pointers
@@ -131,7 +136,9 @@ func (tec *Cluster) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		tec.Fault.Error <- &Error{
+			Action: `cluster.updatePropertyInherited on inherited=false`}
+		return
 	}
 	tec.switchProperty(f)
 	tec.updatePropertyOnChildren(p)
@@ -167,7 +174,8 @@ func (tec *Cluster) DeleteProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		tec.Fault.Error <- &Error{Action: `cluster.DeleteProperty on !source`}
+		return
 	}
 
 	tec.rmProperty(p)
@@ -196,6 +204,11 @@ func (tec *Cluster) rmProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
+	if delId == `` {
+		tec.Fault.Error <- &Error{
+			Action: `cluster.rmProperty property not found`}
+		return
+	}
 
 	switch p.GetType() {
 	case `custom`:
@@ -218,6 +231,8 @@ func (tec *Cluster) rmProperty(p Property) {
 			tec.PropertyOncall[delId].MakeAction(),
 		)
 		delete(tec.PropertyOncall, delId)
+	default:
+		tec.Fault.Error <- &Error{Action: `cluster.rmProperty unknown type`}
 	}
 }
 

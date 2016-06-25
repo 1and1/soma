@@ -72,7 +72,9 @@ func (teg *Group) setPropertyInherited(p Property) {
 	f.clearInstances()
 
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		teg.Fault.Error <- &Error{
+			Action: `group.setPropertyInherited on inherited=false`}
+		return
 	}
 	teg.addProperty(f)
 	p.SetId(uuid.UUID{})
@@ -103,6 +105,8 @@ func (teg *Group) addProperty(p Property) {
 		teg.PropertyService[p.GetID()] = p
 	case `oncall`:
 		teg.PropertyOncall[p.GetID()] = p
+	default:
+		teg.Fault.Error <- &Error{Action: `group.addProperty unknown type`}
 	}
 }
 
@@ -114,7 +118,8 @@ func (teg *Group) UpdateProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		teg.Fault.Error <- &Error{Action: `update_property_on_non_source`}
+		return
 	}
 
 	// keep a copy for ourselves, no shared pointers
@@ -131,7 +136,9 @@ func (teg *Group) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	if !f.GetIsInherited() {
-		panic(`not inherited`)
+		teg.Fault.Error <- &Error{
+			Action: `group.updatePropertyInherited on inherited=false`}
+		return
 	}
 	teg.switchProperty(f)
 	teg.updatePropertyOnChildren(p)
@@ -167,7 +174,8 @@ func (teg *Group) DeleteProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	) {
-		return // XXX faultChannel
+		teg.Fault.Error <- &Error{Action: `group.DeleteProperty on !source`}
+		return
 	}
 
 	teg.rmProperty(p)
@@ -196,6 +204,11 @@ func (teg *Group) rmProperty(p Property) {
 		p.GetSourceInstance(),
 		p.GetType(),
 	)
+	if delId == `` {
+		teg.Fault.Error <- &Error{
+			Action: `group.rmProperty property not found`}
+		return
+	}
 
 	switch p.GetType() {
 	case `custom`:
@@ -218,6 +231,8 @@ func (teg *Group) rmProperty(p Property) {
 			teg.PropertyOncall[delId].MakeAction(),
 		)
 		delete(teg.PropertyOncall, delId)
+	default:
+		teg.Fault.Error <- &Error{Action: `group.rmProperty unknown type`}
 	}
 }
 
