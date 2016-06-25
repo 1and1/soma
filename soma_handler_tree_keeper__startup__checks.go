@@ -188,13 +188,13 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		ckRows, thrRows, cstrRows, itRows, inRows, tckRows           *sql.Rows
 		cfgMap                                                       map[string]proto.CheckConfig
 		victim                                                       proto.CheckConfig // go/issues/3117 workaround
-		ckTree                                                       *somatree.Check
-		ckItem                                                       somatree.CheckItem
-		ckOrder                                                      map[string]map[string]somatree.Check
+		ckTree                                                       *tree.Check
+		ckItem                                                       tree.CheckItem
+		ckOrder                                                      map[string]map[string]tree.Check
 		nullBucketId                                                 sql.NullString
 	)
 	cfgMap = make(map[string]proto.CheckConfig)
-	ckOrder = make(map[string]map[string]somatree.Check)
+	ckOrder = make(map[string]map[string]tree.Check)
 
 	switch typ {
 	case "group":
@@ -436,16 +436,16 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// required to populate groups in the correct order.
 	for checkId, _ = range cfgMap {
 		victim = cfgMap[checkId]
-		ckOrder[victim.ObjectId] = map[string]somatree.Check{}
+		ckOrder[victim.ObjectId] = map[string]tree.Check{}
 		if ckTree, err = tk.convertCheck(&victim); err != nil {
 			goto fail
 		}
 		// add source check as well so it gets recreated with the
 		// correct UUID
-		ckItem = somatree.CheckItem{ObjectType: victim.ObjectType}
+		ckItem = tree.CheckItem{ObjectType: victim.ObjectType}
 		ckItem.ObjectId, _ = uuid.FromString(victim.ObjectId)
 		ckItem.ItemId, _ = uuid.FromString(checkId)
-		ckTree.Items = []somatree.CheckItem{ckItem}
+		ckTree.Items = []tree.CheckItem{ckItem}
 		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
 			tk.repoName,
 			`AssociateCheck`,
@@ -470,7 +470,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			}
 
 			// create new object per iteration
-			ckItem := somatree.CheckItem{ObjectType: objType}
+			ckItem := tree.CheckItem{ObjectType: objType}
 			ckItem.ObjectId, _ = uuid.FromString(objId)
 			ckItem.ItemId, _ = uuid.FromString(itemId)
 			ckTree.Items = append(ckTree.Items, ckItem)
@@ -489,7 +489,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		ckOrder[victim.ObjectId][checkId] = *ckTree
 	}
 
-	// apply all somatree.Check object to the tree, special case
+	// apply all tree.Check object to the tree, special case
 	// groups due to their ordering requirements
 	//
 	// grOrder maps from a standalone groupId to an array of child groupIds
@@ -504,7 +504,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			if _, ok := ckOrder[objKey]; ok {
 				// apply all checks for objKey
 				for ck, _ := range ckOrder[objKey] {
-					tk.tree.Find(somatree.FindRequest{
+					tk.tree.Find(tree.FindRequest{
 						ElementType: cfgMap[ck].ObjectType,
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
@@ -537,7 +537,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				if _, ok := ckOrder[grOrder[objKey][pos]]; ok {
 					// apply all checks for grOrder[objKey][pos]
 					for ck, _ := range ckOrder[objKey] {
-						tk.tree.Find(somatree.FindRequest{
+						tk.tree.Find(tree.FindRequest{
 							ElementType: cfgMap[ck].ObjectType,
 							ElementId:   cfgMap[ck].ObjectId,
 						}, true).SetCheck(ckOrder[objKey][ck])
@@ -574,7 +574,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			if _, ok := ckOrder[objKey]; ok {
 				// apply all checks for objKey
 				for ck, _ := range ckOrder[objKey] {
-					tk.tree.Find(somatree.FindRequest{
+					tk.tree.Find(tree.FindRequest{
 						ElementType: cfgMap[ck].ObjectType,
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
@@ -605,7 +605,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	default:
 		for objKey, _ := range ckOrder {
 			for ck, _ := range ckOrder[objKey] {
-				tk.tree.Find(somatree.FindRequest{
+				tk.tree.Find(tree.FindRequest{
 					ElementType: cfgMap[ck].ObjectType,
 					ElementId:   cfgMap[ck].ObjectId,
 				}, true).SetCheck(ckOrder[objKey][ck])
@@ -692,7 +692,7 @@ directinstances:
 			}
 
 			// fresh object per iteration -> memory safe!
-			ckInstance := somatree.CheckInstance{
+			ckInstance := tree.CheckInstance{
 				Version:            uint64(version),
 				ConstraintHash:     cstrHash,
 				ConstraintValHash:  cstrValHash,
@@ -714,7 +714,7 @@ directinstances:
 			ckInstance.InstanceConfigId, _ = uuid.FromString(itemCfgId)
 
 			// attach instance to tree
-			tk.tree.Find(somatree.FindRequest{
+			tk.tree.Find(tree.FindRequest{
 				ElementType: typ,
 				ElementId:   objId,
 			}, true).LoadInstance(ckInstance)

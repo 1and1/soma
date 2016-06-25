@@ -152,7 +152,7 @@ bucketloop:
 			tk.broken = true
 			return
 		}
-		somatree.NewBucket(somatree.BucketSpec{
+		tree.NewBucket(tree.BucketSpec{
 			Id:          bucketId,
 			Name:        bucketName,
 			Environment: environment,
@@ -160,7 +160,7 @@ bucketloop:
 			Deleted:     deleted,
 			Frozen:      frozen,
 			Repository:  tk.repoId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "repository",
 			ParentId:   tk.repoId,
@@ -223,11 +223,11 @@ grouploop:
 			tk.broken = true
 			return
 		}
-		somatree.NewGroup(somatree.GroupSpec{
+		tree.NewGroup(tree.GroupSpec{
 			Id:   groupId,
 			Name: groupName,
 			Team: teamId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   bucketId,
@@ -286,10 +286,10 @@ memberloop:
 			return
 		}
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   childGroupId,
-		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+		}, true).(tree.BucketAttacher).ReAttach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   groupId,
@@ -355,11 +355,11 @@ clusterloop:
 			return
 		}
 
-		somatree.NewCluster(somatree.ClusterSpec{
+		tree.NewCluster(tree.ClusterSpec{
 			Id:   clusterId,
 			Name: clusterName,
 			Team: teamId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   groupId,
@@ -423,11 +423,11 @@ clusterloop:
 			return
 		}
 
-		somatree.NewCluster(somatree.ClusterSpec{
+		tree.NewCluster(tree.ClusterSpec{
 			Id:   clusterId,
 			Name: clusterName,
 			Team: teamId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   bucketId,
@@ -511,7 +511,7 @@ nodeloop:
 			return
 		}
 
-		node := somatree.NewNode(somatree.NodeSpec{
+		node := tree.NewNode(tree.NodeSpec{
 			Id:       nodeId,
 			AssetId:  uint64(assetId),
 			Name:     nodeName,
@@ -521,19 +521,19 @@ nodeloop:
 			Deleted:  nodeDeleted,
 		})
 		if clusterId.Valid {
-			node.Attach(somatree.AttachRequest{
+			node.Attach(tree.AttachRequest{
 				Root:       tk.tree,
 				ParentType: "cluster",
 				ParentId:   clusterId.String,
 			})
 		} else if groupId.Valid {
-			node.Attach(somatree.AttachRequest{
+			node.Attach(tree.AttachRequest{
 				Root:       tk.tree,
 				ParentType: "group",
 				ParentId:   groupId.String,
 			})
 		} else {
-			node.Attach(somatree.AttachRequest{
+			node.Attach(tree.AttachRequest{
 				Root:       tk.tree,
 				ParentType: "bucket",
 				ParentId:   bucketId,
@@ -673,7 +673,7 @@ customloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyCustom{
+		prop := tree.PropertyCustom{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -682,14 +682,14 @@ customloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
 			srcInstanceId,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading group system properties: %s", tk.repoName, err.Error())
+			log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -731,7 +731,7 @@ customloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -740,7 +740,7 @@ customloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: groupId,
 		}, true).SetProperty(&prop)
 
@@ -824,7 +824,7 @@ oncallloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyOncall{
+		prop := tree.PropertyOncall{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -833,7 +833,7 @@ oncallloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.OncallId, _ = uuid.FromString(oncallId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
@@ -882,7 +882,7 @@ oncallloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -891,7 +891,7 @@ oncallloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: groupId,
 		}, true).SetProperty(&prop)
 

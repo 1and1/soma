@@ -77,7 +77,7 @@ systemloop:
 		}
 
 		// build the property
-		prop := somatree.PropertySystem{
+		prop := tree.PropertySystem{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -85,7 +85,7 @@ systemloop:
 			Value:        value,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
@@ -134,7 +134,7 @@ systemloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -143,7 +143,7 @@ systemloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: repositoryId,
 		}, true).SetProperty(&prop)
 
@@ -231,7 +231,7 @@ systemloop:
 		}
 
 		// build the property
-		prop := somatree.PropertySystem{
+		prop := tree.PropertySystem{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -239,7 +239,7 @@ systemloop:
 			Value:        value,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
@@ -288,7 +288,7 @@ systemloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -297,7 +297,7 @@ systemloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: bucketId,
 		}, true).SetProperty(&prop)
 
@@ -385,7 +385,7 @@ systemloop:
 		}
 
 		// build the property
-		prop := somatree.PropertySystem{
+		prop := tree.PropertySystem{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -393,7 +393,7 @@ systemloop:
 			Value:        value,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
@@ -442,7 +442,7 @@ systemloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -451,7 +451,7 @@ systemloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: groupId,
 		}, true).SetProperty(&prop)
 
@@ -539,7 +539,7 @@ systemloop:
 		}
 
 		// build the property
-		prop := somatree.PropertySystem{
+		prop := tree.PropertySystem{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -547,7 +547,7 @@ systemloop:
 			Value:        value,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
@@ -596,7 +596,7 @@ systemloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -605,7 +605,7 @@ systemloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: clusterId,
 		}, true).SetProperty(&prop)
 
@@ -693,7 +693,7 @@ systemloop:
 		}
 
 		// build the property
-		prop := somatree.PropertySystem{
+		prop := tree.PropertySystem{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -701,7 +701,7 @@ systemloop:
 			Value:        value,
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
 			tk.repoId,
@@ -750,7 +750,7 @@ systemloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -759,7 +759,7 @@ systemloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: nodeId,
 		}, true).SetProperty(&prop)
 

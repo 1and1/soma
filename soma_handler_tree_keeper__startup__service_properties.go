@@ -86,7 +86,7 @@ serviceloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyService{
+		prop := tree.PropertyService{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -94,7 +94,7 @@ serviceloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
 			teamId,
@@ -177,7 +177,7 @@ serviceloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -186,7 +186,7 @@ serviceloop:
 		}
 
 		// lookup the repository and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: repositoryId,
 		}, true).SetProperty(&prop)
 
@@ -283,7 +283,7 @@ serviceloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyService{
+		prop := tree.PropertyService{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -291,7 +291,7 @@ serviceloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
 			teamId,
@@ -374,7 +374,7 @@ serviceloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -383,7 +383,7 @@ serviceloop:
 		}
 
 		// lookup the bucket and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: bucketId,
 		}, true).SetProperty(&prop)
 
@@ -480,7 +480,7 @@ serviceloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyService{
+		prop := tree.PropertyService{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -488,7 +488,7 @@ serviceloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
 			teamId,
@@ -571,7 +571,7 @@ serviceloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -580,7 +580,7 @@ serviceloop:
 		}
 
 		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: groupId,
 		}, true).SetProperty(&prop)
 
@@ -677,7 +677,7 @@ serviceloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyService{
+		prop := tree.PropertyService{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -685,7 +685,7 @@ serviceloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
 			teamId,
@@ -768,7 +768,7 @@ serviceloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -777,7 +777,7 @@ serviceloop:
 		}
 
 		// lookup the cluster and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: clusterId,
 		}, true).SetProperty(&prop)
 
@@ -874,7 +874,7 @@ serviceloop:
 		}
 
 		// build the property
-		prop := somatree.PropertyService{
+		prop := tree.PropertyService{
 			Inheritance:  inheritance,
 			ChildrenOnly: childrenOnly,
 			View:         view,
@@ -882,7 +882,7 @@ serviceloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
+		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		attribute_rows, err = load_attributes.Query(
 			teamId,
@@ -965,7 +965,7 @@ serviceloop:
 				continue inproploop
 			}
 
-			pi := somatree.PropertyInstance{
+			pi := tree.PropertyInstance{
 				ObjectId:   propObjectId,
 				ObjectType: inObjectType,
 				InstanceId: propInstanceId,
@@ -974,7 +974,7 @@ serviceloop:
 		}
 
 		// lookup the node and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementId: nodeId,
 		}, true).SetProperty(&prop)
 

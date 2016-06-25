@@ -70,9 +70,9 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 	var (
 		res        sql.Result
 		err        error
-		sTree      *somatree.SomaTree
-		actionChan chan *somatree.Action
-		errChan    chan *somatree.Error
+		sTree      *tree.Tree
+		actionChan chan *tree.Action
+		errChan    chan *tree.Error
 		team       string
 	)
 	result := somaResult{}
@@ -84,24 +84,24 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 			fmt.Sprintf("%s/%s", `CreateRepository`, q.Repository.Name),
 			q.user, q.remoteAddr,
 		)
-		actionChan = make(chan *somatree.Action, 1024000)
-		errChan = make(chan *somatree.Error, 1024000)
+		actionChan = make(chan *tree.Action, 1024000)
+		errChan = make(chan *tree.Error, 1024000)
 
 		id := uuid.NewV4()
 		q.Repository.Id = id.String()
 
-		sTree = somatree.New(somatree.TreeSpec{
+		sTree = tree.New(tree.TreeSpec{
 			Id:     uuid.NewV4().String(),
 			Name:   fmt.Sprintf("root_%s", q.Repository.Name),
 			Action: actionChan,
 		})
-		somatree.NewRepository(somatree.RepositorySpec{
+		tree.NewRepository(tree.RepositorySpec{
 			Id:      q.Repository.Id,
 			Name:    q.Repository.Name,
 			Team:    q.Repository.TeamId,
 			Deleted: false,
 			Active:  q.Repository.IsActive,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       sTree,
 			ParentType: "root",
 			ParentId:   sTree.GetID(),
@@ -208,21 +208,21 @@ func (f *forestCustodian) initialLoad() {
 }
 
 func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
-	actionChan := make(chan *somatree.Action, 1024000)
-	errChan := make(chan *somatree.Error, 1024000)
+	actionChan := make(chan *tree.Action, 1024000)
+	errChan := make(chan *tree.Error, 1024000)
 
-	sTree := somatree.New(somatree.TreeSpec{
+	sTree := tree.New(tree.TreeSpec{
 		Id:     uuid.NewV4().String(),
 		Name:   fmt.Sprintf("root_%s", q.Repository.Name),
 		Action: actionChan,
 	})
-	somatree.NewRepository(somatree.RepositorySpec{
+	tree.NewRepository(tree.RepositorySpec{
 		Id:      q.Repository.Id,
 		Name:    q.Repository.Name,
 		Team:    q.Repository.TeamId,
 		Deleted: q.Repository.IsDeleted,
 		Active:  q.Repository.IsActive,
-	}).Attach(somatree.AttachRequest{
+	}).Attach(tree.AttachRequest{
 		Root:       sTree,
 		ParentType: "root",
 		ParentId:   sTree.GetID(),
@@ -239,8 +239,8 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 	f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.TeamId)
 }
 
-func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *somatree.SomaTree,
-	ec chan *somatree.Error, ac chan *somatree.Action, team string) {
+func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree,
+	ec chan *tree.Error, ac chan *tree.Action, team string) {
 	tK := new(treeKeeper)
 	tK.input = make(chan treeRequest, 1024)
 	tK.shutdown = make(chan bool)
