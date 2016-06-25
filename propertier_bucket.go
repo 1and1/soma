@@ -167,22 +167,32 @@ func (teb *SomaTreeElemBucket) deletePropertyOnChildren(p Property) {
 }
 
 func (teb *SomaTreeElemBucket) rmProperty(p Property) {
-	delId, _ := uuid.FromString(teb.findIdForSource(
+	delId := teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
-	p.SetId(delId)
-	teb.actionPropertyDelete(p.MakeAction())
+	)
 
 	switch p.GetType() {
 	case `custom`:
-		delete(teb.PropertyCustom, delId.String())
+		teb.actionPropertyDelete(
+			teb.PropertyCustom[delId].MakeAction(),
+		)
+		delete(teb.PropertyCustom, delId)
 	case `service`:
-		delete(teb.PropertyService, delId.String())
+		teb.actionPropertyDelete(
+			teb.PropertyService[delId].MakeAction(),
+		)
+		delete(teb.PropertyService, delId)
 	case `system`:
-		delete(teb.PropertySystem, delId.String())
+		teb.actionPropertyDelete(
+			teb.PropertySystem[delId].MakeAction(),
+		)
+		delete(teb.PropertySystem, delId)
 	case `oncall`:
-		delete(teb.PropertyOncall, delId.String())
+		teb.actionPropertyDelete(
+			teb.PropertyOncall[delId].MakeAction(),
+		)
+		delete(teb.PropertyOncall, delId)
 	}
 }
 

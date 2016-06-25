@@ -167,22 +167,32 @@ func (tec *SomaTreeElemCluster) deletePropertyOnChildren(p Property) {
 }
 
 func (tec *SomaTreeElemCluster) rmProperty(p Property) {
-	delId, _ := uuid.FromString(tec.findIdForSource(
+	delId := tec.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
-	p.SetId(delId)
-	tec.actionPropertyDelete(p.MakeAction())
+	)
 
 	switch p.GetType() {
 	case `custom`:
-		delete(tec.PropertyCustom, delId.String())
+		tec.actionPropertyDelete(
+			tec.PropertyCustom[delId].MakeAction(),
+		)
+		delete(tec.PropertyCustom, delId)
 	case `service`:
-		delete(tec.PropertyService, delId.String())
+		tec.actionPropertyDelete(
+			tec.PropertyService[delId].MakeAction(),
+		)
+		delete(tec.PropertyService, delId)
 	case `system`:
-		delete(tec.PropertySystem, delId.String())
+		tec.actionPropertyDelete(
+			tec.PropertySystem[delId].MakeAction(),
+		)
+		delete(tec.PropertySystem, delId)
 	case `oncall`:
-		delete(tec.PropertyOncall, delId.String())
+		tec.actionPropertyDelete(
+			tec.PropertyOncall[delId].MakeAction(),
+		)
+		delete(tec.PropertyOncall, delId)
 	}
 }
 

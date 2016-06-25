@@ -167,22 +167,32 @@ func (ter *SomaTreeElemRepository) deletePropertyOnChildren(p Property) {
 }
 
 func (ter *SomaTreeElemRepository) rmProperty(p Property) {
-	delId, _ := uuid.FromString(ter.findIdForSource(
+	delId := ter.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
-	p.SetId(delId)
-	ter.actionPropertyDelete(p.MakeAction())
+	)
 
 	switch p.GetType() {
 	case `custom`:
-		delete(ter.PropertyCustom, delId.String())
+		ter.actionPropertyDelete(
+			ter.PropertyCustom[delId].MakeAction(),
+		)
+		delete(ter.PropertyCustom, delId)
 	case `service`:
-		delete(ter.PropertyService, delId.String())
+		ter.actionPropertyDelete(
+			ter.PropertyService[delId].MakeAction(),
+		)
+		delete(ter.PropertyService, delId)
 	case `system`:
-		delete(ter.PropertySystem, delId.String())
+		ter.actionPropertyDelete(
+			ter.PropertySystem[delId].MakeAction(),
+		)
+		delete(ter.PropertySystem, delId)
 	case `oncall`:
-		delete(ter.PropertyOncall, delId.String())
+		ter.actionPropertyDelete(
+			ter.PropertyOncall[delId].MakeAction(),
+		)
+		delete(ter.PropertyOncall, delId)
 	}
 }
 

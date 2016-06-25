@@ -140,22 +140,32 @@ func (ten *SomaTreeElemNode) deletePropertyOnChildren(p Property) {
 }
 
 func (ten *SomaTreeElemNode) rmProperty(p Property) {
-	delId, _ := uuid.FromString(ten.findIdForSource(
+	delId := ten.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
-	))
-	p.SetId(delId)
-	ten.actionPropertyDelete(p.MakeAction())
+	)
 
 	switch p.GetType() {
 	case `custom`:
-		delete(ten.PropertyCustom, delId.String())
+		ten.actionPropertyDelete(
+			ten.PropertyCustom[delId].MakeAction(),
+		)
+		delete(ten.PropertyCustom, delId)
 	case `service`:
-		delete(ten.PropertyService, delId.String())
+		ten.actionPropertyDelete(
+			ten.PropertyService[delId].MakeAction(),
+		)
+		delete(ten.PropertyService, delId)
 	case `system`:
-		delete(ten.PropertySystem, delId.String())
+		ten.actionPropertyDelete(
+			ten.PropertySystem[delId].MakeAction(),
+		)
+		delete(ten.PropertySystem, delId)
 	case `oncall`:
-		delete(ten.PropertyOncall, delId.String())
+		ten.actionPropertyDelete(
+			ten.PropertyOncall[delId].MakeAction(),
+		)
+		delete(ten.PropertyOncall, delId)
 	}
 }
 
