@@ -103,7 +103,11 @@ func (teb *Bucket) UpdateProperty(p Property) {
 	}
 
 	// keep a copy for ourselves, no shared pointers
+	p.SetInheritedFrom(teb.Id)
+	p.SetSourceType(teb.Type)
+	p.SetInherited(true)
 	f := p.Clone()
+	f.SetInherited(false)
 	teb.switchProperty(f)
 	teb.updatePropertyOnChildren(p)
 }

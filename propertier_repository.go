@@ -103,7 +103,11 @@ func (ter *Repository) UpdateProperty(p Property) {
 	}
 
 	// keep a copy for ourselves, no shared pointers
+	p.SetInheritedFrom(ter.Id)
+	p.SetSourceType(ter.Type)
+	p.SetInherited(true)
 	f := p.Clone()
+	f.SetInherited(false)
 	ter.switchProperty(f)
 	ter.updatePropertyOnChildren(p)
 }

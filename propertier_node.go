@@ -92,7 +92,11 @@ func (ten *Node) UpdateProperty(p Property) {
 	}
 
 	// keep a copy for ourselves, no shared pointers
+	p.SetInheritedFrom(ten.Id)
+	p.SetSourceType(ten.Type)
+	p.SetInherited(true)
 	f := p.Clone()
+	f.SetInherited(false)
 	ten.switchProperty(f)
 	ten.updatePropertyOnChildren(p)
 }

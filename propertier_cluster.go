@@ -103,7 +103,11 @@ func (tec *Cluster) UpdateProperty(p Property) {
 	}
 
 	// keep a copy for ourselves, no shared pointers
+	p.SetInheritedFrom(tec.Id)
+	p.SetSourceType(tec.Type)
+	p.SetInherited(true)
 	f := p.Clone()
+	f.SetInherited(false)
 	tec.switchProperty(f)
 	tec.updatePropertyOnChildren(p)
 }

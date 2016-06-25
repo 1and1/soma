@@ -109,7 +109,11 @@ func (teg *Group) UpdateProperty(p Property) {
 	}
 
 	// keep a copy for ourselves, no shared pointers
+	p.SetInheritedFrom(teg.Id)
+	p.SetSourceType(teg.Type)
+	p.SetInherited(true)
 	f := p.Clone()
+	f.SetInherited(false)
 	teg.switchProperty(f)
 	teg.updatePropertyOnChildren(p)
 }
