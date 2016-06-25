@@ -308,27 +308,30 @@ func (tec *Cluster) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := tec.PropertyCustom[id]; !ok {
-			return false
+			goto bailout
 		}
 		return tec.PropertyCustom[id].GetSourceInstance() == id
 	case `service`:
 		if _, ok := tec.PropertyService[id]; !ok {
-			return false
+			goto bailout
 		}
 		return tec.PropertyService[id].GetSourceInstance() == id
 	case `system`:
 		if _, ok := tec.PropertySystem[id]; !ok {
-			return false
+			goto bailout
 		}
 		return tec.PropertySystem[id].GetSourceInstance() == id
 	case `oncall`:
 		if _, ok := tec.PropertyOncall[id]; !ok {
-			return false
+			goto bailout
 		}
 		return tec.PropertyOncall[id].GetSourceInstance() == id
-	default:
-		return false
 	}
+
+bailout:
+	tec.Fault.Error <- &Error{
+		Action: `cluster.verifySourceInstance not found`}
+	return false
 }
 
 //

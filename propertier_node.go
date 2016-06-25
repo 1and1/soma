@@ -279,27 +279,30 @@ func (ten *Node) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := ten.PropertyCustom[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ten.PropertyCustom[id].GetSourceInstance() == id
 	case `service`:
 		if _, ok := ten.PropertyService[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ten.PropertyService[id].GetSourceInstance() == id
 	case `system`:
 		if _, ok := ten.PropertySystem[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ten.PropertySystem[id].GetSourceInstance() == id
 	case `oncall`:
 		if _, ok := ten.PropertyOncall[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ten.PropertyOncall[id].GetSourceInstance() == id
-	default:
-		return false
 	}
+
+bailout:
+	ten.Fault.Error <- &Error{
+		Action: `node.verifySourceInstance not found`}
+	return false
 }
 
 func (ten *Node) findIdForSource(source, prop string) string {

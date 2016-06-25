@@ -308,27 +308,30 @@ func (teg *Group) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := teg.PropertyCustom[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teg.PropertyCustom[id].GetSourceInstance() == id
 	case `service`:
 		if _, ok := teg.PropertyService[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teg.PropertyService[id].GetSourceInstance() == id
 	case `system`:
 		if _, ok := teg.PropertySystem[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teg.PropertySystem[id].GetSourceInstance() == id
 	case `oncall`:
 		if _, ok := teg.PropertyOncall[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teg.PropertyOncall[id].GetSourceInstance() == id
-	default:
-		return false
 	}
+
+bailout:
+	teg.Fault.Error <- &Error{
+		Action: `group.verifySourceInstance not found`}
+	return false
 }
 
 //

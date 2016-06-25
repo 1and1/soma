@@ -308,27 +308,30 @@ func (teb *Bucket) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := teb.PropertyCustom[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teb.PropertyCustom[id].GetSourceInstance() == id
 	case `service`:
 		if _, ok := teb.PropertyService[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teb.PropertyService[id].GetSourceInstance() == id
 	case `system`:
 		if _, ok := teb.PropertySystem[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teb.PropertySystem[id].GetSourceInstance() == id
 	case `oncall`:
 		if _, ok := teb.PropertyOncall[id]; !ok {
-			return false
+			goto bailout
 		}
 		return teb.PropertyOncall[id].GetSourceInstance() == id
-	default:
-		return false
 	}
+
+bailout:
+	teb.Fault.Error <- &Error{
+		Action: `bucket.verifySourceInstance not found`}
+	return false
 }
 
 //

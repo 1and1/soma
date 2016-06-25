@@ -308,27 +308,30 @@ func (ter *Repository) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := ter.PropertyCustom[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ter.PropertyCustom[id].GetSourceInstance() == id
 	case `service`:
 		if _, ok := ter.PropertyService[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ter.PropertyService[id].GetSourceInstance() == id
 	case `system`:
 		if _, ok := ter.PropertySystem[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ter.PropertySystem[id].GetSourceInstance() == id
 	case `oncall`:
 		if _, ok := ter.PropertyOncall[id]; !ok {
-			return false
+			goto bailout
 		}
 		return ter.PropertyOncall[id].GetSourceInstance() == id
-	default:
-		return false
 	}
+
+bailout:
+	ter.Fault.Error <- &Error{
+		Action: `repository.verifySourceInstance not found`}
+	return false
 }
 
 func (ter *Repository) findIdForSource(source, prop string) string {
