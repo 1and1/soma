@@ -162,7 +162,7 @@ func (ten *SomaTreeElemNode) GetType() string {
 
 func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
-	case *SomaTreeElemBucket:
+	case *Bucket:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
 		ten.State = "standalone"
 	case *SomaTreeElemGroup:

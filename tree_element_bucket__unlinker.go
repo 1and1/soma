@@ -2,7 +2,7 @@ package somatree
 
 //
 // Interface: SomaTreeUnlinker
-func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
+func (teb *Bucket) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
 		case "group":
@@ -12,7 +12,7 @@ func (teb *SomaTreeElemBucket) Unlink(u UnlinkRequest) {
 		case "node":
 			teb.unlinkNode(u)
 		default:
-			panic(`SomaTreeElemBucket.Unlink`)
+			panic(`Bucket.Unlink`)
 		}
 		return
 	}
@@ -27,7 +27,7 @@ loop:
 
 //
 // Interface: SomaTreeGroupUnlinker
-func (teb *SomaTreeElemBucket) unlinkGroup(u UnlinkRequest) {
+func (teb *Bucket) unlinkGroup(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
 		case "group":
@@ -38,16 +38,16 @@ func (teb *SomaTreeElemBucket) unlinkGroup(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemBucket.unlinkGroup`)
+			panic(`Bucket.unlinkGroup`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.unlinkGroup`)
+	panic(`Bucket.unlinkGroup`)
 }
 
 //
 // Interface: SomaTreeClusterUnlinker
-func (teb *SomaTreeElemBucket) unlinkCluster(u UnlinkRequest) {
+func (teb *Bucket) unlinkCluster(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
 		case "cluster":
@@ -58,16 +58,16 @@ func (teb *SomaTreeElemBucket) unlinkCluster(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemBucket.unlinkCluster`)
+			panic(`Bucket.unlinkCluster`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.unlinkCluster`)
+	panic(`Bucket.unlinkCluster`)
 }
 
 //
 // Interface: SomaTreeNodeUnlinker
-func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
+func (teb *Bucket) unlinkNode(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
 		case "node":
@@ -83,11 +83,11 @@ func (teb *SomaTreeElemBucket) unlinkNode(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemBucket.unlinkNode`)
+			panic(`Bucket.unlinkNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.unlinkNode`)
+	panic(`Bucket.unlinkNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

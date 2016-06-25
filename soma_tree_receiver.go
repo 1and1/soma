@@ -98,7 +98,7 @@ type ReceiveRequest struct {
 	ParentName string
 	ChildType  string
 	Repository *SomaTreeElemRepository
-	Bucket     *SomaTreeElemBucket
+	Bucket     *Bucket
 	Group      *SomaTreeElemGroup
 	Cluster    *SomaTreeElemCluster
 	Node       *SomaTreeElemNode

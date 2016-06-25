@@ -166,14 +166,14 @@ func TestSetProperty(t *testing.T) {
 		)
 	}
 
-	if len(sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem) != 1 {
+	if len(sTree.Child.Children[buckId].(*Bucket).PropertySystem) != 1 {
 		t.Error(
 			`Expected bucket to have 1 system property, found`,
-			len(sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem),
+			len(sTree.Child.Children[buckId].(*Bucket).PropertySystem),
 		)
 	}
 
-	for _, p := range sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem {
+	for _, p := range sTree.Child.Children[buckId].(*Bucket).PropertySystem {
 		if p.GetSourceInstance() != propId {
 			t.Error(`Wrong source id`, p.GetSourceInstance())
 		}
@@ -386,14 +386,14 @@ func TestUpdateProperty(t *testing.T) {
 		)
 	}
 
-	if len(sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem) != 1 {
+	if len(sTree.Child.Children[buckId].(*Bucket).PropertySystem) != 1 {
 		t.Error(
 			`Expected bucket to have 1 system property, found`,
-			len(sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem),
+			len(sTree.Child.Children[buckId].(*Bucket).PropertySystem),
 		)
 	}
 
-	for _, p := range sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem {
+	for _, p := range sTree.Child.Children[buckId].(*Bucket).PropertySystem {
 		if p.GetSourceInstance() != propId {
 			t.Error(`Wrong source id`, p.GetSourceInstance())
 		}
@@ -613,10 +613,10 @@ func TestDeleteProperty(t *testing.T) {
 		)
 	}
 
-	if len(sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem) != 0 {
+	if len(sTree.Child.Children[buckId].(*Bucket).PropertySystem) != 0 {
 		t.Error(
 			`Expected bucket to have 0 system property, found`,
-			len(sTree.Child.Children[buckId].(*SomaTreeElemBucket).PropertySystem),
+			len(sTree.Child.Children[buckId].(*Bucket).PropertySystem),
 		)
 	}
 

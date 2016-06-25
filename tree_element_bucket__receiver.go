@@ -3,7 +3,7 @@ package somatree
 
 //
 // Interface: SomaTreeReceiver
-func (teb *SomaTreeElemBucket) Receive(r ReceiveRequest) {
+func (teb *Bucket) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
 		case "group":
@@ -13,7 +13,7 @@ func (teb *SomaTreeElemBucket) Receive(r ReceiveRequest) {
 		case "node":
 			teb.receiveNode(r)
 		default:
-			panic(`SomaTreeElemBucket.Receive`)
+			panic(`Bucket.Receive`)
 		}
 		return
 	}
@@ -28,7 +28,7 @@ loop:
 
 //
 // Interface: SomaTreeGroupReceiver
-func (teb *SomaTreeElemBucket) receiveGroup(r ReceiveRequest) {
+func (teb *Bucket) receiveGroup(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
 		case "group":
@@ -37,16 +37,16 @@ func (teb *SomaTreeElemBucket) receiveGroup(r ReceiveRequest) {
 			r.Group.setAction(teb.Action)
 			r.Group.setFault(teb.Fault)
 		default:
-			panic(`SomaTreeElemBucket.receiveGroup`)
+			panic(`Bucket.receiveGroup`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.receiveGroup`)
+	panic(`Bucket.receiveGroup`)
 }
 
 //
 // Interface: SomaTreeClusterReceiver
-func (teb *SomaTreeElemBucket) receiveCluster(r ReceiveRequest) {
+func (teb *Bucket) receiveCluster(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
 		case "cluster":
@@ -55,16 +55,16 @@ func (teb *SomaTreeElemBucket) receiveCluster(r ReceiveRequest) {
 			r.Cluster.setAction(teb.Action)
 			r.Cluster.setFault(teb.Fault)
 		default:
-			panic(`SomaTreeElemBucket.receiveCluster`)
+			panic(`Bucket.receiveCluster`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.receiveCluster`)
+	panic(`Bucket.receiveCluster`)
 }
 
 //
 // Interface: SomaTreeNodeReceiver
-func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
+func (teb *Bucket) receiveNode(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
 		case "node":
@@ -80,11 +80,11 @@ func (teb *SomaTreeElemBucket) receiveNode(r ReceiveRequest) {
 				},
 			})
 		default:
-			panic(`SomaTreeElemBucket.receiveNode`)
+			panic(`Bucket.receiveNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemBucket.receiveNode`)
+	panic(`Bucket.receiveNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

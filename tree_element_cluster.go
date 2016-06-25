@@ -151,7 +151,7 @@ func (tec *SomaTreeElemCluster) GetType() string {
 
 func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
-	case *SomaTreeElemBucket:
+	case *Bucket:
 		tec.setClusterParent(p.(SomaTreeClusterReceiver))
 		tec.State = "standalone"
 	case *SomaTreeElemGroup:

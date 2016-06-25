@@ -11,7 +11,7 @@ import (
 //
 // Checker:> Add Check
 
-func (teb *SomaTreeElemBucket) SetCheck(c Check) {
+func (teb *Bucket) SetCheck(c Check) {
 	c.Id = c.GetItemId(teb.Type, teb.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
 		c.Id = uuid.NewV4()
@@ -31,7 +31,7 @@ func (teb *SomaTreeElemBucket) SetCheck(c Check) {
 	teb.addCheck(c)
 }
 
-func (teb *SomaTreeElemBucket) setCheckInherited(c Check) {
+func (teb *Bucket) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(teb.Type, teb.Id)
@@ -45,7 +45,7 @@ func (teb *SomaTreeElemBucket) setCheckInherited(c Check) {
 	teb.setCheckOnChildren(c)
 }
 
-func (teb *SomaTreeElemBucket) setCheckOnChildren(c Check) {
+func (teb *Bucket) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
@@ -58,7 +58,7 @@ func (teb *SomaTreeElemBucket) setCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) addCheck(c Check) {
+func (teb *Bucket) addCheck(c Check) {
 	teb.Checks[c.Id.String()] = c
 	teb.actionCheckNew(teb.setupCheckAction(c))
 }
@@ -66,17 +66,17 @@ func (teb *SomaTreeElemBucket) addCheck(c Check) {
 //
 // Checker:> Remove Check
 
-func (teb *SomaTreeElemBucket) DeleteCheck(c Check) {
+func (teb *Bucket) DeleteCheck(c Check) {
 	teb.rmCheck(c)
 	teb.deleteCheckOnChildren(c)
 }
 
-func (teb *SomaTreeElemBucket) deleteCheckInherited(c Check) {
+func (teb *Bucket) deleteCheckInherited(c Check) {
 	teb.rmCheck(c)
 	teb.deleteCheckOnChildren(c)
 }
 
-func (teb *SomaTreeElemBucket) deleteCheckOnChildren(c Check) {
+func (teb *Bucket) deleteCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
@@ -88,7 +88,7 @@ func (teb *SomaTreeElemBucket) deleteCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) rmCheck(c Check) {
+func (teb *Bucket) rmCheck(c Check) {
 	for id, _ := range teb.Checks {
 		if uuid.Equal(teb.Checks[id].SourceId, c.SourceId) {
 			teb.actionCheckRemoved(teb.setupCheckAction(teb.Checks[id]))
@@ -101,7 +101,7 @@ func (teb *SomaTreeElemBucket) rmCheck(c Check) {
 //
 // Checker:> Meta
 
-func (teb *SomaTreeElemBucket) syncCheck(childId string) {
+func (teb *Bucket) syncCheck(childId string) {
 	for check, _ := range teb.Checks {
 		if !teb.Checks[check].Inheritance {
 			continue
@@ -113,7 +113,7 @@ func (teb *SomaTreeElemBucket) syncCheck(childId string) {
 	}
 }
 
-func (teb *SomaTreeElemBucket) checkCheck(checkId string) bool {
+func (teb *Bucket) checkCheck(checkId string) bool {
 	if _, ok := teb.Checks[checkId]; ok {
 		return true
 	}
@@ -121,7 +121,7 @@ func (teb *SomaTreeElemBucket) checkCheck(checkId string) bool {
 }
 
 // XXX
-func (teb *SomaTreeElemBucket) LoadInstance(i CheckInstance) {
+func (teb *Bucket) LoadInstance(i CheckInstance) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

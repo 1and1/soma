@@ -150,7 +150,7 @@ func (teg *SomaTreeElemGroup) GetType() string {
 
 func (teg *SomaTreeElemGroup) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
-	case *SomaTreeElemBucket:
+	case *Bucket:
 		teg.setGroupParent(p.(SomaTreeGroupReceiver))
 		teg.State = "standalone"
 	case *SomaTreeElemGroup:

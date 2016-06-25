@@ -8,26 +8,26 @@ import (
 
 //
 // Interface: SomaTreeAttacher
-func (teb *SomaTreeElemBucket) Attach(a AttachRequest) {
+func (teb *Bucket) Attach(a AttachRequest) {
 	if teb.Parent != nil {
-		panic(`SomaTreeElemBucket.Attach: already attached`)
+		panic(`Bucket.Attach: already attached`)
 	}
 	switch {
 	case a.ParentType == "repository":
 		teb.attachToRepository(a)
 	default:
-		panic(`SomaTreeElemBucket.Attach`)
+		panic(`Bucket.Attach`)
 	}
 
 	if teb.Parent == nil {
-		panic(`SomaTreeElemBucket.Attach: failed`)
+		panic(`Bucket.Attach: failed`)
 	}
 	teb.Parent.(Propertier).syncProperty(teb.Id.String())
 }
 
-func (teb *SomaTreeElemBucket) Destroy() {
+func (teb *Bucket) Destroy() {
 	if teb.Parent == nil {
-		panic(`SomaTreeElemBucket.Destroy called without Parent to unlink from`)
+		panic(`Bucket.Destroy called without Parent to unlink from`)
 	}
 	// XXX: destroy all inherited properties before unlinking
 	// teb.(SomaTreePropertier).destroyInheritedProperties()
@@ -47,20 +47,20 @@ func (teb *SomaTreeElemBucket) Destroy() {
 	teb.setAction(nil)
 }
 
-func (teb *SomaTreeElemBucket) Detach() {
+func (teb *Bucket) Detach() {
 	teb.Destroy()
 }
 
-func (teb *SomaTreeElemBucket) clearParent() {
+func (teb *Bucket) clearParent() {
 	teb.Parent = nil
 	teb.State = "floating"
 }
 
-func (teb *SomaTreeElemBucket) setFault(f *SomaTreeElemFault) {
+func (teb *Bucket) setFault(f *SomaTreeElemFault) {
 	teb.Fault = f
 }
 
-func (teb *SomaTreeElemBucket) updateParentRecursive(p SomaTreeReceiver) {
+func (teb *Bucket) updateParentRecursive(p SomaTreeReceiver) {
 	teb.setParent(p)
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
@@ -74,7 +74,7 @@ func (teb *SomaTreeElemBucket) updateParentRecursive(p SomaTreeReceiver) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) updateFaultRecursive(f *SomaTreeElemFault) {
+func (teb *Bucket) updateFaultRecursive(f *SomaTreeElemFault) {
 	teb.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
@@ -88,24 +88,24 @@ func (teb *SomaTreeElemBucket) updateFaultRecursive(f *SomaTreeElemFault) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) setParent(p SomaTreeReceiver) {
+func (teb *Bucket) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeBucketReceiver:
 		teb.setBucketParent(p.(SomaTreeBucketReceiver))
 		teb.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
-		panic(`SomaTreeElemBucket.setParent`)
+		panic(`Bucket.setParent`)
 	}
 }
 
-func (teb *SomaTreeElemBucket) setBucketParent(p SomaTreeBucketReceiver) {
+func (teb *Bucket) setBucketParent(p SomaTreeBucketReceiver) {
 	teb.Parent = p
 }
 
 //
 // Interface: SomaTreeRepositoryAttacher
-func (teb *SomaTreeElemBucket) attachToRepository(a AttachRequest) {
+func (teb *Bucket) attachToRepository(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,

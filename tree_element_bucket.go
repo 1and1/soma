@@ -9,7 +9,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeElemBucket struct {
+type Bucket struct {
 	Id              uuid.UUID
 	Name            string
 	Environment     string
@@ -42,13 +42,13 @@ type BucketSpec struct {
 
 //
 // NEW
-func NewBucket(spec BucketSpec) *SomaTreeElemBucket {
+func NewBucket(spec BucketSpec) *Bucket {
 	if !specBucketCheck(spec) {
 		fmt.Printf("%#v\n", spec) // XXX DEBUG
 		panic(`No.`)
 	}
 
-	teb := new(SomaTreeElemBucket)
+	teb := new(Bucket)
 	teb.Id, _ = uuid.FromString(spec.Id)
 	teb.Name = spec.Name
 	teb.Team, _ = uuid.FromString(spec.Team)
@@ -69,8 +69,8 @@ func NewBucket(spec BucketSpec) *SomaTreeElemBucket {
 	return teb
 }
 
-func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
-	cl := SomaTreeElemBucket{
+func (teb Bucket) CloneRepository() SomaTreeRepositoryAttacher {
+	cl := Bucket{
 		Name:        teb.Name,
 		Environment: teb.Environment,
 		Type:        teb.Type,
@@ -123,23 +123,23 @@ func (teb SomaTreeElemBucket) CloneRepository() SomaTreeRepositoryAttacher {
 
 //
 // Interface: SomaTreeBuilder
-func (teb *SomaTreeElemBucket) GetID() string {
+func (teb *Bucket) GetID() string {
 	return teb.Id.String()
 }
 
-func (teb *SomaTreeElemBucket) GetName() string {
+func (teb *Bucket) GetName() string {
 	return teb.Name
 }
 
-func (teb *SomaTreeElemBucket) GetType() string {
+func (teb *Bucket) GetType() string {
 	return teb.Type
 }
 
-func (teb *SomaTreeElemBucket) setAction(c chan *Action) {
+func (teb *Bucket) setAction(c chan *Action) {
 	teb.Action = c
 }
 
-func (teb *SomaTreeElemBucket) setActionDeep(c chan *Action) {
+func (teb *Bucket) setActionDeep(c chan *Action) {
 	teb.setAction(c)
 	for ch, _ := range teb.Children {
 		teb.Children[ch].setActionDeep(c)
@@ -148,25 +148,25 @@ func (teb *SomaTreeElemBucket) setActionDeep(c chan *Action) {
 
 //
 // Interface: SomaTreeBucketeer
-func (teb *SomaTreeElemBucket) GetBucket() SomaTreeReceiver {
+func (teb *Bucket) GetBucket() SomaTreeReceiver {
 	return teb
 }
 
-func (teb *SomaTreeElemBucket) GetEnvironment() string {
+func (teb *Bucket) GetEnvironment() string {
 	return teb.Environment
 }
 
-func (teb *SomaTreeElemBucket) GetRepository() string {
+func (teb *Bucket) GetRepository() string {
 	return teb.Repository.String()
 }
 
-func (teb *SomaTreeElemBucket) GetRepositoryName() string {
+func (teb *Bucket) GetRepositoryName() string {
 	return teb.Parent.(*SomaTreeElemRepository).GetName()
 }
 
 //
 //
-func (teb *SomaTreeElemBucket) ComputeCheckInstances() {
+func (teb *Bucket) ComputeCheckInstances() {
 	log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
 		teb.GetRepositoryName(),
 		`ComputeCheckInstances`,
@@ -187,7 +187,7 @@ func (teb *SomaTreeElemBucket) ComputeCheckInstances() {
 
 //
 //
-func (teb *SomaTreeElemBucket) ClearLoadInfo() {
+func (teb *Bucket) ClearLoadInfo() {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
@@ -202,7 +202,7 @@ func (teb *SomaTreeElemBucket) ClearLoadInfo() {
 
 //
 //
-func (teb *SomaTreeElemBucket) export() proto.Bucket {
+func (teb *Bucket) export() proto.Bucket {
 	return proto.Bucket{
 		Id:           teb.Id.String(),
 		Name:         teb.Name,
@@ -214,7 +214,7 @@ func (teb *SomaTreeElemBucket) export() proto.Bucket {
 	}
 }
 
-func (teb *SomaTreeElemBucket) actionCreate() {
+func (teb *Bucket) actionCreate() {
 	teb.Action <- &Action{
 		Action: "create",
 		Type:   teb.Type,
@@ -222,7 +222,7 @@ func (teb *SomaTreeElemBucket) actionCreate() {
 	}
 }
 
-func (teb *SomaTreeElemBucket) actionUpdate() {
+func (teb *Bucket) actionUpdate() {
 	teb.Action <- &Action{
 		Action: "update",
 		Type:   teb.Type,
@@ -230,7 +230,7 @@ func (teb *SomaTreeElemBucket) actionUpdate() {
 	}
 }
 
-func (teb *SomaTreeElemBucket) actionDelete() {
+func (teb *Bucket) actionDelete() {
 	teb.Action <- &Action{
 		Action: "delete",
 		Type:   teb.Type,
@@ -238,7 +238,7 @@ func (teb *SomaTreeElemBucket) actionDelete() {
 	}
 }
 
-func (teb *SomaTreeElemBucket) actionAssignNode(a Action) {
+func (teb *Bucket) actionAssignNode(a Action) {
 	a.Action = "node_assignment"
 	a.Type = teb.Type
 	a.Bucket = teb.export()
@@ -247,22 +247,22 @@ func (teb *SomaTreeElemBucket) actionAssignNode(a Action) {
 }
 
 //
-func (teb *SomaTreeElemBucket) actionPropertyNew(a Action) {
+func (teb *Bucket) actionPropertyNew(a Action) {
 	a.Action = "property_new"
 	teb.actionProperty(a)
 }
 
-func (teb *SomaTreeElemBucket) actionPropertyUpdate(a Action) {
+func (teb *Bucket) actionPropertyUpdate(a Action) {
 	a.Action = `property_update`
 	teb.actionProperty(a)
 }
 
-func (teb *SomaTreeElemBucket) actionPropertyDelete(a Action) {
+func (teb *Bucket) actionPropertyDelete(a Action) {
 	a.Action = `property_delete`
 	teb.actionProperty(a)
 }
 
-func (teb *SomaTreeElemBucket) actionProperty(a Action) {
+func (teb *Bucket) actionProperty(a Action) {
 	a.Type = teb.Type
 	a.Bucket = teb.export()
 
@@ -279,7 +279,7 @@ func (teb *SomaTreeElemBucket) actionProperty(a Action) {
 }
 
 //
-func (teb *SomaTreeElemBucket) actionCheckNew(a Action) {
+func (teb *Bucket) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = teb.Type
 	a.Bucket = teb.export()
@@ -289,7 +289,7 @@ func (teb *SomaTreeElemBucket) actionCheckNew(a Action) {
 	teb.Action <- &a
 }
 
-func (teb *SomaTreeElemBucket) actionCheckRemoved(a Action) {
+func (teb *Bucket) actionCheckRemoved(a Action) {
 	a.Action = `check_removed`
 	a.Type = teb.Type
 	a.Bucket = teb.export()
@@ -299,7 +299,7 @@ func (teb *SomaTreeElemBucket) actionCheckRemoved(a Action) {
 	teb.Action <- &a
 }
 
-func (teb *SomaTreeElemBucket) setupCheckAction(c Check) Action {
+func (teb *Bucket) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }
 

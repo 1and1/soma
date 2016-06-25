@@ -12,7 +12,7 @@ import (
 //
 // Propertier:> Add Property
 
-func (teb *SomaTreeElemBucket) SetProperty(p Property) {
+func (teb *Bucket) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := teb.checkDuplicate(p); dupe && !deleteOK {
@@ -47,7 +47,7 @@ func (teb *SomaTreeElemBucket) SetProperty(p Property) {
 	teb.actionPropertyNew(p.MakeAction())
 }
 
-func (teb *SomaTreeElemBucket) setPropertyInherited(p Property) {
+func (teb *Bucket) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(teb.Type, teb.Id))
 	if f.Equal(uuid.Nil) {
@@ -62,7 +62,7 @@ func (teb *SomaTreeElemBucket) setPropertyInherited(p Property) {
 	teb.actionPropertyNew(f.MakeAction())
 }
 
-func (teb *SomaTreeElemBucket) setPropertyOnChildren(p Property) {
+func (teb *Bucket) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teb.Children {
@@ -75,7 +75,7 @@ func (teb *SomaTreeElemBucket) setPropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) addProperty(p Property) {
+func (teb *Bucket) addProperty(p Property) {
 	switch p.GetType() {
 	case `custom`:
 		teb.PropertyCustom[p.GetID()] = p
@@ -91,7 +91,7 @@ func (teb *SomaTreeElemBucket) addProperty(p Property) {
 //
 // Propertier:> Update Property
 
-func (teb *SomaTreeElemBucket) UpdateProperty(p Property) {
+func (teb *Bucket) UpdateProperty(p Property) {
 	if !teb.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -105,14 +105,14 @@ func (teb *SomaTreeElemBucket) UpdateProperty(p Property) {
 	teb.updatePropertyOnChildren(p)
 }
 
-func (teb *SomaTreeElemBucket) updatePropertyInherited(p Property) {
+func (teb *Bucket) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	teb.switchProperty(f)
 	teb.updatePropertyOnChildren(p)
 }
 
-func (teb *SomaTreeElemBucket) updatePropertyOnChildren(p Property) {
+func (teb *Bucket) updatePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
@@ -124,7 +124,7 @@ func (teb *SomaTreeElemBucket) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) switchProperty(p Property) {
+func (teb *Bucket) switchProperty(p Property) {
 	updId, _ := uuid.FromString(teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -137,7 +137,7 @@ func (teb *SomaTreeElemBucket) switchProperty(p Property) {
 //
 // Propertier:> Delete Property
 
-func (teb *SomaTreeElemBucket) DeleteProperty(p Property) {
+func (teb *Bucket) DeleteProperty(p Property) {
 	if !teb.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -149,12 +149,12 @@ func (teb *SomaTreeElemBucket) DeleteProperty(p Property) {
 	teb.deletePropertyOnChildren(p)
 }
 
-func (teb *SomaTreeElemBucket) deletePropertyInherited(p Property) {
+func (teb *Bucket) deletePropertyInherited(p Property) {
 	teb.rmProperty(p)
 	teb.deletePropertyOnChildren(p)
 }
 
-func (teb *SomaTreeElemBucket) deletePropertyOnChildren(p Property) {
+func (teb *Bucket) deletePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
@@ -166,7 +166,7 @@ func (teb *SomaTreeElemBucket) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teb *SomaTreeElemBucket) rmProperty(p Property) {
+func (teb *Bucket) rmProperty(p Property) {
 	delId := teb.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -200,7 +200,7 @@ func (teb *SomaTreeElemBucket) rmProperty(p Property) {
 // Propertier:> Utility
 
 // used to verify this is a source instance
-func (teb *SomaTreeElemBucket) verifySourceInstance(id, prop string) bool {
+func (teb *Bucket) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := teb.PropertyCustom[id]; !ok {
@@ -228,7 +228,7 @@ func (teb *SomaTreeElemBucket) verifySourceInstance(id, prop string) bool {
 }
 
 //
-func (teb *SomaTreeElemBucket) findIdForSource(source, prop string) string {
+func (teb *Bucket) findIdForSource(source, prop string) string {
 	switch prop {
 	case `custom`:
 		for id, _ := range teb.PropertyCustom {
@@ -264,7 +264,7 @@ func (teb *SomaTreeElemBucket) findIdForSource(source, prop string) string {
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
-func (teb *SomaTreeElemBucket) syncProperty(childId string) {
+func (teb *Bucket) syncProperty(childId string) {
 customloop:
 	for prop, _ := range teb.PropertyCustom {
 		if !teb.PropertyCustom[prop].hasInheritance() {
@@ -313,7 +313,7 @@ systemloop:
 
 // function to be used by a child to check if the parent has a
 // specific Property
-func (teb *SomaTreeElemBucket) checkProperty(propType string, propId string) bool {
+func (teb *Bucket) checkProperty(propType string, propId string) bool {
 	switch propType {
 	case "custom":
 		if _, ok := teb.PropertyCustom[propId]; ok {
@@ -338,7 +338,7 @@ func (teb *SomaTreeElemBucket) checkProperty(propType string, propId string) boo
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (teb *SomaTreeElemBucket) checkDuplicate(p Property) (bool, bool, Property) {
+func (teb *Bucket) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

@@ -4,7 +4,7 @@ import "sync"
 
 //
 // Interface: SomaTreeFinder
-func (teb *SomaTreeElemBucket) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (teb *Bucket) Find(f FindRequest, b bool) SomaTreeAttacher {
 	if findRequestCheck(f, teb) {
 		return teb
 	}
