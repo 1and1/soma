@@ -22,7 +22,7 @@ func (teb *SomaTreeElemBucket) Attach(a AttachRequest) {
 	if teb.Parent == nil {
 		panic(`SomaTreeElemBucket.Attach: failed`)
 	}
-	teb.Parent.(SomaTreePropertier).syncProperty(teb.Id.String())
+	teb.Parent.(Propertier).syncProperty(teb.Id.String())
 }
 
 func (teb *SomaTreeElemBucket) Destroy() {

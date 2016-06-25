@@ -20,7 +20,7 @@ func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
 	if ten.Parent == nil {
 		panic(`SomaTreeElemNode.Attach: failed`)
 	}
-	ten.Parent.(SomaTreePropertier).syncProperty(ten.Id.String())
+	ten.Parent.(Propertier).syncProperty(ten.Id.String())
 }
 
 func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
@@ -53,7 +53,7 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 		panic(`SomaTreeElemNode.ReAttach: not reattached`)
 	}
 	ten.actionUpdate()
-	ten.Parent.(SomaTreePropertier).syncProperty(ten.Id.String())
+	ten.Parent.(Propertier).syncProperty(ten.Id.String())
 }
 
 func (ten *SomaTreeElemNode) Destroy() {

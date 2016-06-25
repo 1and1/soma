@@ -20,7 +20,7 @@ func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
 	if tec.Parent == nil {
 		panic(`SomaTreeElemCluster.Attach: failed`)
 	}
-	tec.Parent.(SomaTreePropertier).syncProperty(tec.Id.String())
+	tec.Parent.(Propertier).syncProperty(tec.Id.String())
 }
 
 func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
@@ -53,7 +53,7 @@ func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
 		panic(`SomaTreeElemGroup.ReAttach: not reattached`)
 	}
 	tec.actionUpdate()
-	tec.Parent.(SomaTreePropertier).syncProperty(tec.Id.String())
+	tec.Parent.(Propertier).syncProperty(tec.Id.String())
 }
 
 func (tec *SomaTreeElemCluster) Destroy() {
