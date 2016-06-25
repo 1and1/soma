@@ -7,7 +7,7 @@ import (
 )
 
 //
-// Interface: SomaTreeAttacher
+// Interface: Attacher
 func (teb *Bucket) Attach(a AttachRequest) {
 	if teb.Parent != nil {
 		panic(`Bucket.Attach: already attached`)
@@ -104,7 +104,7 @@ func (teb *Bucket) setBucketParent(p SomaTreeBucketReceiver) {
 }
 
 //
-// Interface: SomaTreeRepositoryAttacher
+// Interface: RepositoryAttacher
 func (teb *Bucket) attachToRepository(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,

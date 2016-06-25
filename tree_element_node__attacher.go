@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeAttacher
+// Interface: Attacher
 func (ten *Node) Attach(a AttachRequest) {
 	if ten.Parent != nil {
 		panic(`Node.Attach: already attached`)
@@ -106,7 +106,7 @@ func (ten *Node) Detach() {
 }
 
 //
-// Interface: SomaTreeBucketAttacher
+// Interface: BucketAttacher
 func (ten *Node) attachToBucket(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
@@ -124,7 +124,7 @@ func (ten *Node) attachToBucket(a AttachRequest) {
 }
 
 //
-// Interface: SomaTreeGroupAttacher
+// Interface: GroupAttacher
 func (ten *Node) attachToGroup(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
@@ -142,7 +142,7 @@ func (ten *Node) attachToGroup(a AttachRequest) {
 }
 
 //
-// Interface: SomaTreeClusterAttacher
+// Interface: ClusterAttacher
 func (ten *Node) attachToCluster(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,

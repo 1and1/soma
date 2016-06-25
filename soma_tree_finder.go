@@ -1,7 +1,7 @@
 package somatree
 
 type SomaTreeFinder interface {
-	Find(f FindRequest, b bool) SomaTreeAttacher
+	Find(f FindRequest, b bool) Attacher
 }
 
 type FindRequest struct {

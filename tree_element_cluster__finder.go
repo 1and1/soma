@@ -4,13 +4,13 @@ import "sync"
 
 //
 // Interface: SomaTreeFinder
-func (tec *Cluster) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (tec *Cluster) Find(f FindRequest, b bool) Attacher {
 	if findRequestCheck(f, tec) {
 		return tec
 	}
 	var (
 		wg             sync.WaitGroup
-		rawResult, res chan SomaTreeAttacher
+		rawResult, res chan Attacher
 	)
 	if len(tec.Children) == 0 {
 		goto skip
@@ -27,7 +27,7 @@ func (tec *Cluster) Find(f FindRequest, b bool) SomaTreeAttacher {
 		// searched element can't be a child of a cluster
 		goto skip
 	}
-	rawResult = make(chan SomaTreeAttacher, len(tec.Children))
+	rawResult = make(chan Attacher, len(tec.Children))
 	for child, _ := range tec.Children {
 		wg.Add(1)
 		c := child
@@ -39,7 +39,7 @@ func (tec *Cluster) Find(f FindRequest, b bool) SomaTreeAttacher {
 	wg.Wait()
 	close(rawResult)
 
-	res = make(chan SomaTreeAttacher, len(rawResult))
+	res = make(chan Attacher, len(rawResult))
 	for sta := range rawResult {
 		if sta != nil {
 			res <- sta

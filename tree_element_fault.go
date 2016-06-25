@@ -53,11 +53,11 @@ func (tef *Fault) GetType() string {
 	return tef.Type
 }
 
-func (tef Fault) CloneRepository() SomaTreeRepositoryAttacher {
+func (tef Fault) CloneRepository() RepositoryAttacher {
 	return &tef
 }
 
-func (tef Fault) CloneBucket() SomaTreeBucketAttacher {
+func (tef Fault) CloneBucket() BucketAttacher {
 	return &tef
 }
 

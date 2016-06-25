@@ -134,15 +134,15 @@ func (ten Node) Clone() *Node {
 	return &cl
 }
 
-func (ten Node) CloneBucket() SomaTreeBucketAttacher {
+func (ten Node) CloneBucket() BucketAttacher {
 	return ten.Clone()
 }
 
-func (ten Node) CloneGroup() SomaTreeGroupAttacher {
+func (ten Node) CloneGroup() GroupAttacher {
 	return ten.Clone()
 }
 
-func (ten Node) CloneCluster() SomaTreeClusterAttacher {
+func (ten Node) CloneCluster() ClusterAttacher {
 	return ten.Clone()
 }
 

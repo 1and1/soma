@@ -26,8 +26,8 @@ type Bucket struct {
 	PropertySystem  map[string]Property
 	PropertyCustom  map[string]Property
 	Checks          map[string]Check
-	Children        map[string]SomaTreeBucketAttacher //`json:"-"`
-	Action          chan *Action                      `json:"-"`
+	Children        map[string]BucketAttacher //`json:"-"`
+	Action          chan *Action              `json:"-"`
 }
 
 type BucketSpec struct {
@@ -59,7 +59,7 @@ func NewBucket(spec BucketSpec) *Bucket {
 	teb.Type = "bucket"
 	teb.State = "floating"
 	teb.Parent = nil
-	teb.Children = make(map[string]SomaTreeBucketAttacher)
+	teb.Children = make(map[string]BucketAttacher)
 	teb.PropertyOncall = make(map[string]Property)
 	teb.PropertyService = make(map[string]Property)
 	teb.PropertySystem = make(map[string]Property)
@@ -69,7 +69,7 @@ func NewBucket(spec BucketSpec) *Bucket {
 	return teb
 }
 
-func (teb Bucket) CloneRepository() SomaTreeRepositoryAttacher {
+func (teb Bucket) CloneRepository() RepositoryAttacher {
 	cl := Bucket{
 		Name:        teb.Name,
 		Environment: teb.Environment,
@@ -82,7 +82,7 @@ func (teb Bucket) CloneRepository() SomaTreeRepositoryAttacher {
 	cl.Team, _ = uuid.FromString(teb.Team.String())
 	cl.Repository, _ = uuid.FromString(teb.Repository.String())
 
-	f := make(map[string]SomaTreeBucketAttacher)
+	f := make(map[string]BucketAttacher)
 	for k, child := range teb.Children {
 		f[k] = child.CloneBucket()
 	}

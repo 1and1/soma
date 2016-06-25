@@ -4,18 +4,18 @@ import "sync"
 
 //
 // Interface: SomaTreeFinder
-func (teb *Bucket) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (teb *Bucket) Find(f FindRequest, b bool) Attacher {
 	if findRequestCheck(f, teb) {
 		return teb
 	}
 	var (
 		wg             sync.WaitGroup
-		rawResult, res chan SomaTreeAttacher
+		rawResult, res chan Attacher
 	)
 	if len(teb.Children) == 0 {
 		goto skip
 	}
-	rawResult = make(chan SomaTreeAttacher, len(teb.Children))
+	rawResult = make(chan Attacher, len(teb.Children))
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		c := child
@@ -27,7 +27,7 @@ func (teb *Bucket) Find(f FindRequest, b bool) SomaTreeAttacher {
 	wg.Wait()
 	close(rawResult)
 
-	res = make(chan SomaTreeAttacher, len(rawResult))
+	res = make(chan Attacher, len(rawResult))
 	for sta := range rawResult {
 		if sta != nil {
 			res <- sta

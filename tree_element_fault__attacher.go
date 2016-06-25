@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeAttacher
+// Interface: Attacher
 func (tef *Fault) Attach(a AttachRequest) {
 	if tef.Parent != nil {
 		panic(`Fault.Attach: already attached`)
@@ -17,7 +17,7 @@ func (tef *Fault) Destroy() {
 		panic(`Fault.Destroy called without Parent to unlink from`)
 	}
 
-	tef.Parent.(SomaTreeAttacher).updateFaultRecursive(nil)
+	tef.Parent.(Attacher).updateFaultRecursive(nil)
 
 	tef.Parent.Unlink(UnlinkRequest{
 		ParentType: tef.Parent.(Builder).GetType(),
@@ -41,7 +41,7 @@ func (tef *Fault) ReAttach(a AttachRequest) {
 }
 
 //
-// Interface: SomaTreeRepositoryAttacher
+// Interface: RepositoryAttacher
 func (tef *Fault) attachToRepository(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
@@ -53,7 +53,7 @@ func (tef *Fault) attachToRepository(a AttachRequest) {
 }
 
 //
-// Interface: SomaTreeBucketAttacher
+// Interface: BucketAttacher
 func (tef *Fault) attachToBucket(a AttachRequest) {
 }
 

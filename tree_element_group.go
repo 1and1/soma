@@ -25,7 +25,7 @@ type Group struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	Children        map[string]SomaTreeGroupAttacher    `json:"-"`
+	Children        map[string]GroupAttacher            `json:"-"`
 	loadedInstances map[string]map[string]CheckInstance `json:"-"`
 }
 
@@ -50,7 +50,7 @@ func NewGroup(spec GroupSpec) *Group {
 	teg.Type = "group"
 	teg.State = "floating"
 	teg.Parent = nil
-	teg.Children = make(map[string]SomaTreeGroupAttacher)
+	teg.Children = make(map[string]GroupAttacher)
 	teg.PropertyOncall = make(map[string]Property)
 	teg.PropertyService = make(map[string]Property)
 	teg.PropertySystem = make(map[string]Property)
@@ -71,7 +71,7 @@ func (teg Group) Clone() *Group {
 	}
 	cl.Id, _ = uuid.FromString(teg.Id.String())
 
-	f := make(map[string]SomaTreeGroupAttacher, 0)
+	f := make(map[string]GroupAttacher, 0)
 	for k, child := range teg.Children {
 		f[k] = child.CloneGroup()
 	}
@@ -126,11 +126,11 @@ func (teg Group) Clone() *Group {
 	return &cl
 }
 
-func (teg Group) CloneBucket() SomaTreeBucketAttacher {
+func (teg Group) CloneBucket() BucketAttacher {
 	return teg.Clone()
 }
 
-func (teg Group) CloneGroup() SomaTreeGroupAttacher {
+func (teg Group) CloneGroup() GroupAttacher {
 	return teg.Clone()
 }
 

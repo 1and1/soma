@@ -2,7 +2,7 @@ package somatree
 
 //
 // Interface: SomaTreeFinder
-func (ten *Node) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (ten *Node) Find(f FindRequest, b bool) Attacher {
 	if findRequestCheck(f, ten) {
 		return ten
 	} else if b {

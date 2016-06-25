@@ -3,7 +3,7 @@ package somatree
 import "sync"
 
 //
-// Interface: SomaTreeAttacher
+// Interface: Attacher
 func (teg *Group) Attach(a AttachRequest) {
 	if teg.Parent != nil {
 		panic(`Group.Attach: already attached`)
@@ -118,7 +118,7 @@ func (teg *Group) Detach() {
 }
 
 //
-// Interface: SomaTreeBucketAttacher
+// Interface: BucketAttacher
 func (teg *Group) attachToBucket(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
@@ -136,7 +136,7 @@ func (teg *Group) attachToBucket(a AttachRequest) {
 }
 
 //
-// Interface: SomaTreeGroupAttacher
+// Interface: GroupAttacher
 func (teg *Group) attachToGroup(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,

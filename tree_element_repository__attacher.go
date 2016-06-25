@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeAttacher
+// Interface: Attacher
 func (ter *Repository) Attach(a AttachRequest) {
 	if ter.Parent != nil {
 		panic(`Repository.Attach: already attached`)

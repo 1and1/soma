@@ -25,7 +25,7 @@ type Cluster struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	Children        map[string]SomaTreeClusterAttacher  `json:"-"`
+	Children        map[string]ClusterAttacher          `json:"-"`
 	loadedInstances map[string]map[string]CheckInstance `json:"-"`
 }
 
@@ -50,7 +50,7 @@ func NewCluster(spec ClusterSpec) *Cluster {
 	tec.Type = "cluster"
 	tec.State = "floating"
 	tec.Parent = nil
-	tec.Children = make(map[string]SomaTreeClusterAttacher)
+	tec.Children = make(map[string]ClusterAttacher)
 	tec.PropertyOncall = make(map[string]Property)
 	tec.PropertyService = make(map[string]Property)
 	tec.PropertySystem = make(map[string]Property)
@@ -72,7 +72,7 @@ func (tec Cluster) Clone() *Cluster {
 	cl.Id, _ = uuid.FromString(tec.Id.String())
 	cl.Team, _ = uuid.FromString(tec.Team.String())
 
-	f := make(map[string]SomaTreeClusterAttacher, 0)
+	f := make(map[string]ClusterAttacher, 0)
 	for k, child := range tec.Children {
 		f[k] = child.CloneCluster()
 	}
@@ -127,11 +127,11 @@ func (tec Cluster) Clone() *Cluster {
 	return &cl
 }
 
-func (tec Cluster) CloneBucket() SomaTreeBucketAttacher {
+func (tec Cluster) CloneBucket() BucketAttacher {
 	return tec.Clone()
 }
 
-func (tec Cluster) CloneGroup() SomaTreeGroupAttacher {
+func (tec Cluster) CloneGroup() GroupAttacher {
 	return tec.Clone()
 }
 

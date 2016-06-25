@@ -25,8 +25,8 @@ type Repository struct {
 	PropertySystem  map[string]Property
 	PropertyCustom  map[string]Property
 	Checks          map[string]Check
-	Children        map[string]SomaTreeRepositoryAttacher // `json:"-"`
-	Action          chan *Action                          `json:"-"`
+	Children        map[string]RepositoryAttacher // `json:"-"`
+	Action          chan *Action                  `json:"-"`
 }
 
 type RepositorySpec struct {
@@ -54,7 +54,7 @@ func NewRepository(spec RepositorySpec) *Repository {
 	ter.Parent = nil
 	ter.Deleted = spec.Deleted
 	ter.Active = spec.Active
-	ter.Children = make(map[string]SomaTreeRepositoryAttacher)
+	ter.Children = make(map[string]RepositoryAttacher)
 	ter.PropertyOncall = make(map[string]Property)
 	ter.PropertyService = make(map[string]Property)
 	ter.PropertySystem = make(map[string]Property)
@@ -82,7 +82,7 @@ func (ter Repository) Clone() Repository {
 	}
 	cl.Id, _ = uuid.FromString(ter.Id.String())
 	cl.Team, _ = uuid.FromString(ter.Id.String())
-	f := make(map[string]SomaTreeRepositoryAttacher)
+	f := make(map[string]RepositoryAttacher)
 	for k, child := range ter.Children {
 		f[k] = child.CloneRepository()
 	}

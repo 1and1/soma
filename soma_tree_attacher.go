@@ -1,6 +1,6 @@
 package somatree
 
-type SomaTreeAttacher interface {
+type Attacher interface {
 	Propertier
 	Checker
 
@@ -21,46 +21,46 @@ type SomaTreeAttacher interface {
 }
 
 // implemented by: repository
-type SomaTreeRootAttacher interface {
-	SomaTreeAttacher
+type RootAttacher interface {
+	Attacher
 
 	attachToRoot(a AttachRequest)
 }
 
 // implemented by: buckets
-type SomaTreeRepositoryAttacher interface {
-	SomaTreeAttacher
+type RepositoryAttacher interface {
+	Attacher
 
-	CloneRepository() SomaTreeRepositoryAttacher
+	CloneRepository() RepositoryAttacher
 
 	attachToRepository(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
-type SomaTreeBucketAttacher interface {
-	SomaTreeAttacher
+type BucketAttacher interface {
+	Attacher
 
-	CloneBucket() SomaTreeBucketAttacher
+	CloneBucket() BucketAttacher
 	ReAttach(a AttachRequest)
 
 	attachToBucket(a AttachRequest)
 }
 
 // implemented by: groups, clusters, nodes
-type SomaTreeGroupAttacher interface {
-	SomaTreeAttacher
+type GroupAttacher interface {
+	Attacher
 
-	CloneGroup() SomaTreeGroupAttacher
+	CloneGroup() GroupAttacher
 	ReAttach(a AttachRequest)
 
 	attachToGroup(a AttachRequest)
 }
 
 // implemented by: nodes
-type SomaTreeClusterAttacher interface {
-	SomaTreeAttacher
+type ClusterAttacher interface {
+	Attacher
 
-	CloneCluster() SomaTreeClusterAttacher
+	CloneCluster() ClusterAttacher
 	ReAttach(a AttachRequest)
 
 	attachToCluster(a AttachRequest)
