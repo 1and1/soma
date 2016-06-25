@@ -4,7 +4,7 @@ import "sync"
 
 //
 // Interface: SomaTreeFinder
-func (ter *SomaTreeElemRepository) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (ter *Repository) Find(f FindRequest, b bool) SomaTreeAttacher {
 	if findRequestCheck(f, ter) {
 		return ter
 	}

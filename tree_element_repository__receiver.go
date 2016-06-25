@@ -1,7 +1,7 @@
 package somatree
 
 // Interface: SomaTreeReceiver
-func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
+func (ter *Repository) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {
 		case "bucket":
@@ -9,7 +9,7 @@ func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
 		case "fault":
 			ter.receiveFault(r)
 		default:
-			panic(`SomaTreeElemRepository.Receive`)
+			panic(`Repository.Receive`)
 		}
 		return
 	}
@@ -19,7 +19,7 @@ func (ter *SomaTreeElemRepository) Receive(r ReceiveRequest) {
 }
 
 // Interface: SomaTreeBucketReceiver
-func (ter *SomaTreeElemRepository) receiveBucket(r ReceiveRequest) {
+func (ter *Repository) receiveBucket(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {
 		case "bucket":
@@ -27,13 +27,13 @@ func (ter *SomaTreeElemRepository) receiveBucket(r ReceiveRequest) {
 			r.Bucket.setParent(ter)
 			r.Bucket.setAction(ter.Action)
 		default:
-			panic(`SomaTreeElemRepository.receiveBucket`)
+			panic(`Repository.receiveBucket`)
 		}
 	}
 }
 
 // Interface: SomaTreeFaultReceiver
-func (ter *SomaTreeElemRepository) receiveFault(r ReceiveRequest) {
+func (ter *Repository) receiveFault(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {
 		case "fault":
@@ -41,11 +41,11 @@ func (ter *SomaTreeElemRepository) receiveFault(r ReceiveRequest) {
 			ter.Fault.setParent(ter)
 			ter.updateFaultRecursive(ter.Fault)
 		default:
-			panic(`SomaTreeElemRepository.receiveFault`)
+			panic(`Repository.receiveFault`)
 		}
 		return
 	}
-	panic(`SomaTreeElemRepository.receiveFault`)
+	panic(`Repository.receiveFault`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

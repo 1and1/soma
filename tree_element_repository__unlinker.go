@@ -1,7 +1,7 @@
 package somatree
 
 // Interface: SomaTreeUnlinker
-func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
+func (ter *Repository) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {
 		case "bucket":
@@ -9,7 +9,7 @@ func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
 		case "fault":
 			ter.unlinkFault(u)
 		default:
-			panic(`SomaTreeElemRepository.Unlink`)
+			panic(`Repository.Unlink`)
 		}
 		return
 	}
@@ -19,7 +19,7 @@ func (ter *SomaTreeElemRepository) Unlink(u UnlinkRequest) {
 }
 
 // Interface: SomaTreeBucketUnlinker
-func (ter *SomaTreeElemRepository) unlinkBucket(u UnlinkRequest) {
+func (ter *Repository) unlinkBucket(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {
 		case "bucket":
@@ -30,26 +30,26 @@ func (ter *SomaTreeElemRepository) unlinkBucket(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemRepository.unlinkBucket`)
+			panic(`Repository.unlinkBucket`)
 		}
 		return
 	}
-	panic(`SomaTreeElemRepository.unlinkBucket`)
+	panic(`Repository.unlinkBucket`)
 }
 
 // Interface: SomaTreeFaultUnlinker
-func (ter *SomaTreeElemRepository) unlinkFault(u UnlinkRequest) {
+func (ter *Repository) unlinkFault(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {
 		case "fault":
 			ter.Fault = nil
 			ter.updateFaultRecursive(ter.Fault)
 		default:
-			panic(`SomaTreeElemRepository.unlinkFault`)
+			panic(`Repository.unlinkFault`)
 		}
 		return
 	}
-	panic(`SomaTreeElemRepository.unlinkFault`)
+	panic(`Repository.unlinkFault`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

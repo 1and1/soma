@@ -161,7 +161,7 @@ func (teb *Bucket) GetRepository() string {
 }
 
 func (teb *Bucket) GetRepositoryName() string {
-	return teb.Parent.(*SomaTreeElemRepository).GetName()
+	return teb.Parent.(*Repository).GetName()
 }
 
 //

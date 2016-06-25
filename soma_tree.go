@@ -10,8 +10,8 @@ type SomaTree struct {
 	Id     uuid.UUID
 	Name   string
 	Type   string
-	Child  *SomaTreeElemRepository
-	Snap   *SomaTreeElemRepository
+	Child  *Repository
+	Snap   *Repository
 	Action chan *Action `json:"-"`
 }
 

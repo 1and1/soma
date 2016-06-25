@@ -12,7 +12,7 @@ import (
 //
 // Propertier:> Add Property
 
-func (ter *SomaTreeElemRepository) SetProperty(p Property) {
+func (ter *Repository) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := ter.checkDuplicate(p); dupe && !deleteOK {
@@ -47,7 +47,7 @@ func (ter *SomaTreeElemRepository) SetProperty(p Property) {
 	ter.actionPropertyNew(p.MakeAction())
 }
 
-func (ter *SomaTreeElemRepository) setPropertyInherited(p Property) {
+func (ter *Repository) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(ter.Type, ter.Id))
 	if f.Equal(uuid.Nil) {
@@ -62,7 +62,7 @@ func (ter *SomaTreeElemRepository) setPropertyInherited(p Property) {
 	ter.actionPropertyNew(f.MakeAction())
 }
 
-func (ter *SomaTreeElemRepository) setPropertyOnChildren(p Property) {
+func (ter *Repository) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range ter.Children {
@@ -75,7 +75,7 @@ func (ter *SomaTreeElemRepository) setPropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) addProperty(p Property) {
+func (ter *Repository) addProperty(p Property) {
 	switch p.GetType() {
 	case `custom`:
 		ter.PropertyCustom[p.GetID()] = p
@@ -91,7 +91,7 @@ func (ter *SomaTreeElemRepository) addProperty(p Property) {
 //
 // Propertier:> Update Property
 
-func (ter *SomaTreeElemRepository) UpdateProperty(p Property) {
+func (ter *Repository) UpdateProperty(p Property) {
 	if !ter.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -105,14 +105,14 @@ func (ter *SomaTreeElemRepository) UpdateProperty(p Property) {
 	ter.updatePropertyOnChildren(p)
 }
 
-func (ter *SomaTreeElemRepository) updatePropertyInherited(p Property) {
+func (ter *Repository) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	ter.switchProperty(f)
 	ter.updatePropertyOnChildren(p)
 }
 
-func (ter *SomaTreeElemRepository) updatePropertyOnChildren(p Property) {
+func (ter *Repository) updatePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
@@ -124,7 +124,7 @@ func (ter *SomaTreeElemRepository) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) switchProperty(p Property) {
+func (ter *Repository) switchProperty(p Property) {
 	updId, _ := uuid.FromString(ter.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -137,7 +137,7 @@ func (ter *SomaTreeElemRepository) switchProperty(p Property) {
 //
 // Propertier:> Delete Property
 
-func (ter *SomaTreeElemRepository) DeleteProperty(p Property) {
+func (ter *Repository) DeleteProperty(p Property) {
 	if !ter.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -149,12 +149,12 @@ func (ter *SomaTreeElemRepository) DeleteProperty(p Property) {
 	ter.deletePropertyOnChildren(p)
 }
 
-func (ter *SomaTreeElemRepository) deletePropertyInherited(p Property) {
+func (ter *Repository) deletePropertyInherited(p Property) {
 	ter.rmProperty(p)
 	ter.deletePropertyOnChildren(p)
 }
 
-func (ter *SomaTreeElemRepository) deletePropertyOnChildren(p Property) {
+func (ter *Repository) deletePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
@@ -166,7 +166,7 @@ func (ter *SomaTreeElemRepository) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) rmProperty(p Property) {
+func (ter *Repository) rmProperty(p Property) {
 	delId := ter.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -200,7 +200,7 @@ func (ter *SomaTreeElemRepository) rmProperty(p Property) {
 // Propertier:> Utility
 
 //
-func (ter *SomaTreeElemRepository) verifySourceInstance(id, prop string) bool {
+func (ter *Repository) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := ter.PropertyCustom[id]; !ok {
@@ -227,7 +227,7 @@ func (ter *SomaTreeElemRepository) verifySourceInstance(id, prop string) bool {
 	}
 }
 
-func (ter *SomaTreeElemRepository) findIdForSource(source, prop string) string {
+func (ter *Repository) findIdForSource(source, prop string) string {
 	switch prop {
 	case `custom`:
 		for id, _ := range ter.PropertyCustom {
@@ -263,7 +263,7 @@ func (ter *SomaTreeElemRepository) findIdForSource(source, prop string) string {
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
-func (ter *SomaTreeElemRepository) syncProperty(childId string) {
+func (ter *Repository) syncProperty(childId string) {
 customloop:
 	for prop, _ := range ter.PropertyCustom {
 		if !ter.PropertyCustom[prop].hasInheritance() {
@@ -312,7 +312,7 @@ systemloop:
 
 // function to be used by a child to check if the parent has a
 // specific Property
-func (ter *SomaTreeElemRepository) checkProperty(propType string, propId string) bool {
+func (ter *Repository) checkProperty(propType string, propId string) bool {
 	switch propType {
 	case "custom":
 		if _, ok := ter.PropertyCustom[propId]; ok {
@@ -337,7 +337,7 @@ func (ter *SomaTreeElemRepository) checkProperty(propType string, propId string)
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (ter *SomaTreeElemRepository) checkDuplicate(p Property) (bool, bool, Property) {
+func (ter *Repository) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

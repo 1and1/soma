@@ -10,7 +10,7 @@ import (
 
 //
 // Checker:> Add Check
-func (ter *SomaTreeElemRepository) SetCheck(c Check) {
+func (ter *Repository) SetCheck(c Check) {
 	c.Id = c.GetItemId(ter.Type, ter.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
 		c.Id = uuid.NewV4()
@@ -30,7 +30,7 @@ func (ter *SomaTreeElemRepository) SetCheck(c Check) {
 	ter.addCheck(c)
 }
 
-func (ter *SomaTreeElemRepository) setCheckInherited(c Check) {
+func (ter *Repository) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(ter.Type, ter.Id)
@@ -44,7 +44,7 @@ func (ter *SomaTreeElemRepository) setCheckInherited(c Check) {
 	ter.setCheckOnChildren(c)
 }
 
-func (ter *SomaTreeElemRepository) setCheckOnChildren(c Check) {
+func (ter *Repository) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
@@ -57,7 +57,7 @@ func (ter *SomaTreeElemRepository) setCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) addCheck(c Check) {
+func (ter *Repository) addCheck(c Check) {
 	ter.Checks[c.Id.String()] = c
 	ter.actionCheckNew(c.MakeAction())
 }
@@ -65,17 +65,17 @@ func (ter *SomaTreeElemRepository) addCheck(c Check) {
 //
 // Checker:> Remove Check
 
-func (ter *SomaTreeElemRepository) DeleteCheck(c Check) {
+func (ter *Repository) DeleteCheck(c Check) {
 	ter.rmCheck(c)
 	ter.deleteCheckOnChildren(c)
 }
 
-func (ter *SomaTreeElemRepository) deleteCheckInherited(c Check) {
+func (ter *Repository) deleteCheckInherited(c Check) {
 	ter.rmCheck(c)
 	ter.deleteCheckOnChildren(c)
 }
 
-func (ter *SomaTreeElemRepository) deleteCheckOnChildren(c Check) {
+func (ter *Repository) deleteCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
@@ -87,7 +87,7 @@ func (ter *SomaTreeElemRepository) deleteCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) rmCheck(c Check) {
+func (ter *Repository) rmCheck(c Check) {
 	for id, _ := range ter.Checks {
 		if uuid.Equal(ter.Checks[id].SourceId, c.SourceId) {
 			ter.actionCheckRemoved(ter.setupCheckAction(ter.Checks[id]))
@@ -100,7 +100,7 @@ func (ter *SomaTreeElemRepository) rmCheck(c Check) {
 //
 // Checker:> Meta
 
-func (ter *SomaTreeElemRepository) syncCheck(childId string) {
+func (ter *Repository) syncCheck(childId string) {
 	for check, _ := range ter.Checks {
 		if !ter.Checks[check].Inheritance {
 			continue
@@ -112,7 +112,7 @@ func (ter *SomaTreeElemRepository) syncCheck(childId string) {
 	}
 }
 
-func (ter *SomaTreeElemRepository) checkCheck(checkId string) bool {
+func (ter *Repository) checkCheck(checkId string) bool {
 	if _, ok := ter.Checks[checkId]; ok {
 		return true
 	}
@@ -120,7 +120,7 @@ func (ter *SomaTreeElemRepository) checkCheck(checkId string) bool {
 }
 
 // XXX
-func (ter *SomaTreeElemRepository) LoadInstance(i CheckInstance) {
+func (ter *Repository) LoadInstance(i CheckInstance) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -10,7 +10,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeElemRepository struct {
+type Repository struct {
 	Id              uuid.UUID
 	Name            string
 	Team            uuid.UUID
@@ -39,13 +39,13 @@ type RepositorySpec struct {
 
 //
 // NEW
-func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
+func NewRepository(spec RepositorySpec) *Repository {
 	if !specRepoCheck(spec) {
 		fmt.Printf("%#v\n", spec) // XXX DEBUG
 		panic(`No.`)
 	}
 
-	ter := new(SomaTreeElemRepository)
+	ter := new(Repository)
 	ter.Id, _ = uuid.FromString(spec.Id)
 	ter.Name = spec.Name
 	ter.Team, _ = uuid.FromString(spec.Team)
@@ -72,8 +72,8 @@ func NewRepository(spec RepositorySpec) *SomaTreeElemRepository {
 	return ter
 }
 
-func (ter SomaTreeElemRepository) Clone() SomaTreeElemRepository {
-	cl := SomaTreeElemRepository{
+func (ter Repository) Clone() Repository {
+	cl := Repository{
 		Name:    ter.Name,
 		Deleted: ter.Deleted,
 		Active:  ter.Active,
@@ -123,19 +123,19 @@ func (ter SomaTreeElemRepository) Clone() SomaTreeElemRepository {
 
 //
 // Interface: SomaTreeBuilder
-func (ter *SomaTreeElemRepository) GetID() string {
+func (ter *Repository) GetID() string {
 	return ter.Id.String()
 }
 
-func (ter *SomaTreeElemRepository) GetName() string {
+func (ter *Repository) GetName() string {
 	return ter.Name
 }
 
-func (ter *SomaTreeElemRepository) GetType() string {
+func (ter *Repository) GetType() string {
 	return ter.Type
 }
 
-func (ter *SomaTreeElemRepository) setParent(p SomaTreeReceiver) {
+func (ter *Repository) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeRepositoryReceiver:
 		ter.setRepositoryParent(p.(SomaTreeRepositoryReceiver))
@@ -146,11 +146,11 @@ func (ter *SomaTreeElemRepository) setParent(p SomaTreeReceiver) {
 	}
 }
 
-func (ter *SomaTreeElemRepository) setAction(c chan *Action) {
+func (ter *Repository) setAction(c chan *Action) {
 	ter.Action = c
 }
 
-func (ter *SomaTreeElemRepository) setActionDeep(c chan *Action) {
+func (ter *Repository) setActionDeep(c chan *Action) {
 	ter.setAction(c)
 	ter.Fault.setActionDeep(c)
 	for ch, _ := range ter.Children {
@@ -158,24 +158,24 @@ func (ter *SomaTreeElemRepository) setActionDeep(c chan *Action) {
 	}
 }
 
-func (ter *SomaTreeElemRepository) setError(c chan *Error) {
+func (ter *Repository) setError(c chan *Error) {
 	if ter.Fault != nil {
 		ter.Fault.setError(c)
 	}
 }
 
-func (ter *SomaTreeElemRepository) getErrors() []error {
+func (ter *Repository) getErrors() []error {
 	if ter.Fault != nil {
 		return ter.Fault.getErrors()
 	}
 	return []error{}
 }
 
-func (ter *SomaTreeElemRepository) setRepositoryParent(p SomaTreeRepositoryReceiver) {
+func (ter *Repository) setRepositoryParent(p SomaTreeRepositoryReceiver) {
 	ter.Parent = p
 }
 
-func (ter *SomaTreeElemRepository) updateParentRecursive(p SomaTreeReceiver) {
+func (ter *Repository) updateParentRecursive(p SomaTreeReceiver) {
 	ter.setParent(p.(SomaTreeRepositoryReceiver))
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
@@ -189,16 +189,16 @@ func (ter *SomaTreeElemRepository) updateParentRecursive(p SomaTreeReceiver) {
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) clearParent() {
+func (ter *Repository) clearParent() {
 	ter.Parent = nil
 	ter.State = "floating"
 }
 
-func (ter *SomaTreeElemRepository) setFault(f *SomaTreeElemFault) {
+func (ter *Repository) setFault(f *SomaTreeElemFault) {
 	ter.Fault = f
 }
 
-func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
+func (ter *Repository) updateFaultRecursive(f *SomaTreeElemFault) {
 	ter.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
@@ -214,7 +214,7 @@ func (ter *SomaTreeElemRepository) updateFaultRecursive(f *SomaTreeElemFault) {
 
 //
 //
-func (ter *SomaTreeElemRepository) ComputeCheckInstances() {
+func (ter *Repository) ComputeCheckInstances() {
 	log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
 		ter.Name,
 		`ComputeCheckInstances`,
@@ -235,7 +235,7 @@ func (ter *SomaTreeElemRepository) ComputeCheckInstances() {
 
 //
 //
-func (ter *SomaTreeElemRepository) ClearLoadInfo() {
+func (ter *Repository) ClearLoadInfo() {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
@@ -250,7 +250,7 @@ func (ter *SomaTreeElemRepository) ClearLoadInfo() {
 
 //
 //
-func (ter *SomaTreeElemRepository) export() proto.Repository {
+func (ter *Repository) export() proto.Repository {
 	return proto.Repository{
 		Id:        ter.Id.String(),
 		Name:      ter.Name,
@@ -260,7 +260,7 @@ func (ter *SomaTreeElemRepository) export() proto.Repository {
 	}
 }
 
-func (ter *SomaTreeElemRepository) actionCreate() {
+func (ter *Repository) actionCreate() {
 	ter.Action <- &Action{
 		Action:     "create",
 		Type:       ter.Type,
@@ -268,7 +268,7 @@ func (ter *SomaTreeElemRepository) actionCreate() {
 	}
 }
 
-func (ter *SomaTreeElemRepository) actionUpdate() {
+func (ter *Repository) actionUpdate() {
 	ter.Action <- &Action{
 		Action:     "update",
 		Type:       ter.Type,
@@ -276,7 +276,7 @@ func (ter *SomaTreeElemRepository) actionUpdate() {
 	}
 }
 
-func (ter *SomaTreeElemRepository) actionDelete() {
+func (ter *Repository) actionDelete() {
 	ter.Action <- &Action{
 		Action:     "delete",
 		Type:       ter.Type,
@@ -285,22 +285,22 @@ func (ter *SomaTreeElemRepository) actionDelete() {
 }
 
 //
-func (ter *SomaTreeElemRepository) actionPropertyNew(a Action) {
+func (ter *Repository) actionPropertyNew(a Action) {
 	a.Action = "property_new"
 	ter.actionProperty(a)
 }
 
-func (ter *SomaTreeElemRepository) actionPropertyUpdate(a Action) {
+func (ter *Repository) actionPropertyUpdate(a Action) {
 	a.Action = "property_update"
 	ter.actionProperty(a)
 }
 
-func (ter *SomaTreeElemRepository) actionPropertyDelete(a Action) {
+func (ter *Repository) actionPropertyDelete(a Action) {
 	a.Action = "property_delete"
 	ter.actionProperty(a)
 }
 
-func (ter *SomaTreeElemRepository) actionProperty(a Action) {
+func (ter *Repository) actionProperty(a Action) {
 	a.Type = ter.Type
 	a.Repository = ter.export()
 	a.Property.RepositoryId = ter.Id.String()
@@ -317,7 +317,7 @@ func (ter *SomaTreeElemRepository) actionProperty(a Action) {
 }
 
 //
-func (ter *SomaTreeElemRepository) actionCheckNew(a Action) {
+func (ter *Repository) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = ter.Type
 	a.Repository = ter.export()
@@ -327,7 +327,7 @@ func (ter *SomaTreeElemRepository) actionCheckNew(a Action) {
 	ter.Action <- &a
 }
 
-func (ter *SomaTreeElemRepository) actionCheckRemoved(a Action) {
+func (ter *Repository) actionCheckRemoved(a Action) {
 	a.Action = `check_removed`
 	a.Type = ter.Type
 	a.Repository = ter.export()
@@ -337,7 +337,7 @@ func (ter *SomaTreeElemRepository) actionCheckRemoved(a Action) {
 	ter.Action <- &a
 }
 
-func (ter *SomaTreeElemRepository) setupCheckAction(c Check) Action {
+func (ter *Repository) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 	/*
 			a := Action{

@@ -2,27 +2,27 @@ package somatree
 
 //
 // Interface: SomaTreeAttacher
-func (ter *SomaTreeElemRepository) Attach(a AttachRequest) {
+func (ter *Repository) Attach(a AttachRequest) {
 	if ter.Parent != nil {
-		panic(`SomaTreeElemRepository.Attach: already attached`)
+		panic(`Repository.Attach: already attached`)
 	}
 	switch {
 	case a.ParentType == "root":
 		ter.attachToRoot(a)
 	default:
-		panic(`SomaTreeElemRepository.Attach`)
+		panic(`Repository.Attach`)
 	}
 
 	if ter.Parent == nil {
-		panic(`SomaTreeElemRepository.Attach: failed`)
+		panic(`Repository.Attach: failed`)
 	}
 	// no need to sync properties, as top level element the repo can't
 	// inherit
 }
 
-func (ter *SomaTreeElemRepository) Destroy() {
+func (ter *Repository) Destroy() {
 	if ter.Parent == nil {
-		panic(`SomaTreeElemRepository.Destroy called without Parent to unlink from`)
+		panic(`Repository.Destroy called without Parent to unlink from`)
 	}
 	// XXX: destroy all properties before unlinking
 	// ter.(SomaTreePropertier).nukeAllProperties()
@@ -49,12 +49,12 @@ func (ter *SomaTreeElemRepository) Destroy() {
 	ter.PropertyCustom = nil
 }
 
-func (ter *SomaTreeElemRepository) Detach() {
+func (ter *Repository) Detach() {
 	ter.Destroy()
 }
 
 // Interface: SomaTreeRootAttacher
-func (ter *SomaTreeElemRepository) attachToRoot(a AttachRequest) {
+func (ter *Repository) attachToRoot(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
