@@ -1,57 +1,57 @@
 package somatree
 
-func (tef *SomaTreeElemFault) SetProperty(p Property) {
+func (tef *Fault) SetProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) setPropertyInherited(p Property) {
+func (tef *Fault) setPropertyInherited(p Property) {
 }
 
-func (tef *SomaTreeElemFault) setPropertyOnChildren(p Property) {
+func (tef *Fault) setPropertyOnChildren(p Property) {
 }
 
-func (tef *SomaTreeElemFault) addProperty(p Property) {
+func (tef *Fault) addProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) UpdateProperty(p Property) {
+func (tef *Fault) UpdateProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) updatePropertyInherited(p Property) {
+func (tef *Fault) updatePropertyInherited(p Property) {
 }
 
-func (tef *SomaTreeElemFault) updatePropertyOnChildren(p Property) {
+func (tef *Fault) updatePropertyOnChildren(p Property) {
 }
 
-func (tef *SomaTreeElemFault) switchProperty(p Property) {
+func (tef *Fault) switchProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) DeleteProperty(p Property) {
+func (tef *Fault) DeleteProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) deletePropertyInherited(p Property) {
+func (tef *Fault) deletePropertyInherited(p Property) {
 }
 
-func (tef *SomaTreeElemFault) deletePropertyOnChildren(p Property) {
+func (tef *Fault) deletePropertyOnChildren(p Property) {
 }
 
-func (tef *SomaTreeElemFault) rmProperty(p Property) {
+func (tef *Fault) rmProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) verifySourceInstance(id, prop string) bool {
+func (tef *Fault) verifySourceInstance(id, prop string) bool {
 	return false
 }
 
-func (tef *SomaTreeElemFault) findIdForSource(source, prop string) string {
+func (tef *Fault) findIdForSource(source, prop string) string {
 	return ``
 }
 
-func (tef *SomaTreeElemFault) syncProperty(childId string) {
+func (tef *Fault) syncProperty(childId string) {
 }
 
-func (tef *SomaTreeElemFault) checkProperty(propType, propId string) bool {
+func (tef *Fault) checkProperty(propType, propId string) bool {
 	return false
 }
 
-func (tef *SomaTreeElemFault) checkDuplicate(p Property) (bool, bool, Property) {
+func (tef *Fault) checkDuplicate(p Property) (bool, bool, Property) {
 	return true, false, nil
 }
 

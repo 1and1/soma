@@ -7,7 +7,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeElemFault struct {
+type Fault struct {
 	Id     uuid.UUID
 	Name   string
 	Type   string
@@ -20,8 +20,8 @@ type SomaTreeElemFault struct {
 
 //
 // NEW
-func newFault() *SomaTreeElemFault {
-	tef := new(SomaTreeElemFault)
+func newFault() *Fault {
+	tef := new(Fault)
 	tef.Id = uuid.NewV4()
 	tef.Type = "fault"
 	tef.Name = "McFaulty"
@@ -32,7 +32,7 @@ func newFault() *SomaTreeElemFault {
 	return tef
 }
 
-func (tef *SomaTreeElemFault) getErrors() []error {
+func (tef *Fault) getErrors() []error {
 	err := make([]error, len(tef.Errors))
 	copy(err, tef.Errors)
 	tef.Errors = make([]error, 0)
@@ -41,38 +41,38 @@ func (tef *SomaTreeElemFault) getErrors() []error {
 
 //
 // Interface: SomaTreeBuilder
-func (tef *SomaTreeElemFault) GetID() string {
+func (tef *Fault) GetID() string {
 	return tef.Id.String()
 }
 
-func (tef *SomaTreeElemFault) GetName() string {
+func (tef *Fault) GetName() string {
 	return tef.Name
 }
 
-func (tef *SomaTreeElemFault) GetType() string {
+func (tef *Fault) GetType() string {
 	return tef.Type
 }
 
-func (tef SomaTreeElemFault) CloneRepository() SomaTreeRepositoryAttacher {
+func (tef Fault) CloneRepository() SomaTreeRepositoryAttacher {
 	return &tef
 }
 
-func (tef SomaTreeElemFault) CloneBucket() SomaTreeBucketAttacher {
+func (tef Fault) CloneBucket() SomaTreeBucketAttacher {
 	return &tef
 }
 
-func (tef *SomaTreeElemFault) setParent(p SomaTreeReceiver) {
+func (tef *Fault) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case SomaTreeFaultReceiver:
 		tef.setFaultParent(p.(SomaTreeFaultReceiver))
 		tef.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
-		panic(`SomaTreeElemFault.setParent`)
+		panic(`Fault.setParent`)
 	}
 }
 
-func (tef *SomaTreeElemFault) setAction(c chan *Action) {
+func (tef *Fault) setAction(c chan *Action) {
 	tef.Action = c
 
 	tef.Action <- &Action{
@@ -83,11 +83,11 @@ func (tef *SomaTreeElemFault) setAction(c chan *Action) {
 	}
 }
 
-func (tef *SomaTreeElemFault) setActionDeep(c chan *Action) {
+func (tef *Fault) setActionDeep(c chan *Action) {
 	tef.Action = c
 }
 
-func (tef *SomaTreeElemFault) setError(c chan *Error) {
+func (tef *Fault) setError(c chan *Error) {
 	tef.Error = c
 
 	tef.Action <- &Action{
@@ -96,25 +96,25 @@ func (tef *SomaTreeElemFault) setError(c chan *Error) {
 	}
 }
 
-func (tef *SomaTreeElemFault) updateParentRecursive(p SomaTreeReceiver) {
+func (tef *Fault) updateParentRecursive(p SomaTreeReceiver) {
 	tef.setParent(p)
 }
 
-func (tef *SomaTreeElemFault) setFaultParent(p SomaTreeFaultReceiver) {
+func (tef *Fault) setFaultParent(p SomaTreeFaultReceiver) {
 	tef.Parent = p
 }
 
-func (tef *SomaTreeElemFault) clearParent() {
+func (tef *Fault) clearParent() {
 	tef.Parent = nil
 	tef.State = "floating"
 }
 
 // noop, but satisfy the interface
-func (tef *SomaTreeElemFault) setFault(f *SomaTreeElemFault) {
+func (tef *Fault) setFault(f *Fault) {
 }
 
 // noop, but satisfy the interface
-func (tef *SomaTreeElemFault) updateFaultRecursive(f *SomaTreeElemFault) {
+func (tef *Fault) updateFaultRecursive(f *Fault) {
 }
 
 /*
@@ -134,23 +134,23 @@ func (tef *SomaTreeElemFault) updateFaultRecursive(f *SomaTreeElemFault) {
 
 //
 // Interface: SomaTreeBucketeer
-func (tef *SomaTreeElemFault) GetBucket() SomaTreeReceiver {
-	panic(`SomaTreeElemFault.GetBucket`)
+func (tef *Fault) GetBucket() SomaTreeReceiver {
+	panic(`Fault.GetBucket`)
 	return tef
 }
 
-func (tef *SomaTreeElemFault) GetEnvironment() string {
-	panic(`SomaTreeElemFault.GetEnvironment`)
+func (tef *Fault) GetEnvironment() string {
+	panic(`Fault.GetEnvironment`)
 	return "none"
 }
 
-func (tef *SomaTreeElemFault) ComputeCheckInstances() {
+func (tef *Fault) ComputeCheckInstances() {
 }
 
-func (tef *SomaTreeElemFault) ClearLoadInfo() {
+func (tef *Fault) ClearLoadInfo() {
 }
 
-func (tef *SomaTreeElemFault) LoadInstance(i CheckInstance) {
+func (tef *Fault) LoadInstance(i CheckInstance) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

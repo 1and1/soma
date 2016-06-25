@@ -56,7 +56,7 @@ func (teb *Bucket) clearParent() {
 	teb.State = "floating"
 }
 
-func (teb *Bucket) setFault(f *SomaTreeElemFault) {
+func (teb *Bucket) setFault(f *Fault) {
 	teb.Fault = f
 }
 
@@ -74,13 +74,13 @@ func (teb *Bucket) updateParentRecursive(p SomaTreeReceiver) {
 	wg.Wait()
 }
 
-func (teb *Bucket) updateFaultRecursive(f *SomaTreeElemFault) {
+func (teb *Bucket) updateFaultRecursive(f *Fault) {
 	teb.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		c := child
-		go func(ptr *SomaTreeElemFault) {
+		go func(ptr *Fault) {
 			defer wg.Done()
 			teb.Children[c].updateFaultRecursive(ptr)
 		}(f)

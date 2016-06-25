@@ -14,9 +14,9 @@ type SomaTreeAttacher interface {
 	setActionDeep(c chan *Action)
 
 	clearParent()
-	setFault(f *SomaTreeElemFault)
+	setFault(f *Fault)
 	setParent(p SomaTreeReceiver)
-	updateFaultRecursive(f *SomaTreeElemFault)
+	updateFaultRecursive(f *Fault)
 	updateParentRecursive(p SomaTreeReceiver)
 }
 

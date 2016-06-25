@@ -16,7 +16,7 @@ type Group struct {
 	Team            uuid.UUID
 	Type            string
 	Parent          SomaTreeGroupReceiver `json:"-"`
-	Fault           *SomaTreeElemFault    `json:"-"`
+	Fault           *Fault                `json:"-"`
 	Action          chan *Action          `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
@@ -197,17 +197,17 @@ func (teg *Group) clearParent() {
 	teg.State = "floating"
 }
 
-func (teg *Group) setFault(f *SomaTreeElemFault) {
+func (teg *Group) setFault(f *Fault) {
 	teg.Fault = f
 }
 
-func (teg *Group) updateFaultRecursive(f *SomaTreeElemFault) {
+func (teg *Group) updateFaultRecursive(f *Fault) {
 	teg.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		c := child
-		go func(ptr *SomaTreeElemFault) {
+		go func(ptr *Fault) {
 			defer wg.Done()
 			teg.Children[c].updateFaultRecursive(ptr)
 		}(f)

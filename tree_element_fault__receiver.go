@@ -17,8 +17,8 @@ package somatree
 
 //
 // Interface: SomaTreeReceiver
-func (tef *SomaTreeElemFault) Receive(r ReceiveRequest) {
-	panic(`SomaTreeElemFault.Receive`)
+func (tef *Fault) Receive(r ReceiveRequest) {
+	panic(`Fault.Receive`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

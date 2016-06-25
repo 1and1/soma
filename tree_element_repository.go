@@ -19,7 +19,7 @@ type Repository struct {
 	Type            string
 	State           string
 	Parent          SomaTreeRepositoryReceiver `json:"-"`
-	Fault           *SomaTreeElemFault         `json:"-"`
+	Fault           *Fault                     `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property
@@ -194,17 +194,17 @@ func (ter *Repository) clearParent() {
 	ter.State = "floating"
 }
 
-func (ter *Repository) setFault(f *SomaTreeElemFault) {
+func (ter *Repository) setFault(f *Fault) {
 	ter.Fault = f
 }
 
-func (ter *Repository) updateFaultRecursive(f *SomaTreeElemFault) {
+func (ter *Repository) updateFaultRecursive(f *Fault) {
 	ter.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
 		c := child
-		go func(ptr *SomaTreeElemFault) {
+		go func(ptr *Fault) {
 			defer wg.Done()
 			ter.Children[c].updateFaultRecursive(ptr)
 		}(f)

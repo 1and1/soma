@@ -19,7 +19,7 @@ type Node struct {
 	Deleted         bool
 	Type            string
 	Parent          SomaTreeNodeReceiver `json:"-"`
-	Fault           *SomaTreeElemFault   `json:"-"`
+	Fault           *Fault               `json:"-"`
 	Action          chan *Action         `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
@@ -198,11 +198,11 @@ func (ten *Node) clearParent() {
 	ten.State = "floating"
 }
 
-func (ten *Node) setFault(f *SomaTreeElemFault) {
+func (ten *Node) setFault(f *Fault) {
 	ten.Fault = f
 }
 
-func (ten *Node) updateFaultRecursive(f *SomaTreeElemFault) {
+func (ten *Node) updateFaultRecursive(f *Fault) {
 	ten.setFault(f)
 }
 

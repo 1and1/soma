@@ -17,8 +17,8 @@ package somatree
 
 //
 // Interface: SomaTreeUnlinker
-func (tef *SomaTreeElemFault) Unlink(u UnlinkRequest) {
-	panic(`SomaTreeElemFault.Unlink`)
+func (tef *Fault) Unlink(u UnlinkRequest) {
+	panic(`Fault.Unlink`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

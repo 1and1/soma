@@ -16,7 +16,7 @@ type Cluster struct {
 	Team            uuid.UUID
 	Type            string
 	Parent          SomaTreeClusterReceiver `json:"-"`
-	Fault           *SomaTreeElemFault      `json:"-"`
+	Fault           *Fault                  `json:"-"`
 	Action          chan *Action            `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
@@ -198,17 +198,17 @@ func (tec *Cluster) clearParent() {
 	tec.State = "floating"
 }
 
-func (tec *Cluster) setFault(f *SomaTreeElemFault) {
+func (tec *Cluster) setFault(f *Fault) {
 	tec.Fault = f
 }
 
-func (tec *Cluster) updateFaultRecursive(f *SomaTreeElemFault) {
+func (tec *Cluster) updateFaultRecursive(f *Fault) {
 	tec.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
 		c := child
-		go func(ptr *SomaTreeElemFault) {
+		go func(ptr *Fault) {
 			defer wg.Done()
 			tec.Children[c].updateFaultRecursive(ptr)
 		}(f)

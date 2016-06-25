@@ -2,9 +2,9 @@ package somatree
 
 //
 // Interface: SomaTreeAttacher
-func (tef *SomaTreeElemFault) Attach(a AttachRequest) {
+func (tef *Fault) Attach(a AttachRequest) {
 	if tef.Parent != nil {
-		panic(`SomaTreeElemFault.Attach: already attached`)
+		panic(`Fault.Attach: already attached`)
 	}
 	switch {
 	case a.ParentType == "repository":
@@ -12,9 +12,9 @@ func (tef *SomaTreeElemFault) Attach(a AttachRequest) {
 	}
 }
 
-func (tef *SomaTreeElemFault) Destroy() {
+func (tef *Fault) Destroy() {
 	if tef.Parent == nil {
-		panic(`SomaTreeElemFault.Destroy called without Parent to unlink from`)
+		panic(`Fault.Destroy called without Parent to unlink from`)
 	}
 
 	tef.Parent.(SomaTreeAttacher).updateFaultRecursive(nil)
@@ -33,16 +33,16 @@ func (tef *SomaTreeElemFault) Destroy() {
 	tef.Error = nil
 }
 
-func (tef *SomaTreeElemFault) Detach() {
+func (tef *Fault) Detach() {
 	tef.Destroy()
 }
 
-func (tef *SomaTreeElemFault) ReAttach(a AttachRequest) {
+func (tef *Fault) ReAttach(a AttachRequest) {
 }
 
 //
 // Interface: SomaTreeRepositoryAttacher
-func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
+func (tef *Fault) attachToRepository(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
@@ -54,7 +54,7 @@ func (tef *SomaTreeElemFault) attachToRepository(a AttachRequest) {
 
 //
 // Interface: SomaTreeBucketAttacher
-func (tef *SomaTreeElemFault) attachToBucket(a AttachRequest) {
+func (tef *Fault) attachToBucket(a AttachRequest) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

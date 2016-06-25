@@ -20,7 +20,7 @@ type Bucket struct {
 	Repository      uuid.UUID
 	Team            uuid.UUID
 	Parent          SomaTreeBucketReceiver `json:"-"`
-	Fault           *SomaTreeElemFault     `json:"-"`
+	Fault           *Fault                 `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property

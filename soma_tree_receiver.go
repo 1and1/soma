@@ -102,7 +102,7 @@ type ReceiveRequest struct {
 	Group      *Group
 	Cluster    *Cluster
 	Node       *Node
-	Fault      *SomaTreeElemFault
+	Fault      *Fault
 }
 
 type UnlinkRequest struct {
