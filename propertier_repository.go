@@ -114,7 +114,15 @@ func (ter *SomaTreeElemRepository) updatePropertyInherited(p Property) {
 }
 
 func (ter *SomaTreeElemRepository) updatePropertyOnChildren(p Property) {
-	// noop, satisfy interface
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		go func(stp Property, c string) {
+			defer wg.Done()
+			ter.Children[c].updatePropertyInherited(stp)
+		}(p, child)
+	}
+	wg.Wait()
 }
 
 func (ter *SomaTreeElemRepository) switchProperty(p Property) {
@@ -148,7 +156,15 @@ func (ter *SomaTreeElemRepository) deletePropertyInherited(p Property) {
 }
 
 func (ter *SomaTreeElemRepository) deletePropertyOnChildren(p Property) {
-	// noop, satisfy interface
+	var wg sync.WaitGroup
+	for child, _ := range ter.Children {
+		wg.Add(1)
+		go func(stp Property, c string) {
+			defer wg.Done()
+			ter.Children[c].deletePropertyInherited(stp)
+		}(p, child)
+	}
+	wg.Wait()
 }
 
 func (ter *SomaTreeElemRepository) rmProperty(p Property) {
