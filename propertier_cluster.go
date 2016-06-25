@@ -67,11 +67,10 @@ func (tec *SomaTreeElemCluster) setPropertyOnChildren(p Property) {
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range tec.Children {
 		wg.Add(1)
-		c := child
-		go func(stp Property) {
+		go func(stp Property, c string) {
 			defer wg.Done()
 			tec.Children[c].setPropertyInherited(stp)
-		}(p)
+		}(p, child)
 	}
 	wg.Wait()
 }

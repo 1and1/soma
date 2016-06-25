@@ -67,11 +67,10 @@ func (teb *SomaTreeElemBucket) setPropertyOnChildren(p Property) {
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teb.Children {
 		wg.Add(1)
-		c := child
-		go func(stp Property) {
+		go func(stp Property, c string) {
 			defer wg.Done()
 			teb.Children[c].setPropertyInherited(stp)
-		}(p)
+		}(p, child)
 	}
 	wg.Wait()
 }
