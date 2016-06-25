@@ -62,7 +62,7 @@ func (teg *SomaTreeElemGroup) unlinkCluster(u UnlinkRequest) {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
 					a := Action{
 						ChildType:    "cluster",
-						ChildCluster: teg.Children[u.ChildId].(*SomaTreeElemCluster).export(),
+						ChildCluster: teg.Children[u.ChildId].(*Cluster).export(),
 					}
 
 					teg.Children[u.ChildId].clearParent()

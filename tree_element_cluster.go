@@ -9,7 +9,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeElemCluster struct {
+type Cluster struct {
 	Id              uuid.UUID
 	Name            string
 	State           string
@@ -37,13 +37,13 @@ type ClusterSpec struct {
 
 //
 // NEW
-func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
+func NewCluster(spec ClusterSpec) *Cluster {
 	if !specClusterCheck(spec) {
 		fmt.Printf("%#v\n", spec) // XXX DEBUG
 		panic(`No.`)
 	}
 
-	tec := new(SomaTreeElemCluster)
+	tec := new(Cluster)
 	tec.Id, _ = uuid.FromString(spec.Id)
 	tec.Name = spec.Name
 	tec.Team, _ = uuid.FromString(spec.Team)
@@ -63,8 +63,8 @@ func NewCluster(spec ClusterSpec) *SomaTreeElemCluster {
 	return tec
 }
 
-func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
-	cl := SomaTreeElemCluster{
+func (tec Cluster) Clone() *Cluster {
+	cl := Cluster{
 		Name:  tec.Name,
 		State: tec.State,
 		Type:  tec.Type,
@@ -127,29 +127,29 @@ func (tec SomaTreeElemCluster) Clone() *SomaTreeElemCluster {
 	return &cl
 }
 
-func (tec SomaTreeElemCluster) CloneBucket() SomaTreeBucketAttacher {
+func (tec Cluster) CloneBucket() SomaTreeBucketAttacher {
 	return tec.Clone()
 }
 
-func (tec SomaTreeElemCluster) CloneGroup() SomaTreeGroupAttacher {
+func (tec Cluster) CloneGroup() SomaTreeGroupAttacher {
 	return tec.Clone()
 }
 
 //
 // Interface: Builder
-func (tec *SomaTreeElemCluster) GetID() string {
+func (tec *Cluster) GetID() string {
 	return tec.Id.String()
 }
 
-func (tec *SomaTreeElemCluster) GetName() string {
+func (tec *Cluster) GetName() string {
 	return tec.Name
 }
 
-func (tec *SomaTreeElemCluster) GetType() string {
+func (tec *Cluster) GetType() string {
 	return tec.Type
 }
 
-func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
+func (tec *Cluster) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *Bucket:
 		tec.setClusterParent(p.(SomaTreeClusterReceiver))
@@ -159,22 +159,22 @@ func (tec *SomaTreeElemCluster) setParent(p SomaTreeReceiver) {
 		tec.State = "grouped"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
-		panic(`SomaTreeElemCluster.setParent`)
+		panic(`Cluster.setParent`)
 	}
 }
 
-func (tec *SomaTreeElemCluster) setAction(c chan *Action) {
+func (tec *Cluster) setAction(c chan *Action) {
 	tec.Action = c
 }
 
-func (tec *SomaTreeElemCluster) setActionDeep(c chan *Action) {
+func (tec *Cluster) setActionDeep(c chan *Action) {
 	tec.setAction(c)
 	for ch, _ := range tec.Children {
 		tec.Children[ch].setActionDeep(c)
 	}
 }
 
-func (tec *SomaTreeElemCluster) updateParentRecursive(p SomaTreeReceiver) {
+func (tec *Cluster) updateParentRecursive(p SomaTreeReceiver) {
 	tec.setParent(p)
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
@@ -189,20 +189,20 @@ func (tec *SomaTreeElemCluster) updateParentRecursive(p SomaTreeReceiver) {
 }
 
 // SomaTreeClusterReceiver == can receive Clusters as children
-func (tec *SomaTreeElemCluster) setClusterParent(p SomaTreeClusterReceiver) {
+func (tec *Cluster) setClusterParent(p SomaTreeClusterReceiver) {
 	tec.Parent = p
 }
 
-func (tec *SomaTreeElemCluster) clearParent() {
+func (tec *Cluster) clearParent() {
 	tec.Parent = nil
 	tec.State = "floating"
 }
 
-func (tec *SomaTreeElemCluster) setFault(f *SomaTreeElemFault) {
+func (tec *Cluster) setFault(f *SomaTreeElemFault) {
 	tec.Fault = f
 }
 
-func (tec *SomaTreeElemCluster) updateFaultRecursive(f *SomaTreeElemFault) {
+func (tec *Cluster) updateFaultRecursive(f *SomaTreeElemFault) {
 	tec.setFault(f)
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
@@ -218,10 +218,10 @@ func (tec *SomaTreeElemCluster) updateFaultRecursive(f *SomaTreeElemFault) {
 
 //
 // Interface: Bucketeer
-func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
+func (tec *Cluster) GetBucket() SomaTreeReceiver {
 	if tec.Parent == nil {
 		if tec.Fault == nil {
-			panic(`SomaTreeElemCluster.GetBucket called without Parent`)
+			panic(`Cluster.GetBucket called without Parent`)
 		} else {
 			return tec.Fault
 		}
@@ -229,21 +229,21 @@ func (tec *SomaTreeElemCluster) GetBucket() SomaTreeReceiver {
 	return tec.Parent.(Bucketeer).GetBucket()
 }
 
-func (tec *SomaTreeElemCluster) GetRepository() string {
+func (tec *Cluster) GetRepository() string {
 	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 }
 
-func (tec *SomaTreeElemCluster) GetRepositoryName() string {
+func (tec *Cluster) GetRepositoryName() string {
 	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepositoryName()
 }
 
-func (tec *SomaTreeElemCluster) GetEnvironment() string {
+func (tec *Cluster) GetEnvironment() string {
 	return tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetEnvironment()
 }
 
 //
 //
-func (tec *SomaTreeElemCluster) ComputeCheckInstances() {
+func (tec *Cluster) ComputeCheckInstances() {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
@@ -259,7 +259,7 @@ func (tec *SomaTreeElemCluster) ComputeCheckInstances() {
 
 //
 //
-func (tec *SomaTreeElemCluster) ClearLoadInfo() {
+func (tec *Cluster) ClearLoadInfo() {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
@@ -275,7 +275,7 @@ func (tec *SomaTreeElemCluster) ClearLoadInfo() {
 
 //
 //
-func (tec *SomaTreeElemCluster) export() proto.Cluster {
+func (tec *Cluster) export() proto.Cluster {
 	bucket := tec.Parent.(Bucketeer).GetBucket()
 	return proto.Cluster{
 		Id:          tec.Id.String(),
@@ -286,7 +286,7 @@ func (tec *SomaTreeElemCluster) export() proto.Cluster {
 	}
 }
 
-func (tec *SomaTreeElemCluster) actionCreate() {
+func (tec *Cluster) actionCreate() {
 	tec.Action <- &Action{
 		Action:  "create",
 		Type:    tec.Type,
@@ -294,7 +294,7 @@ func (tec *SomaTreeElemCluster) actionCreate() {
 	}
 }
 
-func (tec *SomaTreeElemCluster) actionUpdate() {
+func (tec *Cluster) actionUpdate() {
 	tec.Action <- &Action{
 		Action:  "update",
 		Type:    tec.Type,
@@ -302,7 +302,7 @@ func (tec *SomaTreeElemCluster) actionUpdate() {
 	}
 }
 
-func (tec *SomaTreeElemCluster) actionDelete() {
+func (tec *Cluster) actionDelete() {
 	tec.Action <- &Action{
 		Action:  "delete",
 		Type:    tec.Type,
@@ -310,7 +310,7 @@ func (tec *SomaTreeElemCluster) actionDelete() {
 	}
 }
 
-func (tec *SomaTreeElemCluster) actionMemberNew(a Action) {
+func (tec *Cluster) actionMemberNew(a Action) {
 	a.Action = "member_new"
 	a.Type = tec.Type
 	a.Cluster = tec.export()
@@ -318,7 +318,7 @@ func (tec *SomaTreeElemCluster) actionMemberNew(a Action) {
 	tec.Action <- &a
 }
 
-func (tec *SomaTreeElemCluster) actionMemberRemoved(a Action) {
+func (tec *Cluster) actionMemberRemoved(a Action) {
 	a.Action = "member_removed"
 	a.Type = tec.Type
 	a.Cluster = tec.export()
@@ -327,22 +327,22 @@ func (tec *SomaTreeElemCluster) actionMemberRemoved(a Action) {
 }
 
 //
-func (tec *SomaTreeElemCluster) actionPropertyNew(a Action) {
+func (tec *Cluster) actionPropertyNew(a Action) {
 	a.Action = `property_new`
 	tec.actionProperty(a)
 }
 
-func (tec *SomaTreeElemCluster) actionPropertyUpdate(a Action) {
+func (tec *Cluster) actionPropertyUpdate(a Action) {
 	a.Action = `property_update`
 	tec.actionProperty(a)
 }
 
-func (tec *SomaTreeElemCluster) actionPropertyDelete(a Action) {
+func (tec *Cluster) actionPropertyDelete(a Action) {
 	a.Action = `property_delete`
 	tec.actionProperty(a)
 }
 
-func (tec *SomaTreeElemCluster) actionProperty(a Action) {
+func (tec *Cluster) actionProperty(a Action) {
 	a.Type = tec.Type
 	a.Cluster = tec.export()
 	a.Property.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
@@ -359,35 +359,35 @@ func (tec *SomaTreeElemCluster) actionProperty(a Action) {
 }
 
 //
-func (tec *SomaTreeElemCluster) actionCheckNew(a Action) {
+func (tec *Cluster) actionCheckNew(a Action) {
 	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 	tec.actionDispatch("check_new", a)
 }
 
-func (tec *SomaTreeElemCluster) actionCheckRemoved(a Action) {
+func (tec *Cluster) actionCheckRemoved(a Action) {
 	a.Check.RepositoryId = tec.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Check.BucketId = tec.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 	tec.actionDispatch(`check_removed`, a)
 }
 
-func (tec *SomaTreeElemCluster) setupCheckAction(c Check) Action {
+func (tec *Cluster) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }
 
-func (tec *SomaTreeElemCluster) actionCheckInstanceCreate(a Action) {
+func (tec *Cluster) actionCheckInstanceCreate(a Action) {
 	tec.actionDispatch("check_instance_create", a)
 }
 
-func (tec *SomaTreeElemCluster) actionCheckInstanceUpdate(a Action) {
+func (tec *Cluster) actionCheckInstanceUpdate(a Action) {
 	tec.actionDispatch("check_instance_update", a)
 }
 
-func (tec *SomaTreeElemCluster) actionCheckInstanceDelete(a Action) {
+func (tec *Cluster) actionCheckInstanceDelete(a Action) {
 	tec.actionDispatch("check_instance_delete", a)
 }
 
-func (tec *SomaTreeElemCluster) actionDispatch(action string, a Action) {
+func (tec *Cluster) actionDispatch(action string, a Action) {
 	a.Action = action
 	a.Type = tec.Type
 	a.Cluster = tec.export()

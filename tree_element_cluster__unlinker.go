@@ -2,13 +2,13 @@ package somatree
 
 //
 // Interface: SomaTreeUnlinker
-func (tec *SomaTreeElemCluster) Unlink(u UnlinkRequest) {
+func (tec *Cluster) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, tec) {
 		switch u.ChildType {
 		case "node":
 			tec.unlinkNode(u)
 		default:
-			panic(`SomaTreeElemCluster.Unlink`)
+			panic(`Cluster.Unlink`)
 		}
 	}
 	// no passing along since only nodes are a SomeTreeClusterAttacher
@@ -18,7 +18,7 @@ func (tec *SomaTreeElemCluster) Unlink(u UnlinkRequest) {
 
 //
 // Interface: SomaTreeNodeUnlinker
-func (tec *SomaTreeElemCluster) unlinkNode(u UnlinkRequest) {
+func (tec *Cluster) unlinkNode(u UnlinkRequest) {
 	if unlinkRequestCheck(u, tec) {
 		switch u.ChildType {
 		case "node":
@@ -36,11 +36,11 @@ func (tec *SomaTreeElemCluster) unlinkNode(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemCluster.unlinkNode`)
+			panic(`Cluster.unlinkNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemCluster.unlinkNode`)
+	panic(`Cluster.unlinkNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

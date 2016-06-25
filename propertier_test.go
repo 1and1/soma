@@ -198,7 +198,7 @@ func TestSetProperty(t *testing.T) {
 	if len(sTree.Find(FindRequest{
 		ElementType: `cluster`,
 		ElementId:   cltrId,
-	}, true).(*SomaTreeElemCluster).PropertySystem) != 1 {
+	}, true).(*Cluster).PropertySystem) != 1 {
 		t.Error(
 			`Cluster has wrong system property count`,
 		)
@@ -418,7 +418,7 @@ func TestUpdateProperty(t *testing.T) {
 	if len(sTree.Find(FindRequest{
 		ElementType: `cluster`,
 		ElementId:   cltrId,
-	}, true).(*SomaTreeElemCluster).PropertySystem) != 1 {
+	}, true).(*Cluster).PropertySystem) != 1 {
 		t.Error(
 			`Cluster has wrong system property count`,
 		)
@@ -632,7 +632,7 @@ func TestDeleteProperty(t *testing.T) {
 	if len(sTree.Find(FindRequest{
 		ElementType: `cluster`,
 		ElementId:   cltrId,
-	}, true).(*SomaTreeElemCluster).PropertySystem) != 0 {
+	}, true).(*Cluster).PropertySystem) != 0 {
 		t.Error(
 			`Cluster has wrong system property count`,
 		)

@@ -11,7 +11,7 @@ import (
 //
 // Checker:> Add Check
 
-func (tec *SomaTreeElemCluster) SetCheck(c Check) {
+func (tec *Cluster) SetCheck(c Check) {
 	c.Id = c.GetItemId(tec.Type, tec.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
 		c.Id = uuid.NewV4()
@@ -31,7 +31,7 @@ func (tec *SomaTreeElemCluster) SetCheck(c Check) {
 	tec.addCheck(c)
 }
 
-func (tec *SomaTreeElemCluster) setCheckInherited(c Check) {
+func (tec *Cluster) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(tec.Type, tec.Id)
@@ -45,7 +45,7 @@ func (tec *SomaTreeElemCluster) setCheckInherited(c Check) {
 	tec.setCheckOnChildren(c)
 }
 
-func (tec *SomaTreeElemCluster) setCheckOnChildren(c Check) {
+func (tec *Cluster) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
@@ -58,7 +58,7 @@ func (tec *SomaTreeElemCluster) setCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) addCheck(c Check) {
+func (tec *Cluster) addCheck(c Check) {
 	tec.Checks[c.Id.String()] = c
 	tec.actionCheckNew(tec.setupCheckAction(c))
 }
@@ -66,17 +66,17 @@ func (tec *SomaTreeElemCluster) addCheck(c Check) {
 //
 // Checker:> Remove Check
 
-func (tec *SomaTreeElemCluster) DeleteCheck(c Check) {
+func (tec *Cluster) DeleteCheck(c Check) {
 	tec.rmCheck(c)
 	tec.deleteCheckOnChildren(c)
 }
 
-func (tec *SomaTreeElemCluster) deleteCheckInherited(c Check) {
+func (tec *Cluster) deleteCheckInherited(c Check) {
 	tec.rmCheck(c)
 	tec.deleteCheckOnChildren(c)
 }
 
-func (tec *SomaTreeElemCluster) deleteCheckOnChildren(c Check) {
+func (tec *Cluster) deleteCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
@@ -88,7 +88,7 @@ func (tec *SomaTreeElemCluster) deleteCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) rmCheck(c Check) {
+func (tec *Cluster) rmCheck(c Check) {
 	for id, _ := range tec.Checks {
 		if uuid.Equal(tec.Checks[id].SourceId, c.SourceId) {
 			tec.actionCheckRemoved(tec.setupCheckAction(tec.Checks[id]))
@@ -101,7 +101,7 @@ func (tec *SomaTreeElemCluster) rmCheck(c Check) {
 //
 // Checker:> Meta
 
-func (tec *SomaTreeElemCluster) syncCheck(childId string) {
+func (tec *Cluster) syncCheck(childId string) {
 	for check, _ := range tec.Checks {
 		if !tec.Checks[check].Inheritance {
 			continue
@@ -113,14 +113,14 @@ func (tec *SomaTreeElemCluster) syncCheck(childId string) {
 	}
 }
 
-func (tec *SomaTreeElemCluster) checkCheck(checkId string) bool {
+func (tec *Cluster) checkCheck(checkId string) bool {
 	if _, ok := tec.Checks[checkId]; ok {
 		return true
 	}
 	return false
 }
 
-func (tec *SomaTreeElemCluster) LoadInstance(i CheckInstance) {
+func (tec *Cluster) LoadInstance(i CheckInstance) {
 	ckId := i.CheckId.String()
 	ckInstId := i.InstanceId.String()
 	if tec.loadedInstances[ckId] == nil {

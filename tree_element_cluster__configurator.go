@@ -6,7 +6,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func (tec *SomaTreeElemCluster) updateCheckInstances() {
+func (tec *Cluster) updateCheckInstances() {
 	repoName := tec.GetRepositoryName()
 
 	// object may have no checks, but there could be instances to mop up
@@ -542,7 +542,7 @@ checksloop:
 	} // LOOPEND: range tec.Checks
 }
 
-func (tec *SomaTreeElemCluster) evalNativeProp(
+func (tec *Cluster) evalNativeProp(
 	prop string, val string) bool {
 	switch prop {
 	case "environment":
@@ -565,7 +565,7 @@ func (tec *SomaTreeElemCluster) evalNativeProp(
 	return false
 }
 
-func (tec *SomaTreeElemCluster) evalSystemProp(
+func (tec *Cluster) evalSystemProp(
 	prop string, val string, view string) (string, bool, string) {
 	for _, v := range tec.PropertySystem {
 		t := v.(*PropertySystem)
@@ -576,7 +576,7 @@ func (tec *SomaTreeElemCluster) evalSystemProp(
 	return "", false, ""
 }
 
-func (tec *SomaTreeElemCluster) evalOncallProp(
+func (tec *Cluster) evalOncallProp(
 	prop string, val string, view string) (string, bool) {
 	for _, v := range tec.PropertyOncall {
 		t := v.(*PropertyOncall)
@@ -587,7 +587,7 @@ func (tec *SomaTreeElemCluster) evalOncallProp(
 	return "", false
 }
 
-func (tec *SomaTreeElemCluster) evalCustomProp(
+func (tec *Cluster) evalCustomProp(
 	prop string, val string, view string) (string, bool, string) {
 	for _, v := range tec.PropertyCustom {
 		t := v.(*PropertyCustom)
@@ -598,7 +598,7 @@ func (tec *SomaTreeElemCluster) evalCustomProp(
 	return "", false, ""
 }
 
-func (tec *SomaTreeElemCluster) evalServiceProp(
+func (tec *Cluster) evalServiceProp(
 	prop string, val string, view string) (string, bool, string) {
 	for _, v := range tec.PropertyService {
 		t := v.(*PropertyService)
@@ -609,7 +609,7 @@ func (tec *SomaTreeElemCluster) evalServiceProp(
 	return "", false, ""
 }
 
-func (tec *SomaTreeElemCluster) evalAttributeOfService(
+func (tec *Cluster) evalAttributeOfService(
 	svcId string, view string, attribute string, value string) (bool, string) {
 	t := tec.PropertyService[svcId].(*PropertyService)
 	for _, a := range t.Attributes {
@@ -620,7 +620,7 @@ func (tec *SomaTreeElemCluster) evalAttributeOfService(
 	return false, ""
 }
 
-func (tec *SomaTreeElemCluster) evalAttributeProp(
+func (tec *Cluster) evalAttributeProp(
 	view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
 svcloop:
@@ -639,7 +639,7 @@ svcloop:
 	return false, f
 }
 
-func (tec *SomaTreeElemCluster) getServiceMap(serviceId string) map[string][]string {
+func (tec *Cluster) getServiceMap(serviceId string) map[string][]string {
 	svc := new(PropertyService)
 	svc = tec.PropertyService[serviceId].(*PropertyService)
 
@@ -650,7 +650,7 @@ func (tec *SomaTreeElemCluster) getServiceMap(serviceId string) map[string][]str
 	return res
 }
 
-func (tec *SomaTreeElemCluster) countAttribC(attributeC map[string][]string) int {
+func (tec *Cluster) countAttribC(attributeC map[string][]string) int {
 	var count int = 0
 	for key, _ := range attributeC {
 		count = count + len(attributeC[key])

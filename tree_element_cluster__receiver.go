@@ -2,13 +2,13 @@ package somatree
 
 //
 // Interface: SomaTreeReceiver
-func (tec *SomaTreeElemCluster) Receive(r ReceiveRequest) {
+func (tec *Cluster) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, tec) {
 		switch r.ChildType {
 		case "node":
 			tec.receiveNode(r)
 		default:
-			panic(`SomaTreeElemCluster.Receive`)
+			panic(`Cluster.Receive`)
 		}
 	}
 	// no passing along since only nodes are a SomeTreeClusterAttacher
@@ -18,7 +18,7 @@ func (tec *SomaTreeElemCluster) Receive(r ReceiveRequest) {
 
 //
 // Interface: SomaTreeNodeReceiver
-func (tec *SomaTreeElemCluster) receiveNode(r ReceiveRequest) {
+func (tec *Cluster) receiveNode(r ReceiveRequest) {
 	if receiveRequestCheck(r, tec) {
 		switch r.ChildType {
 		case "node":
@@ -32,11 +32,11 @@ func (tec *SomaTreeElemCluster) receiveNode(r ReceiveRequest) {
 				ChildNode: r.Node.export(),
 			})
 		default:
-			panic(`SomaTreeElemCluster.receiveNode`)
+			panic(`Cluster.receiveNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemCluster.receiveNode`)
+	panic(`Cluster.receiveNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

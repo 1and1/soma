@@ -4,9 +4,9 @@ import "sync"
 
 //
 // Interface: SomaTreeAttacher
-func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
+func (tec *Cluster) Attach(a AttachRequest) {
 	if tec.Parent != nil {
-		panic(`SomaTreeElemCluster.Attach: already attached`)
+		panic(`Cluster.Attach: already attached`)
 	}
 	switch {
 	case a.ParentType == "bucket":
@@ -14,16 +14,16 @@ func (tec *SomaTreeElemCluster) Attach(a AttachRequest) {
 	case a.ParentType == "group":
 		tec.attachToGroup(a)
 	default:
-		panic(`SomaTreeElemCluster.Attach`)
+		panic(`Cluster.Attach`)
 	}
 
 	if tec.Parent == nil {
-		panic(`SomaTreeElemCluster.Attach: failed`)
+		panic(`Cluster.Attach: failed`)
 	}
 	tec.Parent.(Propertier).syncProperty(tec.Id.String())
 }
 
-func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
+func (tec *Cluster) ReAttach(a AttachRequest) {
 	if tec.Parent == nil {
 		panic(`SomaTreeElemGroup.ReAttach: not attached`)
 	}
@@ -56,9 +56,9 @@ func (tec *SomaTreeElemCluster) ReAttach(a AttachRequest) {
 	tec.Parent.(Propertier).syncProperty(tec.Id.String())
 }
 
-func (tec *SomaTreeElemCluster) Destroy() {
+func (tec *Cluster) Destroy() {
 	if tec.Parent == nil {
-		panic(`SomaTreeElemCluster.Destroy called without Parent to unlink from`)
+		panic(`Cluster.Destroy called without Parent to unlink from`)
 	}
 
 	wg := new(sync.WaitGroup)
@@ -89,9 +89,9 @@ func (tec *SomaTreeElemCluster) Destroy() {
 	tec.setAction(nil)
 }
 
-func (tec *SomaTreeElemCluster) Detach() {
+func (tec *Cluster) Detach() {
 	if tec.Parent == nil {
-		panic(`SomaTreeElemCluster.Detach called without Parent to detach from`)
+		panic(`Cluster.Detach called without Parent to detach from`)
 	}
 	bucket := tec.Parent.(Bucketeer).GetBucket()
 
@@ -119,7 +119,7 @@ func (tec *SomaTreeElemCluster) Detach() {
 
 //
 // Interface: SomaTreeBucketAttacher
-func (tec *SomaTreeElemCluster) attachToBucket(a AttachRequest) {
+func (tec *Cluster) attachToBucket(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
@@ -137,7 +137,7 @@ func (tec *SomaTreeElemCluster) attachToBucket(a AttachRequest) {
 
 //
 // Interface: SomaTreeGroupAttacher
-func (tec *SomaTreeElemCluster) attachToGroup(a AttachRequest) {
+func (tec *Cluster) attachToGroup(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,

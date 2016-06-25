@@ -12,7 +12,7 @@ import (
 //
 // Propertier:> Add Property
 
-func (tec *SomaTreeElemCluster) SetProperty(p Property) {
+func (tec *Cluster) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := tec.checkDuplicate(p); dupe && !deleteOK {
@@ -47,7 +47,7 @@ func (tec *SomaTreeElemCluster) SetProperty(p Property) {
 	tec.actionPropertyNew(p.MakeAction())
 }
 
-func (tec *SomaTreeElemCluster) setPropertyInherited(p Property) {
+func (tec *Cluster) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(tec.Type, tec.Id))
 	if f.Equal(uuid.Nil) {
@@ -62,7 +62,7 @@ func (tec *SomaTreeElemCluster) setPropertyInherited(p Property) {
 	tec.actionPropertyNew(f.MakeAction())
 }
 
-func (tec *SomaTreeElemCluster) setPropertyOnChildren(p Property) {
+func (tec *Cluster) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range tec.Children {
@@ -75,7 +75,7 @@ func (tec *SomaTreeElemCluster) setPropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) addProperty(p Property) {
+func (tec *Cluster) addProperty(p Property) {
 	switch p.GetType() {
 	case `custom`:
 		tec.PropertyCustom[p.GetID()] = p
@@ -91,7 +91,7 @@ func (tec *SomaTreeElemCluster) addProperty(p Property) {
 //
 // Propertier:> Update Property
 
-func (tec *SomaTreeElemCluster) UpdateProperty(p Property) {
+func (tec *Cluster) UpdateProperty(p Property) {
 	if !tec.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -105,14 +105,14 @@ func (tec *SomaTreeElemCluster) UpdateProperty(p Property) {
 	tec.updatePropertyOnChildren(p)
 }
 
-func (tec *SomaTreeElemCluster) updatePropertyInherited(p Property) {
+func (tec *Cluster) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	tec.switchProperty(f)
 	tec.updatePropertyOnChildren(p)
 }
 
-func (tec *SomaTreeElemCluster) updatePropertyOnChildren(p Property) {
+func (tec *Cluster) updatePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
@@ -124,7 +124,7 @@ func (tec *SomaTreeElemCluster) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) switchProperty(p Property) {
+func (tec *Cluster) switchProperty(p Property) {
 	updId, _ := uuid.FromString(tec.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -137,7 +137,7 @@ func (tec *SomaTreeElemCluster) switchProperty(p Property) {
 //
 // Propertier:> Delete Property
 
-func (tec *SomaTreeElemCluster) DeleteProperty(p Property) {
+func (tec *Cluster) DeleteProperty(p Property) {
 	if !tec.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -149,12 +149,12 @@ func (tec *SomaTreeElemCluster) DeleteProperty(p Property) {
 	tec.deletePropertyOnChildren(p)
 }
 
-func (tec *SomaTreeElemCluster) deletePropertyInherited(p Property) {
+func (tec *Cluster) deletePropertyInherited(p Property) {
 	tec.rmProperty(p)
 	tec.deletePropertyOnChildren(p)
 }
 
-func (tec *SomaTreeElemCluster) deletePropertyOnChildren(p Property) {
+func (tec *Cluster) deletePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
@@ -166,7 +166,7 @@ func (tec *SomaTreeElemCluster) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (tec *SomaTreeElemCluster) rmProperty(p Property) {
+func (tec *Cluster) rmProperty(p Property) {
 	delId := tec.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -200,7 +200,7 @@ func (tec *SomaTreeElemCluster) rmProperty(p Property) {
 // Propertier:> Utility
 
 //
-func (tec *SomaTreeElemCluster) verifySourceInstance(id, prop string) bool {
+func (tec *Cluster) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := tec.PropertyCustom[id]; !ok {
@@ -228,7 +228,7 @@ func (tec *SomaTreeElemCluster) verifySourceInstance(id, prop string) bool {
 }
 
 //
-func (tec *SomaTreeElemCluster) findIdForSource(source, prop string) string {
+func (tec *Cluster) findIdForSource(source, prop string) string {
 	switch prop {
 	case `custom`:
 		for id, _ := range tec.PropertyCustom {
@@ -264,7 +264,7 @@ func (tec *SomaTreeElemCluster) findIdForSource(source, prop string) string {
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
-func (tec *SomaTreeElemCluster) syncProperty(childId string) {
+func (tec *Cluster) syncProperty(childId string) {
 customloop:
 	for prop, _ := range tec.PropertyCustom {
 		if !tec.PropertyCustom[prop].hasInheritance() {
@@ -313,7 +313,7 @@ systemloop:
 
 // function to be used by a child to check if the parent has a
 // specific Property
-func (tec *SomaTreeElemCluster) checkProperty(propType string, propId string) bool {
+func (tec *Cluster) checkProperty(propType string, propId string) bool {
 	switch propType {
 	case "custom":
 		if _, ok := tec.PropertyCustom[propId]; ok {
@@ -338,7 +338,7 @@ func (tec *SomaTreeElemCluster) checkProperty(propType string, propId string) bo
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (tec *SomaTreeElemCluster) checkDuplicate(p Property) (bool, bool, Property) {
+func (tec *Cluster) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

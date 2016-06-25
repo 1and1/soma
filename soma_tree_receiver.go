@@ -100,7 +100,7 @@ type ReceiveRequest struct {
 	Repository *SomaTreeElemRepository
 	Bucket     *Bucket
 	Group      *SomaTreeElemGroup
-	Cluster    *SomaTreeElemCluster
+	Cluster    *Cluster
 	Node       *SomaTreeElemNode
 	Fault      *SomaTreeElemFault
 }
