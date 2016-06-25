@@ -165,7 +165,7 @@ func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 	case *Bucket:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
 		ten.State = "standalone"
-	case *SomaTreeElemGroup:
+	case *Group:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
 		ten.State = "grouped"
 	case *Cluster:

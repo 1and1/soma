@@ -6,7 +6,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func (teg *SomaTreeElemGroup) updateCheckInstances() {
+func (teg *Group) updateCheckInstances() {
 	repoName := teg.GetRepositoryName()
 
 	// object may have no checks, but there could be instances to mop up
@@ -542,8 +542,7 @@ checksloop:
 	} // LOOPEND: range teg.Checks
 }
 
-func (teg *SomaTreeElemGroup) evalNativeProp(
-	prop string, val string) bool {
+func (teg *Group) evalNativeProp(prop string, val string) bool {
 	switch prop {
 	case "environment":
 		env := teg.Parent.(Bucketeer).GetEnvironment()
@@ -565,8 +564,7 @@ func (teg *SomaTreeElemGroup) evalNativeProp(
 	return false
 }
 
-func (teg *SomaTreeElemGroup) evalSystemProp(
-	prop string, val string, view string) (string, bool, string) {
+func (teg *Group) evalSystemProp(prop string, val string, view string) (string, bool, string) {
 	for _, v := range teg.PropertySystem {
 		t := v.(*PropertySystem)
 		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
@@ -576,8 +574,7 @@ func (teg *SomaTreeElemGroup) evalSystemProp(
 	return "", false, ""
 }
 
-func (teg *SomaTreeElemGroup) evalOncallProp(
-	prop string, val string, view string) (string, bool) {
+func (teg *Group) evalOncallProp(prop string, val string, view string) (string, bool) {
 	for _, v := range teg.PropertyOncall {
 		t := v.(*PropertyOncall)
 		if "OncallId" == prop && t.Id.String() == val && (t.View == view || t.View == `any`) {
@@ -587,8 +584,7 @@ func (teg *SomaTreeElemGroup) evalOncallProp(
 	return "", false
 }
 
-func (teg *SomaTreeElemGroup) evalCustomProp(
-	prop string, val string, view string) (string, bool, string) {
+func (teg *Group) evalCustomProp(prop string, val string, view string) (string, bool, string) {
 	for _, v := range teg.PropertyCustom {
 		t := v.(*PropertyCustom)
 		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
@@ -598,8 +594,7 @@ func (teg *SomaTreeElemGroup) evalCustomProp(
 	return "", false, ""
 }
 
-func (teg *SomaTreeElemGroup) evalServiceProp(
-	prop string, val string, view string) (string, bool, string) {
+func (teg *Group) evalServiceProp(prop string, val string, view string) (string, bool, string) {
 	for _, v := range teg.PropertyService {
 		t := v.(*PropertyService)
 		if prop == "name" && (t.Service == val || val == `@defined`) && (t.View == view || t.View == `any`) {
@@ -609,8 +604,7 @@ func (teg *SomaTreeElemGroup) evalServiceProp(
 	return "", false, ""
 }
 
-func (teg *SomaTreeElemGroup) evalAttributeOfService(
-	svcId string, view string, attribute string, value string) (bool, string) {
+func (teg *Group) evalAttributeOfService(svcId string, view string, attribute string, value string) (bool, string) {
 	t := teg.PropertyService[svcId].(*PropertyService)
 	for _, a := range t.Attributes {
 		if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
@@ -620,8 +614,7 @@ func (teg *SomaTreeElemGroup) evalAttributeOfService(
 	return false, ""
 }
 
-func (teg *SomaTreeElemGroup) evalAttributeProp(
-	view string, attr string, value string) (bool, map[string]string) {
+func (teg *Group) evalAttributeProp(view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
 svcloop:
 	for _, v := range teg.PropertyService {
@@ -639,7 +632,7 @@ svcloop:
 	return false, f
 }
 
-func (teg *SomaTreeElemGroup) getServiceMap(serviceId string) map[string][]string {
+func (teg *Group) getServiceMap(serviceId string) map[string][]string {
 	svc := new(PropertyService)
 	svc = teg.PropertyService[serviceId].(*PropertyService)
 
@@ -650,7 +643,7 @@ func (teg *SomaTreeElemGroup) getServiceMap(serviceId string) map[string][]strin
 	return res
 }
 
-func (teg *SomaTreeElemGroup) countAttribC(attributeC map[string][]string) int {
+func (teg *Group) countAttribC(attributeC map[string][]string) int {
 	var count int = 0
 	for key, _ := range attributeC {
 		count = count + len(attributeC[key])

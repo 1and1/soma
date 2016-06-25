@@ -189,7 +189,7 @@ func TestSetProperty(t *testing.T) {
 	if len(sTree.Find(FindRequest{
 		ElementType: `group`,
 		ElementId:   grupId,
-	}, true).(*SomaTreeElemGroup).PropertySystem) != 1 {
+	}, true).(*Group).PropertySystem) != 1 {
 		t.Error(
 			`Group has wrong system property count`,
 		)
@@ -409,7 +409,7 @@ func TestUpdateProperty(t *testing.T) {
 	if len(sTree.Find(FindRequest{
 		ElementType: `group`,
 		ElementId:   grupId,
-	}, true).(*SomaTreeElemGroup).PropertySystem) != 1 {
+	}, true).(*Group).PropertySystem) != 1 {
 		t.Error(
 			`Group has wrong system property count`,
 		)
@@ -623,7 +623,7 @@ func TestDeleteProperty(t *testing.T) {
 	if len(sTree.Find(FindRequest{
 		ElementType: `group`,
 		ElementId:   grupId,
-	}, true).(*SomaTreeElemGroup).PropertySystem) != 0 {
+	}, true).(*Group).PropertySystem) != 0 {
 		t.Error(
 			`Group has wrong system property count`,
 		)

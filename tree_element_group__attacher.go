@@ -4,9 +4,9 @@ import "sync"
 
 //
 // Interface: SomaTreeAttacher
-func (teg *SomaTreeElemGroup) Attach(a AttachRequest) {
+func (teg *Group) Attach(a AttachRequest) {
 	if teg.Parent != nil {
-		panic(`SomaTreeElemGroup.Attach: already attached`)
+		panic(`Group.Attach: already attached`)
 	}
 	switch {
 	case a.ParentType == "bucket":
@@ -14,18 +14,18 @@ func (teg *SomaTreeElemGroup) Attach(a AttachRequest) {
 	case a.ParentType == "group":
 		teg.attachToGroup(a)
 	default:
-		panic(`SomaTreeElemGroup.Attach`)
+		panic(`Group.Attach`)
 	}
 
 	if teg.Parent == nil {
-		panic(`SomaTreeElemGroup.Attach: failed`)
+		panic(`Group.Attach: failed`)
 	}
 	teg.Parent.(Propertier).syncProperty(teg.Id.String())
 }
 
-func (teg *SomaTreeElemGroup) ReAttach(a AttachRequest) {
+func (teg *Group) ReAttach(a AttachRequest) {
 	if teg.Parent == nil {
-		panic(`SomaTreeElemGroup.ReAttach: not attached`)
+		panic(`Group.ReAttach: not attached`)
 	}
 	// XXX: destroy all inherited properties before unlinking
 	// teg.(SomaTreePropertier).destroyInheritedProperties()
@@ -50,15 +50,15 @@ func (teg *SomaTreeElemGroup) ReAttach(a AttachRequest) {
 	)
 
 	if teg.Parent == nil {
-		panic(`SomaTreeElemGroup.ReAttach: not reattached`)
+		panic(`Group.ReAttach: not reattached`)
 	}
 	teg.actionUpdate()
 	teg.Parent.(Propertier).syncProperty(teg.Id.String())
 }
 
-func (teg *SomaTreeElemGroup) Destroy() {
+func (teg *Group) Destroy() {
 	if teg.Parent == nil {
-		panic(`SomaTreeElemGroup.Destroy called without Parent to unlink from`)
+		panic(`Group.Destroy called without Parent to unlink from`)
 	}
 
 	wg := new(sync.WaitGroup)
@@ -89,9 +89,9 @@ func (teg *SomaTreeElemGroup) Destroy() {
 	teg.setAction(nil)
 }
 
-func (teg *SomaTreeElemGroup) Detach() {
+func (teg *Group) Detach() {
 	if teg.Parent == nil {
-		panic(`SomaTreeElemGroup.Destroy called without Parent to detach from`)
+		panic(`Group.Destroy called without Parent to detach from`)
 	}
 	bucket := teg.Parent.(Bucketeer).GetBucket()
 
@@ -119,7 +119,7 @@ func (teg *SomaTreeElemGroup) Detach() {
 
 //
 // Interface: SomaTreeBucketAttacher
-func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {
+func (teg *Group) attachToBucket(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
@@ -137,7 +137,7 @@ func (teg *SomaTreeElemGroup) attachToBucket(a AttachRequest) {
 
 //
 // Interface: SomaTreeGroupAttacher
-func (teg *SomaTreeElemGroup) attachToGroup(a AttachRequest) {
+func (teg *Group) attachToGroup(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,

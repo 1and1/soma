@@ -12,7 +12,7 @@ import (
 //
 // Propertier:> Add Property
 
-func (teg *SomaTreeElemGroup) SetProperty(p Property) {
+func (teg *Group) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := teg.checkDuplicate(p); dupe && !deleteOK {
@@ -53,7 +53,7 @@ func (teg *SomaTreeElemGroup) SetProperty(p Property) {
 	teg.actionPropertyNew(p.MakeAction())
 }
 
-func (teg *SomaTreeElemGroup) setPropertyInherited(p Property) {
+func (teg *Group) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(teg.Type, teg.Id))
 	if f.Equal(uuid.Nil) {
@@ -68,7 +68,7 @@ func (teg *SomaTreeElemGroup) setPropertyInherited(p Property) {
 	teg.actionPropertyNew(f.MakeAction())
 }
 
-func (teg *SomaTreeElemGroup) setPropertyOnChildren(p Property) {
+func (teg *Group) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teg.Children {
@@ -81,7 +81,7 @@ func (teg *SomaTreeElemGroup) setPropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) addProperty(p Property) {
+func (teg *Group) addProperty(p Property) {
 	switch p.GetType() {
 	case `custom`:
 		teg.PropertyCustom[p.GetID()] = p
@@ -97,7 +97,7 @@ func (teg *SomaTreeElemGroup) addProperty(p Property) {
 //
 // Propertier:> Update Property
 
-func (teg *SomaTreeElemGroup) UpdateProperty(p Property) {
+func (teg *Group) UpdateProperty(p Property) {
 	if !teg.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -111,14 +111,14 @@ func (teg *SomaTreeElemGroup) UpdateProperty(p Property) {
 	teg.updatePropertyOnChildren(p)
 }
 
-func (teg *SomaTreeElemGroup) updatePropertyInherited(p Property) {
+func (teg *Group) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	teg.switchProperty(f)
 	teg.updatePropertyOnChildren(p)
 }
 
-func (teg *SomaTreeElemGroup) updatePropertyOnChildren(p Property) {
+func (teg *Group) updatePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
@@ -130,7 +130,7 @@ func (teg *SomaTreeElemGroup) updatePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) switchProperty(p Property) {
+func (teg *Group) switchProperty(p Property) {
 	updId, _ := uuid.FromString(teg.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -143,7 +143,7 @@ func (teg *SomaTreeElemGroup) switchProperty(p Property) {
 //
 // Propertier:> Delete Property
 
-func (teg *SomaTreeElemGroup) DeleteProperty(p Property) {
+func (teg *Group) DeleteProperty(p Property) {
 	if !teg.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -155,12 +155,12 @@ func (teg *SomaTreeElemGroup) DeleteProperty(p Property) {
 	teg.deletePropertyOnChildren(p)
 }
 
-func (teg *SomaTreeElemGroup) deletePropertyInherited(p Property) {
+func (teg *Group) deletePropertyInherited(p Property) {
 	teg.rmProperty(p)
 	teg.deletePropertyOnChildren(p)
 }
 
-func (teg *SomaTreeElemGroup) deletePropertyOnChildren(p Property) {
+func (teg *Group) deletePropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
@@ -172,7 +172,7 @@ func (teg *SomaTreeElemGroup) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) rmProperty(p Property) {
+func (teg *Group) rmProperty(p Property) {
 	delId := teg.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -206,7 +206,7 @@ func (teg *SomaTreeElemGroup) rmProperty(p Property) {
 // Propertier:> Utility
 
 //
-func (teg *SomaTreeElemGroup) verifySourceInstance(id, prop string) bool {
+func (teg *Group) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := teg.PropertyCustom[id]; !ok {
@@ -234,7 +234,7 @@ func (teg *SomaTreeElemGroup) verifySourceInstance(id, prop string) bool {
 }
 
 //
-func (teg *SomaTreeElemGroup) findIdForSource(source, prop string) string {
+func (teg *Group) findIdForSource(source, prop string) string {
 	switch prop {
 	case `custom`:
 		for id, _ := range teg.PropertyCustom {
@@ -270,7 +270,7 @@ func (teg *SomaTreeElemGroup) findIdForSource(source, prop string) string {
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
-func (teg *SomaTreeElemGroup) syncProperty(childId string) {
+func (teg *Group) syncProperty(childId string) {
 customloop:
 	for prop, _ := range teg.PropertyCustom {
 		if !teg.PropertyCustom[prop].hasInheritance() {
@@ -319,7 +319,7 @@ systemloop:
 
 // function to be used by a child to check if the parent has a
 // specific Property
-func (teg *SomaTreeElemGroup) checkProperty(propType string, propId string) bool {
+func (teg *Group) checkProperty(propType string, propId string) bool {
 	switch propType {
 	case "custom":
 		if _, ok := teg.PropertyCustom[propId]; ok {
@@ -344,7 +344,7 @@ func (teg *SomaTreeElemGroup) checkProperty(propType string, propId string) bool
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (teg *SomaTreeElemGroup) checkDuplicate(p Property) (bool, bool, Property) {
+func (teg *Group) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

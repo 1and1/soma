@@ -4,7 +4,7 @@ import "sync"
 
 //
 // Interface: SomaTreeFinder
-func (teg *SomaTreeElemGroup) Find(f FindRequest, b bool) SomaTreeAttacher {
+func (teg *Group) Find(f FindRequest, b bool) SomaTreeAttacher {
 	if findRequestCheck(f, teg) {
 		return teg
 	}

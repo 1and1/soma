@@ -2,7 +2,7 @@ package somatree
 
 //
 // Interface: SomaTreeUnlinker
-func (teg *SomaTreeElemGroup) Unlink(u UnlinkRequest) {
+func (teg *Group) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teg) {
 		switch u.ChildType {
 		case "group":
@@ -12,7 +12,7 @@ func (teg *SomaTreeElemGroup) Unlink(u UnlinkRequest) {
 		case "node":
 			teg.unlinkNode(u)
 		default:
-			panic(`SomaTreeElemGroup.Unlink`)
+			panic(`Group.Unlink`)
 		}
 		return
 	}
@@ -27,7 +27,7 @@ loop:
 
 //
 // Interface: SomaTreeGroupUnlinker
-func (teg *SomaTreeElemGroup) unlinkGroup(u UnlinkRequest) {
+func (teg *Group) unlinkGroup(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teg) {
 		switch u.ChildType {
 		case "group":
@@ -35,7 +35,7 @@ func (teg *SomaTreeElemGroup) unlinkGroup(u UnlinkRequest) {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
 					a := Action{
 						ChildType:  "group",
-						ChildGroup: teg.Children[u.ChildId].(*SomaTreeElemGroup).export(),
+						ChildGroup: teg.Children[u.ChildId].(*Group).export(),
 					}
 
 					teg.Children[u.ChildId].clearParent()
@@ -45,16 +45,16 @@ func (teg *SomaTreeElemGroup) unlinkGroup(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemGroup.unlinkGroup`)
+			panic(`Group.unlinkGroup`)
 		}
 		return
 	}
-	panic(`SomaTreeElemGroup.unlinkGroup`)
+	panic(`Group.unlinkGroup`)
 }
 
 //
 // Interface: SomaTreeClusterUnlinker
-func (teg *SomaTreeElemGroup) unlinkCluster(u UnlinkRequest) {
+func (teg *Group) unlinkCluster(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teg) {
 		switch u.ChildType {
 		case "cluster":
@@ -72,16 +72,16 @@ func (teg *SomaTreeElemGroup) unlinkCluster(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemGroup.unlinkCluster`)
+			panic(`Group.unlinkCluster`)
 		}
 		return
 	}
-	panic(`SomaTreeElemGroup.unlinkCluster`)
+	panic(`Group.unlinkCluster`)
 }
 
 //
 // Interface: SomaTreeNodeUnlinker
-func (teg *SomaTreeElemGroup) unlinkNode(u UnlinkRequest) {
+func (teg *Group) unlinkNode(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teg) {
 		switch u.ChildType {
 		case "node":
@@ -99,11 +99,11 @@ func (teg *SomaTreeElemGroup) unlinkNode(u UnlinkRequest) {
 				}
 			}
 		default:
-			panic(`SomaTreeElemGroup.unlinkNode`)
+			panic(`Group.unlinkNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemGroup.unlinkNode`)
+	panic(`Group.unlinkNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

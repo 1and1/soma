@@ -154,7 +154,7 @@ func (tec *Cluster) setParent(p SomaTreeReceiver) {
 	case *Bucket:
 		tec.setClusterParent(p.(SomaTreeClusterReceiver))
 		tec.State = "standalone"
-	case *SomaTreeElemGroup:
+	case *Group:
 		tec.setClusterParent(p.(SomaTreeClusterReceiver))
 		tec.State = "grouped"
 	default:

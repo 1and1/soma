@@ -2,7 +2,7 @@ package somatree
 
 //
 // Interface: SomaTreeReceiver
-func (teg *SomaTreeElemGroup) Receive(r ReceiveRequest) {
+func (teg *Group) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, teg) {
 		switch r.ChildType {
 		case "group":
@@ -12,7 +12,7 @@ func (teg *SomaTreeElemGroup) Receive(r ReceiveRequest) {
 		case "node":
 			teg.receiveNode(r)
 		default:
-			panic(`SomaTreeElemGroup.Receive`)
+			panic(`Group.Receive`)
 		}
 		return
 	}
@@ -27,7 +27,7 @@ loop:
 
 //
 // Interface: SomaTreeGroupReceiver
-func (teg *SomaTreeElemGroup) receiveGroup(r ReceiveRequest) {
+func (teg *Group) receiveGroup(r ReceiveRequest) {
 	if receiveRequestCheck(r, teg) {
 		switch r.ChildType {
 		case "group":
@@ -41,16 +41,16 @@ func (teg *SomaTreeElemGroup) receiveGroup(r ReceiveRequest) {
 				ChildGroup: r.Group.export(),
 			})
 		default:
-			panic(`SomaTreeElemGroup.receiveGroup`)
+			panic(`Group.receiveGroup`)
 		}
 		return
 	}
-	panic(`SomaTreeElemGroup.receiveGroup`)
+	panic(`Group.receiveGroup`)
 }
 
 //
 // Interface: SomaTreeClusterReceiver
-func (teg *SomaTreeElemGroup) receiveCluster(r ReceiveRequest) {
+func (teg *Group) receiveCluster(r ReceiveRequest) {
 	if receiveRequestCheck(r, teg) {
 		switch r.ChildType {
 		case "cluster":
@@ -64,16 +64,16 @@ func (teg *SomaTreeElemGroup) receiveCluster(r ReceiveRequest) {
 				ChildCluster: r.Cluster.export(),
 			})
 		default:
-			panic(`SomaTreeElemGroup.receiveCluster`)
+			panic(`Group.receiveCluster`)
 		}
 		return
 	}
-	panic(`SomaTreeElemGroup.receiveCluster`)
+	panic(`Group.receiveCluster`)
 }
 
 //
 // Interface: SomaTreeNodeReceiver
-func (teg *SomaTreeElemGroup) receiveNode(r ReceiveRequest) {
+func (teg *Group) receiveNode(r ReceiveRequest) {
 	if receiveRequestCheck(r, teg) {
 		switch r.ChildType {
 		case "node":
@@ -87,11 +87,11 @@ func (teg *SomaTreeElemGroup) receiveNode(r ReceiveRequest) {
 				ChildNode: r.Node.export(),
 			})
 		default:
-			panic(`SomaTreeElemGroup.receiveNode`)
+			panic(`Group.receiveNode`)
 		}
 		return
 	}
-	panic(`SomaTreeElemGroup.receiveNode`)
+	panic(`Group.receiveNode`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

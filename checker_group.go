@@ -11,7 +11,7 @@ import (
 //
 // Checker:> Add Check
 
-func (teg *SomaTreeElemGroup) SetCheck(c Check) {
+func (teg *Group) SetCheck(c Check) {
 	c.Id = c.GetItemId(teg.Type, teg.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
 		c.Id = uuid.NewV4()
@@ -31,7 +31,7 @@ func (teg *SomaTreeElemGroup) SetCheck(c Check) {
 	teg.addCheck(c)
 }
 
-func (teg *SomaTreeElemGroup) setCheckInherited(c Check) {
+func (teg *Group) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(teg.Type, teg.Id)
@@ -45,7 +45,7 @@ func (teg *SomaTreeElemGroup) setCheckInherited(c Check) {
 	teg.setCheckOnChildren(c)
 }
 
-func (teg *SomaTreeElemGroup) setCheckOnChildren(c Check) {
+func (teg *Group) setCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
@@ -58,7 +58,7 @@ func (teg *SomaTreeElemGroup) setCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) addCheck(c Check) {
+func (teg *Group) addCheck(c Check) {
 	teg.Checks[c.Id.String()] = c
 	teg.actionCheckNew(c.MakeAction())
 }
@@ -66,17 +66,17 @@ func (teg *SomaTreeElemGroup) addCheck(c Check) {
 //
 // Checker:> Remove Check
 
-func (teg *SomaTreeElemGroup) DeleteCheck(c Check) {
+func (teg *Group) DeleteCheck(c Check) {
 	teg.rmCheck(c)
 	teg.deleteCheckOnChildren(c)
 }
 
-func (teg *SomaTreeElemGroup) deleteCheckInherited(c Check) {
+func (teg *Group) deleteCheckInherited(c Check) {
 	teg.rmCheck(c)
 	teg.deleteCheckOnChildren(c)
 }
 
-func (teg *SomaTreeElemGroup) deleteCheckOnChildren(c Check) {
+func (teg *Group) deleteCheckOnChildren(c Check) {
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
@@ -88,7 +88,7 @@ func (teg *SomaTreeElemGroup) deleteCheckOnChildren(c Check) {
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) rmCheck(c Check) {
+func (teg *Group) rmCheck(c Check) {
 	for id, _ := range teg.Checks {
 		if uuid.Equal(teg.Checks[id].SourceId, c.SourceId) {
 			teg.actionCheckRemoved(teg.setupCheckAction(teg.Checks[id]))
@@ -101,7 +101,7 @@ func (teg *SomaTreeElemGroup) rmCheck(c Check) {
 //
 // Checker:> Meta
 
-func (teg *SomaTreeElemGroup) syncCheck(childId string) {
+func (teg *Group) syncCheck(childId string) {
 	for check, _ := range teg.Checks {
 		if !teg.Checks[check].Inheritance {
 			continue
@@ -113,7 +113,7 @@ func (teg *SomaTreeElemGroup) syncCheck(childId string) {
 	}
 }
 
-func (teg *SomaTreeElemGroup) checkCheck(checkId string) bool {
+func (teg *Group) checkCheck(checkId string) bool {
 	if _, ok := teg.Checks[checkId]; ok {
 		return true
 	}
@@ -121,7 +121,7 @@ func (teg *SomaTreeElemGroup) checkCheck(checkId string) bool {
 }
 
 //
-func (teg *SomaTreeElemGroup) LoadInstance(i CheckInstance) {
+func (teg *Group) LoadInstance(i CheckInstance) {
 	ckId := i.CheckId.String()
 	ckInstId := i.InstanceId.String()
 	if teg.loadedInstances[ckId] == nil {
