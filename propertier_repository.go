@@ -7,8 +7,11 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Implementation of the `Propertier` interface
+
 //
-// Interface: SomaTreePropertier
+// Propertier:> Add Property
+
 func (ter *SomaTreeElemRepository) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
@@ -37,23 +40,14 @@ func (ter *SomaTreeElemRepository) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	ter.inheritPropertyDeep(f)
+	ter.setPropertyOnChildren(f)
 	// scrub instance startup information prior to storing
 	p.clearInstances()
-	switch p.GetType() {
-	case "custom":
-		ter.setCustomProperty(p)
-	case "service":
-		ter.setServiceProperty(p)
-	case "system":
-		ter.setSystemProperty(p)
-	case "oncall":
-		ter.setOncallProperty(p)
-	}
+	ter.addProperty(p)
 	ter.actionPropertyNew(p.MakeAction())
 }
 
-func (ter *SomaTreeElemRepository) inheritProperty(p Property) {
+func (ter *SomaTreeElemRepository) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(ter.Type, ter.Id))
 	if f.Equal(uuid.Nil) {
@@ -62,23 +56,13 @@ func (ter *SomaTreeElemRepository) inheritProperty(p Property) {
 	}
 	f.clearInstances()
 
-	switch f.GetType() {
-	case "custom":
-		ter.setCustomProperty(f)
-	case "service":
-		ter.setServiceProperty(f)
-	case "system":
-		ter.setSystemProperty(f)
-	case "oncall":
-		ter.setOncallProperty(f)
-	}
+	ter.addProperty(f)
 	p.SetId(uuid.UUID{})
-	ter.inheritPropertyDeep(p)
+	ter.setPropertyOnChildren(p)
 	ter.actionPropertyNew(f.MakeAction())
 }
 
-func (ter *SomaTreeElemRepository) inheritPropertyDeep(
-	p Property) {
+func (ter *SomaTreeElemRepository) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range ter.Children {
@@ -92,30 +76,169 @@ func (ter *SomaTreeElemRepository) inheritPropertyDeep(
 	wg.Wait()
 }
 
-func (ter *SomaTreeElemRepository) setCustomProperty(
-	p Property) {
-	ter.PropertyCustom[p.GetID()] = p
+func (ter *SomaTreeElemRepository) addProperty(p Property) {
+	switch p.GetType() {
+	case `custom`:
+		ter.PropertyCustom[p.GetID()] = p
+	case `system`:
+		ter.PropertySystem[p.GetID()] = p
+	case `service`:
+		ter.PropertyService[p.GetID()] = p
+	case `oncall`:
+		ter.PropertyOncall[p.GetID()] = p
+	}
 }
 
-func (ter *SomaTreeElemRepository) setServiceProperty(
-	p Property) {
-	ter.PropertyService[p.GetID()] = p
+//
+// Propertier:> Update Property
+
+func (ter *SomaTreeElemRepository) UpdateProperty(p Property) {
+	if !ter.verifySourceInstance(
+		p.GetSourceInstance(),
+		p.GetType(),
+	) {
+		return // XXX faultChannel
+	}
+
+	// keep a copy for ourselves, no shared pointers
+	f := p.Clone()
+	ter.switchProperty(f)
+	ter.updatePropertyOnChildren(p)
 }
 
-func (ter *SomaTreeElemRepository) setSystemProperty(
-	p Property) {
-	ter.PropertySystem[p.GetID()] = p
+func (ter *SomaTreeElemRepository) updatePropertyInherited(p Property) {
+	// keep a copy for ourselves, no shared pointers
+	f := p.Clone()
+	ter.switchProperty(f)
+	ter.updatePropertyOnChildren(p)
 }
 
-func (ter *SomaTreeElemRepository) setOncallProperty(
-	p Property) {
-	ter.PropertyOncall[p.GetID()] = p
+func (ter *SomaTreeElemRepository) updatePropertyOnChildren(p Property) {
+	// noop, satisfy interface
+}
+
+func (ter *SomaTreeElemRepository) switchProperty(p Property) {
+	updId, _ := uuid.FromString(ter.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	))
+	p.SetId(updId)
+	ter.addProperty(p)
+	ter.actionPropertyUpdate(p.MakeAction())
+}
+
+//
+// Propertier:> Delete Property
+
+func (ter *SomaTreeElemRepository) DeleteProperty(p Property) {
+	if !ter.verifySourceInstance(
+		p.GetSourceInstance(),
+		p.GetType(),
+	) {
+		return // XXX faultChannel
+	}
+
+	ter.rmProperty(p)
+	ter.deletePropertyOnChildren(p)
+}
+
+func (ter *SomaTreeElemRepository) deletePropertyInherited(p Property) {
+	ter.rmProperty(p)
+	ter.deletePropertyOnChildren(p)
+}
+
+func (ter *SomaTreeElemRepository) deletePropertyOnChildren(p Property) {
+	// noop, satisfy interface
+}
+
+func (ter *SomaTreeElemRepository) rmProperty(p Property) {
+	delId, _ := uuid.FromString(ter.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	))
+	p.SetId(delId)
+	ter.actionPropertyDelete(p.MakeAction())
+
+	switch p.GetType() {
+	case `custom`:
+		delete(ter.PropertyCustom, delId.String())
+	case `service`:
+		delete(ter.PropertyService, delId.String())
+	case `system`:
+		delete(ter.PropertySystem, delId.String())
+	case `oncall`:
+		delete(ter.PropertyOncall, delId.String())
+	}
+}
+
+//
+// Propertier:> Utility
+
+//
+func (ter *SomaTreeElemRepository) verifySourceInstance(id, prop string) bool {
+	switch prop {
+	case `custom`:
+		if _, ok := ter.PropertyCustom[id]; !ok {
+			return false
+		}
+		return ter.PropertyCustom[id].GetSourceInstance() == id
+	case `service`:
+		if _, ok := ter.PropertyService[id]; !ok {
+			return false
+		}
+		return ter.PropertyService[id].GetSourceInstance() == id
+	case `system`:
+		if _, ok := ter.PropertySystem[id]; !ok {
+			return false
+		}
+		return ter.PropertySystem[id].GetSourceInstance() == id
+	case `oncall`:
+		if _, ok := ter.PropertyOncall[id]; !ok {
+			return false
+		}
+		return ter.PropertyOncall[id].GetSourceInstance() == id
+	default:
+		return false
+	}
+}
+
+func (ter *SomaTreeElemRepository) findIdForSource(source, prop string) string {
+	switch prop {
+	case `custom`:
+		for id, _ := range ter.PropertyCustom {
+			if ter.PropertyCustom[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `system`:
+		for id, _ := range ter.PropertyService {
+			if ter.PropertyService[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `service`:
+		for id, _ := range ter.PropertySystem {
+			if ter.PropertySystem[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `oncall`:
+		for id, _ := range ter.PropertyOncall {
+			if ter.PropertyOncall[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	}
+	return ``
 }
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
-func (ter *SomaTreeElemRepository) syncProperty(
-	childId string) {
+func (ter *SomaTreeElemRepository) syncProperty(childId string) {
 customloop:
 	for prop, _ := range ter.PropertyCustom {
 		if !ter.PropertyCustom[prop].hasInheritance() {
@@ -164,8 +287,7 @@ systemloop:
 
 // function to be used by a child to check if the parent has a
 // specific Property
-func (ter *SomaTreeElemRepository) checkProperty(
-	propType string, propId string) bool {
+func (ter *SomaTreeElemRepository) checkProperty(propType string, propId string) bool {
 	switch propType {
 	case "custom":
 		if _, ok := ter.PropertyCustom[propId]; ok {
@@ -190,8 +312,7 @@ func (ter *SomaTreeElemRepository) checkProperty(
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (ter *SomaTreeElemRepository) checkDuplicate(p Property) (
-	bool, bool, Property) {
+func (ter *SomaTreeElemRepository) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

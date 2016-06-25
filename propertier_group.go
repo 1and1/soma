@@ -7,8 +7,11 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Implementation of the `Propertier` interface
+
 //
-// Interface: SomaTreePropertier
+// Propertier:> Add Property
+
 func (teg *SomaTreeElemGroup) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
@@ -43,23 +46,14 @@ func (teg *SomaTreeElemGroup) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	teg.inheritPropertyDeep(f)
+	teg.setPropertyOnChildren(f)
 	// scrub instance startup information prior to storing
 	p.clearInstances()
-	switch p.GetType() {
-	case "custom":
-		teg.setCustomProperty(p)
-	case "service":
-		teg.setServiceProperty(p)
-	case "system":
-		teg.setSystemProperty(p)
-	case "oncall":
-		teg.setOncallProperty(p)
-	}
+	teg.addProperty(p)
 	teg.actionPropertyNew(p.MakeAction())
 }
 
-func (teg *SomaTreeElemGroup) inheritProperty(p Property) {
+func (teg *SomaTreeElemGroup) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(teg.Type, teg.Id))
 	if f.Equal(uuid.Nil) {
@@ -68,23 +62,13 @@ func (teg *SomaTreeElemGroup) inheritProperty(p Property) {
 	}
 	f.clearInstances()
 
-	switch f.GetType() {
-	case "custom":
-		teg.setCustomProperty(f)
-	case "service":
-		teg.setServiceProperty(f)
-	case "system":
-		teg.setSystemProperty(f)
-	case "oncall":
-		teg.setOncallProperty(f)
-	}
+	teg.addProperty(p)
 	p.SetId(uuid.UUID{})
-	teg.inheritPropertyDeep(p)
+	teg.setPropertyOnChildren(p)
 	teg.actionPropertyNew(f.MakeAction())
 }
 
-func (teg *SomaTreeElemGroup) inheritPropertyDeep(
-	p Property) {
+func (teg *SomaTreeElemGroup) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
 	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teg.Children {
@@ -98,30 +82,186 @@ func (teg *SomaTreeElemGroup) inheritPropertyDeep(
 	wg.Wait()
 }
 
-func (teg *SomaTreeElemGroup) setCustomProperty(
-	p Property) {
-	teg.PropertyCustom[p.GetID()] = p
+func (teg *SomaTreeElemGroup) addProperty(p Property) {
+	switch p.GetType() {
+	case `custom`:
+		teg.PropertyCustom[p.GetID()] = p
+	case `system`:
+		teg.PropertySystem[p.GetID()] = p
+	case `service`:
+		teg.PropertyService[p.GetID()] = p
+	case `oncall`:
+		teg.PropertyOncall[p.GetID()] = p
+	}
 }
 
-func (teg *SomaTreeElemGroup) setServiceProperty(
-	p Property) {
-	teg.PropertyService[p.GetID()] = p
+//
+// Propertier:> Update Property
+
+func (teg *SomaTreeElemGroup) UpdateProperty(p Property) {
+	if !teg.verifySourceInstance(
+		p.GetSourceInstance(),
+		p.GetType(),
+	) {
+		return // XXX faultChannel
+	}
+
+	// keep a copy for ourselves, no shared pointers
+	f := p.Clone()
+	teg.switchProperty(f)
+	teg.updatePropertyOnChildren(p)
 }
 
-func (teg *SomaTreeElemGroup) setSystemProperty(
-	p Property) {
-	teg.PropertySystem[p.GetID()] = p
+func (teg *SomaTreeElemGroup) updatePropertyInherited(p Property) {
+	// keep a copy for ourselves, no shared pointers
+	f := p.Clone()
+	teg.switchProperty(f)
+	teg.updatePropertyOnChildren(p)
 }
 
-func (teg *SomaTreeElemGroup) setOncallProperty(
-	p Property) {
-	teg.PropertyOncall[p.GetID()] = p
+func (teg *SomaTreeElemGroup) updatePropertyOnChildren(p Property) {
+	var wg sync.WaitGroup
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		go func(stp Property, c string) {
+			defer wg.Done()
+			teg.Children[c].updatePropertyInherited(stp)
+		}(p, child)
+	}
+	wg.Wait()
+}
+
+func (teg *SomaTreeElemGroup) switchProperty(p Property) {
+	updId, _ := uuid.FromString(teg.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	))
+	p.SetId(updId)
+	teg.addProperty(p)
+	teg.actionPropertyUpdate(p.MakeAction())
+}
+
+//
+// Propertier:> Delete Property
+
+func (teg *SomaTreeElemGroup) DeleteProperty(p Property) {
+	if !teg.verifySourceInstance(
+		p.GetSourceInstance(),
+		p.GetType(),
+	) {
+		return // XXX faultChannel
+	}
+
+	teg.rmProperty(p)
+	teg.deletePropertyOnChildren(p)
+}
+
+func (teg *SomaTreeElemGroup) deletePropertyInherited(p Property) {
+	teg.rmProperty(p)
+	teg.deletePropertyOnChildren(p)
+}
+
+func (teg *SomaTreeElemGroup) deletePropertyOnChildren(p Property) {
+	var wg sync.WaitGroup
+	for child, _ := range teg.Children {
+		wg.Add(1)
+		go func(stp Property, c string) {
+			defer wg.Done()
+			teg.Children[c].deletePropertyInherited(stp)
+		}(p, child)
+	}
+	wg.Wait()
+}
+
+func (teg *SomaTreeElemGroup) rmProperty(p Property) {
+	delId, _ := uuid.FromString(teg.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	))
+	p.SetId(delId)
+	teg.actionPropertyDelete(p.MakeAction())
+
+	switch p.GetType() {
+	case `custom`:
+		delete(teg.PropertyCustom, delId.String())
+	case `service`:
+		delete(teg.PropertyService, delId.String())
+	case `system`:
+		delete(teg.PropertySystem, delId.String())
+	case `oncall`:
+		delete(teg.PropertyOncall, delId.String())
+	}
+}
+
+//
+// Propertier:> Utility
+
+//
+func (teg *SomaTreeElemGroup) verifySourceInstance(id, prop string) bool {
+	switch prop {
+	case `custom`:
+		if _, ok := teg.PropertyCustom[id]; !ok {
+			return false
+		}
+		return teg.PropertyCustom[id].GetSourceInstance() == id
+	case `service`:
+		if _, ok := teg.PropertyService[id]; !ok {
+			return false
+		}
+		return teg.PropertyService[id].GetSourceInstance() == id
+	case `system`:
+		if _, ok := teg.PropertySystem[id]; !ok {
+			return false
+		}
+		return teg.PropertySystem[id].GetSourceInstance() == id
+	case `oncall`:
+		if _, ok := teg.PropertyOncall[id]; !ok {
+			return false
+		}
+		return teg.PropertyOncall[id].GetSourceInstance() == id
+	default:
+		return false
+	}
+}
+
+//
+func (teg *SomaTreeElemGroup) findIdForSource(source, prop string) string {
+	switch prop {
+	case `custom`:
+		for id, _ := range teg.PropertyCustom {
+			if teg.PropertyCustom[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `system`:
+		for id, _ := range teg.PropertyService {
+			if teg.PropertyService[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `service`:
+		for id, _ := range teg.PropertySystem {
+			if teg.PropertySystem[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `oncall`:
+		for id, _ := range teg.PropertyOncall {
+			if teg.PropertyOncall[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	}
+	return ``
 }
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
-func (teg *SomaTreeElemGroup) syncProperty(
-	childId string) {
+func (teg *SomaTreeElemGroup) syncProperty(childId string) {
 customloop:
 	for prop, _ := range teg.PropertyCustom {
 		if !teg.PropertyCustom[prop].hasInheritance() {
@@ -170,8 +310,7 @@ systemloop:
 
 // function to be used by a child to check if the parent has a
 // specific Property
-func (teg *SomaTreeElemGroup) checkProperty(
-	propType string, propId string) bool {
+func (teg *SomaTreeElemGroup) checkProperty(propType string, propId string) bool {
 	switch propType {
 	case "custom":
 		if _, ok := teg.PropertyCustom[propId]; ok {
@@ -196,8 +335,7 @@ func (teg *SomaTreeElemGroup) checkProperty(
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (teg *SomaTreeElemGroup) checkDuplicate(p Property) (
-	bool, bool, Property) {
+func (teg *SomaTreeElemGroup) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

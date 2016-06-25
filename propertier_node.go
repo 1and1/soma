@@ -6,8 +6,11 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+// Implementation of the `Propertier` interface
+
 //
-// Interface: SomaTreePropertier
+// Propertier:> Add Property
+
 func (ten *SomaTreeElemNode) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
@@ -36,23 +39,14 @@ func (ten *SomaTreeElemNode) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	ten.inheritPropertyDeep(f)
+	ten.setPropertyOnChildren(f)
 	// scrub instance startup information prior to storing
 	p.clearInstances()
-	switch p.GetType() {
-	case "custom":
-		ten.setCustomProperty(p)
-	case "service":
-		ten.setServiceProperty(p)
-	case "system":
-		ten.setSystemProperty(p)
-	case "oncall":
-		ten.setOncallProperty(p)
-	}
+	ten.addProperty(p)
 	ten.actionPropertyNew(p.MakeAction())
 }
 
-func (ten *SomaTreeElemNode) inheritProperty(p Property) {
+func (ten *SomaTreeElemNode) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(ten.Type, ten.Id))
 	if f.Equal(uuid.Nil) {
@@ -61,61 +55,188 @@ func (ten *SomaTreeElemNode) inheritProperty(p Property) {
 	}
 	f.clearInstances()
 
-	switch f.GetType() {
-	case "custom":
-		ten.setCustomProperty(f)
-	case "service":
-		ten.setServiceProperty(f)
-	case "system":
-		ten.setSystemProperty(f)
-	case "oncall":
-		ten.setOncallProperty(f)
-	}
+	ten.addProperty(p)
 	// no inheritPropertyDeep(), nodes have no children
 	ten.actionPropertyNew(f.MakeAction())
 }
 
-// noop, satisfy interface
-func (ten *SomaTreeElemNode) inheritPropertyDeep(
-	p Property) {
+func (ten *SomaTreeElemNode) setPropertyOnChildren(p Property) {
+	// noop, satisfy interface
 }
 
-func (ten *SomaTreeElemNode) setCustomProperty(
-	p Property) {
-	ten.PropertyCustom[p.GetID()] = p
+func (ten *SomaTreeElemNode) addProperty(p Property) {
+	switch p.GetType() {
+	case `custom`:
+		ten.PropertyCustom[p.GetID()] = p
+	case `system`:
+		ten.PropertySystem[p.GetID()] = p
+	case `service`:
+		ten.PropertyService[p.GetID()] = p
+	case `oncall`:
+		ten.PropertyOncall[p.GetID()] = p
+	}
 }
 
-func (ten *SomaTreeElemNode) setServiceProperty(
-	p Property) {
-	ten.PropertyService[p.GetID()] = p
+//
+// Propertier:> Update Property
+
+func (ten *SomaTreeElemNode) UpdateProperty(p Property) {
+	if !ten.verifySourceInstance(
+		p.GetSourceInstance(),
+		p.GetType(),
+	) {
+		return // XXX faultChannel
+	}
+
+	// keep a copy for ourselves, no shared pointers
+	f := p.Clone()
+	ten.switchProperty(f)
+	ten.updatePropertyOnChildren(p)
 }
 
-func (ten *SomaTreeElemNode) setSystemProperty(
-	p Property) {
-	ten.PropertySystem[p.GetID()] = p
+func (ten *SomaTreeElemNode) updatePropertyInherited(p Property) {
+	// keep a copy for ourselves, no shared pointers
+	f := p.Clone()
+	ten.switchProperty(f)
+	ten.updatePropertyOnChildren(p)
 }
 
-func (ten *SomaTreeElemNode) setOncallProperty(
-	p Property) {
-	ten.PropertyOncall[p.GetID()] = p
+func (ten *SomaTreeElemNode) updatePropertyOnChildren(p Property) {
+	// noop, satisfy interface
 }
 
-// noop, satisfy interface
-func (ten *SomaTreeElemNode) syncProperty(
-	childId string) {
+func (ten *SomaTreeElemNode) switchProperty(p Property) {
+	updId, _ := uuid.FromString(ten.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	))
+	p.SetId(updId)
+	ten.addProperty(p)
+	ten.actionPropertyUpdate(p.MakeAction())
 }
 
-// noop, satisfy interface
-func (ten *SomaTreeElemNode) checkProperty(
-	propType string, propId string) bool {
+//
+// Propertier:> Delete Property
+
+func (ten *SomaTreeElemNode) DeleteProperty(p Property) {
+	if !ten.verifySourceInstance(
+		p.GetSourceInstance(),
+		p.GetType(),
+	) {
+		return // XXX faultChannel
+	}
+
+	ten.rmProperty(p)
+	ten.deletePropertyOnChildren(p)
+}
+
+func (ten *SomaTreeElemNode) deletePropertyInherited(p Property) {
+	ten.rmProperty(p)
+	ten.deletePropertyOnChildren(p)
+}
+
+func (ten *SomaTreeElemNode) deletePropertyOnChildren(p Property) {
+	// noop, satisfy interface
+}
+
+func (ten *SomaTreeElemNode) rmProperty(p Property) {
+	delId, _ := uuid.FromString(ten.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	))
+	p.SetId(delId)
+	ten.actionPropertyDelete(p.MakeAction())
+
+	switch p.GetType() {
+	case `custom`:
+		delete(ten.PropertyCustom, delId.String())
+	case `service`:
+		delete(ten.PropertyService, delId.String())
+	case `system`:
+		delete(ten.PropertySystem, delId.String())
+	case `oncall`:
+		delete(ten.PropertyOncall, delId.String())
+	}
+}
+
+//
+// Propertier:> Utility
+
+//
+func (ten *SomaTreeElemNode) verifySourceInstance(id, prop string) bool {
+	switch prop {
+	case `custom`:
+		if _, ok := ten.PropertyCustom[id]; !ok {
+			return false
+		}
+		return ten.PropertyCustom[id].GetSourceInstance() == id
+	case `service`:
+		if _, ok := ten.PropertyService[id]; !ok {
+			return false
+		}
+		return ten.PropertyService[id].GetSourceInstance() == id
+	case `system`:
+		if _, ok := ten.PropertySystem[id]; !ok {
+			return false
+		}
+		return ten.PropertySystem[id].GetSourceInstance() == id
+	case `oncall`:
+		if _, ok := ten.PropertyOncall[id]; !ok {
+			return false
+		}
+		return ten.PropertyOncall[id].GetSourceInstance() == id
+	default:
+		return false
+	}
+}
+
+func (ten *SomaTreeElemNode) findIdForSource(source, prop string) string {
+	switch prop {
+	case `custom`:
+		for id, _ := range ten.PropertyCustom {
+			if ten.PropertyCustom[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `system`:
+		for id, _ := range ten.PropertyService {
+			if ten.PropertyService[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `service`:
+		for id, _ := range ten.PropertySystem {
+			if ten.PropertySystem[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	case `oncall`:
+		for id, _ := range ten.PropertyOncall {
+			if ten.PropertyOncall[id].GetSourceInstance() != source {
+				continue
+			}
+			return id
+		}
+	}
+	return ``
+}
+
+func (ten *SomaTreeElemNode) syncProperty(childId string) {
+	// noop, satisfy interface
+}
+
+func (ten *SomaTreeElemNode) checkProperty(propType string, propId string) bool {
+	// noop, satisfy interface
 	return false
 }
 
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (ten *SomaTreeElemNode) checkDuplicate(p Property) (
-	bool, bool, Property) {
+func (ten *SomaTreeElemNode) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

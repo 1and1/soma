@@ -1,44 +1,57 @@
 package somatree
 
-func (tef *SomaTreeElemFault) SetProperty(
-	p Property) {
+func (tef *SomaTreeElemFault) SetProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) inheritProperty(
-	p Property) {
+func (tef *SomaTreeElemFault) setPropertyInherited(p Property) {
 }
 
-func (tef *SomaTreeElemFault) inheritPropertyDeep(
-	p Property) {
+func (tef *SomaTreeElemFault) setPropertyOnChildren(p Property) {
 }
 
-func (tef *SomaTreeElemFault) setCustomProperty(
-	p Property) {
+func (tef *SomaTreeElemFault) addProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) setServiceProperty(
-	p Property) {
+func (tef *SomaTreeElemFault) UpdateProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) setSystemProperty(
-	p Property) {
+func (tef *SomaTreeElemFault) updatePropertyInherited(p Property) {
 }
 
-func (tef *SomaTreeElemFault) setOncallProperty(
-	p Property) {
+func (tef *SomaTreeElemFault) updatePropertyOnChildren(p Property) {
 }
 
-func (tef *SomaTreeElemFault) syncProperty(
-	childId string) {
+func (tef *SomaTreeElemFault) switchProperty(p Property) {
 }
 
-func (tef *SomaTreeElemFault) checkProperty(
-	propType string, propId string) bool {
+func (tef *SomaTreeElemFault) DeleteProperty(p Property) {
+}
+
+func (tef *SomaTreeElemFault) deletePropertyInherited(p Property) {
+}
+
+func (tef *SomaTreeElemFault) deletePropertyOnChildren(p Property) {
+}
+
+func (tef *SomaTreeElemFault) rmProperty(p Property) {
+}
+
+func (tef *SomaTreeElemFault) verifySourceInstance(id, prop string) bool {
 	return false
 }
 
-func (tef *SomaTreeElemFault) checkDuplicate(p Property) (
-	bool, bool, Property) {
+func (tef *SomaTreeElemFault) findIdForSource(source, prop string) string {
+	return ``
+}
+
+func (tef *SomaTreeElemFault) syncProperty(childId string) {
+}
+
+func (tef *SomaTreeElemFault) checkProperty(propType, propId string) bool {
+	return false
+}
+
+func (tef *SomaTreeElemFault) checkDuplicate(p Property) (bool, bool, Property) {
 	return true, false, nil
 }
 
