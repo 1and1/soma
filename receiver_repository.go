@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 // Interface: Receiver
 func (ter *Repository) Receive(r ReceiveRequest) {

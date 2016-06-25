@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 type Finder interface {
 	Find(f FindRequest, b bool) Attacher

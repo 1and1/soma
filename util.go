@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 func receiveRequestCheck(r ReceiveRequest, b Builder) bool {
 	if r.ParentType == b.GetType() && (r.ParentId == b.GetID() || r.ParentName == b.GetName()) {

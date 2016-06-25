@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 type Receiver interface {
 	Receive(r ReceiveRequest)

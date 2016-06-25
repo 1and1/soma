@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 import (
 	"crypto/sha512"

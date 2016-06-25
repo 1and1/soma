@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 type Propertier interface {
 	SetProperty(p Property)

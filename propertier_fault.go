@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 func (tef *Fault) SetProperty(p Property) {
 }

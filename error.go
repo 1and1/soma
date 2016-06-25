@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 type Error struct {
 	Action string `json:",omitempty"`

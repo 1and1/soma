@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 import "github.com/satori/go.uuid"
 

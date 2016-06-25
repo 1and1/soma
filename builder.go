@@ -1,4 +1,4 @@
-package somatree
+package tree
 
 type Builder interface {
 	GetID() string
