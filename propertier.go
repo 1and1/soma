@@ -15,6 +15,8 @@ type Propertier interface {
 	DeleteProperty(p Property)
 	deletePropertyInherited(p Property)
 	deletePropertyOnChildren(p Property)
+	deletePropertyAllInherited()
+	deletePropertyAllLocal()
 	rmProperty(p Property) bool
 
 	verifySourceInstance(id, prop string) bool

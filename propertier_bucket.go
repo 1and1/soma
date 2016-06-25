@@ -318,6 +318,60 @@ func (teb *Bucket) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
+func (teb *Bucket) deletePropertyAllInherited() {
+	for _, p := range teb.PropertyCustom {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teb.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range teb.PropertySystem {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teb.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range teb.PropertyService {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teb.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range teb.PropertyOncall {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teb.deletePropertyInherited(p.Clone())
+	}
+}
+
+func (teb *Bucket) deletePropertyAllLocal() {
+	for _, p := range teb.PropertyCustom {
+		if p.GetIsInherited() {
+			continue
+		}
+		teb.DeleteProperty(p.Clone())
+	}
+	for _, p := range teb.PropertySystem {
+		if p.GetIsInherited() {
+			continue
+		}
+		teb.DeleteProperty(p.Clone())
+	}
+	for _, p := range teb.PropertyService {
+		if p.GetIsInherited() {
+			continue
+		}
+		teb.DeleteProperty(p.Clone())
+	}
+	for _, p := range teb.PropertyOncall {
+		if p.GetIsInherited() {
+			continue
+		}
+		teb.DeleteProperty(p.Clone())
+	}
+}
+
 func (teb *Bucket) rmProperty(p Property) bool {
 	delId := teb.findIdForSource(
 		p.GetSourceInstance(),

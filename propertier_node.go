@@ -227,6 +227,60 @@ func (ten *Node) deletePropertyOnChildren(p Property) {
 	// noop, satisfy interface
 }
 
+func (ten *Node) deletePropertyAllInherited() {
+	for _, p := range ten.PropertyCustom {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ten.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range ten.PropertySystem {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ten.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range ten.PropertyService {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ten.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range ten.PropertyOncall {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ten.deletePropertyInherited(p.Clone())
+	}
+}
+
+func (ten *Node) deletePropertyAllLocal() {
+	for _, p := range ten.PropertyCustom {
+		if p.GetIsInherited() {
+			continue
+		}
+		ten.DeleteProperty(p.Clone())
+	}
+	for _, p := range ten.PropertySystem {
+		if p.GetIsInherited() {
+			continue
+		}
+		ten.DeleteProperty(p.Clone())
+	}
+	for _, p := range ten.PropertyService {
+		if p.GetIsInherited() {
+			continue
+		}
+		ten.DeleteProperty(p.Clone())
+	}
+	for _, p := range ten.PropertyOncall {
+		if p.GetIsInherited() {
+			continue
+		}
+		ten.DeleteProperty(p.Clone())
+	}
+}
+
 func (ten *Node) rmProperty(p Property) bool {
 	delId := ten.findIdForSource(
 		p.GetSourceInstance(),

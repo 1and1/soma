@@ -318,6 +318,60 @@ func (teg *Group) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
+func (teg *Group) deletePropertyAllInherited() {
+	for _, p := range teg.PropertyCustom {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teg.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range teg.PropertySystem {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teg.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range teg.PropertyService {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teg.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range teg.PropertyOncall {
+		if !p.GetIsInherited() {
+			continue
+		}
+		teg.deletePropertyInherited(p.Clone())
+	}
+}
+
+func (teg *Group) deletePropertyAllLocal() {
+	for _, p := range teg.PropertyCustom {
+		if p.GetIsInherited() {
+			continue
+		}
+		teg.DeleteProperty(p.Clone())
+	}
+	for _, p := range teg.PropertySystem {
+		if p.GetIsInherited() {
+			continue
+		}
+		teg.DeleteProperty(p.Clone())
+	}
+	for _, p := range teg.PropertyService {
+		if p.GetIsInherited() {
+			continue
+		}
+		teg.DeleteProperty(p.Clone())
+	}
+	for _, p := range teg.PropertyOncall {
+		if p.GetIsInherited() {
+			continue
+		}
+		teg.DeleteProperty(p.Clone())
+	}
+}
+
 func (teg *Group) rmProperty(p Property) bool {
 	delId := teg.findIdForSource(
 		p.GetSourceInstance(),

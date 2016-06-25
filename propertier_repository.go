@@ -318,6 +318,60 @@ func (ter *Repository) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
+func (ter *Repository) deletePropertyAllInherited() {
+	for _, p := range ter.PropertyCustom {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ter.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range ter.PropertySystem {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ter.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range ter.PropertyService {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ter.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range ter.PropertyOncall {
+		if !p.GetIsInherited() {
+			continue
+		}
+		ter.deletePropertyInherited(p.Clone())
+	}
+}
+
+func (ter *Repository) deletePropertyAllLocal() {
+	for _, p := range ter.PropertyCustom {
+		if p.GetIsInherited() {
+			continue
+		}
+		ter.DeleteProperty(p.Clone())
+	}
+	for _, p := range ter.PropertySystem {
+		if p.GetIsInherited() {
+			continue
+		}
+		ter.DeleteProperty(p.Clone())
+	}
+	for _, p := range ter.PropertyService {
+		if p.GetIsInherited() {
+			continue
+		}
+		ter.DeleteProperty(p.Clone())
+	}
+	for _, p := range ter.PropertyOncall {
+		if p.GetIsInherited() {
+			continue
+		}
+		ter.DeleteProperty(p.Clone())
+	}
+}
+
 func (ter *Repository) rmProperty(p Property) bool {
 	delId := ter.findIdForSource(
 		p.GetSourceInstance(),

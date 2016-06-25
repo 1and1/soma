@@ -318,6 +318,60 @@ func (tec *Cluster) deletePropertyOnChildren(p Property) {
 	wg.Wait()
 }
 
+func (tec *Cluster) deletePropertyAllInherited() {
+	for _, p := range tec.PropertyCustom {
+		if !p.GetIsInherited() {
+			continue
+		}
+		tec.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range tec.PropertySystem {
+		if !p.GetIsInherited() {
+			continue
+		}
+		tec.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range tec.PropertyService {
+		if !p.GetIsInherited() {
+			continue
+		}
+		tec.deletePropertyInherited(p.Clone())
+	}
+	for _, p := range tec.PropertyOncall {
+		if !p.GetIsInherited() {
+			continue
+		}
+		tec.deletePropertyInherited(p.Clone())
+	}
+}
+
+func (tec *Cluster) deletePropertyAllLocal() {
+	for _, p := range tec.PropertyCustom {
+		if p.GetIsInherited() {
+			continue
+		}
+		tec.DeleteProperty(p.Clone())
+	}
+	for _, p := range tec.PropertySystem {
+		if p.GetIsInherited() {
+			continue
+		}
+		tec.DeleteProperty(p.Clone())
+	}
+	for _, p := range tec.PropertyService {
+		if p.GetIsInherited() {
+			continue
+		}
+		tec.DeleteProperty(p.Clone())
+	}
+	for _, p := range tec.PropertyOncall {
+		if p.GetIsInherited() {
+			continue
+		}
+		tec.DeleteProperty(p.Clone())
+	}
+}
+
 func (tec *Cluster) rmProperty(p Property) bool {
 	delId := tec.findIdForSource(
 		p.GetSourceInstance(),

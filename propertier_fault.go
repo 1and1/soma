@@ -38,6 +38,12 @@ func (tef *Fault) deletePropertyInherited(p Property) {
 func (tef *Fault) deletePropertyOnChildren(p Property) {
 }
 
+func (tef *Fault) deletePropertyAllInherited() {
+}
+
+func (tef *Fault) deletePropertyAllLocal() {
+}
+
 func (tef *Fault) rmProperty(p Property) bool {
 	return false
 }
