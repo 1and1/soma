@@ -229,15 +229,15 @@ func (tec *SomaTreeElemCluster) findIdForSource(source, prop string) string {
 			return id
 		}
 	case `system`:
-		for id, _ := range tec.PropertyService {
-			if tec.PropertyService[id].GetSourceInstance() != source {
+		for id, _ := range tec.PropertySystem {
+			if tec.PropertySystem[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `service`:
-		for id, _ := range tec.PropertySystem {
-			if tec.PropertySystem[id].GetSourceInstance() != source {
+		for id, _ := range tec.PropertyService {
+			if tec.PropertyService[id].GetSourceInstance() != source {
 				continue
 			}
 			return id

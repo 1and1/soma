@@ -229,15 +229,15 @@ func (teb *SomaTreeElemBucket) findIdForSource(source, prop string) string {
 			return id
 		}
 	case `system`:
-		for id, _ := range teb.PropertyService {
-			if teb.PropertyService[id].GetSourceInstance() != source {
+		for id, _ := range teb.PropertySystem {
+			if teb.PropertySystem[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `service`:
-		for id, _ := range teb.PropertySystem {
-			if teb.PropertySystem[id].GetSourceInstance() != source {
+		for id, _ := range teb.PropertyService {
+			if teb.PropertyService[id].GetSourceInstance() != source {
 				continue
 			}
 			return id

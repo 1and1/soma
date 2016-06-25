@@ -235,15 +235,15 @@ func (teg *SomaTreeElemGroup) findIdForSource(source, prop string) string {
 			return id
 		}
 	case `system`:
-		for id, _ := range teg.PropertyService {
-			if teg.PropertyService[id].GetSourceInstance() != source {
+		for id, _ := range teg.PropertySystem {
+			if teg.PropertySystem[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `service`:
-		for id, _ := range teg.PropertySystem {
-			if teg.PropertySystem[id].GetSourceInstance() != source {
+		for id, _ := range teg.PropertyService {
+			if teg.PropertyService[id].GetSourceInstance() != source {
 				continue
 			}
 			return id

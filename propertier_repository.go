@@ -212,15 +212,15 @@ func (ter *SomaTreeElemRepository) findIdForSource(source, prop string) string {
 			return id
 		}
 	case `system`:
-		for id, _ := range ter.PropertyService {
-			if ter.PropertyService[id].GetSourceInstance() != source {
+		for id, _ := range ter.PropertySystem {
+			if ter.PropertySystem[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
 		}
 	case `service`:
-		for id, _ := range ter.PropertySystem {
-			if ter.PropertySystem[id].GetSourceInstance() != source {
+		for id, _ := range ter.PropertyService {
+			if ter.PropertyService[id].GetSourceInstance() != source {
 				continue
 			}
 			return id
