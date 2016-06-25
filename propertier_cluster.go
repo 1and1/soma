@@ -21,12 +21,14 @@ func (tec *Cluster) SetProperty(p Property) {
 		srcUUID, _ := uuid.FromString(prop.GetSourceInstance())
 		switch prop.GetType() {
 		case `custom`:
+			cstUUID, _ := uuid.FromString(prop.GetKey())
 			tec.deletePropertyInherited(&PropertyCustom{
 				SourceId:  srcUUID,
 				View:      prop.GetView(),
 				Inherited: true,
-				Key:       prop.GetKey(),
-				Value:     prop.GetValue(),
+				CustomId:  cstUUID,
+				Key:       prop.(*PropertyCustom).GetKeyField(),
+				Value:     prop.(*PropertyCustom).GetValueField(),
 			})
 		case `service`:
 			// GetValue for serviceproperty returns the uuid to never
@@ -46,13 +48,14 @@ func (tec *Cluster) SetProperty(p Property) {
 				Value:     prop.GetValue(),
 			})
 		case `oncall`:
-			// GetValue for oncallproperty returns the uuid to never
-			// match, we do not set it
+			oncUUID, _ := uuid.FromString(prop.GetKey())
 			tec.deletePropertyInherited(&PropertyOncall{
 				SourceId:  srcUUID,
 				View:      prop.GetView(),
 				Inherited: true,
-				Name:      prop.GetKey(),
+				OncallId:  oncUUID,
+				Name:      prop.(*PropertyOncall).GetName(),
+				Number:    prop.(*PropertyOncall).GetNumber(),
 			})
 		}
 	}
@@ -220,15 +223,19 @@ func (tec *Cluster) switchProperty(p Property) bool {
 		srcUUID, _ := uuid.FromString(curr.GetSourceInstance())
 		switch curr.GetType() {
 		case `custom`:
+			cstUUID, _ := uuid.FromString(curr.GetKey())
 			tec.deletePropertyOnChildren(&PropertyCustom{
 				SourceId:    srcUUID,
 				View:        curr.GetView(),
 				Inherited:   true,
-				Key:         curr.GetKey(),
-				Value:       curr.GetValue(),
+				CustomId:    cstUUID,
+				Key:         curr.(*PropertyCustom).GetKeyField(),
+				Value:       curr.(*PropertyCustom).GetValueField(),
 				Inheritance: true,
 			})
 		case `service`:
+			// GetValue for serviceproperty returns the uuid to never
+			// match, we do not set it
 			tec.deletePropertyOnChildren(&PropertyService{
 				SourceId:    srcUUID,
 				View:        curr.GetView(),
@@ -246,11 +253,14 @@ func (tec *Cluster) switchProperty(p Property) bool {
 				Inheritance: true,
 			})
 		case `oncall`:
+			oncUUID, _ := uuid.FromString(curr.GetKey())
 			tec.deletePropertyOnChildren(&PropertyOncall{
 				SourceId:    srcUUID,
 				View:        curr.GetView(),
 				Inherited:   true,
-				Name:        curr.GetKey(),
+				OncallId:    oncUUID,
+				Name:        curr.(*PropertyOncall).GetName(),
+				Number:      curr.(*PropertyOncall).GetNumber(),
 				Inheritance: true,
 			})
 		}

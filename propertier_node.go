@@ -17,12 +17,14 @@ func (ten *Node) SetProperty(p Property) {
 		srcUUID, _ := uuid.FromString(prop.GetSourceInstance())
 		switch prop.GetType() {
 		case `custom`:
+			cstUUID, _ := uuid.FromString(prop.GetKey())
 			ten.deletePropertyInherited(&PropertyCustom{
 				SourceId:  srcUUID,
 				View:      prop.GetView(),
 				Inherited: true,
-				Key:       prop.GetKey(),
-				Value:     prop.GetValue(),
+				CustomId:  cstUUID,
+				Key:       prop.(*PropertyCustom).GetKeyField(),
+				Value:     prop.(*PropertyCustom).GetValueField(),
 			})
 		case `service`:
 			// GetValue for serviceproperty returns the uuid to never
@@ -44,11 +46,14 @@ func (ten *Node) SetProperty(p Property) {
 		case `oncall`:
 			// GetValue for oncallproperty returns the uuid to never
 			// match, we do not set it
+			oncUUID, _ := uuid.FromString(prop.GetKey())
 			ten.deletePropertyInherited(&PropertyOncall{
 				SourceId:  srcUUID,
 				View:      prop.GetView(),
 				Inherited: true,
-				Name:      prop.GetKey(),
+				OncallId:  oncUUID,
+				Name:      prop.(*PropertyOncall).GetName(),
+				Number:    prop.(*PropertyOncall).GetNumber(),
 			})
 		}
 	}

@@ -105,10 +105,18 @@ func (p *PropertyCustom) GetView() string {
 }
 
 func (p *PropertyCustom) GetKey() string {
-	return p.Key
+	return p.CustomId.String()
 }
 
 func (p *PropertyCustom) GetValue() string {
+	return p.Key + p.Value
+}
+
+func (p *PropertyCustom) GetKeyField() string {
+	return p.Key
+}
+
+func (p *PropertyCustom) GetValueField() string {
 	return p.Value
 }
 
@@ -545,11 +553,19 @@ func (p *PropertyOncall) GetView() string {
 }
 
 func (p *PropertyOncall) GetKey() string {
-	return p.Name
+	return p.OncallId.String()
 }
 
 func (p *PropertyOncall) GetValue() string {
-	return p.Id.String()
+	return p.Name + p.Number
+}
+
+func (p *PropertyOncall) GetName() string {
+	return p.Name
+}
+
+func (p *PropertyOncall) GetNumber() string {
+	return p.Number
 }
 
 func (p *PropertyOncall) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
