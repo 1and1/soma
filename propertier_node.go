@@ -11,7 +11,7 @@ import (
 //
 // Propertier:> Add Property
 
-func (ten *SomaTreeElemNode) SetProperty(p Property) {
+func (ten *Node) SetProperty(p Property) {
 	// if deleteOK is true, then prop is the property that can be
 	// deleted
 	if dupe, deleteOK, _ := ten.checkDuplicate(p); dupe && !deleteOK {
@@ -46,7 +46,7 @@ func (ten *SomaTreeElemNode) SetProperty(p Property) {
 	ten.actionPropertyNew(p.MakeAction())
 }
 
-func (ten *SomaTreeElemNode) setPropertyInherited(p Property) {
+func (ten *Node) setPropertyInherited(p Property) {
 	f := p.Clone()
 	f.SetId(f.GetInstanceId(ten.Type, ten.Id))
 	if f.Equal(uuid.Nil) {
@@ -60,11 +60,11 @@ func (ten *SomaTreeElemNode) setPropertyInherited(p Property) {
 	ten.actionPropertyNew(f.MakeAction())
 }
 
-func (ten *SomaTreeElemNode) setPropertyOnChildren(p Property) {
+func (ten *Node) setPropertyOnChildren(p Property) {
 	// noop, satisfy interface
 }
 
-func (ten *SomaTreeElemNode) addProperty(p Property) {
+func (ten *Node) addProperty(p Property) {
 	switch p.GetType() {
 	case `custom`:
 		ten.PropertyCustom[p.GetID()] = p
@@ -80,7 +80,7 @@ func (ten *SomaTreeElemNode) addProperty(p Property) {
 //
 // Propertier:> Update Property
 
-func (ten *SomaTreeElemNode) UpdateProperty(p Property) {
+func (ten *Node) UpdateProperty(p Property) {
 	if !ten.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -94,18 +94,18 @@ func (ten *SomaTreeElemNode) UpdateProperty(p Property) {
 	ten.updatePropertyOnChildren(p)
 }
 
-func (ten *SomaTreeElemNode) updatePropertyInherited(p Property) {
+func (ten *Node) updatePropertyInherited(p Property) {
 	// keep a copy for ourselves, no shared pointers
 	f := p.Clone()
 	ten.switchProperty(f)
 	ten.updatePropertyOnChildren(p)
 }
 
-func (ten *SomaTreeElemNode) updatePropertyOnChildren(p Property) {
+func (ten *Node) updatePropertyOnChildren(p Property) {
 	// noop, satisfy interface
 }
 
-func (ten *SomaTreeElemNode) switchProperty(p Property) {
+func (ten *Node) switchProperty(p Property) {
 	updId, _ := uuid.FromString(ten.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -118,7 +118,7 @@ func (ten *SomaTreeElemNode) switchProperty(p Property) {
 //
 // Propertier:> Delete Property
 
-func (ten *SomaTreeElemNode) DeleteProperty(p Property) {
+func (ten *Node) DeleteProperty(p Property) {
 	if !ten.verifySourceInstance(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -130,16 +130,16 @@ func (ten *SomaTreeElemNode) DeleteProperty(p Property) {
 	ten.deletePropertyOnChildren(p)
 }
 
-func (ten *SomaTreeElemNode) deletePropertyInherited(p Property) {
+func (ten *Node) deletePropertyInherited(p Property) {
 	ten.rmProperty(p)
 	ten.deletePropertyOnChildren(p)
 }
 
-func (ten *SomaTreeElemNode) deletePropertyOnChildren(p Property) {
+func (ten *Node) deletePropertyOnChildren(p Property) {
 	// noop, satisfy interface
 }
 
-func (ten *SomaTreeElemNode) rmProperty(p Property) {
+func (ten *Node) rmProperty(p Property) {
 	delId := ten.findIdForSource(
 		p.GetSourceInstance(),
 		p.GetType(),
@@ -173,7 +173,7 @@ func (ten *SomaTreeElemNode) rmProperty(p Property) {
 // Propertier:> Utility
 
 //
-func (ten *SomaTreeElemNode) verifySourceInstance(id, prop string) bool {
+func (ten *Node) verifySourceInstance(id, prop string) bool {
 	switch prop {
 	case `custom`:
 		if _, ok := ten.PropertyCustom[id]; !ok {
@@ -200,7 +200,7 @@ func (ten *SomaTreeElemNode) verifySourceInstance(id, prop string) bool {
 	}
 }
 
-func (ten *SomaTreeElemNode) findIdForSource(source, prop string) string {
+func (ten *Node) findIdForSource(source, prop string) string {
 	switch prop {
 	case `custom`:
 		for id, _ := range ten.PropertyCustom {
@@ -234,11 +234,11 @@ func (ten *SomaTreeElemNode) findIdForSource(source, prop string) string {
 	return ``
 }
 
-func (ten *SomaTreeElemNode) syncProperty(childId string) {
+func (ten *Node) syncProperty(childId string) {
 	// noop, satisfy interface
 }
 
-func (ten *SomaTreeElemNode) checkProperty(propType string, propId string) bool {
+func (ten *Node) checkProperty(propType string, propId string) bool {
 	// noop, satisfy interface
 	return false
 }
@@ -246,7 +246,7 @@ func (ten *SomaTreeElemNode) checkProperty(propType string, propId string) bool 
 // Checks if this property is already defined on this node, and
 // whether it was inherited, ie. can be deleted so it can be
 // overwritten
-func (ten *SomaTreeElemNode) checkDuplicate(p Property) (bool, bool, Property) {
+func (ten *Node) checkDuplicate(p Property) (bool, bool, Property) {
 	var dupe, deleteOK bool
 	var prop Property
 

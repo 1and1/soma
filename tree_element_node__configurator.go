@@ -6,7 +6,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func (ten *SomaTreeElemNode) updateCheckInstances() {
+func (ten *Node) updateCheckInstances() {
 	repoName := ten.repositoryName()
 
 	// object may have no checks, but there could be instances to mop up
@@ -539,8 +539,7 @@ checksloop:
 	} // LOOPEND: range ten.Checks
 }
 
-func (ten *SomaTreeElemNode) evalNativeProp(
-	prop string, val string) bool {
+func (ten *Node) evalNativeProp(prop string, val string) bool {
 	switch prop {
 	case "environment":
 		env := ten.Parent.(Bucketeer).GetEnvironment()
@@ -563,8 +562,7 @@ func (ten *SomaTreeElemNode) evalNativeProp(
 	return false
 }
 
-func (ten *SomaTreeElemNode) evalSystemProp(
-	prop string, val string, view string) (string, bool, string) {
+func (ten *Node) evalSystemProp(prop string, val string, view string) (string, bool, string) {
 	for _, v := range ten.PropertySystem {
 		t := v.(*PropertySystem)
 		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
@@ -574,8 +572,7 @@ func (ten *SomaTreeElemNode) evalSystemProp(
 	return "", false, ""
 }
 
-func (ten *SomaTreeElemNode) evalOncallProp(
-	prop string, val string, view string) (string, bool) {
+func (ten *Node) evalOncallProp(prop string, val string, view string) (string, bool) {
 	for _, v := range ten.PropertyOncall {
 		t := v.(*PropertyOncall)
 		if "OncallId" == prop && t.Id.String() == val && (t.View == view || t.View == `any`) {
@@ -585,8 +582,7 @@ func (ten *SomaTreeElemNode) evalOncallProp(
 	return "", false
 }
 
-func (ten *SomaTreeElemNode) evalCustomProp(
-	prop string, val string, view string) (string, bool, string) {
+func (ten *Node) evalCustomProp(prop string, val string, view string) (string, bool, string) {
 	for _, v := range ten.PropertyCustom {
 		t := v.(*PropertyCustom)
 		if t.Key == prop && (t.Value == val || val == `@defined`) && (t.View == view || t.View == `any`) {
@@ -596,8 +592,7 @@ func (ten *SomaTreeElemNode) evalCustomProp(
 	return "", false, ""
 }
 
-func (ten *SomaTreeElemNode) evalServiceProp(
-	prop string, val string, view string) (string, bool, string) {
+func (ten *Node) evalServiceProp(prop string, val string, view string) (string, bool, string) {
 	for _, v := range ten.PropertyService {
 		t := v.(*PropertyService)
 		if prop == "name" && (t.Service == val || val == `@defined`) && (t.View == view || t.View == `any`) {
@@ -607,8 +602,7 @@ func (ten *SomaTreeElemNode) evalServiceProp(
 	return "", false, ""
 }
 
-func (ten *SomaTreeElemNode) evalAttributeOfService(
-	svcId string, view string, attribute string, value string) (bool, string) {
+func (ten *Node) evalAttributeOfService(svcId string, view string, attribute string, value string) (bool, string) {
 	t := ten.PropertyService[svcId].(*PropertyService)
 	for _, a := range t.Attributes {
 		if a.Name == attribute && (t.View == view || t.View == `any`) && (a.Value == value || value == `@defined`) {
@@ -618,8 +612,7 @@ func (ten *SomaTreeElemNode) evalAttributeOfService(
 	return false, ""
 }
 
-func (ten *SomaTreeElemNode) evalAttributeProp(
-	view string, attr string, value string) (bool, map[string]string) {
+func (ten *Node) evalAttributeProp(view string, attr string, value string) (bool, map[string]string) {
 	f := map[string]string{}
 svcloop:
 	for _, v := range ten.PropertyService {
@@ -637,7 +630,7 @@ svcloop:
 	return false, f
 }
 
-func (ten *SomaTreeElemNode) getServiceMap(serviceId string) map[string][]string {
+func (ten *Node) getServiceMap(serviceId string) map[string][]string {
 	svc := new(PropertyService)
 	svc = ten.PropertyService[serviceId].(*PropertyService)
 
@@ -648,7 +641,7 @@ func (ten *SomaTreeElemNode) getServiceMap(serviceId string) map[string][]string
 	return res
 }
 
-func (ten *SomaTreeElemNode) countAttribC(attributeC map[string][]string) int {
+func (ten *Node) countAttribC(attributeC map[string][]string) int {
 	var count int = 0
 	for key, _ := range attributeC {
 		count = count + len(attributeC[key])

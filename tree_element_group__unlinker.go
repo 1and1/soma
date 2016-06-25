@@ -89,7 +89,7 @@ func (teg *Group) unlinkNode(u UnlinkRequest) {
 				if u.ChildName == teg.Children[u.ChildId].GetName() {
 					a := Action{
 						ChildType: "node",
-						ChildNode: teg.Children[u.ChildId].(*SomaTreeElemNode).export(),
+						ChildNode: teg.Children[u.ChildId].(*Node).export(),
 					}
 
 					teg.Children[u.ChildId].clearParent()

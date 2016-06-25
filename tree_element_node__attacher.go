@@ -2,9 +2,9 @@ package somatree
 
 //
 // Interface: SomaTreeAttacher
-func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
+func (ten *Node) Attach(a AttachRequest) {
 	if ten.Parent != nil {
-		panic(`SomaTreeElemNode.Attach: already attached`)
+		panic(`Node.Attach: already attached`)
 	}
 	switch {
 	case a.ParentType == "bucket":
@@ -14,18 +14,18 @@ func (ten *SomaTreeElemNode) Attach(a AttachRequest) {
 	case a.ParentType == "cluster":
 		ten.attachToCluster(a)
 	default:
-		panic(`SomaTreeElemNode.Attach`)
+		panic(`Node.Attach`)
 	}
 
 	if ten.Parent == nil {
-		panic(`SomaTreeElemNode.Attach: failed`)
+		panic(`Node.Attach: failed`)
 	}
 	ten.Parent.(Propertier).syncProperty(ten.Id.String())
 }
 
-func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
+func (ten *Node) ReAttach(a AttachRequest) {
 	if ten.Parent == nil {
-		panic(`SomaTreeElemNode.ReAttach: not attached`)
+		panic(`Node.ReAttach: not attached`)
 	}
 	// XXX: destroy all inherited properties before unlinking
 	// ten.(SomaTreePropertier).destroyInheritedProperties()
@@ -50,15 +50,15 @@ func (ten *SomaTreeElemNode) ReAttach(a AttachRequest) {
 	)
 
 	if ten.Parent == nil {
-		panic(`SomaTreeElemNode.ReAttach: not reattached`)
+		panic(`Node.ReAttach: not reattached`)
 	}
 	ten.actionUpdate()
 	ten.Parent.(Propertier).syncProperty(ten.Id.String())
 }
 
-func (ten *SomaTreeElemNode) Destroy() {
+func (ten *Node) Destroy() {
 	if ten.Parent == nil {
-		panic(`SomaTreeElemNode.Destroy called without Parent to unlink from`)
+		panic(`Node.Destroy called without Parent to unlink from`)
 	}
 	ten.actionDelete()
 
@@ -76,9 +76,9 @@ func (ten *SomaTreeElemNode) Destroy() {
 	ten.setAction(nil)
 }
 
-func (ten *SomaTreeElemNode) Detach() {
+func (ten *Node) Detach() {
 	if ten.Parent == nil {
-		panic(`SomaTreeElemNode.Detach called without Parent to detach from`)
+		panic(`Node.Detach called without Parent to detach from`)
 	}
 
 	bucket := ten.Parent.(Bucketeer).GetBucket()
@@ -107,7 +107,7 @@ func (ten *SomaTreeElemNode) Detach() {
 
 //
 // Interface: SomaTreeBucketAttacher
-func (ten *SomaTreeElemNode) attachToBucket(a AttachRequest) {
+func (ten *Node) attachToBucket(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
@@ -125,7 +125,7 @@ func (ten *SomaTreeElemNode) attachToBucket(a AttachRequest) {
 
 //
 // Interface: SomaTreeGroupAttacher
-func (ten *SomaTreeElemNode) attachToGroup(a AttachRequest) {
+func (ten *Node) attachToGroup(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,
@@ -143,7 +143,7 @@ func (ten *SomaTreeElemNode) attachToGroup(a AttachRequest) {
 
 //
 // Interface: SomaTreeClusterAttacher
-func (ten *SomaTreeElemNode) attachToCluster(a AttachRequest) {
+func (ten *Node) attachToCluster(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,
 		ParentId:   a.ParentId,

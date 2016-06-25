@@ -8,7 +8,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-type SomaTreeElemNode struct {
+type Node struct {
 	Id              uuid.UUID
 	Name            string
 	AssetId         uint64
@@ -43,13 +43,13 @@ type NodeSpec struct {
 
 //
 // NEW
-func NewNode(spec NodeSpec) *SomaTreeElemNode {
+func NewNode(spec NodeSpec) *Node {
 	if !specNodeCheck(spec) {
 		fmt.Printf("%#v\n", spec) // XXX DEBUG
 		panic(`No.`)
 	}
 
-	ten := new(SomaTreeElemNode)
+	ten := new(Node)
 	ten.Id, _ = uuid.FromString(spec.Id)
 	ten.Name = spec.Name
 	ten.AssetId = spec.AssetId
@@ -72,8 +72,8 @@ func NewNode(spec NodeSpec) *SomaTreeElemNode {
 	return ten
 }
 
-func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
-	cl := SomaTreeElemNode{
+func (ten Node) Clone() *Node {
+	cl := Node{
 		Name:    ten.Name,
 		State:   ten.State,
 		Online:  ten.Online,
@@ -134,33 +134,33 @@ func (ten SomaTreeElemNode) Clone() *SomaTreeElemNode {
 	return &cl
 }
 
-func (ten SomaTreeElemNode) CloneBucket() SomaTreeBucketAttacher {
+func (ten Node) CloneBucket() SomaTreeBucketAttacher {
 	return ten.Clone()
 }
 
-func (ten SomaTreeElemNode) CloneGroup() SomaTreeGroupAttacher {
+func (ten Node) CloneGroup() SomaTreeGroupAttacher {
 	return ten.Clone()
 }
 
-func (ten SomaTreeElemNode) CloneCluster() SomaTreeClusterAttacher {
+func (ten Node) CloneCluster() SomaTreeClusterAttacher {
 	return ten.Clone()
 }
 
 //
 // Interface:
-func (ten *SomaTreeElemNode) GetID() string {
+func (ten *Node) GetID() string {
 	return ten.Id.String()
 }
 
-func (ten *SomaTreeElemNode) GetName() string {
+func (ten *Node) GetName() string {
 	return ten.Name
 }
 
-func (ten *SomaTreeElemNode) GetType() string {
+func (ten *Node) GetType() string {
 	return ten.Type
 }
 
-func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
+func (ten *Node) setParent(p SomaTreeReceiver) {
 	switch p.(type) {
 	case *Bucket:
 		ten.setNodeParent(p.(SomaTreeNodeReceiver))
@@ -173,54 +173,54 @@ func (ten *SomaTreeElemNode) setParent(p SomaTreeReceiver) {
 		ten.State = "clustered"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
-		panic(`SomaTreeElemNode.setParent`)
+		panic(`Node.setParent`)
 	}
 }
 
-func (ten *SomaTreeElemNode) setAction(c chan *Action) {
+func (ten *Node) setAction(c chan *Action) {
 	ten.Action = c
 }
 
-func (ten *SomaTreeElemNode) setActionDeep(c chan *Action) {
+func (ten *Node) setActionDeep(c chan *Action) {
 	ten.setAction(c)
 }
 
-func (ten *SomaTreeElemNode) updateParentRecursive(p SomaTreeReceiver) {
+func (ten *Node) updateParentRecursive(p SomaTreeReceiver) {
 	ten.setParent(p)
 }
 
-func (ten *SomaTreeElemNode) setNodeParent(p SomaTreeNodeReceiver) {
+func (ten *Node) setNodeParent(p SomaTreeNodeReceiver) {
 	ten.Parent = p
 }
 
-func (ten *SomaTreeElemNode) clearParent() {
+func (ten *Node) clearParent() {
 	ten.Parent = nil
 	ten.State = "floating"
 }
 
-func (ten *SomaTreeElemNode) setFault(f *SomaTreeElemFault) {
+func (ten *Node) setFault(f *SomaTreeElemFault) {
 	ten.Fault = f
 }
 
-func (ten *SomaTreeElemNode) updateFaultRecursive(f *SomaTreeElemFault) {
+func (ten *Node) updateFaultRecursive(f *SomaTreeElemFault) {
 	ten.setFault(f)
 }
 
 //
 //
-func (ten *SomaTreeElemNode) ComputeCheckInstances() {
+func (ten *Node) ComputeCheckInstances() {
 	ten.updateCheckInstances()
 }
 
 //
 //
-func (ten *SomaTreeElemNode) ClearLoadInfo() {
+func (ten *Node) ClearLoadInfo() {
 	ten.loadedInstances = map[string]map[string]CheckInstance{}
 }
 
 //
 //
-func (ten *SomaTreeElemNode) export() proto.Node {
+func (ten *Node) export() proto.Node {
 	bucket := ten.Parent.(Bucketeer).GetBucket()
 	return proto.Node{
 		Id:        ten.Id.String(),
@@ -237,7 +237,7 @@ func (ten *SomaTreeElemNode) export() proto.Node {
 	}
 }
 
-func (ten *SomaTreeElemNode) actionUpdate() {
+func (ten *Node) actionUpdate() {
 	ten.Action <- &Action{
 		Action: "update",
 		Type:   ten.Type,
@@ -245,7 +245,7 @@ func (ten *SomaTreeElemNode) actionUpdate() {
 	}
 }
 
-func (ten *SomaTreeElemNode) actionDelete() {
+func (ten *Node) actionDelete() {
 	ten.Action <- &Action{
 		Action: "delete",
 		Type:   ten.Type,
@@ -254,22 +254,22 @@ func (ten *SomaTreeElemNode) actionDelete() {
 }
 
 //
-func (ten *SomaTreeElemNode) actionPropertyNew(a Action) {
+func (ten *Node) actionPropertyNew(a Action) {
 	a.Action = `property_new`
 	ten.actionProperty(a)
 }
 
-func (ten *SomaTreeElemNode) actionPropertyUpdate(a Action) {
+func (ten *Node) actionPropertyUpdate(a Action) {
 	a.Action = `property_update`
 	ten.actionProperty(a)
 }
 
-func (ten *SomaTreeElemNode) actionPropertyDelete(a Action) {
+func (ten *Node) actionPropertyDelete(a Action) {
 	a.Action = `property_delete`
 	ten.actionProperty(a)
 }
 
-func (ten *SomaTreeElemNode) actionProperty(a Action) {
+func (ten *Node) actionProperty(a Action) {
 	a.Type = ten.Type
 	a.Node = ten.export()
 	a.Property.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
@@ -286,35 +286,35 @@ func (ten *SomaTreeElemNode) actionProperty(a Action) {
 }
 
 //
-func (ten *SomaTreeElemNode) actionCheckNew(a Action) {
+func (ten *Node) actionCheckNew(a Action) {
 	a.Check.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Check.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 	ten.actionDispatch("check_new", a)
 }
 
-func (ten *SomaTreeElemNode) actionCheckRemoved(a Action) {
+func (ten *Node) actionCheckRemoved(a Action) {
 	a.Check.RepositoryId = ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepository()
 	a.Check.BucketId = ten.Parent.(Bucketeer).GetBucket().(Builder).GetID()
 	ten.actionDispatch(`check_removed`, a)
 }
 
-func (ten *SomaTreeElemNode) setupCheckAction(c Check) Action {
+func (ten *Node) setupCheckAction(c Check) Action {
 	return c.MakeAction()
 }
 
-func (ten *SomaTreeElemNode) actionCheckInstanceCreate(a Action) {
+func (ten *Node) actionCheckInstanceCreate(a Action) {
 	ten.actionDispatch("check_instance_create", a)
 }
 
-func (ten *SomaTreeElemNode) actionCheckInstanceUpdate(a Action) {
+func (ten *Node) actionCheckInstanceUpdate(a Action) {
 	ten.actionDispatch("check_instance_update", a)
 }
 
-func (ten *SomaTreeElemNode) actionCheckInstanceDelete(a Action) {
+func (ten *Node) actionCheckInstanceDelete(a Action) {
 	ten.actionDispatch("check_instance_delete", a)
 }
 
-func (ten *SomaTreeElemNode) actionDispatch(action string, a Action) {
+func (ten *Node) actionDispatch(action string, a Action) {
 	a.Action = action
 	a.Type = ten.Type
 	a.Node = ten.export()
@@ -322,7 +322,7 @@ func (ten *SomaTreeElemNode) actionDispatch(action string, a Action) {
 	ten.Action <- &a
 }
 
-func (ten *SomaTreeElemNode) repositoryName() string {
+func (ten *Node) repositoryName() string {
 	return ten.Parent.(Bucketeer).GetBucket().(Bucketeer).GetRepositoryName()
 }
 

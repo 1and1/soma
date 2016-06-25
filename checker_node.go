@@ -7,7 +7,7 @@ import "github.com/satori/go.uuid"
 //
 // Checker:> Add Check
 
-func (ten *SomaTreeElemNode) SetCheck(c Check) {
+func (ten *Node) SetCheck(c Check) {
 	c.Id = c.GetItemId(ten.Type, ten.Id)
 	if uuid.Equal(c.Id, uuid.Nil) {
 		c.Id = uuid.NewV4()
@@ -21,7 +21,8 @@ func (ten *SomaTreeElemNode) SetCheck(c Check) {
 	c.Items = nil
 	ten.addCheck(c)
 }
-func (ten *SomaTreeElemNode) setCheckInherited(c Check) {
+
+func (ten *Node) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
 	f := c.clone()
 	f.Id = f.GetItemId(ten.Type, ten.Id)
@@ -32,10 +33,10 @@ func (ten *SomaTreeElemNode) setCheckInherited(c Check) {
 	ten.addCheck(f)
 }
 
-func (ten *SomaTreeElemNode) setCheckOnChildren(c Check) {
+func (ten *Node) setCheckOnChildren(c Check) {
 }
 
-func (ten *SomaTreeElemNode) addCheck(c Check) {
+func (ten *Node) addCheck(c Check) {
 	ten.Checks[c.Id.String()] = c
 	ten.actionCheckNew(ten.setupCheckAction(c))
 }
@@ -43,18 +44,18 @@ func (ten *SomaTreeElemNode) addCheck(c Check) {
 //
 // Checker:> Remove Check
 
-func (ten *SomaTreeElemNode) DeleteCheck(c Check) {
+func (ten *Node) DeleteCheck(c Check) {
 	ten.rmCheck(c)
 }
 
-func (ten *SomaTreeElemNode) deleteCheckInherited(c Check) {
+func (ten *Node) deleteCheckInherited(c Check) {
 	ten.rmCheck(c)
 }
 
-func (ten *SomaTreeElemNode) deleteCheckOnChildren(c Check) {
+func (ten *Node) deleteCheckOnChildren(c Check) {
 }
 
-func (ten *SomaTreeElemNode) rmCheck(c Check) {
+func (ten *Node) rmCheck(c Check) {
 	for id, _ := range ten.Checks {
 		if uuid.Equal(ten.Checks[id].SourceId, c.SourceId) {
 			ten.actionCheckRemoved(ten.setupCheckAction(ten.Checks[id]))
@@ -65,10 +66,10 @@ func (ten *SomaTreeElemNode) rmCheck(c Check) {
 }
 
 // noop, satisfy interface
-func (ten *SomaTreeElemNode) syncCheck(childId string) {
+func (ten *Node) syncCheck(childId string) {
 }
 
-func (ten *SomaTreeElemNode) checkCheck(checkId string) bool {
+func (ten *Node) checkCheck(checkId string) bool {
 	if _, ok := ten.Checks[checkId]; ok {
 		return true
 	}
@@ -76,7 +77,7 @@ func (ten *SomaTreeElemNode) checkCheck(checkId string) bool {
 }
 
 //
-func (ten *SomaTreeElemNode) LoadInstance(i CheckInstance) {
+func (ten *Node) LoadInstance(i CheckInstance) {
 	ckId := i.CheckId.String()
 	ckInstId := i.InstanceId.String()
 	if ten.loadedInstances[ckId] == nil {

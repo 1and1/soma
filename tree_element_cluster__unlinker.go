@@ -26,7 +26,7 @@ func (tec *Cluster) unlinkNode(u UnlinkRequest) {
 				if u.ChildName == tec.Children[u.ChildId].GetName() {
 					a := Action{
 						ChildType: "node",
-						ChildNode: tec.Children[u.ChildId].(*SomaTreeElemNode).export(),
+						ChildNode: tec.Children[u.ChildId].(*Node).export(),
 					}
 
 					tec.Children[u.ChildId].clearParent()
