@@ -28,7 +28,7 @@ func (tec *Cluster) ReAttach(a AttachRequest) {
 		panic(`Group.ReAttach: not attached`)
 	}
 	// XXX: destroy all inherited properties before unlinking
-	// tec.(SomaTreePropertier).destroyInheritedProperties()
+	// tec.(Propertier).destroyInheritedProperties()
 
 	tec.Parent.Unlink(UnlinkRequest{
 		ParentType: tec.Parent.(Builder).GetType(),

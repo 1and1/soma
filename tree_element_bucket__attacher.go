@@ -30,7 +30,7 @@ func (teb *Bucket) Destroy() {
 		panic(`Bucket.Destroy called without Parent to unlink from`)
 	}
 	// XXX: destroy all inherited properties before unlinking
-	// teb.(SomaTreePropertier).destroyInheritedProperties()
+	// teb.(Propertier).destroyInheritedProperties()
 
 	teb.Parent.Unlink(UnlinkRequest{
 		ParentType: teb.Parent.(Builder).GetType(),

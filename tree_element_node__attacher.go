@@ -28,7 +28,7 @@ func (ten *Node) ReAttach(a AttachRequest) {
 		panic(`Node.ReAttach: not attached`)
 	}
 	// XXX: destroy all inherited properties before unlinking
-	// ten.(SomaTreePropertier).destroyInheritedProperties()
+	// ten.(Propertier).destroyInheritedProperties()
 
 	ten.Parent.Unlink(UnlinkRequest{
 		ParentType: ten.Parent.(Builder).GetType(),

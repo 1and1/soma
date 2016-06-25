@@ -133,7 +133,7 @@ func (tef *Fault) updateFaultRecursive(f *Fault) {
  */
 
 //
-// Interface: SomaTreeBucketeer
+// Interface: Bucketeer
 func (tef *Fault) GetBucket() Receiver {
 	panic(`Fault.GetBucket`)
 	return tef

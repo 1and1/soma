@@ -28,7 +28,7 @@ func (teg *Group) ReAttach(a AttachRequest) {
 		panic(`Group.ReAttach: not attached`)
 	}
 	// XXX: destroy all inherited properties before unlinking
-	// teg.(SomaTreePropertier).destroyInheritedProperties()
+	// teg.(Propertier).destroyInheritedProperties()
 
 	teg.Parent.Unlink(UnlinkRequest{
 		ParentType: teg.Parent.(Builder).GetType(),

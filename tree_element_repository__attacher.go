@@ -25,7 +25,7 @@ func (ter *Repository) Destroy() {
 		panic(`Repository.Destroy called without Parent to unlink from`)
 	}
 	// XXX: destroy all properties before unlinking
-	// ter.(SomaTreePropertier).nukeAllProperties()
+	// ter.(Propertier).nukeAllProperties()
 
 	// the Destroy handler of Fault calls
 	// updateFaultRecursive(nil) on us
@@ -53,7 +53,7 @@ func (ter *Repository) Detach() {
 	ter.Destroy()
 }
 
-// Interface: SomaTreeRootAttacher
+// Interface: RootAttacher
 func (ter *Repository) attachToRoot(a AttachRequest) {
 	a.Root.Receive(ReceiveRequest{
 		ParentType: a.ParentType,

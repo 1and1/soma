@@ -147,7 +147,7 @@ func (teb *Bucket) setActionDeep(c chan *Action) {
 }
 
 //
-// Interface: SomaTreeBucketeer
+// Interface: Bucketeer
 func (teb *Bucket) GetBucket() Receiver {
 	return teb
 }
