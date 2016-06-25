@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"log"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -43,7 +42,6 @@ func (teg *Group) SetProperty(p Property) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
-	log.Printf("SetProperty(Group) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(teg.Id)
 	p.SetInherited(false)
@@ -67,7 +65,6 @@ func (teg *Group) setPropertyInherited(p Property) {
 	f.SetId(f.GetInstanceId(teg.Type, teg.Id))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
-		log.Printf("Inherit (Group) Generated: %s", f.GetID())
 	}
 	f.clearInstances()
 
@@ -84,7 +81,6 @@ func (teg *Group) setPropertyInherited(p Property) {
 
 func (teg *Group) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
-	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		go func(stp Property, c string) {

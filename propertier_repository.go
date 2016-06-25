@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"log"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -43,7 +42,6 @@ func (ter *Repository) SetProperty(p Property) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
-	log.Printf("SetProperty(Repository) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(ter.Id)
 	p.SetInherited(false)
@@ -67,7 +65,6 @@ func (ter *Repository) setPropertyInherited(p Property) {
 	f.SetId(f.GetInstanceId(ter.Type, ter.Id))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
-		log.Printf("Inherit (Repository) Generated: %s", f.GetID())
 	}
 	f.clearInstances()
 
@@ -84,7 +81,6 @@ func (ter *Repository) setPropertyInherited(p Property) {
 
 func (ter *Repository) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
-	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range ter.Children {
 		wg.Add(1)
 		go func(stp Property, c string) {

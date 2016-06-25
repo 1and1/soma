@@ -1,10 +1,6 @@
 package tree
 
-import (
-	"log"
-
-	"github.com/satori/go.uuid"
-)
+import "github.com/satori/go.uuid"
 
 // Implementation of the `Propertier` interface
 
@@ -42,7 +38,6 @@ func (ten *Node) SetProperty(p Property) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
-	log.Printf("SetProperty(Node) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(ten.Id)
 	p.SetInherited(false)
@@ -66,7 +61,6 @@ func (ten *Node) setPropertyInherited(p Property) {
 	f.SetId(f.GetInstanceId(ten.Type, ten.Id))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
-		log.Printf("Inherit (Node) Generated: %s", f.GetID())
 	}
 	f.clearInstances()
 

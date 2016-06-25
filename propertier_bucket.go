@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"log"
 	"sync"
 
 	"github.com/satori/go.uuid"
@@ -43,7 +42,6 @@ func (teb *Bucket) SetProperty(p Property) {
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
-	log.Printf("SetProperty(Bucket) created source instance: %s", p.GetID())
 	// this property is the source instance
 	p.SetInheritedFrom(teb.Id)
 	p.SetInherited(false)
@@ -67,7 +65,6 @@ func (teb *Bucket) setPropertyInherited(p Property) {
 	f.SetId(f.GetInstanceId(teb.Type, teb.Id))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
-		log.Printf("Inherit (Bucket) Generated: %s", f.GetID())
 	}
 	f.clearInstances()
 
@@ -84,7 +81,6 @@ func (teb *Bucket) setPropertyInherited(p Property) {
 
 func (teb *Bucket) setPropertyOnChildren(p Property) {
 	var wg sync.WaitGroup
-	log.Printf("InheritDeep Sending down: %s", p.GetID())
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		go func(stp Property, c string) {
