@@ -60,13 +60,13 @@ func (teb *Bucket) setFault(f *Fault) {
 	teb.Fault = f
 }
 
-func (teb *Bucket) updateParentRecursive(p SomaTreeReceiver) {
+func (teb *Bucket) updateParentRecursive(p Receiver) {
 	teb.setParent(p)
 	var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		c := child
-		go func(str SomaTreeReceiver) {
+		go func(str Receiver) {
 			defer wg.Done()
 			teb.Children[c].updateParentRecursive(str)
 		}(teb)
@@ -88,10 +88,10 @@ func (teb *Bucket) updateFaultRecursive(f *Fault) {
 	wg.Wait()
 }
 
-func (teb *Bucket) setParent(p SomaTreeReceiver) {
+func (teb *Bucket) setParent(p Receiver) {
 	switch p.(type) {
-	case SomaTreeBucketReceiver:
-		teb.setBucketParent(p.(SomaTreeBucketReceiver))
+	case BucketReceiver:
+		teb.setBucketParent(p.(BucketReceiver))
 		teb.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
@@ -99,7 +99,7 @@ func (teb *Bucket) setParent(p SomaTreeReceiver) {
 	}
 }
 
-func (teb *Bucket) setBucketParent(p SomaTreeBucketReceiver) {
+func (teb *Bucket) setBucketParent(p BucketReceiver) {
 	teb.Parent = p
 }
 

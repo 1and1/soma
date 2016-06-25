@@ -1,92 +1,92 @@
 package somatree
 
-type SomaTreeReceiver interface {
+type Receiver interface {
 	Receive(r ReceiveRequest)
 }
 
-type SomaTreeUnlinker interface {
+type Unlinker interface {
 	Unlink(u UnlinkRequest)
 }
 
 // implemented by: root
-type SomaTreeRepositoryReceiver interface {
-	SomaTreeReceiver
-	SomaTreeRepositoryUnlinker
+type RepositoryReceiver interface {
+	Receiver
+	RepositoryUnlinker
 
 	receiveRepository(r ReceiveRequest)
 }
 
-type SomaTreeRepositoryUnlinker interface {
-	SomaTreeUnlinker
+type RepositoryUnlinker interface {
+	Unlinker
 
 	unlinkRepository(u UnlinkRequest)
 }
 
 // implemented by: repositories
-type SomaTreeBucketReceiver interface {
-	SomaTreeReceiver
-	SomaTreeBucketUnlinker
+type BucketReceiver interface {
+	Receiver
+	BucketUnlinker
 
 	receiveBucket(r ReceiveRequest)
 }
 
-type SomaTreeBucketUnlinker interface {
-	SomaTreeUnlinker
+type BucketUnlinker interface {
+	Unlinker
 
 	unlinkBucket(u UnlinkRequest)
 }
 
-type SomaTreeFaultReceiver interface {
-	SomaTreeReceiver
-	SomaTreeFaultUnlinker
+type FaultReceiver interface {
+	Receiver
+	FaultUnlinker
 
 	receiveFault(r ReceiveRequest)
 }
 
-type SomaTreeFaultUnlinker interface {
-	SomaTreeUnlinker
+type FaultUnlinker interface {
+	Unlinker
 
 	unlinkFault(u UnlinkRequest)
 }
 
 // implemented by: buckets, groups
-type SomaTreeGroupReceiver interface {
-	SomaTreeReceiver
-	SomaTreeGroupUnlinker
+type GroupReceiver interface {
+	Receiver
+	GroupUnlinker
 
 	receiveGroup(r ReceiveRequest)
 }
 
-type SomaTreeGroupUnlinker interface {
-	SomaTreeUnlinker
+type GroupUnlinker interface {
+	Unlinker
 
 	unlinkGroup(u UnlinkRequest)
 }
 
 // implemented by: buckets, groups
-type SomaTreeClusterReceiver interface {
-	SomaTreeReceiver
-	SomaTreeClusterUnlinker
+type ClusterReceiver interface {
+	Receiver
+	ClusterUnlinker
 
 	receiveCluster(r ReceiveRequest)
 }
 
-type SomaTreeClusterUnlinker interface {
-	SomaTreeUnlinker
+type ClusterUnlinker interface {
+	Unlinker
 
 	unlinkCluster(u UnlinkRequest)
 }
 
 // implemented by: buckets, groups, clusters
-type SomaTreeNodeReceiver interface {
-	SomaTreeReceiver
-	SomaTreeNodeUnlinker
+type NodeReceiver interface {
+	Receiver
+	NodeUnlinker
 
 	receiveNode(r ReceiveRequest)
 }
 
-type SomaTreeNodeUnlinker interface {
-	SomaTreeUnlinker
+type NodeUnlinker interface {
+	Unlinker
 
 	unlinkNode(u UnlinkRequest)
 }

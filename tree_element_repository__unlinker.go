@@ -1,6 +1,6 @@
 package somatree
 
-// Interface: SomaTreeUnlinker
+// Interface: Unlinker
 func (ter *Repository) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {
@@ -14,11 +14,11 @@ func (ter *Repository) Unlink(u UnlinkRequest) {
 		return
 	}
 	for child, _ := range ter.Children {
-		ter.Children[child].(SomaTreeUnlinker).Unlink(u)
+		ter.Children[child].(Unlinker).Unlink(u)
 	}
 }
 
-// Interface: SomaTreeBucketUnlinker
+// Interface: BucketUnlinker
 func (ter *Repository) unlinkBucket(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {
@@ -37,7 +37,7 @@ func (ter *Repository) unlinkBucket(u UnlinkRequest) {
 	panic(`Repository.unlinkBucket`)
 }
 
-// Interface: SomaTreeFaultUnlinker
+// Interface: FaultUnlinker
 func (ter *Repository) unlinkFault(u UnlinkRequest) {
 	if unlinkRequestCheck(u, ter) {
 		switch u.ChildType {

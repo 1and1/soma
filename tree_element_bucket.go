@@ -19,8 +19,8 @@ type Bucket struct {
 	Deleted         bool
 	Repository      uuid.UUID
 	Team            uuid.UUID
-	Parent          SomaTreeBucketReceiver `json:"-"`
-	Fault           *Fault                 `json:"-"`
+	Parent          BucketReceiver `json:"-"`
+	Fault           *Fault         `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property
@@ -148,7 +148,7 @@ func (teb *Bucket) setActionDeep(c chan *Action) {
 
 //
 // Interface: SomaTreeBucketeer
-func (teb *Bucket) GetBucket() SomaTreeReceiver {
+func (teb *Bucket) GetBucket() Receiver {
 	return teb
 }
 

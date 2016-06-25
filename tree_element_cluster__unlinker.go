@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeUnlinker
+// Interface: Unlinker
 func (tec *Cluster) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, tec) {
 		switch u.ChildType {
@@ -17,7 +17,7 @@ func (tec *Cluster) Unlink(u UnlinkRequest) {
 }
 
 //
-// Interface: SomaTreeNodeUnlinker
+// Interface: NodeUnlinker
 func (tec *Cluster) unlinkNode(u UnlinkRequest) {
 	if unlinkRequestCheck(u, tec) {
 		switch u.ChildType {

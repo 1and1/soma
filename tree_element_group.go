@@ -15,9 +15,9 @@ type Group struct {
 	State           string
 	Team            uuid.UUID
 	Type            string
-	Parent          SomaTreeGroupReceiver `json:"-"`
-	Fault           *Fault                `json:"-"`
-	Action          chan *Action          `json:"-"`
+	Parent          GroupReceiver `json:"-"`
+	Fault           *Fault        `json:"-"`
+	Action          chan *Action  `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property
@@ -148,13 +148,13 @@ func (teg *Group) GetType() string {
 	return teg.Type
 }
 
-func (teg *Group) setParent(p SomaTreeReceiver) {
+func (teg *Group) setParent(p Receiver) {
 	switch p.(type) {
 	case *Bucket:
-		teg.setGroupParent(p.(SomaTreeGroupReceiver))
+		teg.setGroupParent(p.(GroupReceiver))
 		teg.State = "standalone"
 	case *Group:
-		teg.setGroupParent(p.(SomaTreeGroupReceiver))
+		teg.setGroupParent(p.(GroupReceiver))
 		teg.State = "grouped"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
@@ -173,18 +173,18 @@ func (teg *Group) setActionDeep(c chan *Action) {
 	}
 }
 
-// SomaTreeGroupReceiver == can receive Groups as children
-func (teg *Group) setGroupParent(p SomaTreeGroupReceiver) {
+// GroupReceiver == can receive Groups as children
+func (teg *Group) setGroupParent(p GroupReceiver) {
 	teg.Parent = p
 }
 
-func (teg *Group) updateParentRecursive(p SomaTreeReceiver) {
+func (teg *Group) updateParentRecursive(p Receiver) {
 	teg.setParent(p)
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		c := child
-		go func(str SomaTreeReceiver) {
+		go func(str Receiver) {
 			defer wg.Done()
 			teg.Children[c].updateParentRecursive(str)
 		}(teg)
@@ -217,7 +217,7 @@ func (teg *Group) updateFaultRecursive(f *Fault) {
 
 //
 // Interface: Bucketeer
-func (teg *Group) GetBucket() SomaTreeReceiver {
+func (teg *Group) GetBucket() Receiver {
 	if teg.Parent == nil {
 		if teg.Fault == nil {
 			panic(`Group.GetBucket called without Parent`)

@@ -15,9 +15,9 @@ type Cluster struct {
 	State           string
 	Team            uuid.UUID
 	Type            string
-	Parent          SomaTreeClusterReceiver `json:"-"`
-	Fault           *Fault                  `json:"-"`
-	Action          chan *Action            `json:"-"`
+	Parent          ClusterReceiver `json:"-"`
+	Fault           *Fault          `json:"-"`
+	Action          chan *Action    `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property
@@ -149,13 +149,13 @@ func (tec *Cluster) GetType() string {
 	return tec.Type
 }
 
-func (tec *Cluster) setParent(p SomaTreeReceiver) {
+func (tec *Cluster) setParent(p Receiver) {
 	switch p.(type) {
 	case *Bucket:
-		tec.setClusterParent(p.(SomaTreeClusterReceiver))
+		tec.setClusterParent(p.(ClusterReceiver))
 		tec.State = "standalone"
 	case *Group:
-		tec.setClusterParent(p.(SomaTreeClusterReceiver))
+		tec.setClusterParent(p.(ClusterReceiver))
 		tec.State = "grouped"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
@@ -174,13 +174,13 @@ func (tec *Cluster) setActionDeep(c chan *Action) {
 	}
 }
 
-func (tec *Cluster) updateParentRecursive(p SomaTreeReceiver) {
+func (tec *Cluster) updateParentRecursive(p Receiver) {
 	tec.setParent(p)
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
 		c := child
-		go func(str SomaTreeReceiver) {
+		go func(str Receiver) {
 			defer wg.Done()
 			tec.Children[c].updateParentRecursive(str)
 		}(tec)
@@ -188,8 +188,8 @@ func (tec *Cluster) updateParentRecursive(p SomaTreeReceiver) {
 	wg.Wait()
 }
 
-// SomaTreeClusterReceiver == can receive Clusters as children
-func (tec *Cluster) setClusterParent(p SomaTreeClusterReceiver) {
+// ClusterReceiver == can receive Clusters as children
+func (tec *Cluster) setClusterParent(p ClusterReceiver) {
 	tec.Parent = p
 }
 
@@ -218,7 +218,7 @@ func (tec *Cluster) updateFaultRecursive(f *Fault) {
 
 //
 // Interface: Bucketeer
-func (tec *Cluster) GetBucket() SomaTreeReceiver {
+func (tec *Cluster) GetBucket() Receiver {
 	if tec.Parent == nil {
 		if tec.Fault == nil {
 			panic(`Cluster.GetBucket called without Parent`)

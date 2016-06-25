@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeReceiver
+// Interface: Receiver
 func (tec *Cluster) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, tec) {
 		switch r.ChildType {
@@ -17,7 +17,7 @@ func (tec *Cluster) Receive(r ReceiveRequest) {
 }
 
 //
-// Interface: SomaTreeNodeReceiver
+// Interface: NodeReceiver
 func (tec *Cluster) receiveNode(r ReceiveRequest) {
 	if receiveRequestCheck(r, tec) {
 		switch r.ChildType {

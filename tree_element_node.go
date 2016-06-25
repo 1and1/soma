@@ -18,9 +18,9 @@ type Node struct {
 	Online          bool
 	Deleted         bool
 	Type            string
-	Parent          SomaTreeNodeReceiver `json:"-"`
-	Fault           *Fault               `json:"-"`
-	Action          chan *Action         `json:"-"`
+	Parent          NodeReceiver `json:"-"`
+	Fault           *Fault       `json:"-"`
+	Action          chan *Action `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property
@@ -160,16 +160,16 @@ func (ten *Node) GetType() string {
 	return ten.Type
 }
 
-func (ten *Node) setParent(p SomaTreeReceiver) {
+func (ten *Node) setParent(p Receiver) {
 	switch p.(type) {
 	case *Bucket:
-		ten.setNodeParent(p.(SomaTreeNodeReceiver))
+		ten.setNodeParent(p.(NodeReceiver))
 		ten.State = "standalone"
 	case *Group:
-		ten.setNodeParent(p.(SomaTreeNodeReceiver))
+		ten.setNodeParent(p.(NodeReceiver))
 		ten.State = "grouped"
 	case *Cluster:
-		ten.setNodeParent(p.(SomaTreeNodeReceiver))
+		ten.setNodeParent(p.(NodeReceiver))
 		ten.State = "clustered"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
@@ -185,11 +185,11 @@ func (ten *Node) setActionDeep(c chan *Action) {
 	ten.setAction(c)
 }
 
-func (ten *Node) updateParentRecursive(p SomaTreeReceiver) {
+func (ten *Node) updateParentRecursive(p Receiver) {
 	ten.setParent(p)
 }
 
-func (ten *Node) setNodeParent(p SomaTreeNodeReceiver) {
+func (ten *Node) setNodeParent(p NodeReceiver) {
 	ten.Parent = p
 }
 

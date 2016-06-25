@@ -1,6 +1,6 @@
 package somatree
 
-// Interface: SomaTreeReceiver
+// Interface: Receiver
 func (ter *Repository) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {
@@ -14,11 +14,11 @@ func (ter *Repository) Receive(r ReceiveRequest) {
 		return
 	}
 	for child, _ := range ter.Children {
-		ter.Children[child].(SomaTreeReceiver).Receive(r)
+		ter.Children[child].(Receiver).Receive(r)
 	}
 }
 
-// Interface: SomaTreeBucketReceiver
+// Interface: BucketReceiver
 func (ter *Repository) receiveBucket(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {
@@ -32,7 +32,7 @@ func (ter *Repository) receiveBucket(r ReceiveRequest) {
 	}
 }
 
-// Interface: SomaTreeFaultReceiver
+// Interface: FaultReceiver
 func (ter *Repository) receiveFault(r ReceiveRequest) {
 	if receiveRequestCheck(r, ter) {
 		switch r.ChildType {

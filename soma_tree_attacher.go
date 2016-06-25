@@ -15,9 +15,9 @@ type Attacher interface {
 
 	clearParent()
 	setFault(f *Fault)
-	setParent(p SomaTreeReceiver)
+	setParent(p Receiver)
 	updateFaultRecursive(f *Fault)
-	updateParentRecursive(p SomaTreeReceiver)
+	updateParentRecursive(p Receiver)
 }
 
 // implemented by: repository
@@ -67,7 +67,7 @@ type ClusterAttacher interface {
 }
 
 type AttachRequest struct {
-	Root       SomaTreeReceiver
+	Root       Receiver
 	ParentType string
 	ParentId   string
 	ParentName string

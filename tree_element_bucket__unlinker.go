@@ -1,7 +1,7 @@
 package somatree
 
 //
-// Interface: SomaTreeUnlinker
+// Interface: Unlinker
 func (teb *Bucket) Unlink(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
@@ -21,12 +21,12 @@ loop:
 		if teb.Children[child].(Builder).GetType() == "node" {
 			continue loop
 		}
-		teb.Children[child].(SomaTreeUnlinker).Unlink(u)
+		teb.Children[child].(Unlinker).Unlink(u)
 	}
 }
 
 //
-// Interface: SomaTreeGroupUnlinker
+// Interface: GroupUnlinker
 func (teb *Bucket) unlinkGroup(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
@@ -46,7 +46,7 @@ func (teb *Bucket) unlinkGroup(u UnlinkRequest) {
 }
 
 //
-// Interface: SomaTreeClusterUnlinker
+// Interface: ClusterUnlinker
 func (teb *Bucket) unlinkCluster(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {
@@ -66,7 +66,7 @@ func (teb *Bucket) unlinkCluster(u UnlinkRequest) {
 }
 
 //
-// Interface: SomaTreeNodeUnlinker
+// Interface: NodeUnlinker
 func (teb *Bucket) unlinkNode(u UnlinkRequest) {
 	if unlinkRequestCheck(u, teb) {
 		switch u.ChildType {

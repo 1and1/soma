@@ -18,8 +18,8 @@ type Repository struct {
 	Active          bool
 	Type            string
 	State           string
-	Parent          SomaTreeRepositoryReceiver `json:"-"`
-	Fault           *Fault                     `json:"-"`
+	Parent          RepositoryReceiver `json:"-"`
+	Fault           *Fault             `json:"-"`
 	PropertyOncall  map[string]Property
 	PropertyService map[string]Property
 	PropertySystem  map[string]Property
@@ -135,10 +135,10 @@ func (ter *Repository) GetType() string {
 	return ter.Type
 }
 
-func (ter *Repository) setParent(p SomaTreeReceiver) {
+func (ter *Repository) setParent(p Receiver) {
 	switch p.(type) {
-	case SomaTreeRepositoryReceiver:
-		ter.setRepositoryParent(p.(SomaTreeRepositoryReceiver))
+	case RepositoryReceiver:
+		ter.setRepositoryParent(p.(RepositoryReceiver))
 		ter.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
@@ -171,17 +171,17 @@ func (ter *Repository) getErrors() []error {
 	return []error{}
 }
 
-func (ter *Repository) setRepositoryParent(p SomaTreeRepositoryReceiver) {
+func (ter *Repository) setRepositoryParent(p RepositoryReceiver) {
 	ter.Parent = p
 }
 
-func (ter *Repository) updateParentRecursive(p SomaTreeReceiver) {
-	ter.setParent(p.(SomaTreeRepositoryReceiver))
+func (ter *Repository) updateParentRecursive(p Receiver) {
+	ter.setParent(p.(RepositoryReceiver))
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
 		wg.Add(1)
 		c := child
-		go func(str SomaTreeReceiver) {
+		go func(str Receiver) {
 			defer wg.Done()
 			ter.Children[c].updateParentRecursive(str)
 		}(ter)

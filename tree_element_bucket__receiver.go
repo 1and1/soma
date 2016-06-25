@@ -2,7 +2,7 @@ package somatree
 
 
 //
-// Interface: SomaTreeReceiver
+// Interface: Receiver
 func (teb *Bucket) Receive(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
@@ -22,12 +22,12 @@ loop:
 		if teb.Children[child].(Builder).GetType() == "node" {
 			continue loop
 		}
-		teb.Children[child].(SomaTreeReceiver).Receive(r)
+		teb.Children[child].(Receiver).Receive(r)
 	}
 }
 
 //
-// Interface: SomaTreeGroupReceiver
+// Interface: GroupReceiver
 func (teb *Bucket) receiveGroup(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
@@ -45,7 +45,7 @@ func (teb *Bucket) receiveGroup(r ReceiveRequest) {
 }
 
 //
-// Interface: SomaTreeClusterReceiver
+// Interface: ClusterReceiver
 func (teb *Bucket) receiveCluster(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {
@@ -63,7 +63,7 @@ func (teb *Bucket) receiveCluster(r ReceiveRequest) {
 }
 
 //
-// Interface: SomaTreeNodeReceiver
+// Interface: NodeReceiver
 func (teb *Bucket) receiveNode(r ReceiveRequest) {
 	if receiveRequestCheck(r, teb) {
 		switch r.ChildType {

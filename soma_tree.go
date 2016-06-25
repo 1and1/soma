@@ -92,7 +92,7 @@ func (st *Tree) GetErrors() []error {
 	return []error{}
 }
 
-// Interface: SomaTreeReceiver
+// Interface: Receiver
 func (st *Tree) Receive(r ReceiveRequest) {
 	switch {
 	case r.ParentType == "root" &&
@@ -108,7 +108,7 @@ func (st *Tree) Receive(r ReceiveRequest) {
 	}
 }
 
-// Interface: SomaTreeUnlinker
+// Interface: Unlinker
 func (st *Tree) Unlink(u UnlinkRequest) {
 	switch {
 	case u.ParentType == "root" &&
@@ -126,7 +126,7 @@ func (st *Tree) Unlink(u UnlinkRequest) {
 	}
 }
 
-// Interface: SomaTreeRepositoryReceiver
+// Interface: RepositoryReceiver
 func (st *Tree) receiveRepository(r ReceiveRequest) {
 	switch {
 	case r.ParentType == "root" &&
@@ -140,7 +140,7 @@ func (st *Tree) receiveRepository(r ReceiveRequest) {
 	}
 }
 
-// Interface: SomaTreeRepositoryUnlinker
+// Interface: RepositoryUnlinker
 func (st *Tree) unlinkRepository(u UnlinkRequest) {
 	switch {
 	case u.ParentType == "root" &&

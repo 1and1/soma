@@ -7,16 +7,16 @@ package somatree
  * when asked for something they do not have.
  *
  * This makes these chains safe:
- *		<foo>.Parent.(SomaTreeReceiver).GetBucket().Unlink()
+ *		<foo>.Parent.(Receiver).GetBucket().Unlink()
  *
  * Instead of nil, the parent returns the Fault handler which implements
- * SomaTreeReceiver and SomaTreeUnlinker. Due to the information in the
+ * Receiver and Unlinker. Due to the information in the
  * Receive-/UnlinkRequest, it can log what went wrong.
  *
  */
 
 //
-// Interface: SomaTreeUnlinker
+// Interface: Unlinker
 func (tef *Fault) Unlink(u UnlinkRequest) {
 	panic(`Fault.Unlink`)
 }

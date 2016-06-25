@@ -12,7 +12,7 @@ type Fault struct {
 	Name   string
 	Type   string
 	State  string
-	Parent SomaTreeFaultReceiver `json:"-"`
+	Parent FaultReceiver `json:"-"`
 	Errors []error
 	Action chan *Action `json:"-"`
 	Error  chan *Error  `json:"-"`
@@ -61,10 +61,10 @@ func (tef Fault) CloneBucket() BucketAttacher {
 	return &tef
 }
 
-func (tef *Fault) setParent(p SomaTreeReceiver) {
+func (tef *Fault) setParent(p Receiver) {
 	switch p.(type) {
-	case SomaTreeFaultReceiver:
-		tef.setFaultParent(p.(SomaTreeFaultReceiver))
+	case FaultReceiver:
+		tef.setFaultParent(p.(FaultReceiver))
 		tef.State = "attached"
 	default:
 		fmt.Printf("Type: %s\n", reflect.TypeOf(p))
@@ -96,11 +96,11 @@ func (tef *Fault) setError(c chan *Error) {
 	}
 }
 
-func (tef *Fault) updateParentRecursive(p SomaTreeReceiver) {
+func (tef *Fault) updateParentRecursive(p Receiver) {
 	tef.setParent(p)
 }
 
-func (tef *Fault) setFaultParent(p SomaTreeFaultReceiver) {
+func (tef *Fault) setFaultParent(p FaultReceiver) {
 	tef.Parent = p
 }
 
@@ -124,17 +124,17 @@ func (tef *Fault) updateFaultRecursive(f *Fault) {
  * when asked for something they do not have.
  *
  * This makes these chains safe:
- *		<foo>.Parent.(SomaTreeReceiver).GetBucket().Unlink()
+ *		<foo>.Parent.(Receiver).GetBucket().Unlink()
  *
  * Instead of nil, the parent returns the Fault handler which implements
- * SomaTreeReceiver and SomaTreeUnlinker. Due to the information in the
+ * Receiver and Unlinker. Due to the information in the
  * Receive-/UnlinkRequest, it can log what went wrong.
  *
  */
 
 //
 // Interface: SomaTreeBucketeer
-func (tef *Fault) GetBucket() SomaTreeReceiver {
+func (tef *Fault) GetBucket() Receiver {
 	panic(`Fault.GetBucket`)
 	return tef
 }
