@@ -1582,7 +1582,7 @@ func TestSetAboveSetProperty(t *testing.T) {
 		ElementId:   buckId,
 	}, true).(*Bucket).PropertySystem) != 1 {
 		t.Error(
-			`Group has wrong system property count`,
+			`Bucket has wrong system property count`,
 		)
 	}
 
