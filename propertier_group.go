@@ -207,9 +207,78 @@ func (teg *Group) switchProperty(p Property) bool {
 	}
 	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
+	curr := teg.getCurrentProperty(p)
+	if curr == nil {
+		return false
+	}
 	teg.addProperty(p)
 	teg.actionPropertyUpdate(p.MakeAction())
-	return true
+
+	if !p.hasInheritance() && curr.hasInheritance() {
+		// replacing inheritance with !inheritance:
+		// call deletePropertyOnChildren(curr) to clean up
+		srcUUID, _ := uuid.FromString(curr.GetSourceInstance())
+		switch curr.GetType() {
+		case `custom`:
+			teg.deletePropertyOnChildren(&PropertyCustom{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `service`:
+			teg.deletePropertyOnChildren(&PropertyService{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Service:     curr.GetKey(),
+				Inheritance: true,
+			})
+		case `system`:
+			teg.deletePropertyOnChildren(&PropertySystem{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `oncall`:
+			teg.deletePropertyOnChildren(&PropertyOncall{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Name:        curr.GetKey(),
+				Inheritance: true,
+			})
+		}
+	}
+	if p.hasInheritance() && !curr.hasInheritance() {
+		// replacing !inheritance with inheritance:
+		// call setPropertyonChildren(p) to propagate
+		t := p.Clone()
+		t.SetInherited(true)
+		teg.setPropertyOnChildren(t)
+	}
+	return p.hasInheritance() && curr.hasInheritance()
+}
+
+func (teg *Group) getCurrentProperty(p Property) Property {
+	switch p.GetType() {
+	case `custom`:
+		return teg.PropertyCustom[p.GetID()].Clone()
+	case `system`:
+		return teg.PropertySystem[p.GetID()].Clone()
+	case `service`:
+		return teg.PropertyService[p.GetID()].Clone()
+	case `oncall`:
+		return teg.PropertyOncall[p.GetID()].Clone()
+	}
+	teg.Fault.Error <- &Error{
+		Action: `group.getCurrentProperty unknown type`}
+	return nil
 }
 
 //

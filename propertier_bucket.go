@@ -207,9 +207,78 @@ func (teb *Bucket) switchProperty(p Property) bool {
 	}
 	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
+	curr := teb.getCurrentProperty(p)
+	if curr == nil {
+		return false
+	}
 	teb.addProperty(p)
 	teb.actionPropertyUpdate(p.MakeAction())
-	return true
+
+	if !p.hasInheritance() && curr.hasInheritance() {
+		// replacing inheritance with !inheritance:
+		// call deletePropertyOnChildren(curr) to clean up
+		srcUUID, _ := uuid.FromString(curr.GetSourceInstance())
+		switch curr.GetType() {
+		case `custom`:
+			teb.deletePropertyOnChildren(&PropertyCustom{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `service`:
+			teb.deletePropertyOnChildren(&PropertyService{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Service:     curr.GetKey(),
+				Inheritance: true,
+			})
+		case `system`:
+			teb.deletePropertyOnChildren(&PropertySystem{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `oncall`:
+			teb.deletePropertyOnChildren(&PropertyOncall{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Name:        curr.GetKey(),
+				Inheritance: true,
+			})
+		}
+	}
+	if p.hasInheritance() && !curr.hasInheritance() {
+		// replacing !inheritance with inheritance:
+		// call setPropertyonChildren(p) to propagate
+		t := p.Clone()
+		t.SetInherited(true)
+		teb.setPropertyOnChildren(t)
+	}
+	return p.hasInheritance() && curr.hasInheritance()
+}
+
+func (teb *Bucket) getCurrentProperty(p Property) Property {
+	switch p.GetType() {
+	case `custom`:
+		return teb.PropertyCustom[p.GetID()].Clone()
+	case `system`:
+		return teb.PropertySystem[p.GetID()].Clone()
+	case `service`:
+		return teb.PropertyService[p.GetID()].Clone()
+	case `oncall`:
+		return teb.PropertyOncall[p.GetID()].Clone()
+	}
+	teb.Fault.Error <- &Error{
+		Action: `bucket.getCurrentProperty unknown type`}
+	return nil
 }
 
 //

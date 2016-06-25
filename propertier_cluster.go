@@ -207,9 +207,78 @@ func (tec *Cluster) switchProperty(p Property) bool {
 	}
 	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
+	curr := tec.getCurrentProperty(p)
+	if curr == nil {
+		return false
+	}
 	tec.addProperty(p)
 	tec.actionPropertyUpdate(p.MakeAction())
-	return true
+
+	if !p.hasInheritance() && curr.hasInheritance() {
+		// replacing inheritance with !inheritance:
+		// call deletePropertyOnChildren(curr) to clean up
+		srcUUID, _ := uuid.FromString(curr.GetSourceInstance())
+		switch curr.GetType() {
+		case `custom`:
+			tec.deletePropertyOnChildren(&PropertyCustom{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `service`:
+			tec.deletePropertyOnChildren(&PropertyService{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Service:     curr.GetKey(),
+				Inheritance: true,
+			})
+		case `system`:
+			tec.deletePropertyOnChildren(&PropertySystem{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `oncall`:
+			tec.deletePropertyOnChildren(&PropertyOncall{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Name:        curr.GetKey(),
+				Inheritance: true,
+			})
+		}
+	}
+	if p.hasInheritance() && !curr.hasInheritance() {
+		// replacing !inheritance with inheritance:
+		// call setPropertyonChildren(p) to propagate
+		t := p.Clone()
+		t.SetInherited(true)
+		tec.setPropertyOnChildren(t)
+	}
+	return p.hasInheritance() && curr.hasInheritance()
+}
+
+func (tec *Cluster) getCurrentProperty(p Property) Property {
+	switch p.GetType() {
+	case `custom`:
+		return tec.PropertyCustom[p.GetID()].Clone()
+	case `system`:
+		return tec.PropertySystem[p.GetID()].Clone()
+	case `service`:
+		return tec.PropertyService[p.GetID()].Clone()
+	case `oncall`:
+		return tec.PropertyOncall[p.GetID()].Clone()
+	}
+	tec.Fault.Error <- &Error{
+		Action: `cluster.getCurrentProperty unknown type`}
+	return nil
 }
 
 //

@@ -188,7 +188,14 @@ func (ten *Node) switchProperty(p Property) bool {
 	p.SetId(updId)
 	ten.addProperty(p)
 	ten.actionPropertyUpdate(p.MakeAction())
+	// nodes have no children, we require no handling of changes in
+	// inheritance here
 	return true
+}
+
+func (ten *Node) getCurrentProperty(p Property) Property {
+	// noop, satisfy interface
+	return nil
 }
 
 //

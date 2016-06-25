@@ -207,9 +207,78 @@ func (ter *Repository) switchProperty(p Property) bool {
 	}
 	updId, _ := uuid.FromString(uid)
 	p.SetId(updId)
+	curr := ter.getCurrentProperty(p)
+	if curr == nil {
+		return false
+	}
 	ter.addProperty(p)
 	ter.actionPropertyUpdate(p.MakeAction())
-	return true
+
+	if !p.hasInheritance() && curr.hasInheritance() {
+		// replacing inheritance with !inheritance:
+		// call deletePropertyOnChildren(curr) to clean up
+		srcUUID, _ := uuid.FromString(curr.GetSourceInstance())
+		switch curr.GetType() {
+		case `custom`:
+			ter.deletePropertyOnChildren(&PropertyCustom{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `service`:
+			ter.deletePropertyOnChildren(&PropertyService{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Service:     curr.GetKey(),
+				Inheritance: true,
+			})
+		case `system`:
+			ter.deletePropertyOnChildren(&PropertySystem{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Key:         curr.GetKey(),
+				Value:       curr.GetValue(),
+				Inheritance: true,
+			})
+		case `oncall`:
+			ter.deletePropertyOnChildren(&PropertyOncall{
+				SourceId:    srcUUID,
+				View:        curr.GetView(),
+				Inherited:   true,
+				Name:        curr.GetKey(),
+				Inheritance: true,
+			})
+		}
+	}
+	if p.hasInheritance() && !curr.hasInheritance() {
+		// replacing !inheritance with inheritance:
+		// call setPropertyonChildren(p) to propagate
+		t := p.Clone()
+		t.SetInherited(true)
+		ter.setPropertyOnChildren(t)
+	}
+	return p.hasInheritance() && curr.hasInheritance()
+}
+
+func (ter *Repository) getCurrentProperty(p Property) Property {
+	switch p.GetType() {
+	case `custom`:
+		return ter.PropertyCustom[p.GetID()].Clone()
+	case `system`:
+		return ter.PropertySystem[p.GetID()].Clone()
+	case `service`:
+		return ter.PropertyService[p.GetID()].Clone()
+	case `oncall`:
+		return ter.PropertyOncall[p.GetID()].Clone()
+	}
+	ter.Fault.Error <- &Error{
+		Action: `repository.getCurrentProperty unknown type`}
+	return nil
 }
 
 //

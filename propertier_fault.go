@@ -25,6 +25,10 @@ func (tef *Fault) switchProperty(p Property) bool {
 	return false
 }
 
+func (tef *Fault) getCurrentProperty(p Property) Property {
+	return nil
+}
+
 func (tef *Fault) DeleteProperty(p Property) {
 }
 
