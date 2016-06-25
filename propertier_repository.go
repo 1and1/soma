@@ -71,7 +71,9 @@ func (ter *Repository) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	ter.setPropertyOnChildren(f)
+	if f.hasInheritance() {
+		ter.setPropertyOnChildren(f)
+	}
 	// scrub instance startup information prior to storing
 	p.clearInstances()
 	ter.addProperty(p)

@@ -71,7 +71,9 @@ func (teg *Group) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	teg.setPropertyOnChildren(f)
+	if f.hasInheritance() {
+		teg.setPropertyOnChildren(f)
+	}
 	// scrub instance startup information prior to storing
 	p.clearInstances()
 	teg.addProperty(p)

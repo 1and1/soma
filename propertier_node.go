@@ -67,7 +67,9 @@ func (ten *Node) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	ten.setPropertyOnChildren(f)
+	if f.hasInheritance() {
+		ten.setPropertyOnChildren(f)
+	}
 	// scrub instance startup information prior to storing
 	p.clearInstances()
 	ten.addProperty(p)

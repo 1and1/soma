@@ -71,7 +71,9 @@ func (tec *Cluster) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	tec.setPropertyOnChildren(f)
+	if f.hasInheritance() {
+		tec.setPropertyOnChildren(f)
+	}
 	// scrub instance startup information prior to storing
 	p.clearInstances()
 	tec.addProperty(p)

@@ -71,7 +71,9 @@ func (teb *Bucket) SetProperty(p Property) {
 	f := p.Clone()
 	f.SetInherited(true)
 	f.SetId(uuid.UUID{})
-	teb.setPropertyOnChildren(f)
+	if f.hasInheritance() {
+		teb.setPropertyOnChildren(f)
+	}
 	// scrub instance startup information prior to storing
 	p.clearInstances()
 	teb.addProperty(p)
