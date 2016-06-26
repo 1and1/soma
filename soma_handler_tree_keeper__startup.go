@@ -76,13 +76,6 @@ func (tk *treeKeeper) startupLoad() {
 		return
 	}
 
-	// attach check instances
-	//tk.startupRepositoryCheckInstances()
-	//tk.startupBucketCheckInstances()
-	//tk.startupGroupCheckInstances()
-	//tk.startupClusterCheckInstances()
-	//tk.startupNodeCheckInstances()
-
 	// preload pending/unfinished jobs
 	tk.startupJobs()
 
