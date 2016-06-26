@@ -8,6 +8,46 @@
 
 package stmt
 
+const ClusterOncProps = `
+SELECT op.instance_id,
+       op.source_instance_id,
+       op.view,
+       op.oncall_duty_id,
+       iodt.oncall_duty_name
+FROM   soma.cluster_oncall_property op
+JOIN   inventory.oncall_duty_teams iodt
+  ON   op.oncall_duty_id = iodt.oncall_duty_id
+WHERE  op.cluster_id = $1::uuid;`
+
+const ClusterSvcProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.service_property
+FROM   soma.cluster_service_properties sp
+WHERE  sp.cluster_id = $1::uuid;`
+
+const ClusterSysProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.system_property,
+       sp.value
+FROM   soma.cluster_system_properties sp
+WHERE  sp.cluster_id = $1::uuid;`
+
+const ClusterCstProps = `
+SELECT cp.instance_id,
+       cp.source_instance_id,
+       cp.view,
+       cp.custom_property_id,
+       cp.value,
+       scp.custom_property
+FROM   soma.cluster_custom_properties cp
+JOIN   soma.custom_properties scp
+  ON   cp.custom_property_id = scp.custom_property_id
+WHERE  cp.cluster_id = $1::uuid;`
+
 const ClusterSystemPropertyForDelete = `
 SELECT view,
        system_property,
