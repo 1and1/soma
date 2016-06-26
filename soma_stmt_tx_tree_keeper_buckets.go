@@ -55,6 +55,10 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
+const tkStmtBucketPropertyOncallDelete = `
+DELETE FROM soma.bucket_oncall_properties (
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtBucketPropertyServiceCreate = `
 INSERT INTO soma.bucket_service_properties (
             instance_id,
@@ -75,6 +79,10 @@ SELECT $1::uuid,
        $7::uuid,
        $8::boolean,
        $9::boolean;`
+
+const tkStmtBucketPropertyServiceDelete = `
+DELETE FROM soma.bucket_service_properties
+WHERE       instance_id = $1::uuid;`
 
 const tkStmtBucketPropertySystemCreate = `
 INSERT INTO soma.bucket_system_properties (
@@ -101,6 +109,10 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
+const tkStmtBucketPropertySystemDelete = `
+DELETE FROM soma.bucket_system_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtBucketPropertyCustomCreate = `
 INSERT INTO soma.bucket_custom_properties (
             instance_id,
@@ -121,5 +133,9 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean,
        $9::text;`
+
+const tkStmtBucketPropertyCustomDelete = `
+DELETE FROM soma.bucket_custom_properties
+WHERE       instance_id = $1::uuid;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

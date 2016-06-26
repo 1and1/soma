@@ -214,6 +214,7 @@ func main() {
 
 	if !SomaCfg.ReadOnly {
 		router.DELETE(`/attributes/:attribute`, BasicAuth(DeleteAttribute))
+		router.DELETE(`/buckets/:bucket/property/:type/:source`, BasicAuth(DeletePropertyFromBucket))
 		router.DELETE(`/capability/:capability`, BasicAuth(DeleteCapability))
 		router.DELETE(`/category/:category`, BasicAuth(DeleteCategory))
 		router.DELETE(`/checks/:repository/:check`, BasicAuth(DeleteCheckConfiguration))

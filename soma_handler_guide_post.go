@@ -189,6 +189,14 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_oncall_property_to_bucket":
 		fallthrough
 	case "add_service_property_to_bucket":
+		fallthrough
+	case `delete_system_property_from_bucket`:
+		fallthrough
+	case `delete_custom_property_from_bucket`:
+		fallthrough
+	case `delete_oncall_property_from_bucket`:
+		fallthrough
+	case `delete_service_property_from_bucket`:
 		bucketId = q.Bucket.Bucket.Id
 
 	case "create_group":
@@ -492,7 +500,8 @@ func (g *guidePost) process(q *treeRequest) {
 	}
 
 	// if the request is a property deletion, populate required IDs
-	if strings.HasPrefix(q.Action, `delete_`) && strings.HasSuffix(q.Action, `property_from_repository`) {
+	if strings.HasPrefix(q.Action, `delete_`) && (strings.HasSuffix(q.Action, `property_from_repository`) ||
+		strings.HasSuffix(q.Action, `property_from_bucket`)) {
 		var (
 			err                                             error
 			row                                             *sql.Row
@@ -511,18 +520,39 @@ func (g *guidePost) process(q *treeRequest) {
 			queryStmt = stmt.RepoServicePropertyForDelete
 		case `delete_oncall_property_from_repository`:
 			queryStmt = stmt.RepoOncallPropertyForDelete
+		case `delete_system_property_from_bucket`:
+			queryStmt = stmt.BucketSystemPropertyForDelete
+		case `delete_custom_property_from_bucket`:
+			queryStmt = stmt.BucketCustomPropertyForDelete
+		case `delete_service_property_from_bucket`:
+			queryStmt = stmt.BucketServicePropertyForDelete
+		case `delete_oncall_property_from_bucket`:
+			queryStmt = stmt.BucketOncallPropertyForDelete
 		}
 
 		// execute and scan
-		row = g.conn.QueryRow(queryStmt, (*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		switch q.RequestType {
+		case `repository`:
+			row = g.conn.QueryRow(queryStmt, (*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		case `bucket`:
+			row = g.conn.QueryRow(queryStmt, (*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
+		}
 		switch q.Action {
 		case `delete_system_property_from_repository`:
+			fallthrough
+		case `delete_system_property_from_bucket`:
 			err = row.Scan(&view, &sysProp, &value)
 		case `delete_custom_property_from_repository`:
+			fallthrough
+		case `delete_custom_property_from_bucket`:
 			err = row.Scan(&view, &cstId, &value, &cstProp)
 		case `delete_service_property_from_repository`:
+			fallthrough
+		case `delete_service_property_from_bucket`:
 			err = row.Scan(&view, &svcProp)
 		case `delete_oncall_property_from_repository`:
+			fallthrough
+		case `delete_oncall_property_from_bucket`:
 			err = row.Scan(&view, &oncId, &oncName, &oncNumber)
 		}
 		if err != nil {
@@ -559,6 +589,28 @@ func (g *guidePost) process(q *treeRequest) {
 		case `delete_oncall_property_from_repository`:
 			num := strconv.Itoa(oncNumber)
 			(*q.Repository.Repository.Properties)[0].Oncall = &proto.PropertyOncall{
+				Id:     oncId,
+				Name:   oncName,
+				Number: num,
+			}
+		case `delete_system_property_from_bucket`:
+			(*q.Bucket.Bucket.Properties)[0].System = &proto.PropertySystem{
+				Name:  sysProp,
+				Value: value,
+			}
+		case `delete_custom_property_from_bucket`:
+			(*q.Bucket.Bucket.Properties)[0].Custom = &proto.PropertyCustom{
+				Id:    cstId,
+				Name:  cstProp,
+				Value: value,
+			}
+		case `delete_service_property_from_bucket`:
+			(*q.Bucket.Bucket.Properties)[0].Service = &proto.PropertyService{
+				Name: svcProp,
+			}
+		case `delete_oncall_property_from_bucket`:
+			num := strconv.Itoa(oncNumber)
+			(*q.Bucket.Bucket.Properties)[0].Oncall = &proto.PropertyOncall{
 				Id:     oncId,
 				Name:   oncName,
 				Number: num,
