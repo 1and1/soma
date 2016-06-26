@@ -122,6 +122,32 @@ func registerGroups(app cli.App) *cli.App {
 									},
 								},
 							},
+							{
+								Name:  `delete`,
+								Usage: `SUBCOMMANDS for property delete`,
+								Subcommands: []cli.Command{
+									{
+										Name:   `system`,
+										Usage:  `Delete a system property from a group`,
+										Action: runtime(cmdGroupSystemPropertyDelete),
+									},
+									{
+										Name:   `service`,
+										Usage:  `Delete a service property from a group`,
+										Action: runtime(cmdGroupOncallPropertyDelete),
+									},
+									{
+										Name:   `oncall`,
+										Usage:  `Delete an oncall property from a group`,
+										Action: runtime(cmdGroupOncallPropertyDelete),
+									},
+									{
+										Name:   `custom`,
+										Usage:  `Delete a custom property from a group`,
+										Action: runtime(cmdGroupCustomPropertyDelete),
+									},
+								},
+							},
 						},
 					},
 				},
@@ -611,6 +637,119 @@ func cmdGroupOncallPropertyAdd(c *cli.Context) error {
 		return err
 	} else {
 		return adm.FormatOut(c, resp, ``)
+	}
+}
+
+func cmdGroupSystemPropertyDelete(c *cli.Context) error {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	unique := []string{`from`, `view`, `in`}
+	required := []string{`from`, `view`, `in`}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
+	utl.CheckStringIsSystemProperty(Client, c.Args().First())
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
+
+	sourceId := utl.FindSourceForGroupProperty(Client, `system`, c.Args().First(),
+		opts[`view`][0], groupId)
+	if sourceId == `` {
+		utl.Abort(`Could not find locally set requested property.`)
+	}
+
+	req := proto.NewGroupRequest()
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
+	path := fmt.Sprintf("/groups/%s/property/%s/%s",
+		groupId, `system`, sourceId)
+
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `delete`)
+	}
+}
+
+func cmdGroupServicePropertyDelete(c *cli.Context) error {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	unique := []string{`from`, `view`, `in`}
+	required := []string{`from`, `view`, `in`}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
+
+	sourceId := utl.FindSourceForGroupProperty(Client, `service`, c.Args().First(),
+		opts[`view`][0], groupId)
+	if sourceId == `` {
+		utl.Abort(`Could not find locally set requested property.`)
+	}
+
+	req := proto.NewGroupRequest()
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
+	path := fmt.Sprintf("/groups/%s/property/%s/%s",
+		groupId, `service`, sourceId)
+
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `delete`)
+	}
+}
+
+func cmdGroupOncallPropertyDelete(c *cli.Context) error {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	unique := []string{`from`, `view`, `in`}
+	required := []string{`from`, `view`, `in`}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
+
+	sourceId := utl.FindSourceForGroupProperty(Client, `oncall`, c.Args().First(),
+		opts[`view`][0], groupId)
+	if sourceId == `` {
+		utl.Abort(`Could not find locally set requested property.`)
+	}
+
+	req := proto.NewGroupRequest()
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
+	path := fmt.Sprintf("/groups/%s/property/%s/%s",
+		groupId, `oncall`, sourceId)
+
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `delete`)
+	}
+}
+
+func cmdGroupCustomPropertyDelete(c *cli.Context) error {
+	utl.ValidateCliMinArgumentCount(c, 7)
+	multiple := []string{}
+	unique := []string{`from`, `view`, `in`}
+	required := []string{`from`, `view`, `in`}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
+	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
+
+	sourceId := utl.FindSourceForGroupProperty(Client, `custom`, c.Args().First(),
+		opts[`view`][0], groupId)
+	if sourceId == `` {
+		utl.Abort(`Could not find locally set requested property.`)
+	}
+
+	req := proto.NewGroupRequest()
+	req.Group.Id = groupId
+	req.Group.BucketId = bucketId
+	path := fmt.Sprintf("/groups/%s/property/%s/%s",
+		groupId, `custom`, sourceId)
+
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `delete`)
 	}
 }
 
