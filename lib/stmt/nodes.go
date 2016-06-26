@@ -48,6 +48,46 @@ SELECT node_id,
        node_deleted
 FROM   soma.nodes;`
 
+const NodeOncProps = `
+SELECT op.instance_id,
+       op.source_instance_id,
+       op.view,
+       op.oncall_duty_id,
+       iodt.oncall_duty_name
+FROM   soma.node_oncall_property op
+JOIN   inventory.oncall_duty_teams iodt
+  ON   op.oncall_duty_id = iodt.oncall_duty_id
+WHERE  op.node_id = $1::uuid;`
+
+const NodeSvcProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.service_property
+FROM   soma.node_service_properties sp
+WHERE  sp.node_id = $1::uuid;`
+
+const NodeSysProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.system_property,
+       sp.value
+FROM   soma.node_system_properties sp
+WHERE  sp.node_id = $1::uuid;`
+
+const NodeCstProps = `
+SELECT cp.instance_id,
+       cp.source_instance_id,
+       cp.view,
+       cp.custom_property_id,
+       cp.value,
+       scp.custom_property
+FROM   soma.node_custom_properties cp
+JOIN   soma.custom_properties scp
+  ON   cp.custom_property_id = scp.custom_property_id
+WHERE  cp.node_id = $1::uuid;`
+
 const NodeSystemPropertyForDelete = `
 SELECT snsp.view,
        snsp.system_property,
