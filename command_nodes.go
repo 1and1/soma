@@ -208,9 +208,8 @@ func cmdNodeAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, "/nodes/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeUpdate(c *cli.Context) error {
@@ -236,9 +235,8 @@ func cmdNodeUpdate(c *cli.Context) error {
 	if resp, err := adm.PutReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeDel(c *cli.Context) error {
@@ -249,9 +247,8 @@ func cmdNodeDel(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodePurge(c *cli.Context) error {
@@ -277,9 +274,8 @@ func cmdNodePurge(c *cli.Context) error {
 	if resp, err := adm.DeleteReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeRestore(c *cli.Context) error {
@@ -305,9 +301,8 @@ func cmdNodeRestore(c *cli.Context) error {
 	if resp, err := adm.DeleteReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeRename(c *cli.Context) error {
@@ -323,9 +318,8 @@ func cmdNodeRename(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeRepo(c *cli.Context) error {
@@ -344,9 +338,8 @@ func cmdNodeRepo(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeMove(c *cli.Context) error {
@@ -365,9 +358,8 @@ func cmdNodeMove(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeOnline(c *cli.Context) error {
@@ -382,9 +374,8 @@ func cmdNodeOnline(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeOffline(c *cli.Context) error {
@@ -399,9 +390,8 @@ func cmdNodeOffline(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeAssign(c *cli.Context) error {
@@ -432,9 +422,8 @@ func cmdNodeAssign(c *cli.Context) error {
 	if resp, err := adm.PutReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeList(c *cli.Context) error {
@@ -443,9 +432,8 @@ func cmdNodeList(c *cli.Context) error {
 	if resp, err := adm.GetReq("/nodes/"); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `list`)
+		return adm.FormatOut(c, resp, `list`)
 	}
-	return nil
 }
 
 func cmdNodeShow(c *cli.Context) error {
@@ -456,9 +444,8 @@ func cmdNodeShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `list`)
+		return adm.FormatOut(c, resp, `list`)
 	}
-	return nil
 }
 
 func cmdNodeTree(c *cli.Context) error {
@@ -469,9 +456,8 @@ func cmdNodeTree(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `tree`)
+		return adm.FormatOut(c, resp, `tree`)
 	}
-	return nil
 }
 
 func cmdNodeSync(c *cli.Context) error {
@@ -480,9 +466,8 @@ func cmdNodeSync(c *cli.Context) error {
 	if resp, err := adm.GetReq(`/sync/nodes/`); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeConfig(c *cli.Context) error {
@@ -493,9 +478,8 @@ func cmdNodeConfig(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeSystemPropertyAdd(c *cli.Context) error {
@@ -548,9 +532,8 @@ func cmdNodeSystemPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeServicePropertyAdd(c *cli.Context) error {
@@ -603,9 +586,8 @@ func cmdNodeServicePropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdNodeOncallPropertyAdd(c *cli.Context) error {
@@ -659,9 +641,8 @@ func cmdNodeOncallPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

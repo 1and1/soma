@@ -129,9 +129,8 @@ func cmdRepositoryCreate(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, "/repository/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryDelete(c *cli.Context) error {
@@ -142,9 +141,8 @@ func cmdRepositoryDelete(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryRestore(c *cli.Context) error {
@@ -161,9 +159,8 @@ func cmdRepositoryRestore(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryPurge(c *cli.Context) error {
@@ -180,9 +177,8 @@ func cmdRepositoryPurge(c *cli.Context) error {
 	if resp, err := adm.DeleteReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryClear(c *cli.Context) error {
@@ -199,9 +195,8 @@ func cmdRepositoryClear(c *cli.Context) error {
 	if resp, err := adm.PutReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryRename(c *cli.Context) error {
@@ -217,9 +212,8 @@ func cmdRepositoryRename(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryRepossess(c *cli.Context) error {
@@ -236,9 +230,8 @@ func cmdRepositoryRepossess(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryClone(c *cli.Context) error {
@@ -260,9 +253,8 @@ func cmdRepositoryActivate(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryWipe(c *cli.Context) error {
@@ -275,9 +267,8 @@ func cmdRepositoryList(c *cli.Context) error {
 	if resp, err := adm.GetReq("/repository/"); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `list`)
+		return adm.FormatOut(c, resp, `list`)
 	}
-	return nil
 }
 
 func cmdRepositoryShow(c *cli.Context) error {
@@ -288,9 +279,8 @@ func cmdRepositoryShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `show`)
+		return adm.FormatOut(c, resp, `show`)
 	}
-	return nil
 }
 
 func cmdRepositoryTree(c *cli.Context) error {
@@ -301,9 +291,8 @@ func cmdRepositoryTree(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `tree`)
+		return adm.FormatOut(c, resp, `tree`)
 	}
-	return nil
 }
 
 func cmdRepositorySystemPropertyAdd(c *cli.Context) error {
@@ -355,9 +344,8 @@ func cmdRepositorySystemPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
@@ -408,9 +396,8 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

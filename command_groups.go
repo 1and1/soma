@@ -152,9 +152,8 @@ func cmdGroupCreate(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, "/groups/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupDelete(c *cli.Context) error {
@@ -175,9 +174,8 @@ func cmdGroupDelete(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupRename(c *cli.Context) error {
@@ -202,9 +200,8 @@ func cmdGroupRename(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupList(c *cli.Context) error {
@@ -212,9 +209,8 @@ func cmdGroupList(c *cli.Context) error {
 	if resp, err := adm.GetReq("/groups/"); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `list`)
+		return adm.FormatOut(c, resp, `list`)
 	}
-	return nil
 }
 
 func cmdGroupShow(c *cli.Context) error {
@@ -235,9 +231,8 @@ func cmdGroupShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `show`)
+		return adm.FormatOut(c, resp, `show`)
 	}
-	return nil
 }
 
 func cmdGroupTree(c *cli.Context) error {
@@ -258,9 +253,8 @@ func cmdGroupTree(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `tree`)
+		return adm.FormatOut(c, resp, `tree`)
 	}
-	return nil
 }
 
 func cmdGroupMemberAddGroup(c *cli.Context) error {
@@ -293,9 +287,8 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupMemberAddCluster(c *cli.Context) error {
@@ -328,9 +321,8 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupMemberAddNode(c *cli.Context) error {
@@ -361,9 +353,8 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) error {
@@ -389,9 +380,8 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupMemberDeleteCluster(c *cli.Context) error {
@@ -417,9 +407,8 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupMemberDeleteNode(c *cli.Context) error {
@@ -443,9 +432,8 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupMemberList(c *cli.Context) error {
@@ -467,9 +455,8 @@ func cmdGroupMemberList(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupSystemPropertyAdd(c *cli.Context) error {
@@ -520,9 +507,8 @@ func cmdGroupSystemPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupServicePropertyAdd(c *cli.Context) error {
@@ -572,9 +558,8 @@ func cmdGroupServicePropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdGroupOncallPropertyAdd(c *cli.Context) error {
@@ -625,9 +610,8 @@ func cmdGroupOncallPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

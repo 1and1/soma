@@ -120,9 +120,8 @@ func cmdClusterCreate(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, "/clusters/"); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, `create`)
 	}
-	return nil
 }
 
 func cmdClusterDelete(c *cli.Context) error {
@@ -143,9 +142,8 @@ func cmdClusterDelete(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, `create`)
 	}
-	return nil
 }
 
 func cmdClusterRename(c *cli.Context) error {
@@ -170,9 +168,8 @@ func cmdClusterRename(c *cli.Context) error {
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, `create`)
 	}
-	return nil
 }
 
 func cmdClusterList(c *cli.Context) error {
@@ -180,9 +177,8 @@ func cmdClusterList(c *cli.Context) error {
 	if resp, err := adm.GetReq(`/clusters/`); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `list`)
+		return adm.FormatOut(c, resp, `list`)
 	}
-	return nil
 }
 
 func cmdClusterShow(c *cli.Context) error {
@@ -203,9 +199,8 @@ func cmdClusterShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `show`)
+		return adm.FormatOut(c, resp, `show`)
 	}
-	return nil
 }
 
 func cmdClusterTree(c *cli.Context) error {
@@ -226,9 +221,8 @@ func cmdClusterTree(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `tree`)
+		return adm.FormatOut(c, resp, `tree`)
 	}
-	return nil
 }
 
 func cmdClusterMemberAdd(c *cli.Context) error {
@@ -265,9 +259,8 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdClusterMemberDelete(c *cli.Context) error {
@@ -291,9 +284,8 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdClusterMemberList(c *cli.Context) error {
@@ -314,9 +306,8 @@ func cmdClusterMemberList(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdClusterSystemPropertyAdd(c *cli.Context) error {
@@ -367,9 +358,8 @@ func cmdClusterSystemPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdClusterServicePropertyAdd(c *cli.Context) error {
@@ -419,9 +409,8 @@ func cmdClusterServicePropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 func cmdClusterOncallPropertyAdd(c *cli.Context) error {
@@ -472,9 +461,8 @@ func cmdClusterOncallPropertyAdd(c *cli.Context) error {
 	if resp, err := adm.PostReqBody(req, path); err != nil {
 		return err
 	} else {
-		fmt.Println(resp)
+		return adm.FormatOut(c, resp, ``)
 	}
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -267,9 +267,8 @@ func cmdBucketList(c *cli.Context) error {
 	if resp, err := adm.GetReq(`/buckets/`); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `list`)
+		return adm.FormatOut(c, resp, `list`)
 	}
-	return nil
 }
 
 func cmdBucketShow(c *cli.Context) error {
@@ -280,9 +279,8 @@ func cmdBucketShow(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `show`)
+		return adm.FormatOut(c, resp, `show`)
 	}
-	return nil
 }
 
 func cmdBucketTree(c *cli.Context) error {
@@ -293,9 +291,8 @@ func cmdBucketTree(c *cli.Context) error {
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
-		adm.FormatOut(c, resp, `tree`)
+		return adm.FormatOut(c, resp, `tree`)
 	}
-	return nil
 }
 
 func cmdBucketSystemPropertyAdd(c *cli.Context) error {
