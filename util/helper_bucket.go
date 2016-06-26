@@ -103,6 +103,52 @@ func (u SomaUtil) TeamIdForBucket(c *resty.Client, bucket string) string {
 	return (*bucketResult.Buckets)[0].TeamId
 }
 
+func (u SomaUtil) GetBucketDetails(c *resty.Client, bucketId string) *proto.Bucket {
+	resp := u.GetRequest(c, fmt.Sprintf("/buckets/%s", bucketId))
+	res := u.DecodeResultFromResponse(resp)
+	return &(*res.Buckets)[0]
+}
+
+func (u SomaUtil) FindSourceForBucketProperty(c *resty.Client, pTyp, pName, view, bucketId string) string {
+	bucket := u.GetRepositoryDetails(c, bucketId)
+	if bucket == nil {
+		return ``
+	}
+	for _, prop := range *bucket.Properties {
+		// wrong type
+		if prop.Type != pTyp {
+			continue
+		}
+		// wrong view
+		if prop.View != view {
+			continue
+		}
+		// inherited property
+		if prop.InstanceId != prop.SourceInstanceId {
+			continue
+		}
+		switch pTyp {
+		case `system`:
+			if prop.System.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `oncall`:
+			if prop.Oncall.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `custom`:
+			if prop.Custom.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `service`:
+			if prop.Service.Name == pName {
+				return prop.SourceInstanceId
+			}
+		}
+	}
+	return ``
+}
+
 func (u SomaUtil) DecodeProtoResultBucketFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
