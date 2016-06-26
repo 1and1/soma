@@ -133,21 +133,41 @@ func registerNodes(app cli.App) *cli.App {
 									},
 								},
 							},
-							/*
-								{
-									Name:   "add",
-									Usage:  "Assign a property to a node",
-									Action: cmdNodePropertyAdd,
+							{
+								Name:  `delete`,
+								Usage: `SUBCOMMANDS for property delete`,
+								Subcommands: []cli.Command{
+									{
+										Name:         `system`,
+										Usage:        `Delete a system property from a node`,
+										Action:       runtime(cmdNodeSystemPropertyDelete),
+										BashComplete: cmpl.NodePropertyDelete,
+									},
+									{
+										Name:         `service`,
+										Usage:        `Delete a service property from a node`,
+										Action:       runtime(cmdNodeServicePropertyDelete),
+										BashComplete: cmpl.NodePropertyDelete,
+									},
+									{
+										Name:         `oncall`,
+										Usage:        `Delete an oncall property from a node`,
+										Action:       runtime(cmdNodeOncallPropertyDelete),
+										BashComplete: cmpl.NodePropertyDelete,
+									},
+									{
+										Name:         `custom`,
+										Usage:        `Delete a custom property from a node`,
+										Action:       runtime(cmdNodeCustomPropertyDelete),
+										BashComplete: cmpl.NodePropertyDelete,
+									},
 								},
+							},
+							/*
 								{
 									Name:   "get",
 									Usage:  "Get the value of a node's specific property",
 									Action: cmdNodePropertyGet,
-								},
-								{
-									Name:   "delete",
-									Usage:  "Delete a property from a node",
-									Action: cmdNodePropertyDel,
 								},
 								{
 									Name:   "list",
@@ -642,6 +662,53 @@ func cmdNodeOncallPropertyAdd(c *cli.Context) error {
 		return err
 	} else {
 		return adm.FormatOut(c, resp, ``)
+	}
+}
+
+func cmdNodeSystemPropertyDelete(c *cli.Context) error {
+	return cmdNodePropertyDelete(c, `system`)
+}
+
+func cmdNodeServicePropertyDelete(c *cli.Context) error {
+	return cmdNodePropertyDelete(c, `service`)
+}
+
+func cmdNodeOncallPropertyDelete(c *cli.Context) error {
+	return cmdNodePropertyDelete(c, `oncall`)
+}
+
+func cmdNodeCustomPropertyDelete(c *cli.Context) error {
+	return cmdNodePropertyDelete(c, `custom`)
+}
+
+func cmdNodePropertyDelete(c *cli.Context, pType string) error {
+	utl.ValidateCliMinArgumentCount(c, 5)
+	multiple := []string{}
+	unique := []string{`from`, `view`}
+	required := []string{`from`, `view`}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts[`from`][0])
+	config := utl.GetNodeConfigById(Client, nodeId)
+
+	if pType == `system` {
+		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+	}
+	sourceId := utl.FindSourceForNodeProperty(Client, pType, c.Args().First(),
+		opts[`view`][0], nodeId)
+	if sourceId == `` {
+		return fmt.Errorf(`Could not find locally set requested property.`)
+	}
+
+	req := proto.NewNodeRequest()
+	req.Node.Id = nodeId
+	req.Node.Config = config
+	path := fmt.Sprintf("/nodes/%s/property/%s/%s",
+		nodeId, pType, sourceId)
+
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `delete`)
 	}
 }
 

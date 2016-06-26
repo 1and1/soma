@@ -61,6 +61,52 @@ func (u SomaUtil) TeamIdForNode(c *resty.Client, node string) string {
 	return (*res.Nodes)[0].TeamId
 }
 
+func (u SomaUtil) GetNodeDetails(c *resty.Client, nodeId string) *proto.Node {
+	resp := u.GetRequest(c, fmt.Sprintf("/nodes/%s", nodeId))
+	res := u.DecodeResultFromResponse(resp)
+	return &(*res.Nodes)[0]
+}
+
+func (u SomaUtil) FindSourceForNodeProperty(c *resty.Client, pTyp, pName, view, nodeId string) string {
+	node := u.GetNodeDetails(c, nodeId)
+	if node == nil {
+		return ``
+	}
+	for _, prop := range *node.Properties {
+		// wrong type
+		if prop.Type != pTyp {
+			continue
+		}
+		// wrong view
+		if prop.View != view {
+			continue
+		}
+		// inherited property
+		if prop.InstanceId != prop.SourceInstanceId {
+			continue
+		}
+		switch pTyp {
+		case `system`:
+			if prop.System.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `oncall`:
+			if prop.Oncall.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `custom`:
+			if prop.Custom.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `service`:
+			if prop.Service.Name == pName {
+				return prop.SourceInstanceId
+			}
+		}
+	}
+	return ``
+}
+
 func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
