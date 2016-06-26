@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 
@@ -169,6 +170,14 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_oncall_property_to_repository":
 		fallthrough
 	case "add_service_property_to_repository":
+		fallthrough
+	case `delete_system_property_from_repository`:
+		fallthrough
+	case `delete_custom_property_from_repository`:
+		fallthrough
+	case `delete_oncall_property_from_repository`:
+		fallthrough
+	case `delete_service_property_from_repository`:
 		repoId = q.Repository.Repository.Id
 
 	case "create_bucket":
@@ -480,6 +489,81 @@ func (g *guidePost) process(q *treeRequest) {
 		q.CheckConfig.CheckConfig.ObjectType = delObjTyp
 		q.CheckConfig.CheckConfig.ExternalId = delSrcChkId
 		q.Action = fmt.Sprintf("remove_check_from_%s", delObjTyp)
+	}
+
+	// if the request is a property deletion, populate required IDs
+	if strings.HasPrefix(q.Action, `delete_`) && strings.HasSuffix(q.Action, `property_from_repository`) {
+		var (
+			err                                             error
+			row                                             *sql.Row
+			queryStmt, view, sysProp, value, cstId, cstProp string
+			svcProp, oncId, oncName                         string
+			oncNumber                                       int
+		)
+
+		// select SQL statement
+		switch q.Action {
+		case `delete_system_property_from_repository`:
+			queryStmt = stmt.RepoSystemPropertyForDelete
+		case `delete_custom_property_from_repository`:
+			queryStmt = stmt.RepoCustomPropertyForDelete
+		case `delete_service_property_from_repository`:
+			queryStmt = stmt.RepoServicePropertyForDelete
+		case `delete_oncall_property_from_repository`:
+			queryStmt = stmt.RepoOncallPropertyForDelete
+		}
+
+		// execute and scan
+		row = g.conn.QueryRow(queryStmt, (*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		switch q.Action {
+		case `delete_system_property_from_repository`:
+			err = row.Scan(&view, &sysProp, &value)
+		case `delete_custom_property_from_repository`:
+			err = row.Scan(&view, &cstId, &value, &cstProp)
+		case `delete_service_property_from_repository`:
+			err = row.Scan(&view, &svcProp)
+		case `delete_oncall_property_from_repository`:
+			err = row.Scan(&view, &oncId, &oncName, &oncNumber)
+		}
+		if err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(fmt.Errorf(
+					"Failed to find source property for %s",
+					(*q.Repository.Repository.Properties)[0].SourceInstanceId,
+				))
+			} else {
+				result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+
+		// set results
+		(*q.Repository.Repository.Properties)[0].View = view
+		switch q.Action {
+		case `delete_system_property_from_repository`:
+			(*q.Repository.Repository.Properties)[0].System = &proto.PropertySystem{
+				Name:  sysProp,
+				Value: value,
+			}
+		case `delete_custom_property_from_repository`:
+			(*q.Repository.Repository.Properties)[0].Custom = &proto.PropertyCustom{
+				Id:    cstId,
+				Name:  cstProp,
+				Value: value,
+			}
+		case `delete_service_property_from_repository`:
+			(*q.Repository.Repository.Properties)[0].Service = &proto.PropertyService{
+				Name: svcProp,
+			}
+		case `delete_oncall_property_from_repository`:
+			num := strconv.Itoa(oncNumber)
+			(*q.Repository.Repository.Properties)[0].Oncall = &proto.PropertyOncall{
+				Id:     oncId,
+				Name:   oncName,
+				Number: num,
+			}
+		}
 	}
 
 	// store job in database

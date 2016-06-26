@@ -153,6 +153,39 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 	SendRepositoryReply(&w, &result)
 }
 
+func DeletePropertyFromRepository(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	repo := &proto.Repository{
+		Id: params.ByName(`repository`),
+		Properties: &[]proto.Property{
+			proto.Property{
+				Type:             params.ByName(`type`),
+				RepositoryId:     params.ByName(`repository`),
+				SourceInstanceId: params.ByName(`source`),
+			},
+		},
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: "repository",
+		Action: fmt.Sprintf("delete_%s_property_from_repository",
+			params.ByName("type")),
+		User:  params.ByName(`AuthenticatedUser`),
+		reply: returnChannel,
+		Repository: somaRepositoryRequest{
+			action: fmt.Sprintf("%s_property_remove",
+				params.ByName("type")),
+			Repository: *repo,
+		},
+	}
+	result := <-returnChannel
+	SendRepositoryReply(&w, &result)
+}
+
 /*
  * Utility
  */

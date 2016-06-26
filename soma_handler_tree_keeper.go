@@ -198,6 +198,18 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Repository.Repository.Properties)[0].System.Name,
 			Value:        (*q.Repository.Repository.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `repository`,
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Key:      (*q.Repository.Repository.Properties)[0].System.Name,
+			Value:    (*q.Repository.Repository.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_repository":
 		tk.tree.Find(tree.FindRequest{
 			ElementType: "repository",
@@ -209,6 +221,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Repository.Repository.Properties)[0].View,
 			Service:      (*q.Repository.Repository.Properties)[0].Service.Name,
 			Attributes:   (*q.Repository.Repository.Properties)[0].Service.Attributes,
+		})
+	case `delete_service_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: "repository",
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Service:  (*q.Repository.Repository.Properties)[0].Service.Name,
 		})
 	case "add_oncall_property_to_repository":
 		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
@@ -225,6 +248,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Repository.Repository.Properties)[0].Oncall.Name,
 			Number:       (*q.Repository.Repository.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: "repository",
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Name:     (*q.Repository.Repository.Properties)[0].Oncall.Name,
+			Number:   (*q.Repository.Repository.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_repository":
 		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
 
@@ -239,6 +276,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Repository.Repository.Properties)[0].View,
 			Key:          (*q.Repository.Repository.Properties)[0].Custom.Name,
 			Value:        (*q.Repository.Repository.Properties)[0].Custom.Value,
+		})
+	case `delete_custom_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: "repository",
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Key:      (*q.Repository.Repository.Properties)[0].Custom.Name,
+			Value:    (*q.Repository.Repository.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -1082,6 +1133,21 @@ Service Name:   %s%s`,
 		}
 	}
 
+	// if the error channel has entries, we can fully ignore the
+	// action channel
+	for i := len(tk.errChan); i > 0; i-- {
+		e := <-tk.errChan
+		b, _ := json.Marshal(e)
+		log.Println(string(b))
+		hasErrors = true
+		if err == nil {
+			err = fmt.Errorf(e.Action)
+		}
+	}
+	if hasErrors {
+		goto bailout
+	}
+
 actionloop:
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
@@ -1156,6 +1222,38 @@ actionloop:
 						a.Property.Oncall.Id,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertyOncallDelete,
+						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}
@@ -1924,16 +2022,6 @@ Node ID:             %s%s`,
 		}
 	}
 	if err != nil {
-		goto bailout
-	}
-
-	for i := len(tk.errChan); i > 0; i-- {
-		e := <-tk.errChan
-		b, _ := json.Marshal(e)
-		log.Println(string(b))
-		hasErrors = true
-	}
-	if hasErrors {
 		goto bailout
 	}
 

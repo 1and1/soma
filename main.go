@@ -239,6 +239,7 @@ func main() {
 		router.DELETE(`/property/service/team/:team/:service`, BasicAuth(DeleteProperty))
 		router.DELETE(`/property/system/:system`, BasicAuth(DeleteProperty))
 		router.DELETE(`/providers/:provider`, BasicAuth(DeleteProvider))
+		router.DELETE(`/repository/:repository/property/:type/:source`, BasicAuth(DeletePropertyFromRepository))
 		router.DELETE(`/servers/:server`, BasicAuth(DeleteServer))
 		router.DELETE(`/status/:status`, BasicAuth(DeleteStatus))
 		router.DELETE(`/teams/:team`, BasicAuth(DeleteTeam))

@@ -21,6 +21,10 @@ SELECT $1::uuid,
        $6::boolean,
        $7::boolean;`
 
+const tkStmtRepositoryPropertyOncallDelete = `
+DELETE FROM soma.repository_oncall_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtRepositoryPropertyServiceCreate = `
 INSERT INTO soma.repository_service_properties (
             instance_id,
@@ -39,6 +43,10 @@ SELECT $1::uuid,
        $6::uuid,
        $7::boolean,
        $8::boolean;`
+
+const tkStmtRepositoryPropertyServiceDelete = `
+DELETE FROM soma.repository_service_properties
+WHERE       instance_id = $1::uuid;`
 
 const tkStmtRepositoryPropertySystemCreate = `
 INSERT INTO soma.repository_system_properties (
@@ -63,6 +71,10 @@ SELECT $1::uuid,
        $9::text,
        $10::boolean;`
 
+const tkStmtRepositoryPropertySystemDelete = `
+DELETE FROM soma.repository_system_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtRepositoryPropertyCustomCreate = `
 INSERT INTO soma.repository_custom_properties (
             instance_id,
@@ -81,5 +93,9 @@ SELECT $1::uuid,
        $6::boolean,
        $7::boolean,
        $8::text;`
+
+const tkStmtRepositoryPropertyCustomDelete = `
+DELETE FROM soma.repository_system_properties
+WHERE       instance_id = $1::uuid;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
