@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/satori/go.uuid"
-
 )
 
 func (tk *treeKeeper) startupLoad() {
@@ -50,7 +48,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach custom properties
+	tk.startupRepositoryCustomProperties()
+	tk.startupBucketCustomProperties()
 	tk.startupGroupCustomProperties()
+	tk.startupClusterCustomProperties()
+	tk.startupNodeCustomProperties()
 
 	if len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -59,7 +61,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach oncall properties
+	tk.startupRepositoryOncallProperties()
+	tk.startupBucketOncallProperties()
 	tk.startupGroupOncallProperties()
+	tk.startupClusterOncallProperties()
+	tk.startupNodeOncallProperties()
 
 	if len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -75,13 +81,6 @@ func (tk *treeKeeper) startupLoad() {
 		tk.broken = true
 		return
 	}
-
-	// attach check instances
-	//tk.startupRepositoryCheckInstances()
-	//tk.startupBucketCheckInstances()
-	//tk.startupGroupCheckInstances()
-	//tk.startupClusterCheckInstances()
-	//tk.startupNodeCheckInstances()
 
 	// preload pending/unfinished jobs
 	tk.startupJobs()
@@ -152,7 +151,7 @@ bucketloop:
 			tk.broken = true
 			return
 		}
-		somatree.NewBucket(somatree.BucketSpec{
+		tree.NewBucket(tree.BucketSpec{
 			Id:          bucketId,
 			Name:        bucketName,
 			Environment: environment,
@@ -160,7 +159,7 @@ bucketloop:
 			Deleted:     deleted,
 			Frozen:      frozen,
 			Repository:  tk.repoId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "repository",
 			ParentId:   tk.repoId,
@@ -223,11 +222,11 @@ grouploop:
 			tk.broken = true
 			return
 		}
-		somatree.NewGroup(somatree.GroupSpec{
+		tree.NewGroup(tree.GroupSpec{
 			Id:   groupId,
 			Name: groupName,
 			Team: teamId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   bucketId,
@@ -286,10 +285,10 @@ memberloop:
 			return
 		}
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   childGroupId,
-		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+		}, true).(tree.BucketAttacher).ReAttach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   groupId,
@@ -355,11 +354,11 @@ clusterloop:
 			return
 		}
 
-		somatree.NewCluster(somatree.ClusterSpec{
+		tree.NewCluster(tree.ClusterSpec{
 			Id:   clusterId,
 			Name: clusterName,
 			Team: teamId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   groupId,
@@ -423,11 +422,11 @@ clusterloop:
 			return
 		}
 
-		somatree.NewCluster(somatree.ClusterSpec{
+		tree.NewCluster(tree.ClusterSpec{
 			Id:   clusterId,
 			Name: clusterName,
 			Team: teamId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   bucketId,
@@ -511,7 +510,7 @@ nodeloop:
 			return
 		}
 
-		node := somatree.NewNode(somatree.NodeSpec{
+		node := tree.NewNode(tree.NodeSpec{
 			Id:       nodeId,
 			AssetId:  uint64(assetId),
 			Name:     nodeName,
@@ -521,19 +520,19 @@ nodeloop:
 			Deleted:  nodeDeleted,
 		})
 		if clusterId.Valid {
-			node.Attach(somatree.AttachRequest{
+			node.Attach(tree.AttachRequest{
 				Root:       tk.tree,
 				ParentType: "cluster",
 				ParentId:   clusterId.String,
 			})
 		} else if groupId.Valid {
-			node.Attach(somatree.AttachRequest{
+			node.Attach(tree.AttachRequest{
 				Root:       tk.tree,
 				ParentType: "group",
 				ParentId:   groupId.String,
 			})
 		} else {
-			node.Attach(somatree.AttachRequest{
+			node.Attach(tree.AttachRequest{
 				Root:       tk.tree,
 				ParentType: "bucket",
 				ParentId:   bucketId,
@@ -598,308 +597,6 @@ jobloop:
 		}
 		tk.input <- tr
 		log.Printf("TK[%s] Loaded job %s (%s)\n", tk.repoName, tr.JobId, tr.Action)
-	}
-}
-
-func (tk *treeKeeper) startupGroupCustomProperties() {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                       error
-		instanceId, srcInstanceId, groupId, view, customId, customProperty, value string
-		inInstanceId, inObjectType, inObjId                                       string
-		inheritance, childrenOnly                                                 bool
-		rows, instance_rows                                                       *sql.Rows
-		load_properties, load_instances                                           *sql.Stmt
-	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT sgcp.instance_id,
-       sgcp.source_instance_id,
-	   sgcp.group_id,
-	   sgcp.view,
-	   sgcp.custom_property_id,
-	   sgcp.inheritance_enabled,
-	   sgcp.children_only,
-	   sgcp.value,
-	   scp.custom_property
-FROM   soma.group_custom_properties sgcp
-JOIN   soma.custom_properties scp
-ON     sgcp.custom_property_id = scp.custom_property_id
-WHERE  sgcp.instance_id = sgcp.source_instance_id
-AND    sgcp.repository_id = $1::uuid;`)
-	if err != nil {
-		log.Fatal("treekeeper/load-group-custom-properties: ", err)
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
-	if err != nil {
-		log.Fatal("treekeeper/load-group-custom-property-instances: ", err)
-	}
-	defer load_instances.Close()
-
-	log.Printf("TK[%s]: loading group custom properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
-	if err != nil {
-		log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-customloop:
-	// load all system properties defined directly on group objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&groupId,
-			&view,
-			&customId,
-			&inheritance,
-			&childrenOnly,
-			&value,
-			&customProperty,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break customloop
-			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := somatree.PropertyCustom{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Key:          customProperty,
-			Value:        value,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
-
-		instance_rows, err = load_instances.Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			log.Printf("TK[%s] Error loading group system properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current group system property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
-				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := somatree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
-			ElementId: groupId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
-	}
-}
-
-func (tk *treeKeeper) startupGroupOncallProperties() {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                          error
-		instanceId, srcInstanceId, groupId, view, oncallId, oncallName, oncallNumber string
-		inInstanceId, inObjectType, inObjId                                          string
-		inheritance, childrenOnly                                                    bool
-		rows, instance_rows                                                          *sql.Rows
-		load_properties, load_instances                                              *sql.Stmt
-	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  sgop.instance_id,
-        sgop.source_instance_id,
-        sgop.group_id,
-        sgop.view,
-        sgop.oncall_duty_id,
-        sgop.inheritance_enabled,
-        sgop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.group_oncall_properties sgop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    sgop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   sgop.instance_id = sgop.source_instance_id
-  AND   sgop.repository_id = $1::uuid;`)
-	if err != nil {
-		log.Fatal("treekeeper/load-group-oncall-properties: ", err)
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
-	if err != nil {
-		log.Fatal("treekeeper/load-group-oncall-property-instances: ", err)
-	}
-	defer load_instances.Close()
-
-	log.Printf("TK[%s]: loading group oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
-	if err != nil {
-		log.Printf("TK[%s] Error loading group oncall properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-oncallloop:
-	// load all system properties defined directly on group objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&groupId,
-			&view,
-			&oncallId,
-			&inheritance,
-			&childrenOnly,
-			&oncallName,
-			&oncallNumber,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break oncallloop
-			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := somatree.PropertyOncall{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Name:         oncallName,
-			Number:       oncallNumber,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.OncallId, _ = uuid.FromString(oncallId)
-		prop.Instances = make([]somatree.PropertyInstance, 0)
-
-		instance_rows, err = load_instances.Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current group system property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
-				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := somatree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the group and set the prepared property
-		tk.tree.Find(somatree.FindRequest{
-			ElementId: groupId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
 	}
 }
 

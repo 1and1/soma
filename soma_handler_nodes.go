@@ -41,6 +41,10 @@ type somaNodeReadHandler struct {
 	show_stmt *sql.Stmt
 	conf_stmt *sql.Stmt
 	sync_stmt *sql.Stmt
+	ponc_stmt *sql.Stmt
+	psvc_stmt *sql.Stmt
+	psys_stmt *sql.Stmt
+	pcst_stmt *sql.Stmt
 }
 
 func (r *somaNodeReadHandler) run() {
@@ -66,6 +70,26 @@ func (r *somaNodeReadHandler) run() {
 	}
 	defer r.sync_stmt.Close()
 
+	if r.ponc_stmt, err = r.conn.Prepare(stmt.NodeOncProps); err != nil {
+		log.Fatal(`node/property-oncall: `, err)
+	}
+	defer r.ponc_stmt.Close()
+
+	if r.psvc_stmt, err = r.conn.Prepare(stmt.NodeSvcProps); err != nil {
+		log.Fatal(`node/property-service: `, err)
+	}
+	defer r.psvc_stmt.Close()
+
+	if r.psys_stmt, err = r.conn.Prepare(stmt.NodeSysProps); err != nil {
+		log.Fatal(`node/property-system: `, err)
+	}
+	defer r.psys_stmt.Close()
+
+	if r.pcst_stmt, err = r.conn.Prepare(stmt.NodeCstProps); err != nil {
+		log.Fatal(`node/property-custom: `, err)
+	}
+	defer r.pcst_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -80,11 +104,16 @@ runloop:
 }
 
 func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
-	var nodeId, nodeName, nodeTeam, nodeServer, nodeState, bucketId, repositoryId string
-	var nodeAsset int
-	var nodeOnline, nodeDeleted bool
-	var rows *sql.Rows
-	var err error
+	var (
+		nodeId, nodeName, nodeTeam, nodeServer, nodeState    string
+		bucketId, repositoryId, instanceId, sourceInstanceId string
+		view, oncallId, oncallName, serviceName, customId    string
+		systemProp, value, customProp                        string
+		nodeAsset                                            int
+		nodeOnline, nodeDeleted                              bool
+		rows                                                 *sql.Rows
+		err                                                  error
+	)
 	result := somaResult{}
 
 	switch q.action {
@@ -92,8 +121,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		log.Printf("R: node/list")
 		rows, err = r.list_stmt.Query()
 		if result.SetRequestError(err) {
-			q.reply <- result
-			return
+			goto dispatch
 		}
 		defer rows.Close()
 
@@ -110,8 +138,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		log.Printf(`R: node/sync`)
 		rows, err = r.sync_stmt.Query()
 		if result.SetRequestError(err) {
-			q.reply <- result
-			return
+			goto dispatch
 		}
 		defer rows.Close()
 
@@ -155,21 +182,181 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			} else {
 				_ = result.SetRequestError(err)
 			}
-			q.reply <- result
-			return
+			goto dispatch
+		}
+		node := proto.Node{
+			Id:        nodeId,
+			AssetId:   uint64(nodeAsset),
+			Name:      nodeName,
+			TeamId:    nodeTeam,
+			ServerId:  nodeServer,
+			State:     nodeState,
+			IsOnline:  nodeOnline,
+			IsDeleted: nodeDeleted,
+		}
+
+		// add configuration data
+		err = r.conf_stmt.QueryRow(q.Node.Id).Scan(
+			&nodeId,
+			&nodeName,
+			&bucketId,
+			&repositoryId,
+		)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				result.SetNotFound()
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			goto dispatch
+		}
+		node.Config = &proto.NodeConfig{
+			RepositoryId: repositoryId,
+			BucketId:     bucketId,
+		}
+		node.Properties = &[]proto.Property{}
+
+		// oncall properties
+		rows, err = r.ponc_stmt.Query(q.Node.Id)
+		if result.SetRequestError(err) {
+			goto dispatch
+		}
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&oncallId,
+				&oncallName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*node.Properties = append(
+				*node.Properties,
+				proto.Property{
+					Type:             `oncall`,
+					RepositoryId:     repositoryId,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Oncall: &proto.PropertyOncall{
+						Id:   oncallId,
+						Name: oncallName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// service properties
+		rows, err = r.psvc_stmt.Query(q.Node.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&serviceName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*node.Properties = append(
+				*node.Properties,
+				proto.Property{
+					Type:             `service`,
+					RepositoryId:     repositoryId,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Service: &proto.PropertyService{
+						Name: serviceName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// system properties
+		rows, err = r.psys_stmt.Query(q.Node.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&systemProp,
+				&value,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*node.Properties = append(
+				*node.Properties,
+				proto.Property{
+					Type:             `system`,
+					RepositoryId:     repositoryId,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					System: &proto.PropertySystem{
+						Name:  systemProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// custom properties
+		rows, err = r.pcst_stmt.Query(q.Node.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&customId,
+				&value,
+				&customProp,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*node.Properties = append(
+				*node.Properties,
+				proto.Property{
+					Type:             `custom`,
+					RepositoryId:     repositoryId,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Custom: &proto.PropertyCustom{
+						Id:    customId,
+						Name:  customProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
 		}
 
 		result.Append(err, &somaNodeResult{
-			Node: proto.Node{
-				Id:        nodeId,
-				AssetId:   uint64(nodeAsset),
-				Name:      nodeName,
-				TeamId:    nodeTeam,
-				ServerId:  nodeServer,
-				State:     nodeState,
-				IsOnline:  nodeOnline,
-				IsDeleted: nodeDeleted,
-			},
+			Node: node,
 		})
 	case "get_config":
 		log.Printf("R: node/get_config")
@@ -185,8 +372,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			} else {
 				_ = result.SetRequestError(err)
 			}
-			q.reply <- result
-			return
+			goto dispatch
 		}
 
 		result.Append(err, &somaNodeResult{
@@ -202,6 +388,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 	default:
 		result.SetNotImplemented()
 	}
+dispatch:
 	q.reply <- result
 }
 

@@ -13,6 +13,10 @@ SELECT $1::uuid,
        $4::varchar,
        $5::uuid;`
 
+const tkStmtPropertyInstanceDelete = `
+DELETE FROM soma.property_instances
+WHERE       instance_id = $1::uuid;`
+
 /*
  * Statements for job state updates
  */

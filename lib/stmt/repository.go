@@ -53,4 +53,85 @@ FROM   soma.repositories
 WHERE  repository_id = $1
 AND    NOT repository_deleted;`
 
+const RepoOncProps = `
+SELECT op.instance_id,
+       op.source_instance_id,
+       op.view,
+       op.oncall_duty_id,
+       iodt.oncall_duty_name
+FROM   soma.repository_oncall_property op
+JOIN   inventory.oncall_duty_teams iodt
+  ON   op.oncall_duty_id = iodt.oncall_duty_id
+WHERE  op.repository_id = $1::uuid;`
+
+const RepoSvcProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.service_property
+FROM   soma.repository_service_properties sp
+WHERE  sp.repository_id = $1::uuid;`
+
+const RepoSysProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.system_property,
+       sp.value
+FROM   soma.repository_system_properties sp
+WHERE  sp.repository_id = $1::uuid;`
+
+const RepoCstProps = `
+SELECT cp.instance_id,
+       cp.source_instance_id,
+       cp.view,
+       cp.custom_property_id,
+       cp.value,
+       scp.custom_property
+FROM   soma.repository_custom_properties cp
+JOIN   soma.custom_properties scp
+  ON   cp.custom_property_id = scp.custom_property_id
+WHERE  cp.repository_id = $1::uuid;`
+
+const RepoSystemPropertyForDelete = `
+SELECT view,
+       system_property,
+       value
+FROM   soma.repository_system_properties
+WHERE  source_instance_id = $1::uuid
+  AND  source_instance_id = instance_id;`
+
+const RepoCustomPropertyForDelete = `
+SELECT srcp.view,
+       srcp.custom_property_id,
+       srcp.value,
+       scp.custom_property
+FROM   soma.repository_custom_properties srcp
+JOIN   soma.custom_properties scp
+  ON   srcp.repository_id = scp.repository_id
+ AND   srcp.custom_property_id = scp.custom_property_id
+WHERE  source_instance_id = $1::uuid
+  AND  source_instance_id = instance_id;`
+
+const RepoOncallPropertyForDelete = `
+SELECT srop.view,
+       srop.oncall_duty_id,
+       iodt.oncall_duty_name,
+       iodt.oncall_duty_phone_number
+FROM   soma.repository_oncall_properties srop
+JOIN   inventory.oncall_duty_teams iodt
+  ON   srop.oncall_duty_id = iodt.oncall_duty_id
+WHERE  source_instance_id = $1::uuid
+  AND  source_instance_id = instance_id;`
+
+const RepoServicePropertyForDelete = `
+SELECT srsp.view,
+       srsp.service_property
+FROM   soma.repository_service_properties srsp
+JOIN   soma.team_service_properties stsp
+  ON   srsp.organizational_team_id = stsp.organizational_team_id
+ AND   srsp.service_property = stsp.service_property
+WHERE  source_instance_id = $1::uuid
+  AND  source_instance_id = instance_id;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

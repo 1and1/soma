@@ -87,6 +87,10 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
+const tkStmtGroupPropertyOncallDelete = `
+DELETE FROM soma.group_oncall_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtGroupPropertyServiceCreate = `
 INSERT INTO soma.group_service_properties (
             instance_id,
@@ -107,6 +111,10 @@ SELECT $1::uuid,
        $7::uuid,
        $8::boolean,
        $9::boolean;`
+
+const tkStmtGroupPropertyServiceDelete = `
+DELETE FROM soma.group_service_properties
+WHERE       instance_id = $1::uuid;`
 
 const tkStmtGroupPropertySystemCreate = `
 INSERT INTO soma.group_system_properties (
@@ -133,6 +141,10 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
+const tkStmtGroupPropertySystemDelete = `
+DELETE FROM soma.group_system_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtGroupPropertyCustomCreate = `
 INSERT INTO soma.group_custom_properties (
             instance_id,
@@ -155,5 +167,9 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean,
        $10::text;`
+
+const tkStmtGroupPropertyCustomDelete = `
+DELETE FROM soma.group_custom_properties
+WHERE       instance_id = $1::uuid;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

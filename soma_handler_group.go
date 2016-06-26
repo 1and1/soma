@@ -38,6 +38,10 @@ type somaGroupReadHandler struct {
 	mbgl_stmt *sql.Stmt
 	mbcl_stmt *sql.Stmt
 	mbnl_stmt *sql.Stmt
+	ponc_stmt *sql.Stmt
+	psvc_stmt *sql.Stmt
+	psys_stmt *sql.Stmt
+	pcst_stmt *sql.Stmt
 }
 
 func (r *somaGroupReadHandler) run() {
@@ -110,6 +114,26 @@ WHERE  sgmn.group_id = $1::uuid;`)
 	}
 	defer r.mbnl_stmt.Close()
 
+	if r.ponc_stmt, err = r.conn.Prepare(stmt.GroupOncProps); err != nil {
+		log.Fatal(`group/property-oncall: `, err)
+	}
+	defer r.ponc_stmt.Close()
+
+	if r.psvc_stmt, err = r.conn.Prepare(stmt.GroupSvcProps); err != nil {
+		log.Fatal(`group/property-service: `, err)
+	}
+	defer r.psvc_stmt.Close()
+
+	if r.psys_stmt, err = r.conn.Prepare(stmt.GroupSysProps); err != nil {
+		log.Fatal(`group/property-system: `, err)
+	}
+	defer r.psys_stmt.Close()
+
+	if r.pcst_stmt, err = r.conn.Prepare(stmt.GroupCstProps); err != nil {
+		log.Fatal(`group/property-custom: `, err)
+	}
+	defer r.pcst_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -125,11 +149,13 @@ runloop:
 
 func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 	var (
-		groupId, groupName, bucketId, groupState, teamId string
-		mGroupId, mGroupName, mClusterId, mClusterName   string
-		mNodeId, mNodeName                               string
-		rows                                             *sql.Rows
-		err                                              error
+		groupId, groupName, bucketId, groupState, teamId  string
+		mGroupId, mGroupName, mClusterId, mClusterName    string
+		mNodeId, mNodeName, instanceId, sourceInstanceId  string
+		view, oncallId, oncallName, serviceName, customId string
+		systemProp, value, customProp                     string
+		rows                                              *sql.Rows
+		err                                               error
 	)
 	result := somaResult{}
 	resG := proto.Group{}
@@ -140,8 +166,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
-			q.reply <- result
-			return
+			goto dispatch
 		}
 
 		for rows.Next() {
@@ -168,18 +193,154 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			} else {
 				_ = result.SetRequestError(err)
 			}
-			q.reply <- result
-			return
+			goto dispatch
+		}
+		group := proto.Group{
+			Id:          groupId,
+			Name:        groupName,
+			BucketId:    bucketId,
+			ObjectState: groupState,
+			TeamId:      teamId,
+		}
+		group.Properties = &[]proto.Property{}
+
+		// oncall properties
+		rows, err = r.ponc_stmt.Query(q.Group.Id)
+		if result.SetRequestError(err) {
+			goto dispatch
+		}
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&oncallId,
+				&oncallName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*group.Properties = append(
+				*group.Properties,
+				proto.Property{
+					Type:             `oncall`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Oncall: &proto.PropertyOncall{
+						Id:   oncallId,
+						Name: oncallName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// service properties
+		rows, err = r.psvc_stmt.Query(q.Group.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&serviceName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*group.Properties = append(
+				*group.Properties,
+				proto.Property{
+					Type:             `service`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Service: &proto.PropertyService{
+						Name: serviceName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// system properties
+		rows, err = r.psys_stmt.Query(q.Group.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&systemProp,
+				&value,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*group.Properties = append(
+				*group.Properties,
+				proto.Property{
+					Type:             `system`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					System: &proto.PropertySystem{
+						Name:  systemProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// custom properties
+		rows, err = r.pcst_stmt.Query(q.Group.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&customId,
+				&value,
+				&customProp,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*group.Properties = append(
+				*group.Properties,
+				proto.Property{
+					Type:             `custom`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Custom: &proto.PropertyCustom{
+						Id:    customId,
+						Name:  customProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
 		}
 
 		result.Append(err, &somaGroupResult{
-			Group: proto.Group{
-				Id:          groupId,
-				Name:        groupName,
-				BucketId:    bucketId,
-				ObjectState: groupState,
-				TeamId:      teamId,
-			},
+			Group: group,
 		})
 	case "member_list":
 		log.Printf("R: group/memberlist for %s", q.Group.Id)
@@ -243,6 +404,8 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 	default:
 		result.SetNotImplemented()
 	}
+
+dispatch:
 	q.reply <- result
 }
 

@@ -59,6 +59,10 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
+const tkStmtClusterPropertyOncallDelete = `
+DELETE FROM soma.cluster_oncall_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtClusterPropertyServiceCreate = `
 INSERT INTO soma.cluster_service_properties (
             instance_id,
@@ -79,6 +83,10 @@ SELECT $1::uuid,
        $7::uuid,
        $8::boolean,
        $9::boolean;`
+
+const tkStmtClusterPropertyServiceDelete = `
+DELETE FROM soma.cluster_service_properties
+WHERE       instance_id = $1::uuid;`
 
 const tkStmtClusterPropertySystemCreate = `
 INSERT INTO soma.cluster_system_properties (
@@ -105,6 +113,10 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
+const tkStmtClusterPropertySystemDelete = `
+DELETE FROM soma.cluster_system_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtClusterPropertyCustomCreate = `
 INSERT INTO soma.cluster_custom_properties (
             instance_id,
@@ -127,5 +139,9 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean,
        $10::text;`
+
+const tkStmtClusterPropertyCustomDelete = `
+DELETE FROM soma.cluster_custom_properties
+WHERE       instance_id = $1::uuid;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

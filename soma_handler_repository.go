@@ -37,6 +37,10 @@ type somaRepositoryReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	ponc_stmt *sql.Stmt
+	psvc_stmt *sql.Stmt
+	psys_stmt *sql.Stmt
+	pcst_stmt *sql.Stmt
 }
 
 func (r *somaRepositoryReadHandler) run() {
@@ -51,6 +55,26 @@ func (r *somaRepositoryReadHandler) run() {
 		log.Fatal("repository/show: ", err)
 	}
 	defer r.show_stmt.Close()
+
+	if r.ponc_stmt, err = r.conn.Prepare(stmt.RepoOncProps); err != nil {
+		log.Fatal(`repository/property-oncall: `, err)
+	}
+	defer r.ponc_stmt.Close()
+
+	if r.psvc_stmt, err = r.conn.Prepare(stmt.RepoSvcProps); err != nil {
+		log.Fatal(`repository/property-service: `, err)
+	}
+	defer r.psvc_stmt.Close()
+
+	if r.psys_stmt, err = r.conn.Prepare(stmt.RepoSysProps); err != nil {
+		log.Fatal(`repository/property-system: `, err)
+	}
+	defer r.psys_stmt.Close()
+
+	if r.pcst_stmt, err = r.conn.Prepare(stmt.RepoCstProps); err != nil {
+		log.Fatal(`repository/property-custom: `, err)
+	}
+	defer r.pcst_stmt.Close()
 
 runloop:
 	for {
@@ -67,21 +91,22 @@ runloop:
 
 func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 	var (
-		repoId, repoName, teamId string
-		rows                     *sql.Rows
-		repoActive               bool
-		err                      error
+		repoId, repoName, teamId, instanceId, sourceInstanceId string
+		view, oncallId, oncallName, serviceName, customId      string
+		systemProp, value, customProp                          string
+		rows                                                   *sql.Rows
+		repoActive                                             bool
+		err                                                    error
 	)
 	result := somaResult{}
 
 	switch q.action {
-	case "list":
+	case `list`:
 		log.Printf("R: repository/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
-			q.reply <- result
-			return
+			goto dispatch
 		}
 
 		for rows.Next() {
@@ -93,7 +118,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 				},
 			})
 		}
-	case "show":
+	case `show`:
 		log.Printf("R: repository/show for %s", q.Repository.Id)
 		err = r.show_stmt.QueryRow(q.Repository.Id).Scan(
 			&repoId,
@@ -107,22 +132,160 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 			} else {
 				_ = result.SetRequestError(err)
 			}
-			q.reply <- result
-			return
+			goto dispatch
+		}
+		repo := proto.Repository{
+			Id:        repoId,
+			Name:      repoName,
+			TeamId:    teamId,
+			IsDeleted: false,
+			IsActive:  repoActive,
+		}
+		repo.Properties = &[]proto.Property{}
+
+		// oncall properties
+		rows, err = r.ponc_stmt.Query(q.Repository.Id)
+		if result.SetRequestError(err) {
+			goto dispatch
+		}
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&oncallId,
+				&oncallName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*repo.Properties = append(
+				*repo.Properties,
+				proto.Property{
+					Type:             `oncall`,
+					RepositoryId:     q.Repository.Id,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Oncall: &proto.PropertyOncall{
+						Id:   oncallId,
+						Name: oncallName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// service properties
+		rows, err = r.psvc_stmt.Query(q.Repository.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&serviceName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*repo.Properties = append(
+				*repo.Properties,
+				proto.Property{
+					Type:             `service`,
+					RepositoryId:     q.Repository.Id,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Service: &proto.PropertyService{
+						Name: serviceName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// system properties
+		rows, err = r.psys_stmt.Query(q.Repository.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&systemProp,
+				&value,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*repo.Properties = append(
+				*repo.Properties,
+				proto.Property{
+					Type:             `system`,
+					RepositoryId:     q.Repository.Id,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					System: &proto.PropertySystem{
+						Name:  systemProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// custom properties
+		rows, err = r.pcst_stmt.Query(q.Repository.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&customId,
+				&value,
+				&customProp,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*repo.Properties = append(
+				*repo.Properties,
+				proto.Property{
+					Type:             `custom`,
+					RepositoryId:     q.Repository.Id,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Custom: &proto.PropertyCustom{
+						Id:    customId,
+						Name:  customProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
 		}
 
 		result.Append(err, &somaRepositoryResult{
-			Repository: proto.Repository{
-				Id:        repoId,
-				Name:      repoName,
-				TeamId:    teamId,
-				IsDeleted: false,
-				IsActive:  repoActive,
-			},
+			Repository: repo,
 		})
 	default:
 		result.SetNotImplemented()
 	}
+
+dispatch:
 	q.reply <- result
 }
 

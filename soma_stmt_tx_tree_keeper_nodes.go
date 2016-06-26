@@ -34,6 +34,10 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
+const tkStmtNodePropertyOncallDelete = `
+DELETE FROM soma.node_oncall_property
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtNodePropertyServiceCreate = `
 INSERT INTO soma.node_service_properties (
             instance_id,
@@ -54,6 +58,10 @@ SELECT $1::uuid,
        $7::uuid,
        $8::boolean,
        $9::boolean;`
+
+const tkStmtNodePropertyServiceDelete = `
+DELETE FROM soma.node_service_properties
+WHERE       instance_id = $1::uuid;`
 
 const tkStmtNodePropertySystemCreate = `
 INSERT INTO soma.node_system_properties (
@@ -80,6 +88,10 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
+const tkStmtNodePropertySystemDelete = `
+DELETE FROM soma.node_system_properties
+WHERE       instance_id = $1::uuid;`
+
 const tkStmtNodePropertyCustomCreate = `
 INSERT INTO soma.node_custom_properties (
             instance_id,
@@ -102,5 +114,9 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean,
        $10::text;`
+
+const tkStmtNodePropertyCustomDelete = `
+DELETE FROM soma.node_custom_properties
+WHERE       instance_id = $1::uuid;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

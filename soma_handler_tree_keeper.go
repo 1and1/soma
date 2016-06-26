@@ -45,9 +45,9 @@ type treeKeeper struct {
 	input      chan treeRequest
 	shutdown   chan bool
 	conn       *sql.DB
-	tree       *somatree.SomaTree
-	errChan    chan *somatree.Error
-	actionChan chan *somatree.Action
+	tree       *tree.Tree
+	errChan    chan *tree.Error
+	actionChan chan *tree.Action
 	start_job  *sql.Stmt
 	get_view   *sql.Stmt
 }
@@ -113,7 +113,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		err        error
 		hasErrors  bool
 		tx         *sql.Tx
-		treeCheck  *somatree.Check
+		treeCheck  *tree.Check
 		nullBucket sql.NullString
 
 		txStmtPropertyInstanceCreate *sql.Stmt
@@ -187,10 +187,10 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	//
 	// REPOSITORY MANIPULATION REQUESTS
 	case "add_system_property_to_repository":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "repository",
 			ElementId:   q.Repository.Repository.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertySystem{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Repository.Repository.Properties)[0].ChildrenOnly,
@@ -198,11 +198,23 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Repository.Repository.Properties)[0].System.Name,
 			Value:        (*q.Repository.Repository.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `repository`,
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Key:      (*q.Repository.Repository.Properties)[0].System.Name,
+			Value:    (*q.Repository.Repository.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_repository":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "repository",
 			ElementId:   q.Repository.Repository.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Repository.Repository.Properties)[0].ChildrenOnly,
@@ -210,13 +222,24 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Service:      (*q.Repository.Repository.Properties)[0].Service.Name,
 			Attributes:   (*q.Repository.Repository.Properties)[0].Service.Attributes,
 		})
+	case `delete_service_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: "repository",
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Service:  (*q.Repository.Repository.Properties)[0].Service.Name,
+		})
 	case "add_oncall_property_to_repository":
 		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "repository",
 			ElementId:   q.Repository.Repository.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyOncall{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
 			Id:           uuid.NewV4(),
 			OncallId:     oncallId,
 			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
@@ -225,13 +248,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Repository.Repository.Properties)[0].Oncall.Name,
 			Number:       (*q.Repository.Repository.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: "repository",
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Name:     (*q.Repository.Repository.Properties)[0].Oncall.Name,
+			Number:   (*q.Repository.Repository.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_repository":
 		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "repository",
 			ElementId:   q.Repository.Repository.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyCustom{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
 			Id:           uuid.NewV4(),
 			CustomId:     customId,
 			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
@@ -240,11 +277,25 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Repository.Repository.Properties)[0].Custom.Name,
 			Value:        (*q.Repository.Repository.Properties)[0].Custom.Value,
 		})
+	case `delete_custom_property_from_repository`:
+		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: "repository",
+			ElementId:   q.Repository.Repository.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Repository.Repository.Properties)[0].View,
+			Key:      (*q.Repository.Repository.Properties)[0].Custom.Name,
+			Value:    (*q.Repository.Repository.Properties)[0].Custom.Value,
+		})
 
 	//
 	// BUCKET MANIPULATION REQUESTS
 	case "create_bucket":
-		somatree.NewBucket(somatree.BucketSpec{
+		tree.NewBucket(tree.BucketSpec{
 			Id:          uuid.NewV4().String(),
 			Name:        q.Bucket.Bucket.Name,
 			Environment: q.Bucket.Bucket.Environment,
@@ -252,17 +303,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Deleted:     q.Bucket.Bucket.IsDeleted,
 			Frozen:      q.Bucket.Bucket.IsFrozen,
 			Repository:  q.Bucket.Bucket.RepositoryId,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "repository",
 			ParentId:   tk.repoId,
 			ParentName: tk.repoName,
 		})
 	case "add_system_property_to_bucket":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "bucket",
 			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertySystem{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Bucket.Bucket.Properties)[0].ChildrenOnly,
@@ -270,11 +321,23 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Bucket.Bucket.Properties)[0].System.Name,
 			Value:        (*q.Bucket.Bucket.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_bucket`:
+		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `bucket`,
+			ElementId:   q.Bucket.Bucket.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Bucket.Bucket.Properties)[0].View,
+			Key:      (*q.Bucket.Bucket.Properties)[0].System.Name,
+			Value:    (*q.Bucket.Bucket.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_bucket":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "bucket",
 			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Bucket.Bucket.Properties)[0].ChildrenOnly,
@@ -282,13 +345,24 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Service:      (*q.Bucket.Bucket.Properties)[0].Service.Name,
 			Attributes:   (*q.Bucket.Bucket.Properties)[0].Service.Attributes,
 		})
+	case `delete_service_property_from_bucket`:
+		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `bucket`,
+			ElementId:   q.Bucket.Bucket.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Bucket.Bucket.Properties)[0].View,
+			Service:  (*q.Bucket.Bucket.Properties)[0].Service.Name,
+		})
 	case "add_oncall_property_to_bucket":
 		oncallId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Oncall.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "bucket",
 			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyOncall{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
 			Id:           uuid.NewV4(),
 			OncallId:     oncallId,
 			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
@@ -297,13 +371,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Bucket.Bucket.Properties)[0].Oncall.Name,
 			Number:       (*q.Bucket.Bucket.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_bucket`:
+		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `bucket`,
+			ElementId:   q.Bucket.Bucket.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Bucket.Bucket.Properties)[0].View,
+			Name:     (*q.Bucket.Bucket.Properties)[0].Oncall.Name,
+			Number:   (*q.Bucket.Bucket.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_bucket":
 		customId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Custom.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "bucket",
 			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyCustom{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
 			Id:           uuid.NewV4(),
 			CustomId:     customId,
 			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
@@ -312,43 +400,57 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Bucket.Bucket.Properties)[0].Custom.Name,
 			Value:        (*q.Bucket.Bucket.Properties)[0].Custom.Value,
 		})
+	case `delete_custom_property_from_bucket`:
+		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `bucket`,
+			ElementId:   q.Bucket.Bucket.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Bucket.Bucket.Properties)[0].View,
+			Key:      (*q.Bucket.Bucket.Properties)[0].Custom.Name,
+			Value:    (*q.Bucket.Bucket.Properties)[0].Custom.Value,
+		})
 
 	//
 	// GROUP MANIPULATION REQUESTS
 	case "create_group":
-		somatree.NewGroup(somatree.GroupSpec{
+		tree.NewGroup(tree.GroupSpec{
 			Id:   uuid.NewV4().String(),
 			Name: q.Group.Group.Name,
 			Team: tk.team,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   q.Group.Group.BucketId,
 		})
 	case "delete_group":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
-		}, true).(somatree.SomaTreeBucketAttacher).Destroy()
+		}, true).(tree.BucketAttacher).Destroy()
 	case "reset_group_to_bucket":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
-		}, true).(somatree.SomaTreeBucketAttacher).Detach()
+		}, true).(tree.BucketAttacher).Detach()
 	case "add_group_to_group":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   (*q.Group.Group.MemberGroups)[0].Id,
-		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+		}, true).(tree.BucketAttacher).ReAttach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   q.Group.Group.Id,
 		})
 	case "add_system_property_to_group":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertySystem{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
@@ -356,11 +458,23 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Group.Group.Properties)[0].System.Name,
 			Value:        (*q.Group.Group.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Key:      (*q.Group.Group.Properties)[0].System.Name,
+			Value:    (*q.Group.Group.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_group":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
@@ -368,13 +482,24 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Service:      (*q.Group.Group.Properties)[0].Service.Name,
 			Attributes:   (*q.Group.Group.Properties)[0].Service.Attributes,
 		})
+	case `delete_service_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Service:  (*q.Group.Group.Properties)[0].Service.Name,
+		})
 	case "add_oncall_property_to_group":
 		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyOncall{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
 			Id:           uuid.NewV4(),
 			OncallId:     oncallId,
 			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
@@ -383,13 +508,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Group.Group.Properties)[0].Oncall.Name,
 			Number:       (*q.Group.Group.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Name:     (*q.Group.Group.Properties)[0].Oncall.Name,
+			Number:   (*q.Group.Group.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_group":
 		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
 			ElementId:   q.Group.Group.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyCustom{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
 			Id:           uuid.NewV4(),
 			CustomId:     customId,
 			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
@@ -398,43 +537,57 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Group.Group.Properties)[0].Custom.Name,
 			Value:        (*q.Group.Group.Properties)[0].Custom.Value,
 		})
+	case `delete_custom_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Key:      (*q.Group.Group.Properties)[0].Custom.Name,
+			Value:    (*q.Group.Group.Properties)[0].Custom.Value,
+		})
 
 	//
 	// CLUSTER MANIPULATION REQUESTS
 	case "create_cluster":
-		somatree.NewCluster(somatree.ClusterSpec{
+		tree.NewCluster(tree.ClusterSpec{
 			Id:   uuid.NewV4().String(),
 			Name: q.Cluster.Cluster.Name,
 			Team: tk.team,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   q.Cluster.Cluster.BucketId,
 		})
 	case "delete_cluster":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(somatree.SomaTreeBucketAttacher).Destroy()
+		}, true).(tree.BucketAttacher).Destroy()
 	case "reset_cluster_to_bucket":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(somatree.SomaTreeBucketAttacher).Detach()
+		}, true).(tree.BucketAttacher).Detach()
 	case "add_cluster_to_group":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   (*q.Group.Group.MemberClusters)[0].Id,
-		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+		}, true).(tree.BucketAttacher).ReAttach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   q.Group.Group.Id,
 		})
 	case "add_system_property_to_cluster":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertySystem{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Cluster.Cluster.Properties)[0].ChildrenOnly,
@@ -442,11 +595,23 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Cluster.Cluster.Properties)[0].System.Name,
 			Value:        (*q.Cluster.Cluster.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Key:      (*q.Cluster.Cluster.Properties)[0].System.Name,
+			Value:    (*q.Cluster.Cluster.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_cluster":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Cluster.Cluster.Properties)[0].ChildrenOnly,
@@ -454,13 +619,24 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Service:      (*q.Cluster.Cluster.Properties)[0].Service.Name,
 			Attributes:   (*q.Cluster.Cluster.Properties)[0].Service.Attributes,
 		})
+	case `delete_service_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Service:  (*q.Cluster.Cluster.Properties)[0].Service.Name,
+		})
 	case "add_oncall_property_to_cluster":
 		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyOncall{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
 			Id:           uuid.NewV4(),
 			OncallId:     oncallId,
 			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
@@ -469,13 +645,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
 			Number:       (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Name:     (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
+			Number:   (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_cluster":
 		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
 			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyCustom{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
 			Id:           uuid.NewV4(),
 			CustomId:     customId,
 			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
@@ -484,11 +674,25 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Cluster.Cluster.Properties)[0].Custom.Name,
 			Value:        (*q.Cluster.Cluster.Properties)[0].Custom.Value,
 		})
+	case `delete_custom_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Key:      (*q.Cluster.Cluster.Properties)[0].Custom.Name,
+			Value:    (*q.Cluster.Cluster.Properties)[0].Custom.Value,
+		})
 
 	//
 	// NODE MANIPULATION REQUESTS
 	case "assign_node":
-		somatree.NewNode(somatree.NodeSpec{
+		tree.NewNode(tree.NodeSpec{
 			Id:       q.Node.Node.Id,
 			AssetId:  q.Node.Node.AssetId,
 			Name:     q.Node.Node.Name,
@@ -496,44 +700,44 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			ServerId: q.Node.Node.ServerId,
 			Online:   q.Node.Node.IsOnline,
 			Deleted:  q.Node.Node.IsDeleted,
-		}).Attach(somatree.AttachRequest{
+		}).Attach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "bucket",
 			ParentId:   q.Node.Node.Config.BucketId,
 		})
 	case "delete_node":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   q.Node.Node.Id,
-		}, true).(somatree.SomaTreeBucketAttacher).Destroy()
+		}, true).(tree.BucketAttacher).Destroy()
 	case "reset_node_to_bucket":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   q.Node.Node.Id,
-		}, true).(somatree.SomaTreeBucketAttacher).Detach()
+		}, true).(tree.BucketAttacher).Detach()
 	case "add_node_to_group":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   (*q.Group.Group.MemberNodes)[0].Id,
-		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+		}, true).(tree.BucketAttacher).ReAttach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "group",
 			ParentId:   q.Group.Group.Id,
 		})
 	case "add_node_to_cluster":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   (*q.Cluster.Cluster.Members)[0].Id,
-		}, true).(somatree.SomaTreeBucketAttacher).ReAttach(somatree.AttachRequest{
+		}, true).(tree.BucketAttacher).ReAttach(tree.AttachRequest{
 			Root:       tk.tree,
 			ParentType: "cluster",
 			ParentId:   q.Cluster.Cluster.Id,
 		})
 	case "add_system_property_to_node":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   q.Node.Node.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertySystem{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertySystem{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Node.Node.Properties)[0].ChildrenOnly,
@@ -541,11 +745,23 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Node.Node.Properties)[0].System.Name,
 			Value:        (*q.Node.Node.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Key:      (*q.Node.Node.Properties)[0].System.Name,
+			Value:    (*q.Node.Node.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_node":
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   q.Node.Node.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyService{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
 			Id:           uuid.NewV4(),
 			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
 			ChildrenOnly: (*q.Node.Node.Properties)[0].ChildrenOnly,
@@ -553,13 +769,24 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Service:      (*q.Node.Node.Properties)[0].Service.Name,
 			Attributes:   (*q.Node.Node.Properties)[0].Service.Attributes,
 		})
+	case `delete_service_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Service:  (*q.Node.Node.Properties)[0].Service.Name,
+		})
 	case "add_oncall_property_to_node":
 		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   q.Node.Node.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyOncall{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
 			Id:           uuid.NewV4(),
 			OncallId:     oncallId,
 			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
@@ -568,13 +795,27 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Node.Node.Properties)[0].Oncall.Name,
 			Number:       (*q.Node.Node.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Name:     (*q.Node.Node.Properties)[0].Oncall.Name,
+			Number:   (*q.Node.Node.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_node":
 		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
 
-		tk.tree.Find(somatree.FindRequest{
+		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
 			ElementId:   q.Node.Node.Id,
-		}, true).(somatree.SomaTreePropertier).SetProperty(&somatree.PropertyCustom{
+		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
 			Id:           uuid.NewV4(),
 			CustomId:     customId,
 			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
@@ -582,6 +823,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Node.Node.Properties)[0].View,
 			Key:          (*q.Node.Node.Properties)[0].Custom.Name,
 			Value:        (*q.Node.Node.Properties)[0].Custom.Value,
+		})
+	case `delete_custom_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Key:      (*q.Node.Node.Properties)[0].Custom.Name,
+			Value:    (*q.Node.Node.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -596,7 +851,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		fallthrough
 	case `add_check_to_node`:
 		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(somatree.FindRequest{
+			tk.tree.Find(tree.FindRequest{
 				ElementType: q.CheckConfig.CheckConfig.ObjectType,
 				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
 			}, true).SetCheck(*treeCheck)
@@ -611,7 +866,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		fallthrough
 	case `remove_check_from_node`:
 		if treeCheck, err = tk.convertCheckForDelete(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(somatree.FindRequest{
+			tk.tree.Find(tree.FindRequest{
 				ElementType: q.CheckConfig.CheckConfig.ObjectType,
 				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
 			}, true).DeleteCheck(*treeCheck)
@@ -1082,6 +1337,21 @@ Service Name:   %s%s`,
 		}
 	}
 
+	// if the error channel has entries, we can fully ignore the
+	// action channel
+	for i := len(tk.errChan); i > 0; i-- {
+		e := <-tk.errChan
+		b, _ := json.Marshal(e)
+		log.Println(string(b))
+		hasErrors = true
+		if err == nil {
+			err = fmt.Errorf(e.Action)
+		}
+	}
+	if hasErrors {
+		goto bailout
+	}
+
 actionloop:
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
@@ -1156,6 +1426,38 @@ actionloop:
 						a.Property.Oncall.Id,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtRepositoryPropertyOncallDelete,
+						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}
@@ -1293,6 +1595,38 @@ Children Only:         %t%s`,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtBucketPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtBucketPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtBucketPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtBucketPropertyOncallDelete,
+						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}
@@ -1468,6 +1802,38 @@ Children Only:         %t%s`,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtGroupPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtGroupPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtGroupPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtGroupPropertyOncallDelete,
+						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}
@@ -1664,6 +2030,38 @@ Children Only:         %t%s`,
 						break actionloop
 					}
 				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtClusterPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtClusterPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtClusterPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtClusterPropertyOncallDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				}
 			case "check_new":
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
@@ -1837,6 +2235,38 @@ Is Inherited:          %t%s`,
 						break actionloop
 					}
 				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtNodePropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtNodePropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtNodePropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtNodePropertyOncallDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				}
 			case "check_new":
 				log.Printf(`SQL: tkStmtCreateCheck:
 Check ID:            %s
@@ -1927,16 +2357,6 @@ Node ID:             %s%s`,
 		goto bailout
 	}
 
-	for i := len(tk.errChan); i > 0; i-- {
-		e := <-tk.errChan
-		b, _ := json.Marshal(e)
-		log.Println(string(b))
-		hasErrors = true
-	}
-	if hasErrors {
-		goto bailout
-	}
-
 	// mark job as finished
 	if _, err = tx.Exec(
 		tkStmtFinishJob,
@@ -1978,9 +2398,9 @@ bailout:
 	return
 }
 
-func (tk *treeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*somatree.Check, error) {
+func (tk *treeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*tree.Check, error) {
 	var err error
-	treechk := &somatree.Check{
+	treechk := &tree.Check{
 		Id:            uuid.Nil,
 		InheritedFrom: uuid.Nil,
 	}
@@ -1993,8 +2413,8 @@ func (tk *treeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*somatree.
 	return treechk, nil
 }
 
-func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*somatree.Check, error) {
-	treechk := &somatree.Check{
+func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error) {
+	treechk := &tree.Check{
 		Id:            uuid.Nil,
 		SourceId:      uuid.Nil,
 		InheritedFrom: uuid.Nil,
@@ -2005,12 +2425,12 @@ func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*somatree.Check, er
 	treechk.CapabilityId, _ = uuid.FromString(conf.CapabilityId)
 	treechk.ConfigId, _ = uuid.FromString(conf.Id)
 	if err := tk.get_view.QueryRow(conf.CapabilityId).Scan(&treechk.View); err != nil {
-		return &somatree.Check{}, err
+		return &tree.Check{}, err
 	}
 
-	treechk.Thresholds = make([]somatree.CheckThreshold, len(conf.Thresholds))
+	treechk.Thresholds = make([]tree.CheckThreshold, len(conf.Thresholds))
 	for i, thr := range conf.Thresholds {
-		nthr := somatree.CheckThreshold{
+		nthr := tree.CheckThreshold{
 			Predicate: thr.Predicate.Symbol,
 			Level:     uint8(thr.Level.Numeric),
 			Value:     thr.Value,
@@ -2018,9 +2438,9 @@ func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*somatree.Check, er
 		treechk.Thresholds[i] = nthr
 	}
 
-	treechk.Constraints = make([]somatree.CheckConstraint, len(conf.Constraints))
+	treechk.Constraints = make([]tree.CheckConstraint, len(conf.Constraints))
 	for i, constr := range conf.Constraints {
-		ncon := somatree.CheckConstraint{
+		ncon := tree.CheckConstraint{
 			Type: constr.ConstraintType,
 		}
 		switch constr.ConstraintType {

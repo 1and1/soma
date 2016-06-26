@@ -150,6 +150,39 @@ func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 	SendBucketReply(&w, &result)
 }
 
+func DeletePropertyFromBucket(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	bucket := &proto.Bucket{
+		Id: params.ByName(`bucket`),
+		Properties: &[]proto.Property{
+			proto.Property{
+				Type:             params.ByName(`type`),
+				BucketId:         params.ByName(`bucket`),
+				SourceInstanceId: params.ByName(`source`),
+			},
+		},
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap["guidePost"].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: `bucket`,
+		Action: fmt.Sprintf("delete_%s_property_from_bucket",
+			params.ByName("type")),
+		User:  params.ByName(`AuthenticatedUser`),
+		reply: returnChannel,
+		Bucket: somaBucketRequest{
+			action: fmt.Sprintf("%s_property_remove",
+				params.ByName("type")),
+			Bucket: *bucket,
+		},
+	}
+	result := <-returnChannel
+	SendRepositoryReply(&w, &result)
+}
+
 /*
  * Utility
  */

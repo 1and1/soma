@@ -36,6 +36,10 @@ type somaClusterReadHandler struct {
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
 	mbnl_stmt *sql.Stmt
+	ponc_stmt *sql.Stmt
+	psvc_stmt *sql.Stmt
+	psys_stmt *sql.Stmt
+	pcst_stmt *sql.Stmt
 }
 
 func (r *somaClusterReadHandler) run() {
@@ -78,6 +82,26 @@ WHERE  scm.cluster_id = $1::uuid;`)
 	}
 	defer r.mbnl_stmt.Close()
 
+	if r.ponc_stmt, err = r.conn.Prepare(stmt.ClusterOncProps); err != nil {
+		log.Fatal(`cluster/property-oncall: `, err)
+	}
+	defer r.ponc_stmt.Close()
+
+	if r.psvc_stmt, err = r.conn.Prepare(stmt.ClusterSvcProps); err != nil {
+		log.Fatal(`cluster/property-service: `, err)
+	}
+	defer r.psvc_stmt.Close()
+
+	if r.psys_stmt, err = r.conn.Prepare(stmt.ClusterSysProps); err != nil {
+		log.Fatal(`cluster/property-system: `, err)
+	}
+	defer r.psys_stmt.Close()
+
+	if r.pcst_stmt, err = r.conn.Prepare(stmt.ClusterCstProps); err != nil {
+		log.Fatal(`cluster/property-custom: `, err)
+	}
+	defer r.pcst_stmt.Close()
+
 runloop:
 	for {
 		select {
@@ -94,7 +118,9 @@ runloop:
 func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 	var (
 		clusterId, clusterName, bucketId, clusterState, teamId string
-		mNodeId, mNodeName                                     string
+		mNodeId, mNodeName, instanceId, sourceInstanceId       string
+		view, oncallId, oncallName, serviceName, customId      string
+		systemProp, value, customProp                          string
 		rows                                                   *sql.Rows
 		err                                                    error
 	)
@@ -135,18 +161,154 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			} else {
 				_ = result.SetRequestError(err)
 			}
-			q.reply <- result
-			return
+			goto dispatch
+		}
+		cluster := proto.Cluster{
+			Id:          clusterId,
+			Name:        clusterName,
+			BucketId:    bucketId,
+			ObjectState: clusterState,
+			TeamId:      teamId,
+		}
+		cluster.Properties = &[]proto.Property{}
+
+		// oncall properties
+		rows, err = r.ponc_stmt.Query(q.Cluster.Id)
+		if result.SetRequestError(err) {
+			goto dispatch
+		}
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&oncallId,
+				&oncallName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*cluster.Properties = append(
+				*cluster.Properties,
+				proto.Property{
+					Type:             `oncall`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Oncall: &proto.PropertyOncall{
+						Id:   oncallId,
+						Name: oncallName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// service properties
+		rows, err = r.psvc_stmt.Query(q.Cluster.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&serviceName,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*cluster.Properties = append(
+				*cluster.Properties,
+				proto.Property{
+					Type:             `service`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Service: &proto.PropertyService{
+						Name: serviceName,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// system properties
+		rows, err = r.psys_stmt.Query(q.Cluster.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&systemProp,
+				&value,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*cluster.Properties = append(
+				*cluster.Properties,
+				proto.Property{
+					Type:             `system`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					System: &proto.PropertySystem{
+						Name:  systemProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+
+		// custom properties
+		rows, err = r.pcst_stmt.Query(q.Cluster.Id)
+		for rows.Next() {
+			if err := rows.Scan(
+				&instanceId,
+				&sourceInstanceId,
+				&view,
+				&customId,
+				&value,
+				&customProp,
+			); result.SetRequestError(err) {
+				rows.Close()
+				goto dispatch
+			}
+			*cluster.Properties = append(
+				*cluster.Properties,
+				proto.Property{
+					Type:             `custom`,
+					BucketId:         bucketId,
+					InstanceId:       instanceId,
+					SourceInstanceId: sourceInstanceId,
+					View:             view,
+					Custom: &proto.PropertyCustom{
+						Id:    customId,
+						Name:  customProp,
+						Value: value,
+					},
+				},
+			)
+		}
+		if err = rows.Err(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
 		}
 
 		result.Append(err, &somaClusterResult{
-			Cluster: proto.Cluster{
-				Id:          clusterId,
-				Name:        clusterName,
-				BucketId:    bucketId,
-				ObjectState: clusterState,
-				TeamId:      teamId,
-			},
+			Cluster: cluster,
 		})
 	case "member_list":
 		log.Printf("R: cluster/memberlist for %s", q.Cluster.Id)
@@ -175,6 +337,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 	default:
 		result.SetNotImplemented()
 	}
+dispatch:
 	q.reply <- result
 }
 
