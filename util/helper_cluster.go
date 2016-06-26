@@ -1,6 +1,8 @@
 package util
 
 import (
+	"fmt"
+
 	"gopkg.in/resty.v0"
 )
 
@@ -26,6 +28,52 @@ func (u SomaUtil) GetClusterIdByName(c *resty.Client, cl string, bId string) str
 	clusterResult := u.DecodeProtoResultClusterFromResponse(resp)
 
 	return (*clusterResult.Clusters)[0].Id
+}
+
+func (u SomaUtil) GetClusterDetails(c *resty.Client, clusterId string) *proto.Cluster {
+	resp := u.GetRequest(c, fmt.Sprintf("/clusters/%s", clusterId))
+	res := u.DecodeResultFromResponse(resp)
+	return &(*res.Clusters)[0]
+}
+
+func (u SomaUtil) FindSourceForClusterProperty(c *resty.Client, pTyp, pName, view, clusterId string) string {
+	cluster := u.GetClusterDetails(c, clusterId)
+	if cluster == nil {
+		return ``
+	}
+	for _, prop := range *cluster.Properties {
+		// wrong type
+		if prop.Type != pTyp {
+			continue
+		}
+		// wrong view
+		if prop.View != view {
+			continue
+		}
+		// inherited property
+		if prop.InstanceId != prop.SourceInstanceId {
+			continue
+		}
+		switch pTyp {
+		case `system`:
+			if prop.System.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `oncall`:
+			if prop.Oncall.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `custom`:
+			if prop.Custom.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `service`:
+			if prop.Service.Name == pName {
+				return prop.SourceInstanceId
+			}
+		}
+	}
+	return ``
 }
 
 func (u SomaUtil) DecodeProtoResultClusterFromResponse(resp *resty.Response) *proto.Result {
