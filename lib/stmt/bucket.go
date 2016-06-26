@@ -8,6 +8,46 @@
 
 package stmt
 
+const BucketOncProps = `
+SELECT op.instance_id,
+       op.source_instance_id,
+       op.view,
+       op.oncall_duty_id,
+       iodt.oncall_duty_name
+FROM   soma.bucket_oncall_property op
+JOIN   inventory.oncall_duty_teams iodt
+  ON   op.oncall_duty_id = iodt.oncall_duty_id
+WHERE  op.bucket_id = $1::uuid;`
+
+const BucketSvcProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.service_property
+FROM   soma.bucket_service_properties sp
+WHERE  sp.bucket_id = $1::uuid;`
+
+const BucketSysProps = `
+SELECT sp.instance_id,
+       sp.source_instance_id,
+       sp.view,
+       sp.system_property,
+       sp.value
+FROM   soma.bucket_system_properties sp
+WHERE  sp.bucket_id = $1::uuid;`
+
+const BucketCstProps = `
+SELECT cp.instance_id,
+       cp.source_instance_id,
+       cp.view,
+       cp.custom_property_id,
+       cp.value,
+       scp.custom_property
+FROM   soma.bucket_custom_properties cp
+JOIN   soma.custom_properties scp
+  ON   cp.custom_property_id = scp.custom_property_id
+WHERE  cp.bucket_id = $1::uuid;`
+
 const BucketSystemPropertyForDelete = `
 SELECT view,
        system_property,
