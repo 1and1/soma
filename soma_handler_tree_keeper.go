@@ -458,6 +458,18 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Group.Group.Properties)[0].System.Name,
 			Value:        (*q.Group.Group.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Key:      (*q.Group.Group.Properties)[0].System.Name,
+			Value:    (*q.Group.Group.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_group":
 		tk.tree.Find(tree.FindRequest{
 			ElementType: "group",
@@ -469,6 +481,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Group.Group.Properties)[0].View,
 			Service:      (*q.Group.Group.Properties)[0].Service.Name,
 			Attributes:   (*q.Group.Group.Properties)[0].Service.Attributes,
+		})
+	case `delete_service_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Service:  (*q.Group.Group.Properties)[0].Service.Name,
 		})
 	case "add_oncall_property_to_group":
 		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
@@ -485,6 +508,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Group.Group.Properties)[0].Oncall.Name,
 			Number:       (*q.Group.Group.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Name:     (*q.Group.Group.Properties)[0].Oncall.Name,
+			Number:   (*q.Group.Group.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_group":
 		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
 
@@ -499,6 +536,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Group.Group.Properties)[0].View,
 			Key:          (*q.Group.Group.Properties)[0].Custom.Name,
 			Value:        (*q.Group.Group.Properties)[0].Custom.Value,
+		})
+	case `delete_custom_property_from_group`:
+		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `group`,
+			ElementId:   q.Group.Group.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Group.Group.Properties)[0].View,
+			Key:      (*q.Group.Group.Properties)[0].Custom.Name,
+			Value:    (*q.Group.Group.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -544,6 +595,18 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Cluster.Cluster.Properties)[0].System.Name,
 			Value:        (*q.Cluster.Cluster.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Key:      (*q.Cluster.Cluster.Properties)[0].System.Name,
+			Value:    (*q.Cluster.Cluster.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_cluster":
 		tk.tree.Find(tree.FindRequest{
 			ElementType: "cluster",
@@ -555,6 +618,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Cluster.Cluster.Properties)[0].View,
 			Service:      (*q.Cluster.Cluster.Properties)[0].Service.Name,
 			Attributes:   (*q.Cluster.Cluster.Properties)[0].Service.Attributes,
+		})
+	case `delete_service_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Service:  (*q.Cluster.Cluster.Properties)[0].Service.Name,
 		})
 	case "add_oncall_property_to_cluster":
 		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
@@ -571,6 +645,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
 			Number:       (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Name:     (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
+			Number:   (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_cluster":
 		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
 
@@ -585,6 +673,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Cluster.Cluster.Properties)[0].View,
 			Key:          (*q.Cluster.Cluster.Properties)[0].Custom.Name,
 			Value:        (*q.Cluster.Cluster.Properties)[0].Custom.Value,
+		})
+	case `delete_custom_property_from_cluster`:
+		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `cluster`,
+			ElementId:   q.Cluster.Cluster.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Cluster.Cluster.Properties)[0].View,
+			Key:      (*q.Cluster.Cluster.Properties)[0].Custom.Name,
+			Value:    (*q.Cluster.Cluster.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -1653,6 +1755,38 @@ Children Only:         %t%s`,
 						break actionloop
 					}
 				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtGroupPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtGroupPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtGroupPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtGroupPropertyOncallDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				}
 			case "check_new":
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
@@ -1841,6 +1975,38 @@ Children Only:         %t%s`,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtClusterPropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtClusterPropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtClusterPropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtClusterPropertyOncallDelete,
+						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}

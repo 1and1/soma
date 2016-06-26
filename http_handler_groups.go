@@ -199,6 +199,57 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
+func DeletePropertyFromGroup(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := proto.Request{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName(`group`) != cReq.Group.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched group ids: %s, %s",
+				params.ByName(`group`),
+				cReq.Group.Id))
+		return
+	case cReq.Group.BucketId == ``:
+		DispatchBadRequest(&w,
+			fmt.Errorf(`Missing bucketId in group delete request`))
+		return
+	}
+
+	group := proto.Group{
+		Id: params.ByName(`group`),
+		Properties: &[]proto.Property{
+			proto.Property{
+				Type:             params.ByName(`type`),
+				BucketId:         cReq.Group.BucketId,
+				SourceInstanceId: params.ByName(`source`),
+			},
+		},
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`guidePost`].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: `group`,
+		Action: fmt.Sprintf("delete_%s_property_from_group",
+			params.ByName(`type`)),
+		User:  params.ByName(`AuthenticatedUser`),
+		reply: returnChannel,
+		Group: somaGroupRequest{
+			action: fmt.Sprintf("%s_property_remove",
+				params.ByName(`type`)),
+			Group: group,
+		},
+	}
+	result := <-returnChannel
+	SendGroupReply(&w, &result)
+}
+
 /*
  * Utility
  */

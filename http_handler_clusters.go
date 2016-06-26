@@ -192,6 +192,57 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
+func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := proto.Request{}
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName(`cluster`) != cReq.Cluster.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched cluster ids: %s, %s",
+				params.ByName(`cluster`),
+				cReq.Group.Id))
+		return
+	case cReq.Group.BucketId == ``:
+		DispatchBadRequest(&w,
+			fmt.Errorf(`Missing bucketId in bucket property delete request`))
+		return
+	}
+
+	cluster := proto.Cluster{
+		Id: params.ByName(`cluster`),
+		Properties: &[]proto.Property{
+			proto.Property{
+				Type:             params.ByName(`type`),
+				BucketId:         cReq.Cluster.BucketId,
+				SourceInstanceId: params.ByName(`source`),
+			},
+		},
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`guidePost`].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: `cluster`,
+		Action: fmt.Sprintf("delete_%s_property_from_cluster",
+			params.ByName(`type`)),
+		User:  params.ByName(`AuthenticatedUser`),
+		reply: returnChannel,
+		Cluster: somaClusterRequest{
+			action: fmt.Sprintf("%s_property_remove",
+				params.ByName(`type`)),
+			Cluster: cluster,
+		},
+	}
+	result := <-returnChannel
+	SendClusterReply(&w, &result)
+}
+
 /*
  * Utility
  */
