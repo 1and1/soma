@@ -59,7 +59,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach oncall properties
+	tk.startupRepositoryOncallProperties()
+	tk.startupBucketOncallProperties()
 	tk.startupGroupOncallProperties()
+	tk.startupClusterOncallProperties()
+	tk.startupNodeOncallProperties()
 
 	if len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -675,157 +679,6 @@ customloop:
 		}
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		instance_rows, err = load_instances.Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current group system property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
-				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the group and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: groupId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
-	}
-}
-
-func (tk *treeKeeper) startupGroupOncallProperties() {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                          error
-		instanceId, srcInstanceId, groupId, view, oncallId, oncallName, oncallNumber string
-		inInstanceId, inObjectType, inObjId                                          string
-		inheritance, childrenOnly                                                    bool
-		rows, instance_rows                                                          *sql.Rows
-		load_properties, load_instances                                              *sql.Stmt
-	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  sgop.instance_id,
-        sgop.source_instance_id,
-        sgop.group_id,
-        sgop.view,
-        sgop.oncall_duty_id,
-        sgop.inheritance_enabled,
-        sgop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.group_oncall_properties sgop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    sgop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   sgop.instance_id = sgop.source_instance_id
-  AND   sgop.repository_id = $1::uuid;`)
-	if err != nil {
-		log.Fatal("treekeeper/load-group-oncall-properties: ", err)
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
-	if err != nil {
-		log.Fatal("treekeeper/load-group-oncall-property-instances: ", err)
-	}
-	defer load_instances.Close()
-
-	log.Printf("TK[%s]: loading group oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
-	if err != nil {
-		log.Printf("TK[%s] Error loading group oncall properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-oncallloop:
-	// load all system properties defined directly on group objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&groupId,
-			&view,
-			&oncallId,
-			&inheritance,
-			&childrenOnly,
-			&oncallName,
-			&oncallNumber,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break oncallloop
-			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyOncall{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Name:         oncallName,
-			Number:       oncallNumber,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.OncallId, _ = uuid.FromString(oncallId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
 		instance_rows, err = load_instances.Query(
