@@ -466,7 +466,7 @@ func cmdRepositoryServicePropertyDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `system`, sourceId)
+		repositoryId, `service`, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
@@ -490,7 +490,7 @@ func cmdRepositoryOncallPropertyDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `system`, sourceId)
+		repositoryId, `oncall`, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
@@ -514,7 +514,7 @@ func cmdRepositoryCustomPropertyDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `system`, sourceId)
+		repositoryId, `custom`, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err

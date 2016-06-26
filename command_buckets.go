@@ -463,7 +463,7 @@ func cmdBucketServicePropertyDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `system`, sourceId)
+		bucketId, `service`, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
@@ -487,7 +487,7 @@ func cmdBucketOncallPropertyDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `system`, sourceId)
+		bucketId, `oncall`, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
@@ -511,7 +511,7 @@ func cmdBucketCustomPropertyDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `system`, sourceId)
+		bucketId, `custom`, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
