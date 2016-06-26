@@ -39,6 +39,52 @@ func (u SomaUtil) GetTeamIdByRepositoryId(c *resty.Client, repo string) string {
 	return (*repoResult.Repositories)[0].TeamId
 }
 
+func (u SomaUtil) GetRepositoryDetails(c *resty.Client, repoId string) *proto.Repository {
+	resp := u.GetRequest(c, fmt.Sprintf("/repository/%s", repoId))
+	res := u.DecodeResultFromResponse(resp)
+	return &(*res.Repositories)[0]
+}
+
+func (u SomaUtil) FindSourceForRepoProperty(c *resty.Client, pTyp, pName, view, repoId string) string {
+	repo := u.GetRepositoryDetails(c, repoId)
+	if repo == nil {
+		return ``
+	}
+	for _, prop := range *repo.Properties {
+		// wrong type
+		if prop.Type != pTyp {
+			continue
+		}
+		// wrong view
+		if prop.View != view {
+			continue
+		}
+		// inherited property
+		if prop.InstanceId != prop.SourceInstanceId {
+			continue
+		}
+		switch pTyp {
+		case `system`:
+			if prop.System.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `oncall`:
+			if prop.Oncall.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `custom`:
+			if prop.Custom.Name == pName {
+				return prop.SourceInstanceId
+			}
+		case `service`:
+			if prop.Service.Name == pName {
+				return prop.SourceInstanceId
+			}
+		}
+	}
+	return ``
+}
+
 func (u SomaUtil) DecodeProtoResultRepositoryFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
