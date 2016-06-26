@@ -230,6 +230,7 @@ func main() {
 		router.DELETE(`/metrics/:metric`, BasicAuth(DeleteMetric))
 		router.DELETE(`/modes/:mode`, BasicAuth(DeleteMode))
 		router.DELETE(`/monitoring/:monitoring`, BasicAuth(DeleteMonitoring))
+		router.DELETE(`/nodes/:node/property/:type/:source`, BasicAuth(DeletePropertyFromNode))
 		router.DELETE(`/nodes/:node`, BasicAuth(DeleteNode))
 		router.DELETE(`/objstates/:state`, BasicAuth(DeleteObjectState))
 		router.DELETE(`/objtypes/:type`, BasicAuth(DeleteObjectType))

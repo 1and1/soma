@@ -297,6 +297,14 @@ func (g *guidePost) process(q *treeRequest) {
 	case "add_oncall_property_to_node":
 		fallthrough
 	case "add_service_property_to_node":
+		fallthrough
+	case `delete_system_property_from_node`:
+		fallthrough
+	case `delete_custom_property_from_node`:
+		fallthrough
+	case `delete_oncall_property_from_node`:
+		fallthrough
+	case `delete_service_property_from_node`:
 		if q.Node.Node.Config == nil {
 			_ = result.SetRequestError(fmt.Errorf("NodeConfig subobject missing"))
 			q.reply <- result
@@ -520,7 +528,8 @@ func (g *guidePost) process(q *treeRequest) {
 		(strings.HasSuffix(q.Action, `property_from_repository`) ||
 			strings.HasSuffix(q.Action, `property_from_bucket`) ||
 			strings.HasSuffix(q.Action, `property_from_group`) ||
-			strings.HasSuffix(q.Action, `property_from_cluster`)) {
+			strings.HasSuffix(q.Action, `property_from_cluster`) ||
+			strings.HasSuffix(q.Action, `property_from_node`)) {
 		var (
 			err                                             error
 			row                                             *sql.Row
@@ -563,6 +572,14 @@ func (g *guidePost) process(q *treeRequest) {
 			queryStmt = stmt.ClusterServicePropertyForDelete
 		case `delete_oncall_property_from_cluster`:
 			queryStmt = stmt.ClusterOncallPropertyForDelete
+		case `delete_system_property_from_node`:
+			queryStmt = stmt.NodeSystemPropertyForDelete
+		case `delete_custom_property_from_node`:
+			queryStmt = stmt.NodeCustomPropertyForDelete
+		case `delete_service_property_from_node`:
+			queryStmt = stmt.NodeServicePropertyForDelete
+		case `delete_oncall_property_from_node`:
+			queryStmt = stmt.NodeOncallPropertyForDelete
 		}
 
 		// execute and scan
@@ -575,42 +592,20 @@ func (g *guidePost) process(q *treeRequest) {
 			row = g.conn.QueryRow(queryStmt, (*q.Group.Group.Properties)[0].SourceInstanceId)
 		case `cluster`:
 			row = g.conn.QueryRow(queryStmt, (*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
+		case `node`:
+			row = g.conn.QueryRow(queryStmt, (*q.Node.Node.Properties)[0].SourceInstanceId)
 		}
-		switch q.Action {
-		case `delete_system_property_from_repository`:
-			fallthrough
-		case `delete_system_property_from_bucket`:
-			fallthrough
-		case `delete_system_property_from_group`:
-			fallthrough
-		case `delete_system_property_from_cluster`:
+		switch {
+		case strings.HasPrefix(q.Action, `delete_system_`):
 			err = row.Scan(&view, &sysProp, &value)
 
-		case `delete_custom_property_from_repository`:
-			fallthrough
-		case `delete_custom_property_from_bucket`:
-			fallthrough
-		case `delete_custom_property_from_group`:
-			fallthrough
-		case `delete_custom_property_from_cluster`:
+		case strings.HasPrefix(q.Action, `delete_custom_`):
 			err = row.Scan(&view, &cstId, &value, &cstProp)
 
-		case `delete_service_property_from_repository`:
-			fallthrough
-		case `delete_service_property_from_bucket`:
-			fallthrough
-		case `delete_service_property_from_group`:
-			fallthrough
-		case `delete_service_property_from_cluster`:
+		case strings.HasPrefix(q.Action, `delete_service_`):
 			err = row.Scan(&view, &svcProp)
 
-		case `delete_oncall_property_from_repository`:
-			fallthrough
-		case `delete_oncall_property_from_bucket`:
-			fallthrough
-		case `delete_oncall_property_from_group`:
-			fallthrough
-		case `delete_oncall_property_from_cluster`:
+		case strings.HasPrefix(q.Action, `delete_oncall_`):
 			err = row.Scan(&view, &oncId, &oncName, &oncNumber)
 		}
 		if err != nil {
@@ -668,6 +663,8 @@ func (g *guidePost) process(q *treeRequest) {
 			(*q.Group.Group.Properties)[0].View = view
 		case strings.HasSuffix(q.Action, `_cluster`):
 			(*q.Cluster.Cluster.Properties)[0].View = view
+		case strings.HasSuffix(q.Action, `_node`):
+			(*q.Node.Node.Properties)[0].View = view
 		}
 
 		// final assembly step
@@ -707,6 +704,15 @@ func (g *guidePost) process(q *treeRequest) {
 			(*q.Cluster.Cluster.Properties)[0].Service = pSvc
 		case `delete_oncall_property_from_cluster`:
 			(*q.Cluster.Cluster.Properties)[0].Oncall = pOnc
+
+		case `delete_system_property_from_node`:
+			(*q.Node.Node.Properties)[0].System = pSys
+		case `delete_custom_property_from_node`:
+			(*q.Node.Node.Properties)[0].Custom = pCst
+		case `delete_service_property_from_node`:
+			(*q.Node.Node.Properties)[0].Service = pSvc
+		case `delete_oncall_property_from_node`:
+			(*q.Node.Node.Properties)[0].Oncall = pOnc
 		}
 	}
 

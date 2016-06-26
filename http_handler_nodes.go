@@ -277,6 +277,69 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+func DeletePropertyFromNode(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	cReq := proto.NewNodeRequest()
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	switch {
+	case params.ByName(`node`) != cReq.Node.Id:
+		DispatchBadRequest(&w,
+			fmt.Errorf("Mismatched node ids: %s, %s",
+				params.ByName(`node`),
+				cReq.Node.Id))
+		return
+	case cReq.Node.Config == nil:
+		DispatchBadRequest(&w,
+			fmt.Errorf(`Node configuration data missing`))
+		return
+	}
+	// outside switch: _after_ nil test
+	if cReq.Node.Config.RepositoryId == `` ||
+		cReq.Node.Config.BucketId == `` {
+		DispatchBadRequest(&w,
+			fmt.Errorf(`Node configuration data incomplete`))
+		return
+	}
+
+	node := proto.Node{
+		Id: params.ByName(`node`),
+		Config: &proto.NodeConfig{
+			RepositoryId: cReq.Node.Config.RepositoryId,
+			BucketId:     cReq.Node.Config.BucketId,
+		},
+		Properties: &[]proto.Property{
+			proto.Property{
+				Type:             params.ByName(`type`),
+				RepositoryId:     cReq.Node.Config.RepositoryId,
+				BucketId:         cReq.Node.Config.BucketId,
+				SourceInstanceId: params.ByName(`source`),
+			},
+		},
+	}
+
+	returnChannel := make(chan somaResult)
+	handler := handlerMap[`guidePost`].(guidePost)
+	handler.input <- treeRequest{
+		RequestType: `node`,
+		Action: fmt.Sprintf("delete_%s_property_from_node",
+			params.ByName(`type`)),
+		User:  params.ByName(`AuthenticatedUser`),
+		reply: returnChannel,
+		Node: somaNodeRequest{
+			action: fmt.Sprintf("%s_property_remove",
+				params.ByName(`type`)),
+			Node: node,
+		},
+	}
+	result := <-returnChannel
+	SendNodeReply(&w, &result)
+}
+
 /* Utility
  */
 func SendNodeReply(w *http.ResponseWriter, r *somaResult) {

@@ -48,4 +48,45 @@ SELECT node_id,
        node_deleted
 FROM   soma.nodes;`
 
+const NodeSystemPropertyForDelete = `
+SELECT snsp.view,
+       snsp.system_property,
+       snsp.value
+FROM   soma.node_system_properties snsp
+WHERE  snsp.source_instance_id = $1::uuid
+  AND  snsp.source_instance_id = snsp.instance_id;`
+
+const NodeCustomPropertyForDelete = `
+SELECT sncp.view,
+       sncp.custom_property_id,
+       sncp.value,
+       scp.custom_property
+FROM   soma.node_custom_properties sncp
+JOIN   soma.custom_properties scp
+  ON   sncp.repository_id = scp.repository_id
+ AND   sncp.custom_property_id = scp.custom_property_id
+WHERE  sncp.source_instance_id = $1::uuid
+  AND  sncp.source_instance_id = sncp.instance_id;`
+
+const NodeOncallPropertyForDelete = `
+SELECT snop.view,
+       snop.oncall_duty_id,
+       iodt.oncall_duty_name,
+       iodt.oncall_duty_phone_number
+FROM   soma.node_oncall_properties snop
+JOIN   inventory.oncall_duty_teams iodt
+  ON   snop.oncall_duty_id = iodt.oncall_duty_id
+WHERE  snop.source_instance_id = $1::uuid
+  AND  snop.source_instance_id = snop.instance_id;`
+
+const NodeServicePropertyForDelete = `
+SELECT snsp.view,
+       snsp.service_property
+FROM   soma.node_service_properties snsp
+JOIN   soma.team_service_properties stsp
+  ON   snsp.organizational_team_id = stsp.organizational_team_id
+ AND   snsp.service_property = stsp.service_property
+WHERE  snsp.source_instance_id = $1::uuid
+  AND  snsp.source_instance_id = snsp.instance_id;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

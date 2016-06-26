@@ -745,6 +745,18 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:          (*q.Node.Node.Properties)[0].System.Name,
 			Value:        (*q.Node.Node.Properties)[0].System.Value,
 		})
+	case `delete_system_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertySystem{
+			SourceId: srcUUID,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Key:      (*q.Node.Node.Properties)[0].System.Name,
+			Value:    (*q.Node.Node.Properties)[0].System.Value,
+		})
 	case "add_service_property_to_node":
 		tk.tree.Find(tree.FindRequest{
 			ElementType: "node",
@@ -756,6 +768,17 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Node.Node.Properties)[0].View,
 			Service:      (*q.Node.Node.Properties)[0].Service.Name,
 			Attributes:   (*q.Node.Node.Properties)[0].Service.Attributes,
+		})
+	case `delete_service_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
+			SourceId: srcUUID,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Service:  (*q.Node.Node.Properties)[0].Service.Name,
 		})
 	case "add_oncall_property_to_node":
 		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
@@ -772,6 +795,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:         (*q.Node.Node.Properties)[0].Oncall.Name,
 			Number:       (*q.Node.Node.Properties)[0].Oncall.Number,
 		})
+	case `delete_oncall_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
+			SourceId: srcUUID,
+			OncallId: oncallId,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Name:     (*q.Node.Node.Properties)[0].Oncall.Name,
+			Number:   (*q.Node.Node.Properties)[0].Oncall.Number,
+		})
 	case "add_custom_property_to_node":
 		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
 
@@ -786,6 +823,20 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:         (*q.Node.Node.Properties)[0].View,
 			Key:          (*q.Node.Node.Properties)[0].Custom.Name,
 			Value:        (*q.Node.Node.Properties)[0].Custom.Value,
+		})
+	case `delete_custom_property_from_node`:
+		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
+		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
+
+		tk.tree.Find(tree.FindRequest{
+			ElementType: `node`,
+			ElementId:   q.Node.Node.Id,
+		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
+			SourceId: srcUUID,
+			CustomId: customId,
+			View:     (*q.Node.Node.Properties)[0].View,
+			Key:      (*q.Node.Node.Properties)[0].Custom.Name,
+			Value:    (*q.Node.Node.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -2180,6 +2231,38 @@ Is Inherited:          %t%s`,
 						a.Property.RepositoryId,
 						a.Property.Inheritance,
 						a.Property.ChildrenOnly,
+					); err != nil {
+						break actionloop
+					}
+				}
+			case `property_delete`:
+				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
+					a.Property.InstanceId,
+				); err != nil {
+					break actionloop
+				}
+				switch a.Property.Type {
+				case `custom`:
+					if _, err = tx.Exec(tkStmtNodePropertyCustomDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `system`:
+					if _, err = tx.Exec(tkStmtNodePropertySystemDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `service`:
+					if _, err = tx.Exec(tkStmtNodePropertyServiceDelete,
+						a.Property.InstanceId,
+					); err != nil {
+						break actionloop
+					}
+				case `oncall`:
+					if _, err = tx.Exec(tkStmtNodePropertyOncallDelete,
+						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}
