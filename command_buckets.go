@@ -90,24 +90,28 @@ func registerBuckets(app cli.App) *cli.App {
 								Usage: `SUBCOMMANDS for property delete`,
 								Subcommands: []cli.Command{
 									{
-										Name:   `system`,
-										Usage:  `Delete a system property from a bucket`,
-										Action: runtime(cmdBucketSystemPropertyDelete),
+										Name:         `system`,
+										Usage:        `Delete a system property from a bucket`,
+										Action:       runtime(cmdBucketSystemPropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 									{
-										Name:   `service`,
-										Usage:  `Delete a service property from a bucket`,
-										Action: runtime(cmdBucketServicePropertyDelete),
+										Name:         `service`,
+										Usage:        `Delete a service property from a bucket`,
+										Action:       runtime(cmdBucketServicePropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 									{
-										Name:   `oncall`,
-										Usage:  `Delete an oncall property from a bucket`,
-										Action: runtime(cmdBucketOncallPropertyDelete),
+										Name:         `oncall`,
+										Usage:        `Delete an oncall property from a bucket`,
+										Action:       runtime(cmdBucketOncallPropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 									{
-										Name:   `custom`,
-										Usage:  `Delete a custom property from a bucket`,
-										Action: runtime(cmdBucketCustomPropertyDelete),
+										Name:         `custom`,
+										Usage:        `Delete a custom property from a bucket`,
+										Action:       runtime(cmdBucketCustomPropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 								},
 							},
@@ -424,79 +428,22 @@ func cmdBucketServicePropertyAdd(c *cli.Context) error {
 }
 
 func cmdBucketSystemPropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	unique := []string{`from`, `view`}
-	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`from`][0])
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-
-	sourceId := utl.FindSourceForBucketProperty(Client, `system`, c.Args().First(),
-		opts[`view`][0], bucketId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `system`, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdBucketPropertyDelete(c, `system`)
 }
 
 func cmdBucketServicePropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	unique := []string{`from`, `view`}
-	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`from`][0])
-
-	sourceId := utl.FindSourceForBucketProperty(Client, `service`, c.Args().First(),
-		opts[`view`][0], bucketId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `service`, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdBucketPropertyDelete(c, `service`)
 }
 
 func cmdBucketOncallPropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	unique := []string{`from`, `view`}
-	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`from`][0])
-
-	sourceId := utl.FindSourceForBucketProperty(Client, `oncall`, c.Args().First(),
-		opts[`view`][0], bucketId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `oncall`, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdBucketPropertyDelete(c, `oncall`)
 }
 
 func cmdBucketCustomPropertyDelete(c *cli.Context) error {
+	return cmdBucketPropertyDelete(c, `custom`)
+}
+
+func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	unique := []string{`from`, `view`}
@@ -504,14 +451,17 @@ func cmdBucketCustomPropertyDelete(c *cli.Context) error {
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	bucketId := utl.BucketByUUIDOrName(Client, opts[`from`][0])
 
-	sourceId := utl.FindSourceForBucketProperty(Client, `custom`, c.Args().First(),
+	if pType == `system` {
+		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+	}
+	sourceId := utl.FindSourceForBucketProperty(Client, pType, c.Args().First(),
 		opts[`view`][0], bucketId)
 	if sourceId == `` {
 		utl.Abort(`Could not find locally set requested property.`)
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
-		bucketId, `custom`, sourceId)
+		bucketId, pType, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err

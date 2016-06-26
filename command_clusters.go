@@ -90,6 +90,36 @@ func registerClusters(app cli.App) *cli.App {
 									},
 								},
 							},
+							{
+								Name:  `delete`,
+								Usage: `SUBCOMMANDS for property delete`,
+								Subcommands: []cli.Command{
+									{
+										Name:         `system`,
+										Usage:        `Delete a system property from a cluster`,
+										Action:       runtime(cmdClusterSystemPropertyDelete),
+										BashComplete: cmpl.FromViewIn,
+									},
+									{
+										Name:         `service`,
+										Usage:        `Delete a service property from a cluster`,
+										Action:       runtime(cmdClusterOncallPropertyDelete),
+										BashComplete: cmpl.FromViewIn,
+									},
+									{
+										Name:         `oncall`,
+										Usage:        `Delete an oncall property from a cluster`,
+										Action:       runtime(cmdClusterOncallPropertyDelete),
+										BashComplete: cmpl.FromViewIn,
+									},
+									{
+										Name:         `custom`,
+										Usage:        `Delete a custom property from a cluster`,
+										Action:       runtime(cmdClusterCustomPropertyDelete),
+										BashComplete: cmpl.FromViewIn,
+									},
+								},
+							},
 						},
 					},
 				},
@@ -466,91 +496,22 @@ func cmdClusterOncallPropertyAdd(c *cli.Context) error {
 }
 
 func cmdClusterSystemPropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	unique := []string{`from`, `view`, `in`}
-	required := []string{`from`, `view`, `in`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
-
-	sourceId := utl.FindSourceForClusterProperty(Client, `system`, c.Args().First(),
-		opts[`view`][0], clusterId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	req := proto.NewClusterRequest()
-	req.Cluster.Id = clusterId
-	req.Cluster.BucketId = bucketId
-	path := fmt.Sprintf("/clusters/%s/property/%s/%s",
-		clusterId, `system`, sourceId)
-
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdClusterPropertyDelete(c, `system`)
 }
 
 func cmdClusterServicePropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	unique := []string{`from`, `view`, `in`}
-	required := []string{`from`, `view`, `in`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
-
-	sourceId := utl.FindSourceForClusterProperty(Client, `service`, c.Args().First(),
-		opts[`view`][0], clusterId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	req := proto.NewClusterRequest()
-	req.Cluster.Id = clusterId
-	req.Cluster.BucketId = bucketId
-	path := fmt.Sprintf("/clusters/%s/property/%s/%s",
-		clusterId, `service`, sourceId)
-
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdClusterPropertyDelete(c, `service`)
 }
 
 func cmdClusterOncallPropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	unique := []string{`from`, `view`, `in`}
-	required := []string{`from`, `view`, `in`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
-
-	sourceId := utl.FindSourceForClusterProperty(Client, `oncall`, c.Args().First(),
-		opts[`view`][0], clusterId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	req := proto.NewClusterRequest()
-	req.Cluster.Id = clusterId
-	req.Cluster.BucketId = bucketId
-	path := fmt.Sprintf("/clusters/%s/property/%s/%s",
-		clusterId, `oncall`, sourceId)
-
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdClusterPropertyDelete(c, `oncall`)
 }
 
 func cmdClusterCustomPropertyDelete(c *cli.Context) error {
+	return cmdClusterPropertyDelete(c, `custom`)
+}
+
+func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{`from`, `view`, `in`}
@@ -559,7 +520,10 @@ func cmdClusterCustomPropertyDelete(c *cli.Context) error {
 	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
 
-	sourceId := utl.FindSourceForClusterProperty(Client, `custom`, c.Args().First(),
+	if pType == `system` {
+		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+	}
+	sourceId := utl.FindSourceForClusterProperty(Client, pType, c.Args().First(),
 		opts[`view`][0], clusterId)
 	if sourceId == `` {
 		utl.Abort(`Could not find locally set requested property.`)
@@ -569,7 +533,7 @@ func cmdClusterCustomPropertyDelete(c *cli.Context) error {
 	req.Cluster.Id = clusterId
 	req.Cluster.BucketId = bucketId
 	path := fmt.Sprintf("/clusters/%s/property/%s/%s",
-		clusterId, `custom`, sourceId)
+		clusterId, pType, sourceId)
 
 	if resp, err := adm.DeleteReqBody(req, path); err != nil {
 		return err

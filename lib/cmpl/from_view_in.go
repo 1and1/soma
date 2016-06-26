@@ -6,12 +6,12 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-func NodePropertyDelete(c *cli.Context) {
+func FromViewIn(c *cli.Context) {
 	switch {
 	case c.NArg() == 0:
 		return
 	case c.NArg() == 1:
-		for _, t := range []string{`from`, `view`} {
+		for _, t := range []string{`from`, `view`, `in`} {
 			fmt.Println(t)
 		}
 		return
@@ -20,6 +20,7 @@ func NodePropertyDelete(c *cli.Context) {
 	skip := 0
 	hasFROM := false
 	hasVIEW := false
+	hasIN := false
 
 	for _, t := range c.Args().Tail() {
 		if skip > 0 {
@@ -35,12 +36,16 @@ func NodePropertyDelete(c *cli.Context) {
 			skip = 1
 			hasVIEW = true
 			continue
+		case `in`:
+			skip = 1
+			hasIN = true
+			continue
 		}
 	}
 	if skip > 0 {
 		return
 	}
-	for _, t := range []string{`from`, `view`} {
+	for _, t := range []string{`from`, `view`, `in`} {
 		switch t {
 		case `from`:
 			if !hasFROM {
@@ -48,6 +53,10 @@ func NodePropertyDelete(c *cli.Context) {
 			}
 		case `view`:
 			if !hasVIEW {
+				fmt.Println(t)
+			}
+		case `in`:
+			if !hasIN {
 				fmt.Println(t)
 			}
 		}

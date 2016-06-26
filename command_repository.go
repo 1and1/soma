@@ -109,24 +109,28 @@ func registerRepository(app cli.App) *cli.App {
 								Usage: `SUBCOMMANDS for property delete`,
 								Subcommands: []cli.Command{
 									{
-										Name:   `system`,
-										Usage:  `Delete a system property from a repository`,
-										Action: runtime(cmdRepositorySystemPropertyDelete),
+										Name:         `system`,
+										Usage:        `Delete a system property from a repository`,
+										Action:       runtime(cmdRepositorySystemPropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 									{
-										Name:   `service`,
-										Usage:  `Delete a service property from a repository`,
-										Action: runtime(cmdRepositoryServicePropertyDelete),
+										Name:         `service`,
+										Usage:        `Delete a service property from a repository`,
+										Action:       runtime(cmdRepositoryServicePropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 									{
-										Name:   `oncall`,
-										Usage:  `Delete an oncall property from a repository`,
-										Action: runtime(cmdRepositoryOncallPropertyDelete),
+										Name:         `oncall`,
+										Usage:        `Delete an oncall property from a repository`,
+										Action:       runtime(cmdRepositoryOncallPropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 									{
-										Name:   `custom`,
-										Usage:  `Delete a custom property from a repository`,
-										Action: runtime(cmdRepositoryCustomPropertyDelete),
+										Name:         `custom`,
+										Usage:        `Delete a custom property from a repository`,
+										Action:       runtime(cmdRepositoryCustomPropertyDelete),
+										BashComplete: cmpl.FromView,
 									},
 								},
 							},
@@ -427,79 +431,22 @@ func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
 }
 
 func cmdRepositorySystemPropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	unique := []string{`from`, `view`}
-	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`from`][0])
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-
-	sourceId := utl.FindSourceForRepoProperty(Client, `system`, c.Args().First(),
-		opts[`view`][0], repositoryId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `system`, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdRepositoryPropertyDelete(c, `system`)
 }
 
 func cmdRepositoryServicePropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	unique := []string{`from`, `view`}
-	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`from`][0])
-
-	sourceId := utl.FindSourceForRepoProperty(Client, `service`, c.Args().First(),
-		opts[`view`][0], repositoryId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `service`, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdRepositoryPropertyDelete(c, `service`)
 }
 
 func cmdRepositoryOncallPropertyDelete(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	unique := []string{`from`, `view`}
-	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`from`][0])
-
-	sourceId := utl.FindSourceForRepoProperty(Client, `oncall`, c.Args().First(),
-		opts[`view`][0], repositoryId)
-	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
-	}
-
-	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `oncall`, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return cmdRepositoryPropertyDelete(c, `oncall`)
 }
 
 func cmdRepositoryCustomPropertyDelete(c *cli.Context) error {
+	return cmdRepositoryPropertyDelete(c, `custom`)
+}
+
+func cmdRepositoryPropertyDelete(c *cli.Context, pType string) error {
 	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	unique := []string{`from`, `view`}
@@ -507,14 +454,17 @@ func cmdRepositoryCustomPropertyDelete(c *cli.Context) error {
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`from`][0])
 
-	sourceId := utl.FindSourceForRepoProperty(Client, `custom`, c.Args().First(),
+	if pType == `system` {
+		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+	}
+	sourceId := utl.FindSourceForRepoProperty(Client, pType, c.Args().First(),
 		opts[`view`][0], repositoryId)
 	if sourceId == `` {
-		utl.Abort(`Could not find locally set requested property.`)
+		return fmt.Errorf(`Could not find locally set requested property.`)
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/%s/%s",
-		repositoryId, `custom`, sourceId)
+		repositoryId, pType, sourceId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
