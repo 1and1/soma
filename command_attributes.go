@@ -15,9 +15,10 @@ func registerAttributes(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for service attributes",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new service attribute",
-						Action: runtime(cmdAttributeCreate),
+						Name:         "create",
+						Usage:        "Create a new service attribute",
+						Action:       runtime(cmdAttributeCreate),
+						BashComplete: cmpl.AttributeCreate,
 					},
 					{
 						Name:   "delete",
