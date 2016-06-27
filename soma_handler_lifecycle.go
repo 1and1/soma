@@ -328,12 +328,12 @@ func (lc *lifeCycle) poke() {
 		pokeIDs[monitoringID] = append(pokeIDs[monitoringID], chkID)
 	}
 
-	cl = resty.New().SetTimeout(500 * time.Millisecond)
 	// do not poke the bear
 bearloop:
 	for mon, idList := range pokeIDs {
 		for _, id := range idList {
-			if _, err = cl.R().
+			cl = resty.New()
+			if _, err = cl.SetTimeout(500 * time.Millisecond).R().
 				SetBody(PokeMessage{Uuid: id, Path: "/deployments/id"}).
 				Post(callbacks[mon]); err != nil {
 				log.Println(err)
