@@ -272,13 +272,16 @@ checksloop:
 							ldInstId,
 							false,
 						)
-						break nosvcstartinstanceloop
+						goto nosvcstartinstancematch
 					}
-					// if we hit here, then we just computed an instance
-					// that we could not match to any loaded instances
-					// -> something is wrong
-					panic(`Failed to match computed instance to loaded instances`)
 				}
+				// if we hit here, then we just computed an instance
+				// that we could not match to any loaded instances
+				// -> something is wrong
+				log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+				ten.Fault.Error <- &Error{Action: `instance_match_failure`}
+				return
+			nosvcstartinstancematch:
 			} else {
 			nosvcinstanceloop:
 				for _, exInstId := range ten.CheckInstances[i] {
@@ -395,7 +398,6 @@ checksloop:
 				inst.calcInstanceSvcCfgHash()
 
 				if startupLoad {
-				startinstanceloop:
 					for ldInstId, ldInst := range ten.loadedInstances[i] {
 						// check for data from loaded instance
 						if ldInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
@@ -427,13 +429,16 @@ checksloop:
 								ldInstId,
 								true,
 							)
-							break startinstanceloop
+							goto startinstancematch
 						}
-						// if we hit here, then just computed an
-						// instance that we could not match to any
-						// loaded instances -> something is wrong
-						panic(`Failed to match computed instance to loaded instances`)
 					}
+					// if we hit here, then just computed an
+					// instance that we could not match to any
+					// loaded instances -> something is wrong
+					log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+					ten.Fault.Error <- &Error{Action: `instance_match_failure`}
+					return
+				startinstancematch:
 				} else {
 					// lookup existing instance ids for check in ten.CheckInstances
 					// to determine if this is an update
