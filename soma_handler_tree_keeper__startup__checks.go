@@ -528,7 +528,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						tk.broken = true
 						return
 					}
-					tk.drain(`error`)
+					if tk.drain(`error`) > 0 {
+						goto fail
+					}
 				}
 			}
 			// iterate through all childgroups of objKey
@@ -563,7 +565,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 								return
 							}
 						}
-						tk.drain(`error`)
+						if tk.drain(`error`) > 0 {
+							goto fail
+						}
 					}
 				}
 			}
@@ -598,7 +602,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						tk.broken = true
 						return
 					}
-					tk.drain(`error`)
+					if tk.drain(`error`) > 0 {
+						goto fail
+					}
 				}
 			}
 		}
@@ -629,7 +635,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					tk.broken = true
 					return
 				}
-				tk.drain(`error`)
+				if tk.drain(`error`) > 0 {
+					goto fail
+				}
 			}
 		}
 	}
