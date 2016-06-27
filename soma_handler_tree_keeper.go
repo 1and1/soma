@@ -1358,8 +1358,8 @@ actionloop:
 
 		// we need all messages to figure out why for example a deferred
 		// constraint later failed
-		jBxX, _ := json.Marshal(a)
-		log.Printf("%s - Processing: %s\n", q.JobId.String(), string(jBxX))
+		//jBxX, _ := json.Marshal(a)
+		//log.Printf("%s - Processing: %s\n", q.JobId.String(), string(jBxX))
 
 		switch a.Type {
 		// REPOSITORY
