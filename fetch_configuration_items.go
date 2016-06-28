@@ -64,29 +64,35 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		}
 		log.Printf("Failed to fetch deployment from SOMA: %s\n", err.Error())
 		dispatchPrecondition(&w, err.Error())
+		Failed(msg.Uuid)
 		return
 	}
 	if err = json.Unmarshal(resp.Body(), &res); err != nil {
 		log.Printf("Error deserializing deployment: %s\n", err.Error())
 		dispatchUnprocessable(&w, err.Error())
+		Failed(msg.Uuid)
 		return
 	}
 	if res.StatusCode != 200 {
 		log.Printf("Error in fetched deployment, Statuscode %d\n", res.StatusCode)
 		dispatchGone(&w, err.Error())
+		Failed(msg.Uuid)
 		return
 	}
 	if len(*res.Deployments) != 1 {
 		log.Printf("Error, deployment contained wrong deployment count: %d\n", len(*res.Deployments))
 		dispatchPrecondition(&w, err.Error())
+		Failed(msg.Uuid)
 		return
 	}
 	if err = CheckUpdateOrInsertOrDelete(&(*res.Deployments)[0]); err != nil {
 		log.Printf("Error processing fetched deployment: %s\n", err.Error())
 		dispatchInternalServerError(&w, err.Error())
+		Failed(msg.Uuid)
 		return
 	}
 	dispatchNoContent(&w)
+	Success(msg.Uuid)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
