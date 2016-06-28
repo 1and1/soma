@@ -566,7 +566,7 @@ customloop:
 		if !teg.PropertyCustom[prop].hasInheritance() {
 			continue customloop
 		}
-		f := teg.PropertyCustom[prop].(*PropertyCustom)
+		f := teg.PropertyCustom[prop].(*PropertyCustom).Clone()
 		f.SetInherited(true)
 		f.SetId(uuid.UUID{})
 		f.clearInstances()
