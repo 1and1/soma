@@ -40,6 +40,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 	)
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(&msg); err != nil {
+		log.Printf("Received bad notify event: %s\n", err.Error())
 		dispatchBadRequest(&w, err.Error())
 		return
 	}
@@ -48,6 +49,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		return filepath.IsAbs(str)
 	})
 	if ok, err := govalidator.ValidateStruct(msg); !ok {
+		log.Printf("Failed notify event verification: %s\n", err.Error())
 		dispatchBadRequest(&w, err.Error())
 		return
 	}
@@ -60,22 +62,27 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		if err == nil {
 			err = fmt.Errorf(resp.Status())
 		}
+		log.Printf("Failed to fetch deployment from SOMA: %s\n", err.Error())
 		dispatchPrecondition(&w, err.Error())
 		return
 	}
 	if err = json.Unmarshal(resp.Body(), &res); err != nil {
+		log.Printf("Error deserializing deployment: %s\n", err.Error())
 		dispatchUnprocessable(&w, err.Error())
 		return
 	}
 	if res.StatusCode != 200 {
+		log.Printf("Error in fetched deployment, Statuscode %d\n", res.StatusCode)
 		dispatchGone(&w, err.Error())
 		return
 	}
 	if len(*res.Deployments) != 1 {
+		log.Printf("Error, deployment contained wrong deployment count: %d\n", len(*res.Deployments))
 		dispatchPrecondition(&w, err.Error())
 		return
 	}
 	if err = CheckUpdateOrInsertOrDelete(&(*res.Deployments)[0]); err != nil {
+		log.Printf("Error processing fetched deployment: %s\n", err.Error())
 		dispatchInternalServerError(&w, err.Error())
 		return
 	}

@@ -51,7 +51,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/eye/conf/eye.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.9.999"
+	version := "0.9.9999"
 	log.Printf("Starting runtime config initialization, Eye v%s", version)
 	/*
 	 * Read configuration file
@@ -123,6 +123,7 @@ func main() {
 	router.PUT("/api/v1/item/:item", UpdateConfigurationItem)
 	router.DELETE("/api/v1/item/:item", DeleteConfigurationItem)
 	router.POST("/api/v1/notify/", FetchConfigurationItems)
+	router.POST("/api/v1/notify", FetchConfigurationItems)
 
 	if Eye.Daemon.Tls {
 		log.Fatal(http.ListenAndServeTLS(
