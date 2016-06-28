@@ -21,8 +21,8 @@ type ConfigurationItem struct {
 	Metric              string                   `json:"metric" valid:"printableascii"`
 	HostId              string                   `json:"host_id" valid:"numeric"`
 	Tags                []string                 `json:"tags,omitempty" valid:"-"`
-	Oncall              string                   `json:"oncall" valid:"required"`
-	Interval            uint64                   `json:"interval" valid:"numeric"`
+	Oncall              string                   `json:"oncall" valid:"-"`
+	Interval            uint64                   `json:"interval" valid:"-"`
 	Metadata            ConfigurationMetaData    `json:"metadata" valid:"required"`
 	Thresholds          []ConfigurationThreshold `json:"thresholds" valid:"required"`
 }
@@ -37,7 +37,7 @@ type ConfigurationMetaData struct {
 type ConfigurationThreshold struct {
 	Predicate string `json:"predicate" valid:"required"`
 	Level     uint16 `json:"level" valid:"required"`
-	Value     int64  `json:"value" valid:"required"`
+	Value     int64  `json:"value" valid:"-"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

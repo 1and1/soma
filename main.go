@@ -51,7 +51,7 @@ func main() {
 	flag.StringVar(&configFlag, "config", "/srv/eye/conf/eye.conf", "Configuration file location")
 	flag.Parse()
 
-	version := "0.9.9999"
+	version := "0.9.99999"
 	log.Printf("Starting runtime config initialization, Eye v%s", version)
 	/*
 	 * Read configuration file
