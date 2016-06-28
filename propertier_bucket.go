@@ -303,10 +303,37 @@ func (teb *Bucket) DeleteProperty(p Property) {
 		return
 	}
 
+	var flow Property
+	resync := false
+	delId := teb.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	)
+	if delId != `` {
+		// this is a delete for a locally set property. It might be a
+		// delete for an overwrite property, in which case we need to
+		// ask the parent to sync it to us again.
+		// If it was an overwrite, the parent should have a property
+		// we would consider a dupe if it were to be passed down to
+		// us.
+		// If p is considered a dupe, then flow is set to the prop we
+		// need to inherit.
+		resync, _, flow = teb.Parent.(Propertier).checkDuplicate(p)
+	}
+
 	p.SetInherited(false)
 	if teb.rmProperty(p) {
 		p.SetInherited(true)
 		teb.deletePropertyOnChildren(p)
+	}
+
+	// now that the property is deleted from us and our children,
+	// request resync if required
+	if resync {
+		teb.Parent.resyncProperty(flow.GetSourceInstance(),
+			p.GetType(),
+			teb.Id.String(),
+		)
 	}
 }
 
@@ -502,6 +529,33 @@ func (teb *Bucket) findIdForSource(source, prop string) string {
 		}
 	}
 	return ``
+}
+
+//
+func (teb *Bucket) resyncProperty(srcId, pType, childId string) {
+	pId := teb.findIdForSource(srcId, pType)
+	if pId == `` {
+		return
+	}
+
+	var f Property
+	switch pType {
+	case `custom`:
+		f = teb.PropertyCustom[pId].(*PropertyCustom).Clone()
+	case `oncall`:
+		f = teb.PropertyOncall[pId].(*PropertyOncall).Clone()
+	case `service`:
+		f = teb.PropertyService[pId].(*PropertyService).Clone()
+	case `system`:
+		f = teb.PropertySystem[pId].(*PropertySystem).Clone()
+	}
+	if !f.hasInheritance() {
+		return
+	}
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	f.clearInstances()
+	teb.Children[childId].setPropertyInherited(f)
 }
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)

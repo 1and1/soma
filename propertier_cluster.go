@@ -303,10 +303,37 @@ func (tec *Cluster) DeleteProperty(p Property) {
 		return
 	}
 
+	var flow Property
+	resync := false
+	delId := tec.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	)
+	if delId != `` {
+		// this is a delete for a locally set property. It might be a
+		// delete for an overwrite property, in which case we need to
+		// ask the parent to sync it to us again.
+		// If it was an overwrite, the parent should have a property
+		// we would consider a dupe if it were to be passed down to
+		// us.
+		// If p is considered a dupe, then flow is set to the prop we
+		// need to inherit.
+		resync, _, flow = tec.Parent.(Propertier).checkDuplicate(p)
+	}
+
 	p.SetInherited(false)
 	if tec.rmProperty(p) {
 		p.SetInherited(true)
 		tec.deletePropertyOnChildren(p)
+	}
+
+	// now that the property is deleted from us and our children,
+	// request resync if required
+	if resync {
+		tec.Parent.resyncProperty(flow.GetSourceInstance(),
+			p.GetType(),
+			tec.Id.String(),
+		)
 	}
 }
 
@@ -502,6 +529,33 @@ func (tec *Cluster) findIdForSource(source, prop string) string {
 		}
 	}
 	return ``
+}
+
+//
+func (tec *Cluster) resyncProperty(srcId, pType, childId string) {
+	pId := tec.findIdForSource(srcId, pType)
+	if pId == `` {
+		return
+	}
+
+	var f Property
+	switch pType {
+	case `custom`:
+		f = tec.PropertyCustom[pId].(*PropertyCustom).Clone()
+	case `oncall`:
+		f = tec.PropertyOncall[pId].(*PropertyOncall).Clone()
+	case `service`:
+		f = tec.PropertyService[pId].(*PropertyService).Clone()
+	case `system`:
+		f = tec.PropertySystem[pId].(*PropertySystem).Clone()
+	}
+	if !f.hasInheritance() {
+		return
+	}
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	f.clearInstances()
+	tec.Children[childId].setPropertyInherited(f)
 }
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)

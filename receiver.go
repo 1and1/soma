@@ -28,6 +28,7 @@ type BucketReceiver interface {
 	BucketUnlinker
 
 	receiveBucket(r ReceiveRequest)
+	resyncProperty(srcId, pType, childId string)
 }
 
 type BucketUnlinker interface {
@@ -55,6 +56,7 @@ type GroupReceiver interface {
 	GroupUnlinker
 
 	receiveGroup(r ReceiveRequest)
+	resyncProperty(srcId, pType, childId string)
 }
 
 type GroupUnlinker interface {
@@ -69,6 +71,7 @@ type ClusterReceiver interface {
 	ClusterUnlinker
 
 	receiveCluster(r ReceiveRequest)
+	resyncProperty(srcId, pType, childId string)
 }
 
 type ClusterUnlinker interface {
@@ -83,6 +86,7 @@ type NodeReceiver interface {
 	NodeUnlinker
 
 	receiveNode(r ReceiveRequest)
+	resyncProperty(srcId, pType, childId string)
 }
 
 type NodeUnlinker interface {

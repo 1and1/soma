@@ -303,10 +303,37 @@ func (teg *Group) DeleteProperty(p Property) {
 		return
 	}
 
+	var flow Property
+	resync := false
+	delId := teg.findIdForSource(
+		p.GetSourceInstance(),
+		p.GetType(),
+	)
+	if delId != `` {
+		// this is a delete for a locally set property. It might be a
+		// delete for an overwrite property, in which case we need to
+		// ask the parent to sync it to us again.
+		// If it was an overwrite, the parent should have a property
+		// we would consider a dupe if it were to be passed down to
+		// us.
+		// If p is considered a dupe, then flow is set to the prop we
+		// need to inherit.
+		resync, _, flow = teg.Parent.(Propertier).checkDuplicate(p)
+	}
+
 	p.SetInherited(false)
 	if teg.rmProperty(p) {
 		p.SetInherited(true)
 		teg.deletePropertyOnChildren(p)
+	}
+
+	// now that the property is deleted from us and our children,
+	// request resync if required
+	if resync {
+		teg.Parent.resyncProperty(flow.GetSourceInstance(),
+			p.GetType(),
+			teg.Id.String(),
+		)
 	}
 }
 
@@ -502,6 +529,33 @@ func (teg *Group) findIdForSource(source, prop string) string {
 		}
 	}
 	return ``
+}
+
+//
+func (teg *Group) resyncProperty(srcId, pType, childId string) {
+	pId := teg.findIdForSource(srcId, pType)
+	if pId == `` {
+		return
+	}
+
+	var f Property
+	switch pType {
+	case `custom`:
+		f = teg.PropertyCustom[pId].(*PropertyCustom).Clone()
+	case `oncall`:
+		f = teg.PropertyOncall[pId].(*PropertyOncall).Clone()
+	case `service`:
+		f = teg.PropertyService[pId].(*PropertyService).Clone()
+	case `system`:
+		f = teg.PropertySystem[pId].(*PropertySystem).Clone()
+	}
+	if !f.hasInheritance() {
+		return
+	}
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	f.clearInstances()
+	teg.Children[childId].setPropertyInherited(f)
 }
 
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)

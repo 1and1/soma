@@ -503,6 +503,33 @@ func (ter *Repository) findIdForSource(source, prop string) string {
 	return ``
 }
 
+//
+func (ter *Repository) resyncProperty(srcId, pType, childId string) {
+	pId := ter.findIdForSource(srcId, pType)
+	if pId == `` {
+		return
+	}
+
+	var f Property
+	switch pType {
+	case `custom`:
+		f = ter.PropertyCustom[pId].(*PropertyCustom).Clone()
+	case `oncall`:
+		f = ter.PropertyOncall[pId].(*PropertyOncall).Clone()
+	case `service`:
+		f = ter.PropertyService[pId].(*PropertyService).Clone()
+	case `system`:
+		f = ter.PropertySystem[pId].(*PropertySystem).Clone()
+	}
+	if !f.hasInheritance() {
+		return
+	}
+	f.SetInherited(true)
+	f.SetId(uuid.UUID{})
+	f.clearInstances()
+	ter.Children[childId].setPropertyInherited(f)
+}
+
 // when a child attaches, it calls self.Parent.syncProperty(self.Id)
 // to get get all properties of that part of the tree
 func (ter *Repository) syncProperty(childId string) {
