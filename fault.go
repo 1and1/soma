@@ -73,13 +73,21 @@ func (tef *Fault) setParent(p Receiver) {
 }
 
 func (tef *Fault) setAction(c chan *Action) {
+	if tef.Action != nil && c == nil {
+		tef.Action <- &Action{
+			Action: `remove_actionchannel`,
+			Type:   `fault`,
+		}
+	}
 	tef.Action = c
 
-	tef.Action <- &Action{
-		Action: "create",
-		Type:   "fault",
-		//Id:     tef.Id.String(),
-		//Name:   tef.Name,
+	if tef.Action != nil {
+		tef.Action <- &Action{
+			Action: "create",
+			Type:   "fault",
+			//Id:     tef.Id.String(),
+			//Name:   tef.Name,
+		}
 	}
 }
 
