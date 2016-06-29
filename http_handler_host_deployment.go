@@ -98,7 +98,9 @@ func SendHostDeploymentReply(w *http.ResponseWriter, r *somaResult) {
 			})
 			continue
 		}
-		*result.Deployments = append(*result.Deployments, i.Deployment)
+		if i.ResultError == nil {
+			*result.Deployments = append(*result.Deployments, i.Deployment)
+		}
 	}
 
 dispatch:
