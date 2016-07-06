@@ -6,7 +6,7 @@ func createTablesInstances(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 5)
+	queries := make([]string, 15)
 
 	queryMap["createTableCheckInstanceStatus"] = `
 create table if not exists soma.check_instance_status (
@@ -26,6 +26,15 @@ create table if not exists soma.check_instances (
     deleted                     boolean         NOT NULL DEFAULT 'no'
 );`
 	queries[idx] = "createTableCheckInstances"
+	idx++
+
+	queryMap[`createIndexChecksToInstances`] = `
+create index _checks_to_instances
+on soma.check_instances (
+    check_id,
+    check_instance_id
+);`
+	queries[idx] = `createIndexChecksToInstances`
 	idx++
 
 	queryMap["createTableCheckInstanceConfigurations"] = `
@@ -60,6 +69,33 @@ create unique index _unique_check_instance_configurations_active
 	queries[idx] = "createUniqueIndexActiveConfigurations"
 	idx++
 
+	queryMap[`createIndexInstanceToConfig`] = `
+create index _instance_to_config
+    on soma.check_instance_configurations (
+    check_instance_id,
+    check_instance_config_id
+);`
+	queries[idx] = `createIndexInstanceToConfig`
+	idx++
+
+	queryMap[`createIndexInstanceConfigVersion`] = `
+create unique index _instance_config_version
+    on soma.check_instance_configurations (
+    check_instance_id,
+    version
+);`
+	queries[idx] = `createIndexInstanceConfigVersion`
+	idx++
+
+	queryMap[`createIndexInstanceConfigStatus`] = `
+create index _instance_config_status
+    on soma.check_instance_configurations (
+	status,
+    check_instance_id
+);`
+	queries[idx] = `createIndexInstanceConfigStatus`
+	idx++
+
 	queryMap["createTableCheckInstanceConfigurationDependencies"] = `
 create table if not exists soma.check_instance_configuration_dependencies (
     blocked_instance_config_id  uuid            NOT NULL REFERENCES soma.check_instance_configurations ( check_instance_config_id ) DEFERRABLE,
@@ -67,6 +103,15 @@ create table if not exists soma.check_instance_configuration_dependencies (
     unblocking_state            varchar(32)     NOT NULL REFERENCES soma.check_instance_status ( status ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckInstanceConfigurationDependencies"
+	idx++
+
+	queryMap[`createIndexConfigurationDependencies`] = `
+create index _config_dependencies
+    on soma.check_instance_configuration_dependencies (
+	blocked_instance_config_id,
+    blocking_instance_config_id
+);`
+	queries[idx] = `createIndexConfigurationDependencies`
 	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)

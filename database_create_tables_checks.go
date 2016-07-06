@@ -32,7 +32,7 @@ func createTablesChecks(printOnly bool, verbose bool) {
 	queryMap := make(map[string]string)
 	// slice storing the required statement order so foreign keys can
 	// resolve successfully
-	queries := make([]string, 25)
+	queries := make([]string, 27)
 
 	queryMap["createTableConfigurationPredicates"] = `
 create table if not exists soma.configuration_predicates (
@@ -106,6 +106,15 @@ create table if not exists soma.checks (
 	queries[idx] = "createTableChecks"
 	idx++
 
+	queryMap[`createIndexRepoToChecks`] = `
+create index _repo_to_checks
+    on soma.checks (
+	repository_id,
+    check_id
+);`
+	queries[idx] = `createIndexRepoToChecks`
+	idx++
+
 	queryMap["createTableCheckConfigurationThresholds"] = `
 create table if not exists soma.configuration_thresholds (
     configuration_id            uuid            NOT NULL REFERENCES soma.check_configurations ( configuration_id ) DEFERRABLE,
@@ -114,6 +123,15 @@ create table if not exists soma.configuration_thresholds (
     notification_level          varchar(16)     NOT NULL REFERENCES soma.notification_levels ( level_name ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConfigurationThresholds"
+	idx++
+
+	queryMap[`createIndexConfigurationLevelsById`] = `
+create index _configuration_id_levels
+    on soma.configuration_thresholds (
+	configuration_id,
+    notification_level
+);`
+	queries[idx] = `createIndexConfigurationLevelsById`
 	idx++
 
 	queryMap["createTableCheckConstraintsCustomProperty"] = `

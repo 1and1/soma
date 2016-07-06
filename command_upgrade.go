@@ -26,6 +26,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201605310001: upgrade_soma_to_201606150001,
 		201606150001: upgrade_soma_to_201606160001,
 		201606160001: upgrade_soma_to_201606210001,
+		201606210001: upgrade_soma_to_201607060001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -304,6 +305,28 @@ func upgrade_soma_to_201606210001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201606210001
+}
+
+func upgrade_soma_to_201607060001(curr int, tool string, printOnly bool) int {
+	if curr != 201606210001 {
+		return 0
+	}
+	stmts := []string{
+		`CREATE INDEX CONCURRENTLY _checks_to_instances ON soma.check_instances ( check_id, check_instance_id );`,
+		`CREATE INDEX CONCURRENTLY _repo_to_checks ON checks ( repository_id, check_id );`,
+		`CREATE INDEX CONCURRENTLY _instance_to_config ON soma.check_instance_configurations ( check_instance_id, check_instance_config_id );`,
+		`CREATE INDEX CONCURRENTLY _config_dependencies ON soma.check_instance_configuration_dependencies ( blocked_instance_config_id, blocking_instance_config_id );`,
+		`CREATE INDEX CONCURRENTLY _instance_config_status ON soma.check_instance_configurations ( status, check_instance_id );`,
+		`CREATE UNIQUE INDEX CONCURRENTLY _instance_config_version ON check_instance_configurations ( check_instance_id, version );`,
+		`CREATE INDEX CONCURRENTLY _configuration_id_levels ON configuration_thresholds ( configuration_id, notification_level );`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201607060001, 'Upgrade - somadbctl %s');", tool),
+	)
+
+	executeUpgrades(stmts, printOnly)
+
+	return 201607060001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
