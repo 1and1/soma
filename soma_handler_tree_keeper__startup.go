@@ -8,6 +8,7 @@ import (
 )
 
 func (tk *treeKeeper) startupLoad() {
+
 	tk.startupBuckets()
 	tk.startupGroups()
 	tk.startupGroupMemberGroups()
@@ -81,6 +82,11 @@ func (tk *treeKeeper) startupLoad() {
 		tk.broken = true
 		return
 	}
+
+	// these run as part of a job, but not inside the job's transaction. If there are leftovers
+	// after a crash, fix them up
+	tk.buildDeploymentDetails()
+	tk.orderDeploymentDetails()
 
 	// preload pending/unfinished jobs
 	tk.startupJobs()
