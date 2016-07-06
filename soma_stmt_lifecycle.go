@@ -11,7 +11,7 @@ JOIN    soma.check_instance_configurations scic
 ON      scicd.blocking_instance_config_id = scic.check_instance_config_id
 AND     scicd.unblocking_state = scic.status
 JOIN    soma.check_instance_configurations p
-ON      scicd.blocked_instance_config_id = scic.check_instance_config_id;`
+ON      scicd.blocked_instance_config_id = p.check_instance_config_id;`
 
 const lcStmtUpdateInstance = `
 UPDATE	soma.check_instances
