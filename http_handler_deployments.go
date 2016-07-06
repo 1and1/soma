@@ -105,7 +105,7 @@ func SendDeploymentReply(w *http.ResponseWriter, r *somaResult) {
 		}
 		*result.Deployments = append(*result.Deployments, i.Deployment)
 	}
-	if len(*result.DeploymentsList) == 0 {
+	if len(*result.Deployments) > 0 && len(*result.DeploymentsList) == 0 {
 		result.DeploymentsList = nil
 	}
 
