@@ -14,6 +14,7 @@ type SomaConfig struct {
 	Environment   string         `json:"environment"`
 	ReadOnly      bool           `json:"readonly,string"`
 	OpenInstance  bool           `json:"open.door.policy,string"`
+	LifeCycleTick uint64         `json:"lifecycle.tick.seconds,string"`
 	PokePath      string         `json:"notify.path.element"`
 	Database      SomaDbConfig   `json:"database"`
 	Daemon        SomaDaemon     `json:"daemon"`
