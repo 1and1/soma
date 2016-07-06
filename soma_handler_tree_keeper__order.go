@@ -51,6 +51,7 @@ deployments:
 			tx                            *sql.Tx
 			txUpdateStatus                *sql.Stmt
 			txUpdateInstance              *sql.Stmt
+			txUpdateExisting              *sql.Stmt
 			txDependency                  *sql.Stmt
 		)
 		err = computed.Scan(
@@ -162,6 +163,12 @@ deployments:
 		}
 		defer txUpdateInstance.Close()
 
+		if txUpdateExisting, err = tx.Prepare(tkStmtUpdateExistingCheckInstance); err != nil {
+			log.Println("Failed to prepare: tkStmtUpdateExistingCheckInstance")
+			log.Fatal(err)
+		}
+		defer txUpdateExisting.Close()
+
 		if txDependency, err = tx.Prepare(tkStmtSetDependency); err != nil {
 			log.Println("Failed to prepare: tkStmtSetDependency")
 			log.Fatal(err)
@@ -184,14 +191,15 @@ deployments:
 			); err != nil {
 				goto bailout_withprev
 			}
-		case "rollout_in_progress":
-			if _, err = txUpdateStatus.Exec(
-				"rollout_in_progress",
-				"awaiting_deprovision",
-				previousChkInstanceConfigId,
+			if _, err = txUpdateInstance.Exec(
+				time.Now().UTC(),
+				true,
+				currentChkInstanceConfigId,
+				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
 			}
+		case "rollout_in_progress":
 			if _, err = txUpdateStatus.Exec(
 				"blocked",
 				"awaiting_rollout",
@@ -199,10 +207,9 @@ deployments:
 			); err != nil {
 				goto bailout_withprev
 			}
-			if _, err = txUpdateInstance.Exec(
+			if _, err = txUpdateExisting.Exec(
 				time.Now().UTC(),
-				false,
-				previousChkInstanceConfigId,
+				true,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
@@ -229,10 +236,9 @@ deployments:
 			); err != nil {
 				goto bailout_withprev
 			}
-			if _, err = txUpdateInstance.Exec(
+			if _, err = txUpdateExisting.Exec(
 				time.Now().UTC(),
 				true,
-				previousChkInstanceConfigId,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
@@ -258,10 +264,9 @@ deployments:
 			); err != nil {
 				goto bailout_withprev
 			}
-			if _, err = txUpdateInstance.Exec(
+			if _, err = txUpdateExisting.Exec(
 				time.Now().UTC(),
-				false,
-				previousChkInstanceConfigId,
+				true,
 				chkInstanceId,
 			); err != nil {
 				goto bailout_withprev
