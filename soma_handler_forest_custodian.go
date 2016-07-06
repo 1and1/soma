@@ -241,10 +241,14 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 
 func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree,
 	ec chan *tree.Error, ac chan *tree.Action, team string) {
+	db, err := newDatabaseConnection()
+	if err != nil {
+		return
+	}
 	tK := new(treeKeeper)
 	tK.input = make(chan treeRequest, 1024)
 	tK.shutdown = make(chan bool)
-	tK.conn = f.conn
+	tK.conn = db
 	tK.tree = s
 	tK.errChan = ec
 	tK.actionChan = ac

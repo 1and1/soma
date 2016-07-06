@@ -87,6 +87,32 @@ GROUP  BY schema;`); err != nil {
 	}
 }
 
+func newDatabaseConnection() (*sql.DB, error) {
+	driver := "postgres"
+
+	connect := fmt.Sprintf("dbname='%s' user='%s' password='%s' host='%s' port='%s' sslmode='%s' connect_timeout='%s'",
+		SomaCfg.Database.Name,
+		SomaCfg.Database.User,
+		SomaCfg.Database.Pass,
+		SomaCfg.Database.Host,
+		SomaCfg.Database.Port,
+		SomaCfg.Database.TlsMode,
+		SomaCfg.Database.Timeout,
+	)
+
+	dbcon, err := sql.Open(driver, connect)
+	if err != nil {
+		return nil, err
+	}
+	if err = conn.Ping(); err != nil {
+		return nil, err
+	}
+	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
+		return nil, err
+	}
+	return dbcon, nil
+}
+
 func pingDatabase() {
 	ticker := time.NewTicker(time.Second).C
 
