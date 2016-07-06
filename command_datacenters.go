@@ -25,9 +25,10 @@ func registerDatacenters(app cli.App) *cli.App {
 						Action: runtime(cmdDatacentersRemove),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing datacenter",
-						Action: runtime(cmdDatacentersRename),
+						Name:         "rename",
+						Usage:        "Rename an existing datacenter",
+						Action:       runtime(cmdDatacentersRename),
+						BashComplete: cmpl.To,
 					},
 					{
 						Name:   "list",
@@ -84,6 +85,57 @@ func cmdDatacentersAdd(c *cli.Context) error {
 	return nil
 }
 
+func cmdDatacentersRemove(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
+
+	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
+
+	resp := utl.DeleteRequest(Client, path)
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdDatacentersRename(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 3)
+	key := []string{`to`}
+
+	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
+
+	req := proto.NewDatacenterRequest()
+	req.Datacenter.Locode = opts[`to`][0]
+
+	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
+
+	resp := utl.PutRequestWithBody(Client, req, path)
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdDatacentersList(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, `/datacenters/`)
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdDatacentersSync(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
+	resp := utl.GetRequest(Client, `/sync/datacenters/`)
+	fmt.Println(resp)
+	return nil
+}
+
+func cmdDatacentersShow(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
+
+	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
+	resp := utl.GetRequest(Client, path)
+	fmt.Println(resp)
+	return nil
+}
+
+// DC:group
+
 func cmdDatacentersAddToGroup(c *cli.Context) error {
 	/*
 		url, err := url.Parse(Cfg.Api)
@@ -117,16 +169,6 @@ func cmdDatacentersAddToGroup(c *cli.Context) error {
 		}
 		log.Printf("Response: %s", resp.Status())
 	*/
-	return nil
-}
-
-func cmdDatacentersRemove(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
-
-	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
 	return nil
 }
 
@@ -166,36 +208,6 @@ func cmdDatacentersRemoveFromGroup(c *cli.Context) error {
 	return nil
 }
 
-func cmdDatacentersRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	key := []string{`to`}
-
-	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
-
-	req := proto.NewDatacenterRequest()
-	req.Datacenter.Locode = opts[`to`][0]
-
-	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
-}
-
-func cmdDatacentersList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest(Client, `/datacenters/`)
-	fmt.Println(resp)
-	return nil
-}
-
-func cmdDatacentersSync(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
-	resp := utl.GetRequest(Client, `/sync/datacenters/`)
-	fmt.Println(resp)
-	return nil
-}
-
 func cmdDatacentersListGroups(c *cli.Context) error {
 	/*
 		utl.ValidateCliArgumentCount(c, 0)
@@ -214,15 +226,6 @@ func cmdDatacentersShowGroup(c *cli.Context) error {
 		resp := utl.GetRequest(Client, path)
 		fmt.Println(resp)
 	*/
-	return nil
-}
-
-func cmdDatacentersShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
-
-	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
 	return nil
 }
 

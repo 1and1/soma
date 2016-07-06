@@ -252,31 +252,4 @@ func CheckAdd(c *cli.Context) {
 	}
 }
 
-func CheckDelete(c *cli.Context) {
-	switch {
-	case (c.NArg() % 2) == 1:
-		for _, t := range []string{`in`} {
-			fmt.Println(t)
-		}
-	}
-}
-
-func CheckList(c *cli.Context) {
-	switch {
-	case (c.NArg() % 2) == 0:
-		for _, t := range []string{`in`} {
-			fmt.Println(t)
-		}
-	}
-}
-
-func CheckShow(c *cli.Context) {
-	switch {
-	case (c.NArg() % 2) == 1:
-		for _, t := range []string{`in`} {
-			fmt.Println(t)
-		}
-	}
-}
-
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

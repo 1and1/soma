@@ -15,9 +15,10 @@ func registerOncall(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for oncall duty teams",
 				Subcommands: []cli.Command{
 					{
-						Name:   "add",
-						Usage:  "Register a new oncall duty team",
-						Action: runtime(cmdOnCallAdd),
+						Name:         "add",
+						Usage:        "Register a new oncall duty team",
+						Action:       runtime(cmdOnCallAdd),
+						BashComplete: cmpl.OnCallAdd,
 					},
 					{
 						Name:   "remove",
@@ -25,14 +26,16 @@ func registerOncall(app cli.App) *cli.App {
 						Action: runtime(cmdOnCallDel),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing oncall duty team",
-						Action: runtime(cmdOnCallRename),
+						Name:         "rename",
+						Usage:        "Rename an existing oncall duty team",
+						Action:       runtime(cmdOnCallRename),
+						BashComplete: cmpl.To,
 					},
 					{
-						Name:   "update",
-						Usage:  "Update phone number of an existing oncall duty team",
-						Action: runtime(cmdOnCallUpdate),
+						Name:         "update",
+						Usage:        "Update phone number of an existing oncall duty team",
+						Action:       runtime(cmdOnCallUpdate),
+						BashComplete: cmpl.OnCallUpdate,
 					},
 					{
 						Name:   "list",
@@ -49,14 +52,16 @@ func registerOncall(app cli.App) *cli.App {
 						Usage: "SUBCOMMANDS to manipulate oncall duty members",
 						Subcommands: []cli.Command{
 							{
-								Name:   "add",
-								Usage:  "Add a user to an oncall duty team",
-								Action: runtime(cmdOnCallMemberAdd),
+								Name:         "add",
+								Usage:        "Add a user to an oncall duty team",
+								Action:       runtime(cmdOnCallMemberAdd),
+								BashComplete: cmpl.To,
 							},
 							{
-								Name:   "remove",
-								Usage:  "Remove a member from an oncall duty team",
-								Action: runtime(cmdOnCallMemberDel),
+								Name:         "remove",
+								Usage:        "Remove a member from an oncall duty team",
+								Action:       runtime(cmdOnCallMemberDel),
+								BashComplete: cmpl.From,
 							},
 							{
 								Name:   "list",

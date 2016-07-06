@@ -25,9 +25,10 @@ func registerTypes(app cli.App) *cli.App {
 						Action: runtime(cmdObjectTypesRemove),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing object type",
-						Action: runtime(cmdObjectTypesRename),
+						Name:         "rename",
+						Usage:        "Rename an existing object type",
+						Action:       runtime(cmdObjectTypesRename),
+						BashComplete: cmpl.To,
 					},
 					{
 						Name:   "list",

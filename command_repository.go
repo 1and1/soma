@@ -16,9 +16,10 @@ func registerRepository(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for repository",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new repository",
-						Action: runtime(cmdRepositoryCreate),
+						Name:         "create",
+						Usage:        "Create a new repository",
+						Action:       runtime(cmdRepositoryCreate),
+						BashComplete: cmpl.Team,
 					},
 					{
 						Name:   "delete",
@@ -41,14 +42,16 @@ func registerRepository(app cli.App) *cli.App {
 						Action: runtime(cmdRepositoryClear),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing repository",
-						Action: runtime(cmdRepositoryRename),
+						Name:         "rename",
+						Usage:        "Rename an existing repository",
+						Action:       runtime(cmdRepositoryRename),
+						BashComplete: cmpl.To,
 					},
 					{
-						Name:   "repossess",
-						Usage:  "Change the owner of a repository",
-						Action: runtime(cmdRepositoryRepossess),
+						Name:         "repossess",
+						Usage:        "Change the owner of a repository",
+						Action:       runtime(cmdRepositoryRepossess),
+						BashComplete: cmpl.To,
 					},
 					/*
 						{
@@ -93,14 +96,16 @@ func registerRepository(app cli.App) *cli.App {
 								Usage: "SUBCOMMANDS for property add",
 								Subcommands: []cli.Command{
 									{
-										Name:   "system",
-										Usage:  "Add a system property to a repository",
-										Action: runtime(cmdRepositorySystemPropertyAdd),
+										Name:         "system",
+										Usage:        "Add a system property to a repository",
+										Action:       runtime(cmdRepositorySystemPropertyAdd),
+										BashComplete: cmpl.PropertyAddValue,
 									},
 									{
-										Name:   "service",
-										Usage:  "Add a service property to a repository",
-										Action: runtime(cmdRepositoryServicePropertyAdd),
+										Name:         "service",
+										Usage:        "Add a service property to a repository",
+										Action:       runtime(cmdRepositoryServicePropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
 									},
 								},
 							},

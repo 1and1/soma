@@ -16,9 +16,10 @@ func registerMetrics(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for metrics",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new metric",
-						Action: runtime(cmdMetricCreate),
+						Name:         "create",
+						Usage:        "Create a new metric",
+						Action:       runtime(cmdMetricCreate),
+						BashComplete: cmpl.MetricCreate,
 					},
 					{
 						Name:   "delete",

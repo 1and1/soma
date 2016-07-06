@@ -25,9 +25,10 @@ func registerEnvironments(app cli.App) *cli.App {
 						Action: runtime(cmdEnvironmentsRemove),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing environment",
-						Action: runtime(cmdEnvironmentsRename),
+						Name:         "rename",
+						Usage:        "Rename an existing environment",
+						Action:       runtime(cmdEnvironmentsRename),
+						BashComplete: cmpl.To,
 					},
 					{
 						Name:   "list",

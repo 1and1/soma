@@ -18,9 +18,10 @@ func registerUsers(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for users",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new user",
-						Action: runtime(cmdUserAdd),
+						Name:         "create",
+						Usage:        "Create a new user",
+						Action:       runtime(cmdUserAdd),
+						BashComplete: cmpl.UserAdd,
 					},
 					{
 						Name:   "delete",
@@ -38,6 +39,12 @@ func registerUsers(app cli.App) *cli.App {
 							},
 						},
 					},
+					{
+						Name:         "update",
+						Usage:        "Set/change user information",
+						Action:       runtime(cmdUserUpdate),
+						BashComplete: cmpl.UserUpdate,
+					},
 					/*
 						{
 							Name:   "restore",
@@ -49,11 +56,6 @@ func registerUsers(app cli.App) *cli.App {
 									Usage: "Restore all deleted users",
 								},
 							},
-						},
-						{
-							Name:   "update",
-							Usage:  "Set/change user information",
-							Action: cmdUserUpdate,
 						},
 						{
 							Name:   "rename",

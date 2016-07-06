@@ -15,9 +15,10 @@ func registerUnits(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for metric units",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new metric unit",
-						Action: runtime(cmdUnitCreate),
+						Name:         "create",
+						Usage:        "Create a new metric unit",
+						Action:       runtime(cmdUnitCreate),
+						BashComplete: cmpl.Name,
 					},
 					{
 						Name:   "delete",

@@ -25,9 +25,10 @@ func registerStates(app cli.App) *cli.App {
 						Action: runtime(cmdObjectStatesRemove),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing object state",
-						Action: runtime(cmdObjectStatesRename),
+						Name:         "rename",
+						Usage:        "Rename an existing object state",
+						Action:       runtime(cmdObjectStatesRename),
+						BashComplete: cmpl.To,
 					},
 					{
 						Name:   "list",

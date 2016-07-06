@@ -6,10 +6,6 @@ func BucketCreate(c *cli.Context) {
 	Generic(c, []string{`repository`, `environment`})
 }
 
-func Bucket(c *cli.Context) {
-	Generic(c, []string{`repository`})
-}
-
 func BucketRename(c *cli.Context) {
 	Generic(c, []string{`to`, `repository`})
 }

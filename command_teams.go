@@ -16,9 +16,10 @@ func registerTeams(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for teams",
 				Subcommands: []cli.Command{
 					{
-						Name:   "add",
-						Usage:  "Register a new team",
-						Action: runtime(cmdTeamAdd),
+						Name:         "add",
+						Usage:        "Register a new team",
+						Action:       runtime(cmdTeamAdd),
+						BashComplete: cmpl.TeamCreate,
 					},
 					{
 						Name:   "remove",
@@ -26,9 +27,10 @@ func registerTeams(app cli.App) *cli.App {
 						Action: runtime(cmdTeamDel),
 					},
 					{
-						Name:   "rename",
-						Usage:  "Rename an existing team",
-						Action: runtime(cmdTeamRename),
+						Name:         "rename",
+						Usage:        "Rename an existing team",
+						Action:       runtime(cmdTeamRename),
+						BashComplete: cmpl.To,
 					},
 					{
 						Name:   "migrate",
@@ -51,9 +53,10 @@ func registerTeams(app cli.App) *cli.App {
 						Action: runtime(cmdTeamShow),
 					},
 					{
-						Name:   "update",
-						Usage:  "Update team information",
-						Action: runtime(cmdTeamUpdate),
+						Name:         "update",
+						Usage:        "Update team information",
+						Action:       runtime(cmdTeamUpdate),
+						BashComplete: cmpl.TeamUpdate,
 					},
 				},
 			}, // end teams
@@ -70,12 +73,12 @@ func cmdTeamAdd(c *cli.Context) error {
 	default:
 		utl.Abort("Syntax error, unexpected argument count")
 	}
-	allowed := []string{"ldap", "system"}
+	multi := []string{}
 	required := []string{"ldap"}
 	unique := []string{"ldap", "system"}
 
 	opts := utl.ParseVariadicArguments(
-		allowed,
+		multi,
 		unique,
 		required,
 		c.Args().Tail())
@@ -99,8 +102,8 @@ func cmdTeamAdd(c *cli.Context) error {
 
 func cmdTeamUpdate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multi := []string{`system`}
-	unique := []string{`name`, `ldap`}
+	multi := []string{}
+	unique := []string{`name`, `ldap`, `system`}
 	required := []string{`name`, `ldap`}
 
 	opts := utl.ParseVariadicArguments(multi, unique, required, c.Args().Tail())

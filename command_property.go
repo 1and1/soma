@@ -20,9 +20,10 @@ func registerProperty(app cli.App) *cli.App {
 						Usage: "SUBCOMMANDS for property create",
 						Subcommands: []cli.Command{
 							{
-								Name:   "service",
-								Usage:  "Create a new per-team service property",
-								Action: runtime(cmdPropertyServiceCreate),
+								Name:         "service",
+								Usage:        "Create a new per-team service property",
+								Action:       runtime(cmdPropertyServiceCreate),
+								BashComplete: comptime(bashCompSvcCreate),
 							},
 							{
 								Name:   "system",
@@ -35,9 +36,10 @@ func registerProperty(app cli.App) *cli.App {
 								Action: runtime(cmdPropertyNativeCreate),
 							},
 							{
-								Name:   "custom",
-								Usage:  "Create a new per-repo custom property",
-								Action: runtime(cmdPropertyCustomCreate),
+								Name:         "custom",
+								Usage:        "Create a new per-repo custom property",
+								Action:       runtime(cmdPropertyCustomCreate),
+								BashComplete: cmpl.Repository,
 							},
 							{
 								Name:   "template",
@@ -51,9 +53,10 @@ func registerProperty(app cli.App) *cli.App {
 						Usage: "SUBCOMMANDS for property delete",
 						Subcommands: []cli.Command{
 							{
-								Name:   "service",
-								Usage:  "Delete a team service property",
-								Action: runtime(cmdPropertyServiceDelete),
+								Name:         "service",
+								Usage:        "Delete a team service property",
+								Action:       runtime(cmdPropertyServiceDelete),
+								BashComplete: cmpl.Team,
 							},
 							{
 								Name:   "system",
@@ -66,9 +69,10 @@ func registerProperty(app cli.App) *cli.App {
 								Action: runtime(cmdPropertyNativeDelete),
 							},
 							{
-								Name:   "custom",
-								Usage:  "Delete a repository custom property",
-								Action: runtime(cmdPropertyCustomDelete),
+								Name:         "custom",
+								Usage:        "Delete a repository custom property",
+								Action:       runtime(cmdPropertyCustomDelete),
+								BashComplete: cmpl.Repository,
 							},
 							{
 								Name:   "template",
@@ -128,14 +132,16 @@ func registerProperty(app cli.App) *cli.App {
 						Usage: "SUBCOMMANDS for property show",
 						Subcommands: []cli.Command{
 							{
-								Name:   "service",
-								Usage:  "Show a service property",
-								Action: runtime(cmdPropertyServiceShow),
+								Name:         "service",
+								Usage:        "Show a service property",
+								Action:       runtime(cmdPropertyServiceShow),
+								BashComplete: cmpl.Team,
 							},
 							{
-								Name:   "custom",
-								Usage:  "Show a custom property",
-								Action: runtime(cmdPropertyCustomShow),
+								Name:         "custom",
+								Usage:        "Show a custom property",
+								Action:       runtime(cmdPropertyCustomShow),
+								BashComplete: cmpl.Repository,
 							},
 							{
 								Name:   "system",
@@ -159,14 +165,16 @@ func registerProperty(app cli.App) *cli.App {
 						Usage: "SUBCOMMANDS for property list",
 						Subcommands: []cli.Command{
 							{
-								Name:   "service",
-								Usage:  "List service properties",
-								Action: runtime(cmdPropertyServiceList),
+								Name:         "service",
+								Usage:        "List service properties",
+								Action:       runtime(cmdPropertyServiceList),
+								BashComplete: cmpl.Team,
 							},
 							{
-								Name:   "custom",
-								Usage:  "List custom properties",
-								Action: runtime(cmdPropertyCustomList),
+								Name:         "custom",
+								Usage:        "List custom properties",
+								Action:       runtime(cmdPropertyCustomList),
+								BashComplete: cmpl.Repository,
 							},
 							{
 								Name:   "system",
@@ -362,6 +370,35 @@ attrConversionLoop:
 		fmt.Println(resp)
 	}
 	return nil
+}
+
+// in main and not the cmpl lib because the full runtime is required
+// to provide the completion options. This means we need access to
+// globals that do not fit the function signature
+func bashCompSvcCreate(c *cli.Context) {
+	// fetch list of possible service attributes from SOMA
+	attrResponse := utl.GetRequest(Client, "/attributes/")
+	attrs := proto.Result{}
+	err := json.Unmarshal(attrResponse.Body(), &attrs)
+	if err != nil {
+		utl.Abort("Failed to unmarshal Service Attribute data")
+	}
+
+	// sort attributes based on their cardinality so we can use them
+	// for command line parsing
+	multiple := []string{}
+	unique := []string{}
+	for _, attr := range *attrs.Attributes {
+		switch attr.Cardinality {
+		case "once":
+			unique = append(unique, attr.Name)
+		case "multi":
+			multiple = append(multiple, attr.Name)
+		default:
+			utl.Abort()
+		}
+	}
+	cmpl.GenericMulti(c, unique, multiple)
 }
 
 /* DELETE

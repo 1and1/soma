@@ -15,10 +15,11 @@ func registerServers(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for servers",
 				Subcommands: []cli.Command{
 					{
-						Name:        "create",
-						Usage:       "Create a new physical server",
-						Description: help.CmdServerCreate,
-						Action:      runtime(cmdServerCreate),
+						Name:         "create",
+						Usage:        "Create a new physical server",
+						Description:  help.CmdServerCreate,
+						Action:       runtime(cmdServerCreate),
+						BashComplete: cmpl.ServerCreate,
 					},
 					{
 						Name:   "delete",
@@ -39,10 +40,11 @@ func registerServers(app cli.App) *cli.App {
 						},
 					*/
 					{
-						Name:        "update",
-						Usage:       "Full update of server attributes (replace, not merge)",
-						Description: help.CmdServerUpdate,
-						Action:      runtime(cmdServerUpdate),
+						Name:         "update",
+						Usage:        "Full update of server attributes (replace, not merge)",
+						Description:  help.CmdServerUpdate,
+						Action:       runtime(cmdServerUpdate),
+						BashComplete: cmpl.ServerUpdate,
 					},
 					/*
 						{
@@ -89,9 +91,10 @@ func registerServers(app cli.App) *cli.App {
 						},
 					*/
 					{
-						Name:   "null",
-						Usage:  "Bootstrap the null server",
-						Action: runtime(cmdServerNull),
+						Name:         "null",
+						Usage:        "Bootstrap the null server",
+						Action:       runtime(cmdServerNull),
+						BashComplete: cmpl.Datacenter,
 					},
 				},
 			}, // end servers

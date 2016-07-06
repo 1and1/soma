@@ -174,4 +174,76 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 	}
 }
 
+// comptime is runtime as a different type
+func comptime(completion cli.BashCompleteFunc) cli.BashCompleteFunc {
+	return func(c *cli.Context) {
+		var err error
+		var token string
+		var cred *auth.Token
+
+		// common initialization
+		initCommon(c)
+
+		if !c.GlobalBool(`o`) {
+			// ensure database content structure is in place
+			if _ = store.EnsureBuckets(); err != nil {
+				fmt.Fprintf(os.Stderr, "Database bucket error: %s\n", err)
+				return
+			}
+		}
+
+		// prompt for user
+		for Cfg.Auth.User == "" {
+			if Cfg.Auth.User, err = adm.Read(`user`); err == liner.ErrPromptAborted {
+				os.Exit(0)
+			} else if err != nil {
+				return
+			}
+		}
+
+		// no staticly configured token
+		if Cfg.Auth.Token == "" {
+			// load token from BoltDB
+			token, err = store.GetActiveToken(Cfg.Auth.User)
+			if err == bolt.ErrBucketNotFound {
+				// no token in cache
+				for Cfg.Auth.Pass == "" {
+					if Cfg.Auth.Pass, err = adm.Read(`password`); err == liner.ErrPromptAborted {
+						os.Exit(0)
+					} else if err != nil {
+						return
+					}
+				}
+				// request new token (validated)
+				if cred, err = adm.RequestToken(Client, &auth.Token{
+					UserName: Cfg.Auth.User,
+					Password: Cfg.Auth.Pass,
+				}); err != nil {
+					return
+				}
+				// save token
+				if err = store.SaveToken(
+					cred.UserName,
+					cred.ValidFrom,
+					cred.ExpiresAt,
+					cred.Token,
+				); err != nil {
+					return
+				}
+				token = cred.Token
+			} else if err != nil {
+				return
+			}
+		} else {
+			token = Cfg.Auth.Token
+		}
+
+		// set token for basic auth
+		Client = Client.SetBasicAuth(Cfg.Auth.User, token)
+
+		// run action
+		completion(c)
+	}
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

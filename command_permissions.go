@@ -41,9 +41,10 @@ func registerPermissions(app cli.App) *cli.App {
 						}, // end permissions type
 					},
 					{
-						Name:   "add",
-						Usage:  "Register a new permission",
-						Action: runtime(cmdPermissionAdd),
+						Name:         "add",
+						Usage:        "Register a new permission",
+						Action:       runtime(cmdPermissionAdd),
+						BashComplete: cmpl.PermissionAdd,
 					},
 					{
 						Name:   "remove",

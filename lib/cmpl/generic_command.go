@@ -2,6 +2,10 @@ package cmpl
 
 import "github.com/codegangsta/cli"
 
+func Datacenter(c *cli.Context) {
+	Generic(c, []string{`datacenter`})
+}
+
 func In(c *cli.Context) {
 	Generic(c, []string{`in`})
 }
@@ -18,8 +22,24 @@ func InFromView(c *cli.Context) {
 	Generic(c, []string{`in`, `from`, `view`})
 }
 
+func From(c *cli.Context) {
+	Generic(c, []string{`from`})
+}
+
 func FromView(c *cli.Context) {
 	Generic(c, []string{`from`, `view`})
+}
+
+func Name(c *cli.Context) {
+	Generic(c, []string{`name`})
+}
+
+func To(c *cli.Context) {
+	Generic(c, []string{`to`})
+}
+
+func User(c *cli.Context) {
+	Generic(c, []string{`user`})
 }
 
 func ValidityCreate(c *cli.Context) {
