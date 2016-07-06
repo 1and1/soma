@@ -48,42 +48,44 @@ func (c *Capability) DeepCompare(a *Capability) bool {
 	if c.Thresholds != a.Thresholds {
 		return false
 	}
-	if c.Demux != nil {
-	demuxloop:
-		for _, str := range *c.Demux {
-			if c.DeepCompareSlice(str, a.Demux) {
-				continue demuxloop
+	/*
+		if c.Demux != nil {
+		demuxloop:
+			for _, str := range *c.Demux {
+				if c.DeepCompareSlice(str, a.Demux) {
+					continue demuxloop
+				}
+				return false
 			}
-			return false
 		}
-	}
-	if a.Demux != nil {
-	revdemuxloop:
-		for _, str := range *a.Demux {
-			if c.DeepCompareSlice(str, c.Demux) {
-				continue revdemuxloop
+		if a.Demux != nil {
+		revdemuxloop:
+			for _, str := range *a.Demux {
+				if c.DeepCompareSlice(str, c.Demux) {
+					continue revdemuxloop
+				}
+				return false
 			}
-			return false
 		}
-	}
-	if c.Constraints != nil {
-	constraintloop:
-		for _, cstr := range *c.Constraints {
-			if cstr.DeepCompareSlice(a.Constraints) {
-				continue constraintloop
+		if c.Constraints != nil {
+		constraintloop:
+			for _, cstr := range *c.Constraints {
+				if cstr.DeepCompareSlice(a.Constraints) {
+					continue constraintloop
+				}
+				return false
 			}
-			return false
 		}
-	}
-	if a.Constraints != nil {
-	revconstraintloop:
-		for _, cstr := range *a.Constraints {
-			if cstr.DeepCompareSlice(c.Constraints) {
-				continue revconstraintloop
+		if a.Constraints != nil {
+		revconstraintloop:
+			for _, cstr := range *a.Constraints {
+				if cstr.DeepCompareSlice(c.Constraints) {
+					continue revconstraintloop
+				}
+				return false
 			}
-			return false
 		}
-	}
+	*/
 	return true
 }
 
