@@ -222,7 +222,11 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 
 		//
 		detail.CheckConfig.Thresholds = []proto.CheckConfigThreshold{}
-		thresh, _ = stmt_Threshold.Query(detail.CheckConfig.Id)
+		thresh, err = stmt_Threshold.Query(detail.CheckConfig.Id)
+		if err != nil {
+			log.Println(`DANGER WILL ROBINSON! Failed to get thresholds for:`, detail.CheckConfig.Id)
+			continue
+		}
 		defer thresh.Close()
 
 		for thresh.Next() {

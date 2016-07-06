@@ -1886,6 +1886,7 @@ Children Only:         %t%s`,
 					false,
 					"{}",
 				); err != nil {
+					fmt.Println(`Failed CreateCheckInstanceConfiguration`, a.CheckInstance.InstanceConfigId)
 					break actionloop
 				}
 			case "check_instance_delete":
@@ -2110,6 +2111,7 @@ Children Only:         %t%s`,
 					false,
 					"{}",
 				); err != nil {
+					fmt.Println(`Failed CreateCheckInstanceConfiguration`, a.CheckInstance.InstanceConfigId)
 					break actionloop
 				}
 			case "check_instance_delete":
@@ -2334,6 +2336,7 @@ Node ID:             %s%s`,
 					false,
 					"{}",
 				); err != nil {
+					fmt.Println(`Failed CreateCheckInstanceConfiguration`, a.CheckInstance.InstanceConfigId)
 					break actionloop
 				}
 			case "check_instance_delete":

@@ -180,7 +180,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		externalId, predicate, threshold, levelName, levelShort      string
 		cstrType, value1, value2, value3, itemId, itemCfgId          string
 		monitoringId, cstrHash, cstrValHash, instSvc, instSvcCfgHash string
-		instSvcCfg                                                   string
+		instSvcCfg, errLocation                                      string
 		levelNumeric, numVal, interval, version                      int64
 		isActive, hasInheritance, isChildrenOnly, isEnabled          bool
 		grOrder                                                      map[string][]string
@@ -652,6 +652,7 @@ directinstances:
 	// iterate over all checks on this object type and load the check
 	// instances they have created
 	if tckRows, err = ld.loadTypeChecks.Query(tk.repoId, typ); err != nil {
+		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `loadTypeChecks.Query()`, tk.repoId, typ)
 		goto fail
 	}
 
@@ -662,12 +663,14 @@ directinstances:
 			&objId,
 		); err != nil {
 			tckRows.Close()
+			errLocation = `loadTypeChecks.Rows.Scan error`
 			goto fail
 		}
 
 		// lookup instances for that check
 		if inRows, err = ld.loadInstances.Query(checkId); err != nil {
 			tckRows.Close()
+			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `loadInstances.Query()`, tk.repoId, typ, checkId)
 			goto fail
 		}
 
@@ -678,6 +681,7 @@ directinstances:
 			); err != nil {
 				tckRows.Close()
 				inRows.Close()
+				errLocation = `loadInstances.Rows.Scan error`
 				goto fail
 			}
 
@@ -696,6 +700,7 @@ directinstances:
 				// configuration
 				tckRows.Close()
 				inRows.Close()
+				errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s, instanceId=%s", `loadInstConfig.QueryRow()`, tk.repoId, typ, checkId, itemId)
 				goto fail
 			}
 
@@ -713,6 +718,7 @@ directinstances:
 				if err = json.Unmarshal([]byte(instSvcCfg), &ckInstance.InstanceServiceConfig); err != nil {
 					tckRows.Close()
 					inRows.Close()
+					errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s, instanceId=%s, instCfgId=%s", `json.Unmarshal(InstanceServiceConfig)`, tk.repoId, typ, checkId, itemId, itemCfgId)
 					goto fail
 				}
 			}
@@ -737,10 +743,13 @@ directinstances:
 		}
 		if err = inRows.Err(); err != nil {
 			inRows.Close()
+			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `checkInstanceRows.Iterate.Error`, tk.repoId, typ, checkId)
 			goto fail
 		}
 	}
 	if err = tckRows.Err(); err != nil {
+		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `checksForType.Iterate.Error()`, tk.repoId, typ)
+		fmt.Println(`line746`)
 		goto fail
 	}
 
@@ -749,6 +758,9 @@ done:
 
 fail:
 	tk.broken = true
+	if err != nil {
+		log.Println(`BROKEN REPOSITORY ERROR: `, errLocation, err)
+	}
 	return
 }
 
