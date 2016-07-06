@@ -258,12 +258,14 @@ checksloop:
 					if ldInst.ConstraintHash == inst.ConstraintHash {
 						inst.InstanceId, _ = uuid.FromString(ldInstId)
 						if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
-							panic(`Matched instances loaded for different ConfigId`)
+							teg.Fault.Error <- &Error{Action: `Matched instances loaded for different ConfigId`}
+							return
 						}
 						inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 						inst.Version = ldInst.Version
 						if inst.ConstraintValHash != ldInst.ConstraintValHash {
-							panic(`Matched instances loaded for different ConstraintValHash`)
+							teg.Fault.Error <- &Error{Action: `Matched instances loaded for different ConstraintValHash`}
+							return
 						}
 						delete(teg.loadedInstances[i], ldInstId)
 						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
@@ -406,18 +408,22 @@ checksloop:
 						if ldInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
 							inst.InstanceId, _ = uuid.FromString(ldInstId)
 							if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
-								panic(`Matched instances loaded for different ConfigId`)
+								teg.Fault.Error <- &Error{Action: `Matched instances loaded for different ConfigId`}
+								return
 							}
 							inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 							inst.Version = ldInst.Version
 							if inst.ConstraintHash != ldInst.ConstraintHash {
-								panic(`Matched instances loaded for different ConstraintHash`)
+								teg.Fault.Error <- &Error{Action: `Matched instances loaded for different ConstraintHash`}
+								return
 							}
 							if inst.ConstraintValHash != ldInst.ConstraintValHash {
-								panic(`Matched instances loaded for different ConstraintValHash`)
+								teg.Fault.Error <- &Error{Action: `Matched instances loaded for different ConstraintValHash`}
+								return
 							}
 							if inst.InstanceService != ldInst.InstanceService {
-								panic(`Matched instances loaded for different InstanceService`)
+								teg.Fault.Error <- &Error{Action: `Matched instances loaded for different InstanceService`}
+								return
 							}
 							// we can assume InstanceServiceConfig to
 							// be equal, since InstanceSvcCfgHash is
@@ -481,7 +487,8 @@ checksloop:
 		// loaded instances, but there are loaded
 		// instances left. why?
 		if startupLoad && len(teg.loadedInstances[i]) != 0 {
-			panic(`Leftover matched instances after assignment, computed instances missing`)
+			teg.Fault.Error <- &Error{Action: `Leftover matched instances after assignment, computed instances missing`}
+			return
 		}
 
 		// all new check instances have been built, check which
