@@ -30,7 +30,7 @@ type PokeMessage struct {
 
 func (lc *lifeCycle) run() {
 	var err error
-	lc.tick = time.NewTicker(20 * time.Second).C
+	lc.tick = time.NewTicker(5 * time.Second).C
 
 	if lc.stmt_unblock, err = lc.conn.Prepare(lcStmtActiveUnblockCondition); err != nil {
 		log.Fatal(err)
