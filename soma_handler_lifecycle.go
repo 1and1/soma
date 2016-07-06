@@ -213,11 +213,11 @@ cfgloop:
 
 func (lc *lifeCycle) unblock() {
 	var (
-		cfgIds                                                 *sql.Rows
-		blockedID, blockingID, instanceID, state, next, nextNG string
-		err                                                    error
-		tx                                                     *sql.Tx
-		txUpdate, txDelete, txInstance                         *sql.Stmt
+		cfgIds                                                         *sql.Rows
+		blockedID, blockingID, instanceID, state, next, nextNG, status string
+		err                                                            error
+		tx                                                             *sql.Tx
+		txUpdate, txDelete, txInstance                                 *sql.Stmt
 	)
 
 	// lcStmtActiveUnblockCondition
@@ -233,6 +233,7 @@ idloop:
 			&blockedID,
 			&blockingID,
 			&state,
+			&status,
 			&next,
 			&instanceID,
 		); err != nil {

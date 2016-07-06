@@ -4,6 +4,7 @@ const lcStmtActiveUnblockCondition = `
 SELECT 	scicd.blocked_instance_config_id,
 		scicd.blocking_instance_config_id,
 		scicd.unblocking_state,
+		p.status,
 		p.next_status,
 		p.check_instance_id
 FROM    soma.check_instance_configuration_dependencies scicd
@@ -11,7 +12,10 @@ JOIN    soma.check_instance_configurations scic
 ON      scicd.blocking_instance_config_id = scic.check_instance_config_id
 AND     scicd.unblocking_state = scic.status
 JOIN    soma.check_instance_configurations p
-ON      scicd.blocked_instance_config_id = p.check_instance_config_id;`
+ON      scicd.blocked_instance_config_id = p.check_instance_config_id
+JOIN    soma.check_instances sci
+ON      p.check_instance_id = sci.check_instance_id
+AND     scicd.blocking_instance_config_id = sci.current_instance_config_id;`
 
 const lcStmtUpdateInstance = `
 UPDATE	soma.check_instances
