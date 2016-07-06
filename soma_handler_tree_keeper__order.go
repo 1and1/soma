@@ -175,127 +175,26 @@ deployments:
 		}
 		defer txDependency.Close()
 
-		switch previousStatus {
-		case "awaiting_rollout":
-			if _, err = txUpdateStatus.Exec(
-				"deprovisioned",
-				"none",
-				previousChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateStatus.Exec(
-				"awaiting_rollout",
-				"rollout_in_progress",
-				currentChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateInstance.Exec(
-				time.Now().UTC(),
-				true,
-				currentChkInstanceConfigId,
-				chkInstanceId,
-			); err != nil {
-				goto bailout_withprev
-			}
-		case "rollout_in_progress":
-			if _, err = txUpdateStatus.Exec(
-				"blocked",
-				"awaiting_rollout",
-				currentChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateExisting.Exec(
-				time.Now().UTC(),
-				true,
-				chkInstanceId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txDependency.Exec(
-				currentChkInstanceConfigId,
-				previousChkInstanceConfigId,
-				"deprovisioned",
-			); err != nil {
-				goto bailout_withprev
-			}
-		case "active":
-			if _, err = txUpdateStatus.Exec(
-				"awaiting_deprovision",
-				"deprovision_in_progress",
-				previousChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateStatus.Exec(
-				"blocked",
-				"awaiting_rollout",
-				currentChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateExisting.Exec(
-				time.Now().UTC(),
-				true,
-				chkInstanceId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txDependency.Exec(
-				currentChkInstanceConfigId,
-				previousChkInstanceConfigId,
-				"deprovisioned",
-			); err != nil {
-				goto bailout_withprev
-			}
-		case "blocked":
-			// TODO: if there are >1 configurations waiting for rollout,
-			// these could be compacted by cutting middle versions
-			fallthrough
-		case "awaiting_deprovision":
-			fallthrough
-		case "deprovision_in_progress":
-			if _, err = txUpdateStatus.Exec(
-				"blocked",
-				"awaiting_rollout",
-				currentChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateExisting.Exec(
-				time.Now().UTC(),
-				true,
-				chkInstanceId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txDependency.Exec(
-				currentChkInstanceConfigId,
-				previousChkInstanceConfigId,
-				"deprovisioned",
-			); err != nil {
-				goto bailout_withprev
-			}
-		case "deprovisioned":
-			fallthrough
-		case "awaiting_deletion":
-			if _, err = txUpdateStatus.Exec(
-				"awaiting_rollout",
-				"rollout_in_progress",
-				currentChkInstanceConfigId,
-			); err != nil {
-				goto bailout_withprev
-			}
-			if _, err = txUpdateInstance.Exec(
-				time.Now().UTC(),
-				true,
-				currentChkInstanceConfigId,
-				chkInstanceId,
-			); err != nil {
-				goto bailout_withprev
-			}
+		if _, err = txUpdateStatus.Exec(
+			"blocked",
+			"awaiting_rollout",
+			currentChkInstanceConfigId,
+		); err != nil {
+			goto bailout_withprev
+		}
+		if _, err = txUpdateExisting.Exec(
+			time.Now().UTC(),
+			true,
+			chkInstanceId,
+		); err != nil {
+			goto bailout_withprev
+		}
+		if _, err = txDependency.Exec(
+			currentChkInstanceConfigId,
+			previousChkInstanceConfigId,
+			"deprovisioned",
+		); err != nil {
+			goto bailout_withprev
 		}
 
 		if err = tx.Commit(); err != nil {
