@@ -17,6 +17,7 @@ type lifeCycle struct {
 	stmt_clear   *sql.Stmt
 	stmt_delblk  *sql.Stmt
 	stmt_delact  *sql.Stmt
+	stmt_dead    *sql.Stmt
 }
 
 type PokeMessage struct {
@@ -57,6 +58,11 @@ func (lc *lifeCycle) run() {
 	}
 	defer lc.stmt_delact.Close()
 
+	if lc.stmt_dead, err = lc.conn.Prepare(lcStmtDeadLockResolver); err != nil {
+		log.Fatal(err)
+	}
+	defer lc.stmt_dead.Close()
+
 runloop:
 	for {
 		select {
@@ -69,6 +75,7 @@ runloop:
 				// deleted blocks
 				lc.unblock()
 			}
+			lc.deadlockResolver()
 			lc.handleDelete()
 			lc.poke()
 		}
@@ -213,6 +220,7 @@ func (lc *lifeCycle) unblock() {
 		txUpdate, txDelete, txInstance                         *sql.Stmt
 	)
 
+	// lcStmtActiveUnblockCondition
 	if cfgIds, err = lc.stmt_unblock.Query(); err != nil {
 		log.Println(err)
 		return
@@ -257,7 +265,10 @@ idloop:
 		case "awaiting_rollout":
 			nextNG = "rollout_in_progress"
 		default:
-			log.Println(`lifeCycle.unblock() unhandled next_status`)
+			log.Printf("lifeCycle.unblock() error: blocked: %s, blocking%s, next: %s, instanceID: %s\n",
+				blockedID, blockingID, next, instanceID)
+			tx.Rollback()
+			continue idloop
 		}
 		if _, err = txUpdate.Exec(
 			next,
@@ -265,7 +276,7 @@ idloop:
 			false,
 			blockedID,
 		); err != nil {
-			log.Println(err.Error())
+			log.Println(`lifeCycle.unblock(moveConfig)`, err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -274,7 +285,7 @@ idloop:
 			blockedID,
 			instanceID,
 		); err != nil {
-			log.Println(err.Error())
+			log.Println(`lifeCycle.unblock(updateInstance)`, err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -283,7 +294,7 @@ idloop:
 			blockingID,
 			state,
 		); err != nil {
-			log.Println(err.Error())
+			log.Println(`lifeCycle.unblock(deleteDependency)`, err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -304,7 +315,7 @@ func (lc *lifeCycle) poke() {
 	)
 
 	if chkIds, err = lc.stmt_poke.Query(); err != nil {
-		log.Fatal(err)
+		log.Println(`lifeCycle.poke()`, err)
 	}
 	defer chkIds.Close()
 
@@ -343,6 +354,41 @@ bearloop:
 			log.Printf("Poked %s about %s", mon, id)
 			lc.stmt_clear.Exec(id)
 		}
+	}
+}
+
+func (lc *lifeCycle) deadlockResolver() {
+	var (
+		rows                       *sql.Rows
+		chkInstID, chkInstConfigID string
+		err                        error
+	)
+
+	if rows, err = lc.stmt_dead.Query(); err != nil {
+		log.Println(`lifeCycle.deadLockResolver()`, err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&chkInstID,
+			&chkInstConfigID,
+		); err != nil {
+			log.Println(`lifeCycle.deadLockResolver()`, err)
+			return
+		}
+		lc.conn.Exec(lcStmtUpdateConfig,
+			`awaiting_deprovision`,
+			`deprovision_in_progress`,
+			false,
+			chkInstConfigID,
+		)
+		lc.conn.Exec(lcStmtUpdateInstance,
+			true,
+			chkInstConfigID,
+			chkInstID,
+		)
 	}
 }
 

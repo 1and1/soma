@@ -117,4 +117,15 @@ SET    status = 'awaiting_deprovision'::varchar,
 WHERE  check_instance_config_id = $1::uuid;
 `
 
+const lcStmtDeadLockResolver = `
+SELECT ci.check_instance_id,
+       ci.current_instance_config_id
+FROM   check_instances ci
+JOIN   check_instance_configurations cic
+  ON   ci.check_instance_id = cic.check_instance_id
+ AND   ci.current_instance_config_id = cic.check_instance_config_id
+JOIN   check_instance_configuration_dependencies cicd
+  ON   ci.current_instance_config_id = cicd.blocking_instance_config_id
+WHERE  cic.status = 'active';`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
