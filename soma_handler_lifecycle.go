@@ -22,10 +22,8 @@ type lifeCycle struct {
 
 type PokeMessage struct {
 	Uuid string `json:"uuid"`
-	// TODO path should be used to tell the client system the basepath
+	// path should be used to tell the client system the basepath
 	// where to get it so SOMA + path + item_id === complete_url
-	// It is currently hardcoded, should move to the configuration
-	// file
 	Path string `json:"path"`
 }
 
@@ -346,7 +344,7 @@ bearloop:
 		for _, id := range idList {
 			cl = resty.New()
 			if _, err = cl.SetTimeout(500 * time.Millisecond).R().
-				SetBody(PokeMessage{Uuid: id, Path: "/deployments/id"}).
+				SetBody(PokeMessage{Uuid: id, Path: SomaCfg.PokePath}).
 				Post(callbacks[mon]); err != nil {
 				log.Println(err)
 				continue bearloop

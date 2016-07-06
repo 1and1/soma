@@ -11,13 +11,14 @@ import (
 )
 
 type SomaConfig struct {
-	Environment  string         `json:"environment"`
-	ReadOnly     bool           `json:"readonly,string"`
-	OpenInstance bool           `json:"open.door.policy,string"`
-	Database     SomaDbConfig   `json:"database"`
-	Daemon       SomaDaemon     `json:"daemon"`
-	Auth         SomaAuthConfig `json:"authentication"`
-	Ldap         SomaLdapConfig `json:"ldap"`
+	Environment   string         `json:"environment"`
+	ReadOnly      bool           `json:"readonly,string"`
+	OpenInstance  bool           `json:"open.door.policy,string"`
+	PokePath      string         `json:"notify.path.element"`
+	Database      SomaDbConfig   `json:"database"`
+	Daemon        SomaDaemon     `json:"daemon"`
+	Auth          SomaAuthConfig `json:"authentication"`
+	Ldap          SomaLdapConfig `json:"ldap"`
 }
 
 type SomaDbConfig struct {
