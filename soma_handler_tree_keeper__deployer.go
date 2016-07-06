@@ -152,7 +152,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 	defer stmt_DefaultDC.Close()
 
 	//
-	if rows, err = stmt_List.Query(); err != nil {
+	if rows, err = stmt_List.Query(tk.repoId); err != nil {
 		log.Fatal(err)
 	}
 	defer rows.Close()

@@ -165,9 +165,14 @@ SELECT $1::uuid,
 
 ////////////////////////////////////////////////
 const tkStmtDeployDetailsComputeList = `
-SELECT check_instance_config_id
-FROM   soma.check_instance_configurations
-WHERE  status = 'awaiting_computation';`
+SELECT scic.check_instance_config_id
+FROM   soma.checks sc
+JOIN   soma.check_instances sci
+  ON   sc.check_id = sci.check_id
+JOIN   soma.check_instance_configurations scic
+  ON   sci.check_instance_id = scic.check_instance_id
+WHERE  scic.status = 'awaiting_computation'
+  AND  sc.repository_id = $1::uuid;`
 
 const tkStmtDeployDetailsUpdate = `
 UPDATE soma.check_instance_configurations
