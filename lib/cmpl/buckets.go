@@ -14,8 +14,4 @@ func BucketRename(c *cli.Context) {
 	Generic(c, []string{`to`, `repository`})
 }
 
-func PropertyAdd(c *cli.Context) {
-	Generic(c, []string{`to`, `in`, `value`, `view`, `inheritance`, `childrenonly`})
-}
-
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

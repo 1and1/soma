@@ -14,9 +14,10 @@ func registerValidity(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for system property validity",
 				Subcommands: []cli.Command{
 					{
-						Name:   "create",
-						Usage:  "Create a new system property validity",
-						Action: runtime(cmdValidityCreate),
+						Name:         "create",
+						Usage:        "Create a new system property validity",
+						Action:       runtime(cmdValidityCreate),
+						BashComplete: cmpl.ValidityCreate,
 					},
 					{
 						Name:   "delete",

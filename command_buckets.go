@@ -84,7 +84,7 @@ func registerBuckets(app cli.App) *cli.App {
 										Name:         "system",
 										Usage:        "Add a system property to a bucket",
 										Action:       runtime(cmdBucketSystemPropertyAdd),
-										BashComplete: cmpl.PropertyAdd,
+										BashComplete: cmpl.PropertyAddValue,
 									},
 									{
 										Name:         "service",
