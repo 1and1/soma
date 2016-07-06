@@ -16,6 +16,7 @@ type SomaConfig struct {
 	OpenInstance  bool           `json:"open.door.policy,string"`
 	LifeCycleTick uint64         `json:"lifecycle.tick.seconds,string"`
 	PokePath      string         `json:"notify.path.element"`
+	PokeBatchSize uint64         `json:'notify.batch.size,string"`
 	Database      SomaDbConfig   `json:"database"`
 	Daemon        SomaDaemon     `json:"daemon"`
 	Auth          SomaAuthConfig `json:"authentication"`

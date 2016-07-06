@@ -341,6 +341,7 @@ func (lc *lifeCycle) poke() {
 	// do not poke the bear
 bearloop:
 	for mon, idList := range pokeIDs {
+		var i uint64 = 0
 		for _, id := range idList {
 			cl = resty.New()
 			if _, err = cl.SetTimeout(500 * time.Millisecond).R().
@@ -352,6 +353,10 @@ bearloop:
 			// XXX TODO: MAYBE we should look at the return code. MAYBE.
 			log.Printf("Poked %s about %s", mon, id)
 			lc.stmt_clear.Exec(id)
+			i++
+			if i == SomaCfg.PokeBatchSize {
+				continue bearloop
+			}
 		}
 	}
 }
