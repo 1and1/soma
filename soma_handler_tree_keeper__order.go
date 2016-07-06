@@ -135,7 +135,7 @@ deployments:
 		json.Unmarshal([]byte(currentDeploymentDetailsJSON), curDetails)
 		json.Unmarshal([]byte(previousDeploymentDetailsJSON), prvDetails)
 
-		if curDetails.DeepCompare(&prvDetails) {
+		if !curDetails.DeepCompare(&prvDetails) {
 			// there is no change in deployment details, thus no point
 			// to sending the new deployment details as an update to the
 			// monitoring systems
