@@ -42,9 +42,6 @@ func (dd *Deployment) DeepCompare(alternate *Deployment) bool {
 	if dd.View != alternate.View {
 		return false
 	}
-	if dd.Task != alternate.Task {
-		return false
-	}
 	if dd.Datacenter != alternate.Datacenter {
 		return false
 	}
