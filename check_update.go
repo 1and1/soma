@@ -55,7 +55,10 @@ func CheckUpdateOrInsertOrDelete(details *proto.Deployment) error {
 			return err
 		}
 	case "deprovision":
-		if err != nil {
+		if err == sql.ErrNoRows {
+			// nothing to do
+			return nil
+		} else if err != nil {
 			return err
 		}
 	}

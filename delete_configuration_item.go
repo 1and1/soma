@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package main
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -57,7 +58,10 @@ func deleteItem(itemID string) error {
 		err      error
 	)
 
-	if err = Eye.run.get_lookup.QueryRow(itemID).Scan(&lookupID); err != nil {
+	if err = Eye.run.get_lookup.QueryRow(itemID).Scan(&lookupID); err == sql.ErrNoRows {
+		// not being able to delete what we do not have is ok
+		return nil
+	} else if err != nil {
 		// either a real error, or what is to be deleted does not exist
 		return err
 	}
