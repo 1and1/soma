@@ -589,6 +589,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
+			q.Custom.Id = uuid.NewV4()
 			log.Printf("R: property/add-custom for %s", q.Custom.Name)
 			res, err = w.add_cst_stmt.Exec(
 				q.Custom.Id,
@@ -740,7 +741,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			err = tx.Commit()
 		} // switch q.prType
 	default:
-		log.Printf("R: unimplemented metrics/%s", q.action)
+		log.Printf("R: unimplemented property/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return
