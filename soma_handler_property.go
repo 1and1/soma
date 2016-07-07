@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/satori/go.uuid"
+
 )
 
 type somaPropertyRequest struct {
@@ -589,7 +591,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
-			q.Custom.Id = uuid.NewV4()
+			q.Custom.Id = uuid.NewV4().String()
 			log.Printf("R: property/add-custom for %s", q.Custom.Name)
 			res, err = w.add_cst_stmt.Exec(
 				q.Custom.Id,
