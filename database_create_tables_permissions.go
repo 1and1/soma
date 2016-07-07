@@ -149,6 +149,26 @@ create table if not exists soma.authorizations_cluster (
 	queries[idx] = "createTableClusterAuthorizations"
 	idx++
 
+	queryMap["createTableMonitoringAuthorizations"] = `
+create table if not exists soma.authorizations_monitoring (
+    grant_id                    uuid            PRIMARY KEY,
+    user_id                     uuid            REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    tool_id                     uuid            REFERENCES auth.tools ( tool_id ) DEFERRABLE,
+    organizational_team_id      uuid            REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    monitoring_id               uuid            NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE,
+    permission_id               uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
+    permission_type             varchar(32)     NOT NULL REFERENCES soma.permission_types ( permission_type ) DEFERRABLE,
+    created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
+    FOREIGN KEY ( permission_id, permission_type ) REFERENCES soma.permissions ( permission_id, permission_type ) DEFERRABLE,
+    CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
+           OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
+           OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
+    CHECK ( permission_type = 'limited' )
+);`
+	queries[idx] = "createTableMonitoringAuthorizations"
+	idx++
+
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
 

@@ -26,7 +26,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201605310001: upgrade_soma_to_201606150001,
 		201606150001: upgrade_soma_to_201606160001,
 		201606160001: upgrade_soma_to_201606210001,
-		201606210001: upgrade_soma_to_201607060001,
+		201606210001: upgrade_soma_to_201607070001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -307,7 +307,7 @@ func upgrade_soma_to_201606210001(curr int, tool string, printOnly bool) int {
 	return 201606210001
 }
 
-func upgrade_soma_to_201607060001(curr int, tool string, printOnly bool) int {
+func upgrade_soma_to_201607070001(curr int, tool string, printOnly bool) int {
 	if curr != 201606210001 {
 		return 0
 	}
@@ -319,14 +319,15 @@ func upgrade_soma_to_201607060001(curr int, tool string, printOnly bool) int {
 		`CREATE INDEX CONCURRENTLY _instance_config_status ON soma.check_instance_configurations ( status, check_instance_id );`,
 		`CREATE UNIQUE INDEX CONCURRENTLY _instance_config_version ON check_instance_configurations ( check_instance_id, version );`,
 		`CREATE INDEX CONCURRENTLY _configuration_id_levels ON configuration_thresholds ( configuration_id, notification_level );`,
+		`CREATE TABLE IF NOT EXISTS soma.authorizations_monitoring ( grant_id uuid PRIMARY KEY, user_id uuid REFERENCES inventory.users ( user_id ) DEFERRABLE, tool_id uuid REFERENCES auth.tools ( tool_id ) DEFERRABLE, organizational_team_id uuid REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE, monitoring_id uuid NOT NULL REFERENCES soma.monitoring_systems ( monitoring_id ) DEFERRABLE, permission_id uuid NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE, permission_type varchar(32) NOT NULL REFERENCES soma.permission_types ( permission_type ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), FOREIGN KEY ( permission_id, permission_type ) REFERENCES soma.permissions ( permission_id, permission_type ) DEFERRABLE, CHECK (( user_id IS NOT NULL AND tool_id IS NULL AND organizational_team_id IS NULL ) OR ( user_id IS NULL AND tool_id IS NOT NULL AND organizational_team_id IS NULL ) OR ( user_id IS NULL AND tool_id IS NULL AND organizational_team_id IS NOT NULL )), CHECK ( permission_type = 'limited' ));`,
 	}
 	stmts = append(stmts,
-		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201607060001, 'Upgrade - somadbctl %s');", tool),
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201607070001, 'Upgrade - somadbctl %s');", tool),
 	)
 
 	executeUpgrades(stmts, printOnly)
 
-	return 201607060001
+	return 201607070001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
