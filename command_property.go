@@ -674,7 +674,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	// XXX WIP switch
 	switch oType {
 	case `group`, `bucket`, `repository`:
-		return fmt.Errorf("Object %s properties should not yet be handled via this function", oType)
+		return fmt.Errorf(
+			"Object %s properties should not yet be handled via this function",
+			oType,
+		)
 	}
 
 	// argument parsing
@@ -694,7 +697,8 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	case `group`, `cluster`:
 		required = append(required, `in`)
 	}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := utl.ParseVariadicArguments(multiple, unique, required,
+		c.Args().Tail())
 
 	// deprecation warning
 	switch oType {
@@ -722,7 +726,13 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		bucketId = config.BucketId
 	case `cluster`:
 		bucketId = utl.BucketByUUIDOrName(Client, opts[`in`][0])
-		objectId = utl.TryGetClusterByUUIDOrName(Client, opts[`to`][0], bucketId)
+		objectId = utl.TryGetClusterByUUIDOrName(Client, opts[`to`][0],
+			bucketId)
+		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
+	case `group`:
+		bucketId = utl.BucketByUUIDOrName(Client, opts[`in`][0])
+		objectId = utl.TryGetGroupByUUIDOrName(Client, opts[`to`][0],
+			bucketId)
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	}
 
@@ -764,7 +774,8 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		}
 		prop.Oncall.Name, prop.Oncall.Number = utl.GetOncallDetailsById(Client, oncallId)
 	case `custom`:
-		customId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(), repoId)
+		customId := utl.TryGetCustomPropertyByUUIDOrName(
+			Client, c.Args().First(), repoId)
 		prop.Custom = &proto.PropertyCustom{
 			Id:           customId,
 			Name:         c.Args().First(),
@@ -785,6 +796,11 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		req.Cluster.Id = objectId
 		req.Cluster.BucketId = bucketId
 		req.Cluster.Properties = &[]proto.Property{prop}
+	case `group`:
+		req = proto.NewGroupRequest()
+		req.Group.Id = objectId
+		req.Group.BucketId = bucketId
+		req.Group.Properties = &[]proto.Property{prop}
 	}
 
 	// request dispatch
