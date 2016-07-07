@@ -82,7 +82,9 @@ func (st *Tree) GetType() string {
 func (st *Tree) SetError(c chan *Error) {
 	if st.Child != nil {
 		st.Child.setError(c)
+		return
 	}
+	panic(`tree.SetError called without attached child`)
 }
 
 func (st *Tree) GetErrors() []error {
