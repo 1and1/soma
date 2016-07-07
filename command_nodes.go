@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/codegangsta/cli"
@@ -138,6 +137,12 @@ func registerNodes(app cli.App) *cli.App {
 										Name:         `oncall`,
 										Usage:        `Add an oncall property to a node`,
 										Action:       runtime(cmdNodeOncallPropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
+									},
+									{
+										Name:         `custom`,
+										Usage:        `Add a custom property to a node`,
+										Action:       runtime(cmdNodeCustomPropertyAdd),
 										BashComplete: cmpl.PropertyAdd,
 									},
 								},
@@ -512,166 +517,23 @@ func cmdNodeConfig(c *cli.Context) error {
 }
 
 func cmdNodeSystemPropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	required := []string{"to", "value", "view"}
-	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
-	}
-
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts["to"][0])
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-
-	config := utl.GetNodeConfigById(Client, nodeId)
-
-	tprop := proto.Property{
-		Type: "system",
-		View: opts["view"][0],
-		System: &proto.PropertySystem{
-			Name:  c.Args().First(),
-			Value: opts["value"][0],
-		},
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	propList := []proto.Property{tprop}
-
-	node := proto.Node{
-		Id:         nodeId,
-		Properties: &propList,
-		Config:     config,
-	}
-
-	req := proto.Request{
-		Node: &node,
-	}
-
-	path := fmt.Sprintf("/nodes/%s/property/system/", nodeId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return cmdNodePropertyAdd(c, `system`)
 }
 
 func cmdNodeServicePropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	required := []string{"to", "view"}
-	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
-	}
-
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts["to"][0])
-	config := utl.GetNodeConfigById(Client, nodeId)
-	teamId := utl.TeamIdForBucket(Client, config.BucketId)
-
-	// no reason to fill out the attributes, client-provided
-	// attributes are discarded by the server
-	tprop := proto.Property{
-		Type: "service",
-		View: opts["view"][0],
-		Service: &proto.PropertyService{
-			Name:       c.Args().First(),
-			TeamId:     teamId,
-			Attributes: []proto.ServiceAttribute{},
-		},
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	req := proto.Request{
-		Node: &proto.Node{
-			Id:     nodeId,
-			Config: config,
-			Properties: &[]proto.Property{
-				tprop,
-			},
-		},
-	}
-
-	path := fmt.Sprintf("/nodes/%s/property/service/", nodeId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return cmdNodePropertyAdd(c, `service`)
 }
 
 func cmdNodeOncallPropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	required := []string{"to", "view"}
-	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for nodes, since they are global objects. Ignoring.")
-	}
+	return cmdNodePropertyAdd(c, `oncall`)
+}
 
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts["to"][0])
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
-	oprop := proto.PropertyOncall{
-		Id: oncallId,
-	}
-	oprop.Name, oprop.Number = utl.GetOncallDetailsById(Client, oncallId)
+func cmdNodeCustomPropertyAdd(c *cli.Context) error {
+	return cmdNodePropertyAdd(c, `custom`)
+}
 
-	config := utl.GetNodeConfigById(Client, nodeId)
-
-	tprop := proto.Property{
-		Type:   `oncall`,
-		View:   opts["view"][0],
-		Oncall: &oprop,
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	propList := []proto.Property{tprop}
-
-	node := proto.Node{
-		Id:         nodeId,
-		Properties: &propList,
-		Config:     config,
-	}
-
-	req := proto.Request{
-		Node: &node,
-	}
-
-	path := fmt.Sprintf("/nodes/%s/property/oncall/", nodeId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+func cmdNodePropertyAdd(c *cli.Context, pType string) error {
+	return cmdPropertyAdd(c, pType, `node`)
 }
 
 func cmdNodeSystemPropertyDelete(c *cli.Context) error {

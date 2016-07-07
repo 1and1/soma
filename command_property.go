@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/codegangsta/cli"
 )
@@ -507,6 +508,8 @@ func cmdPropertyTemplateRename(c *cli.Context) {
 }
 */
 
+/* SHOW
+ */
 func cmdPropertyCustomShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
@@ -572,6 +575,8 @@ func cmdPropertyTemplateShow(c *cli.Context) error {
 	return nil
 }
 
+/* LIST
+ */
 func cmdPropertyCustomList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	utl.ValidateCliArgument(c, 2, "repository")
@@ -631,6 +636,159 @@ func cmdPropertyTemplateList(c *cli.Context) error {
 		fmt.Println(resp)
 	}
 	return nil
+}
+
+/* ADD
+ */
+func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
+	switch oType {
+	case `node`, `bucket`, `repository`:
+		switch pType {
+		case `system`:
+			fallthrough
+		case `custom`:
+			utl.ValidateCliMinArgumentCount(c, 7)
+		case `service`:
+			fallthrough
+		case `oncall`:
+			utl.ValidateCliMinArgumentCount(c, 5)
+		default:
+			utl.Abort(`Unknown property type`)
+		}
+	case `group`, `cluster`:
+		switch pType {
+		case `system`:
+			fallthrough
+		case `custom`:
+			utl.ValidateCliMinArgumentCount(c, 9)
+		case `service`:
+			fallthrough
+		case `oncall`:
+			utl.ValidateCliMinArgumentCount(c, 7)
+		default:
+			utl.Abort(`Unknown property type`)
+		}
+	default:
+		utl.Abort(`Unknown object type`)
+	}
+	// XXX WIP switch
+	switch oType {
+	case `cluster`, `group`, `bucket`, `repository`:
+		return fmt.Errorf("Object %s properties should not yet be handled via this function", oType)
+	}
+
+	// argument parsing
+	multiple := []string{}
+	required := []string{`to`, `view`}
+	unique := []string{`to`, `in`, `view`, `inheritance`, `childrenonly`}
+
+	switch pType {
+	case `system`:
+		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+		fallthrough
+	case `custom`:
+		required = append(required, `value`)
+		unique = append(unique, `value`)
+	}
+	switch oType {
+	case `group`, `cluster`:
+		required = append(required, `in`)
+	}
+	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+
+	switch oType {
+	case `repository`, `bucket`, `node`:
+		if _, ok := opts[`in`]; ok {
+			fmt.Fprintf(
+				os.Stderr,
+				"Hint: Keyword `in` is DEPRECATED for %s objects, since they are global objects. Ignoring.",
+				oType,
+			)
+		}
+	}
+
+	var (
+		objectId, object, repoId string
+		config                   *proto.NodeConfig
+		req                      proto.Request
+	)
+	// id lookup
+	switch oType {
+	case `node`:
+		objectId = utl.TryGetNodeByUUIDOrName(Client, opts[`to`][0])
+		config = utl.GetNodeConfigById(Client, objectId)
+		repoId = config.RepositoryId
+	}
+
+	// property assembly
+	prop := proto.Property{
+		Type: pType,
+		View: opts[`view`][0],
+	}
+	// property assembly, optional arguments
+	if _, ok := opts[`childrenonly`]; ok {
+		prop.ChildrenOnly = utl.GetValidatedBool(opts[`childrenonly`][0])
+	} else {
+		prop.ChildrenOnly = false
+	}
+	if _, ok := opts[`inheritance`]; ok {
+		prop.Inheritance = utl.GetValidatedBool(opts[`inheritance`][0])
+	} else {
+		prop.Inheritance = false
+	}
+	switch pType {
+	case `system`:
+		prop.System = &proto.PropertySystem{
+			Name:  c.Args().First(),
+			Value: opts[`value`][0],
+		}
+	case `service`:
+		teamId := utl.TeamIdForBucket(Client, config.BucketId)
+		// no reason to fill out the attributes, client-provided
+		// attributes are discarded by the server
+		prop.Service = &proto.PropertyService{
+			Name:       c.Args().First(),
+			TeamId:     teamId,
+			Attributes: []proto.ServiceAttribute{},
+		}
+	case `oncall`:
+		oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+		prop.Oncall = &proto.PropertyOncall{
+			Id: oncallId,
+		}
+		prop.Oncall.Name, prop.Oncall.Number = utl.GetOncallDetailsById(Client, oncallId)
+	case `custom`:
+		customId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(), repoId)
+		prop.Custom = &proto.PropertyCustom{
+			Id:           customId,
+			Name:         c.Args().First(),
+			RepositoryId: repoId,
+			Value:        opts[`value`][0],
+		}
+	}
+
+	// request assembly
+	switch oType {
+	case `node`:
+		req = proto.NewNodeRequest()
+		req.Node.Id = objectId
+		req.Node.Config = config
+		req.Node.Properties = &[]proto.Property{prop}
+	}
+
+	// request dispatch
+	switch oType {
+	case `repository`:
+		object = oType
+	default:
+		object = oType + `s`
+	}
+	path := fmt.Sprintf("/%s/%s/property/%s/", object, objectId, pType)
+	if resp, err := adm.PostReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, ``)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
