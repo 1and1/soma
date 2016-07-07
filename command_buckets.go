@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/codegangsta/cli"
 )
@@ -90,6 +89,18 @@ func registerBuckets(app cli.App) *cli.App {
 										Name:         "service",
 										Usage:        "Add a service property to a bucket",
 										Action:       runtime(cmdBucketServicePropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
+									},
+									{
+										Name:         "oncall",
+										Usage:        "Add an oncall property to a bucket",
+										Action:       runtime(cmdBucketOncallPropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
+									},
+									{
+										Name:         "custom",
+										Usage:        "Add a custom property to a bucket",
+										Action:       runtime(cmdBucketCustomPropertyAdd),
 										BashComplete: cmpl.PropertyAdd,
 									},
 								},
@@ -335,105 +346,23 @@ func cmdBucketTree(c *cli.Context) error {
 }
 
 func cmdBucketSystemPropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	required := []string{"to", "value", "view"}
-	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for buckets, since they are global objects. Ignoring.")
-	}
-
-	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-
-	prop := proto.Property{
-		Type: "system",
-		View: opts["view"][0],
-		System: &proto.PropertySystem{
-			Name:  c.Args().First(),
-			Value: opts["value"][0],
-		},
-	}
-	if _, ok := opts["inheritance"]; ok {
-		prop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		prop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		prop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		prop.ChildrenOnly = false
-	}
-
-	req := proto.Request{
-		Bucket: &proto.Bucket{
-			Id: bucketId,
-			Properties: &[]proto.Property{
-				prop,
-			},
-		},
-	}
-
-	path := fmt.Sprintf("/buckets/%s/property/system/", bucketId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return cmdBucketPropertyAdd(c, `system`)
 }
 
 func cmdBucketServicePropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	required := []string{"to", "view"}
-	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+	return cmdBucketPropertyAdd(c, `service`)
+}
 
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for buckets, since they are global objects. Ignoring.")
-	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
-	teamId := utl.TeamIdForBucket(Client, bucketId)
-	// no reason to fill out the attributes, client-provided
-	// attributes are discarded by the server
-	prop := proto.Property{
-		Type: "service",
-		View: opts["view"][0],
-		Service: &proto.PropertyService{
-			Name:       c.Args().First(),
-			TeamId:     teamId,
-			Attributes: []proto.ServiceAttribute{},
-		},
-	}
-	if _, ok := opts["inheritance"]; ok {
-		prop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		prop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		prop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		prop.ChildrenOnly = false
-	}
+func cmdBucketOncallPropertyAdd(c *cli.Context) error {
+	return cmdBucketPropertyAdd(c, `oncall`)
+}
 
-	req := proto.Request{
-		Bucket: &proto.Bucket{
-			Id: bucketId,
-			Properties: &[]proto.Property{
-				prop,
-			},
-		},
-	}
+func cmdBucketCustomPropertyAdd(c *cli.Context) error {
+	return cmdBucketPropertyAdd(c, `custom`)
+}
 
-	path := fmt.Sprintf("/buckets/%s/property/service/", bucketId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+func cmdBucketPropertyAdd(c *cli.Context, pType string) error {
+	return cmdPropertyAdd(c, pType, `bucket`)
 }
 
 func cmdBucketSystemPropertyDelete(c *cli.Context) error {

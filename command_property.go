@@ -673,7 +673,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	}
 	// XXX WIP switch
 	switch oType {
-	case `group`, `bucket`, `repository`:
+	case `repository`:
 		return fmt.Errorf(
 			"Object %s properties should not yet be handled via this function",
 			oType,
@@ -734,6 +734,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		objectId = utl.TryGetGroupByUUIDOrName(Client, opts[`to`][0],
 			bucketId)
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
+	case `bucket`:
+		bucketId = utl.BucketByUUIDOrName(Client, opts[`to`][0])
+		objectId = bucketId
+		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	}
 
 	// property assembly
@@ -772,7 +776,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		prop.Oncall = &proto.PropertyOncall{
 			Id: oncallId,
 		}
-		prop.Oncall.Name, prop.Oncall.Number = utl.GetOncallDetailsById(Client, oncallId)
+		prop.Oncall.Name, prop.Oncall.Number = utl.GetOncallDetailsById(
+			Client,
+			oncallId,
+		)
 	case `custom`:
 		customId := utl.TryGetCustomPropertyByUUIDOrName(
 			Client, c.Args().First(), repoId)
@@ -801,6 +808,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		req.Group.Id = objectId
 		req.Group.BucketId = bucketId
 		req.Group.Properties = &[]proto.Property{prop}
+	case `bucket`:
+		req = proto.NewBucketRequest()
+		req.Bucket.Id = objectId
+		req.Bucket.Properties = &[]proto.Property{prop}
 	}
 
 	// request dispatch
