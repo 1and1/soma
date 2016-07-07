@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/codegangsta/cli"
 )
@@ -105,6 +104,18 @@ func registerRepository(app cli.App) *cli.App {
 										Name:         "service",
 										Usage:        "Add a service property to a repository",
 										Action:       runtime(cmdRepositoryServicePropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
+									},
+									{
+										Name:         "oncall",
+										Usage:        "Add an oncall property to a repository",
+										Action:       runtime(cmdRepositoryOncallPropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
+									},
+									{
+										Name:         "custom",
+										Usage:        "Add a custom property to a repository",
+										Action:       runtime(cmdRepositoryCustomPropertyAdd),
 										BashComplete: cmpl.PropertyAdd,
 									},
 								},
@@ -331,108 +342,23 @@ func cmdRepositoryTree(c *cli.Context) error {
 }
 
 func cmdRepositorySystemPropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	required := []string{"to", "value", "view"}
-	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for repositories, since they are global objects. Ignoring.")
-	}
-
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts["to"][0])
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-
-	sprop := proto.PropertySystem{
-		Name:  c.Args().First(),
-		Value: opts["value"][0],
-	}
-
-	tprop := proto.Property{
-		Type:   "system",
-		View:   opts["view"][0],
-		System: &sprop,
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	propList := []proto.Property{tprop}
-
-	repository := proto.Repository{
-		Id:         repositoryId,
-		Properties: &propList,
-	}
-
-	req := proto.Request{
-		Repository: &repository,
-	}
-
-	path := fmt.Sprintf("/repository/%s/property/system/", repositoryId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return cmdRepositoryPropertyAdd(c, `system`)
 }
 
 func cmdRepositoryServicePropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
-	multiple := []string{}
-	required := []string{"to", "view"}
-	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	if _, ok := opts["in"]; ok {
-		fmt.Fprintln(os.Stderr, "Hint: Keyword `in` is DEPRECATED for repositories, since they are global objects. Ignoring.")
-	}
+	return cmdRepositoryPropertyAdd(c, `service`)
+}
 
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts["to"][0])
-	teamId := utl.GetTeamIdByRepositoryId(Client, repositoryId)
+func cmdRepositoryOncallPropertyAdd(c *cli.Context) error {
+	return cmdRepositoryPropertyAdd(c, `oncall`)
+}
 
-	// no reason to fill out the attributes, client-provided
-	// attributes are discarded by the server
-	tprop := proto.Property{
-		Type: "service",
-		View: opts["view"][0],
-		Service: &proto.PropertyService{
-			Name:       c.Args().First(),
-			TeamId:     teamId,
-			Attributes: []proto.ServiceAttribute{},
-		},
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
+func cmdRepositoryCustomPropertyAdd(c *cli.Context) error {
+	return cmdRepositoryPropertyAdd(c, `custom`)
+}
 
-	req := proto.Request{
-		Repository: &proto.Repository{
-			Id: repositoryId,
-			Properties: &[]proto.Property{
-				tprop,
-			},
-		},
-	}
-
-	path := fmt.Sprintf("/repository/%s/property/service/", repositoryId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+func cmdRepositoryPropertyAdd(c *cli.Context, pType string) error {
+	return cmdPropertyAdd(c, pType, `repository`)
 }
 
 func cmdRepositorySystemPropertyDelete(c *cli.Context) error {

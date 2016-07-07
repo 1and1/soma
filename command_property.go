@@ -671,14 +671,6 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	default:
 		utl.Abort(`Unknown object type`)
 	}
-	// XXX WIP switch
-	switch oType {
-	case `repository`:
-		return fmt.Errorf(
-			"Object %s properties should not yet be handled via this function",
-			oType,
-		)
-	}
 
 	// argument parsing
 	multiple := []string{}
@@ -738,6 +730,9 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		bucketId = utl.BucketByUUIDOrName(Client, opts[`to`][0])
 		objectId = bucketId
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
+	case `repository`:
+		repoId = utl.TryGetRepositoryByUUIDOrName(Client, opts[`to`][0])
+		objectId = repoId
 	}
 
 	// property assembly
@@ -763,7 +758,13 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			Value: opts[`value`][0],
 		}
 	case `service`:
-		teamId := utl.TeamIdForBucket(Client, bucketId)
+		var teamId string
+		switch oType {
+		case `repository`:
+			teamId = utl.GetTeamIdByRepositoryId(Client, repoId)
+		default:
+			teamId = utl.TeamIdForBucket(Client, bucketId)
+		}
 		// no reason to fill out the attributes, client-provided
 		// attributes are discarded by the server
 		prop.Service = &proto.PropertyService{
@@ -812,6 +813,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		req = proto.NewBucketRequest()
 		req.Bucket.Id = objectId
 		req.Bucket.Properties = &[]proto.Property{prop}
+	case `repository`:
+		req = proto.NewRepositoryRequest()
+		req.Repository.Id = repoId
+		req.Repository.Properties = &[]proto.Property{prop}
 	}
 
 	// request dispatch
