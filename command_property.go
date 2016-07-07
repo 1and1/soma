@@ -673,7 +673,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	}
 	// XXX WIP switch
 	switch oType {
-	case `cluster`, `group`, `bucket`, `repository`:
+	case `group`, `bucket`, `repository`:
 		return fmt.Errorf("Object %s properties should not yet be handled via this function", oType)
 	}
 
@@ -696,6 +696,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	}
 	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 
+	// deprecation warning
 	switch oType {
 	case `repository`, `bucket`, `node`:
 		if _, ok := opts[`in`]; ok {
@@ -708,9 +709,9 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	}
 
 	var (
-		objectId, object, repoId string
-		config                   *proto.NodeConfig
-		req                      proto.Request
+		objectId, object, repoId, bucketId string
+		config                             *proto.NodeConfig
+		req                                proto.Request
 	)
 	// id lookup
 	switch oType {
@@ -718,6 +719,11 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		objectId = utl.TryGetNodeByUUIDOrName(Client, opts[`to`][0])
 		config = utl.GetNodeConfigById(Client, objectId)
 		repoId = config.RepositoryId
+		bucketId = config.BucketId
+	case `cluster`:
+		bucketId = utl.BucketByUUIDOrName(Client, opts[`in`][0])
+		objectId = utl.TryGetClusterByUUIDOrName(Client, opts[`to`][0], bucketId)
+		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	}
 
 	// property assembly
@@ -743,7 +749,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			Value: opts[`value`][0],
 		}
 	case `service`:
-		teamId := utl.TeamIdForBucket(Client, config.BucketId)
+		teamId := utl.TeamIdForBucket(Client, bucketId)
 		// no reason to fill out the attributes, client-provided
 		// attributes are discarded by the server
 		prop.Service = &proto.PropertyService{
@@ -774,6 +780,11 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		req.Node.Id = objectId
 		req.Node.Config = config
 		req.Node.Properties = &[]proto.Property{prop}
+	case `cluster`:
+		req = proto.NewClusterRequest()
+		req.Cluster.Id = objectId
+		req.Cluster.BucketId = bucketId
+		req.Cluster.Properties = &[]proto.Property{prop}
 	}
 
 	// request dispatch

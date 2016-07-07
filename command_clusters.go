@@ -99,6 +99,12 @@ func registerClusters(app cli.App) *cli.App {
 										Action:       runtime(cmdClusterOncallPropertyAdd),
 										BashComplete: cmpl.PropertyAdd,
 									},
+									{
+										Name:         `custom`,
+										Usage:        `Add a custom property to a cluster`,
+										Action:       runtime(cmdClusterCustomPropertyAdd),
+										BashComplete: cmpl.PropertyAdd,
+									},
 								},
 							},
 							{
@@ -352,158 +358,23 @@ func cmdClusterMemberList(c *cli.Context) error {
 }
 
 func cmdClusterSystemPropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 9)
-	multiple := []string{}
-	required := []string{"to", "in", "value", "view"}
-	unique := []string{"to", "in", "value", "view", "inheritance", "childrenonly"}
-
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts["to"][0], bucketId)
-	utl.CheckStringIsSystemProperty(Client, c.Args().First())
-
-	sprop := proto.PropertySystem{
-		Name:  c.Args().First(),
-		Value: opts["value"][0],
-	}
-
-	tprop := proto.Property{
-		Type:   "system",
-		View:   opts["view"][0],
-		System: &sprop,
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	propList := []proto.Property{tprop}
-
-	cluster := proto.Cluster{
-		Id:         clusterId,
-		BucketId:   bucketId,
-		Properties: &propList,
-	}
-
-	req := proto.Request{
-		Cluster: &cluster,
-	}
-
-	path := fmt.Sprintf("/clusters/%s/property/system/", clusterId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return cmdClusterPropertyAdd(c, `system`)
 }
 
 func cmdClusterServicePropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	required := []string{"to", "in", "view"}
-	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
-
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts["to"][0], bucketId)
-	teamId := utl.TeamIdForBucket(Client, bucketId)
-
-	// no reason to fill out the attributes, client-provided
-	// attributes are discarded by the server
-	tprop := proto.Property{
-		Type: "service",
-		View: opts["view"][0],
-		Service: &proto.PropertyService{
-			Name:       c.Args().First(),
-			TeamId:     teamId,
-			Attributes: []proto.ServiceAttribute{},
-		},
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	req := proto.Request{
-		Cluster: &proto.Cluster{
-			Id:       clusterId,
-			BucketId: bucketId,
-			Properties: &[]proto.Property{
-				tprop,
-			},
-		},
-	}
-
-	path := fmt.Sprintf("/clusters/%s/property/service/", clusterId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return cmdClusterPropertyAdd(c, `service`)
 }
 
 func cmdClusterOncallPropertyAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-	multiple := []string{}
-	required := []string{"to", "in", "view"}
-	unique := []string{"to", "in", "view", "inheritance", "childrenonly"}
+	return cmdClusterPropertyAdd(c, `oncall`)
+}
 
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts["to"][0], bucketId)
+func cmdClusterCustomPropertyAdd(c *cli.Context) error {
+	return cmdClusterPropertyAdd(c, `custom`)
+}
 
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
-	oprop := proto.PropertyOncall{
-		Id: oncallId,
-	}
-	oprop.Name, oprop.Number = utl.GetOncallDetailsById(Client, oncallId)
-
-	tprop := proto.Property{
-		Type:   `oncall`,
-		View:   opts["view"][0],
-		Oncall: &oprop,
-	}
-	if _, ok := opts["inheritance"]; ok {
-		tprop.Inheritance = utl.GetValidatedBool(opts["inheritance"][0])
-	} else {
-		tprop.Inheritance = true
-	}
-	if _, ok := opts["childrenonly"]; ok {
-		tprop.ChildrenOnly = utl.GetValidatedBool(opts["childrenonly"][0])
-	} else {
-		tprop.ChildrenOnly = false
-	}
-
-	propList := []proto.Property{tprop}
-
-	cluster := proto.Cluster{
-		Id:         clusterId,
-		BucketId:   bucketId,
-		Properties: &propList,
-	}
-
-	req := proto.Request{
-		Cluster: &cluster,
-	}
-
-	path := fmt.Sprintf("/clusters/%s/property/oncall/", clusterId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+func cmdClusterPropertyAdd(c *cli.Context, pType string) error {
+	return cmdPropertyAdd(c, pType, `cluster`)
 }
 
 func cmdClusterSystemPropertyDelete(c *cli.Context) error {
