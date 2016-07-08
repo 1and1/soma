@@ -50,10 +50,11 @@ const (
 
 func main() {
 	var (
-		configFlag, configFile string
-		err                    error
+		configFlag, configFile, obsRepoFlag string
+		err                                 error
 	)
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
+	flag.StringVar(&obsRepoFlag, "repo", "", "Observer target repository")
 	flag.Parse()
 
 	log.Printf("Starting runtime config initialization, SOMA v%s", SomaVersion)
@@ -69,6 +70,10 @@ func main() {
 	err = SomaCfg.readConfigFile(configFile)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if SomaCfg.Observer && obsRepoFlag != `` {
+		SomaCfg.ObserverRepo = obsRepoFlag
 	}
 
 	/*

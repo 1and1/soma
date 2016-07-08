@@ -139,6 +139,12 @@ WHERE  capability_id = $1::uuid;`)
 	}
 	defer g.cdel_stmt.Close()
 
+	if SomaCfg.Observer {
+		fmt.Println(`GuidePost entered observer mode`)
+		<-g.shutdown
+		goto exit
+	}
+
 runloop:
 	for {
 		select {
@@ -148,6 +154,7 @@ runloop:
 			g.process(&req)
 		}
 	}
+exit:
 }
 
 func (g *guidePost) process(q *treeRequest) {

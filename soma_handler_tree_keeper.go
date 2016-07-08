@@ -84,6 +84,12 @@ func (tk *treeKeeper) run() {
 	log.Printf("TK[%s]: ready for service!\n", tk.repoName)
 	tk.ready = true
 
+	if SomaCfg.Observer {
+		fmt.Printf("TreeKeeper [%s] entered observer mode\n", tk.repoName)
+		<-tk.shutdown
+		goto exit
+	}
+
 runloop:
 	for {
 		select {
@@ -98,6 +104,7 @@ runloop:
 			}
 		}
 	}
+exit:
 }
 
 func (tk *treeKeeper) isReady() bool {
