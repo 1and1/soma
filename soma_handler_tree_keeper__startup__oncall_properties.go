@@ -638,7 +638,7 @@ SELECT  snop.instance_id,
         snop.children_only,
         iodt.oncall_duty_name,
         iodt.oncall_duty_phone_number
-FROM    soma.node_oncall_properties snop
+FROM    soma.node_oncall_property snop
 JOIN    inventory.oncall_duty_teams iodt
   ON    snop.oncall_duty_id = iodt.oncall_duty_id
 WHERE   snop.instance_id = snop.source_instance_id

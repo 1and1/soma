@@ -59,7 +59,7 @@ SELECT op.instance_id,
        op.view,
        op.oncall_duty_id,
        iodt.oncall_duty_name
-FROM   soma.repository_oncall_property op
+FROM   soma.repository_oncall_properties op
 JOIN   inventory.oncall_duty_teams iodt
   ON   op.oncall_duty_id = iodt.oncall_duty_id
 WHERE  op.repository_id = $1::uuid;`
