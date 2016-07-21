@@ -17,9 +17,6 @@ func (teg *Group) Attach(a AttachRequest) {
 		panic(`Group.Attach`)
 	}
 
-	if teg.Parent == nil {
-		panic(`Group.Attach: failed`)
-	}
 	teg.Parent.(Propertier).syncProperty(teg.Id.String())
 }
 

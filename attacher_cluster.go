@@ -17,9 +17,6 @@ func (tec *Cluster) Attach(a AttachRequest) {
 		panic(`Cluster.Attach`)
 	}
 
-	if tec.Parent == nil {
-		panic(`Cluster.Attach: failed`)
-	}
 	tec.Parent.(Propertier).syncProperty(tec.Id.String())
 }
 

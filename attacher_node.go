@@ -17,9 +17,6 @@ func (ten *Node) Attach(a AttachRequest) {
 		panic(`Node.Attach`)
 	}
 
-	if ten.Parent == nil {
-		panic(`Node.Attach: failed`)
-	}
 	ten.Parent.(Propertier).syncProperty(ten.Id.String())
 }
 

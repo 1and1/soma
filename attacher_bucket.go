@@ -19,9 +19,6 @@ func (teb *Bucket) Attach(a AttachRequest) {
 		panic(`Bucket.Attach`)
 	}
 
-	if teb.Parent == nil {
-		panic(`Bucket.Attach: failed`)
-	}
 	teb.Parent.(Propertier).syncProperty(teb.Id.String())
 }
 
