@@ -57,10 +57,6 @@ func (tef Fault) CloneRepository() RepositoryAttacher {
 	return &tef
 }
 
-func (tef Fault) CloneBucket() BucketAttacher {
-	return &tef
-}
-
 func (tef *Fault) setParent(p Receiver) {
 	switch p.(type) {
 	case FaultReceiver:
