@@ -26,6 +26,7 @@ type Result struct {
 	Permission []proto.Permission
 	Grant      []proto.Grant
 	Job        []proto.Job
+	System     []proto.SystemOperation
 }
 
 func (r *Result) RowCnt(i int64, err error) bool {

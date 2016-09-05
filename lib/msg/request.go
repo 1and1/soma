@@ -24,6 +24,7 @@ type Request struct {
 	Grant      proto.Grant
 	Job        proto.Job
 	Tree       proto.Tree
+	System     proto.SystemOperation
 }
 
 type Filter struct {
