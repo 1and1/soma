@@ -8,6 +8,11 @@
 
 package stmt
 
+const GroupBucketId = `
+SELECT sg.bucket_id
+FROM   soma.groups sg
+WHERE  sg.group_id = $1;`
+
 const GroupOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,

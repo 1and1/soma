@@ -14,17 +14,20 @@ import (
 )
 
 type guidePost struct {
-	input     chan treeRequest
-	shutdown  chan bool
-	conn      *sql.DB
-	jbsv_stmt *sql.Stmt
-	repo_stmt *sql.Stmt
-	name_stmt *sql.Stmt
-	node_stmt *sql.Stmt
-	serv_stmt *sql.Stmt
-	attr_stmt *sql.Stmt
-	cthr_stmt *sql.Stmt
-	cdel_stmt *sql.Stmt
+	input              chan treeRequest
+	shutdown           chan bool
+	conn               *sql.DB
+	jbsv_stmt          *sql.Stmt
+	repo_stmt          *sql.Stmt
+	name_stmt          *sql.Stmt
+	node_stmt          *sql.Stmt
+	serv_stmt          *sql.Stmt
+	attr_stmt          *sql.Stmt
+	cthr_stmt          *sql.Stmt
+	cdel_stmt          *sql.Stmt
+	bucket_for_node    *sql.Stmt
+	bucket_for_cluster *sql.Stmt
+	bucket_for_group   *sql.Stmt
 }
 
 func (g *guidePost) run() {
@@ -138,6 +141,21 @@ WHERE  capability_id = $1::uuid;`)
 		log.Fatal("guide/get-details-for-delete-check: ", err)
 	}
 	defer g.cdel_stmt.Close()
+
+	if g.bucket_for_node, err = g.conn.Prepare(stmt.NodeBucketId); err != nil {
+		log.Fatal("guide/get-bucketid-for-node: ", err)
+	}
+	defer g.bucket_for_node.Close()
+
+	if g.bucket_for_cluster, err = g.conn.Prepare(stmt.ClusterBucketId); err != nil {
+		log.Fatal("guide/get-bucketid-for-cluster: ", err)
+	}
+	defer g.bucket_for_cluster.Close()
+
+	if g.bucket_for_group, err = g.conn.Prepare(stmt.GroupBucketId); err != nil {
+		log.Fatal("guide/get-bucketid-for-group: ", err)
+	}
+	defer g.bucket_for_group.Close()
 
 	if SomaCfg.Observer {
 		fmt.Println(`GuidePost entered observer mode`)

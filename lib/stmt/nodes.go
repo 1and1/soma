@@ -38,6 +38,11 @@ JOIN   soma.buckets
   ON   node_bucket_assignment.bucket_id = buckets.bucket_id
 WHERE  nodes.node_id = $1;`
 
+const NodeBucketId = `
+SELECT snba.bucket_id
+FROM   soma.node_bucket_assignment snba
+WHERE  snba.node_id = $1;`
+
 const SyncNodes = `
 SELECT node_id,
        node_asset_id,

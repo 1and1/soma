@@ -8,6 +8,11 @@
 
 package stmt
 
+const ClusterBucketId = `
+SELECT sc.bucket_id
+FROM   soma.clusters sc
+WHERE  sc.cluster_id = $1;`
+
 const ClusterOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,
