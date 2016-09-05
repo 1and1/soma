@@ -41,6 +41,7 @@ type treeKeeper struct {
 	team       string
 	broken     bool
 	ready      bool
+	stopped    bool
 	frozen     bool
 	input      chan treeRequest
 	shutdown   chan bool
@@ -113,6 +114,12 @@ func (tk *treeKeeper) isReady() bool {
 
 func (tk *treeKeeper) isBroken() bool {
 	return tk.broken
+}
+
+func (tk *treeKeeper) stop() {
+	tk.ready = false
+	tk.broken = false
+	tk.stopped = true
 }
 
 func (tk *treeKeeper) process(q *treeRequest) {
