@@ -294,27 +294,30 @@ func (g *guidePost) process(q *treeRequest) {
 		// group bucketId sent by client
 		bucketId = q.Group.Group.BucketId
 
-		// retrieve bucketId for group
-		if err = g.bucket_for_group.QueryRow(
-			q.Group.Group.Id,
-		).Scan(&valGroupBId); err != nil {
-			if err == sql.ErrNoRows {
-				result.SetRequestError(
-					fmt.Errorf(`GuidePost: parent group is not assigned to a bucket`),
-				)
-			} else {
-				_ = result.SetRequestError(err)
+		// for create, the group can not be in the bucket yet
+		if q.Action != "create_group" {
+			// retrieve bucketId for group
+			if err = g.bucket_for_group.QueryRow(
+				q.Group.Group.Id,
+			).Scan(&valGroupBId); err != nil {
+				if err == sql.ErrNoRows {
+					result.SetRequestError(
+						fmt.Errorf(`GuidePost: parent group is not assigned to a bucket`),
+					)
+				} else {
+					_ = result.SetRequestError(err)
+				}
+				q.reply <- result
+				return
 			}
-			q.reply <- result
-			return
-		}
-		// check if client sent correct bucketId
-		if bucketId != valGroupBId {
-			result.SetRequestError(
-				fmt.Errorf(`GuidePost: parent group is not in specified bucket`),
-			)
-			q.reply <- result
-			return
+			// check if client sent correct bucketId
+			if bucketId != valGroupBId {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: parent group is not in specified bucket`),
+				)
+				q.reply <- result
+				return
+			}
 		}
 		// check if node and group are in the same bucket
 		if valNodeBId != "" && valNodeBId != bucketId {
@@ -377,27 +380,30 @@ func (g *guidePost) process(q *treeRequest) {
 		// cluster bucketId sent by client
 		bucketId = q.Cluster.Cluster.BucketId
 
-		// retrieve bucketId for cluster
-		if err = g.bucket_for_cluster.QueryRow(
-			q.Cluster.Cluster.Id,
-		).Scan(&valClusterBId); err != nil {
-			if err == sql.ErrNoRows {
-				result.SetRequestError(
-					fmt.Errorf(`GuidePost: cluster is not assigned to a bucket`),
-				)
-			} else {
-				_ = result.SetRequestError(err)
+		// for create, the cluster can not be in the bucket yet
+		if q.Action != `create_cluster` {
+			// retrieve bucketId for cluster
+			if err = g.bucket_for_cluster.QueryRow(
+				q.Cluster.Cluster.Id,
+			).Scan(&valClusterBId); err != nil {
+				if err == sql.ErrNoRows {
+					result.SetRequestError(
+						fmt.Errorf(`GuidePost: cluster is not assigned to a bucket`),
+					)
+				} else {
+					_ = result.SetRequestError(err)
+				}
+				q.reply <- result
+				return
 			}
-			q.reply <- result
-			return
-		}
-		// check if client sent correct bucketId
-		if bucketId != valClusterBId {
-			result.SetRequestError(
-				fmt.Errorf(`GuidePost: cluster is not in specified bucket`),
-			)
-			q.reply <- result
-			return
+			// check if client sent correct bucketId
+			if bucketId != valClusterBId {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: cluster is not in specified bucket`),
+				)
+				q.reply <- result
+				return
+			}
 		}
 		// check if node and cluster are in the same bucket
 		if valNodeBId != "" && valNodeBId != bucketId {
