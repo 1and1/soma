@@ -31,6 +31,7 @@ type Request struct {
 	Server          *Server          `json:"server,omitempty"`
 	State           *State           `json:"state,omitempty"`
 	Status          *Status          `json:"status,omitempty"`
+	SystemOperation *SystemOperation `json:"systemOperation,omitempty"`
 	Team            *Team            `json:"team,omitempty"`
 	Unit            *Unit            `json:"unit,omitempty"`
 	User            *User            `json:"user,omitempty"`
