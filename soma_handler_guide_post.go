@@ -342,10 +342,17 @@ func (g *guidePost) process(q *treeRequest) {
 		}
 
 	case "add_node_to_cluster":
-		if q.Cluster.Cluster.BucketId != (*q.Cluster.Cluster.Members)[0].Config.BucketId {
-			result.SetRequestError(
-				fmt.Errorf(`GuidePost: node and cluster are in different buckets`),
-			)
+		// retrieve bucketId for node
+		if err = g.bucket_for_node.QueryRow(
+			(*q.Cluster.Cluster.Members)[0].Id,
+		).Scan(&valNodeBId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: node is not assigned to a bucket`),
+				)
+			} else {
+				_ = result.SetRequestError(err)
+			}
 			q.reply <- result
 			return
 		}
@@ -367,7 +374,39 @@ func (g *guidePost) process(q *treeRequest) {
 	case `delete_oncall_property_from_cluster`:
 		fallthrough
 	case `delete_service_property_from_cluster`:
+		// cluster bucketId sent by client
 		bucketId = q.Cluster.Cluster.BucketId
+
+		// retrieve bucketId for cluster
+		if err = g.bucket_for_cluster.QueryRow(
+			q.Cluster.Cluster.Id,
+		).Scan(&valClusterBId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: cluster is not assigned to a bucket`),
+				)
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+		// check if client sent correct bucketId
+		if bucketId != valClusterBId {
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: cluster is not in specified bucket`),
+			)
+			q.reply <- result
+			return
+		}
+		// check if node and cluster are in the same bucket
+		if valNodeBId != "" && valNodeBId != bucketId {
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: cluster and node are not in the same bucket`),
+			)
+			q.reply <- result
+			return
+		}
 
 	case "add_check_to_repository":
 		fallthrough
