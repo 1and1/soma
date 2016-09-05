@@ -303,6 +303,7 @@ func main() {
 		router.POST(`/servers/:server`, BasicAuth(InsertNullServer))
 		router.POST(`/servers/`, BasicAuth(AddServer))
 		router.POST(`/status/`, BasicAuth(AddStatus))
+		router.POST(`/system/`, BasicAuth(SystemOperation))
 		router.POST(`/teams/`, BasicAuth(AddTeam))
 		router.POST(`/units/`, BasicAuth(AddUnit))
 		router.POST(`/users/`, BasicAuth(AddUser))
