@@ -15,6 +15,7 @@ import (
 
 type guidePost struct {
 	input              chan treeRequest
+	system             chan msg.Request
 	shutdown           chan bool
 	conn               *sql.DB
 	jbsv_stmt          *sql.Stmt
@@ -170,6 +171,8 @@ runloop:
 			break runloop
 		case req := <-g.input:
 			g.process(&req)
+		case req := <-g.system:
+			g.sysprocess(&req)
 		}
 	}
 exit:
@@ -954,6 +957,12 @@ func (g *guidePost) process(q *treeRequest) {
 		})
 	}
 	q.reply <- result
+}
+
+func (g *guidePost) sysprocess(q *msg.Request) {
+	result := msg.Result{Type: `guidepost`, Action: `systemoperation`, System: &proto.SystemOperation{Request: q.System.Request}}
+
+	q.Reply <- result
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
