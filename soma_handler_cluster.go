@@ -47,7 +47,8 @@ func (r *somaClusterReadHandler) run() {
 
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT cluster_id,
-       cluster_name
+       cluster_name,
+       bucket_id
 FROM soma.clusters;`)
 	if err != nil {
 		log.Fatal("cluster/list: ", err)
@@ -138,11 +139,12 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&clusterId, &clusterName)
+			err := rows.Scan(&clusterId, &clusterName, &bucketId)
 			result.Append(err, &somaClusterResult{
 				Cluster: proto.Cluster{
-					Id:   clusterId,
-					Name: clusterName,
+					Id:       clusterId,
+					Name:     clusterName,
+					BucketId: bucketId,
 				},
 			})
 		}

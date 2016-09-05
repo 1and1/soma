@@ -36,7 +36,8 @@ func ListCluster(w http.ResponseWriter, r *http.Request,
 	if cReq.Filter.Cluster.Name != "" {
 		filtered := make([]somaClusterResult, 0)
 		for _, i := range result.Clusters {
-			if i.Cluster.Name == cReq.Filter.Cluster.Name {
+			if i.Cluster.Name == cReq.Filter.Cluster.Name &&
+				i.Cluster.BucketId == cReq.Filter.Cluster.BucketId {
 				filtered = append(filtered, i)
 			}
 		}

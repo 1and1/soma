@@ -49,7 +49,8 @@ func (r *somaGroupReadHandler) run() {
 
 	r.list_stmt, err = r.conn.Prepare(`
 SELECT group_id,
-       group_name
+       group_name,
+       bucket_id
 FROM soma.groups;`)
 	if err != nil {
 		log.Fatal("group/list: ", err)
@@ -170,11 +171,12 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&groupId, &groupName)
+			err := rows.Scan(&groupId, &groupName, &bucketId)
 			result.Append(err, &somaGroupResult{
 				Group: proto.Group{
-					Id:   groupId,
-					Name: groupName,
+					Id:       groupId,
+					Name:     groupName,
+					BucketId: bucketId,
 				},
 			})
 		}

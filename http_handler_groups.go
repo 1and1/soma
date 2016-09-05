@@ -34,7 +34,8 @@ func ListGroup(w http.ResponseWriter, r *http.Request,
 	if cReq.Filter.Group.Name != "" {
 		filtered := make([]somaGroupResult, 0)
 		for _, i := range result.Groups {
-			if i.Group.Name == cReq.Filter.Group.Name {
+			if i.Group.Name == cReq.Filter.Group.Name &&
+				i.Group.BucketId == cReq.Filter.Group.BucketId {
 				filtered = append(filtered, i)
 			}
 		}
