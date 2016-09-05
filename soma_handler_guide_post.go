@@ -184,6 +184,8 @@ func (g *guidePost) process(q *treeRequest) {
 		ndName, ndTeam, ndServer           string
 		ndAsset                            int64
 		ndOnline, ndDeleted                bool
+		// vars used for validation
+		valNodeBId, valClusterBId, valGroupBId, valChGBId string
 	)
 	result := somaResult{}
 
@@ -224,13 +226,55 @@ func (g *guidePost) process(q *treeRequest) {
 	case `delete_service_property_from_bucket`:
 		bucketId = q.Bucket.Bucket.Id
 
-	case "create_group":
-		fallthrough
 	case "add_group_to_group":
+		// retrieve bucketId for child group
+		if err = g.bucket_for_group.QueryRow(
+			(*q.Group.Group.MemberGroups)[0].Id,
+		).Scan(&valChGBId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: child group is not assigned to a bucket`),
+				)
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
 		fallthrough
 	case "add_cluster_to_group":
+		// retrieve bucketId for cluster
+		if err = g.bucket_for_cluster.QueryRow(
+			(*q.Group.Group.MemberClusters)[0].Id,
+		).Scan(&valClusterBId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: cluster is not assigned to a bucket`),
+				)
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
 		fallthrough
 	case "add_node_to_group":
+		// retrieve bucketId for node
+		if err = g.bucket_for_node.QueryRow(
+			(*q.Group.Group.MemberNodes)[0].Id,
+		).Scan(&valNodeBId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: node is not assigned to a bucket`),
+				)
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+		fallthrough
+	case "create_group":
 		fallthrough
 	case "add_system_property_to_group":
 		fallthrough
@@ -247,7 +291,55 @@ func (g *guidePost) process(q *treeRequest) {
 	case `delete_oncall_property_from_group`:
 		fallthrough
 	case `delete_service_property_from_group`:
+		// group bucketId sent by client
 		bucketId = q.Group.Group.BucketId
+
+		// retrieve bucketId for group
+		if err = g.bucket_for_group.QueryRow(
+			q.Group.Group.Id,
+		).Scan(&valGroupBId); err != nil {
+			if err == sql.ErrNoRows {
+				result.SetRequestError(
+					fmt.Errorf(`GuidePost: parent group is not assigned to a bucket`),
+				)
+			} else {
+				_ = result.SetRequestError(err)
+			}
+			q.reply <- result
+			return
+		}
+		// check if client sent correct bucketId
+		if bucketId != valGroupBId {
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: parent group is not in specified bucket`),
+			)
+			q.reply <- result
+			return
+		}
+		// check if node and group are in the same bucket
+		if valNodeBId != "" && valNodeBId != bucketId {
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: parent group and node are not in the same bucket`),
+			)
+			q.reply <- result
+			return
+		}
+		// check if cluster and group are in the same bucket
+		if valClusterBId != "" && valClusterBId != bucketId {
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: parent group and cluster are not in the same bucket`),
+			)
+			q.reply <- result
+			return
+		}
+		// check if group and group are in the same bucket
+		if valChGBId != "" && valChGBId != bucketId {
+			result.SetRequestError(
+				fmt.Errorf(`GuidePost: parent and child group are not in the same bucket`),
+			)
+			q.reply <- result
+			return
+		}
 
 	case "add_node_to_cluster":
 		if q.Cluster.Cluster.BucketId != (*q.Cluster.Cluster.Members)[0].Config.BucketId {
