@@ -45,6 +45,7 @@ type treeKeeper struct {
 	frozen     bool
 	input      chan treeRequest
 	shutdown   chan bool
+	stopchan   chan bool
 	conn       *sql.DB
 	tree       *tree.Tree
 	errChan    chan *tree.Error
@@ -56,6 +57,7 @@ type treeKeeper struct {
 func (tk *treeKeeper) run() {
 	log.Printf("Starting TreeKeeper for Repo %s (%s)", tk.repoName, tk.repoId)
 	tk.startupLoad()
+	var err error
 
 	if tk.broken {
 		tickTack := time.NewTicker(time.Second * 10).C
@@ -67,11 +69,14 @@ func (tk *treeKeeper) run() {
 					tk.repoName, tk.repoId)
 			case <-tk.shutdown:
 				break hoverloop
+			case <-tk.stopchan:
+				tk.stop()
+				goto stopsign
 			}
 		}
 		return
 	}
-	var err error
+
 	if tk.start_job, err = tk.conn.Prepare(tkStmtStartJob); err != nil {
 		log.Fatal("treekeeper/start-job: ", err)
 	}
@@ -91,11 +96,19 @@ func (tk *treeKeeper) run() {
 		goto exit
 	}
 
+stopsign:
+	if tk.stopped {
+		<-tk.shutdown
+		goto exit
+	}
 runloop:
 	for {
 		select {
 		case <-tk.shutdown:
 			break runloop
+		case <-tk.stopchan:
+			tk.stop()
+			goto stopsign
 		case req := <-tk.input:
 			tk.process(&req)
 			handlerMap[`jobDelay`].(jobDelay).notify <- req.JobId.String()
