@@ -968,9 +968,69 @@ func (g *guidePost) process(q *treeRequest) {
 	q.reply <- result
 }
 
+//
+// Process system operation requests
 func (g *guidePost) sysprocess(q *msg.Request) {
-	result := msg.Result{Type: `guidepost`, Action: `systemoperation`, System: []proto.SystemOperation{}}
+	var (
+		repoName, repoId, keeper string
+		err                      error
+		handler                  *treeKeeper
+	)
+	result := msg.Result{Type: `guidepost`, Action: `systemoperation`, System: []proto.SystemOperation{q.System}}
 
+	switch q.System.Request {
+	case `stop_repository`:
+		repoId = q.System.RepositoryId
+	default:
+		result.NotImplemented(
+			fmt.Errorf("Unknown requested system operation: %s",
+				q.System.Request),
+		)
+		goto exit
+	}
+
+	if err = g.name_stmt.QueryRow(repoId).Scan(&repoName); err != nil {
+		if err == sql.ErrNoRows {
+			result.NotFound(fmt.Errorf(`No such repository`))
+		} else {
+			result.ServerError(err)
+		}
+		goto exit
+	}
+
+	// check we have a treekeeper for that repository
+	keeper = fmt.Sprintf("repository_%s", repoName)
+	if _, ok := handlerMap[keeper].(*treeKeeper); !ok {
+		result.NotFound(
+			fmt.Errorf("No handler for repository %s registered.",
+				repoName),
+		)
+		goto exit
+	}
+
+	// check the treekeeper is ready for system requests
+	handler = handlerMap[keeper].(*treeKeeper)
+	if !(handler.isReady() || handler.isBroken()) {
+		result.Unavailable(
+			fmt.Errorf("Repository %s not fully loaded yet.",
+				repoName),
+		)
+		goto exit
+	}
+
+	// nothin' to do, it is already stopped
+	if handler.isStopped() {
+		result.OK()
+		goto exit
+	}
+
+	switch q.System.Request {
+	case `stop_repository`:
+		handler.stopchan <- true
+		result.OK()
+	}
+
+exit:
 	q.Reply <- result
 }
 
