@@ -1,5 +1,12 @@
 package main
 
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/julienschmidt/httprouter"
+)
+
 func SystemOperation(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -38,7 +45,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		System:     sys,
+		System:     *sys,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
