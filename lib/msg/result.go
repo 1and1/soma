@@ -110,7 +110,7 @@ func (r *Result) ServerError(err error) {
 }
 
 func (r *Result) NotImplemented(err error) {
-	r.Code = 500
+	r.Code = 501
 	r.SetError(err)
 }
 
