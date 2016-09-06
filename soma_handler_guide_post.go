@@ -960,7 +960,7 @@ func (g *guidePost) process(q *treeRequest) {
 }
 
 func (g *guidePost) sysprocess(q *msg.Request) {
-	result := msg.Result{Type: `guidepost`, Action: `systemoperation`, System: &proto.SystemOperation{Request: q.System.Request}}
+	result := msg.Result{Type: `guidepost`, Action: `systemoperation`, System: []proto.SystemOperation{}}
 
 	q.Reply <- result
 }
