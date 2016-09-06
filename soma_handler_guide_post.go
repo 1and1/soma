@@ -559,6 +559,15 @@ func (g *guidePost) process(q *treeRequest) {
 		return
 	}
 
+	// check the treekeeper has not been stopped
+	if handler.isStopped() {
+		_ = result.SetRequestError(
+			fmt.Errorf("Repository %s is currently stopped.\n", repoName),
+		)
+		q.reply <- result
+		return
+	}
+
 	// load authoritative copy of the service attributes from the
 	// database. Replaces whatever the client sent in.
 	if strings.Contains(q.Action, "add_service_property_to_") {
