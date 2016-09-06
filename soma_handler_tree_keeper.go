@@ -130,9 +130,13 @@ func (tk *treeKeeper) isBroken() bool {
 }
 
 func (tk *treeKeeper) stop() {
+	tk.stopped = true
 	tk.ready = false
 	tk.broken = false
-	tk.stopped = true
+}
+
+func (tk *treeKeeper) isStopped() bool {
+	return tk.stopped
 }
 
 func (tk *treeKeeper) process(q *treeRequest) {
