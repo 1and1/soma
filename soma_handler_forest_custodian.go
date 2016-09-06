@@ -11,6 +11,7 @@ import (
 
 type forestCustodian struct {
 	input     chan somaRepositoryRequest
+	system    chan msg.Request
 	shutdown  chan bool
 	conn      *sql.DB
 	add_stmt  *sql.Stmt
@@ -62,6 +63,8 @@ runloop:
 			break runloop
 		case req := <-f.input:
 			f.process(&req)
+		case req := <-f.system:
+			f.sysprocess(&req)
 		}
 	}
 }
@@ -168,6 +171,53 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 		}
 	}
 	q.reply <- result
+}
+
+func (f *forestCustodian) sysprocess(q *msg.Request) {
+	var (
+		repoId string
+	)
+	result := msg.Result{
+		Type:   `guidepost`,
+		Action: `systemoperation`,
+		System: []proto.SystemOperation{q.System},
+	}
+
+	switch q.System.Request {
+	case `rebuild_repository`:
+		repoId = q.System.RepositoryId
+	default:
+		result.NotImplemented(
+			fmt.Errorf("Unknown requested system operation: %s",
+				q.System.Request),
+		)
+		q.Reply <- result
+		return
+	}
+
+	// TODO Shutdown running TreeKeeper
+	// TODO Delete items according to q.System.RebuildLevel
+	// TODO Start new TreeKeeper with RebuildFlag
+	returnChannel := make(chan somaResult)
+	f.input <- somaRepositoryRequest{
+		action:     `rebuild`,
+		reply:      returnChannel,
+		remoteAddr: q.RemoteAddr,
+		user:       q.User,
+		rebuild:    true,
+		rbLevel:    q.System.RebuildLevel,
+		Repository: proto.Repository{
+			Id:        repoId,
+			Name:      "",    // TODO lookup repoName
+			TeamId:    "",    // TODO lookup teamID
+			IsDeleted: false, // TODO lookup deleted flag
+			IsActive:  true,  // TODO lookup active flag
+		},
+	}
+	<-returnChannel
+	// TODO issue result.OK() based on returnChannel result
+
+	q.Reply <- result
 }
 
 func (f *forestCustodian) initialLoad() {
