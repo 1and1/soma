@@ -88,6 +88,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		result = proto.NewTreeResult()
 		*result.Tree = r.Tree
 		goto UnmaskedReply
+	case `guidepost`, `forestcustodian`:
+		result = proto.NewSystemOperationResult()
+		*result.SystemOperations = append(*result.SystemOperations, r.System...)
+		goto UnmaskedReply
 	default:
 		log.Printf(LogStrErr, r.Type, ``, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)
@@ -98,6 +102,8 @@ UnmaskedReply:
 	switch r.Type {
 	case `supervisor`:
 		action = fmt.Sprintf("%s/%s", r.Action, r.Super.Action)
+	case `guidepost`, `forestcustodian`:
+		action = fmt.Sprintf("%s/%s", r.Action, r.System[0].Request)
 	default:
 		action = r.Action
 	}
