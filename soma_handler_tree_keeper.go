@@ -75,9 +75,6 @@ func (tk *treeKeeper) run() {
 			JobId:       uuid.NewV4(),
 		}
 		tk.process(&req)
-		handlerMap[`jobDelay`].(jobDelay).notify <- req.JobId.String()
-		tk.buildDeploymentDetails()
-		tk.orderDeploymentDetails()
 		return
 	}
 
