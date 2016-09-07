@@ -186,7 +186,7 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 		handler                          *treeKeeper
 	)
 	result := msg.Result{
-		Type:   `guidepost`,
+		Type:   `forestcustodian`,
 		Action: `systemoperation`,
 		System: []proto.SystemOperation{q.System},
 	}
