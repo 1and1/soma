@@ -17,6 +17,8 @@ type forestCustodian struct {
 	add_stmt  *sql.Stmt
 	load_stmt *sql.Stmt
 	name_stmt *sql.Stmt
+	rbck_stmt *sql.Stmt
+	rbci_stmt *sql.Stmt
 }
 
 func (f *forestCustodian) run() {
@@ -64,6 +66,21 @@ WHERE  repository_id = $1::uuid;`)
 		log.Fatal("forestCustodian/reponame-by-id: ", err)
 	}
 	defer f.name_stmt.Close()
+
+	if f.rbck_stmt, err = f.conn.Prepare(
+		stmt.ForestRebuildDeleteChecks,
+	); err != nil {
+		log.Fatal("forestCustodian/delete-checks-for-repo: ", err)
+	}
+	defer f.rbck_stmt.Close()
+
+	if f.rbci_stmt, err = f.conn.Prepare(
+		stmt.ForestRebuildDeleteInstances,
+	); err != nil {
+		log.Fatal("forestCustodian/delete-check-instances-for-repo: ",
+			err)
+	}
+	defer f.rbci_stmt.Close()
 
 	f.initialLoad()
 
@@ -237,7 +254,19 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 	delete(handlerMap, keeper)
 	handler.shutdown <- true
 
-	// TODO Delete items according to q.System.RebuildLevel
+	// mark all existing check instances as deleted - instances
+	// are deleted for both rebuild levels checks and instances
+	if _, err = f.rbci_stmt.Exec(repoId); err != nil {
+		result.ServerError(err)
+		goto exit
+	}
+	// only delete checks for rebuild level checks
+	if q.System.RebuildLevel == `checks` {
+		if _, err = f.rbck_stmt.Exec(repoId); err != nil {
+			result.ServerError(err)
+			goto exit
+		}
+	}
 
 	// load the tree again, with requested rebuild active
 	f.loadSomaTree(&somaRepositoryRequest{
@@ -252,7 +281,8 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 		},
 	})
 
-	// rebuild has finished, restart the tree
+	// rebuild has finished, restart the tree. If the rebuild did not
+	// work, this will simply be a broken tree once more
 	f.loadSomaTree(&somaRepositoryRequest{
 		rebuild: false,
 		rbLevel: "",
@@ -264,8 +294,7 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 			IsActive:  true,
 		},
 	})
-
-	// TODO issue result.OK()
+	result.OK()
 
 exit:
 	q.Reply <- result
