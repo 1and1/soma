@@ -24,45 +24,23 @@ type forestCustodian struct {
 func (f *forestCustodian) run() {
 	var err error
 
-	f.add_stmt, err = f.conn.Prepare(`
-INSERT INTO soma.repositories (
-	repository_id,
-	repository_name,
-	repository_active,
-	repository_deleted,
-	organizational_team_id,
-	created_by)
-SELECT $1::uuid, $2::varchar, $3::boolean, $4::boolean, $5::uuid, user_id
-FROM inventory.users iu
-WHERE iu.user_uid = $6::varchar
-AND   NOT EXISTS (
-	SELECT repository_id
-	FROM   soma.repositories
-	WHERE  repository_id = $1::uuid
-	OR     repository_name = $2::varchar);`)
-	if err != nil {
+	if f.add_stmt, err = f.conn.Prepare(
+		stmt.ForestAddRepository,
+	); err != nil {
 		log.Fatal("repository/add: ", err)
 	}
 	defer f.add_stmt.Close()
 
-	f.load_stmt, err = f.conn.Prepare(`
-SELECT repository_id,
-	   repository_name,
-	   repository_deleted,
-	   repository_active,
-	   organizational_team_id
-FROM   soma.repositories;`)
-	if err != nil {
+	if f.load_stmt, err = f.conn.Prepare(
+		stmt.ForestLoadRepository,
+	); err != nil {
 		log.Fatal("repository/load: ", err)
 	}
 	defer f.load_stmt.Close()
 
-	f.name_stmt, err = f.conn.Prepare(`
-SELECT repository_name,
-       organizational_team_id
-FROM   soma.repositories
-WHERE  repository_id = $1::uuid;`)
-	if err != nil {
+	if f.name_stmt, err = f.conn.Prepare(
+		stmt.ForestRepoNameById,
+	); err != nil {
 		log.Fatal("forestCustodian/reponame-by-id: ", err)
 	}
 	defer f.name_stmt.Close()
