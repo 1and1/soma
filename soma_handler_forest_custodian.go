@@ -16,6 +16,7 @@ type forestCustodian struct {
 	conn      *sql.DB
 	add_stmt  *sql.Stmt
 	load_stmt *sql.Stmt
+	name_stmt *sql.Stmt
 }
 
 func (f *forestCustodian) run() {
@@ -53,6 +54,16 @@ FROM   soma.repositories;`)
 		log.Fatal("repository/load: ", err)
 	}
 	defer f.load_stmt.Close()
+
+	f.name_stmt, err = f.conn.Prepare(`
+SELECT repository_name,
+       organizational_team_id
+FROM   soma.repositories
+WHERE  repository_id = $1::uuid;`)
+	if err != nil {
+		log.Fatal("forestCustodian/reponame-by-id: ", err)
+	}
+	defer f.name_stmt.Close()
 
 	f.initialLoad()
 
@@ -175,7 +186,10 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 
 func (f *forestCustodian) sysprocess(q *msg.Request) {
 	var (
-		repoId string
+		repoId, repoName, teamId, keeper string
+		err                              error
+		returnChannel                    chan somaResult
+		handler                          *treeKeeper
 	)
 	result := msg.Result{
 		Type:   `guidepost`,
@@ -191,14 +205,42 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 			fmt.Errorf("Unknown requested system operation: %s",
 				q.System.Request),
 		)
-		q.Reply <- result
-		return
+		goto exit
 	}
 
-	// TODO Shutdown running TreeKeeper
+	// look up name of the repository
+	if err = f.name_stmt.QueryRow(repoId).
+		Scan(&repoName, &teamId); err != nil {
+		if err == sql.ErrNoRows {
+			result.NotFound(fmt.Errorf(`No such repository`))
+		} else {
+			result.ServerError(err)
+		}
+		goto exit
+	}
+
+	// get the treekeeper for the repository
+	keeper = fmt.Sprintf("repository_%s", repoName)
+	if _, ok := handlerMap[keeper].(*treeKeeper); !ok {
+		result.NotFound(
+			fmt.Errorf("No handler for repository %s registered.",
+				repoName),
+		)
+		goto exit
+	}
+
+	// stop the handler if it is still running
+	if !handler.isStopped() {
+		handler.stopchan <- true
+	}
+
+	// remove handler from lookup table and shut it down
+	delete(handlerMap, keeper)
+	handler.shutdown <- true
+
 	// TODO Delete items according to q.System.RebuildLevel
 	// TODO Start new TreeKeeper with RebuildFlag
-	returnChannel := make(chan somaResult)
+	returnChannel = make(chan somaResult)
 	f.input <- somaRepositoryRequest{
 		action:     `rebuild`,
 		reply:      returnChannel,
@@ -208,15 +250,16 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 		rbLevel:    q.System.RebuildLevel,
 		Repository: proto.Repository{
 			Id:        repoId,
-			Name:      "",    // TODO lookup repoName
-			TeamId:    "",    // TODO lookup teamID
-			IsDeleted: false, // TODO lookup deleted flag
-			IsActive:  true,  // TODO lookup active flag
+			Name:      repoName,
+			TeamId:    "", // TODO lookup teamID
+			IsDeleted: false,
+			IsActive:  true,
 		},
 	}
 	<-returnChannel
 	// TODO issue result.OK() based on returnChannel result
 
+exit:
 	q.Reply <- result
 }
 
