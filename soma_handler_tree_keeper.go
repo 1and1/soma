@@ -43,6 +43,8 @@ type treeKeeper struct {
 	ready      bool
 	stopped    bool
 	frozen     bool
+	rebuild    bool
+	rbLevel    string
 	input      chan treeRequest
 	shutdown   chan bool
 	stopchan   chan bool

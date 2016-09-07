@@ -188,7 +188,6 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 	var (
 		repoId, repoName, teamId, keeper string
 		err                              error
-		returnChannel                    chan somaResult
 		handler                          *treeKeeper
 	)
 	result := msg.Result{
@@ -239,25 +238,34 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 	handler.shutdown <- true
 
 	// TODO Delete items according to q.System.RebuildLevel
-	// TODO Start new TreeKeeper with RebuildFlag
-	returnChannel = make(chan somaResult)
-	f.input <- somaRepositoryRequest{
-		action:     `rebuild`,
-		reply:      returnChannel,
-		remoteAddr: q.RemoteAddr,
-		user:       q.User,
-		rebuild:    true,
-		rbLevel:    q.System.RebuildLevel,
+
+	// load the tree again, with requested rebuild active
+	f.loadSomaTree(&somaRepositoryRequest{
+		rebuild: true,
+		rbLevel: q.System.RebuildLevel,
 		Repository: proto.Repository{
 			Id:        repoId,
 			Name:      repoName,
-			TeamId:    "", // TODO lookup teamID
+			TeamId:    teamId,
 			IsDeleted: false,
 			IsActive:  true,
 		},
-	}
-	<-returnChannel
-	// TODO issue result.OK() based on returnChannel result
+	})
+
+	// rebuild has finished, restart the tree
+	f.loadSomaTree(&somaRepositoryRequest{
+		rebuild: false,
+		rbLevel: "",
+		Repository: proto.Repository{
+			Id:        repoId,
+			Name:      repoName,
+			TeamId:    teamId,
+			IsDeleted: false,
+			IsActive:  true,
+		},
+	})
+
+	// TODO issue result.OK()
 
 exit:
 	q.Reply <- result
@@ -355,12 +363,22 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	tK.broken = false
 	tK.ready = false
 	tK.frozen = false
+	tK.stopped = false
+	tK.rebuild = q.rebuild
+	tK.rbLevel = q.rbLevel
 	tK.repoId = q.Repository.Id
 	tK.repoName = q.Repository.Name
 	tK.team = team
 	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
-	handlerMap[keeperName] = tK
-	go tK.run()
+
+	// during rebuild the treekeeper will not run in background
+	if tK.rebuild {
+		tK.run()
+	} else {
+		// non-rebuild, register TK and detach
+		handlerMap[keeperName] = tK
+		go tK.run()
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
