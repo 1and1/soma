@@ -77,7 +77,7 @@ func (tk *treeKeeper) startupLoad() {
 	// attach checks
 	tk.startupChecks()
 
-	if len(tk.actionChan) > 0 {
+	if !tk.rebuild && len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
@@ -91,7 +91,7 @@ func (tk *treeKeeper) startupLoad() {
 	// preload pending/unfinished jobs
 	tk.startupJobs()
 
-	if len(tk.actionChan) > 0 {
+	if !tk.rebuild && len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
