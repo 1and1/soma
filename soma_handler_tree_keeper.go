@@ -61,6 +61,26 @@ func (tk *treeKeeper) run() {
 	tk.startupLoad()
 	var err error
 
+	// if this was a rebuild, simply return if it failed
+	if tk.broken && tk.rebuild {
+		return
+	}
+
+	// rebuild was successful, process events from initial loading
+	// then exit
+	if tk.rebuild {
+		req := treeRequest{
+			RequestType: `rebuild`,
+			Action:      `rebuild`,
+			JobId:       uuid.NewV4(),
+		}
+		tk.process(&req)
+		handlerMap[`jobDelay`].(jobDelay).notify <- req.JobId.String()
+		tk.buildDeploymentDetails()
+		tk.orderDeploymentDetails()
+		return
+	}
+
 	if tk.broken {
 		tickTack := time.NewTicker(time.Second * 10).C
 	hoverloop:
@@ -208,14 +228,19 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		txStmtDeleteCheck                                 *sql.Stmt
 		txStmtDeleteCheckInstance                         *sql.Stmt
 	)
-	_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
-	if err != nil {
-		log.Println(err)
+	if !tk.rebuild {
+		_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
+		if err != nil {
+			log.Println(err)
+		}
+		log.Printf("Processing job: %s\n", q.JobId.String())
+	} else {
+		log.Printf("Processing rebuild job: %s\n", q.JobId.String())
 	}
-	log.Printf("Processing job: %s\n", q.JobId.String())
 
 	tk.tree.Begin()
 
+	// q.Action == `rebuild` will fall through switch
 	switch q.Action {
 	//
 	// REPOSITORY MANIPULATION REQUESTS
@@ -1399,6 +1424,10 @@ actionloop:
 		case "repository":
 			switch a.Action {
 			case "property_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtPropertyInstanceCreate.Exec(
 					a.Property.InstanceId,
 					a.Property.RepositoryId,
@@ -1464,6 +1493,10 @@ actionloop:
 					}
 				}
 			case `property_delete`:
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
 					a.Property.InstanceId,
 				); err != nil {
@@ -1496,6 +1529,10 @@ actionloop:
 					}
 				}
 			case "check_new":
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in instance-rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
 					a.Check.RepositoryId,
@@ -1511,6 +1548,10 @@ actionloop:
 					break actionloop
 				}
 			case `check_removed`:
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtDeleteCheck.Exec(
 					a.Check.CheckId,
 				); err != nil {
@@ -1525,6 +1566,10 @@ actionloop:
 		case "bucket":
 			switch a.Action {
 			case "create":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtCreateBucket.Exec(
 					a.Bucket.Id,
 					a.Bucket.Name,
@@ -1537,6 +1582,10 @@ actionloop:
 					break actionloop
 				}
 			case "node_assignment":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtBucketAssignNode.Exec(
 					a.ChildNode.Id,
 					a.Bucket.Id,
@@ -1545,6 +1594,10 @@ actionloop:
 					break actionloop
 				}
 			case "property_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtPropertyInstanceCreate.Exec(
 					a.Property.InstanceId,
 					a.Property.RepositoryId,
@@ -1633,6 +1686,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case `property_delete`:
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
 					a.Property.InstanceId,
 				); err != nil {
@@ -1665,6 +1722,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case "check_new":
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in instance rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
 					a.Check.RepositoryId,
@@ -1680,6 +1741,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case `check_removed`:
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtDeleteCheck.Exec(
 					a.Check.CheckId,
 				); err != nil {
@@ -1693,6 +1758,10 @@ Children Only:         %t%s`,
 		case "group":
 			switch a.Action {
 			case "create":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtGroupCreate.Exec(
 					a.Group.Id,
 					a.Group.BucketId,
@@ -1703,6 +1772,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "update":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtGroupUpdate.Exec(
 					a.Group.Id,
 					a.Group.ObjectState,
@@ -1710,12 +1783,20 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "delete":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtGroupDelete.Exec(
 					a.Group.Id,
 				); err != nil {
 					break actionloop
 				}
 			case "member_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				switch a.ChildType {
 				case "group":
 					log.Println("==> group/new membergroup")
@@ -1746,6 +1827,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case "member_removed":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				switch a.ChildType {
 				case "group":
 					if _, err = txStmtGroupMemberRemoveGroup.Exec(
@@ -1770,6 +1855,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case "property_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtPropertyInstanceCreate.Exec(
 					a.Property.InstanceId,
 					a.Property.RepositoryId,
@@ -1840,6 +1929,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case `property_delete`:
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
 					a.Property.InstanceId,
 				); err != nil {
@@ -1872,6 +1965,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case "check_new":
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
 					a.Check.RepositoryId,
@@ -1887,6 +1984,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case `check_removed`:
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtDeleteCheck.Exec(
 					a.Check.CheckId,
 				); err != nil {
@@ -1936,6 +2037,10 @@ Children Only:         %t%s`,
 		case "cluster":
 			switch a.Action {
 			case "create":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtClusterCreate.Exec(
 					a.Cluster.Id,
 					a.Cluster.Name,
@@ -1946,6 +2051,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "update":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtClusterUpdate.Exec(
 					a.Cluster.Id,
 					a.Cluster.ObjectState,
@@ -1953,12 +2062,20 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "delete":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtClusterDelete.Exec(
 					a.Cluster.Id,
 				); err != nil {
 					break actionloop
 				}
 			case "member_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberNew.Exec(
 					a.Cluster.Id,
@@ -1968,6 +2085,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "member_removed":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberRemove.Exec(
 					a.Cluster.Id,
@@ -1976,6 +2097,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "property_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtPropertyInstanceCreate.Exec(
 					a.Property.InstanceId,
 					a.Property.RepositoryId,
@@ -2065,6 +2190,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case `property_delete`:
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
 					a.Property.InstanceId,
 				); err != nil {
@@ -2097,6 +2226,10 @@ Children Only:         %t%s`,
 					}
 				}
 			case "check_new":
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtCreateCheck.Exec(
 					a.Check.CheckId,
 					a.Check.RepositoryId,
@@ -2112,6 +2245,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case `check_removed`:
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtDeleteCheck.Exec(
 					a.Check.CheckId,
 				); err != nil {
@@ -2161,6 +2298,10 @@ Children Only:         %t%s`,
 		case "node":
 			switch a.Action {
 			case "delete":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtNodeUnassignFromBucket.Exec(
 					a.Node.Id,
 					a.Node.Config.BucketId,
@@ -2170,6 +2311,10 @@ Children Only:         %t%s`,
 				}
 				fallthrough // need to call txStmtUpdateNodeState for delete as well
 			case "update":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				log.Println("==> node/update")
 				if _, err = txStmtUpdateNodeState.Exec(
 					a.Node.Id,
@@ -2178,6 +2323,10 @@ Children Only:         %t%s`,
 					break actionloop
 				}
 			case "property_new":
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = txStmtPropertyInstanceCreate.Exec(
 					a.Property.InstanceId,
 					a.Property.RepositoryId,
@@ -2271,6 +2420,10 @@ Is Inherited:          %t%s`,
 					}
 				}
 			case `property_delete`:
+				if tk.rebuild {
+					// ignore in rebuild mode
+					continue actionloop
+				}
 				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
 					a.Property.InstanceId,
 				); err != nil {
@@ -2303,6 +2456,10 @@ Is Inherited:          %t%s`,
 					}
 				}
 			case "check_new":
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in instance-rebuild mode
+					continue actionloop
+				}
 				log.Printf(`SQL: tkStmtCreateCheck:
 Check ID:            %s
 Repository ID:       %s
@@ -2337,6 +2494,10 @@ Node ID:             %s%s`,
 					break actionloop
 				}
 			case `check_removed`:
+				if tk.rebuild && tk.rbLevel == `instances` {
+					// ignore in instance-rebuild mode
+					continue actionloop
+				}
 				if _, err = tx.Exec(stmt.TxMarkCheckDeleted,
 					a.Check.CheckId,
 				); err != nil {
@@ -2393,15 +2554,17 @@ Node ID:             %s%s`,
 		goto bailout
 	}
 
-	// mark job as finished
-	if _, err = tx.Exec(
-		tkStmtFinishJob,
-		q.JobId.String(),
-		time.Now().UTC(),
-		"success",
-		``, // empty error field
-	); err != nil {
-		goto bailout
+	if !tk.rebuild {
+		// mark job as finished
+		if _, err = tx.Exec(
+			tkStmtFinishJob,
+			q.JobId.String(),
+			time.Now().UTC(),
+			"success",
+			``, // empty error field
+		); err != nil {
+			goto bailout
+		}
 	}
 
 	// commit transaction
@@ -2417,6 +2580,13 @@ Node ID:             %s%s`,
 bailout:
 	log.Printf("FAILED - Finished job: %s\n", q.JobId.String())
 	log.Println(err)
+
+	// if this was a rebuild, the tree will not persist and the
+	// job is faked
+	if tk.rebuild {
+		return
+	}
+
 	tk.tree.Rollback()
 	tx.Rollback()
 	tk.conn.Exec(
