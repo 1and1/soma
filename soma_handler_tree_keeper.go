@@ -1575,6 +1575,7 @@ actionloop:
 					a.Bucket.RepositoryId,
 					a.Bucket.Environment,
 					a.Bucket.TeamId,
+					q.User,
 				); err != nil {
 					break actionloop
 				}
@@ -1765,6 +1766,7 @@ Children Only:         %t%s`,
 					a.Group.Name,
 					a.Group.ObjectState,
 					a.Group.TeamId,
+					q.User,
 				); err != nil {
 					break actionloop
 				}
@@ -2044,6 +2046,7 @@ Children Only:         %t%s`,
 					a.Cluster.BucketId,
 					a.Cluster.ObjectState,
 					a.Cluster.TeamId,
+					q.User,
 				); err != nil {
 					break actionloop
 				}

@@ -10,12 +10,16 @@ INSERT INTO soma.groups (
             bucket_id,
             group_name,
             object_state,
-            organizational_team_id)
+            organizational_team_id,
+            created_by)
 SELECT $1::uuid,
        $2::uuid,
        $3::varchar,
        $4::varchar,
-       $5::uuid;`
+       $5::uuid,
+       user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $6::varchar;`
 
 const tkStmtGroupUpdate = `
 UPDATE soma.groups

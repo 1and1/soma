@@ -12,14 +12,18 @@ INSERT INTO soma.buckets (
             bucket_deleted,
             repository_id,
             environment,
-            organizational_team_id)
+            organizational_team_id,
+            created_by)
 SELECT $1::uuid,
        $2::varchar,
        $3::boolean,
        $4::boolean,
        $5::uuid,
        $6::varchar,
-       $7::uuid;`
+       $7::uuid,
+       user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $8::varchar;`
 
 const tkStmtBucketAssignNode = `
 INSERT INTO soma.node_bucket_assignment (

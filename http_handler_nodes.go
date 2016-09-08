@@ -119,6 +119,7 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 	handler.input <- somaNodeRequest{
 		action: "add",
 		reply:  returnChannel,
+		user:   params.ByName(`AuthenticatedUser`),
 		// TODO: assign default server if no server information provided
 		Node: proto.Node{
 			AssetId:   cReq.Node.AssetId,

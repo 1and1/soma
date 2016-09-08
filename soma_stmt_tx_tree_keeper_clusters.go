@@ -10,12 +10,16 @@ INSERT INTO soma.clusters (
             cluster_name,
             bucket_id,
             object_state,
-            organizational_team_id)
+            organizational_team_id,
+            created_by)
 SELECT $1::uuid,
        $2::varchar,
        $3::uuid,
        $4::varchar,
-       $5::uuid;`
+       $5::uuid,
+       user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $6::varchar;`
 
 const tkStmtClusterUpdate = `
 UPDATE soma.clusters

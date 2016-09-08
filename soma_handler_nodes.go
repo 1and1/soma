@@ -11,6 +11,7 @@ import (
 
 type somaNodeRequest struct {
 	action string
+	user   string
 	Node   proto.Node
 	reply  chan somaResult
 }
@@ -410,21 +411,33 @@ func (w *somaNodeWriteHandler) run() {
 
 	w.add_stmt, err = w.conn.Prepare(`
 INSERT INTO soma.nodes (
-	node_id,
-	node_asset_id,
-	node_name,
-	organizational_team_id,
-	server_id,
-	object_state,
-	node_online,
-    node_deleted)
-SELECT $1::uuid, $2::numeric, $3::varchar, $4, $5, $6, $7, $8
-WHERE NOT EXISTS (
-	SELECT node_id
-	FROM   soma.nodes
-	WHERE  node_id = $1::uuid
-	OR     node_asset_id = $2::numeric
-	OR     (node_name = $3::varchar AND node_online));`)
+            node_id,
+            node_asset_id,
+            node_name,
+            organizational_team_id,
+            server_id,
+            object_state,
+            node_online,
+            node_deleted,
+            created_by)
+SELECT $1::uuid,
+       $2::numeric,
+       $3::varchar,
+       $4,
+       $5,
+       $6,
+       $7,
+       $8,
+       user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $9::varchar
+AND    NOT EXISTS (
+         SELECT node_id
+         FROM   soma.nodes
+         WHERE  node_id = $1::uuid
+         OR     node_asset_id = $2::numeric
+         OR     (node_name = $3::varchar AND node_online)
+       );`)
 	if err != nil {
 		log.Fatal("node/add: ", err)
 	}
@@ -496,6 +509,7 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 			q.Node.State,
 			q.Node.IsOnline,
 			false,
+			q.user,
 		)
 		q.Node.Id = id.String()
 	case `update`:

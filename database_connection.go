@@ -37,17 +37,22 @@ func connectToDatabase() {
 	if err = conn.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	log.Print("Connected to database")
+	log.Print("Connected main pool to database")
 	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
 		log.Fatal(err)
 	}
+
+	// size the connection pool
+	conn.SetMaxIdleConns(20)
+	conn.SetMaxOpenConns(40)
+	conn.SetConnMaxLifetime(12 * time.Hour)
 
 	// required schema versions
 	required := map[string]int64{
 		"inventory": 201605060001,
 		"root":      201605160001,
 		"auth":      201605190001,
-		"soma":      201606210001,
+		"soma":      201609080001,
 	}
 
 	if rows, err = conn.Query(`
@@ -110,6 +115,10 @@ func newDatabaseConnection() (*sql.DB, error) {
 	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
 		return nil, err
 	}
+	dbcon.SetMaxIdleConns(5)
+	dbcon.SetMaxOpenConns(10)
+	dbcon.SetConnMaxLifetime(12 * time.Hour)
+	log.Print("Connected new secondary pool to database")
 	return dbcon, nil
 }
 
