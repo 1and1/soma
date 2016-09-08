@@ -72,7 +72,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if SomaCfg.Observer && obsRepoFlag != `` {
+	// force observer mode if the cli argument was present
+	if obsRepoFlag != `` {
+		SomaCfg.Observer = true
 		SomaCfg.ObserverRepo = obsRepoFlag
 	}
 
