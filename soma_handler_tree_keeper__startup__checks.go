@@ -47,6 +47,7 @@ func (tk *treeKeeper) startupChecks() {
 		err error
 		ld  tkLoaderChecks
 	)
+	log.Printf("TK[%s]: loading checks\n", tk.repoName)
 
 	// prepare all required statements into the loader structure
 	ld = tkLoaderChecks{}
