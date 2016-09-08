@@ -27,6 +27,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201606150001: upgrade_soma_to_201606160001,
 		201606160001: upgrade_soma_to_201606210001,
 		201606210001: upgrade_soma_to_201607070001,
+		201607070001: upgrade_soma_to_201609080001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -328,6 +329,29 @@ func upgrade_soma_to_201607070001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201607070001
+}
+
+func upgrade_soma_to_201609080001(curr int, tool string, printOnly bool) int {
+	if curr != 201607070001 {
+		return 0
+	}
+	stmts := []string{
+		`ALTER TABLE soma.buckets ADD COLUMN created_by uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.buckets ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.groups ADD COLUMN created_by uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.groups ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.clusters ADD COLUMN created_by uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.clusters ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`ALTER TABLE soma.nodes ADD COLUMN created_by uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.nodes ADD COLUMN created_at timestamptz(3) NOT NULL DEFAULT NOW();`,
+		`INSERT INTO soma.job_types ( job_type ) VALUES ( 'delete_system_property_from_repository' ), ( 'delete_custom_property_from_repository' ), ( 'delete_oncall_property_from_repository' ), ( 'delete_service_property_from_repository' ), ( 'delete_system_property_from_bucket' ), ( 'delete_custom_property_from_bucket' ), ( 'delete_oncall_property_from_bucket' ), ( 'delete_service_property_from_bucket' ), ( 'delete_system_property_from_group' ), ( 'delete_custom_property_from_group' ), ( 'delete_oncall_property_from_group' ), ( 'delete_service_property_from_group' ), ( 'delete_system_property_from_cluster' ), ( 'delete_custom_property_from_cluster' ), ( 'delete_oncall_property_from_cluster' ), ( 'delete_service_property_from_cluster' ), ( 'delete_system_property_from_node' ), ( 'delete_custom_property_from_node' ), ( 'delete_oncall_property_from_node' ), ( 'delete_service_property_from_node' );`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201609080001, 'Upgrade - somadbctl %s');", tool),
+	)
+	executeUpgrades(stmts, printOnly)
+
+	return 201609080001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {

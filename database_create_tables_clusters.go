@@ -41,6 +41,8 @@ create table if not exists soma.clusters (
     bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
     object_state                varchar(64)     NOT NULL DEFAULT 'standalone' REFERENCES soma.object_states ( object_state ) DEFERRABLE,
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    created_by                  uuid            NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
     -- enforce unique cluster names per bucket
     UNIQUE( bucket_id, cluster_name ),
     -- required for FK relation from soma.cluster_membership

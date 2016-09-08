@@ -18,6 +18,8 @@ create table if not exists soma.nodes (
     object_state                varchar(64)     NOT NULL DEFAULT 'unassigned' REFERENCES soma.object_states ( object_state ) DEFERRABLE,
     node_online                 boolean         NOT NULL DEFAULT 'yes',
     node_deleted                boolean         NOT NULL DEFAULT 'no',
+    created_by                  uuid            NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
     UNIQUE ( node_id, organizational_team_id )
 );`
 	queries[idx] = "createTableNodes"

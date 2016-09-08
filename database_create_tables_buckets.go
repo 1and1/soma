@@ -17,6 +17,8 @@ create table if not exists soma.buckets (
     repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
     environment                 varchar(32)     NOT NULL REFERENCES soma.environments ( environment ) DEFERRABLE,
     organizational_team_id      uuid            NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
+    created_by                  uuid            NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' REFERENCES inventory.users ( user_id ) DEFERRABLE,
+    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
     UNIQUE ( bucket_id, repository_id ),
     UNIQUE ( bucket_id, organizational_team_id )
 );`
