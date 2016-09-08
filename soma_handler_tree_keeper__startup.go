@@ -88,8 +88,10 @@ func (tk *treeKeeper) startupLoad() {
 	tk.buildDeploymentDetails()
 	tk.orderDeploymentDetails()
 
-	// preload pending/unfinished jobs
-	tk.startupJobs()
+	// preload pending/unfinished jobs if not rebuilding the tree
+	if !tk.rebuild {
+		tk.startupJobs()
+	}
 
 	if !tk.rebuild && len(tk.actionChan) > 0 {
 		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
