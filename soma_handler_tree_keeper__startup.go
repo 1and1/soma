@@ -88,8 +88,9 @@ func (tk *treeKeeper) startupLoad() {
 	tk.buildDeploymentDetails()
 	tk.orderDeploymentDetails()
 
-	// preload pending/unfinished jobs if not rebuilding the tree
-	if !tk.rebuild {
+	// preload pending/unfinished jobs if not rebuilding the tree or
+	// running in observer mode
+	if !tk.rebuild && !SomaCfg.Observer {
 		tk.startupJobs()
 	}
 
