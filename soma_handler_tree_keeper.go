@@ -110,7 +110,7 @@ func (tk *treeKeeper) run() {
 	tk.ready = true
 
 	if SomaCfg.Observer {
-		fmt.Printf("TreeKeeper [%s] entered observer mode\n", tk.repoName)
+		log.Printf("TreeKeeper [%s] entered observer mode\n", tk.repoName)
 		<-tk.shutdown
 		goto exit
 	}

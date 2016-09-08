@@ -159,7 +159,7 @@ WHERE  capability_id = $1::uuid;`)
 	defer g.bucket_for_group.Close()
 
 	if SomaCfg.Observer {
-		fmt.Println(`GuidePost entered observer mode`)
+		log.Println(`GuidePost entered observer mode`)
 		<-g.shutdown
 		goto exit
 	}

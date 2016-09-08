@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -63,7 +62,7 @@ func (lc *lifeCycle) run() {
 	defer lc.stmt_dead.Close()
 
 	if SomaCfg.Observer {
-		fmt.Println(`LifeCycle entered observer mode`)
+		log.Println(`LifeCycle entered observer mode`)
 		<-lc.shutdown
 		goto exit
 	}
