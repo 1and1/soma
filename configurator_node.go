@@ -62,12 +62,76 @@ func (ten *Node) updateCheckInstances() {
 		delete(ten.CheckInstances, ck)
 	}
 
-	// process checks
+	// loop over all checks and test if there is a reason to disable
+	// its check instances. And with disable we mean delete.
+	for chk, _ := range ten.Checks {
+		disableThis := false
+		// disable this check if the system property
+		// `disable_all_monitoring` is set for the view that the check
+		// uses
+		if _, hit, _ := ten.evalSystemProp(
+			`disable_all_monitoring`,
+			`true`,
+			ten.Checks[chk].View,
+		); hit {
+			disableThis = true
+		}
+		// disable this check if the system property
+		// `disable_check_configuration` is set to the
+		// check_configuration that spawned this check
+		if _, hit, _ := ten.evalSystemProp(
+			`disable_check_configuration`,
+			ten.Checks[chk].ConfigId.String(),
+			ten.Checks[chk].View,
+		); hit {
+			disableThis = true
+		}
+		// if there was a reason to disable this check, all instances
+		// are deleted
+		if disableThis {
+			if instanceArray, ok := ten.CheckInstances[chk]; ok {
+				for _, i := range instanceArray {
+					ten.actionCheckInstanceDelete(ten.Instances[i].MakeAction())
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+						repoName,
+						`RemoveDisabledInstance`,
+						`node`,
+						ten.Id.String(),
+						chk,
+						i,
+					)
+					delete(ten.Instances, i)
+				}
+				delete(ten.CheckInstances, chk)
+			}
+		}
+	}
+
+	// process remaining checks
 checksloop:
 	for i, _ := range ten.Checks {
 		if ten.Checks[i].Inherited == false && ten.Checks[i].ChildrenOnly == true {
 			continue checksloop
 		}
+		// skip check if its view has `disable_all_monitoring`
+		// property set
+		if _, hit, _ := ten.evalSystemProp(
+			`disable_all_monitoring`,
+			`true`,
+			ten.Checks[i].View,
+		); hit {
+			continue checksloop
+		}
+		// skip check if there is a matching `disable_check_configuration`
+		// property
+		if _, hit, _ := ten.evalSystemProp(
+			`disable_check_configuration`,
+			ten.Checks[i].ConfigId.String(),
+			ten.Checks[i].View,
+		); hit {
+			continue checksloop
+		}
+
 		hasBrokenConstraint := false
 		hasServiceConstraint := false
 		hasAttributeConstraint := false

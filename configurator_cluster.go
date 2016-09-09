@@ -62,7 +62,52 @@ func (tec *Cluster) updateCheckInstances() {
 		delete(tec.CheckInstances, ck)
 	}
 
-	// process checks
+	// loop over all checks and test if there is a reason to disable
+	// its check instances. And with disable we mean delete.
+	for chk, _ := range tec.Checks {
+		disableThis := false
+		// disable this check if the system property
+		// `disable_all_monitoring` is set for the view that the check
+		// uses
+		if _, hit, _ := tec.evalSystemProp(
+			`disable_all_monitoring`,
+			`true`,
+			tec.Checks[chk].View,
+		); hit {
+			disableThis = true
+		}
+		// disable this check if the system property
+		// `disable_check_configuration` is set to the
+		// check_configuration that spawned this check
+		if _, hit, _ := tec.evalSystemProp(
+			`disable_check_configuration`,
+			tec.Checks[chk].ConfigId.String(),
+			tec.Checks[chk].View,
+		); hit {
+			disableThis = true
+		}
+		// if there was a reason to disable this check, all instances
+		// are deleted
+		if disableThis {
+			if instanceArray, ok := tec.CheckInstances[chk]; ok {
+				for _, i := range instanceArray {
+					tec.actionCheckInstanceDelete(tec.Instances[i].MakeAction())
+					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+						repoName,
+						`RemoveDisabledInstance`,
+						`cluster`,
+						tec.Id.String(),
+						chk,
+						i,
+					)
+					delete(tec.Instances, i)
+				}
+				delete(tec.CheckInstances, chk)
+			}
+		}
+	}
+
+	// process remaining checks
 checksloop:
 	for i, _ := range tec.Checks {
 		if tec.Checks[i].Inherited == false && tec.Checks[i].ChildrenOnly == true {
@@ -71,6 +116,25 @@ checksloop:
 		if tec.Checks[i].View == "local" {
 			continue checksloop
 		}
+		// skip check if its view has `disable_all_monitoring`
+		// property set
+		if _, hit, _ := tec.evalSystemProp(
+			`disable_all_monitoring`,
+			`true`,
+			tec.Checks[i].View,
+		); hit {
+			continue checksloop
+		}
+		// skip check if there is a matching `disable_check_configuration`
+		// property
+		if _, hit, _ := tec.evalSystemProp(
+			`disable_check_configuration`,
+			tec.Checks[i].ConfigId.String(),
+			tec.Checks[i].View,
+		); hit {
+			continue checksloop
+		}
+
 		hasBrokenConstraint := false
 		hasServiceConstraint := false
 		hasAttributeConstraint := false
