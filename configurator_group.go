@@ -22,7 +22,7 @@ func (teg *Group) updateCheckInstances() {
 		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
 			repoName,
 			`UpdateCheckInstances`,
-			`node`,
+			`group`,
 			teg.Id.String(),
 			false,
 		)
@@ -52,7 +52,7 @@ func (teg *Group) updateCheckInstances() {
 			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`CleanupInstance`,
-				`cluster`,
+				`group`,
 				teg.Id.String(),
 				ck,
 				i,

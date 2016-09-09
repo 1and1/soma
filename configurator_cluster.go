@@ -22,7 +22,7 @@ func (tec *Cluster) updateCheckInstances() {
 		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
 			repoName,
 			`UpdateCheckInstances`,
-			`node`,
+			`cluster`,
 			tec.Id.String(),
 			false,
 		)
