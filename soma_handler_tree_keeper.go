@@ -78,6 +78,9 @@ func (tk *treeKeeper) run() {
 			JobId:       uuid.NewV4(),
 		}
 		tk.process(&req)
+		tk.buildDeploymentDetails()
+		tk.orderDeploymentDetails()
+		tk.conn.Close()
 		return
 	}
 
