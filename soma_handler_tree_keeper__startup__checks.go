@@ -171,13 +171,37 @@ func (tk *treeKeeper) startupChecks() {
 		// actions for instances that could be matched to loaded
 		// information. Leftovers indicate that loaded and computed
 		// instances diverge!
+		// If requested, print all encountered messages instead of
+		// simply bailing out.
+		if SomaCfg.PrintChannels {
+			if len(tk.actionChan) > 0 {
+				tk.broken = true
+				for i := len(tk.actionChan); i > 0; i-- {
+					a := <-tk.actionChan
+					jBxX, _ := json.Marshal(a)
+					log.Printf("TK[%s], startupChecks(): leftover action in channel: %s", tk.repoName, string(jBxX))
+				}
+			}
+			if len(tk.errChan) > 0 {
+				tk.broken = true
+				for i := len(tk.errChan); i > 0; i-- {
+					e := <-tk.errChan
+					jBxX, _ := json.Marshal(e)
+					log.Printf("TK[%s], startupChecks(): error in channel: %s", tk.repoName, string(jBxX))
+				}
+			}
+			if tk.broken {
+				return
+			}
+		}
+		// drain the action channel
 		if tk.drain(`action`) > 0 {
 			tk.broken = true
 			log.Printf("TK[%s], startupChecks(): leftovers in actionChannel after drain", tk.repoName)
 			return
 		}
 
-		// drain the error channel for now
+		// drain the error channel
 		if tk.drain(`error`) > 0 {
 			tk.broken = true
 			log.Printf("TK[%s], startupChecks(): leftovers in errorChannel after drain", tk.repoName)

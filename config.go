@@ -20,6 +20,7 @@ type SomaConfig struct {
 	Observer      bool           `json:"observer,string"`
 	ObserverRepo  string         `json:"-"`
 	NoPoke        bool           `json:"no.poke,string"`
+	PrintChannels bool           `json:"startup.print.channel.errors,string"`
 	Database      SomaDbConfig   `json:"database"`
 	Daemon        SomaDaemon     `json:"daemon"`
 	Auth          SomaAuthConfig `json:"authentication"`
