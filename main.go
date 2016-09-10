@@ -51,10 +51,12 @@ const (
 func main() {
 	var (
 		configFlag, configFile, obsRepoFlag string
+		noPokeFlag                          bool
 		err                                 error
 	)
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.StringVar(&obsRepoFlag, "repo", "", "Observer target repository")
+	flag.BoolVar(&noPokeFlag, "nopoke", false, "Disable lifecycle pokes")
 	flag.Parse()
 
 	log.Printf("Starting runtime config initialization, SOMA v%s", SomaVersion)
@@ -76,6 +78,10 @@ func main() {
 	if obsRepoFlag != `` {
 		SomaCfg.Observer = true
 		SomaCfg.ObserverRepo = obsRepoFlag
+	}
+
+	if noPokeFlag {
+		SomaCfg.NoPoke = true
 	}
 
 	/*

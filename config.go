@@ -19,6 +19,7 @@ type SomaConfig struct {
 	PokeBatchSize uint64         `json:'notify.batch.size,string"`
 	Observer      bool           `json:"observer,string"`
 	ObserverRepo  string         `json:"-"`
+	NoPoke        bool           `json:"no.poke,string"`
 	Database      SomaDbConfig   `json:"database"`
 	Daemon        SomaDaemon     `json:"daemon"`
 	Auth          SomaAuthConfig `json:"authentication"`
