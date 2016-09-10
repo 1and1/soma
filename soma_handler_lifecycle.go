@@ -81,7 +81,9 @@ runloop:
 			}
 			lc.deadlockResolver()
 			lc.handleDelete()
-			lc.poke()
+			if !SomaCfg.NoPoke {
+				lc.poke()
+			}
 		}
 	}
 exit:
