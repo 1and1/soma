@@ -327,18 +327,14 @@ checksloop:
 					}
 					// check if an instance exists bound against the same
 					// constraints
-					if ldInst.ConstraintHash == inst.ConstraintHash {
+					if ldInst.ConstraintHash == inst.ConstraintHash &&
+						uuid.Equal(ldInst.ConfigId, inst.ConfigId) &&
+						ldInst.ConstraintValHash == inst.ConstraintValHash {
+
+						// found a match
 						inst.InstanceId, _ = uuid.FromString(ldInstId)
-						if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
-							tec.Fault.Error <- &Error{Action: `Matched instances loaded for different ConfigId`}
-							return
-						}
 						inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 						inst.Version = ldInst.Version
-						if inst.ConstraintValHash != ldInst.ConstraintValHash {
-							tec.Fault.Error <- &Error{Action: `Matched instances loaded for different ConstraintValHash`}
-							return
-						}
 						delete(tec.loadedInstances[i], ldInstId)
 						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 							repoName,
@@ -356,7 +352,7 @@ checksloop:
 				// that we could not match to any loaded instances
 				// -> something is wrong
 				log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
-				tec.Fault.Error <- &Error{Action: `instance_match_failure`}
+				tec.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 				return
 			nosvcstartinstancematch:
 			} else {
@@ -477,26 +473,16 @@ checksloop:
 				if startupLoad {
 					for ldInstId, ldInst := range tec.loadedInstances[i] {
 						// check for data from loaded instance
-						if ldInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash {
+						if ldInst.InstanceSvcCfgHash == inst.InstanceSvcCfgHash &&
+							ldInst.ConstraintHash == inst.ConstraintHash &&
+							ldInst.ConstraintValHash == inst.ConstraintValHash &&
+							ldInst.InstanceService == inst.InstanceService &&
+							uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
+
+							// found a match
 							inst.InstanceId, _ = uuid.FromString(ldInstId)
-							if !uuid.Equal(ldInst.ConfigId, inst.ConfigId) {
-								tec.Fault.Error <- &Error{Action: `Matched instances loaded for different ConfigId`}
-								return
-							}
 							inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 							inst.Version = ldInst.Version
-							if inst.ConstraintHash != ldInst.ConstraintHash {
-								tec.Fault.Error <- &Error{Action: `Matched instances loaded for different ConstraintHash`}
-								return
-							}
-							if inst.ConstraintValHash != ldInst.ConstraintValHash {
-								tec.Fault.Error <- &Error{Action: `Matched instances loaded for different ConstraintValHash`}
-								return
-							}
-							if inst.InstanceService != ldInst.InstanceService {
-								tec.Fault.Error <- &Error{Action: `Matched instances loaded for different InstanceService`}
-								return
-							}
 							// we can assume InstanceServiceConfig to
 							// be equal, since InstanceSvcCfgHash is
 							// equal
@@ -517,7 +503,7 @@ checksloop:
 					// instance that we could not match to any
 					// loaded instances -> something is wrong
 					log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
-					tec.Fault.Error <- &Error{Action: `instance_match_failure`}
+					tec.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 					return
 				startinstancematch:
 				} else {
