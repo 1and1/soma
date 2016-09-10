@@ -541,7 +541,7 @@ func (o *outputTree) clustersInBucket(id string) []string {
 
 //
 func (o *outputTree) nodesInBucket(id string) []string {
-	rows, err := o.stmtBuckGrp.Query(id)
+	rows, err := o.stmtBuckNod.Query(id)
 	if err != nil {
 		return []string{}
 	}
