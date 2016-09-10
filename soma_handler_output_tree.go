@@ -481,9 +481,9 @@ func (o *outputTree) bucketsInRepository(id string) []string {
 	}
 	defer rows.Close()
 
-	bID := ``
 	res := []string{}
 	for rows.Next() {
+		bID := ``
 		if err := rows.Scan(&bID); err != nil {
 			return []string{}
 		}
@@ -503,9 +503,9 @@ func (o *outputTree) groupsInBucket(id string) []string {
 	}
 	defer rows.Close()
 
-	gID := ``
 	res := []string{}
 	for rows.Next() {
+		gID := ``
 		if err := rows.Scan(&gID); err != nil {
 			return []string{}
 		}
@@ -525,9 +525,9 @@ func (o *outputTree) clustersInBucket(id string) []string {
 	}
 	defer rows.Close()
 
-	cID := ``
 	res := []string{}
 	for rows.Next() {
+		cID := ``
 		if err := rows.Scan(&cID); err != nil {
 			return []string{}
 		}
@@ -547,9 +547,9 @@ func (o *outputTree) nodesInBucket(id string) []string {
 	}
 	defer rows.Close()
 
-	nID := ``
 	res := []string{}
 	for rows.Next() {
+		nID := ``
 		if err := rows.Scan(&nID); err != nil {
 			return []string{}
 		}
@@ -569,9 +569,9 @@ func (o *outputTree) groupsInGroup(id string) []string {
 	}
 	defer rows.Close()
 
-	gID := ``
 	res := []string{}
 	if rows.Next() {
+		gID := ``
 		if err := rows.Scan(&gID); err != nil {
 			return []string{}
 		}
@@ -591,9 +591,9 @@ func (o *outputTree) clustersInGroup(id string) []string {
 	}
 	defer rows.Close()
 
-	cID := ``
 	res := []string{}
 	if rows.Next() {
+		cID := ``
 		if err := rows.Scan(&cID); err != nil {
 			return []string{}
 		}
@@ -613,9 +613,9 @@ func (o *outputTree) nodesInGroup(id string) []string {
 	}
 	defer rows.Close()
 
-	nID := ``
 	res := []string{}
 	if rows.Next() {
+		nID := ``
 		if err := rows.Scan(&nID); err != nil {
 			return []string{}
 		}
@@ -635,9 +635,9 @@ func (o *outputTree) nodesInCluster(id string) []string {
 	}
 	defer rows.Close()
 
-	nID := ``
 	res := []string{}
 	for rows.Next() {
+		nID := ``
 		if err := rows.Scan(&nID); err != nil {
 			return []string{}
 		}
