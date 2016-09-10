@@ -41,6 +41,9 @@ func connectToDatabase() {
 	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
 		log.Fatal(err)
 	}
+	if _, err = conn.Exec(`SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`); err != nil {
+		log.Fatal(err)
+	}
 
 	// size the connection pool
 	conn.SetMaxIdleConns(20)
@@ -117,6 +120,9 @@ func newDatabaseConnection() (*sql.DB, error) {
 	}
 	dbcon.SetMaxIdleConns(5)
 	dbcon.SetMaxOpenConns(10)
+	if _, err = conn.Exec(`SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`); err != nil {
+		log.Fatal(err)
+	}
 	dbcon.SetConnMaxLifetime(12 * time.Hour)
 	log.Print("Connected new secondary pool to database")
 	return dbcon, nil
