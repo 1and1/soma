@@ -71,13 +71,15 @@ WHERE  sci.deleted
 const lcStmtConfigAwaitingDeletion = `
 UPDATE soma.check_instance_configurations
 SET    status = 'awaiting_deletion"::varchar,
-       next_status = 'none'::varchar
+       next_status = 'none'::varchar,
+       awaiting_deletion = 'yes'::boolean
 WHERE  check_instance_config_id = $1::uuid;`
 
 const lcStmtDeleteGhosts = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
-       next_status = 'none'::varchar
+       next_status = 'none'::varchar,
+       awaiting_deletion = 'yes'::boolean
 FROM   soma.check_instances sci
 WHERE  scic.check_instance_id = sci.check_instance_id
 AND    scic.status = 'awaiting_rollout'
@@ -87,7 +89,8 @@ AND    sci.update_available;`
 const lcStmtDeleteFailedRollouts = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
-       next_status = 'none'::varchar
+       next_status = 'none'::varchar,
+       awaiting_deletion = 'yes'::boolean
 FROM   soma.check_instances sci
 WHERE  scic.check_instance_id = sci.check_instance_id
 AND    sci.deleted
@@ -96,7 +99,8 @@ AND    scic.status = 'rollout_failed';`
 const lcStmtDeleteDeprovisioned = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
-       next_status = 'none'::varchar
+       next_status = 'none'::varchar,
+       awaiting_deletion = 'yes'::boolean
 FROM   soma.check_instances sci
 WHERE  scic.check_instance_id = sci.check_instance_id
 AND    sci.deleted
