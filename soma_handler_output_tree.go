@@ -570,7 +570,7 @@ func (o *outputTree) groupsInGroup(id string) []string {
 	defer rows.Close()
 
 	res := []string{}
-	if rows.Next() {
+	for rows.Next() {
 		gID := ``
 		if err := rows.Scan(&gID); err != nil {
 			return []string{}
@@ -592,7 +592,7 @@ func (o *outputTree) clustersInGroup(id string) []string {
 	defer rows.Close()
 
 	res := []string{}
-	if rows.Next() {
+	for rows.Next() {
 		cID := ``
 		if err := rows.Scan(&cID); err != nil {
 			return []string{}
@@ -614,7 +614,7 @@ func (o *outputTree) nodesInGroup(id string) []string {
 	defer rows.Close()
 
 	res := []string{}
-	if rows.Next() {
+	for rows.Next() {
 		nID := ``
 		if err := rows.Scan(&nID); err != nil {
 			return []string{}
