@@ -438,10 +438,10 @@ func (o *outputTree) node(id string, recurse bool) (*proto.Node, error) {
 		&nodeState,
 		&nodeIsOnline,
 		&nodeIsDeleted,
-		&nodeRepositoryId,
-		&nodeBucketId,
 		&nodeCreatedBy,
 		&nodeCreatedAt,
+		&nodeRepositoryId,
+		&nodeBucketId,
 	); err != nil {
 		return nil, err
 	}
