@@ -363,6 +363,7 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	tK := new(treeKeeper)
 	tK.input = make(chan treeRequest, 1024)
 	tK.shutdown = make(chan bool)
+	tK.stopchan = make(chan bool)
 	tK.conn = db
 	tK.tree = s
 	tK.errChan = ec

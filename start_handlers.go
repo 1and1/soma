@@ -490,6 +490,7 @@ func spawnClusterReadHandler() {
 func spawnForestCustodian() {
 	var fC forestCustodian
 	fC.input = make(chan somaRepositoryRequest, 64)
+	fC.system = make(chan msg.Request, 32)
 	fC.shutdown = make(chan bool)
 	fC.conn = conn
 	handlerMap["forestCustodian"] = fC
@@ -499,6 +500,7 @@ func spawnForestCustodian() {
 func spawnGuidePost() {
 	var gP guidePost
 	gP.input = make(chan treeRequest, 4096)
+	gP.system = make(chan msg.Request, 32)
 	gP.shutdown = make(chan bool)
 	gP.conn = conn
 	handlerMap["guidePost"] = gP
