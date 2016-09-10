@@ -183,6 +183,7 @@ func (o *outputTree) repository(id string, recurse bool) (*proto.Repository, err
 		&repoCreatedBy,
 		&repoCreatedAt,
 	); err != nil {
+		log.Printf("Error in outputTree.repository() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -237,6 +238,7 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 		&bucketCreatedBy,
 		&bucketCreatedAt,
 	); err != nil {
+		log.Printf("Error in outputTree.bucket() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -312,6 +314,7 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 		&groupCreatedBy,
 		&groupCreatedAt,
 	); err != nil {
+		log.Printf("Error in outputTree.group() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -385,6 +388,7 @@ func (o *outputTree) cluster(id string, recurse bool) (*proto.Cluster, error) {
 		&clusterCreatedBy,
 		&clusterCreatedAt,
 	); err != nil {
+		log.Printf("Error in outputTree.cluster() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -443,6 +447,7 @@ func (o *outputTree) node(id string, recurse bool) (*proto.Node, error) {
 		&nodeRepositoryId,
 		&nodeBucketId,
 	); err != nil {
+		log.Printf("Error in outputTree.node() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
