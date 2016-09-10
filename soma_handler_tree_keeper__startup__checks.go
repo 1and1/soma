@@ -20,6 +20,7 @@ type tkLoaderChecks struct {
 	loadChecks     *sql.Stmt
 	loadItems      *sql.Stmt
 	loadConfig     *sql.Stmt
+	loadAllConfigs *sql.Stmt
 	loadThresh     *sql.Stmt
 	loadCstrCustom *sql.Stmt
 	loadCstrNative *sql.Stmt
@@ -65,6 +66,11 @@ func (tk *treeKeeper) startupChecks() {
 		log.Fatal("treekeeper/tkStmtLoadCheckConfiguration: ", err)
 	}
 	defer ld.loadConfig.Close()
+
+	if ld.loadAllConfigs, err = tk.conn.Prepare(tkStmtLoadAllCheckConfigurationsForType); err != nil {
+		log.Fatal(`treekeeper/tkStmtLoadAllCheckConfigurationsForType: `, err)
+	}
+	defer ld.loadAllConfigs.Close()
 
 	if ld.loadThresh, err = tk.conn.Prepare(tkStmtLoadCheckThresholds); err != nil {
 		log.Fatal("treekeeper/tkStmtLoadCheckThresholds: ", err)
@@ -143,13 +149,24 @@ func (tk *treeKeeper) startupChecks() {
 		tk.startupScopedChecks(typ, &ld)
 	}
 
-	// recompute instances with preloaded IDs
-	tk.tree.ComputeCheckInstances()
-
-	// ensure there are no leftovers
-	tk.tree.ClearLoadInfo()
+	//
+	// if this a checks level rebuild, then we need to populate the
+	// tree again with the original CheckConfigs since all checks that
+	// could be loaded have been deleted
+	if tk.rebuild && tk.rbLevel == `checks` {
+		log.Printf("TK[%s]: starting checks rebuild", tk.repoId)
+		for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
+			tk.startupScopedReapplyCheckConfig(typ, &ld)
+		}
+	}
 
 	if !tk.rebuild {
+		// recompute instances with preloaded IDs
+		tk.tree.ComputeCheckInstances()
+
+		// ensure there are no leftovers
+		tk.tree.ClearLoadInfo()
+
 		// this startup drains actions after checks, then suppresses
 		// actions for instances that could be matched to loaded
 		// information. Leftovers indicate that loaded and computed
@@ -351,7 +368,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				goto fail
 			}
 
-			// iterate over returned thresholds - no rows is valid, as
+			// iterate over returned constraints - no rows is valid, as
 			// constraints are not mandatory
 			for cstrRows.Next() {
 				if err = cstrRows.Scan(&value1, &value2, &value3); err != nil {
@@ -773,6 +790,204 @@ fail:
 		log.Println(`BROKEN REPOSITORY ERROR: `, errLocation, err)
 	}
 	return
+}
+
+func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderChecks) {
+	if tk.broken {
+		return
+	}
+
+	var (
+		err                                         error
+		configRows, threshRows, cstrRows            *sql.Rows
+		predicate, threshold, levelName, levelShort string
+		cstrType, value1, value2, value3            string
+		levelNumeric, numVal                        int64
+		treeCheck                                   *tree.Check
+	)
+
+	// 1. identify check configurations to load:
+	//    select configuration_id from soma.check_configurations where
+	//    configuration_object_type = typ and repository_id =
+	//    tk.repoId and not deleted
+	if configRows, err = ld.loadAllConfigs.Query(typ, tk.repoId); err != nil {
+		goto fail
+	}
+	defer configRows.Close()
+
+	for configRows.Next() {
+		conf := proto.CheckConfig{}
+		conf.Thresholds = []proto.CheckConfigThreshold{}
+		conf.Constraints = []proto.CheckConfigConstraint{}
+		conf.RepositoryId = tk.repoId
+		conf.ObjectType = typ
+		if err = configRows.Scan(
+			&conf.Id,
+			&conf.BucketId,
+			&conf.Name,
+			&conf.ObjectId,
+			&conf.Inheritance,
+			&conf.ChildrenOnly,
+			&conf.CapabilityId,
+			&conf.Interval,
+			&conf.IsEnabled,
+			&conf.ExternalId,
+		); err != nil {
+			goto fail
+		}
+		log.Printf("TK[%s]: rebuild processing check configuration %s", tk.repoName, conf.Id)
+		// 2. assemble proto.CheckConfig object:
+		//    + thresholds
+		if threshRows, err = ld.loadThresh.Query(conf.Id); err != nil {
+			goto fail
+		}
+
+		for threshRows.Next() {
+			if err = threshRows.Scan(
+				&predicate,
+				&threshold,
+				&levelName,
+				&levelShort,
+				&levelNumeric,
+			); err != nil {
+				threshRows.Close()
+				goto fail
+			}
+			// ignore errors, we converted into the DB from int64
+			numVal, _ = strconv.ParseInt(threshold, 10, 64)
+
+			// add threshold to config
+			conf.Thresholds = append(conf.Thresholds,
+				proto.CheckConfigThreshold{
+					Predicate: proto.Predicate{
+						Symbol: predicate,
+					},
+					Level: proto.Level{
+						Name:      levelName,
+						ShortName: levelShort,
+						Numeric:   uint16(levelNumeric),
+					},
+					Value: numVal,
+				},
+			)
+		}
+		if err = threshRows.Err(); err != nil {
+			goto fail
+		}
+
+		//    + constraints
+		for _, cstrType = range []string{`custom`, `native`, `oncall`, `attribute`, `service`, `system`} {
+			switch cstrType {
+			case `custom`:
+				cstrRows, err = ld.loadCstrCustom.Query(conf.Id)
+			case `native`:
+				cstrRows, err = ld.loadCstrNative.Query(conf.Id)
+			case `oncall`:
+				cstrRows, err = ld.loadCstrOncall.Query(conf.Id)
+			case `attribute`:
+				cstrRows, err = ld.loadCstrAttr.Query(conf.Id)
+			case `service`:
+				cstrRows, err = ld.loadCstrServ.Query(conf.Id)
+			case `system`:
+				cstrRows, err = ld.loadCstrSystem.Query(conf.Id)
+			}
+			if err != nil {
+				goto fail
+			}
+
+			for cstrRows.Next() {
+				if err = cstrRows.Scan(&value1, &value2, &value3); err != nil {
+					cstrRows.Close()
+					goto fail
+				}
+				switch cstrType {
+				case `custom`:
+					conf.Constraints = append(conf.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Custom: &proto.PropertyCustom{
+								Id:           value1,
+								Name:         value2,
+								RepositoryId: tk.repoId,
+								Value:        value3,
+							},
+						},
+					)
+				case `native`:
+					conf.Constraints = append(conf.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Native: &proto.PropertyNative{
+								Name:  value1,
+								Value: value2,
+							},
+						},
+					)
+				case `oncall`:
+					conf.Constraints = append(conf.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Oncall: &proto.PropertyOncall{
+								Id:     value1,
+								Name:   value2,
+								Number: value3,
+							},
+						},
+					)
+				case `attribute`:
+					conf.Constraints = append(conf.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Attribute: &proto.ServiceAttribute{
+								Name:  value1,
+								Value: value2,
+							},
+						},
+					)
+				case `service`:
+					conf.Constraints = append(conf.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							Service: &proto.PropertyService{
+								Name:   value2,
+								TeamId: value1,
+							},
+						},
+					)
+				case `system`:
+					conf.Constraints = append(conf.Constraints,
+						proto.CheckConfigConstraint{
+							ConstraintType: cstrType,
+							System: &proto.PropertySystem{
+								Name:  value1,
+								Value: value2,
+							},
+						},
+					)
+				} // switch cstrType
+			} // for cstrRows.Next()
+			if cstrRows.Err() != nil {
+				goto fail
+			}
+		}
+		// 3. convert to treecheck
+		if treeCheck, err = tk.convertCheck(&conf); err == nil {
+			// 4. apply config
+			tk.tree.Find(tree.FindRequest{
+				ElementType: conf.ObjectType,
+				ElementId:   conf.ObjectId,
+			}, true).SetCheck(*treeCheck)
+		} else {
+			log.Printf("Rebuild error during check conversion: %s", err)
+		}
+	}
+	return
+
+fail:
+	tk.broken = true
+	if err != nil {
+		log.Printf("Error during rebuild loading of checks: %s", err)
+	}
 }
 
 // orderGroups orders the groups in a repository so they can be
