@@ -51,6 +51,22 @@ WHERE  configuration_id = $1::uuid
 AND    repository_id = $2::uuid
 AND    NOT deleted;`
 
+const tkStmtLoadAllCheckConfigurationsForType = `
+SELECT configuration_id,
+       bucket_id,
+       configuration_name,
+       configuration_object,
+       inheritance_enabled,
+       children_only,
+       capability_id,
+       interval,
+       enabled,
+       external_id
+FROM   soma.check_configurations
+WHERE  configuration_object_type = $1::varchar
+AND    repository_id = $2::uuid
+AND    NOT deleted;`
+
 const tkStmtLoadCheckThresholds = `
 SELECT sct.predicate,
        sct.threshold,
