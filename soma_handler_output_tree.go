@@ -309,8 +309,8 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 		&groupName,
 		&groupObjectState,
 		&groupTeamId,
-		&groupCreatedBy, // TODO add fields to DB
-		&groupCreatedAt, // TODO add fields to DB
+		&groupCreatedBy,
+		&groupCreatedAt,
 	); err != nil {
 		return nil, err
 	}
@@ -382,8 +382,8 @@ func (o *outputTree) cluster(id string, recurse bool) (*proto.Cluster, error) {
 		&clusterBucketId,
 		&clusterObjectState,
 		&clusterTeamId,
-		&clusterCreatedBy, // TODO add fields to DB
-		&clusterCreatedAt, // TODO add fields to DB
+		&clusterCreatedBy,
+		&clusterCreatedAt,
 	); err != nil {
 		return nil, err
 	}
@@ -440,8 +440,8 @@ func (o *outputTree) node(id string, recurse bool) (*proto.Node, error) {
 		&nodeIsDeleted,
 		&nodeRepositoryId,
 		&nodeBucketId,
-		&nodeCreatedBy, // TODO add fields to DB
-		&nodeCreatedAt, // TODO add fields to DB
+		&nodeCreatedBy,
+		&nodeCreatedAt,
 	); err != nil {
 		return nil, err
 	}
