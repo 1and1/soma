@@ -183,7 +183,6 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 	var (
 		repoId, repoName, teamId, keeper string
 		err                              error
-		handler                          *treeKeeper
 	)
 	result := msg.Result{
 		Type:   `forestcustodian`,
@@ -215,22 +214,13 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 
 	// get the treekeeper for the repository
 	keeper = fmt.Sprintf("repository_%s", repoName)
-	if _, ok := handlerMap[keeper].(*treeKeeper); !ok {
-		result.NotFound(
-			fmt.Errorf("No handler for repository %s registered.",
-				repoName),
-		)
-		goto exit
-	}
-
-	// stop the handler if it is still running
-	if !handler.isStopped() {
+	if handler, ok := handlerMap[keeper].(*treeKeeper); ok {
+		// stop the handler
 		handler.stopchan <- true
-	}
 
-	// remove handler from lookup table and shut it down
-	delete(handlerMap, keeper)
-	handler.shutdown <- true
+		// remove handler from lookup table
+		delete(handlerMap, keeper)
+	}
 
 	// mark all existing check instances as deleted - instances
 	// are deleted for both rebuild levels checks and instances

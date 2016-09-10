@@ -1001,10 +1001,8 @@ func (g *guidePost) sysprocess(q *msg.Request) {
 	// check we have a treekeeper for that repository
 	keeper = fmt.Sprintf("repository_%s", repoName)
 	if _, ok := handlerMap[keeper].(*treeKeeper); !ok {
-		result.NotFound(
-			fmt.Errorf("No handler for repository %s registered.",
-				repoName),
-		)
+		// no handler running, nothing to stop
+		result.OK()
 		goto exit
 	}
 
@@ -1018,16 +1016,14 @@ func (g *guidePost) sysprocess(q *msg.Request) {
 		goto exit
 	}
 
-	// nothin' to do, it is already stopped
-	if handler.isStopped() {
-		result.OK()
-		goto exit
-	}
-
 	switch q.System.Request {
 	case `stop_repository`:
 		handler.stopchan <- true
 		result.OK()
+
+		// remove handler from lookup table
+		delete(handlerMap, keeper)
+
 	}
 
 exit:
