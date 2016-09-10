@@ -61,6 +61,9 @@ func (tk *treeKeeper) run() {
 	tk.startupLoad()
 	var err error
 
+	// treekeepers have a dedicated connection pool
+	defer tk.conn.Close()
+
 	// if this was a rebuild, simply return if it failed
 	if tk.broken && tk.rebuild {
 		return
