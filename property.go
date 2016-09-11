@@ -675,10 +675,10 @@ func isDupe(o, n Property) (bool, bool, Property) {
 		// same view means we have a duplicate
 		if o.GetView() == n.GetView() {
 			dupe = true
+			prop = o.Clone()
 			// inherited properties can be deleted and replaced
 			if o.GetIsInherited() {
 				deleteOK = true
-				prop = o.Clone()
 			}
 		}
 	}
