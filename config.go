@@ -91,7 +91,18 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	json.Unmarshal([]byte(uclJson), &c)
 
 	if c.LifeCycleTick == 0 {
-		log.Fatal(`FATAL: unset configuration parameter: lifecycle.tick.seconds`)
+		log.Println(`Setting default value for lifecycle.tick.seconds: 60`)
+		c.LifeCycleTick = 60
+	}
+
+	if c.PokeBatchSize == 0 {
+		log.Println(`Setting default value for notify.batch.size: 64`)
+		c.PokeBatchSize = 64
+	}
+
+	if c.PokePath == `` {
+		log.Println(`Setting default value for notify.path.element: /deployments/id`)
+		c.PokePath = `/deployments/id`
 	}
 
 	if c.Auth.Activation == `ldap` && !c.Ldap.Tls {
