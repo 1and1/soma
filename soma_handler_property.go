@@ -71,7 +71,8 @@ FROM   soma.system_properties;`)
 	r.list_srv_stmt, err = r.conn.Prepare(`
 SELECT service_property,
        organizational_team_id
-FROM soma.team_service_properties;`)
+FROM   soma.team_service_properties
+WHERE  organizational_team_id = $1::uuid;`)
 	if err != nil {
 		log.Fatal("property/list-service: ", err)
 	}
@@ -97,7 +98,8 @@ FROM   soma.service_properties;`)
 SELECT custom_property_id,
        repository_id,
 	   custom_property
-FROM   soma.custom_properties;`)
+FROM   soma.custom_properties
+WHERE  repository_id = $1::uuid;`)
 	if err != nil {
 		log.Fatal("property/list-custom: ", err)
 	}
@@ -193,10 +195,10 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 			rows, err = r.list_nat_stmt.Query()
 		case "custom":
 			log.Printf("R: property/list-custom")
-			rows, err = r.list_cst_stmt.Query()
+			rows, err = r.list_cst_stmt.Query(q.Custom.RepositoryId)
 		case "service":
 			log.Printf("R: property/list-service")
-			rows, err = r.list_srv_stmt.Query()
+			rows, err = r.list_srv_stmt.Query(q.Service.TeamId)
 		case "template":
 			log.Printf("R: property/list-service-template")
 			rows, err = r.list_tpl_stmt.Query()

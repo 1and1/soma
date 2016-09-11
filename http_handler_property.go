@@ -39,7 +39,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		req.prType = prType
 	case "custom":
 		req.prType = prType
-		req.Custom.Name = params.ByName("repository")
+		req.Custom.RepositoryId = params.ByName("repository")
 	case "service":
 		req.prType = prType
 		req.Service.TeamId = params.ByName("team")
