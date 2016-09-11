@@ -245,7 +245,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					},
 				})
 			case "custom":
-				err := rows.Scan(&property, &repository, &id)
+				err := rows.Scan(&id, &repository, &property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
 					Custom: proto.PropertyCustom{
