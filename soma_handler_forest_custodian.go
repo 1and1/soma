@@ -62,6 +62,12 @@ func (f *forestCustodian) run() {
 
 	f.initialLoad()
 
+	if SomaCfg.Observer {
+		log.Println(`ForestCustodian entered observer mode`)
+		<-f.shutdown
+		goto exit
+	}
+
 runloop:
 	for {
 		select {
@@ -73,6 +79,7 @@ runloop:
 			f.sysprocess(&req)
 		}
 	}
+exit:
 }
 
 func (f *forestCustodian) process(q *somaRepositoryRequest) {
