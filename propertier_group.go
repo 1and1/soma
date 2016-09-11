@@ -326,7 +326,20 @@ func (teg *Group) DeleteProperty(p Property) {
 		// us.
 		// If p is considered a dupe, then flow is set to the prop we
 		// need to inherit.
-		resync, _, flow = teg.Parent.(Propertier).checkDuplicate(p)
+		var delProp Property
+		switch p.GetType() {
+		case `custom`:
+			delProp = teg.PropertyCustom[delId]
+		case `system`:
+			delProp = teg.PropertySystem[delId]
+		case `service`:
+			delProp = teg.PropertyService[delId]
+		case `oncall`:
+			delProp = teg.PropertyOncall[delId]
+		}
+		resync, _, flow = teg.Parent.(Propertier).checkDuplicate(
+			delProp,
+		)
 	}
 
 	p.SetInherited(false)
@@ -338,7 +351,8 @@ func (teg *Group) DeleteProperty(p Property) {
 	// now that the property is deleted from us and our children,
 	// request resync if required
 	if resync {
-		teg.Parent.resyncProperty(flow.GetSourceInstance(),
+		teg.Parent.(Propertier).resyncProperty(
+			flow.GetSourceInstance(),
 			p.GetType(),
 			teg.Id.String(),
 		)

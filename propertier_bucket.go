@@ -326,7 +326,20 @@ func (teb *Bucket) DeleteProperty(p Property) {
 		// us.
 		// If p is considered a dupe, then flow is set to the prop we
 		// need to inherit.
-		resync, _, flow = teb.Parent.(Propertier).checkDuplicate(p)
+		var delProp Property
+		switch p.GetType() {
+		case `custom`:
+			delProp = teb.PropertyCustom[delId]
+		case `system`:
+			delProp = teb.PropertySystem[delId]
+		case `service`:
+			delProp = teb.PropertyService[delId]
+		case `oncall`:
+			delProp = teb.PropertyOncall[delId]
+		}
+		resync, _, flow = teb.Parent.(Propertier).checkDuplicate(
+			delProp,
+		)
 	}
 
 	p.SetInherited(false)
@@ -338,7 +351,8 @@ func (teb *Bucket) DeleteProperty(p Property) {
 	// now that the property is deleted from us and our children,
 	// request resync if required
 	if resync {
-		teb.Parent.resyncProperty(flow.GetSourceInstance(),
+		teb.Parent.(Propertier).resyncProperty(
+			flow.GetSourceInstance(),
 			p.GetType(),
 			teb.Id.String(),
 		)

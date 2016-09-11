@@ -326,7 +326,20 @@ func (tec *Cluster) DeleteProperty(p Property) {
 		// us.
 		// If p is considered a dupe, then flow is set to the prop we
 		// need to inherit.
-		resync, _, flow = tec.Parent.(Propertier).checkDuplicate(p)
+		var delProp Property
+		switch p.GetType() {
+		case `custom`:
+			delProp = tec.PropertyCustom[delId]
+		case `system`:
+			delProp = tec.PropertySystem[delId]
+		case `service`:
+			delProp = tec.PropertyService[delId]
+		case `oncall`:
+			delProp = tec.PropertyOncall[delId]
+		}
+		resync, _, flow = tec.Parent.(Propertier).checkDuplicate(
+			delProp,
+		)
 	}
 
 	p.SetInherited(false)
@@ -338,7 +351,8 @@ func (tec *Cluster) DeleteProperty(p Property) {
 	// now that the property is deleted from us and our children,
 	// request resync if required
 	if resync {
-		tec.Parent.resyncProperty(flow.GetSourceInstance(),
+		tec.Parent.(Propertier).resyncProperty(
+			flow.GetSourceInstance(),
 			p.GetType(),
 			tec.Id.String(),
 		)

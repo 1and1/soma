@@ -238,7 +238,20 @@ func (ten *Node) DeleteProperty(p Property) {
 		// us.
 		// If p is considered a dupe, then flow is set to the prop we
 		// need to inherit.
-		resync, _, flow = ten.Parent.(Propertier).checkDuplicate(p)
+		var delProp Property
+		switch p.GetType() {
+		case `custom`:
+			delProp = ten.PropertyCustom[delId]
+		case `system`:
+			delProp = ten.PropertySystem[delId]
+		case `service`:
+			delProp = ten.PropertyService[delId]
+		case `oncall`:
+			delProp = ten.PropertyOncall[delId]
+		}
+		resync, _, flow = ten.Parent.(Propertier).checkDuplicate(
+			delProp,
+		)
 	}
 
 	p.SetInherited(false)
@@ -250,7 +263,8 @@ func (ten *Node) DeleteProperty(p Property) {
 	// now that the property is deleted from us and our children,
 	// request resync if required
 	if resync {
-		ten.Parent.resyncProperty(flow.GetSourceInstance(),
+		ten.Parent.(Propertier).resyncProperty(
+			flow.GetSourceInstance(),
 			p.GetType(),
 			ten.Id.String(),
 		)
@@ -505,6 +519,9 @@ propswitch:
 		deleteOK = false
 	}
 	return dupe, deleteOK, prop
+}
+
+func (ten *Node) resyncProperty(srcId, pType, childId string) {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
