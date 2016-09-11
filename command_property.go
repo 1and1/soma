@@ -578,9 +578,9 @@ func cmdPropertyTemplateShow(c *cli.Context) error {
 /* LIST
  */
 func cmdPropertyCustomList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	utl.ValidateCliArgumentCount(c, 2)
+	utl.ValidateCliArgument(c, 1, "repository")
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(1))
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
