@@ -749,7 +749,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	if _, ok := opts[`inheritance`]; ok {
 		prop.Inheritance = utl.GetValidatedBool(opts[`inheritance`][0])
 	} else {
-		prop.Inheritance = false
+		prop.Inheritance = true
 	}
 	switch pType {
 	case `system`:
