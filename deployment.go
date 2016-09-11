@@ -61,6 +61,10 @@ func (dd *Deployment) DeepCompare(alternate *Deployment) bool {
 	if !dd.Team.DeepCompare(alternate.Team) {
 		return false
 	}
+	if (dd.Oncall == nil && alternate.Oncall != nil) ||
+		(dd.Oncall != nil && alternate.Oncall == nil) {
+		return false
+	}
 	if !dd.Oncall.DeepCompare(alternate.Oncall) {
 		return false
 	}
