@@ -51,12 +51,13 @@ const (
 func main() {
 	var (
 		configFlag, configFile, obsRepoFlag string
-		noPokeFlag                          bool
+		noPokeFlag, forcedCorruption        bool
 		err                                 error
 	)
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
-	flag.StringVar(&obsRepoFlag, "repo", "", "Observer target repository")
+	flag.StringVar(&obsRepoFlag, "repo", "", "Single-repository mode target repository")
 	flag.BoolVar(&noPokeFlag, "nopoke", false, "Disable lifecycle pokes")
+	flag.BoolVar(&forcedCorruption, `allowdatacorruption`, false, `Allow single-repo mode on production`)
 	flag.Parse()
 
 	log.Printf("Starting runtime config initialization, SOMA v%s", SomaVersion)
@@ -74,10 +75,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// force observer mode if the cli argument was present
+	// set single-repo mode if the cli argument was present
 	if obsRepoFlag != `` {
-		SomaCfg.Observer = true
 		SomaCfg.ObserverRepo = obsRepoFlag
+	}
+
+	// disallow single-repository mode on production r/w instances
+	if !SomaCfg.ReadOnly && !SomaCfg.Observer &&
+		SomaCfg.ObserverRepo != `` && SomaCfg.Environment == `production` &&
+		!forcedCorruption {
+		log.Fatal(`Single-repository r/w mode disallowed for production environments. ` +
+			`Use the -allowdatacorruption flag if you are sure this will be the only ` +
+			`running SOMA instance.`)
 	}
 
 	if noPokeFlag {

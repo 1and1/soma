@@ -347,9 +347,8 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree,
 	ec chan *tree.Error, ac chan *tree.Action, team string) {
 
-	// only start the single requested repo in observer mode with
-	// set repo flag
-	if SomaCfg.Observer && SomaCfg.ObserverRepo != `` && q.Repository.Name != SomaCfg.ObserverRepo {
+	// only start the single requested repo
+	if SomaCfg.ObserverRepo != `` && q.Repository.Name != SomaCfg.ObserverRepo {
 		return
 	}
 

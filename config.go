@@ -90,6 +90,11 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	}
 	json.Unmarshal([]byte(uclJson), &c)
 
+	if c.Environment == `` {
+		log.Println(`Setting default value for environment: production`)
+		c.Environment = `production`
+	}
+
 	if c.LifeCycleTick == 0 {
 		log.Println(`Setting default value for lifecycle.tick.seconds: 60`)
 		c.LifeCycleTick = 60
