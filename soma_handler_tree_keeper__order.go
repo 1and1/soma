@@ -132,8 +132,24 @@ deployments:
 		 */
 		curDetails := proto.Deployment{}
 		prvDetails := proto.Deployment{}
-		json.Unmarshal([]byte(currentDeploymentDetailsJSON), curDetails)
-		json.Unmarshal([]byte(previousDeploymentDetailsJSON), prvDetails)
+		err = json.Unmarshal([]byte(currentDeploymentDetailsJSON), &curDetails)
+		if err != nil {
+			log.Printf("Error unmarshal/deploymentdetails %s: %s",
+				currentChkInstanceConfigId,
+				err.Error(),
+			)
+			err = nil
+			continue deployments
+		}
+		err = json.Unmarshal([]byte(previousDeploymentDetailsJSON), &prvDetails)
+		if err != nil {
+			log.Printf("Error unmarshal/deploymentdetails %s: %s",
+				previousChkInstanceConfigId,
+				err.Error(),
+			)
+			err = nil
+			continue deployments
+		}
 
 		if !curDetails.DeepCompare(&prvDetails) {
 			// there is no change in deployment details, thus no point
