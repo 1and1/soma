@@ -567,7 +567,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 
 			for nCustProps.Next() {
 				prop := proto.PropertyCustom{}
-				gCustProps.Scan(
+				nCustProps.Scan(
 					&prop.Id,
 					&prop.Name,
 					&prop.Value,
