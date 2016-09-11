@@ -17,11 +17,16 @@ FROM   soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`
 
 const tkStmtGetComputedDeployments = `
-SELECT check_instance_id,
-       check_instance_config_id,
-	   deployment_details
-FROM   soma.check_instance_configurations
-WHERE  status = 'computed';`
+SELECT scic.check_instance_id,
+       scic.check_instance_config_id,
+	   scic.deployment_details
+FROM   soma.checks sc
+JOIN   soma.check_instances sci
+  ON   sc.check_id = sci.check_id
+JOIN   soma.check_instance_configurations scic
+  ON   sci.check_instance_id = scic.check_instance_id
+WHERE  scic.status = 'computed'
+  AND  sc.repository_id = $1::uuid;`
 
 const tkStmtGetPreviousDeployment = `
 SELECT check_instance_config_id,

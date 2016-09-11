@@ -32,7 +32,7 @@ func (tk *treeKeeper) orderDeploymentDetails() {
 	}
 	defer stmt_DelDuplicate.Close()
 
-	if computed, err = stmt_GetComputed.Query(); err != nil {
+	if computed, err = stmt_GetComputed.Query(tk.repoId); err != nil {
 		log.Fatal(err)
 	}
 	defer computed.Close()
