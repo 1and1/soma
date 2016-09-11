@@ -61,12 +61,16 @@ func (dd *Deployment) DeepCompare(alternate *Deployment) bool {
 	if !dd.Team.DeepCompare(alternate.Team) {
 		return false
 	}
+	// not equal if one of them is nil while the other is not
 	if (dd.Oncall == nil && alternate.Oncall != nil) ||
 		(dd.Oncall != nil && alternate.Oncall == nil) {
 		return false
 	}
-	if !dd.Oncall.DeepCompare(alternate.Oncall) {
-		return false
+	// do not compare if any of them are nil
+	if !(dd.Oncall == nil || alternate.Oncall == nil) {
+		if !dd.Oncall.DeepCompare(alternate.Oncall) {
+			return false
+		}
 	}
 	if !dd.Service.DeepCompare(alternate.Service) {
 		return false
