@@ -59,6 +59,27 @@ create table if not exists soma.authorizations_global (
 	queries[idx] = "createTableGlobalAuthorizations"
 	idx++
 
+	queryMap[`createUniqueIndexAdminGlobalAuthorization`] = `
+create unique index _unique_admin_global_authoriz
+    on soma.authorizations_global ( admin_id, permission_id )
+    where admin_id IS NOT NULL;`
+	queries[idx] = `createUniqueIndexAdminGlobalAuthorization`
+	idx++
+
+	queryMap[`createUniqueIndexUserGlobalAuthorization`] = `
+create unique index _unique_user_global_authoriz
+    on soma.authorizations_global ( user_id, permission_id )
+    where user_id IS NOT NULL;`
+	queries[idx] = `createUniqueIndexUserGlobalAuthorization`
+	idx++
+
+	queryMap[`createUniqueIndexToolGlobalAuthorization`] = `
+create unique index _unique_tool_global_authoriz
+    on soma.authorizations_global ( tool_id, permission_id )
+    where tool_id IS NOT NULL;`
+	queries[idx] = `createUniqueIndexToolGlobalAuthorization`
+	idx++
+
 	queryMap["createTableRepoAuthorizations"] = `
 create table if not exists soma.authorizations_repository (
     grant_id                    uuid            PRIMARY KEY,
