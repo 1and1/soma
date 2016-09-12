@@ -213,4 +213,14 @@ func (w *somaModeWriteHandler) process(q *somaModeRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaModeReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaModeWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

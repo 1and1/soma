@@ -200,4 +200,14 @@ func (w *somaAttributeWriteHandler) process(q *somaAttributeRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaAttributeReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaAttributeWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

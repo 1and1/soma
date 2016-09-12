@@ -213,4 +213,14 @@ func (w *somaPredicateWriteHandler) process(q *somaPredicateRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaPredicateReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaPredicateWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
