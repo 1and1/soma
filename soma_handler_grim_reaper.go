@@ -60,7 +60,7 @@ func (grim *grimReaper) process(q *msg.Request) {
 	// shutdown all treeKeeper   : /^repository_.*/
 	for handler, _ := range handlerMap {
 		if strings.HasPrefix(handler, `repository_`) {
-			handlerMap[handler].(*treeKeeper).shutdown <- true
+			handlerMap[handler].(Downer).shutdownNow()
 			delete(handlerMap, handler)
 			log.Printf("grimReaper: shut down %s", handler)
 		}
@@ -70,56 +70,20 @@ func (grim *grimReaper) process(q *msg.Request) {
 		if !strings.HasSuffix(handler, `WriteHandler`) {
 			continue
 		}
-		switch handlerMap[handler].(type) {
-		case *somaViewWriteHandler:
-			handlerMap[handler].(*somaViewWriteHandler).
-				shutdown <- true
-		case *somaEnvironmentWriteHandler:
-			handlerMap[handler].(*somaEnvironmentWriteHandler).
-				shutdown <- true
-		case *somaObjectStateWriteHandler:
-			handlerMap[handler].(*somaObjectStateWriteHandler).
-				shutdown <- true
-		case *somaObjectTypeWriteHandler:
-			handlerMap[handler].(*somaObjectTypeWriteHandler).
-				shutdown <- true
-		case *somaDatacenterWriteHandler:
-			handlerMap[handler].(*somaDatacenterWriteHandler).
-				shutdown <- true
-		default:
-			continue
-		}
+		handlerMap[handler].(Downer).shutdownNow()
 		delete(handlerMap, handler)
 		log.Printf("grimReaper: shut down %s", handler)
 	}
 	// shutdown all read handler : /ReadHandler$/
 	for handler, _ := range handlerMap {
-		if !strings.HasSuffix(handler, `ReadHandler`) {
+		if !(strings.HasSuffix(handler, `ReadHandler`) ||
+			strings.HasSuffix(handler, `_r`)) {
 			continue
 		}
-		switch handlerMap[handler].(type) {
-		case *somaViewReadHandler:
-			handlerMap[handler].(*somaViewReadHandler).
-				shutdown <- true
-		case *somaEnvironmentReadHandler:
-			handlerMap[handler].(*somaEnvironmentReadHandler).
-				shutdown <- true
-		case *somaObjectStateReadHandler:
-			handlerMap[handler].(*somaObjectStateReadHandler).
-				shutdown <- true
-		case *somaObjectTypeReadHandler:
-			handlerMap[handler].(*somaObjectTypeReadHandler).
-				shutdown <- true
-		case *somaDatacenterReadHandler:
-			handlerMap[handler].(*somaDatacenterReadHandler).
-				shutdown <- true
-		default:
-			continue
-		}
+		handlerMap[handler].(Downer).shutdownNow()
 		delete(handlerMap, handler)
 		log.Printf("grimReaper: shut down %s", handler)
 	}
-	//                             /_r$/
 	// shutdown special handlers
 	// shutdown supervisor -- needs handling in BasicAuth()
 }
