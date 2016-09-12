@@ -34,6 +34,8 @@ var (
 	// time value Go can represent.
 	// RFC: 219248499-12-06 15:30:07.999999999 +0000 UTC
 	PosTimeInf = time.Unix(1<<63-1-unixToInternalOffset, 999999999)
+	// Orderly shutdown of the system has been called. GrimReaper is active
+	ShutdownInProgress bool = false
 )
 
 const (
