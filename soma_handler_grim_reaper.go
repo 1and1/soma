@@ -54,7 +54,7 @@ func (grim *grimReaper) process(q *msg.Request) {
 	// stop all treeKeeper       : /^repository_.*/
 	for handler, _ := range handlerMap {
 		if strings.HasPrefix(handler, `repository_`) {
-			handlerMap[handler].(*treeKeeper).stopchan <- true
+			handlerMap[handler].(Stopper).stopNow()
 		}
 	}
 	// shutdown all treeKeeper   : /^repository_.*/
