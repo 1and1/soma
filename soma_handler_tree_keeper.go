@@ -56,6 +56,9 @@ type treeKeeper struct {
 	get_view   *sql.Stmt
 }
 
+// run() is the method a treeKeeper executes in its background
+// go-routine. It checks and handles the input channels and reacts
+// appropriately.
 func (tk *treeKeeper) run() {
 	log.Printf("Starting TreeKeeper for Repo %s (%s)", tk.repoName, tk.repoId)
 	tk.startupLoad()
@@ -70,7 +73,7 @@ func (tk *treeKeeper) run() {
 	}
 
 	// rebuild was successful, process events from initial loading
-	// then exit
+	// then exit. We issue a fake job for this.
 	if tk.rebuild {
 		req := treeRequest{
 			RequestType: `rebuild`,
@@ -84,6 +87,8 @@ func (tk *treeKeeper) run() {
 		return
 	}
 
+	// there was an error during startupLoad(), the repository is
+	// considered broken.
 	if tk.broken {
 		tickTack := time.NewTicker(time.Second * 10).C
 	hoverloop:
@@ -102,6 +107,7 @@ func (tk *treeKeeper) run() {
 		return
 	}
 
+	// prepare statements
 	if tk.start_job, err = tk.conn.Prepare(tkStmtStartJob); err != nil {
 		log.Fatal("treekeeper/start-job: ", err)
 	}
@@ -116,6 +122,7 @@ func (tk *treeKeeper) run() {
 	tk.ready = true
 
 	if SomaCfg.Observer {
+		// XXX should listen on stopchan
 		log.Printf("TreeKeeper [%s] entered observer mode\n", tk.repoName)
 		<-tk.shutdown
 		goto exit

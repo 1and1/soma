@@ -63,6 +63,7 @@ func (f *forestCustodian) run() {
 	f.initialLoad()
 
 	if SomaCfg.Observer {
+		// XXX restart repository should be possible in observer mode
 		log.Println(`ForestCustodian entered observer mode`)
 		<-f.shutdown
 		goto exit

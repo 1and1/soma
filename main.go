@@ -16,7 +16,7 @@ import (
 
 // global variables
 var (
-	// database connection
+	// main database connection pool
 	conn *sql.DB
 	// lookup table for go routine input channels
 	handlerMap = make(map[string]interface{})
@@ -54,6 +54,8 @@ func main() {
 		noPokeFlag, forcedCorruption        bool
 		err                                 error
 	)
+
+	// Daemon command line flags
 	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
 	flag.StringVar(&obsRepoFlag, "repo", "", "Single-repository mode target repository")
 	flag.BoolVar(&noPokeFlag, "nopoke", false, "Disable lifecycle pokes")
@@ -75,9 +77,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// set single-repo mode if the cli argument was present
+	if SomaCfg.ReadOnly {
+		log.Println(`Instance has been configured as: read-only mode`)
+	} else if SomaCfg.Observer {
+		log.Println(`Instance has been configured as: observer mode`)
+	} else {
+		log.Println(`Instance has been configured as: normal mode`)
+	}
+
+	// single-repo cli argument overwrites config file
 	if obsRepoFlag != `` {
 		SomaCfg.ObserverRepo = obsRepoFlag
+	}
+	if SomaCfg.ObserverRepo != `` {
+		log.Printf("Single-repository mode active for: %s", SomaCfg.ObserverRepo)
 	}
 
 	// disallow single-repository mode on production r/w instances
@@ -91,6 +104,7 @@ func main() {
 
 	if noPokeFlag {
 		SomaCfg.NoPoke = true
+		log.Println(`Instance has disabled outgoing pokes by lifeCycle manager`)
 	}
 
 	/*

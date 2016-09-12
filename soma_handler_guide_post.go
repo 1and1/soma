@@ -159,6 +159,8 @@ WHERE  capability_id = $1::uuid;`)
 	defer g.bucket_for_group.Close()
 
 	if SomaCfg.Observer {
+		// XXX system/stop_repository should be possible in observer
+		// mode
 		log.Println(`GuidePost entered observer mode`)
 		<-g.shutdown
 		goto exit
