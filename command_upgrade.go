@@ -28,6 +28,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201606160001: upgrade_soma_to_201606210001,
 		201606210001: upgrade_soma_to_201607070001,
 		201607070001: upgrade_soma_to_201609080001,
+		201609080001: upgrade_soma_to_201609120001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -352,6 +353,23 @@ func upgrade_soma_to_201609080001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201609080001
+}
+
+func upgrade_soma_to_201609120001(curr int, tool string, printOnly bool) int {
+	if curr != 201609080001 {
+		return 0
+	}
+	stmts := []string{
+		`create unique index _unique_admin_global_authoriz on soma.authorizations_global ( admin_id, permission_id ) where admin_id IS NOT NULL;`,
+		`create unique index _unique_user_global_authoriz on soma.authorizations_global ( user_id, permission_id ) where user_id IS NOT NULL;`,
+		`create unique index _unique_tool_global_authoriz on soma.authorizations_global ( tool_id, permission_id ) where tool_id IS NOT NULL;`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201609120001, 'Upgrade - somadbctl %s');", tool),
+	)
+	executeUpgrades(stmts, printOnly)
+
+	return 201609120001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
