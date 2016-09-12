@@ -190,8 +190,6 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 	var (
 		repoId, repoName, teamId, keeper string
 		err                              error
-		ok                               bool
-		handler                          *treeKeeper
 	)
 	result := msg.Result{
 		Type:   `forestcustodian`,
@@ -201,6 +199,8 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 
 	switch q.System.Request {
 	case `rebuild_repository`:
+		repoId = q.System.RepositoryId
+	case `restart_repository`:
 		repoId = q.System.RepositoryId
 	default:
 		result.NotImplemented(
@@ -223,38 +223,46 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 
 	// get the treekeeper for the repository
 	keeper = fmt.Sprintf("repository_%s", repoName)
-	if handler, ok = handlerMap[keeper].(*treeKeeper); ok {
+	if handler, ok := handlerMap[keeper].(*treeKeeper); ok {
 		// remove handler from lookup table
 		delete(handlerMap, keeper)
+
+		// stop the handler before shut down to give it a chance to
+		// drain the input channel
+		if !handler.isStopped() {
+			handler.stopchan <- true
+		}
+		handler.shutdown <- true
 	}
 
-	// stop the handler before shut down to give it a chance to
-	// drain the input channel
-	if !handler.isStopped() {
-		handler.stopchan <- true
-	}
-	handler.shutdown <- true
-
-	// only delete checks for rebuild level checks
-	if q.System.RebuildLevel == `checks` {
-		if _, err = f.rbck_stmt.Exec(repoId); err != nil {
+	if q.System.Request == `rebuild_repository` {
+		// mark all existing check instances as deleted - instances
+		// are deleted for both rebuild levels checks and instances
+		if _, err = f.rbci_stmt.Exec(repoId); err != nil {
 			result.ServerError(err)
 			goto exit
 		}
-	}
+		// only delete checks for rebuild level checks
+		if q.System.RebuildLevel == `checks` {
+			if _, err = f.rbck_stmt.Exec(repoId); err != nil {
+				result.ServerError(err)
+				goto exit
+			}
+		}
 
-	// load the tree again, with requested rebuild active
-	f.loadSomaTree(&somaRepositoryRequest{
-		rebuild: true,
-		rbLevel: q.System.RebuildLevel,
-		Repository: proto.Repository{
-			Id:        repoId,
-			Name:      repoName,
-			TeamId:    teamId,
-			IsDeleted: false,
-			IsActive:  true,
-		},
-	})
+		// load the tree again, with requested rebuild active
+		f.loadSomaTree(&somaRepositoryRequest{
+			rebuild: true,
+			rbLevel: q.System.RebuildLevel,
+			Repository: proto.Repository{
+				Id:        repoId,
+				Name:      repoName,
+				TeamId:    teamId,
+				IsDeleted: false,
+				IsActive:  true,
+			},
+		})
+	}
 
 	// rebuild has finished, restart the tree. If the rebuild did not
 	// work, this will simply be a broken tree once more

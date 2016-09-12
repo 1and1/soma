@@ -37,6 +37,11 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			RepositoryId: cReq.SystemOperation.RepositoryId,
 			RebuildLevel: cReq.SystemOperation.RebuildLevel,
 		}
+	case `restart_repository`:
+		sys = &proto.SystemOperation{
+			Request:      cReq.SystemOperation.Request,
+			RepositoryId: cReq.SystemOperation.RepositoryId,
+		}
 	default:
 		DispatchBadRequest(&w, fmt.Errorf("%s %s",
 			`Unknown system operation:`, cReq.SystemOperation.Request))
@@ -55,7 +60,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			User:       params.ByName(`AuthenticatedUser`),
 			System:     *sys,
 		}
-	case `rebuild_repository`:
+	case `rebuild_repository`, `restart_repository`:
 		handler := handlerMap[`forestCustodian`].(forestCustodian)
 		handler.system <- msg.Request{
 			Type:       `forestcustodian`,
