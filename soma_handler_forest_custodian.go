@@ -190,6 +190,8 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 	var (
 		repoId, repoName, teamId, keeper string
 		err                              error
+		ok                               bool
+		handler                          *treeKeeper
 	)
 	result := msg.Result{
 		Type:   `forestcustodian`,
@@ -221,20 +223,18 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 
 	// get the treekeeper for the repository
 	keeper = fmt.Sprintf("repository_%s", repoName)
-	if handler, ok := handlerMap[keeper].(*treeKeeper); ok {
-		// stop the handler
-		handler.stopchan <- true
-
+	if handler, ok = handlerMap[keeper].(*treeKeeper); ok {
 		// remove handler from lookup table
 		delete(handlerMap, keeper)
 	}
 
-	// mark all existing check instances as deleted - instances
-	// are deleted for both rebuild levels checks and instances
-	if _, err = f.rbci_stmt.Exec(repoId); err != nil {
-		result.ServerError(err)
-		goto exit
+	// stop the handler before shut down to give it a chance to
+	// drain the input channel
+	if !handler.isStopped() {
+		handler.stopchan <- true
 	}
+	handler.shutdown <- true
+
 	// only delete checks for rebuild level checks
 	if q.System.RebuildLevel == `checks` {
 		if _, err = f.rbck_stmt.Exec(repoId); err != nil {

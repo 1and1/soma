@@ -1018,12 +1018,10 @@ func (g *guidePost) sysprocess(q *msg.Request) {
 
 	switch q.System.Request {
 	case `stop_repository`:
-		handler.stopchan <- true
+		if !handler.isStopped() {
+			handler.stopchan <- true
+		}
 		result.OK()
-
-		// remove handler from lookup table
-		delete(handlerMap, keeper)
-
 	}
 
 exit:

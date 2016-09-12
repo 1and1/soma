@@ -123,8 +123,27 @@ func (tk *treeKeeper) run() {
 
 stopsign:
 	if tk.stopped {
-		<-tk.shutdown
-		goto exit
+		// drain the input channel, it could be currently full and
+		// writers blocked on it. Future writers will check
+		// isStopped() before writing (and/or remove this tree from
+		// the handlerMap)
+	drain:
+		for i := len(tk.input); i > 0; i-- {
+			<-tk.input
+		}
+		if len(tk.input) > 0 {
+			// there were blocked writers on a full buffered channel
+			goto drain
+		}
+
+		log.Printf("TreeKeeper [%s] has stopped", tk.repoName)
+		for {
+			select {
+			case <-tk.shutdown:
+				goto exit
+			case <-tk.stopchan:
+			}
+		}
 	}
 runloop:
 	for {
