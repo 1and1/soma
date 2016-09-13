@@ -99,6 +99,10 @@ func (grim *grimReaper) process(q *msg.Request) {
 	}
 
 	// shutdown supervisor -- needs handling in BasicAuth()
+	handlerMap[`supervisor`].(Downer).shutdownNow()
+	delete(handlerMap, `supervisor`)
+	log.Println(`grimReaper: shut down the supervisor`)
+
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
