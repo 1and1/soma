@@ -30,6 +30,12 @@ func registerOps(app cli.App) *cli.App {
 						Action:      runtime(cmdOpsDumpToken),
 					},
 					{
+						Name:        `shutdown`,
+						Usage:       `Controlled shutdown of a running SOMA instance`,
+						Description: help.CmdOpsShutdown,
+						Action:      runtime(cmdOpsShutdown),
+					},
+					{
 						Name:  `repository`,
 						Usage: `SUBCOMMANDS for repository TreeKeeper maintenance`,
 						Subcommands: []cli.Command{
@@ -45,6 +51,12 @@ func registerOps(app cli.App) *cli.App {
 								Action:       runtime(cmdOpsRepoRebuild),
 								Description:  help.CmdOpsRepoRebuild,
 								BashComplete: cmpl.OpsRepoRebuild,
+							},
+							{
+								Name:        `restart`,
+								Usage:       `Restart the TreeKeeper for a specific repository`,
+								Description: help.CmdOpsRepoRestart,
+								Action:      runtime(cmdOpsRepoRestart),
 							},
 						},
 					},
@@ -219,19 +231,19 @@ func cmdOpsDumpToken(c *cli.Context) error {
 func cmdOpsRepoStop(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 
-	// lookup requested repository
-	repoId := utl.TryGetRepositoryByUUIDOrName(
-		Client, c.Args().First())
-
 	req := proto.NewSystemOperationRequest()
 	req.SystemOperation.Request = `stop_repository`
-	req.SystemOperation.RepositoryId = repoId
 
-	if resp, err := adm.PostReqBody(req, `/system/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `system`)
-	}
+	return cmdOpsRepo(c, req)
+}
+
+func cmdOpsRepoRestart(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 1)
+
+	req := proto.NewSystemOperationRequest()
+	req.SystemOperation.Request = `restart_repository`
+
+	return cmdOpsRepo(c, req)
 }
 
 func cmdOpsRepoRebuild(c *cli.Context) error {
@@ -248,14 +260,32 @@ func cmdOpsRepoRebuild(c *cli.Context) error {
 		return fmt.Errorf(`Only rebuild levels 'checks' and 'instances' are supported`)
 	}
 
+	req := proto.NewSystemOperationRequest()
+	req.SystemOperation.Request = `rebuild_repository`
+	req.SystemOperation.RebuildLevel = opts[`level`][0]
+
+	return cmdOpsRepo(c, req)
+}
+
+func cmdOpsRepo(c *cli.Context, req proto.Request) error {
+
 	// lookup requested repository
 	repoId := utl.TryGetRepositoryByUUIDOrName(
 		Client, c.Args().First())
+	req.SystemOperation.RepositoryId = repoId
+
+	if resp, err := adm.PostReqBody(req, `/system/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `system`)
+	}
+}
+
+func cmdOpsShutdown(c *cli.Context) error {
+	utl.ValidateCliArgumentCount(c, 0)
 
 	req := proto.NewSystemOperationRequest()
-	req.SystemOperation.Request = `rebuild_repository`
-	req.SystemOperation.RepositoryId = repoId
-	req.SystemOperation.RebuildLevel = opts[`level`][0]
+	req.SystemOperation.Request = `shutdown`
 
 	if resp, err := adm.PostReqBody(req, `/system/`); err != nil {
 		return err

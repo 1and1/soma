@@ -66,6 +66,44 @@ EXAMPLES:
    
    ./somaadm ops repository stop 21a4eda3-fafd-4c1b-9dd2-a29ef96ac916`
 
+const CmdOpsRepoRestart string = `
+   This command restarts the running or stopped repository on the
+   server.
+
+   A running repository that is still loading can not be stopped.
+   A broken repository can be restarted in the hope that the
+   problem goes away (it won't).
+
+SYNOPSIS:
+   somaadm ops repository restart ${repository}
+
+PERMISSIONS:
+   This command requires one of the following permissions:
+      - system_all
+
+EXAMPLES:
+   ./somaadm ops repository restart fump
+
+   ./somaadm ops repository restart 21a4eda3-fafd-4c1b-9dd2-a29ef96ac916`
+
+const CmdOpsShutdown string = `
+   This command will activate the controlled shutdown of a SOMA
+   instance. Once received, it will answer all requests with a HTTP
+   unavailable error, while finishing active jobs, draining queues
+   and shutting down background go routines.
+
+   This command has no confirmation dialogue.
+
+SYNOPSIS:
+   somaadm ops shutdown
+
+PERMISSIONS:
+   This command requires one of the following permissions:
+      - system_all
+
+EXAMPLES:
+   ./somaadm ops shutdown`
+
 const CmdOpsRepoRebuild string = `
    The repository rebuild command rebuilds the dynamic objects
    inside a repository. All user created objects like groups,
