@@ -176,6 +176,12 @@ func (c *svCredMap) restore(user string, uid uuid.UUID, valid, expires time.Time
 	}
 }
 
+func (c *svCredMap) revoke(user string) {
+	c.lock()
+	defer c.unlock()
+	delete(c.CMap, user)
+}
+
 // set writelock
 func (c *svCredMap) lock() {
 	c.mutex.Lock()
