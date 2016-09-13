@@ -11,6 +11,7 @@ const (
 	StatusConflict       = 406
 	StatusError          = 500
 	StatusNotImplemented = 501
+	StatusUnavailable    = 503
 	StatusGatewayTimeout = 504
 )
 
@@ -26,6 +27,7 @@ var DisplayStatus = map[int]string{
 	406: "Readonly instance",
 	500: "Server error",
 	501: "Not implemented",
+	503: "Service unavailable",
 	504: "Gateway timeout",
 }
 
@@ -108,6 +110,11 @@ func (r *Result) NotFound() {
 func (r *Result) Accepted() {
 	r.StatusCode = StatusAccepted
 	r.StatusText = DisplayStatus[StatusAccepted]
+}
+
+func (r *Result) Unavailable() {
+	r.StatusCode = StatusUnavailable
+	r.StatusText = DisplayStatus[StatusUnavailable]
 }
 
 func (r *Result) OK() {
