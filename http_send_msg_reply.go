@@ -140,6 +140,9 @@ UnmaskedReply:
 	case 501:
 		log.Printf(LogStrOK, r.Type, action, r.Code, 501)
 		result.NotImplemented()
+	case 503:
+		log.Printf(LogStrOK, r.Type, action, r.Code, 503)
+		result.Unavailable()
 	default:
 		log.Printf(LogStrErr, r.Type, action, r.Code, `Unhandled internal result code`)
 		DispatchInternalError(w, nil)
