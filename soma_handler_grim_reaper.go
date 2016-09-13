@@ -92,8 +92,8 @@ func (grim *grimReaper) process(q *msg.Request) {
 		`lifeCycle`,
 	} {
 		handlerMap[h].(Downer).shutdownNow()
-		delete(handlerMap, handler)
-		log.Printf("grimReaper: shut down %s", handler)
+		delete(handlerMap, h)
+		log.Printf("grimReaper: shut down %s", h)
 	}
 
 	// shutdown supervisor -- needs handling in BasicAuth()
