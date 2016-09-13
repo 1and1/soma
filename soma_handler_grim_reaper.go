@@ -90,6 +90,8 @@ func (grim *grimReaper) process(q *msg.Request) {
 		`forestCustodian`,
 		`guidePost`,
 		`lifeCycle`,
+		`deploymentHandler`,
+		`hostDeploymentHandler`,
 	} {
 		handlerMap[h].(Downer).shutdownNow()
 		delete(handlerMap, h)
