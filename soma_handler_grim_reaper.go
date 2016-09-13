@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -11,12 +12,13 @@ import (
 
 type grimReaper struct {
 	system chan msg.Request
+	conn   *sql.DB
 }
 
 func (grim *grimReaper) run() {
 	// defer calls stack in LIFO order
 	defer os.Exit(0)
-	defer conn.Close()
+	defer grim.conn.Close()
 
 runloop:
 	for {
@@ -44,7 +46,6 @@ func (grim *grimReaper) process(q *msg.Request) {
 	}
 
 	// tell HTTP handlers to start turning people away
-	// TODO 900/ShutdownInProgress
 	ShutdownInProgress = true
 
 	// answer shutdown request
@@ -108,6 +109,14 @@ func (grim *grimReaper) process(q *msg.Request) {
 	delete(handlerMap, `supervisor`)
 	log.Println(`grimReaper: shut down the supervisor`)
 
+	// log what we have missed
+	log.Println(`grimReaper: checking for still running handlers`)
+	for name, _ := range handlerMap {
+		if name == `grimReaper` {
+			continue
+		}
+		log.Printf("grimReaper: %s is still running\n", name)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

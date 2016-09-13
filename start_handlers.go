@@ -6,7 +6,7 @@ import (
 )
 
 func startHandlers() {
-	// supervisor is always started
+	spawnGrimReaperHandler()
 	spawnSupervisorHandler()
 
 	spawnViewReadHandler()
@@ -612,6 +612,14 @@ func spawnOutputTreeHandler() {
 	handler.conn = conn
 	handlerMap[`tree_r`] = handler
 	go handler.run()
+}
+
+func spawnGrimReaperHandler() {
+	var reaper grimReaper
+	reaper.system = make(chan msg.Request, 1)
+	reaper.conn = conn
+	handlerMap[`grimReaper`] = reaper
+	go reaper.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
