@@ -17,7 +17,7 @@ func ListCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["checkConfigurationReadHandler"].(somaCheckConfigurationReadHandler)
+	handler := handlerMap["checkConfigurationReadHandler"].(*somaCheckConfigurationReadHandler)
 	handler.input <- somaCheckConfigRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -55,7 +55,7 @@ func ShowCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["checkConfigurationReadHandler"].(somaCheckConfigurationReadHandler)
+	handler := handlerMap["checkConfigurationReadHandler"].(*somaCheckConfigurationReadHandler)
 	handler.input <- somaCheckConfigRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -83,7 +83,7 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	cReq.CheckConfig.Id = uuid.Nil.String()
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "check",
 		Action:      fmt.Sprintf("add_check_to_%s", cReq.CheckConfig.ObjectType),
@@ -103,7 +103,7 @@ func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: `check`,
 		Action:      `remove_check`,

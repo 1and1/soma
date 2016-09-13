@@ -63,7 +63,7 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 	if SomaCfg.OpenInstance {
 		return true, true
 	}
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:   `supervisor`,
 		Action: `authorize`,

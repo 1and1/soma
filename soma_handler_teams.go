@@ -226,11 +226,11 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 	var (
 		res    sql.Result
 		err    error
-		super  supervisor
+		super  *supervisor
 		notify msg.Request
 	)
 	result := somaResult{}
-	super = handlerMap[`supervisor`].(supervisor)
+	super = handlerMap[`supervisor`].(*supervisor)
 	notify = msg.Request{Type: `supervisor`, Action: `update_map`,
 		Super: &msg.Supervisor{
 			Object: `team`,

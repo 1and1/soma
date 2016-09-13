@@ -22,7 +22,7 @@ func ListMonitoring(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringReadHandler"].(somaMonitoringReadHandler)
+	handler := handlerMap["monitoringReadHandler"].(*somaMonitoringReadHandler)
 	handler.input <- somaMonitoringRequest{
 		action: "list",
 		admin:  admin,
@@ -62,7 +62,7 @@ func ShowMonitoring(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringReadHandler"].(somaMonitoringReadHandler)
+	handler := handlerMap["monitoringReadHandler"].(*somaMonitoringReadHandler)
 	handler.input <- somaMonitoringRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -97,7 +97,7 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringWriteHandler"].(somaMonitoringWriteHandler)
+	handler := handlerMap["monitoringWriteHandler"].(*somaMonitoringWriteHandler)
 	handler.input <- somaMonitoringRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -123,7 +123,7 @@ func DeleteMonitoring(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringWriteHandler"].(somaMonitoringWriteHandler)
+	handler := handlerMap["monitoringWriteHandler"].(*somaMonitoringWriteHandler)
 	handler.input <- somaMonitoringRequest{
 		action: "delete",
 		reply:  returnChannel,

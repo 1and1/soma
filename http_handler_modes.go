@@ -19,7 +19,7 @@ func ListMode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["modeReadHandler"].(somaModeReadHandler)
+	handler := handlerMap["modeReadHandler"].(*somaModeReadHandler)
 	handler.input <- somaModeRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowMode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["modeReadHandler"].(somaModeReadHandler)
+	handler := handlerMap["modeReadHandler"].(*somaModeReadHandler)
 	handler.input <- somaModeRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddMode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["modeWriteHandler"].(somaModeWriteHandler)
+	handler := handlerMap["modeWriteHandler"].(*somaModeWriteHandler)
 	handler.input <- somaModeRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -91,7 +91,7 @@ func DeleteMode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["modeWriteHandler"].(somaModeWriteHandler)
+	handler := handlerMap["modeWriteHandler"].(*somaModeWriteHandler)
 	handler.input <- somaModeRequest{
 		action: "delete",
 		reply:  returnChannel,

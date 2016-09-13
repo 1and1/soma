@@ -35,7 +35,7 @@ func SearchGrant(w http.ResponseWriter, r *http.Request,
 	crq := proto.NewGrantFilter()
 	_ = DecodeJsonBody(r, &crq)
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,
@@ -80,7 +80,7 @@ func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,
@@ -111,7 +111,7 @@ func RevokeGlobalRight(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,
@@ -160,7 +160,7 @@ func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,
@@ -205,7 +205,7 @@ func RevokeLimitedRight(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,
@@ -243,7 +243,7 @@ func GrantSystemRight(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,
@@ -274,7 +274,7 @@ func RevokeSystemRight(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `right`,

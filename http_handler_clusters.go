@@ -17,7 +17,7 @@ func ListCluster(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["clusterReadHandler"].(somaClusterReadHandler)
+	handler := handlerMap["clusterReadHandler"].(*somaClusterReadHandler)
 	handler.input <- somaClusterRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -53,7 +53,7 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["clusterReadHandler"].(somaClusterReadHandler)
+	handler := handlerMap["clusterReadHandler"].(*somaClusterReadHandler)
 	handler.input <- somaClusterRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -70,7 +70,7 @@ func ListClusterMembers(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["clusterReadHandler"].(somaClusterReadHandler)
+	handler := handlerMap["clusterReadHandler"].(*somaClusterReadHandler)
 	handler.input <- somaClusterRequest{
 		action: "member_list",
 		reply:  returnChannel,
@@ -102,7 +102,7 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      "create_cluster",
@@ -129,7 +129,7 @@ func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      "add_node_to_cluster",
@@ -178,7 +178,7 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      fmt.Sprintf("add_%s_property_to_cluster", params.ByName("type")),
@@ -227,7 +227,7 @@ func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap[`guidePost`].(guidePost)
+	handler := handlerMap[`guidePost`].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: `cluster`,
 		Action: fmt.Sprintf("delete_%s_property_from_cluster",

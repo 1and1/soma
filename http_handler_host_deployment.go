@@ -31,7 +31,7 @@ func GetHostDeployment(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["hostDeploymentHandler"].(somaHostDeploymentHandler)
+	handler := handlerMap["hostDeploymentHandler"].(*somaHostDeploymentHandler)
 	handler.input <- somaHostDeploymentRequest{
 		action:  "get",
 		reply:   returnChannel,
@@ -71,7 +71,7 @@ func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["hostDeploymentHandler"].(somaHostDeploymentHandler)
+	handler := handlerMap["hostDeploymentHandler"].(*somaHostDeploymentHandler)
 	handler.input <- somaHostDeploymentRequest{
 		action:  "assemble",
 		reply:   returnChannel,

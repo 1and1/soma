@@ -19,7 +19,7 @@ func ListOncall(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["oncallReadHandler"].(somaOncallReadHandler)
+	handler := handlerMap["oncallReadHandler"].(*somaOncallReadHandler)
 	handler.input <- somaOncallRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -57,7 +57,7 @@ func ShowOncall(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["oncallReadHandler"].(somaOncallReadHandler)
+	handler := handlerMap["oncallReadHandler"].(*somaOncallReadHandler)
 	handler.input <- somaOncallRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -88,7 +88,7 @@ func AddOncall(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)
+	handler := handlerMap["oncallWriteHandler"].(*somaOncallWriteHandler)
 	handler.input <- somaOncallRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -118,7 +118,7 @@ func UpdateOncall(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)
+	handler := handlerMap["oncallWriteHandler"].(*somaOncallWriteHandler)
 	handler.input <- somaOncallRequest{
 		action: "update",
 		reply:  returnChannel,
@@ -142,7 +142,7 @@ func DeleteOncall(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["oncallWriteHandler"].(somaOncallWriteHandler)
+	handler := handlerMap["oncallWriteHandler"].(*somaOncallWriteHandler)
 	handler.input <- somaOncallRequest{
 		action: "delete",
 		reply:  returnChannel,

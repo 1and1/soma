@@ -21,7 +21,7 @@ func ListUser(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["userReadHandler"].(somaUserReadHandler)
+	handler := handlerMap["userReadHandler"].(*somaUserReadHandler)
 	handler.input <- somaUserRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -59,7 +59,7 @@ func ShowUser(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["userReadHandler"].(somaUserReadHandler)
+	handler := handlerMap["userReadHandler"].(*somaUserReadHandler)
 	handler.input <- somaUserRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -81,7 +81,7 @@ func SyncUser(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["userReadHandler"].(somaUserReadHandler)
+	handler := handlerMap["userReadHandler"].(*somaUserReadHandler)
 	handler.input <- somaUserRequest{
 		action: `sync`,
 		reply:  returnChannel,
@@ -113,7 +113,7 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["userWriteHandler"].(somaUserWriteHandler)
+	handler := handlerMap["userWriteHandler"].(*somaUserWriteHandler)
 	handler.input <- somaUserRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -158,7 +158,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["userWriteHandler"].(somaUserWriteHandler)
+	handler := handlerMap["userWriteHandler"].(*somaUserWriteHandler)
 	handler.input <- somaUserRequest{
 		action: "update",
 		reply:  returnChannel,
@@ -194,7 +194,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["userWriteHandler"].(somaUserWriteHandler)
+	handler := handlerMap["userWriteHandler"].(*somaUserWriteHandler)
 	handler.input <- somaUserRequest{
 		action: action,
 		reply:  returnChannel,

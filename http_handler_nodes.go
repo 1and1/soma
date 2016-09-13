@@ -15,7 +15,7 @@ func ListNode(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
+	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
 	handler.input <- somaNodeRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -48,7 +48,7 @@ func ShowNode(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
+	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
 	handler.input <- somaNodeRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -65,7 +65,7 @@ func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
+	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
 	handler.input <- somaNodeRequest{
 		action: "get_config",
 		reply:  returnChannel,
@@ -87,7 +87,7 @@ func SyncNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeReadHandler"].(somaNodeReadHandler)
+	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
 	handler.input <- somaNodeRequest{
 		action: `sync`,
 		reply:  returnChannel,
@@ -115,7 +115,7 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeWriteHandler"].(somaNodeWriteHandler)
+	handler := handlerMap["nodeWriteHandler"].(*somaNodeWriteHandler)
 	handler.input <- somaNodeRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -152,7 +152,7 @@ func UpdateNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeWriteHandler"].(somaNodeWriteHandler)
+	handler := handlerMap["nodeWriteHandler"].(*somaNodeWriteHandler)
 	handler.input <- somaNodeRequest{
 		action: `update`,
 		reply:  returnChannel,
@@ -181,7 +181,7 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "node",
 		Action:      "assign_node",
@@ -217,7 +217,7 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["nodeWriteHandler"].(somaNodeWriteHandler)
+	handler := handlerMap["nodeWriteHandler"].(*somaNodeWriteHandler)
 	handler.input <- somaNodeRequest{
 		action: action,
 		reply:  returnChannel,
@@ -263,7 +263,7 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "node",
 		Action:      fmt.Sprintf("add_%s_property_to_node", params.ByName("type")),
@@ -324,7 +324,7 @@ func DeletePropertyFromNode(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap[`guidePost`].(guidePost)
+	handler := handlerMap[`guidePost`].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: `node`,
 		Action: fmt.Sprintf("delete_%s_property_from_node",

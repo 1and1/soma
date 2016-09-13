@@ -21,7 +21,7 @@ func DeliverDeploymentDetails(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["deploymentHandler"].(somaDeploymentHandler)
+	handler := handlerMap["deploymentHandler"].(*somaDeploymentHandler)
 	handler.input <- somaDeploymentRequest{
 		action:     "get",
 		reply:      returnChannel,
@@ -48,7 +48,7 @@ func DeliverMonitoringDeployments(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["deploymentHandler"].(somaDeploymentHandler)
+	handler := handlerMap["deploymentHandler"].(*somaDeploymentHandler)
 	handler.input <- somaDeploymentRequest{
 		action:     action,
 		reply:      returnChannel,
@@ -76,7 +76,7 @@ func UpdateDeploymentDetails(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["deploymentHandler"].(somaDeploymentHandler)
+	handler := handlerMap["deploymentHandler"].(*somaDeploymentHandler)
 	handler.input <- somaDeploymentRequest{
 		action:     fmt.Sprintf("update/%s", params.ByName("result")),
 		reply:      returnChannel,

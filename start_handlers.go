@@ -78,7 +78,7 @@ func spawnViewReadHandler() {
 	viewReadHandler.input = make(chan somaViewRequest)
 	viewReadHandler.shutdown = make(chan bool)
 	viewReadHandler.conn = conn
-	handlerMap["viewReadHandler"] = viewReadHandler
+	handlerMap["viewReadHandler"] = &viewReadHandler
 	go viewReadHandler.run()
 }
 
@@ -87,7 +87,7 @@ func spawnViewWriteHandler() {
 	viewWriteHandler.input = make(chan somaViewRequest, 64)
 	viewWriteHandler.shutdown = make(chan bool)
 	viewWriteHandler.conn = conn
-	handlerMap["viewWriteHandler"] = viewWriteHandler
+	handlerMap["viewWriteHandler"] = &viewWriteHandler
 	go viewWriteHandler.run()
 }
 
@@ -96,7 +96,7 @@ func spawnEnvironmentReadHandler() {
 	environmentReadHandler.input = make(chan somaEnvironmentRequest)
 	environmentReadHandler.shutdown = make(chan bool)
 	environmentReadHandler.conn = conn
-	handlerMap["environmentReadHandler"] = environmentReadHandler
+	handlerMap["environmentReadHandler"] = &environmentReadHandler
 	go environmentReadHandler.run()
 }
 
@@ -105,7 +105,7 @@ func spawnEnvironmentWriteHandler() {
 	environmentWriteHandler.input = make(chan somaEnvironmentRequest, 64)
 	environmentWriteHandler.shutdown = make(chan bool)
 	environmentWriteHandler.conn = conn
-	handlerMap["environmentWriteHandler"] = environmentWriteHandler
+	handlerMap["environmentWriteHandler"] = &environmentWriteHandler
 	go environmentWriteHandler.run()
 }
 
@@ -114,7 +114,7 @@ func spawnObjectStateReadHandler() {
 	objectStateReadHandler.input = make(chan somaObjectStateRequest)
 	objectStateReadHandler.shutdown = make(chan bool)
 	objectStateReadHandler.conn = conn
-	handlerMap["objectStateReadHandler"] = objectStateReadHandler
+	handlerMap["objectStateReadHandler"] = &objectStateReadHandler
 	go objectStateReadHandler.run()
 }
 
@@ -123,7 +123,7 @@ func spawnObjectStateWriteHandler() {
 	objectStateWriteHandler.input = make(chan somaObjectStateRequest, 64)
 	objectStateWriteHandler.shutdown = make(chan bool)
 	objectStateWriteHandler.conn = conn
-	handlerMap["objectStateWriteHandler"] = objectStateWriteHandler
+	handlerMap["objectStateWriteHandler"] = &objectStateWriteHandler
 	go objectStateWriteHandler.run()
 }
 
@@ -132,7 +132,7 @@ func spawnObjectTypeReadHandler() {
 	objectTypeReadHandler.input = make(chan somaObjectTypeRequest)
 	objectTypeReadHandler.shutdown = make(chan bool)
 	objectTypeReadHandler.conn = conn
-	handlerMap["objectTypeReadHandler"] = objectTypeReadHandler
+	handlerMap["objectTypeReadHandler"] = &objectTypeReadHandler
 	go objectTypeReadHandler.run()
 }
 
@@ -141,7 +141,7 @@ func spawnObjectTypeWriteHandler() {
 	objectTypeWriteHandler.input = make(chan somaObjectTypeRequest, 64)
 	objectTypeWriteHandler.shutdown = make(chan bool)
 	objectTypeWriteHandler.conn = conn
-	handlerMap["objectTypeWriteHandler"] = objectTypeWriteHandler
+	handlerMap["objectTypeWriteHandler"] = &objectTypeWriteHandler
 	go objectTypeWriteHandler.run()
 }
 
@@ -150,7 +150,7 @@ func spawnDatacenterReadHandler() {
 	datacenterReadHandler.input = make(chan somaDatacenterRequest)
 	datacenterReadHandler.shutdown = make(chan bool)
 	datacenterReadHandler.conn = conn
-	handlerMap["datacenterReadHandler"] = datacenterReadHandler
+	handlerMap["datacenterReadHandler"] = &datacenterReadHandler
 	go datacenterReadHandler.run()
 }
 
@@ -159,7 +159,7 @@ func spawnDatacenterWriteHandler() {
 	datacenterWriteHandler.input = make(chan somaDatacenterRequest, 64)
 	datacenterWriteHandler.shutdown = make(chan bool)
 	datacenterWriteHandler.conn = conn
-	handlerMap["datacenterWriteHandler"] = datacenterWriteHandler
+	handlerMap["datacenterWriteHandler"] = &datacenterWriteHandler
 	go datacenterWriteHandler.run()
 }
 
@@ -168,7 +168,7 @@ func spawnLevelReadHandler() {
 	levelReadHandler.input = make(chan somaLevelRequest, 64)
 	levelReadHandler.shutdown = make(chan bool)
 	levelReadHandler.conn = conn
-	handlerMap["levelReadHandler"] = levelReadHandler
+	handlerMap["levelReadHandler"] = &levelReadHandler
 	go levelReadHandler.run()
 }
 
@@ -177,7 +177,7 @@ func spawnLevelWriteHandler() {
 	levelWriteHandler.input = make(chan somaLevelRequest, 64)
 	levelWriteHandler.shutdown = make(chan bool)
 	levelWriteHandler.conn = conn
-	handlerMap["levelWriteHandler"] = levelWriteHandler
+	handlerMap["levelWriteHandler"] = &levelWriteHandler
 	go levelWriteHandler.run()
 }
 
@@ -186,7 +186,7 @@ func spawnPredicateReadHandler() {
 	predicateReadHandler.input = make(chan somaPredicateRequest, 64)
 	predicateReadHandler.shutdown = make(chan bool)
 	predicateReadHandler.conn = conn
-	handlerMap["predicateReadHandler"] = predicateReadHandler
+	handlerMap["predicateReadHandler"] = &predicateReadHandler
 	go predicateReadHandler.run()
 }
 
@@ -195,7 +195,7 @@ func spawnPredicateWriteHandler() {
 	predicateWriteHandler.input = make(chan somaPredicateRequest, 64)
 	predicateWriteHandler.shutdown = make(chan bool)
 	predicateWriteHandler.conn = conn
-	handlerMap["predicateWriteHandler"] = predicateWriteHandler
+	handlerMap["predicateWriteHandler"] = &predicateWriteHandler
 	go predicateWriteHandler.run()
 }
 
@@ -204,7 +204,7 @@ func spawnStatusReadHandler() {
 	statusReadHandler.input = make(chan somaStatusRequest, 64)
 	statusReadHandler.shutdown = make(chan bool)
 	statusReadHandler.conn = conn
-	handlerMap["statusReadHandler"] = statusReadHandler
+	handlerMap["statusReadHandler"] = &statusReadHandler
 	go statusReadHandler.run()
 }
 
@@ -213,7 +213,7 @@ func spawnStatusWriteHandler() {
 	statusWriteHandler.input = make(chan somaStatusRequest, 64)
 	statusWriteHandler.shutdown = make(chan bool)
 	statusWriteHandler.conn = conn
-	handlerMap["statusWriteHandler"] = statusWriteHandler
+	handlerMap["statusWriteHandler"] = &statusWriteHandler
 	go statusWriteHandler.run()
 }
 
@@ -222,7 +222,7 @@ func spawnOncallReadHandler() {
 	oncallReadHandler.input = make(chan somaOncallRequest, 64)
 	oncallReadHandler.shutdown = make(chan bool)
 	oncallReadHandler.conn = conn
-	handlerMap["oncallReadHandler"] = oncallReadHandler
+	handlerMap["oncallReadHandler"] = &oncallReadHandler
 	go oncallReadHandler.run()
 }
 
@@ -231,7 +231,7 @@ func spawnOncallWriteHandler() {
 	oncallWriteHandler.input = make(chan somaOncallRequest, 64)
 	oncallWriteHandler.shutdown = make(chan bool)
 	oncallWriteHandler.conn = conn
-	handlerMap["oncallWriteHandler"] = oncallWriteHandler
+	handlerMap["oncallWriteHandler"] = &oncallWriteHandler
 	go oncallWriteHandler.run()
 }
 
@@ -240,7 +240,7 @@ func spawnTeamReadHandler() {
 	teamReadHandler.input = make(chan somaTeamRequest, 64)
 	teamReadHandler.shutdown = make(chan bool)
 	teamReadHandler.conn = conn
-	handlerMap["teamReadHandler"] = teamReadHandler
+	handlerMap["teamReadHandler"] = &teamReadHandler
 	go teamReadHandler.run()
 }
 
@@ -249,7 +249,7 @@ func spawnTeamWriteHandler() {
 	teamWriteHandler.input = make(chan somaTeamRequest, 64)
 	teamWriteHandler.shutdown = make(chan bool)
 	teamWriteHandler.conn = conn
-	handlerMap["teamWriteHandler"] = teamWriteHandler
+	handlerMap["teamWriteHandler"] = &teamWriteHandler
 	go teamWriteHandler.run()
 }
 
@@ -258,7 +258,7 @@ func spawnNodeReadHandler() {
 	nodeReadHandler.input = make(chan somaNodeRequest, 64)
 	nodeReadHandler.shutdown = make(chan bool)
 	nodeReadHandler.conn = conn
-	handlerMap["nodeReadHandler"] = nodeReadHandler
+	handlerMap["nodeReadHandler"] = &nodeReadHandler
 	go nodeReadHandler.run()
 }
 
@@ -267,7 +267,7 @@ func spawnNodeWriteHandler() {
 	nodeWriteHandler.input = make(chan somaNodeRequest, 64)
 	nodeWriteHandler.shutdown = make(chan bool)
 	nodeWriteHandler.conn = conn
-	handlerMap["nodeWriteHandler"] = nodeWriteHandler
+	handlerMap["nodeWriteHandler"] = &nodeWriteHandler
 	go nodeWriteHandler.run()
 }
 
@@ -276,7 +276,7 @@ func spawnServerReadHandler() {
 	serverReadHandler.input = make(chan somaServerRequest, 64)
 	serverReadHandler.shutdown = make(chan bool)
 	serverReadHandler.conn = conn
-	handlerMap["serverReadHandler"] = serverReadHandler
+	handlerMap["serverReadHandler"] = &serverReadHandler
 	go serverReadHandler.run()
 }
 
@@ -285,7 +285,7 @@ func spawnServerWriteHandler() {
 	serverWriteHandler.input = make(chan somaServerRequest, 64)
 	serverWriteHandler.shutdown = make(chan bool)
 	serverWriteHandler.conn = conn
-	handlerMap["serverWriteHandler"] = serverWriteHandler
+	handlerMap["serverWriteHandler"] = &serverWriteHandler
 	go serverWriteHandler.run()
 }
 
@@ -294,7 +294,7 @@ func spawnUnitReadHandler() {
 	unitReadHandler.input = make(chan somaUnitRequest, 64)
 	unitReadHandler.shutdown = make(chan bool)
 	unitReadHandler.conn = conn
-	handlerMap["unitReadHandler"] = unitReadHandler
+	handlerMap["unitReadHandler"] = &unitReadHandler
 	go unitReadHandler.run()
 }
 
@@ -303,7 +303,7 @@ func spawnUnitWriteHandler() {
 	unitWriteHandler.input = make(chan somaUnitRequest, 64)
 	unitWriteHandler.shutdown = make(chan bool)
 	unitWriteHandler.conn = conn
-	handlerMap["unitWriteHandler"] = unitWriteHandler
+	handlerMap["unitWriteHandler"] = &unitWriteHandler
 	go unitWriteHandler.run()
 }
 
@@ -312,7 +312,7 @@ func spawnProviderReadHandler() {
 	providerReadHandler.input = make(chan somaProviderRequest, 64)
 	providerReadHandler.shutdown = make(chan bool)
 	providerReadHandler.conn = conn
-	handlerMap["providerReadHandler"] = providerReadHandler
+	handlerMap["providerReadHandler"] = &providerReadHandler
 	go providerReadHandler.run()
 }
 
@@ -321,7 +321,7 @@ func spawnProviderWriteHandler() {
 	providerWriteHandler.input = make(chan somaProviderRequest, 64)
 	providerWriteHandler.shutdown = make(chan bool)
 	providerWriteHandler.conn = conn
-	handlerMap["providerWriteHandler"] = providerWriteHandler
+	handlerMap["providerWriteHandler"] = &providerWriteHandler
 	go providerWriteHandler.run()
 }
 
@@ -330,7 +330,7 @@ func spawnMetricReadHandler() {
 	metricReadHandler.input = make(chan somaMetricRequest, 64)
 	metricReadHandler.shutdown = make(chan bool)
 	metricReadHandler.conn = conn
-	handlerMap["metricReadHandler"] = metricReadHandler
+	handlerMap["metricReadHandler"] = &metricReadHandler
 	go metricReadHandler.run()
 }
 
@@ -339,7 +339,7 @@ func spawnMetricWriteHandler() {
 	metricWriteHandler.input = make(chan somaMetricRequest, 64)
 	metricWriteHandler.shutdown = make(chan bool)
 	metricWriteHandler.conn = conn
-	handlerMap["metricWriteHandler"] = metricWriteHandler
+	handlerMap["metricWriteHandler"] = &metricWriteHandler
 	go metricWriteHandler.run()
 }
 
@@ -348,7 +348,7 @@ func spawnModeReadHandler() {
 	modeReadHandler.input = make(chan somaModeRequest, 64)
 	modeReadHandler.shutdown = make(chan bool)
 	modeReadHandler.conn = conn
-	handlerMap["modeReadHandler"] = modeReadHandler
+	handlerMap["modeReadHandler"] = &modeReadHandler
 	go modeReadHandler.run()
 }
 
@@ -357,7 +357,7 @@ func spawnModeWriteHandler() {
 	modeWriteHandler.input = make(chan somaModeRequest, 64)
 	modeWriteHandler.shutdown = make(chan bool)
 	modeWriteHandler.conn = conn
-	handlerMap["modeWriteHandler"] = modeWriteHandler
+	handlerMap["modeWriteHandler"] = &modeWriteHandler
 	go modeWriteHandler.run()
 }
 
@@ -366,7 +366,7 @@ func spawnUserReadHandler() {
 	userReadHandler.input = make(chan somaUserRequest, 64)
 	userReadHandler.shutdown = make(chan bool)
 	userReadHandler.conn = conn
-	handlerMap["userReadHandler"] = userReadHandler
+	handlerMap["userReadHandler"] = &userReadHandler
 	go userReadHandler.run()
 }
 
@@ -375,7 +375,7 @@ func spawnUserWriteHandler() {
 	userWriteHandler.input = make(chan somaUserRequest, 64)
 	userWriteHandler.shutdown = make(chan bool)
 	userWriteHandler.conn = conn
-	handlerMap["userWriteHandler"] = userWriteHandler
+	handlerMap["userWriteHandler"] = &userWriteHandler
 	go userWriteHandler.run()
 }
 
@@ -384,7 +384,7 @@ func spawnMonitoringReadHandler() {
 	monitoringReadHandler.input = make(chan somaMonitoringRequest, 64)
 	monitoringReadHandler.shutdown = make(chan bool)
 	monitoringReadHandler.conn = conn
-	handlerMap["monitoringReadHandler"] = monitoringReadHandler
+	handlerMap["monitoringReadHandler"] = &monitoringReadHandler
 	go monitoringReadHandler.run()
 }
 
@@ -393,7 +393,7 @@ func spawnMonitoringWriteHandler() {
 	monitoringWriteHandler.input = make(chan somaMonitoringRequest, 64)
 	monitoringWriteHandler.shutdown = make(chan bool)
 	monitoringWriteHandler.conn = conn
-	handlerMap["monitoringWriteHandler"] = monitoringWriteHandler
+	handlerMap["monitoringWriteHandler"] = &monitoringWriteHandler
 	go monitoringWriteHandler.run()
 }
 
@@ -402,7 +402,7 @@ func spawnCapabilityReadHandler() {
 	capabilityReadHandler.input = make(chan somaCapabilityRequest, 64)
 	capabilityReadHandler.shutdown = make(chan bool)
 	capabilityReadHandler.conn = conn
-	handlerMap["capabilityReadHandler"] = capabilityReadHandler
+	handlerMap["capabilityReadHandler"] = &capabilityReadHandler
 	go capabilityReadHandler.run()
 }
 
@@ -411,7 +411,7 @@ func spawnCapabilityWriteHandler() {
 	capabilityWriteHandler.input = make(chan somaCapabilityRequest, 64)
 	capabilityWriteHandler.shutdown = make(chan bool)
 	capabilityWriteHandler.conn = conn
-	handlerMap["capabilityWriteHandler"] = capabilityWriteHandler
+	handlerMap["capabilityWriteHandler"] = &capabilityWriteHandler
 	go capabilityWriteHandler.run()
 }
 
@@ -420,7 +420,7 @@ func spawnPropertyReadHandler() {
 	propertyReadHandler.input = make(chan somaPropertyRequest, 64)
 	propertyReadHandler.shutdown = make(chan bool)
 	propertyReadHandler.conn = conn
-	handlerMap["propertyReadHandler"] = propertyReadHandler
+	handlerMap["propertyReadHandler"] = &propertyReadHandler
 	go propertyReadHandler.run()
 }
 
@@ -429,7 +429,7 @@ func spawnPropertyWriteHandler() {
 	propertyWriteHandler.input = make(chan somaPropertyRequest, 64)
 	propertyWriteHandler.shutdown = make(chan bool)
 	propertyWriteHandler.conn = conn
-	handlerMap["propertyWriteHandler"] = propertyWriteHandler
+	handlerMap["propertyWriteHandler"] = &propertyWriteHandler
 	go propertyWriteHandler.run()
 }
 
@@ -438,7 +438,7 @@ func spawnAttributeReadHandler() {
 	attributeReadHandler.input = make(chan somaAttributeRequest, 64)
 	attributeReadHandler.shutdown = make(chan bool)
 	attributeReadHandler.conn = conn
-	handlerMap["attributeReadHandler"] = attributeReadHandler
+	handlerMap["attributeReadHandler"] = &attributeReadHandler
 	go attributeReadHandler.run()
 }
 
@@ -447,7 +447,7 @@ func spawnAttributeWriteHandler() {
 	attributeWriteHandler.input = make(chan somaAttributeRequest, 64)
 	attributeWriteHandler.shutdown = make(chan bool)
 	attributeWriteHandler.conn = conn
-	handlerMap["attributeWriteHandler"] = attributeWriteHandler
+	handlerMap["attributeWriteHandler"] = &attributeWriteHandler
 	go attributeWriteHandler.run()
 }
 
@@ -456,7 +456,7 @@ func spawnRepositoryReadHandler() {
 	repositoryReadHandler.input = make(chan somaRepositoryRequest, 64)
 	repositoryReadHandler.shutdown = make(chan bool)
 	repositoryReadHandler.conn = conn
-	handlerMap["repositoryReadHandler"] = repositoryReadHandler
+	handlerMap["repositoryReadHandler"] = &repositoryReadHandler
 	go repositoryReadHandler.run()
 }
 
@@ -465,7 +465,7 @@ func spawnBucketReadHandler() {
 	bucketReadHandler.input = make(chan somaBucketRequest, 64)
 	bucketReadHandler.shutdown = make(chan bool)
 	bucketReadHandler.conn = conn
-	handlerMap["bucketReadHandler"] = bucketReadHandler
+	handlerMap["bucketReadHandler"] = &bucketReadHandler
 	go bucketReadHandler.run()
 }
 
@@ -474,7 +474,7 @@ func spawnGroupReadHandler() {
 	groupReadHandler.input = make(chan somaGroupRequest, 64)
 	groupReadHandler.shutdown = make(chan bool)
 	groupReadHandler.conn = conn
-	handlerMap["groupReadHandler"] = groupReadHandler
+	handlerMap["groupReadHandler"] = &groupReadHandler
 	go groupReadHandler.run()
 }
 
@@ -483,7 +483,7 @@ func spawnClusterReadHandler() {
 	clusterReadHandler.input = make(chan somaClusterRequest, 64)
 	clusterReadHandler.shutdown = make(chan bool)
 	clusterReadHandler.conn = conn
-	handlerMap["clusterReadHandler"] = clusterReadHandler
+	handlerMap["clusterReadHandler"] = &clusterReadHandler
 	go clusterReadHandler.run()
 }
 
@@ -493,7 +493,7 @@ func spawnForestCustodian() {
 	fC.system = make(chan msg.Request, 32)
 	fC.shutdown = make(chan bool)
 	fC.conn = conn
-	handlerMap["forestCustodian"] = fC
+	handlerMap["forestCustodian"] = &fC
 	go fC.run()
 }
 
@@ -503,7 +503,7 @@ func spawnGuidePost() {
 	gP.system = make(chan msg.Request, 32)
 	gP.shutdown = make(chan bool)
 	gP.conn = conn
-	handlerMap["guidePost"] = gP
+	handlerMap["guidePost"] = &gP
 	go gP.run()
 }
 
@@ -512,7 +512,7 @@ func spawnCheckConfigurationReadHandler() {
 	checkConfigurationReadHandler.input = make(chan somaCheckConfigRequest, 64)
 	checkConfigurationReadHandler.shutdown = make(chan bool)
 	checkConfigurationReadHandler.conn = conn
-	handlerMap["checkConfigurationReadHandler"] = checkConfigurationReadHandler
+	handlerMap["checkConfigurationReadHandler"] = &checkConfigurationReadHandler
 	go checkConfigurationReadHandler.run()
 }
 
@@ -520,7 +520,7 @@ func spawnLifeCycle() {
 	var lifeCycleHandler lifeCycle
 	lifeCycleHandler.shutdown = make(chan bool)
 	lifeCycleHandler.conn = conn
-	handlerMap["lifeCycle"] = lifeCycleHandler
+	handlerMap["lifeCycle"] = &lifeCycleHandler
 	go lifeCycleHandler.run()
 }
 
@@ -529,7 +529,7 @@ func spawnDeploymentHandler() {
 	deploymentHandler.input = make(chan somaDeploymentRequest, 64)
 	deploymentHandler.shutdown = make(chan bool)
 	deploymentHandler.conn = conn
-	handlerMap["deploymentHandler"] = deploymentHandler
+	handlerMap["deploymentHandler"] = &deploymentHandler
 	go deploymentHandler.run()
 }
 
@@ -538,7 +538,7 @@ func spawnHostDeploymentHandler() {
 	hostDeploymentHandler.input = make(chan somaHostDeploymentRequest, 64)
 	hostDeploymentHandler.shutdown = make(chan bool)
 	hostDeploymentHandler.conn = conn
-	handlerMap["hostDeploymentHandler"] = hostDeploymentHandler
+	handlerMap["hostDeploymentHandler"] = &hostDeploymentHandler
 	go hostDeploymentHandler.run()
 }
 
@@ -547,7 +547,7 @@ func spawnValidityReadHandler() {
 	validityReadHandler.input = make(chan somaValidityRequest, 64)
 	validityReadHandler.shutdown = make(chan bool)
 	validityReadHandler.conn = conn
-	handlerMap["validityReadHandler"] = validityReadHandler
+	handlerMap["validityReadHandler"] = &validityReadHandler
 	go validityReadHandler.run()
 }
 
@@ -556,7 +556,7 @@ func spawnValidityWriteHandler() {
 	validityWriteHandler.input = make(chan somaValidityRequest, 64)
 	validityWriteHandler.shutdown = make(chan bool)
 	validityWriteHandler.conn = conn
-	handlerMap["validityWriteHandler"] = validityWriteHandler
+	handlerMap["validityWriteHandler"] = &validityWriteHandler
 	go validityWriteHandler.run()
 }
 
@@ -583,7 +583,7 @@ func spawnSupervisorHandler() {
 	supervisorHandler.kexExpiry = SomaCfg.Auth.KexExpirySeconds
 	supervisorHandler.credExpiry = SomaCfg.Auth.CredentialExpiryDays
 	supervisorHandler.activation = SomaCfg.Auth.Activation
-	handlerMap[`supervisor`] = supervisorHandler
+	handlerMap[`supervisor`] = &supervisorHandler
 	go supervisorHandler.run()
 }
 
@@ -592,7 +592,7 @@ func spawnJobDelay() {
 	handler.input = make(chan waitSpec, 128)
 	handler.shutdown = make(chan bool)
 	handler.notify = make(chan string, 256)
-	handlerMap[`jobDelay`] = handler
+	handlerMap[`jobDelay`] = &handler
 	go handler.run()
 }
 
@@ -601,7 +601,7 @@ func spawnJobReadHandler() {
 	handler.input = make(chan msg.Request, 256)
 	handler.shutdown = make(chan bool)
 	handler.conn = conn
-	handlerMap[`jobs_r`] = handler
+	handlerMap[`jobs_r`] = &handler
 	go handler.run()
 }
 
@@ -610,7 +610,7 @@ func spawnOutputTreeHandler() {
 	handler.input = make(chan msg.Request, 128)
 	handler.shutdown = make(chan bool)
 	handler.conn = conn
-	handlerMap[`tree_r`] = handler
+	handlerMap[`tree_r`] = &handler
 	go handler.run()
 }
 
@@ -618,7 +618,7 @@ func spawnGrimReaperHandler() {
 	var reaper grimReaper
 	reaper.system = make(chan msg.Request, 1)
 	reaper.conn = conn
-	handlerMap[`grimReaper`] = reaper
+	handlerMap[`grimReaper`] = &reaper
 	go reaper.run()
 }
 

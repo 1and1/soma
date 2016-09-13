@@ -19,7 +19,7 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["levelReadHandler"].(somaLevelReadHandler)
+	handler := handlerMap["levelReadHandler"].(*somaLevelReadHandler)
 	handler.input <- somaLevelRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -58,7 +58,7 @@ func ShowLevel(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["levelReadHandler"].(somaLevelReadHandler)
+	handler := handlerMap["levelReadHandler"].(*somaLevelReadHandler)
 	handler.input <- somaLevelRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -89,7 +89,7 @@ func AddLevel(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["levelWriteHandler"].(somaLevelWriteHandler)
+	handler := handlerMap["levelWriteHandler"].(*somaLevelWriteHandler)
 	handler.input <- somaLevelRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -113,7 +113,7 @@ func DeleteLevel(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["levelWriteHandler"].(somaLevelWriteHandler)
+	handler := handlerMap["levelWriteHandler"].(*somaLevelWriteHandler)
 	handler.input <- somaLevelRequest{
 		action: "delete",
 		reply:  returnChannel,

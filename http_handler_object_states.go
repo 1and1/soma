@@ -19,7 +19,7 @@ func ListObjectStates(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaObjectStateResult)
 
-	handler := handlerMap["objectStateReadHandler"].(somaObjectStateReadHandler)
+	handler := handlerMap["objectStateReadHandler"].(*somaObjectStateReadHandler)
 	handler.input <- somaObjectStateRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -50,7 +50,7 @@ func ShowObjectState(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaObjectStateResult)
 
-	handler := handlerMap["objectStateReadHandler"].(somaObjectStateReadHandler)
+	handler := handlerMap["objectStateReadHandler"].(*somaObjectStateReadHandler)
 	handler.input <- somaObjectStateRequest{
 		action: "show",
 		state:  params.ByName("state"),
@@ -98,7 +98,7 @@ func AddObjectState(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	handler := handlerMap["objectStateWriteHandler"].(somaObjectStateWriteHandler)
+	handler := handlerMap["objectStateWriteHandler"].(*somaObjectStateWriteHandler)
 	handler.input <- somaObjectStateRequest{
 		action: "add",
 		state:  clientRequest.State.Name,
@@ -147,7 +147,7 @@ func DeleteObjectState(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaObjectStateResult)
 
-	handler := handlerMap["objectStateWriteHandler"].(somaObjectStateWriteHandler)
+	handler := handlerMap["objectStateWriteHandler"].(*somaObjectStateWriteHandler)
 	handler.input <- somaObjectStateRequest{
 		action: "delete",
 		state:  params.ByName("state"),
@@ -205,7 +205,7 @@ func RenameObjectState(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	handler := handlerMap["objectStateWriteHandler"].(somaObjectStateWriteHandler)
+	handler := handlerMap["objectStateWriteHandler"].(*somaObjectStateWriteHandler)
 	handler.input <- somaObjectStateRequest{
 		action: "rename",
 		state:  params.ByName("state"),

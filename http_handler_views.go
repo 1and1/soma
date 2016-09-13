@@ -21,7 +21,7 @@ func ListView(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["viewReadHandler"].(somaViewReadHandler)
+	handler := handlerMap["viewReadHandler"].(*somaViewReadHandler)
 	handler.input <- somaViewRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -40,7 +40,7 @@ func ShowView(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["viewReadHandler"].(somaViewReadHandler)
+	handler := handlerMap["viewReadHandler"].(*somaViewReadHandler)
 	handler.input <- somaViewRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -75,7 +75,7 @@ func AddView(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
+	handler := handlerMap["viewWriteHandler"].(*somaViewWriteHandler)
 	handler.input <- somaViewRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -97,7 +97,7 @@ func DeleteView(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
+	handler := handlerMap["viewWriteHandler"].(*somaViewWriteHandler)
 	handler.input <- somaViewRequest{
 		action: "delete",
 		reply:  returnChannel,
@@ -126,7 +126,7 @@ func RenameView(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["viewWriteHandler"].(somaViewWriteHandler)
+	handler := handlerMap["viewWriteHandler"].(*somaViewWriteHandler)
 	handler.input <- somaViewRequest{
 		action: "rename",
 		reply:  returnChannel,

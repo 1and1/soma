@@ -19,7 +19,7 @@ func ListDatacenters(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
+	handler := handlerMap["datacenterReadHandler"].(*somaDatacenterReadHandler)
 	handler.input <- somaDatacenterRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func SyncDatacenters(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
+	handler := handlerMap["datacenterReadHandler"].(*somaDatacenterReadHandler)
 	handler.input <- somaDatacenterRequest{
 		action: `sync`,
 		reply:  returnChannel,
@@ -88,7 +88,7 @@ func ShowDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Pa
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
+	handler := handlerMap["datacenterReadHandler"].(*somaDatacenterReadHandler)
 	handler.input <- somaDatacenterRequest{
 		action: "show",
 		Datacenter: proto.Datacenter{
@@ -155,7 +155,7 @@ func AddDatacenter(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["datacenterWriteHandler"].(somaDatacenterWriteHandler)
+	handler := handlerMap["datacenterWriteHandler"].(*somaDatacenterWriteHandler)
 	handler.input <- somaDatacenterRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -237,7 +237,7 @@ func DeleteDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["datacenterWriteHandler"].(somaDatacenterWriteHandler)
+	handler := handlerMap["datacenterWriteHandler"].(*somaDatacenterWriteHandler)
 	handler.input <- somaDatacenterRequest{
 		action: "delete",
 		reply:  returnChannel,
@@ -325,7 +325,7 @@ func RenameDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["datacenterWriteHandler"].(somaDatacenterWriteHandler)
+	handler := handlerMap["datacenterWriteHandler"].(*somaDatacenterWriteHandler)
 	handler.input <- somaDatacenterRequest{
 		action: "rename",
 		Datacenter: proto.Datacenter{

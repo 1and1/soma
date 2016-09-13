@@ -19,7 +19,7 @@ func ListAttribute(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["attributeReadHandler"].(somaAttributeReadHandler)
+	handler := handlerMap["attributeReadHandler"].(*somaAttributeReadHandler)
 	handler.input <- somaAttributeRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowAttribute(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["attributeReadHandler"].(somaAttributeReadHandler)
+	handler := handlerMap["attributeReadHandler"].(*somaAttributeReadHandler)
 	handler.input <- somaAttributeRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["attributeWriteHandler"].(somaAttributeWriteHandler)
+	handler := handlerMap["attributeWriteHandler"].(*somaAttributeWriteHandler)
 	handler.input <- somaAttributeRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -92,7 +92,7 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["attributeWriteHandler"].(somaAttributeWriteHandler)
+	handler := handlerMap["attributeWriteHandler"].(*somaAttributeWriteHandler)
 	handler.input <- somaAttributeRequest{
 		action: "delete",
 		reply:  returnChannel,

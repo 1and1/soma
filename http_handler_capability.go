@@ -14,7 +14,7 @@ func ListCapability(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["capabilityReadHandler"].(somaCapabilityReadHandler)
+	handler := handlerMap["capabilityReadHandler"].(*somaCapabilityReadHandler)
 	handler.input <- somaCapabilityRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -58,7 +58,7 @@ func ShowCapability(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["capabilityReadHandler"].(somaCapabilityReadHandler)
+	handler := handlerMap["capabilityReadHandler"].(*somaCapabilityReadHandler)
 	handler.input <- somaCapabilityRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -84,7 +84,7 @@ func AddCapability(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["capabilityWriteHandler"].(somaCapabilityWriteHandler)
+	handler := handlerMap["capabilityWriteHandler"].(*somaCapabilityWriteHandler)
 	handler.input <- somaCapabilityRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -104,7 +104,7 @@ func DeleteCapability(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["capabilityWriteHandler"].(somaCapabilityWriteHandler)
+	handler := handlerMap["capabilityWriteHandler"].(*somaCapabilityWriteHandler)
 	handler.input <- somaCapabilityRequest{
 		action: "delete",
 		reply:  returnChannel,

@@ -52,7 +52,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	switch cReq.SystemOperation.Request {
 	case `stop_repository`:
-		handler := handlerMap[`guidePost`].(guidePost)
+		handler := handlerMap[`guidePost`].(*guidePost)
 		handler.system <- msg.Request{
 			Type:       `guidepost`,
 			Action:     `systemoperation`,
@@ -62,7 +62,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			System:     *sys,
 		}
 	case `rebuild_repository`, `restart_repository`:
-		handler := handlerMap[`forestCustodian`].(forestCustodian)
+		handler := handlerMap[`forestCustodian`].(*forestCustodian)
 		handler.system <- msg.Request{
 			Type:       `forestcustodian`,
 			Action:     `systemoperation`,
@@ -72,7 +72,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			System:     *sys,
 		}
 	case `shutdown`:
-		handler := handlerMap[`grimReaper`].(grimReaper)
+		handler := handlerMap[`grimReaper`].(*grimReaper)
 		handler.system <- msg.Request{
 			Type:       `grimReaper`,
 			Action:     `shutdown`,

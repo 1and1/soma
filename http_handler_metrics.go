@@ -19,7 +19,7 @@ func ListMetric(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["metricReadHandler"].(somaMetricReadHandler)
+	handler := handlerMap["metricReadHandler"].(*somaMetricReadHandler)
 	handler.input <- somaMetricRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowMetric(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["metricReadHandler"].(somaMetricReadHandler)
+	handler := handlerMap["metricReadHandler"].(*somaMetricReadHandler)
 	handler.input <- somaMetricRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddMetric(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["metricWriteHandler"].(somaMetricWriteHandler)
+	handler := handlerMap["metricWriteHandler"].(*somaMetricWriteHandler)
 	handler.input <- somaMetricRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -89,7 +89,7 @@ func DeleteMetric(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["metricWriteHandler"].(somaMetricWriteHandler)
+	handler := handlerMap["metricWriteHandler"].(*somaMetricWriteHandler)
 	handler.input <- somaMetricRequest{
 		action: "delete",
 		reply:  returnChannel,

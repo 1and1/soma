@@ -19,7 +19,7 @@ func ListPredicate(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["predicateReadHandler"].(somaPredicateReadHandler)
+	handler := handlerMap["predicateReadHandler"].(*somaPredicateReadHandler)
 	handler.input <- somaPredicateRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowPredicate(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["predicateReadHandler"].(somaPredicateReadHandler)
+	handler := handlerMap["predicateReadHandler"].(*somaPredicateReadHandler)
 	handler.input <- somaPredicateRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddPredicate(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["predicateWriteHandler"].(somaPredicateWriteHandler)
+	handler := handlerMap["predicateWriteHandler"].(*somaPredicateWriteHandler)
 	handler.input <- somaPredicateRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -91,7 +91,7 @@ func DeletePredicate(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["predicateWriteHandler"].(somaPredicateWriteHandler)
+	handler := handlerMap["predicateWriteHandler"].(*somaPredicateWriteHandler)
 	handler.input <- somaPredicateRequest{
 		action: "delete",
 		reply:  returnChannel,

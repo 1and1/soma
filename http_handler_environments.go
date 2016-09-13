@@ -20,7 +20,7 @@ func ListEnvironments(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
-	handler := handlerMap["environmentReadHandler"].(somaEnvironmentReadHandler)
+	handler := handlerMap["environmentReadHandler"].(*somaEnvironmentReadHandler)
 	handler.input <- somaEnvironmentRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -60,7 +60,7 @@ func ShowEnvironment(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
-	handler := handlerMap["environmentReadHandler"].(somaEnvironmentReadHandler)
+	handler := handlerMap["environmentReadHandler"].(*somaEnvironmentReadHandler)
 	handler.input <- somaEnvironmentRequest{
 		action:      "show",
 		environment: params.ByName("environment"),
@@ -114,7 +114,7 @@ func AddEnvironment(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	handler := handlerMap["environmentWriteHandler"].(somaEnvironmentWriteHandler)
+	handler := handlerMap["environmentWriteHandler"].(*somaEnvironmentWriteHandler)
 	handler.input <- somaEnvironmentRequest{
 		action:      "add",
 		environment: clientRequest.Environment.Name,
@@ -166,7 +166,7 @@ func DeleteEnvironment(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaEnvironmentResult)
 
-	handler := handlerMap["environmentWriteHandler"].(somaEnvironmentWriteHandler)
+	handler := handlerMap["environmentWriteHandler"].(*somaEnvironmentWriteHandler)
 	handler.input <- somaEnvironmentRequest{
 		action:      "delete",
 		environment: params.ByName("environment"),
@@ -212,7 +212,7 @@ func RenameEnvironment(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	handler := handlerMap["environmentWriteHandler"].(somaEnvironmentWriteHandler)
+	handler := handlerMap["environmentWriteHandler"].(*somaEnvironmentWriteHandler)
 	handler.input <- somaEnvironmentRequest{
 		action:      "rename",
 		environment: params.ByName("environment"),

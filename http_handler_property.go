@@ -49,7 +49,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		SendPropertyReply(&w, &somaResult{})
 	}
 
-	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
+	handler := handlerMap["propertyReadHandler"].(*somaPropertyReadHandler)
 	handler.input <- req
 	result := <-returnChannel
 
@@ -147,7 +147,7 @@ func ShowProperty(w http.ResponseWriter, r *http.Request,
 		SendPropertyReply(&w, &somaResult{})
 	}
 
-	handler := handlerMap["propertyReadHandler"].(somaPropertyReadHandler)
+	handler := handlerMap["propertyReadHandler"].(*somaPropertyReadHandler)
 	handler.input <- req
 	result := <-returnChannel
 	SendPropertyReply(&w, &result)
@@ -212,7 +212,7 @@ func AddProperty(w http.ResponseWriter, r *http.Request,
 		SendPropertyReply(&w, &somaResult{})
 	}
 
-	handler := handlerMap["propertyWriteHandler"].(somaPropertyWriteHandler)
+	handler := handlerMap["propertyWriteHandler"].(*somaPropertyWriteHandler)
 	handler.input <- req
 	result := <-returnChannel
 	SendPropertyReply(&w, &result)
@@ -261,7 +261,7 @@ func DeleteProperty(w http.ResponseWriter, r *http.Request,
 		SendPropertyReply(&w, &somaResult{})
 	}
 
-	handler := handlerMap["propertyWriteHandler"].(somaPropertyWriteHandler)
+	handler := handlerMap["propertyWriteHandler"].(*somaPropertyWriteHandler)
 	handler.input <- req
 	result := <-returnChannel
 	SendPropertyReply(&w, &result)

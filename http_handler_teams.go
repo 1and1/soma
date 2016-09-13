@@ -20,7 +20,7 @@ func ListTeam(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
+	handler := handlerMap["teamReadHandler"].(*somaTeamReadHandler)
 	handler.input <- somaTeamRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -58,7 +58,7 @@ func ShowTeam(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
+	handler := handlerMap["teamReadHandler"].(*somaTeamReadHandler)
 	handler.input <- somaTeamRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -80,7 +80,7 @@ func SyncTeam(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["teamReadHandler"].(somaTeamReadHandler)
+	handler := handlerMap["teamReadHandler"].(*somaTeamReadHandler)
 	handler.input <- somaTeamRequest{
 		action: "sync",
 		reply:  returnChannel,
@@ -109,7 +109,7 @@ func AddTeam(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)
+	handler := handlerMap["teamWriteHandler"].(*somaTeamWriteHandler)
 	handler.input <- somaTeamRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -140,7 +140,7 @@ func UpdateTeam(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)
+	handler := handlerMap["teamWriteHandler"].(*somaTeamWriteHandler)
 	handler.input <- somaTeamRequest{
 		action: `update`,
 		reply:  returnChannel,
@@ -165,7 +165,7 @@ func DeleteTeam(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["teamWriteHandler"].(somaTeamWriteHandler)
+	handler := handlerMap["teamWriteHandler"].(*somaTeamWriteHandler)
 	handler.input <- somaTeamRequest{
 		action: "delete",
 		reply:  returnChannel,

@@ -20,7 +20,7 @@ func ListValidity(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["validityReadHandler"].(somaValidityReadHandler)
+	handler := handlerMap["validityReadHandler"].(*somaValidityReadHandler)
 	handler.input <- somaValidityRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -39,7 +39,7 @@ func ShowValidity(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["validityReadHandler"].(somaValidityReadHandler)
+	handler := handlerMap["validityReadHandler"].(*somaValidityReadHandler)
 	handler.input <- somaValidityRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -70,7 +70,7 @@ func AddValidity(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["validityWriteHandler"].(somaValidityWriteHandler)
+	handler := handlerMap["validityWriteHandler"].(*somaValidityWriteHandler)
 	handler.input <- somaValidityRequest{
 		action:   "add",
 		reply:    returnChannel,
@@ -90,7 +90,7 @@ func DeleteValidity(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["validityWriteHandler"].(somaValidityWriteHandler)
+	handler := handlerMap["validityWriteHandler"].(*somaValidityWriteHandler)
 	handler.input <- somaValidityRequest{
 		action: "delete",
 		reply:  returnChannel,

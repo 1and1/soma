@@ -17,7 +17,7 @@ func ListGroup(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["groupReadHandler"].(somaGroupReadHandler)
+	handler := handlerMap["groupReadHandler"].(*somaGroupReadHandler)
 	handler.input <- somaGroupRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -51,7 +51,7 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["groupReadHandler"].(somaGroupReadHandler)
+	handler := handlerMap["groupReadHandler"].(*somaGroupReadHandler)
 	handler.input <- somaGroupRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -68,7 +68,7 @@ func ListGroupMembers(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["groupReadHandler"].(somaGroupReadHandler)
+	handler := handlerMap["groupReadHandler"].(*somaGroupReadHandler)
 	handler.input <- somaGroupRequest{
 		action: "member_list",
 		reply:  returnChannel,
@@ -100,7 +100,7 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      "create_group",
@@ -127,7 +127,7 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	var rAct string
 	switch {
 	case len(*cReq.Group.MemberGroups) > 0:
@@ -185,7 +185,7 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      fmt.Sprintf("add_%s_property_to_group", params.ByName("type")),
@@ -234,7 +234,7 @@ func DeletePropertyFromGroup(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap[`guidePost`].(guidePost)
+	handler := handlerMap[`guidePost`].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: `group`,
 		Action: fmt.Sprintf("delete_%s_property_from_group",

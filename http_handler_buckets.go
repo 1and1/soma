@@ -17,7 +17,7 @@ func ListBucket(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["bucketReadHandler"].(somaBucketReadHandler)
+	handler := handlerMap["bucketReadHandler"].(*somaBucketReadHandler)
 	handler.input <- somaBucketRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -54,7 +54,7 @@ func ShowBucket(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["bucketReadHandler"].(somaBucketReadHandler)
+	handler := handlerMap["bucketReadHandler"].(*somaBucketReadHandler)
 	handler.input <- somaBucketRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -86,7 +86,7 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "bucket",
 		Action:      "create_bucket",
@@ -135,7 +135,7 @@ func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "bucket",
 		Action:      fmt.Sprintf("add_%s_property_to_bucket", params.ByName("type")),
@@ -166,7 +166,7 @@ func DeletePropertyFromBucket(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: `bucket`,
 		Action: fmt.Sprintf("delete_%s_property_from_bucket",

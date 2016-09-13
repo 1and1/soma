@@ -20,7 +20,7 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	handler := handlerMap["serverReadHandler"].(*somaServerReadHandler)
 	handler.input <- somaServerRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -40,7 +40,7 @@ func SyncServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	handler := handlerMap["serverReadHandler"].(*somaServerReadHandler)
 	handler.input <- somaServerRequest{
 		action: "sync",
 		reply:  returnChannel,
@@ -60,7 +60,7 @@ func ShowServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	handler := handlerMap["serverReadHandler"].(*somaServerReadHandler)
 	handler.input <- somaServerRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -82,7 +82,7 @@ func SearchServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverReadHandler"].(somaServerReadHandler)
+	handler := handlerMap["serverReadHandler"].(*somaServerReadHandler)
 	ssr := somaServerRequest{
 		reply: returnChannel,
 	}
@@ -126,7 +126,7 @@ func AddServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler := handlerMap["serverWriteHandler"].(*somaServerWriteHandler)
 	handler.input <- somaServerRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -160,7 +160,7 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler := handlerMap["serverWriteHandler"].(*somaServerWriteHandler)
 	handler.input <- somaServerRequest{
 		action: action,
 		reply:  returnChannel,
@@ -194,7 +194,7 @@ func UpdateServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler := handlerMap["serverWriteHandler"].(*somaServerWriteHandler)
 	handler.input <- somaServerRequest{
 		action: "update",
 		reply:  returnChannel,
@@ -235,7 +235,7 @@ func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["serverWriteHandler"].(somaServerWriteHandler)
+	handler := handlerMap["serverWriteHandler"].(*somaServerWriteHandler)
 	handler.input <- somaServerRequest{
 		action: "insert-null",
 		reply:  returnChannel,

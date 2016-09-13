@@ -76,7 +76,7 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 				pair := bytes.SplitN(payload, []byte(":"), 2)
 				if len(pair) == 2 {
 					returnChannel := make(chan msg.Result)
-					super := handlerMap[`supervisor`].(supervisor)
+					super := handlerMap[`supervisor`].(*supervisor)
 					super.input <- msg.Request{
 						Type:   `supervisor`,
 						Action: `basic_auth`,

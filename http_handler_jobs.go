@@ -12,7 +12,7 @@ func JobDelay(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan bool)
-	handler := handlerMap[`jobDelay`].(jobDelay)
+	handler := handlerMap[`jobDelay`].(*jobDelay)
 	handler.input <- waitSpec{
 		JobId: params.ByName(`jobid`),
 		Reply: returnChannel,
@@ -35,7 +35,7 @@ func ListJobs(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`jobs_r`].(jobsRead)
+	handler := handlerMap[`jobs_r`].(*jobsRead)
 	handler.input <- msg.Request{
 		Type:       `job`,
 		Action:     `list`,
@@ -59,7 +59,7 @@ func ShowJob(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`jobs_r`].(jobsRead)
+	handler := handlerMap[`jobs_r`].(*jobsRead)
 	handler.input <- msg.Request{
 		Type:       `job`,
 		Action:     `show`,
@@ -91,7 +91,7 @@ func SearchJob(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`jobs_r`].(jobsRead)
+	handler := handlerMap[`jobs_r`].(*jobsRead)
 	handler.input <- msg.Request{
 		Type:       `job`,
 		Action:     `search/idlist`,

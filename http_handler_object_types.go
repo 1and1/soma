@@ -19,7 +19,7 @@ func ListObjectTypes(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
-	handler := handlerMap["objectTypeReadHandler"].(somaObjectTypeReadHandler)
+	handler := handlerMap["objectTypeReadHandler"].(*somaObjectTypeReadHandler)
 	handler.input <- somaObjectTypeRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -50,7 +50,7 @@ func ShowObjectType(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
-	handler := handlerMap["objectTypeReadHandler"].(somaObjectTypeReadHandler)
+	handler := handlerMap["objectTypeReadHandler"].(*somaObjectTypeReadHandler)
 	handler.input <- somaObjectTypeRequest{
 		action:     "show",
 		objectType: params.ByName("objectType"),
@@ -99,7 +99,7 @@ func AddObjectType(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	handler := handlerMap["objectTypeWriteHandler"].(somaObjectTypeWriteHandler)
+	handler := handlerMap["objectTypeWriteHandler"].(*somaObjectTypeWriteHandler)
 	handler.input <- somaObjectTypeRequest{
 		action:     "add",
 		objectType: clientRequest.Entity.Name,
@@ -148,7 +148,7 @@ func DeleteObjectType(w http.ResponseWriter, r *http.Request,
 	}
 	returnChannel := make(chan []somaObjectTypeResult)
 
-	handler := handlerMap["objectTypeWriteHandler"].(somaObjectTypeWriteHandler)
+	handler := handlerMap["objectTypeWriteHandler"].(*somaObjectTypeWriteHandler)
 	handler.input <- somaObjectTypeRequest{
 		action:     "delete",
 		objectType: params.ByName("objectType"),
@@ -205,7 +205,7 @@ func RenameObjectType(w http.ResponseWriter, r *http.Request, params httprouter.
 		return
 	}
 
-	handler := handlerMap["objectTypeWriteHandler"].(somaObjectTypeWriteHandler)
+	handler := handlerMap["objectTypeWriteHandler"].(*somaObjectTypeWriteHandler)
 	handler.input <- somaObjectTypeRequest{
 		action:     "rename",
 		objectType: params.ByName("objectType"),

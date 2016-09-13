@@ -19,7 +19,7 @@ func ListStatus(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["statusReadHandler"].(somaStatusReadHandler)
+	handler := handlerMap["statusReadHandler"].(*somaStatusReadHandler)
 	handler.input <- somaStatusRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowStatus(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["statusReadHandler"].(somaStatusReadHandler)
+	handler := handlerMap["statusReadHandler"].(*somaStatusReadHandler)
 	handler.input <- somaStatusRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddStatus(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)
+	handler := handlerMap["statusWriteHandler"].(*somaStatusWriteHandler)
 	handler.input <- somaStatusRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -91,7 +91,7 @@ func DeleteStatus(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["statusWriteHandler"].(somaStatusWriteHandler)
+	handler := handlerMap["statusWriteHandler"].(*somaStatusWriteHandler)
 	handler.input <- somaStatusRequest{
 		action: "delete",
 		reply:  returnChannel,

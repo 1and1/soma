@@ -19,7 +19,7 @@ func ListUnit(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["unitReadHandler"].(somaUnitReadHandler)
+	handler := handlerMap["unitReadHandler"].(*somaUnitReadHandler)
 	handler.input <- somaUnitRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowUnit(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["unitReadHandler"].(somaUnitReadHandler)
+	handler := handlerMap["unitReadHandler"].(*somaUnitReadHandler)
 	handler.input <- somaUnitRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddUnit(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["unitWriteHandler"].(somaUnitWriteHandler)
+	handler := handlerMap["unitWriteHandler"].(*somaUnitWriteHandler)
 	handler.input <- somaUnitRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -92,7 +92,7 @@ func DeleteUnit(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["unitWriteHandler"].(somaUnitWriteHandler)
+	handler := handlerMap["unitWriteHandler"].(*somaUnitWriteHandler)
 	handler.input <- somaUnitRequest{
 		action: "delete",
 		reply:  returnChannel,

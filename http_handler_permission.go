@@ -18,7 +18,7 @@ func ListPermission(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `permission`,
@@ -43,7 +43,7 @@ func ShowPermission(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `permission`,
@@ -73,7 +73,7 @@ func SearchPermission(w http.ResponseWriter, r *http.Request,
 	crq := proto.NewPermissionFilter()
 	_ = DecodeJsonBody(r, &crq)
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
 		Type:       `supervisor`,
 		Action:     `permission`,
@@ -113,7 +113,7 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `permission`,
@@ -143,7 +143,7 @@ func DeletePermission(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(supervisor)
+	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Action:     `permission`,

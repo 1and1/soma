@@ -19,7 +19,7 @@ func ListProvider(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["providerReadHandler"].(somaProviderReadHandler)
+	handler := handlerMap["providerReadHandler"].(*somaProviderReadHandler)
 	handler.input <- somaProviderRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -38,7 +38,7 @@ func ShowProvider(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["providerReadHandler"].(somaProviderReadHandler)
+	handler := handlerMap["providerReadHandler"].(*somaProviderReadHandler)
 	handler.input <- somaProviderRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -69,7 +69,7 @@ func AddProvider(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["providerWriteHandler"].(somaProviderWriteHandler)
+	handler := handlerMap["providerWriteHandler"].(*somaProviderWriteHandler)
 	handler.input <- somaProviderRequest{
 		action: "add",
 		reply:  returnChannel,
@@ -91,7 +91,7 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["providerWriteHandler"].(somaProviderWriteHandler)
+	handler := handlerMap["providerWriteHandler"].(*somaProviderWriteHandler)
 	handler.input <- somaProviderRequest{
 		action: "delete",
 		reply:  returnChannel,

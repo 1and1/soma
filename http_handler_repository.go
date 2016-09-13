@@ -17,7 +17,7 @@ func ListRepository(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["repositoryReadHandler"].(somaRepositoryReadHandler)
+	handler := handlerMap["repositoryReadHandler"].(*somaRepositoryReadHandler)
 	handler.input <- somaRepositoryRequest{
 		action: "list",
 		reply:  returnChannel,
@@ -50,7 +50,7 @@ func ShowRepository(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["repositoryReadHandler"].(somaRepositoryReadHandler)
+	handler := handlerMap["repositoryReadHandler"].(*somaRepositoryReadHandler)
 	handler.input <- somaRepositoryRequest{
 		action: "show",
 		reply:  returnChannel,
@@ -87,7 +87,7 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["forestCustodian"].(forestCustodian)
+	handler := handlerMap["forestCustodian"].(*forestCustodian)
 	handler.input <- somaRepositoryRequest{
 		action:     "add",
 		reply:      returnChannel,
@@ -138,7 +138,7 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "repository",
 		Action:      fmt.Sprintf("add_%s_property_to_repository", params.ByName("type")),
@@ -169,7 +169,7 @@ func DeletePropertyFromRepository(w http.ResponseWriter, r *http.Request,
 	}
 
 	returnChannel := make(chan somaResult)
-	handler := handlerMap["guidePost"].(guidePost)
+	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
 		RequestType: "repository",
 		Action: fmt.Sprintf("delete_%s_property_from_repository",
