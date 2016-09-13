@@ -89,6 +89,7 @@ func (grim *grimReaper) process(q *msg.Request) {
 		`jobDelay`,
 		`forestCustodian`,
 		`guidePost`,
+		`lifeCycle`,
 	} {
 		handlerMap[h].(Downer).shutdownNow()
 		delete(handlerMap, handler)
