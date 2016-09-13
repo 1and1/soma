@@ -87,6 +87,7 @@ func (grim *grimReaper) process(q *msg.Request) {
 	// shutdown special handlers
 	for _, h := range []string{
 		`jobDelay`,
+		`forestCustodian`,
 	} {
 		handlerMap[h].(Downer).shutdownNow()
 		delete(handlerMap, handler)
