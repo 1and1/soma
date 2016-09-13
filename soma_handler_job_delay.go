@@ -25,6 +25,17 @@ runloop:
 	for {
 		select {
 		case <-j.shutdown:
+			// clean jobDone cache
+			for jid, _ := range j.jobDone {
+				delete(j.jobDone, jid)
+			}
+			// clean all waiters
+			for jid, _ := range j.waitList {
+				for i, _ := range j.waitList[jid] {
+					close(j.waitList[jid][i].Reply)
+				}
+				delete(j.waitList, jid)
+			}
 			break runloop
 		case jid := <-j.notify:
 			j.jobDone[jid] = time.Now().UTC()
