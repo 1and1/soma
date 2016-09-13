@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 )
@@ -20,20 +21,38 @@ func (grim *grimReaper) run() {
 	defer os.Exit(0)
 	defer grim.conn.Close()
 
+	var res bool
+	lock := sync.Mutex{}
+
 runloop:
 	for {
 		select {
 		case req := <-grim.system:
-			grim.process(&req)
+			// this is mainly so the go runtime does not optimize
+			// away waiting for the shutdown routine
+			lock.Lock()
+			go func() {
+				res = grim.process(&req)
+				lock.Unlock()
+			}()
 		}
 		break runloop
 	}
+	// blocks until the go routine has unlocked the mutex
+	lock.Lock()
+	if !res {
+		lock.Unlock()
+		goto runloop
+	}
 
 	time.Sleep(time.Duration(SomaCfg.ShutdownDelay) * time.Second)
+	log.Println("grimReaper: shutdown complete")
 }
 
-func (grim *grimReaper) process(q *msg.Request) {
-	result := msg.Result{Type: `grimReaper`, Action: q.Action}
+func (grim *grimReaper) process(q *msg.Request) bool {
+	result := msg.Result{Type: `grimReaper`, Action: q.Action,
+		System: []proto.SystemOperation{}}
+
 	switch q.Action {
 	case `shutdown`:
 	default:
@@ -42,7 +61,7 @@ func (grim *grimReaper) process(q *msg.Request) {
 				q.Action),
 		)
 		q.Reply <- result
-		return
+		return false
 	}
 
 	// tell HTTP handlers to start turning people away
@@ -117,6 +136,8 @@ func (grim *grimReaper) process(q *msg.Request) {
 		}
 		log.Printf("grimReaper: %s is still running\n", name)
 	}
+
+	return true
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
