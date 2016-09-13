@@ -88,7 +88,7 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		result = proto.NewTreeResult()
 		*result.Tree = r.Tree
 		goto UnmaskedReply
-	case `guidepost`, `forestcustodian`:
+	case `guidepost`, `forestcustodian`, `grimReaper`:
 		result = proto.NewSystemOperationResult()
 		*result.SystemOperations = append(*result.SystemOperations, r.System...)
 		goto UnmaskedReply
