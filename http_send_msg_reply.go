@@ -37,7 +37,7 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			fallthrough
 		case `activate_user`:
 			fallthrough
-		case `issue_token`:
+		case `issue_token`, `reset_user_password`, `change_user_password`:
 			// for this request type, errors are masked in responses
 			switch r.Code {
 			case 200:

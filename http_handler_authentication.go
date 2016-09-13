@@ -96,6 +96,20 @@ func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
 	AuthenticationEncryptedData(&w, r, &params, `activate_user`)
 }
 
+func AuthenticationChangeUserPassword(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	AuthenticationEncryptedData(&w, r, &params, `change_user_password`)
+}
+
+func AuthenticationResetUserPassword(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	AuthenticationEncryptedData(&w, r, &params, `reset_user_password`)
+}
+
 func AuthenticationEncryptedData(w *http.ResponseWriter, r *http.Request,
 	params *httprouter.Params, action string) {
 	defer PanicCatcher(*w)
