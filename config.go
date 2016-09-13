@@ -21,6 +21,7 @@ type SomaConfig struct {
 	ObserverRepo  string         `json:"-"`
 	NoPoke        bool           `json:"no.poke,string"`
 	PrintChannels bool           `json:"startup.print.channel.errors,string"`
+	ShutdownDelay uint64         `json:"shutdown.delay.seconds,string"`
 	Database      SomaDbConfig   `json:"database"`
 	Daemon        SomaDaemon     `json:"daemon"`
 	Auth          SomaAuthConfig `json:"authentication"`
@@ -113,6 +114,11 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	if c.Auth.Activation == `ldap` && !c.Ldap.Tls {
 		log.Println(`Account activation via LDAP configured, but LDAP/TLS disabled!`)
 	}
+	if c.ShutdownDelay == 0 {
+		log.Println(`Setting default value for shutdown.delay.seconds: 5`)
+		c.ShutdownDelay = 5
+	}
+
 	return nil
 }
 

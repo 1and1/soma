@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 )
 
@@ -25,6 +26,8 @@ runloop:
 		}
 		break runloop
 	}
+
+	time.Sleep(time.Duration(SomaCfg.ShutdownDelay) * time.Second)
 }
 
 func (grim *grimReaper) process(q *msg.Request) {
@@ -47,6 +50,8 @@ func (grim *grimReaper) process(q *msg.Request) {
 	// answer shutdown request
 	result.OK()
 	q.Reply <- result
+
+	time.Sleep(time.Duration(SomaCfg.ShutdownDelay) * time.Second)
 
 	// I have awoken.
 	log.Println(`GRIM REAPER ACTIVATED. SYSTEM SHUTDOWN INITIATED`)
