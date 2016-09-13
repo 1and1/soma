@@ -56,10 +56,14 @@ SET    user_is_active = 'yes'::boolean
 WHERE  user_id = $1::uuid;`
 
 const InvalidateUserCredential = `
-UPDATE auth.user_authentication
+UPDATE auth.user_authentication aua
 SET    valid_until = $1::timestamptz
-WHERE  user_id = $2::uuid
-  AND  user_is_active = 'yes'::boolean
-  AND  user_id != '00000000-0000-0000-0000-000000000000';`
+FROM   inventory.users iu
+WHERE  aua.user_id = iu.user_id
+  AND  aua.user_id = $2::uuid
+  AND  NOW() < aua.valid_until
+  AND  iu.user_is_active = 'yes'::boolean
+  AND  NOT iu.user_is_deleted
+  AND  iu.user_id != '00000000-0000-0000-0000-000000000000';`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
