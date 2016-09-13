@@ -541,12 +541,12 @@ func (g *guidePost) process(q *treeRequest) {
 		q.reply <- result
 		return
 	}
-
-	// check the treekeeper has finished loading
 	handler := handlerMap[keeper].(*treeKeeper)
-	if !handler.isReady() {
-		_ = result.SetRequestError( // TODO should be 503/ServiceUnavailable
-			fmt.Errorf("Repository %s not fully loaded yet.\n", repoName),
+
+	// check the treekeeper has not been stopped
+	if handler.isStopped() {
+		_ = result.SetRequestError(
+			fmt.Errorf("Repository %s is currently stopped.\n", repoName),
 		)
 		q.reply <- result
 		return
@@ -561,10 +561,10 @@ func (g *guidePost) process(q *treeRequest) {
 		return
 	}
 
-	// check the treekeeper has not been stopped
-	if handler.isStopped() {
-		_ = result.SetRequestError(
-			fmt.Errorf("Repository %s is currently stopped.\n", repoName),
+	// check the treekeeper has finished loading
+	if !handler.isReady() {
+		_ = result.SetRequestError( // TODO should be 503/ServiceUnavailable
+			fmt.Errorf("Repository %s not fully loaded yet.\n", repoName),
 		)
 		q.reply <- result
 		return
