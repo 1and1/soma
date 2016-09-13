@@ -234,4 +234,14 @@ func (w *somaViewWriteHandler) process(q *somaViewRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaViewReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaViewWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

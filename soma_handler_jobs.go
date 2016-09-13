@@ -217,4 +217,10 @@ dispatch:
 	q.Reply <- result
 }
 
+/* Ops Access
+ */
+func (j *jobsRead) shutdownNow() {
+	j.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

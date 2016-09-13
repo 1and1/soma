@@ -293,4 +293,14 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaTeamReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaTeamWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

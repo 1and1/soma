@@ -49,6 +49,13 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 		ps httprouter.Params) {
 		const basicAuthPrefix string = "Basic "
 
+		// if the supervisor is not available, no requests are accepted
+		if _, ok := handlerMap[`supervisor`]; !ok {
+			http.Error(w, `Authentication supervisor not available`,
+				http.StatusServiceUnavailable)
+			return
+		}
+
 		// disable authentication much?
 		if SomaCfg.OpenInstance {
 			ps = append(ps, httprouter.Param{

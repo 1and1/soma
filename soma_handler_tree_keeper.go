@@ -2706,4 +2706,14 @@ func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error)
 	return treechk, nil
 }
 
+/* Ops Access
+ */
+func (tk *treeKeeper) shutdownNow() {
+	tk.shutdown <- true
+}
+
+func (tk *treeKeeper) stopNow() {
+	tk.stopchan <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

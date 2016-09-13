@@ -267,4 +267,14 @@ func (w *somaMonitoringWriteHandler) process(q *somaMonitoringRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaMonitoringReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaMonitoringWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

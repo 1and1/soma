@@ -42,6 +42,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			Request:      cReq.SystemOperation.Request,
 			RepositoryId: cReq.SystemOperation.RepositoryId,
 		}
+	case `shutdown`:
 	default:
 		DispatchBadRequest(&w, fmt.Errorf("%s %s",
 			`Unknown system operation:`, cReq.SystemOperation.Request))
@@ -69,6 +70,15 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			RemoteAddr: extractAddress(r.RemoteAddr),
 			User:       params.ByName(`AuthenticatedUser`),
 			System:     *sys,
+		}
+	case `shutdown`:
+		handler := handlerMap[`reaper`].(grimReaper)
+		handler.system <- msg.Request{
+			Type:       `grimReaper`,
+			Action:     `shutdown`,
+			Reply:      returnChannel,
+			RemoteAddr: extractAddress(r.RemoteAddr),
+			User:       params.ByName(`AuthenticatedUser`),
 		}
 	}
 	result := <-returnChannel

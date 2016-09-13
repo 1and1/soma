@@ -333,4 +333,14 @@ bailout:
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaMetricReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaMetricWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

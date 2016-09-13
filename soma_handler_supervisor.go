@@ -348,4 +348,10 @@ func (s *supervisor) checkIV(iv string) error {
 	return nil
 }
 
+/* Ops Access
+ */
+func (s *supervisor) shutdownNow() {
+	s.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

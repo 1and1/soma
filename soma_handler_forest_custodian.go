@@ -394,4 +394,10 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	}
 }
 
+/* Ops Access
+ */
+func (f *forestCustodian) shutdownNow() {
+	f.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -561,4 +561,14 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaNodeReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaNodeWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

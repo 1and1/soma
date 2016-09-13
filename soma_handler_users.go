@@ -364,4 +364,14 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaUserReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaUserWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

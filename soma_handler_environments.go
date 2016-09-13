@@ -215,4 +215,14 @@ func (w *somaEnvironmentWriteHandler) process(q *somaEnvironmentRequest) {
 	q.reply <- result
 }
 
+/* Ops Access
+ */
+func (r *somaEnvironmentReadHandler) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *somaEnvironmentWriteHandler) shutdownNow() {
+	w.shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
