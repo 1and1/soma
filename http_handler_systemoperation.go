@@ -72,7 +72,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			System:     *sys,
 		}
 	case `shutdown`:
-		handler := handlerMap[`reaper`].(grimReaper)
+		handler := handlerMap[`grimReaper`].(grimReaper)
 		handler.system <- msg.Request{
 			Type:       `grimReaper`,
 			Action:     `shutdown`,
