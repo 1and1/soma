@@ -55,7 +55,7 @@ func connectToDatabase() {
 		"inventory": 201605060001,
 		"root":      201605160001,
 		"auth":      201605190001,
-		"soma":      201609080001,
+		"soma":      201609120001,
 	}
 
 	if rows, err = conn.Query(`
