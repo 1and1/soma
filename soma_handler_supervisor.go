@@ -201,6 +201,8 @@ func (s *supervisor) process(q *msg.Request) {
 		go func() { s.issue_token(q) }()
 	case `activate_user`:
 		go func() { s.activate_user(q) }()
+	case `reset_user_password`, `change_user_password`:
+		go func() { s.userPassword(q) }()
 	case `authorize`:
 		go func() { s.authorize(q) }()
 	case `update_map`:
