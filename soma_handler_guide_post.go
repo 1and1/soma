@@ -1008,8 +1008,14 @@ func (g *guidePost) sysprocess(q *msg.Request) {
 		goto exit
 	}
 
-	// check the treekeeper is ready for system requests
+	// might already be stopped
 	handler = handlerMap[keeper].(*treeKeeper)
+	if handler.isStopped() {
+		result.OK()
+		goto exit
+	}
+
+	// check the treekeeper is ready for system requests
 	if !(handler.isReady() || handler.isBroken()) {
 		result.Unavailable(
 			fmt.Errorf("Repository %s not fully loaded yet.",
