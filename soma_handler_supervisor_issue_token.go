@@ -101,7 +101,7 @@ func (s *supervisor) issue_token(q *msg.Request) {
 		result.Unauthorized(fmt.Errorf("Expired: %s", token.UserName))
 		goto dispatch
 	}
-	// generate token
+	// generate token if the provided credentials are valid
 	token.SetIPAddressExtractedString(q.Super.RemoteAddr)
 	if err = token.Generate(cred.cryptMCF, s.key, s.seed); err != nil {
 		result.ServerError(err)
