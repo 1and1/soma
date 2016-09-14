@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/1and1/soma/lib/proto"
 
 	"gopkg.in/resty.v0"
 

@@ -30,6 +30,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/1and1/soma/lib/proto"
 )
 
 func CheckUpdateOrInsertOrDelete(details *proto.Deployment) error {
