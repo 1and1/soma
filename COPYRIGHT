@@ -1,0 +1,94 @@
+The compilation of software in this repository, excluding the vendor/
+directory, is distributed under the following terms.
+Differences from these terms for individual files may occur, as
+indicated at the top of the file.
+
+Copyright (c) 2016, 1&1 Internet SE
+Copyright (c) 2015-2016, Jörg Pernfuß <joerg.pernfuss@1und1.de>
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+
+--------------------------------------------------------------------------
+
+The vendored software below vendor/ is subject to its own license, as
+indicated in its LICENSE file. Please consult these files for the full
+license text.
+
+github.com/asaskevich/govalidator: MIT License
+  Copyright (c) 2014 Alex Saskevich
+
+github.com/boltdb/bolt: MIT License
+  Copyright (c) 2013 Ben Johnson
+
+github.com/codegangsta/cli: MIT License
+  Copyright (C) 2013 Jeremy Saenz
+
+github.com/dchest/blake2b: Public Domain Dedication
+  2012 by Dmitry Chestnykh
+
+github.com/julienschmidt: 3-clause BSD
+  Copyright (c) 2013 Julien Schmidt
+
+github.com/lib/pq: ISC-style
+  Copyright (c) 2011-2013, 'pq' Contributors
+  Portions Copyright (C) 2011 Blake Mizerany
+
+github.com/mitchellh/go-homedir: MIT License
+  Copyright (c) 2013 Mitchell Hashimoto
+
+github.com/mjolnir42/hash64: CC0
+
+github.com/mjolnir42/scrypth64: 2-clause BSD
+   Copyright (c) 2016, Jörg Pernfuß
+
+github.com/nahanni/go-ucl: 2-clause BSD
+  Copyright (c) 2015 Leon Dang, Nahanni Systems Inc
+
+github.com/nbutton23/zxcvbn-go: ISC-style
+  Copyright (c) Nathan Button
+
+github.com/peterh/liner: ISC-style
+  Copyright © 2012 Peter Harris
+
+github.com/satori/go.uuid: ISC-style
+  Copyright (C) 2013-2016 by Maxim Bublis
+
+golang.org/x/sys: 3-clause BSD
+  Copyright (c) 2009 The Go Authors
+
+golang.org/x/crypto: 3-clause BSD
+  Copyright (c) 2009 The Go Authors
+
+golang.org/x/net: 3-clause BSD
+  Copyright (c) 2009 The Go Authors
+
+gopkg.in/asn1-ber.v1: 3-clause BSD
+  Copyright (c) 2012 The Go Authors
+
+gopkg.in/ldap.v2: 3-clause BSD
+  Copyright (c) 2012 The Go Authors
+
+gopkg.in/resty.v0: MIT License
+  Copyright (c) 2015-2016 Jeevanandam M
+
