@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/1and1/soma/lib/adm"
-	"github.com/1and1/soma/lib/util"
+	"github.com/1and1/soma/internal/adm"
+	"github.com/1and1/soma/internal/util"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"

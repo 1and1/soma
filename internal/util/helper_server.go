@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/1and1/soma/lib/db"
+	"github.com/1and1/soma/internal/db"
 	"github.com/1and1/soma/lib/proto"
 	"gopkg.in/resty.v0"
 )

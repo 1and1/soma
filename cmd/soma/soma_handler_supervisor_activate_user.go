@@ -33,8 +33,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/1and1/soma/lib/msg"
-	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/internal/msg"
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
 	"github.com/mjolnir42/scrypth64"
 	"github.com/satori/go.uuid"

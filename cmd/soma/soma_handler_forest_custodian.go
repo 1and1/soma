@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/1and1/soma/lib/msg"
-	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/internal/msg"
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
-	"github.com/1and1/soma/lib/tree"
+	"github.com/1and1/soma/internal/tree"
 	"github.com/satori/go.uuid"
 )
 

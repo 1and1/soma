@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 )
 

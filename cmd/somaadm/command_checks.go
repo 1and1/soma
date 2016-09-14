@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/1and1/soma/lib/help"
-	"github.com/1and1/soma/lib/adm"
-	"github.com/1and1/soma/lib/cmpl"
+	"github.com/1and1/soma/internal/help"
+	"github.com/1and1/soma/internal/adm"
+	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )

@@ -3,7 +3,7 @@ package util
 import (
 	"fmt"
 
-	"github.com/1and1/soma/lib/adm"
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/lib/proto"
 	"gopkg.in/resty.v0"
 )
