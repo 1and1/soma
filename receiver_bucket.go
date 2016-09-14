@@ -8,6 +8,7 @@
 
 package tree
 
+import "github.com/1and1/soma/lib/proto"
 
 //
 // Interface: Receiver

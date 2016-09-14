@@ -13,6 +13,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/1and1/soma/lib/proto"
 
 	"github.com/satori/go.uuid"
 )
