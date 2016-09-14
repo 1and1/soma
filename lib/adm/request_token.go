@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/1and1/soma/lib/auth"
 	"gopkg.in/resty.v0"
 )
 

@@ -1,6 +1,7 @@
 package adm
 
 import (
+	"github.com/1and1/soma/lib/db"
 
 	"gopkg.in/resty.v0"
 )

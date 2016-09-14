@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/1and1/soma/lib/help"
+	"github.com/1and1/soma/lib/cmpl"
+	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
 

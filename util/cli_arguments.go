@@ -6,6 +6,7 @@ import (
 
 	"gopkg.in/resty.v0"
 
+	proto "github.com/1and1/soma/lib/proto"
 
 	"github.com/codegangsta/cli"
 )

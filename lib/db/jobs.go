@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/1and1/soma/lib/proto"
 
 	"github.com/boltdb/bolt"
 )

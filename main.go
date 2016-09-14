@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/1and1/soma/lib/db"
+	"github.com/1and1/soma/lib/util"
 	"github.com/codegangsta/cli"
 )
 
