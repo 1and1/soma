@@ -7,6 +7,7 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/1and1/soma/lib/proto"
 	"github.com/satori/go.uuid"
 )
 

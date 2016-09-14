@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/1and1/soma/lib/proto"
+	"github.com/1and1/soma/lib/tree"
 	"github.com/satori/go.uuid"
 )
 

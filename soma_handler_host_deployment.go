@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/1and1/soma/lib/proto"
 )
 
 type somaHostDeploymentRequest struct {

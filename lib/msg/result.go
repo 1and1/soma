@@ -11,6 +11,7 @@ package msg
 import (
 	"fmt"
 
+	"github.com/1and1/soma/lib/proto"
 )
 
 type Result struct {

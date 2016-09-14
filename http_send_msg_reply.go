@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/auth"
+	"github.com/1and1/soma/lib/proto"
 )
 
 func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {

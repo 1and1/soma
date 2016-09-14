@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/proto"
 )
 
 func (s *supervisor) permission_category(q *msg.Request) {

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/hex"
 
+	"github.com/1and1/soma/lib/msg"
 )
 
 func startHandlers() {

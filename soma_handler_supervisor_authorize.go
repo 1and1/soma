@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/1and1/soma/lib/msg"
 )
 
 func (s *supervisor) authorize(q *msg.Request) {

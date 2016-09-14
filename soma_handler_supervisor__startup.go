@@ -31,6 +31,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/1and1/soma/lib/stmt"
 	"github.com/mjolnir42/scrypth64"
 	"github.com/satori/go.uuid"
 )

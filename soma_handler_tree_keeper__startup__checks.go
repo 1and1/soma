@@ -9,6 +9,8 @@ import (
 
 	"github.com/satori/go.uuid"
 
+	"github.com/1and1/soma/lib/proto"
+	"github.com/1and1/soma/lib/tree"
 )
 
 type tkLoader interface {

@@ -9,6 +9,8 @@
 package msg
 
 import (
+	"github.com/1and1/soma/lib/auth"
+	"github.com/1and1/soma/lib/proto"
 )
 
 type Supervisor struct {

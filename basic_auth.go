@@ -40,6 +40,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/1and1/soma/lib/msg"
 
 	"github.com/julienschmidt/httprouter"
 )

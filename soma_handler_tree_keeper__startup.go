@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/1and1/soma/lib/tree"
 )
 
 func (tk *treeKeeper) startupLoad() {

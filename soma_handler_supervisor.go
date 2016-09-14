@@ -34,6 +34,9 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/lib/auth"
 )
 
 type supervisor struct {

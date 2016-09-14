@@ -1,5 +1,6 @@
 package main
 
+import "github.com/1and1/soma/lib/msg"
 
 func (s *supervisor) update_map(q *msg.Request) {
 

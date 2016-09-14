@@ -30,6 +30,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/auth"
 
 	"github.com/julienschmidt/httprouter"
 )

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )

@@ -33,6 +33,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/lib/auth"
 )
 
 func (s *supervisor) issue_token(q *msg.Request) {

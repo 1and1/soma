@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/lib/proto"
 )
 
 type somaRepositoryRequest struct {

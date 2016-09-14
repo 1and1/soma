@@ -11,6 +11,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/1and1/soma/lib/auth"
+	"github.com/1and1/soma/lib/proto"
 )
 
 func PanicCatcher(w http.ResponseWriter) {

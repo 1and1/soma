@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/proto"
 )
 
 type grimReaper struct {

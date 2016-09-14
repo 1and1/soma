@@ -29,6 +29,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/auth"
 )
 
 func (s *supervisor) kexInit(q *msg.Request) {

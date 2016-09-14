@@ -9,6 +9,9 @@ import (
 
 	"github.com/lib/pq"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/lib/proto"
 )
 
 type jobsRead struct {

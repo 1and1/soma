@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/1and1/soma/lib/proto"
 )
 
 func (tk *treeKeeper) buildDeploymentDetails() {

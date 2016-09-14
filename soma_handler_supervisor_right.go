@@ -7,6 +7,8 @@ import (
 
 	"github.com/satori/go.uuid"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/proto"
 )
 
 func (s *supervisor) right(q *msg.Request) {

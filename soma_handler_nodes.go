@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/lib/proto"
 	"github.com/satori/go.uuid"
 )
 

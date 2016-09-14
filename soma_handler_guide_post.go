@@ -9,6 +9,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/1and1/soma/lib/msg"
+	"github.com/1and1/soma/lib/stmt"
+	"github.com/1and1/soma/lib/proto"
 
 	"github.com/satori/go.uuid"
 )
