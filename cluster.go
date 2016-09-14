@@ -31,13 +31,20 @@ func (c *Cluster) DeepCompare(a *Cluster) bool {
 		return false
 	}
 
-member:
-	for i, _ := range *c.Members {
-		for j, _ := range *a.Members {
-			if (*c.Members)[i].Id == (*a.Members)[j].Id {
-				continue member
+	if c.Members != nil && a.Members != nil {
+	member:
+		for i, _ := range *c.Members {
+			for j, _ := range *a.Members {
+				if (*c.Members)[i].Id == (*a.Members)[j].Id {
+					continue member
+				}
 			}
+			return false
 		}
+		return true
+	} else if c.Members != nil && a.Members == nil {
+		return false
+	} else if c.Members == nil && a.Members != nil {
 		return false
 	}
 	return true
