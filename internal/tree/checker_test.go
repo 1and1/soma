@@ -234,9 +234,34 @@ func testSpawnCheck(inherited, inheritance, childrenOnly bool) Check {
 		},
 		Constraints: []CheckConstraint{
 			{
-				Type:  `type`,
-				Key:   `key`,
-				Value: `value`,
+				Type:  `native`,
+				Key:   `object_type`,
+				Value: `node`,
+			},
+			{
+				Type:  `system`,
+				Key:   `fqdn`,
+				Value: `host.example.org`,
+			},
+			{
+				Type:  `custom`,
+				Key:   `47db9a82-83f2-11e6-bc90-f8a963a55ba6`,
+				Value: `foobar`,
+			},
+			{
+				Type:  `service`,
+				Key:   `name`,
+				Value: `Important Enterprise Business Application`,
+			},
+			{
+				Type:  `attribute`,
+				Key:   `port`,
+				Value: `@defined`,
+			},
+			{
+				Type:  `oncall`,
+				Key:   `70c1570b-83f4-11e6-bc90-f8a963a55ba6`,
+				Value: `Heroes of Oncall Duty`,
 			},
 		},
 		Items: []CheckItem{
