@@ -445,50 +445,6 @@ func (tci *CheckInstance) calcInstanceSvcCfgHash() {
 	tci.InstanceSvcCfgHash = base64.URLEncoding.EncodeToString(h.Sum(nil))
 }
 
-func (c *Check) clone() Check {
-	cl := Check{
-		SourceType:   c.SourceType,
-		Inherited:    c.Inherited,
-		Inheritance:  c.Inheritance,
-		ChildrenOnly: c.ChildrenOnly,
-		View:         c.View,
-		Interval:     c.Interval,
-	}
-	cl.Id, _ = uuid.FromString(c.Id.String())
-	cl.SourceId, _ = uuid.FromString(c.SourceId.String())
-	cl.InheritedFrom, _ = uuid.FromString(c.InheritedFrom.String())
-	cl.CapabilityId, _ = uuid.FromString(c.CapabilityId.String())
-	cl.ConfigId, _ = uuid.FromString(c.ConfigId.String())
-	cl.Thresholds = make([]CheckThreshold, len(c.Thresholds))
-	for i, thr := range c.Thresholds {
-		n := CheckThreshold{
-			Predicate: thr.Predicate,
-			Level:     thr.Level,
-			Value:     thr.Value,
-		}
-		cl.Thresholds[i] = n
-	}
-	cl.Constraints = make([]CheckConstraint, len(c.Constraints))
-	for i, ctr := range c.Constraints {
-		n := CheckConstraint{
-			Type:  ctr.Type,
-			Key:   ctr.Key,
-			Value: ctr.Value,
-		}
-		cl.Constraints[i] = n
-	}
-	cl.Items = make([]CheckItem, len(c.Items))
-	for i, item := range c.Items {
-		n := CheckItem{
-			ObjectType: item.ObjectType,
-		}
-		n.ItemId, _ = uuid.FromString(item.ItemId.String())
-		n.ObjectId, _ = uuid.FromString(item.ObjectId.String())
-		cl.Items[i] = n
-	}
-	return cl
-}
-
 func (ci CheckInstance) MakeAction() Action {
 	serviceCfg, err := json.Marshal(ci.InstanceServiceConfig)
 	if err != nil {

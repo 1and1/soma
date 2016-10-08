@@ -32,7 +32,7 @@ func (ten *Node) SetCheck(c Check) {
 
 func (ten *Node) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
-	f := c.clone()
+	f := c.Clone()
 	f.Id = f.GetItemId(ten.Type, ten.Id)
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()

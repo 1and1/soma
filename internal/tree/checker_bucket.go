@@ -30,7 +30,7 @@ func (teb *Bucket) SetCheck(c Check) {
 	c.SourceId, _ = uuid.FromString(c.Id.String())
 	c.SourceType = teb.Type
 	// send a scrubbed copy downward
-	f := c.clone()
+	f := c.Clone()
 	f.Inherited = true
 	f.Id = uuid.Nil
 	teb.setCheckOnChildren(f)
@@ -41,7 +41,7 @@ func (teb *Bucket) SetCheck(c Check) {
 
 func (teb *Bucket) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
-	f := c.clone()
+	f := c.Clone()
 	f.Id = f.GetItemId(teb.Type, teb.Id)
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()
