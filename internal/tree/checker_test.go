@@ -118,6 +118,87 @@ func TestCheckAction(t *testing.T) {
 	}
 }
 
+func TestCheckGetItemNotNil(t *testing.T) {
+	check := testSpawnCheck(false, false, false)
+
+	if check.GetCheckId() != check.GetItemId(`node`, uuid.Nil).String() {
+		t.Errorf(`GetItemId did not return already set ID`)
+	}
+}
+
+func TestCheckGetItemNoMatch(t *testing.T) {
+	check := testSpawnCheck(false, false, false)
+	check.Id = uuid.UUID{}
+
+	if !uuid.Equal(uuid.Nil, check.GetItemId(`node`, uuid.Nil)) {
+		t.Errorf(`GetItemId did not return uuid.Nil in non-match case`)
+	}
+}
+
+func TestCheckGetItem(t *testing.T) {
+	check := testSpawnCheck(false, false, false)
+	check.Id = uuid.UUID{}
+
+	itemId := uuid.NewV4()
+	objId := uuid.NewV4()
+	check.Items = append(check.Items, CheckItem{
+		ObjectId: func() uuid.UUID {
+			ui, _ := uuid.FromString(objId.String())
+			return ui
+		}(),
+		ObjectType: `node`,
+		ItemId: func() uuid.UUID {
+			ui, _ := uuid.FromString(itemId.String())
+			return ui
+		}(),
+	})
+
+	if !uuid.Equal(itemId, check.GetItemId(`node`, objId)) {
+		t.Errorf(`GetItemId did not correctly match objects`)
+	}
+}
+
+func TestCheckInstanceClone(t *testing.T) {
+	check := testSpawnCheck(false, false, false)
+	instance := testSpawnCheckInstance(check)
+
+	clone := instance.Clone()
+
+	if !uuid.Equal(instance.InstanceId, clone.InstanceId) {
+		t.Errorf(`Faulty checkinstance clone`)
+	}
+	if !uuid.Equal(instance.CheckId, clone.CheckId) {
+		t.Errorf(`Faulty checkinstance clone - CheckId`)
+	}
+	if !uuid.Equal(instance.ConfigId, clone.ConfigId) {
+		t.Errorf(`Faulty checkinstance clone - ConfigId`)
+	}
+}
+
+func testSpawnCheckInstance(chk Check) CheckInstance {
+	return CheckInstance{
+		InstanceId: uuid.NewV4(),
+		CheckId: func(id string) uuid.UUID {
+			f, _ := uuid.FromString(id)
+			return f
+		}(chk.GetCheckId()),
+		ConfigId: func(id string) uuid.UUID {
+			f, _ := uuid.FromString(id)
+			return f
+		}(chk.GetCheckConfigId()),
+		InstanceConfigId:      uuid.NewV4(),
+		ConstraintOncall:      ``,
+		ConstraintService:     map[string]string{},
+		ConstraintSystem:      map[string]string{},
+		ConstraintCustom:      map[string]string{},
+		ConstraintNative:      map[string]string{},
+		ConstraintAttribute:   map[string]map[string][]string{},
+		InstanceService:       ``,
+		InstanceServiceConfig: nil,
+		InstanceSvcCfgHash:    ``,
+	}
+}
+
 func testSpawnCheck(inherited, inheritance, childrenOnly bool) Check {
 	id := uuid.NewV4()
 	var idFrom uuid.UUID
