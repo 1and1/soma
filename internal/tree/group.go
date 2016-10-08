@@ -127,7 +127,7 @@ func (teg Group) Clone() *Group {
 
 	cK := make(map[string]Check)
 	for k, chk := range teg.Checks {
-		cK[k] = chk.clone()
+		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
 

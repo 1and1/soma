@@ -128,7 +128,7 @@ func (ter Repository) Clone() Repository {
 
 	cK := make(map[string]Check)
 	for k, chk := range ter.Checks {
-		cK[k] = chk.clone()
+		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
 

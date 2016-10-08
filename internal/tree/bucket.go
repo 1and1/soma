@@ -138,7 +138,7 @@ func (teb Bucket) CloneRepository() RepositoryAttacher {
 
 	cK := make(map[string]Check)
 	for k, chk := range teb.Checks {
-		cK[k] = chk.clone()
+		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
 

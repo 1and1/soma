@@ -30,7 +30,7 @@ func (teg *Group) SetCheck(c Check) {
 	c.SourceId, _ = uuid.FromString(c.Id.String())
 	c.SourceType = teg.Type
 	// send a scrubbed copy downward
-	f := c.clone()
+	f := c.Clone()
 	f.Inherited = true
 	f.Id = uuid.Nil
 	teg.setCheckOnChildren(f)
@@ -41,7 +41,7 @@ func (teg *Group) SetCheck(c Check) {
 
 func (teg *Group) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
-	f := c.clone()
+	f := c.Clone()
 	f.Id = f.GetItemId(teg.Type, teg.Id)
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()

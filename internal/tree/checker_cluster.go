@@ -30,7 +30,7 @@ func (tec *Cluster) SetCheck(c Check) {
 	c.SourceId, _ = uuid.FromString(c.Id.String())
 	c.SourceType = tec.Type
 	// send a scrubbed copy downward
-	f := c.clone()
+	f := c.Clone()
 	f.Inherited = true
 	f.Id = uuid.Nil
 	tec.setCheckOnChildren(f)
@@ -41,7 +41,7 @@ func (tec *Cluster) SetCheck(c Check) {
 
 func (tec *Cluster) setCheckInherited(c Check) {
 	// we keep a local copy, that way we know it is ours....
-	f := c.clone()
+	f := c.Clone()
 	f.Id = f.GetItemId(tec.Type, tec.Id)
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()
