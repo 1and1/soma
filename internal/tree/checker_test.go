@@ -176,7 +176,7 @@ func TestCheckInstanceClone(t *testing.T) {
 }
 
 func testSpawnCheckInstance(chk Check) CheckInstance {
-	return CheckInstance{
+	ci := CheckInstance{
 		InstanceId: uuid.NewV4(),
 		CheckId: func(id string) uuid.UUID {
 			f, _ := uuid.FromString(id)
@@ -186,17 +186,44 @@ func testSpawnCheckInstance(chk Check) CheckInstance {
 			f, _ := uuid.FromString(id)
 			return f
 		}(chk.GetCheckConfigId()),
-		InstanceConfigId:      uuid.NewV4(),
-		ConstraintOncall:      ``,
-		ConstraintService:     map[string]string{},
-		ConstraintSystem:      map[string]string{},
-		ConstraintCustom:      map[string]string{},
-		ConstraintNative:      map[string]string{},
-		ConstraintAttribute:   map[string]map[string][]string{},
-		InstanceService:       ``,
-		InstanceServiceConfig: nil,
-		InstanceSvcCfgHash:    ``,
+		InstanceConfigId:    uuid.NewV4(),
+		ConstraintOncall:    ``,
+		ConstraintService:   map[string]string{},
+		ConstraintSystem:    map[string]string{},
+		ConstraintCustom:    map[string]string{},
+		ConstraintNative:    map[string]string{},
+		ConstraintAttribute: map[string]map[string][]string{},
+		InstanceService:     `Important Enterprise Business Application`,
+		InstanceServiceConfig: map[string]string{
+			`port`:            `443`,
+			`transport_proto`: `tcp`,
+		},
 	}
+
+	for _, c := range chk.Constraints {
+		switch c.Type {
+		case `native`:
+			ci.ConstraintNative[c.Key] = c.Value
+		case `system`:
+			ci.ConstraintSystem[c.Key] = c.Value
+		case `custom`:
+			ci.ConstraintCustom[c.Key] = c.Value
+		case `service`:
+			ci.ConstraintService[c.Key] = c.Value
+		case `oncall`:
+			ci.ConstraintOncall = c.Key
+		case `attribute`:
+			ci.ConstraintAttribute[`Important Enterprise Business Application`] =
+				map[string][]string{
+					`port`: []string{`80`, `443`},
+				}
+		}
+	}
+	ci.calcConstraintHash()
+	ci.calcConstraintValHash()
+	ci.calcInstanceSvcCfgHash()
+
+	return ci
 }
 
 func testSpawnCheck(inherited, inheritance, childrenOnly bool) Check {
