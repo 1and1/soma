@@ -175,6 +175,17 @@ func TestCheckInstanceClone(t *testing.T) {
 	}
 }
 
+func TestCheckInstanceAction(t *testing.T) {
+	check := testSpawnCheck(false, false, false)
+	instance := testSpawnCheckInstance(check)
+
+	action := instance.MakeAction()
+
+	if action.CheckInstance.InstanceId != instance.InstanceId.String() {
+		t.Errorf(`Created instance action is incorrect`)
+	}
+}
+
 func testSpawnCheckInstance(chk Check) CheckInstance {
 	ci := CheckInstance{
 		InstanceId: uuid.NewV4(),
