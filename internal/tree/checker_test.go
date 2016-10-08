@@ -222,9 +222,14 @@ func testSpawnCheck(inherited, inheritance, childrenOnly bool) Check {
 		Interval:      1,
 		Thresholds: []CheckThreshold{
 			{
-				Predicate: `==`,
-				Level:     0,
-				Value:     0,
+				Predicate: `>=`,
+				Level:     1,
+				Value:     1,
+			},
+			{
+				Predicate: `>=`,
+				Level:     3,
+				Value:     5,
 			},
 		},
 		Constraints: []CheckConstraint{
