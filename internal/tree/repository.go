@@ -36,6 +36,8 @@ type Repository struct {
 	Checks          map[string]Check
 	Children        map[string]RepositoryAttacher // `json:"-"`
 	Action          chan *Action                  `json:"-"`
+	ordNumChildBck int `json:"-"`
+	ordChildrenBck map[int]string `json:"-"`
 }
 
 type RepositorySpec struct {
@@ -69,6 +71,8 @@ func NewRepository(spec RepositorySpec) *Repository {
 	ter.PropertySystem = make(map[string]Property)
 	ter.PropertyCustom = make(map[string]Property)
 	ter.Checks = make(map[string]Check)
+	ter.ordNumChildBck = 0
+	ter.ordChildrenBck = make(map[int]string)
 
 	// return new repository with attached fault handler
 	newFault().Attach(
@@ -83,11 +87,12 @@ func NewRepository(spec RepositorySpec) *Repository {
 
 func (ter Repository) Clone() Repository {
 	cl := Repository{
-		Name:    ter.Name,
-		Deleted: ter.Deleted,
-		Active:  ter.Active,
-		Type:    ter.Type,
-		State:   ter.State,
+		Name:           ter.Name,
+		Deleted:        ter.Deleted,
+		Active:         ter.Active,
+		Type:           ter.Type,
+		State:          ter.State,
+		ordNumChildBck: ter.ordNumChildBck,
 	}
 	cl.Id, _ = uuid.FromString(ter.Id.String())
 	cl.Team, _ = uuid.FromString(ter.Id.String())
@@ -126,6 +131,12 @@ func (ter Repository) Clone() Repository {
 		cK[k] = chk.Clone()
 	}
 	cl.Checks = cK
+
+	chLB := make(map[int]string)
+	for i, s := range ter.ordChildrenBck {
+		chLB[i] = s
+	}
+	cl.ordChildrenBck = chLB
 
 	return cl
 }

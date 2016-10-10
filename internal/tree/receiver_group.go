@@ -43,6 +43,8 @@ func (teg *Group) receiveGroup(r ReceiveRequest) {
 			r.Group.setParent(teg)
 			r.Group.setAction(teg.Action)
 			r.Group.setFault(teg.Fault)
+			teg.ordChildrenGrp[teg.ordNumChildGrp] = r.Group.GetID()
+			teg.ordNumChildGrp++
 
 			teg.actionMemberNew(Action{
 				ChildType:  "group",
@@ -66,6 +68,8 @@ func (teg *Group) receiveCluster(r ReceiveRequest) {
 			r.Cluster.setParent(teg)
 			r.Cluster.setAction(teg.Action)
 			r.Cluster.setFault(teg.Fault)
+			teg.ordChildrenClr[teg.ordNumChildClr] = r.Cluster.GetID()
+			teg.ordNumChildClr++
 
 			teg.actionMemberNew(Action{
 				ChildType:    "cluster",
@@ -89,6 +93,8 @@ func (teg *Group) receiveNode(r ReceiveRequest) {
 			r.Node.setParent(teg)
 			r.Node.setAction(teg.Action)
 			r.Node.setFault(teg.Fault)
+			teg.ordChildrenNod[teg.ordNumChildNod] = r.Node.GetID()
+			teg.ordNumChildNod++
 
 			teg.actionMemberNew(Action{
 				ChildType: "node",

@@ -48,6 +48,11 @@ func (teg *Group) unlinkGroup(u UnlinkRequest) {
 
 					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
+					for i, grp := range teg.ordChildrenGrp {
+						if grp == u.ChildId {
+							delete(teg.ordChildrenGrp, i)
+						}
+					}
 
 					teg.actionMemberRemoved(a)
 				}
@@ -75,6 +80,11 @@ func (teg *Group) unlinkCluster(u UnlinkRequest) {
 
 					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
+					for i, clr := range teg.ordChildrenClr {
+						if clr == u.ChildId {
+							delete(teg.ordChildrenClr, i)
+						}
+					}
 
 					teg.actionMemberRemoved(a)
 				}
@@ -102,6 +112,11 @@ func (teg *Group) unlinkNode(u UnlinkRequest) {
 
 					teg.Children[u.ChildId].clearParent()
 					delete(teg.Children, u.ChildId)
+					for i, nod := range teg.ordChildrenNod {
+						if nod == u.ChildId {
+							delete(teg.ordChildrenNod, i)
+						}
+					}
 
 					teg.actionMemberRemoved(a)
 				}

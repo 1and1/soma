@@ -36,6 +36,12 @@ type Group struct {
 	Instances       map[string]CheckInstance
 	Children        map[string]GroupAttacher            `json:"-"`
 	loadedInstances map[string]map[string]CheckInstance `json:"-"`
+	ordNumChildGrp int `json:"-"`
+	ordNumChildClr int `json:"-"`
+	ordNumChildNod int `json:"-"`
+	ordChildrenGrp map[int]string `json:"-"`
+	ordChildrenClr map[int]string `json:"-"`
+	ordChildrenNod map[int]string `json:"-"`
 }
 
 type GroupSpec struct {
@@ -68,6 +74,12 @@ func NewGroup(spec GroupSpec) *Group {
 	teg.CheckInstances = make(map[string][]string)
 	teg.Instances = make(map[string]CheckInstance)
 	teg.loadedInstances = make(map[string]map[string]CheckInstance)
+	teg.ordNumChildGrp = 0
+	teg.ordNumChildClr = 0
+	teg.ordNumChildNod = 0
+	teg.ordChildrenGrp = make(map[int]string)
+	teg.ordChildrenClr = make(map[int]string)
+	teg.ordChildrenNod = make(map[int]string)
 
 	return teg
 }
@@ -77,6 +89,9 @@ func (teg Group) Clone() *Group {
 		Name:  teg.Name,
 		State: teg.State,
 		Type:  teg.Type,
+		ordNumChildGrp: teg.ordNumChildGrp,
+		ordNumChildClr: teg.ordNumChildClr,
+		ordNumChildNod: teg.ordNumChildNod,
 	}
 	cl.Id, _ = uuid.FromString(teg.Id.String())
 
@@ -131,6 +146,24 @@ func (teg Group) Clone() *Group {
 		}
 	}
 	cl.CheckInstances = ci
+
+	chLG := make(map[int]string)
+	for i, s := range teg.ordChildrenGrp {
+		chLG[i] = s
+	}
+	cl.ordChildrenGrp = chLG
+
+	chLC := make(map[int]string)
+	for i, s := range teg.ordChildrenClr {
+		chLC[i] = s
+	}
+	cl.ordChildrenClr = chLC
+
+	chLN := make(map[int]string)
+	for i, s := range teg.ordChildrenNod {
+		chLN[i] = s
+	}
+	cl.ordChildrenNod = chLN
 
 	return &cl
 }
