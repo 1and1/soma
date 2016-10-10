@@ -9,7 +9,7 @@
 package tree
 
 import (
-	"sync"
+	//	"sync"
 
 	"github.com/satori/go.uuid"
 )
@@ -53,16 +53,23 @@ func (ter *Repository) setCheckInherited(c Check) {
 }
 
 func (ter *Repository) setCheckOnChildren(c Check) {
-	var wg sync.WaitGroup
-	for child, _ := range ter.Children {
-		wg.Add(1)
-		ch := child
-		go func(stc Check) {
-			defer wg.Done()
-			ter.Children[ch].(Checker).setCheckInherited(stc)
-		}(c)
+	/*	var wg sync.WaitGroup
+		for child, _ := range ter.Children {
+			wg.Add(1)
+			ch := child
+			go func(stc Check) {
+				defer wg.Done()
+				ter.Children[ch].(Checker).setCheckInherited(stc)
+			}(c)
+		}
+		wg.Wait() */
+
+	// buckets
+	for i := 0; i < ter.ordNumChildBck; i++ {
+		if child, ok := ter.ordChildrenBck[i]; ok {
+			ter.Children[child].(Checker).setCheckInherited(c)
+		}
 	}
-	wg.Wait()
 }
 
 func (ter *Repository) addCheck(c Check) {
@@ -84,15 +91,22 @@ func (ter *Repository) deleteCheckInherited(c Check) {
 }
 
 func (ter *Repository) deleteCheckOnChildren(c Check) {
-	var wg sync.WaitGroup
-	for child, _ := range ter.Children {
-		wg.Add(1)
-		go func(stc Check, ch string) {
-			defer wg.Done()
-			ter.Children[ch].(Checker).deleteCheckInherited(stc)
-		}(c, child)
+	/*	var wg sync.WaitGroup
+		for child, _ := range ter.Children {
+			wg.Add(1)
+			go func(stc Check, ch string) {
+				defer wg.Done()
+				ter.Children[ch].(Checker).deleteCheckInherited(stc)
+			}(c, child)
+		}
+		wg.Wait() */
+
+	// buckets
+	for i := 0; i < ter.ordNumChildBck; i++ {
+		if child, ok := ter.ordChildrenBck[i]; ok {
+			ter.Children[child].(Checker).deleteCheckInherited(c)
+		}
 	}
-	wg.Wait()
 }
 
 func (ter *Repository) rmCheck(c Check) {
