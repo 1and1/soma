@@ -46,11 +46,11 @@ func (tec *Cluster) setCheckInherited(c Check) {
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()
 	}
-	f.Items = nil
-	tec.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
 	tec.setCheckOnChildren(c)
+	f.Items = nil
+	tec.addCheck(f)
 }
 
 func (tec *Cluster) setCheckOnChildren(c Check) {
@@ -75,13 +75,13 @@ func (tec *Cluster) addCheck(c Check) {
 // Checker:> Remove Check
 
 func (tec *Cluster) DeleteCheck(c Check) {
-	tec.rmCheck(c)
 	tec.deleteCheckOnChildren(c)
+	tec.rmCheck(c)
 }
 
 func (tec *Cluster) deleteCheckInherited(c Check) {
-	tec.rmCheck(c)
 	tec.deleteCheckOnChildren(c)
+	tec.rmCheck(c)
 }
 
 func (tec *Cluster) deleteCheckOnChildren(c Check) {

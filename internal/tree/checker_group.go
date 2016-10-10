@@ -46,11 +46,11 @@ func (teg *Group) setCheckInherited(c Check) {
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()
 	}
-	f.Items = nil
-	teg.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
 	teg.setCheckOnChildren(c)
+	f.Items = nil
+	teg.addCheck(f)
 }
 
 func (teg *Group) setCheckOnChildren(c Check) {
@@ -75,13 +75,13 @@ func (teg *Group) addCheck(c Check) {
 // Checker:> Remove Check
 
 func (teg *Group) DeleteCheck(c Check) {
-	teg.rmCheck(c)
 	teg.deleteCheckOnChildren(c)
+	teg.rmCheck(c)
 }
 
 func (teg *Group) deleteCheckInherited(c Check) {
-	teg.rmCheck(c)
 	teg.deleteCheckOnChildren(c)
+	teg.rmCheck(c)
 }
 
 func (teg *Group) deleteCheckOnChildren(c Check) {

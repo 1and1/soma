@@ -46,11 +46,11 @@ func (teb *Bucket) setCheckInherited(c Check) {
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()
 	}
-	f.Items = nil
-	teb.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
 	teb.setCheckOnChildren(c)
+	f.Items = nil
+	teb.addCheck(f)
 }
 
 func (teb *Bucket) setCheckOnChildren(c Check) {
@@ -75,13 +75,13 @@ func (teb *Bucket) addCheck(c Check) {
 // Checker:> Remove Check
 
 func (teb *Bucket) DeleteCheck(c Check) {
-	teb.rmCheck(c)
 	teb.deleteCheckOnChildren(c)
+	teb.rmCheck(c)
 }
 
 func (teb *Bucket) deleteCheckInherited(c Check) {
-	teb.rmCheck(c)
 	teb.deleteCheckOnChildren(c)
+	teb.rmCheck(c)
 }
 
 func (teb *Bucket) deleteCheckOnChildren(c Check) {
