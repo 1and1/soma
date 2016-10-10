@@ -45,11 +45,11 @@ func (ter *Repository) setCheckInherited(c Check) {
 	if uuid.Equal(f.Id, uuid.Nil) {
 		f.Id = uuid.NewV4()
 	}
-	f.Items = nil
-	ter.addCheck(f)
 	// send original check downwards
 	c.Id = uuid.Nil
 	ter.setCheckOnChildren(c)
+	f.Items = nil
+	ter.addCheck(f)
 }
 
 func (ter *Repository) setCheckOnChildren(c Check) {
@@ -74,13 +74,13 @@ func (ter *Repository) addCheck(c Check) {
 // Checker:> Remove Check
 
 func (ter *Repository) DeleteCheck(c Check) {
-	ter.rmCheck(c)
 	ter.deleteCheckOnChildren(c)
+	ter.rmCheck(c)
 }
 
 func (ter *Repository) deleteCheckInherited(c Check) {
-	ter.rmCheck(c)
 	ter.deleteCheckOnChildren(c)
+	ter.rmCheck(c)
 }
 
 func (ter *Repository) deleteCheckOnChildren(c Check) {
