@@ -43,6 +43,11 @@ func (teb *Bucket) unlinkGroup(u UnlinkRequest) {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
 					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
+					for i, grp := range teb.ordChildrenGrp {
+						if grp == u.ChildId {
+							delete(teb.ordChildrenGrp, i)
+						}
+					}
 				}
 			}
 		default:
@@ -63,6 +68,11 @@ func (teb *Bucket) unlinkCluster(u UnlinkRequest) {
 				if u.ChildName == teb.Children[u.ChildId].GetName() {
 					teb.Children[u.ChildId].clearParent()
 					delete(teb.Children, u.ChildId)
+					for i, clr := range teb.ordChildrenClr {
+						if clr == u.ChildId {
+							delete(teb.ordChildrenClr, i)
+						}
+					}
 				}
 			}
 		default:
@@ -88,6 +98,11 @@ func (teb *Bucket) unlinkNode(u UnlinkRequest) {
 					// update its state from standalone->grouped|clustered
 					// or delete the bucket_assignment on Destroy(),
 					// which can not be differentiated here
+					for i, nod := range teb.ordChildrenNod {
+						if nod == u.ChildId {
+							delete(teb.ordChildrenNod, i)
+						}
+					}
 				}
 			}
 		default:

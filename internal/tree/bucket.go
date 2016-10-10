@@ -37,6 +37,12 @@ type Bucket struct {
 	Checks          map[string]Check
 	Children        map[string]BucketAttacher //`json:"-"`
 	Action          chan *Action              `json:"-"`
+	ordNumChildGrp int `json:"-"`
+	ordNumChildClr int `json:"-"`
+	ordNumChildNod int `json:"-"`
+	ordChildrenGrp map[int]string `json:"-"`
+	ordChildrenClr map[int]string `json:"-"`
+	ordChildrenNod map[int]string `json:"-"`
 }
 
 type BucketSpec struct {
@@ -74,6 +80,12 @@ func NewBucket(spec BucketSpec) *Bucket {
 	teb.PropertySystem = make(map[string]Property)
 	teb.PropertyCustom = make(map[string]Property)
 	teb.Checks = make(map[string]Check)
+	teb.ordNumChildGrp = 0
+	teb.ordNumChildClr = 0
+	teb.ordNumChildNod = 0
+	teb.ordChildrenGrp = make(map[int]string)
+	teb.ordChildrenClr = make(map[int]string)
+	teb.ordChildrenNod = make(map[int]string)
 
 	return teb
 }
@@ -86,6 +98,9 @@ func (teb Bucket) CloneRepository() RepositoryAttacher {
 		State:       teb.State,
 		Frozen:      teb.Frozen,
 		Deleted:     teb.Deleted,
+		ordNumChildGrp: teb.ordNumChildGrp,
+		ordNumChildClr: teb.ordNumChildClr,
+		ordNumChildNod: teb.ordNumChildNod,
 	}
 	cl.Id, _ = uuid.FromString(teb.Id.String())
 	cl.Team, _ = uuid.FromString(teb.Team.String())
@@ -126,6 +141,24 @@ func (teb Bucket) CloneRepository() RepositoryAttacher {
 		cK[k] = chk.clone()
 	}
 	cl.Checks = cK
+
+	chLG := make(map[int]string)
+	for i, s := range teb.ordChildrenGrp {
+		chLG[i] = s
+	}
+	cl.ordChildrenGrp = chLG
+
+	chLC := make(map[int]string)
+	for i, s := range teb.ordChildrenClr {
+		chLC[i] = s
+	}
+	cl.ordChildrenClr = chLC
+
+	chLN := make(map[int]string)
+	for i, s := range teb.ordChildrenNod {
+		chLN[i] = s
+	}
+	cl.ordChildrenNod = chLN
 
 	return &cl
 }

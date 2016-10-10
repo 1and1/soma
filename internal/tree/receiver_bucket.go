@@ -45,6 +45,8 @@ func (teb *Bucket) receiveGroup(r ReceiveRequest) {
 			r.Group.setParent(teb)
 			r.Group.setAction(teb.Action)
 			r.Group.setFault(teb.Fault)
+			teb.ordChildrenGrp[teb.ordNumChildGrp] = r.Group.GetID()
+			teb.ordNumChildGrp++
 		default:
 			panic(`Bucket.receiveGroup`)
 		}
@@ -63,6 +65,8 @@ func (teb *Bucket) receiveCluster(r ReceiveRequest) {
 			r.Cluster.setParent(teb)
 			r.Cluster.setAction(teb.Action)
 			r.Cluster.setFault(teb.Fault)
+			teb.ordChildrenClr[teb.ordNumChildClr] = r.Cluster.GetID()
+			teb.ordNumChildClr++
 		default:
 			panic(`Bucket.receiveCluster`)
 		}
@@ -81,6 +85,8 @@ func (teb *Bucket) receiveNode(r ReceiveRequest) {
 			r.Node.setParent(teb)
 			r.Node.setAction(teb.Action)
 			r.Node.setFault(teb.Fault)
+			teb.ordChildrenNod[teb.ordNumChildNod] = r.Node.GetID()
+			teb.ordNumChildNod++
 
 			teb.actionAssignNode(Action{
 				ChildType: "node",

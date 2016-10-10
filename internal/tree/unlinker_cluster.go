@@ -39,6 +39,11 @@ func (tec *Cluster) unlinkNode(u UnlinkRequest) {
 
 					tec.Children[u.ChildId].clearParent()
 					delete(tec.Children, u.ChildId)
+					for i, nod := range tec.ordChildrenNod {
+						if nod == u.ChildId {
+							delete(tec.ordChildrenNod, i)
+						}
+					}
 
 					tec.actionMemberRemoved(a)
 				}

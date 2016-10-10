@@ -34,6 +34,8 @@ func (tec *Cluster) receiveNode(r ReceiveRequest) {
 			r.Node.setParent(tec)
 			r.Node.setAction(tec.Action)
 			r.Node.setFault(tec.Fault)
+			tec.ordChildrenNod[tec.ordNumChildNod] = r.Node.GetID()
+			tec.ordNumChildNod++
 
 			tec.actionMemberNew(Action{
 				ChildType: "node",

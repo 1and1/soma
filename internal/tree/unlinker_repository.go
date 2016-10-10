@@ -35,6 +35,11 @@ func (ter *Repository) unlinkBucket(u UnlinkRequest) {
 				if u.ChildName == ter.Children[u.ChildId].GetName() {
 					ter.Children[u.ChildId].clearParent()
 					delete(ter.Children, u.ChildId)
+					for i, bck := range ter.ordChildrenBck {
+						if bck == u.ChildId {
+							delete(ter.ordChildrenBck, i)
+						}
+					}
 				}
 			}
 		default:

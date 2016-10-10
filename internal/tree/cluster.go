@@ -36,6 +36,8 @@ type Cluster struct {
 	Instances       map[string]CheckInstance
 	Children        map[string]ClusterAttacher          `json:"-"`
 	loadedInstances map[string]map[string]CheckInstance `json:"-"`
+	ordNumChildNod int `json:"-"`
+	ordChildrenNod map[int]string `json:"-"`
 }
 
 type ClusterSpec struct {
@@ -68,15 +70,18 @@ func NewCluster(spec ClusterSpec) *Cluster {
 	tec.CheckInstances = make(map[string][]string)
 	tec.Instances = make(map[string]CheckInstance)
 	tec.loadedInstances = make(map[string]map[string]CheckInstance)
+	tec.ordNumChildNod = 0
+	tec.ordChildrenNod = make(map[int]string)
 
 	return tec
 }
 
 func (tec Cluster) Clone() *Cluster {
 	cl := Cluster{
-		Name:  tec.Name,
-		State: tec.State,
-		Type:  tec.Type,
+		Name:           tec.Name,
+		State:          tec.State,
+		Type:           tec.Type,
+		ordNumChildNod: tec.ordNumChildNod,
 	}
 	cl.Id, _ = uuid.FromString(tec.Id.String())
 	cl.Team, _ = uuid.FromString(tec.Team.String())
@@ -132,6 +137,12 @@ func (tec Cluster) Clone() *Cluster {
 		}
 	}
 	cl.CheckInstances = ci
+
+	chLN := make(map[int]string)
+	for i, s := range tec.ordChildrenNod {
+		chLN[i] = s
+	}
+	cl.ordChildrenNod = chLN
 
 	return &cl
 }
