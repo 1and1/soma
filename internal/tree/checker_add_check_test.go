@@ -79,12 +79,12 @@ func TestCheckerAddCheck(t *testing.T) {
 		[]string{`node`, `update`},
 		[]string{`group`, `member_new`}, // MoveNodeToGroup
 		[]string{`node`, `update`},
-		[]string{`bucket`, `check_new`}, // SetCheck
-		[]string{`group`, `check_new`},
-		[]string{`node`, `check_new`},
-		[]string{`node`, `check_new`},
+		[]string{`node`, `check_new`}, // SetCheck
 		[]string{`cluster`, `check_new`},
 		[]string{`node`, `check_new`},
+		[]string{`group`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`bucket`, `check_new`},
 		[]string{`repository`, `check_new`},
 		[]string{`node`, `check_instance_create`}, // ComputeInstances
 		[]string{`node`, `check_instance_create`},
@@ -192,25 +192,25 @@ func TestCheckerDeleteCheck(t *testing.T) {
 		[]string{`node`, `update`},
 		[]string{`group`, `member_new`}, // MoveNodeToGroup
 		[]string{`node`, `update`},
-		[]string{`bucket`, `check_new`}, // SetCheck
-		[]string{`group`, `check_new`},
-		[]string{`node`, `check_new`},
-		[]string{`node`, `check_new`},
+		[]string{`node`, `check_new`}, // SetCheck
 		[]string{`cluster`, `check_new`},
 		[]string{`node`, `check_new`},
+		[]string{`group`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`bucket`, `check_new`},
 		[]string{`repository`, `check_new`},
 		[]string{`node`, `check_instance_create`}, // ComputeInstances
 		[]string{`node`, `check_instance_create`},
 		[]string{`node`, `check_instance_create`},
 		[]string{`cluster`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
-		[]string{`repository`, `check_removed`}, // DeleteCheck
-		[]string{`bucket`, `check_removed`},
-		[]string{`group`, `check_removed`},
-		[]string{`node`, `check_removed`},
-		[]string{`node`, `check_removed`},
+		[]string{`node`, `check_removed`}, // DeleteCheck
 		[]string{`cluster`, `check_removed`},
 		[]string{`node`, `check_removed`},
+		[]string{`group`, `check_removed`},
+		[]string{`node`, `check_removed`},
+		[]string{`bucket`, `check_removed`},
+		[]string{`repository`, `check_removed`},
 		[]string{`node`, `check_instance_delete`},
 		[]string{`node`, `check_instance_delete`},
 		[]string{`node`, `check_instance_delete`},
