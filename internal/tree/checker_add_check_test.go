@@ -112,6 +112,132 @@ func TestCheckerAddCheck(t *testing.T) {
 	}
 }
 
+func TestCheckerDeleteCheck(t *testing.T) {
+	sTree, actionC, errC := testSpawnCheckTree()
+
+	chkConfigId := uuid.NewV4()
+	capId := uuid.NewV4()
+	chkId := uuid.NewV4()
+
+	chk := Check{
+		Id:            chkId,
+		SourceId:      uuid.Nil,
+		InheritedFrom: uuid.Nil,
+		Inheritance:   true,
+		ChildrenOnly:  false,
+		Interval:      60,
+		ConfigId:      chkConfigId,
+		CapabilityId:  capId,
+		View:          `any`,
+		Thresholds: []CheckThreshold{
+			{
+				Predicate: `>=`,
+				Level:     1,
+				Value:     100,
+			},
+			{
+				Predicate: `>=`,
+				Level:     3,
+				Value:     450,
+			},
+		},
+		Constraints: []CheckConstraint{},
+	}
+
+	sTree.Find(FindRequest{
+		ElementType: `repository`,
+		ElementName: `checkTest`,
+	}, true).SetCheck(chk)
+
+	sTree.ComputeCheckInstances()
+
+	delChk := Check{
+		Id:            uuid.Nil,
+		InheritedFrom: uuid.Nil,
+		SourceId:      chkId,
+		ConfigId:      chkConfigId,
+	}
+
+	sTree.Find(FindRequest{
+		ElementType: `repository`,
+		ElementName: `checkTest`,
+	}, true).DeleteCheck(delChk)
+
+	sTree.ComputeCheckInstances()
+
+	close(actionC)
+	close(errC)
+
+	if len(errC) > 0 {
+		t.Error(`Error channel not empty`)
+	}
+
+	elem := 0
+	actions := [][]string{
+		[]string{`repository`, `create`},
+		[]string{`fault`, `create`},
+		[]string{`errorchannel`, `attached`},
+		[]string{`bucket`, `create`},
+		[]string{`group`, `create`},
+		[]string{`cluster`, `create`},
+		[]string{`bucket`, `node_assignment`}, // NewNode
+		[]string{`node`, `update`},
+		[]string{`bucket`, `node_assignment`}, // NewNode
+		[]string{`node`, `update`},
+		[]string{`bucket`, `node_assignment`}, // NewNode
+		[]string{`node`, `update`},
+		[]string{`group`, `member_new`}, // MoveClusterToGroup
+		[]string{`cluster`, `update`},
+		[]string{`cluster`, `member_new`}, // MoveNodeToCluster
+		[]string{`node`, `update`},
+		[]string{`group`, `member_new`}, // MoveNodeToGroup
+		[]string{`node`, `update`},
+		[]string{`bucket`, `check_new`}, // SetCheck
+		[]string{`group`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`cluster`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`repository`, `check_new`},
+		[]string{`node`, `check_instance_create`}, // ComputeInstances
+		[]string{`node`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
+		[]string{`cluster`, `check_instance_create`},
+		[]string{`group`, `check_instance_create`},
+		[]string{`repository`, `check_removed`}, // DeleteCheck
+		[]string{`bucket`, `check_removed`},
+		[]string{`group`, `check_removed`},
+		[]string{`node`, `check_removed`},
+		[]string{`node`, `check_removed`},
+		[]string{`cluster`, `check_removed`},
+		[]string{`node`, `check_removed`},
+		[]string{`node`, `check_instance_delete`},
+		[]string{`node`, `check_instance_delete`},
+		[]string{`node`, `check_instance_delete`},
+		[]string{`cluster`, `check_instance_delete`},
+		[]string{`group`, `check_instance_delete`},
+	}
+	for a := range actionC {
+		if elem >= len(actions) {
+			t.Error(
+				`Received additional action`,
+				elem, a.Type, a.Action,
+			)
+			elem++
+			continue
+		}
+
+		if a.Type != actions[elem][0] || a.Action != actions[elem][1] {
+			t.Error(
+				`Received incorrect action`, elem, `. Expected`,
+				actions[elem][0], actions[elem][1],
+				`and received`, a.Type, a.Action,
+			)
+		}
+		elem++
+	}
+}
+
 func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 	actionC := make(chan *Action, 128)
 	errC := make(chan *Error, 128)
