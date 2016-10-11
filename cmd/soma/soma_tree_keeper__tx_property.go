@@ -191,7 +191,7 @@ func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
 	_, err = statement.Exec(
 		a.Property.InstanceId,
 		a.Property.SourceInstanceId,
-		a.Node.Id,
+		id,
 		a.Property.View,
 		a.Property.Oncall.Id,
 		a.Property.RepositoryId,
