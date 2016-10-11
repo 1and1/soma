@@ -12,7 +12,6 @@ import (
 	"github.com/satori/go.uuid"
 
 	"github.com/1and1/soma/internal/stmt"
-	"github.com/1and1/soma/lib/proto"
 	"github.com/1and1/soma/internal/tree"
 )
 
@@ -198,7 +197,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		err        error
 		hasErrors  bool
 		tx         *sql.Tx
-		treeCheck  *tree.Check
 		nullBucket sql.NullString
 
 		txStmtPropertyInstanceCreate *sql.Stmt
@@ -940,12 +938,8 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case `add_check_to_cluster`:
 		fallthrough
 	case `add_check_to_node`:
-		if treeCheck, err = tk.convertCheck(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(tree.FindRequest{
-				ElementType: q.CheckConfig.CheckConfig.ObjectType,
-				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
-			}, true).SetCheck(*treeCheck)
-		}
+		err = tk.addCheck(&q.CheckConfig.CheckConfig)
+
 	case `remove_check_from_repository`:
 		fallthrough
 	case `remove_check_from_bucket`:
@@ -955,12 +949,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case `remove_check_from_cluster`:
 		fallthrough
 	case `remove_check_from_node`:
-		if treeCheck, err = tk.convertCheckForDelete(&q.CheckConfig.CheckConfig); err == nil {
-			tk.tree.Find(tree.FindRequest{
-				ElementType: q.CheckConfig.CheckConfig.ObjectType,
-				ElementId:   q.CheckConfig.CheckConfig.ObjectId,
-			}, true).DeleteCheck(*treeCheck)
-		}
+		err = tk.rmCheck(&q.CheckConfig.CheckConfig)
 	}
 
 	// check if we accumulated an error in one of the switch cases
@@ -2637,76 +2626,6 @@ bailout:
 		log.Printf("Cleaned message: %s\n", string(jB))
 	}
 	return
-}
-
-func (tk *treeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*tree.Check, error) {
-	var err error
-	treechk := &tree.Check{
-		Id:            uuid.Nil,
-		InheritedFrom: uuid.Nil,
-	}
-	if treechk.SourceId, err = uuid.FromString(conf.ExternalId); err != nil {
-		return nil, err
-	}
-	if treechk.ConfigId, err = uuid.FromString(conf.Id); err != nil {
-		return nil, err
-	}
-	return treechk, nil
-}
-
-func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error) {
-	treechk := &tree.Check{
-		Id:            uuid.Nil,
-		SourceId:      uuid.Nil,
-		InheritedFrom: uuid.Nil,
-		Inheritance:   conf.Inheritance,
-		ChildrenOnly:  conf.ChildrenOnly,
-		Interval:      conf.Interval,
-	}
-	treechk.CapabilityId, _ = uuid.FromString(conf.CapabilityId)
-	treechk.ConfigId, _ = uuid.FromString(conf.Id)
-	if err := tk.get_view.QueryRow(conf.CapabilityId).Scan(&treechk.View); err != nil {
-		return &tree.Check{}, err
-	}
-
-	treechk.Thresholds = make([]tree.CheckThreshold, len(conf.Thresholds))
-	for i, thr := range conf.Thresholds {
-		nthr := tree.CheckThreshold{
-			Predicate: thr.Predicate.Symbol,
-			Level:     uint8(thr.Level.Numeric),
-			Value:     thr.Value,
-		}
-		treechk.Thresholds[i] = nthr
-	}
-
-	treechk.Constraints = make([]tree.CheckConstraint, len(conf.Constraints))
-	for i, constr := range conf.Constraints {
-		ncon := tree.CheckConstraint{
-			Type: constr.ConstraintType,
-		}
-		switch constr.ConstraintType {
-		case "native":
-			ncon.Key = constr.Native.Name
-			ncon.Value = constr.Native.Value
-		case "oncall":
-			ncon.Key = "OncallId"
-			ncon.Value = constr.Oncall.Id
-		case "custom":
-			ncon.Key = constr.Custom.Id
-			ncon.Value = constr.Custom.Value
-		case "system":
-			ncon.Key = constr.System.Name
-			ncon.Value = constr.System.Value
-		case "service":
-			ncon.Key = "name"
-			ncon.Value = constr.Service.Name
-		case "attribute":
-			ncon.Key = constr.Attribute.Name
-			ncon.Value = constr.Attribute.Value
-		}
-		treechk.Constraints[i] = ncon
-	}
-	return treechk, nil
 }
 
 /* Ops Access
