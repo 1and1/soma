@@ -371,79 +371,25 @@ actionloop:
 		//jBxX, _ := json.Marshal(a)
 		//log.Printf("%s - Processing: %s\n", q.JobId.String(), string(jBxX))
 
+		if tk.rebuild {
+			switch a.Action {
+			case `property_new`:
+				// ignore in rebuild mode
+				continue actionloop
+			}
+		}
+
+		switch a.Action {
+		case `property_new`:
+			if err = tk.txProperty(a, &stm); err != nil {
+				break actionloop
+			}
+		}
+
 		switch a.Type {
 		// REPOSITORY
 		case "repository":
 			switch a.Action {
-			case "property_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtPropertyInstanceCreate.Exec(
-					a.Property.InstanceId,
-					a.Property.RepositoryId,
-					a.Property.SourceInstanceId,
-					a.Property.SourceType,
-					a.Property.InheritedFrom,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case "custom":
-					if _, err = txStmtRepositoryPropertyCustomCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Property.Custom.RepositoryId,
-						a.Property.View,
-						a.Property.Custom.Id,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.Custom.Value,
-					); err != nil {
-						break actionloop
-					}
-				case "system":
-					if _, err = txStmtRepositoryPropertySystemCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Repository.Id,
-						a.Property.View,
-						a.Property.System.Name,
-						a.Property.SourceType,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.System.Value,
-						a.Property.IsInherited,
-					); err != nil {
-						break actionloop
-					}
-				case "service":
-					if _, err = txStmtRepositoryPropertyServiceCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Repository.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				case "oncall":
-					if _, err = txStmtRepositoryPropertyOncallCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Repository.Id,
-						a.Property.View,
-						a.Property.Oncall.Id,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				}
 			case `property_delete`:
 				if tk.rebuild {
 					// ignore in rebuild mode
@@ -545,98 +491,6 @@ actionloop:
 					a.Bucket.TeamId,
 				); err != nil {
 					break actionloop
-				}
-			case "property_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtPropertyInstanceCreate.Exec(
-					a.Property.InstanceId,
-					a.Property.RepositoryId,
-					a.Property.SourceInstanceId,
-					a.Property.SourceType,
-					a.Property.InheritedFrom,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case "custom":
-					if _, err = txStmtBucketPropertyCustomCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Bucket.Id,
-						a.Property.View,
-						a.Property.Custom.Id,
-						a.Property.Custom.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.Custom.Value,
-					); err != nil {
-						break actionloop
-					}
-				case "system":
-					if _, err = txStmtBucketPropertySystemCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Bucket.Id,
-						a.Property.View,
-						a.Property.System.Name,
-						a.Property.SourceType,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.System.Value,
-						a.Property.IsInherited,
-					); err != nil {
-						break actionloop
-					}
-				case "service":
-					log.Printf(`SQL: tkStmtBucketPropertyServiceCreate:
-Instance ID:           %s
-Source Instance ID:    %s
-Bucket ID:             %s
-View:                  %s
-Service Name:          %s
-Service TeamId:        %s
-Repository ID:         %s
-Inheritance Enabled:   %t
-Children Only:         %t%s`,
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Bucket.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly, "\n")
-					if _, err = txStmtBucketPropertyServiceCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Bucket.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				case "oncall":
-					if _, err = txStmtBucketPropertyOncallCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Bucket.Id,
-						a.Property.View,
-						a.Property.Oncall.Id,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
 				}
 			case `property_delete`:
 				if tk.rebuild {
@@ -804,80 +658,6 @@ Children Only:         %t%s`,
 					if _, err = txStmtGroupMemberRemoveNode.Exec(
 						a.Group.Id,
 						a.ChildNode.Id,
-					); err != nil {
-						break actionloop
-					}
-				}
-			case "property_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtPropertyInstanceCreate.Exec(
-					a.Property.InstanceId,
-					a.Property.RepositoryId,
-					a.Property.SourceInstanceId,
-					a.Property.SourceType,
-					a.Property.InheritedFrom,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case "custom":
-					if _, err = txStmtGroupPropertyCustomCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Group.Id,
-						a.Property.View,
-						a.Property.Custom.Id,
-						a.Property.BucketId,
-						a.Property.Custom.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.Custom.Value,
-					); err != nil {
-						break actionloop
-					}
-				case "system":
-					if _, err = txStmtGroupPropertySystemCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Group.Id,
-						a.Property.View,
-						a.Property.System.Name,
-						a.Property.SourceType,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.System.Value,
-						a.Property.IsInherited,
-					); err != nil {
-						break actionloop
-					}
-				case "service":
-					if _, err = txStmtGroupPropertyServiceCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Group.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				case "oncall":
-					if _, err = txStmtGroupPropertyOncallCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Group.Id,
-						a.Property.View,
-						a.Property.Oncall.Id,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
 					); err != nil {
 						break actionloop
 					}
@@ -1051,99 +831,6 @@ Children Only:         %t%s`,
 				); err != nil {
 					break actionloop
 				}
-			case "property_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtPropertyInstanceCreate.Exec(
-					a.Property.InstanceId,
-					a.Property.RepositoryId,
-					a.Property.SourceInstanceId,
-					a.Property.SourceType,
-					a.Property.InheritedFrom,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case "custom":
-					if _, err = txStmtClusterPropertyCustomCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Cluster.Id,
-						a.Property.View,
-						a.Property.Custom.Id,
-						a.Property.BucketId,
-						a.Property.Custom.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.Custom.Value,
-					); err != nil {
-						break actionloop
-					}
-				case "system":
-					if _, err = txStmtClusterPropertySystemCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Cluster.Id,
-						a.Property.View,
-						a.Property.System.Name,
-						a.Property.SourceType,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.System.Value,
-						a.Property.IsInherited,
-					); err != nil {
-						break actionloop
-					}
-				case "service":
-					log.Printf(`SQL: tkStmtClusterPropertyServiceCreate:
-Instance ID:           %s
-Source Instance ID:    %s
-Cluster ID:            %s
-View:                  %s
-Service Name:          %s
-Service TeamId:        %s
-Repository ID:         %s
-Inheritance Enabled:   %t
-Children Only:         %t%s`,
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Cluster.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly, "\n")
-					if _, err = txStmtClusterPropertyServiceCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Cluster.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				case "oncall":
-					if _, err = txStmtClusterPropertyOncallCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Cluster.Id,
-						a.Property.View,
-						a.Property.Oncall.Id,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				}
 			case `property_delete`:
 				if tk.rebuild {
 					// ignore in rebuild mode
@@ -1276,103 +963,6 @@ Children Only:         %t%s`,
 					a.Node.State,
 				); err != nil {
 					break actionloop
-				}
-			case "property_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtPropertyInstanceCreate.Exec(
-					a.Property.InstanceId,
-					a.Property.RepositoryId,
-					a.Property.SourceInstanceId,
-					a.Property.SourceType,
-					a.Property.InheritedFrom,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case "custom":
-					if _, err = txStmtNodePropertyCustomCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Node.Id,
-						a.Property.View,
-						a.Property.Custom.Id,
-						a.Property.BucketId,
-						a.Property.Custom.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.Custom.Value,
-					); err != nil {
-						break actionloop
-					}
-				case "system":
-					log.Printf(`SQL: tkStmtNodePropertySystemCreate:
-Instance ID:           %s
-Source Instance ID:    %s
-Node ID:               %s
-View:                  %s
-SystemProperty:        %s
-Object Type:           %s
-Repository ID:         %s
-Inheritance Enabled:   %t
-Children Only:         %t
-System Property Value: %s
-Is Inherited:          %t%s`,
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Node.Id,
-						a.Property.View,
-						a.Property.System.Name,
-						a.Property.SourceType,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.System.Value,
-						a.Property.IsInherited, "\n")
-					if _, err = txStmtNodePropertySystemCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Node.Id,
-						a.Property.View,
-						a.Property.System.Name,
-						a.Property.SourceType,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-						a.Property.System.Value,
-						a.Property.IsInherited,
-					); err != nil {
-						break actionloop
-					}
-				case "service":
-					if _, err = txStmtNodePropertyServiceCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Node.Id,
-						a.Property.View,
-						a.Property.Service.Name,
-						a.Property.Service.TeamId,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
-				case "oncall":
-					if _, err = txStmtNodePropertyOncallCreate.Exec(
-						a.Property.InstanceId,
-						a.Property.SourceInstanceId,
-						a.Node.Id,
-						a.Property.View,
-						a.Property.Oncall.Id,
-						a.Property.RepositoryId,
-						a.Property.Inheritance,
-						a.Property.ChildrenOnly,
-					); err != nil {
-						break actionloop
-					}
 				}
 			case `property_delete`:
 				if tk.rebuild {
