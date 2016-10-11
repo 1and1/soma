@@ -298,29 +298,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:      (*q.Repository.Repository.Properties)[0].System.Name,
 			Value:    (*q.Repository.Repository.Properties)[0].System.Value,
 		})
-	case "add_service_property_to_repository":
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "repository",
-			ElementId:   q.Repository.Repository.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
-			Id:           uuid.NewV4(),
-			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Repository.Repository.Properties)[0].ChildrenOnly,
-			View:         (*q.Repository.Repository.Properties)[0].View,
-			Service:      (*q.Repository.Repository.Properties)[0].Service.Name,
-			Attributes:   (*q.Repository.Repository.Properties)[0].Service.Attributes,
-		})
-	case `delete_service_property_from_repository`:
-		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "repository",
-			ElementId:   q.Repository.Repository.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
-			SourceId: srcUUID,
-			View:     (*q.Repository.Repository.Properties)[0].View,
-			Service:  (*q.Repository.Repository.Properties)[0].Service.Name,
-		})
 
 	//
 	// BUCKET MANIPULATION REQUESTS
@@ -362,29 +339,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Bucket.Bucket.Properties)[0].View,
 			Key:      (*q.Bucket.Bucket.Properties)[0].System.Name,
 			Value:    (*q.Bucket.Bucket.Properties)[0].System.Value,
-		})
-	case "add_service_property_to_bucket":
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "bucket",
-			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
-			Id:           uuid.NewV4(),
-			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Bucket.Bucket.Properties)[0].ChildrenOnly,
-			View:         (*q.Bucket.Bucket.Properties)[0].View,
-			Service:      (*q.Bucket.Bucket.Properties)[0].Service.Name,
-			Attributes:   (*q.Bucket.Bucket.Properties)[0].Service.Attributes,
-		})
-	case `delete_service_property_from_bucket`:
-		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `bucket`,
-			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
-			SourceId: srcUUID,
-			View:     (*q.Bucket.Bucket.Properties)[0].View,
-			Service:  (*q.Bucket.Bucket.Properties)[0].Service.Name,
 		})
 
 	//
@@ -442,29 +396,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:      (*q.Group.Group.Properties)[0].System.Name,
 			Value:    (*q.Group.Group.Properties)[0].System.Value,
 		})
-	case "add_service_property_to_group":
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "group",
-			ElementId:   q.Group.Group.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
-			Id:           uuid.NewV4(),
-			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
-			View:         (*q.Group.Group.Properties)[0].View,
-			Service:      (*q.Group.Group.Properties)[0].Service.Name,
-			Attributes:   (*q.Group.Group.Properties)[0].Service.Attributes,
-		})
-	case `delete_service_property_from_group`:
-		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `group`,
-			ElementId:   q.Group.Group.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
-			SourceId: srcUUID,
-			View:     (*q.Group.Group.Properties)[0].View,
-			Service:  (*q.Group.Group.Properties)[0].Service.Name,
-		})
 
 	//
 	// CLUSTER MANIPULATION REQUESTS
@@ -520,29 +451,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Cluster.Cluster.Properties)[0].View,
 			Key:      (*q.Cluster.Cluster.Properties)[0].System.Name,
 			Value:    (*q.Cluster.Cluster.Properties)[0].System.Value,
-		})
-	case "add_service_property_to_cluster":
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "cluster",
-			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
-			Id:           uuid.NewV4(),
-			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Cluster.Cluster.Properties)[0].ChildrenOnly,
-			View:         (*q.Cluster.Cluster.Properties)[0].View,
-			Service:      (*q.Cluster.Cluster.Properties)[0].Service.Name,
-			Attributes:   (*q.Cluster.Cluster.Properties)[0].Service.Attributes,
-		})
-	case `delete_service_property_from_cluster`:
-		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `cluster`,
-			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
-			SourceId: srcUUID,
-			View:     (*q.Cluster.Cluster.Properties)[0].View,
-			Service:  (*q.Cluster.Cluster.Properties)[0].Service.Name,
 		})
 
 	//
@@ -613,33 +521,15 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Key:      (*q.Node.Node.Properties)[0].System.Name,
 			Value:    (*q.Node.Node.Properties)[0].System.Value,
 		})
-	case "add_service_property_to_node":
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "node",
-			ElementId:   q.Node.Node.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyService{
-			Id:           uuid.NewV4(),
-			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Node.Node.Properties)[0].ChildrenOnly,
-			View:         (*q.Node.Node.Properties)[0].View,
-			Service:      (*q.Node.Node.Properties)[0].Service.Name,
-			Attributes:   (*q.Node.Node.Properties)[0].Service.Attributes,
-		})
-	case `delete_service_property_from_node`:
-		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `node`,
-			ElementId:   q.Node.Node.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyService{
-			SourceId: srcUUID,
-			View:     (*q.Node.Node.Properties)[0].View,
-			Service:  (*q.Node.Node.Properties)[0].Service.Name,
-		})
 
 	//
 	// PROPERTY MANIPULATION REQUESTS
 	case
+		`add_service_property_to_repository`,
+		`add_service_property_to_bucket`,
+		`add_service_property_to_group`,
+		`add_service_property_to_cluster`,
+		`add_service_property_to_node`,
 		`add_oncall_property_to_repository`,
 		`add_oncall_property_to_bucket`,
 		`add_oncall_property_to_group`,
@@ -653,6 +543,11 @@ func (tk *treeKeeper) process(q *treeRequest) {
 		tk.addProperty(q)
 
 	case
+		`delete_service_property_from_repository`,
+		`delete_service_property_from_bucket`,
+		`delete_service_property_from_group`,
+		`delete_service_property_from_cluster`,
+		`delete_service_property_from_node`,
 		`delete_oncall_property_from_repository`,
 		`delete_oncall_property_from_bucket`,
 		`delete_oncall_property_from_group`,

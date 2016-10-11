@@ -103,6 +103,25 @@ func (tk *treeKeeper) pTT(task string, pp proto.Property) tree.Property {
 				Number:   pp.Oncall.Number,
 			}
 		}
+	case `service`:
+		switch task {
+		case `add`:
+			return &tree.PropertyService{
+				Id:           uuid.NewV4(),
+				Inheritance:  pp.Inheritance,
+				ChildrenOnly: pp.ChildrenOnly,
+				View:         pp.View,
+				Service:      pp.Service.Name,
+				Attributes:   pp.Service.Attributes,
+			}
+		case `rm`:
+			srcUUID, _ := uuid.FromString(pp.SourceInstanceId)
+			return &tree.PropertyService{
+				SourceId: srcUUID,
+				View:     pp.View,
+				Service:  pp.Service.Name,
+			}
+		}
 	}
 	return nil
 }
