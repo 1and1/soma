@@ -639,70 +639,48 @@ func (tk *treeKeeper) process(q *treeRequest) {
 
 	//
 	// PROPERTY MANIPULATION REQUESTS
-	case "add_oncall_property_to_repository":
-		fallthrough
-	case "add_oncall_property_to_bucket":
-		fallthrough
-	case "add_oncall_property_to_group":
-		fallthrough
-	case "add_oncall_property_to_cluster":
-		fallthrough
-	case "add_oncall_property_to_node":
-		fallthrough
-	case "add_custom_property_to_repository":
-		fallthrough
-	case "add_custom_property_to_bucket":
-		fallthrough
-	case "add_custom_property_to_group":
-		fallthrough
-	case "add_custom_property_to_cluster":
-		fallthrough
-	case "add_custom_property_to_node":
+	case
+		`add_oncall_property_to_repository`,
+		`add_oncall_property_to_bucket`,
+		`add_oncall_property_to_group`,
+		`add_oncall_property_to_cluster`,
+		`add_oncall_property_to_node`,
+		`add_custom_property_to_repository`,
+		`add_custom_property_to_bucket`,
+		`add_custom_property_to_group`,
+		`add_custom_property_to_cluster`,
+		`add_custom_property_to_node`:
 		tk.addProperty(q)
 
-	case `delete_oncall_property_from_repository`:
-		fallthrough
-	case `delete_oncall_property_from_bucket`:
-		fallthrough
-	case `delete_oncall_property_from_group`:
-		fallthrough
-	case `delete_oncall_property_from_cluster`:
-		fallthrough
-	case `delete_oncall_property_from_node`:
-		fallthrough
-	case `delete_custom_property_from_repository`:
-		fallthrough
-	case `delete_custom_property_from_bucket`:
-		fallthrough
-	case `delete_custom_property_from_group`:
-		fallthrough
-	case `delete_custom_property_from_cluster`:
-		fallthrough
-	case `delete_custom_property_from_node`:
+	case
+		`delete_oncall_property_from_repository`,
+		`delete_oncall_property_from_bucket`,
+		`delete_oncall_property_from_group`,
+		`delete_oncall_property_from_cluster`,
+		`delete_oncall_property_from_node`,
+		`delete_custom_property_from_repository`,
+		`delete_custom_property_from_bucket`,
+		`delete_custom_property_from_group`,
+		`delete_custom_property_from_cluster`,
+		`delete_custom_property_from_node`:
 		tk.rmProperty(q)
 
 	//
 	// CHECK MANIPULATION REQUESTS
-	case `add_check_to_repository`:
-		fallthrough
-	case `add_check_to_bucket`:
-		fallthrough
-	case `add_check_to_group`:
-		fallthrough
-	case `add_check_to_cluster`:
-		fallthrough
-	case `add_check_to_node`:
+	case
+		`add_check_to_repository`,
+		`add_check_to_bucket`,
+		`add_check_to_group`,
+		`add_check_to_cluster`,
+		`add_check_to_node`:
 		err = tk.addCheck(&q.CheckConfig.CheckConfig)
 
-	case `remove_check_from_repository`:
-		fallthrough
-	case `remove_check_from_bucket`:
-		fallthrough
-	case `remove_check_from_group`:
-		fallthrough
-	case `remove_check_from_cluster`:
-		fallthrough
-	case `remove_check_from_node`:
+	case
+		`remove_check_from_repository`,
+		`remove_check_from_bucket`,
+		`remove_check_from_group`,
+		`remove_check_from_cluster`,
+		`remove_check_from_node`:
 		err = tk.rmCheck(&q.CheckConfig.CheckConfig)
 	}
 
