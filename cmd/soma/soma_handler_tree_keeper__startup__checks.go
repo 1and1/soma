@@ -482,7 +482,9 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// required to populate groups in the correct order.
 	for checkId, _ = range cfgMap {
 		victim = cfgMap[checkId]
-		ckOrder[victim.ObjectId] = map[string]tree.Check{}
+		if ckOrder[victim.ObjectId] == nil {
+			ckOrder[victim.ObjectId] = map[string]tree.Check{}
+		}
 		if ckTree, err = tk.convertCheck(&victim); err != nil {
 			goto fail
 		}
