@@ -350,35 +350,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:     (*q.Repository.Repository.Properties)[0].Oncall.Name,
 			Number:   (*q.Repository.Repository.Properties)[0].Oncall.Number,
 		})
-	case "add_custom_property_to_repository":
-		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "repository",
-			ElementId:   q.Repository.Repository.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
-			Id:           uuid.NewV4(),
-			CustomId:     customId,
-			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Repository.Repository.Properties)[0].ChildrenOnly,
-			View:         (*q.Repository.Repository.Properties)[0].View,
-			Key:          (*q.Repository.Repository.Properties)[0].Custom.Name,
-			Value:        (*q.Repository.Repository.Properties)[0].Custom.Value,
-		})
-	case `delete_custom_property_from_repository`:
-		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
-		customId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "repository",
-			ElementId:   q.Repository.Repository.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
-			SourceId: srcUUID,
-			CustomId: customId,
-			View:     (*q.Repository.Repository.Properties)[0].View,
-			Key:      (*q.Repository.Repository.Properties)[0].Custom.Name,
-			Value:    (*q.Repository.Repository.Properties)[0].Custom.Value,
-		})
 
 	//
 	// BUCKET MANIPULATION REQUESTS
@@ -472,35 +443,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Bucket.Bucket.Properties)[0].View,
 			Name:     (*q.Bucket.Bucket.Properties)[0].Oncall.Name,
 			Number:   (*q.Bucket.Bucket.Properties)[0].Oncall.Number,
-		})
-	case "add_custom_property_to_bucket":
-		customId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "bucket",
-			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
-			Id:           uuid.NewV4(),
-			CustomId:     customId,
-			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Bucket.Bucket.Properties)[0].ChildrenOnly,
-			View:         (*q.Bucket.Bucket.Properties)[0].View,
-			Key:          (*q.Bucket.Bucket.Properties)[0].Custom.Name,
-			Value:        (*q.Bucket.Bucket.Properties)[0].Custom.Value,
-		})
-	case `delete_custom_property_from_bucket`:
-		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
-		customId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `bucket`,
-			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
-			SourceId: srcUUID,
-			CustomId: customId,
-			View:     (*q.Bucket.Bucket.Properties)[0].View,
-			Key:      (*q.Bucket.Bucket.Properties)[0].Custom.Name,
-			Value:    (*q.Bucket.Bucket.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -610,35 +552,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:     (*q.Group.Group.Properties)[0].Oncall.Name,
 			Number:   (*q.Group.Group.Properties)[0].Oncall.Number,
 		})
-	case "add_custom_property_to_group":
-		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "group",
-			ElementId:   q.Group.Group.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
-			Id:           uuid.NewV4(),
-			CustomId:     customId,
-			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
-			View:         (*q.Group.Group.Properties)[0].View,
-			Key:          (*q.Group.Group.Properties)[0].Custom.Name,
-			Value:        (*q.Group.Group.Properties)[0].Custom.Value,
-		})
-	case `delete_custom_property_from_group`:
-		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
-		customId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `group`,
-			ElementId:   q.Group.Group.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
-			SourceId: srcUUID,
-			CustomId: customId,
-			View:     (*q.Group.Group.Properties)[0].View,
-			Key:      (*q.Group.Group.Properties)[0].Custom.Name,
-			Value:    (*q.Group.Group.Properties)[0].Custom.Value,
-		})
 
 	//
 	// CLUSTER MANIPULATION REQUESTS
@@ -746,35 +659,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Cluster.Cluster.Properties)[0].View,
 			Name:     (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
 			Number:   (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
-		})
-	case "add_custom_property_to_cluster":
-		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "cluster",
-			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
-			Id:           uuid.NewV4(),
-			CustomId:     customId,
-			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Cluster.Cluster.Properties)[0].ChildrenOnly,
-			View:         (*q.Cluster.Cluster.Properties)[0].View,
-			Key:          (*q.Cluster.Cluster.Properties)[0].Custom.Name,
-			Value:        (*q.Cluster.Cluster.Properties)[0].Custom.Value,
-		})
-	case `delete_custom_property_from_cluster`:
-		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
-		customId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `cluster`,
-			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
-			SourceId: srcUUID,
-			CustomId: customId,
-			View:     (*q.Cluster.Cluster.Properties)[0].View,
-			Key:      (*q.Cluster.Cluster.Properties)[0].Custom.Name,
-			Value:    (*q.Cluster.Cluster.Properties)[0].Custom.Value,
 		})
 
 	//
@@ -897,35 +781,30 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			Name:     (*q.Node.Node.Properties)[0].Oncall.Name,
 			Number:   (*q.Node.Node.Properties)[0].Oncall.Number,
 		})
+
+	//
+	// PROPERTY MANIPULATION REQUESTS
+	case "add_custom_property_to_repository":
+		fallthrough
+	case "add_custom_property_to_bucket":
+		fallthrough
+	case "add_custom_property_to_group":
+		fallthrough
+	case "add_custom_property_to_cluster":
+		fallthrough
 	case "add_custom_property_to_node":
-		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
+		tk.addProperty(q)
 
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "node",
-			ElementId:   q.Node.Node.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyCustom{
-			Id:           uuid.NewV4(),
-			CustomId:     customId,
-			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Node.Node.Properties)[0].ChildrenOnly,
-			View:         (*q.Node.Node.Properties)[0].View,
-			Key:          (*q.Node.Node.Properties)[0].Custom.Name,
-			Value:        (*q.Node.Node.Properties)[0].Custom.Value,
-		})
+	case `delete_custom_property_from_repository`:
+		fallthrough
+	case `delete_custom_property_from_bucket`:
+		fallthrough
+	case `delete_custom_property_from_group`:
+		fallthrough
+	case `delete_custom_property_from_cluster`:
+		fallthrough
 	case `delete_custom_property_from_node`:
-		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
-		customId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Custom.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `node`,
-			ElementId:   q.Node.Node.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyCustom{
-			SourceId: srcUUID,
-			CustomId: customId,
-			View:     (*q.Node.Node.Properties)[0].View,
-			Key:      (*q.Node.Node.Properties)[0].Custom.Name,
-			Value:    (*q.Node.Node.Properties)[0].Custom.Value,
-		})
+		tk.rmProperty(q)
 
 	//
 	// CHECK MANIPULATION REQUESTS
