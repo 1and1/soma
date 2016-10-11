@@ -80,6 +80,29 @@ func (tk *treeKeeper) pTT(task string, pp proto.Property) tree.Property {
 				Value:    pp.Custom.Value,
 			}
 		}
+	case `oncall`:
+		oncallId, _ := uuid.FromString(pp.Oncall.Id)
+		switch task {
+		case `add`:
+			return &tree.PropertyOncall{
+				Id:           uuid.NewV4(),
+				OncallId:     oncallId,
+				Inheritance:  pp.Inheritance,
+				ChildrenOnly: pp.ChildrenOnly,
+				View:         pp.View,
+				Name:         pp.Oncall.Name,
+				Number:       pp.Oncall.Number,
+			}
+		case `rm`:
+			srcUUID, _ := uuid.FromString(pp.SourceInstanceId)
+			return &tree.PropertyOncall{
+				SourceId: srcUUID,
+				OncallId: oncallId,
+				View:     pp.View,
+				Name:     pp.Oncall.Name,
+				Number:   pp.Oncall.Number,
+			}
+		}
 	}
 	return nil
 }

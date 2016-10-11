@@ -321,35 +321,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Repository.Repository.Properties)[0].View,
 			Service:  (*q.Repository.Repository.Properties)[0].Service.Name,
 		})
-	case "add_oncall_property_to_repository":
-		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "repository",
-			ElementId:   q.Repository.Repository.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
-			Id:           uuid.NewV4(),
-			OncallId:     oncallId,
-			Inheritance:  (*q.Repository.Repository.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Repository.Repository.Properties)[0].ChildrenOnly,
-			View:         (*q.Repository.Repository.Properties)[0].View,
-			Name:         (*q.Repository.Repository.Properties)[0].Oncall.Name,
-			Number:       (*q.Repository.Repository.Properties)[0].Oncall.Number,
-		})
-	case `delete_oncall_property_from_repository`:
-		srcUUID, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].SourceInstanceId)
-		oncallId, _ := uuid.FromString((*q.Repository.Repository.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "repository",
-			ElementId:   q.Repository.Repository.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
-			SourceId: srcUUID,
-			OncallId: oncallId,
-			View:     (*q.Repository.Repository.Properties)[0].View,
-			Name:     (*q.Repository.Repository.Properties)[0].Oncall.Name,
-			Number:   (*q.Repository.Repository.Properties)[0].Oncall.Number,
-		})
 
 	//
 	// BUCKET MANIPULATION REQUESTS
@@ -414,35 +385,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			SourceId: srcUUID,
 			View:     (*q.Bucket.Bucket.Properties)[0].View,
 			Service:  (*q.Bucket.Bucket.Properties)[0].Service.Name,
-		})
-	case "add_oncall_property_to_bucket":
-		oncallId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "bucket",
-			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
-			Id:           uuid.NewV4(),
-			OncallId:     oncallId,
-			Inheritance:  (*q.Bucket.Bucket.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Bucket.Bucket.Properties)[0].ChildrenOnly,
-			View:         (*q.Bucket.Bucket.Properties)[0].View,
-			Name:         (*q.Bucket.Bucket.Properties)[0].Oncall.Name,
-			Number:       (*q.Bucket.Bucket.Properties)[0].Oncall.Number,
-		})
-	case `delete_oncall_property_from_bucket`:
-		srcUUID, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].SourceInstanceId)
-		oncallId, _ := uuid.FromString((*q.Bucket.Bucket.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `bucket`,
-			ElementId:   q.Bucket.Bucket.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
-			SourceId: srcUUID,
-			OncallId: oncallId,
-			View:     (*q.Bucket.Bucket.Properties)[0].View,
-			Name:     (*q.Bucket.Bucket.Properties)[0].Oncall.Name,
-			Number:   (*q.Bucket.Bucket.Properties)[0].Oncall.Number,
 		})
 
 	//
@@ -523,35 +465,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Group.Group.Properties)[0].View,
 			Service:  (*q.Group.Group.Properties)[0].Service.Name,
 		})
-	case "add_oncall_property_to_group":
-		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "group",
-			ElementId:   q.Group.Group.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
-			Id:           uuid.NewV4(),
-			OncallId:     oncallId,
-			Inheritance:  (*q.Group.Group.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Group.Group.Properties)[0].ChildrenOnly,
-			View:         (*q.Group.Group.Properties)[0].View,
-			Name:         (*q.Group.Group.Properties)[0].Oncall.Name,
-			Number:       (*q.Group.Group.Properties)[0].Oncall.Number,
-		})
-	case `delete_oncall_property_from_group`:
-		srcUUID, _ := uuid.FromString((*q.Group.Group.Properties)[0].SourceInstanceId)
-		oncallId, _ := uuid.FromString((*q.Group.Group.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `group`,
-			ElementId:   q.Group.Group.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
-			SourceId: srcUUID,
-			OncallId: oncallId,
-			View:     (*q.Group.Group.Properties)[0].View,
-			Name:     (*q.Group.Group.Properties)[0].Oncall.Name,
-			Number:   (*q.Group.Group.Properties)[0].Oncall.Number,
-		})
 
 	//
 	// CLUSTER MANIPULATION REQUESTS
@@ -630,35 +543,6 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			SourceId: srcUUID,
 			View:     (*q.Cluster.Cluster.Properties)[0].View,
 			Service:  (*q.Cluster.Cluster.Properties)[0].Service.Name,
-		})
-	case "add_oncall_property_to_cluster":
-		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "cluster",
-			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
-			Id:           uuid.NewV4(),
-			OncallId:     oncallId,
-			Inheritance:  (*q.Cluster.Cluster.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Cluster.Cluster.Properties)[0].ChildrenOnly,
-			View:         (*q.Cluster.Cluster.Properties)[0].View,
-			Name:         (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
-			Number:       (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
-		})
-	case `delete_oncall_property_from_cluster`:
-		srcUUID, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].SourceInstanceId)
-		oncallId, _ := uuid.FromString((*q.Cluster.Cluster.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `cluster`,
-			ElementId:   q.Cluster.Cluster.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
-			SourceId: srcUUID,
-			OncallId: oncallId,
-			View:     (*q.Cluster.Cluster.Properties)[0].View,
-			Name:     (*q.Cluster.Cluster.Properties)[0].Oncall.Name,
-			Number:   (*q.Cluster.Cluster.Properties)[0].Oncall.Number,
 		})
 
 	//
@@ -752,38 +636,19 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			View:     (*q.Node.Node.Properties)[0].View,
 			Service:  (*q.Node.Node.Properties)[0].Service.Name,
 		})
-	case "add_oncall_property_to_node":
-		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: "node",
-			ElementId:   q.Node.Node.Id,
-		}, true).(tree.Propertier).SetProperty(&tree.PropertyOncall{
-			Id:           uuid.NewV4(),
-			OncallId:     oncallId,
-			Inheritance:  (*q.Node.Node.Properties)[0].Inheritance,
-			ChildrenOnly: (*q.Node.Node.Properties)[0].ChildrenOnly,
-			View:         (*q.Node.Node.Properties)[0].View,
-			Name:         (*q.Node.Node.Properties)[0].Oncall.Name,
-			Number:       (*q.Node.Node.Properties)[0].Oncall.Number,
-		})
-	case `delete_oncall_property_from_node`:
-		srcUUID, _ := uuid.FromString((*q.Node.Node.Properties)[0].SourceInstanceId)
-		oncallId, _ := uuid.FromString((*q.Node.Node.Properties)[0].Oncall.Id)
-
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `node`,
-			ElementId:   q.Node.Node.Id,
-		}, true).(tree.Propertier).DeleteProperty(&tree.PropertyOncall{
-			SourceId: srcUUID,
-			OncallId: oncallId,
-			View:     (*q.Node.Node.Properties)[0].View,
-			Name:     (*q.Node.Node.Properties)[0].Oncall.Name,
-			Number:   (*q.Node.Node.Properties)[0].Oncall.Number,
-		})
 
 	//
 	// PROPERTY MANIPULATION REQUESTS
+	case "add_oncall_property_to_repository":
+		fallthrough
+	case "add_oncall_property_to_bucket":
+		fallthrough
+	case "add_oncall_property_to_group":
+		fallthrough
+	case "add_oncall_property_to_cluster":
+		fallthrough
+	case "add_oncall_property_to_node":
+		fallthrough
 	case "add_custom_property_to_repository":
 		fallthrough
 	case "add_custom_property_to_bucket":
@@ -795,6 +660,16 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	case "add_custom_property_to_node":
 		tk.addProperty(q)
 
+	case `delete_oncall_property_from_repository`:
+		fallthrough
+	case `delete_oncall_property_from_bucket`:
+		fallthrough
+	case `delete_oncall_property_from_group`:
+		fallthrough
+	case `delete_oncall_property_from_cluster`:
+		fallthrough
+	case `delete_oncall_property_from_node`:
+		fallthrough
 	case `delete_custom_property_from_repository`:
 		fallthrough
 	case `delete_custom_property_from_bucket`:
