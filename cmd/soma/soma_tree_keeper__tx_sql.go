@@ -1,0 +1,405 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+package main
+
+import (
+	"database/sql"
+
+	"github.com/1and1/soma/internal/stmt"
+)
+
+func (tk *treeKeeper) startTx() (
+	*sql.Tx, map[string]*sql.Stmt, error) {
+
+	err := error
+	tx := *sql.Tx{}
+	open := false
+	stMap := map[string]*sql.Stmt{}
+
+	if tx, err = tk.conn.Begin(); err != nil {
+		goto bailout
+	}
+	open = true
+
+	if stMap[`PropertyInstanceCreate`], err = tx.Prepare(
+		tkStmtPropertyInstanceCreate,
+	); err != nil {
+		delete(stMap, `PropertyInstanceCreate`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationBase`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationBase,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationBase`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationThreshold`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationThreshold,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationThreshold`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationConstraintSystem`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationConstraintSystem,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationConstraintSystem`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationConstraintNative`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationConstraintNative,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationConstraintNative`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationConstraintOncall`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationConstraintOncall,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationConstraintOncall`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationConstraintCustom`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationConstraintCustom,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationConstraintCustom`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationConstraintService`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationConstraintService,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationConstraintService`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckConfigurationConstraintAttribute`], err = tx.Prepare(
+		tkStmtCreateCheckConfigurationConstraintAttribute,
+	); err != nil {
+		delete(stMap, `CreateCheckConfigurationConstraintAttribute`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheck`], err = tx.Prepare(
+		tkStmtCreateCheck,
+	); err != nil {
+		delete(stMap, `CreateCheck`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckInstance`], err = tx.Prepare(
+		tkStmtCreateCheckInstance,
+	); err != nil {
+		delete(stMap, `CreateCheckInstance`)
+		goto bailout
+	}
+
+	if stMap[`CreateCheckInstanceConfiguration`], err = tx.Prepare(
+		tkStmtCreateCheckInstanceConfiguration,
+	); err != nil {
+		delete(stMap, `CreateCheckInstanceConfiguration`)
+		goto bailout
+	}
+
+	if stMap[`DeleteCheck`], err = tx.Prepare(
+		stmt.TxMarkCheckDeleted,
+	); err != nil {
+		delete(stMap, `DeleteCheck`)
+		goto bailout
+	}
+
+	if stMap[`DeleteCheckInstance`], err = tx.Prepare(
+		stmt.TxMarkCheckInstanceDeleted,
+	); err != nil {
+		delete(stMap, `DeleteCheckInstance`)
+		goto bailout
+	}
+
+	if stMap[`RepositoryPropertyOncallCreate`], err = tx.Prepare(
+		tkStmtRepositoryPropertyOncallCreate,
+	); err != nil {
+		delete(stMap, `RepositoryPropertyOncallCreate`)
+		goto bailout
+	}
+
+	if stMap[`RepositoryPropertyServiceCreate`], err = tx.Prepare(
+		tkStmtRepositoryPropertyServiceCreate,
+	); err != nil {
+		delete(stMap, `RepositoryPropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`RepositoryPropertySystemCreate`], err = tx.Prepare(
+		tkStmtRepositoryPropertySystemCreate,
+	); err != nil {
+		delete(stMap, `RepositoryPropertySystemCreate`)
+		goto bailout
+	}
+
+	if stMap[`RepositoryPropertyCustomCreate`], err = tx.Prepare(
+		tkStmtRepositoryPropertyCustomCreate,
+	); err != nil {
+		delete(stMap, `RepositoryPropertyCustomCreate`)
+		goto bailout
+	}
+
+	if stMap[`CreateBucket`], err = tx.Prepare(
+		tkStmtCreateBucket,
+	); err != nil {
+		delete(stMap, `CreateBucket`)
+		goto bailout
+	}
+
+	if stMap[`BucketPropertyOncallCreate`], err = tx.Prepare(
+		tkStmtBucketPropertyOncallCreate,
+	); err != nil {
+		delete(stMap, `BucketPropertyOncallCreate`)
+		goto bailout
+	}
+
+	if stMap[`BucketPropertyServiceCreate`], err = tx.Prepare(
+		tkStmtBucketPropertyServiceCreate,
+	); err != nil {
+		delete(stMap, `BucketPropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`BucketPropertySystemCreate`], err = tx.Prepare(
+		tkStmtBucketPropertySystemCreate,
+	); err != nil {
+		delete(stMap, `BucketPropertySystemCreate`)
+		goto bailout
+	}
+
+	if stMap[`BucketPropertyCustomCreate`], err = tx.Prepare(
+		tkStmtBucketPropertyCustomCreate,
+	); err != nil {
+		delete(stMap, `BucketPropertyCustomCreate`)
+		goto bailout
+	}
+
+	if stMap[`GroupCreate`], err = tx.Prepare(
+		tkStmtGroupCreate,
+	); err != nil {
+		delete(stMap, `GroupCreate`)
+		goto bailout
+	}
+
+	if stMap[`GroupUpdate`], err = tx.Prepare(
+		tkStmtGroupUpdate,
+	); err != nil {
+		delete(stMap, `GroupUpdate`)
+		goto bailout
+	}
+
+	if stMap[`GroupDelete`], err = tx.Prepare(
+		tkStmtGroupDelete,
+	); err != nil {
+		delete(stMap, `GroupDelete`)
+		goto bailout
+	}
+
+	if stMap[`GroupMemberNewNode`], err = tx.Prepare(
+		tkStmtGroupMemberNewNode,
+	); err != nil {
+		delete(stMap, `GroupMemberNewNode`)
+		goto bailout
+	}
+
+	if stMap[`GroupMemberNewCluster`], err = tx.Prepare(
+		tkStmtGroupMemberNewCluster,
+	); err != nil {
+		delete(stMap, `GroupMemberNewCluster`)
+		goto bailout
+	}
+
+	if stMap[`GroupMemberNewGroup`], err = tx.Prepare(
+		tkStmtGroupMemberNewGroup,
+	); err != nil {
+		delete(stMap, `GroupMemberNewGroup`)
+		goto bailout
+	}
+
+	if stMap[`GroupMemberRemoveNode`], err = tx.Prepare(
+		tkStmtGroupMemberRemoveNode,
+	); err != nil {
+		delete(stMap, `GroupMemberRemoveNode`)
+		goto bailout
+	}
+
+	if stMap[`GroupMemberRemoveCluster`], err = tx.Prepare(
+		tkStmtGroupMemberRemoveCluster,
+	); err != nil {
+		delete(stMap, `GroupMemberRemoveCluster`)
+		goto bailout
+	}
+
+	if stMap[`GroupMemberRemoveGroup`], err = tx.Prepare(
+		tkStmtGroupMemberRemoveGroup,
+	); err != nil {
+		delete(stMap, `GroupMemberRemoveGroup`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertyOncallCreate`], err = tx.Prepare(
+		tkStmtGroupPropertyOncallCreate,
+	); err != nil {
+		delete(stMap, `GroupPropertyOncallCreate`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertyServiceCreate`], err = tx.Prepare(
+		tkStmtGroupPropertyServiceCreate,
+	); err != nil {
+		delete(stMap, `GroupPropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertySystemCreate`], err = tx.Prepare(
+		tkStmtGroupPropertySystemCreate,
+	); err != nil {
+		delete(stMap, `GroupPropertySystemCreate`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertyCustomCreate`], err = tx.Prepare(
+		tkStmtGroupPropertyCustomCreate,
+	); err != nil {
+		delete(stMap, `GroupPropertyCustomCreate`)
+		goto bailout
+	}
+
+	if stMap[`ClusterCreate`], err = tx.Prepare(
+		tkStmtClusterCreate,
+	); err != nil {
+		delete(stMap, `ClusterCreate`)
+		goto bailout
+	}
+
+	if stMap[`ClusterUpdate`], err = tx.Prepare(
+		tkStmtClusterUpdate,
+	); err != nil {
+		delete(stMap, `ClusterUpdate`)
+		goto bailout
+	}
+
+	if stMap[`ClusterDelete`], err = tx.Prepare(
+		tkStmtClusterDelete,
+	); err != nil {
+		delete(stMap, `ClusterDelete`)
+		goto bailout
+	}
+
+	if stMap[`ClusterMemberNew`], err = tx.Prepare(
+		tkStmtClusterMemberNew,
+	); err != nil {
+		delete(stMap, `ClusterMemberNew`)
+		goto bailout
+	}
+
+	if stMap[`ClusterMemberRemove`], err = tx.Prepare(
+		tkStmtClusterMemberRemove,
+	); err != nil {
+		delete(stMap, `ClusterMemberRemove`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertyOncallCreate`], err = tx.Prepare(
+		tkStmtClusterPropertyOncallCreate,
+	); err != nil {
+		delete(stMap, `ClusterPropertyOncallCreate`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertyServiceCreate`], err = tx.Prepare(
+		tkStmtClusterPropertyServiceCreate,
+	); err != nil {
+		delete(stMap, `ClusterPropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertySystemCreate`], err = tx.Prepare(
+		tkStmtClusterPropertySystemCreate,
+	); err != nil {
+		delete(stMap, `ClusterPropertySystemCreate`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertyCustomCreate`], err = tx.Prepare(
+		tkStmtClusterPropertyCustomCreate,
+	); err != nil {
+		delete(stMap, `ClusterPropertyCustomCreate`)
+		goto bailout
+	}
+
+	if stMap[`BucketAssignNode`], err = tx.Prepare(
+		tkStmtBucketAssignNode,
+	); err != nil {
+		delete(stMap, `BucketAssignNode`)
+		goto bailout
+	}
+
+	if stMap[`UpdateNodeState`], err = tx.Prepare(
+		tkStmtUpdateNodeState,
+	); err != nil {
+		delete(stMap, `UpdateNodeState`)
+		goto bailout
+	}
+
+	if stMap[`NodeUnassignFromBucket`], err = tx.Prepare(
+		tkStmtNodeUnassignFromBucket,
+	); err != nil {
+		delete(stMap, `NodeUnassignFromBucket`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertyOncallCreate`], err = tx.Prepare(
+		tkStmtNodePropertyOncallCreate,
+	); err != nil {
+		delete(stMap, `NodePropertyOncallCreate`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertyServiceCreate`], err = tx.Prepare(
+		tkStmtNodePropertyServiceCreate,
+	); err != nil {
+		delete(stMap, `NodePropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertySystemCreate`], err = tx.Prepare(
+		tkStmtNodePropertySystemCreate,
+	); err != nil {
+		delete(stMap, `NodePropertySystemCreate`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertyCustomCreate`], err = tx.Prepare(
+		tkStmtNodePropertyCustomCreate,
+	); err != nil {
+		delete(stMap, `NodePropertyCustomCreate`)
+		goto bailout
+	}
+
+	return tx, nil, stMap
+
+bailout:
+	if open {
+		defer tx.Rollback()
+	}
+	for _, stmt := range stMap {
+		defer stmt.Close()
+	}
+	return nil, err
+}
+
+// vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
