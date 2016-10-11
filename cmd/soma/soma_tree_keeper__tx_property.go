@@ -22,6 +22,8 @@ func (tk *treeKeeper) txProperty(a *tree.Action,
 	}
 }
 
+//
+// PROPERTY NEW
 func (tk *treeKeeper) txPropertyNew(a *tree.Action,
 	stm *map[string]*sql.Stmt) error {
 	if err := stm[`PropertyInstanceCreate`].Exec(
@@ -49,277 +51,153 @@ func (tk *treeKeeper) txPropertyNew(a *tree.Action,
 
 func (tk *treeKeeper) txPropertyNewCustom(a *tree.Action,
 	stm *map[string]*sql.Stmt) error {
-	var err error
+	var (
+		err       error
+		statement *sql.Stmt
+		id        string
+	)
 	switch a.Type {
 	case `repository`:
-		_, err = stm[`RepositoryPropertyCustomCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Property.Custom.RepositoryId,
-			a.Property.View,
-			a.Property.Custom.Id,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.Custom.Value,
-		)
+		statement = stm[`RepositoryPropertyCustomCreate`]
+		id = a.Property.Custom.RepositoryId
 	case `bucket`:
-		_, err = stm[`BucketPropertyCustomCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Bucket.Id,
-			a.Property.View,
-			a.Property.Custom.Id,
-			a.Property.Custom.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.Custom.Value,
-		)
+		statement = stm[`BucketPropertyCustomCreate`]
+		id = a.Bucket.Id
 	case `group`:
-		_, err = stm[`GroupPropertyCustomCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Group.Id,
-			a.Property.View,
-			a.Property.Custom.Id,
-			a.Property.BucketId,
-			a.Property.Custom.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.Custom.Value,
-		)
+		statement = stm[`GroupPropertyCustomCreate`]
+		id = a.Group.Id
 	case `cluster`:
-		_, err = stm[`ClusterPropertyCustomCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Cluster.Id,
-			a.Property.View,
-			a.Property.Custom.Id,
-			a.Property.BucketId,
-			a.Property.Custom.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.Custom.Value,
-		)
+		statement = stm[`ClusterPropertyCustomCreate`]
+		id = a.Cluster.Id
 	case `node`:
-		_, err = stm[`NodePropertyCustomCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Node.Id,
-			a.Property.View,
-			a.Property.Custom.Id,
-			a.Property.BucketId,
-			a.Property.Custom.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.Custom.Value,
-		)
+		statement = stm[`NodePropertyCustomCreate`]
+		id = a.Node.Id
 	}
+	_, err = statement.Exec(
+		a.Property.InstanceId,
+		a.Property.SourceInstanceId,
+		id,
+		a.Property.View,
+		a.Property.Custom.Id,
+		a.Property.Inheritance,
+		a.Property.ChildrenOnly,
+		a.Property.Custom.Value,
+	)
 	return err
 }
 
 func (tk *treeKeeper) txPropertyNewSystem(a *tree.Action,
 	stm *map[string]*sql.Stmt) error {
-	var err error
+	var (
+		err       error
+		statement *sql.Stmt
+		id        string
+	)
 	switch a.Type {
 	case `repository`:
-		_, err = stm[`RepositoryPropertySystemCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Repository.Id,
-			a.Property.View,
-			a.Property.System.Name,
-			a.Property.SourceType,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.System.Value,
-			a.Property.IsInherited,
-		)
+		statement = stm[`RepositoryPropertySystemCreate`]
+		id = a.Repository.Id
 	case `bucket`:
-		_, err = stm[`BucketPropertySystemCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Bucket.Id,
-			a.Property.View,
-			a.Property.System.Name,
-			a.Property.SourceType,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.System.Value,
-			a.Property.IsInherited,
-		)
+		statement = stm[`BucketPropertySystemCreate`]
+		id = a.Bucket.Id
 	case `group`:
-		_, err = stm[`GroupPropertySystemCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Group.Id,
-			a.Property.View,
-			a.Property.System.Name,
-			a.Property.SourceType,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.System.Value,
-			a.Property.IsInherited,
-		)
+		statement = stm[`GroupPropertySystemCreate`]
+		id = a.Group.Id
 	case `cluster`:
-		_, err = stm[`ClusterPropertySystemCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Cluster.Id,
-			a.Property.View,
-			a.Property.System.Name,
-			a.Property.SourceType,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.System.Value,
-			a.Property.IsInherited,
-		)
+		statement = stm[`ClusterPropertySystemCreate`]
+		id = a.Cluster.Id
 	case `node`:
-		_, err = stm[`NodePropertySystemCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Node.Id,
-			a.Property.View,
-			a.Property.System.Name,
-			a.Property.SourceType,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-			a.Property.System.Value,
-			a.Property.IsInherited,
-		)
+		statement = stm[`NodePropertySystemCreate`]
+		id = a.Node.Id
 	}
+	_, err = statement.Exec(
+		a.Property.InstanceId,
+		a.Property.SourceInstanceId,
+		id,
+		a.Property.View,
+		a.Property.System.Name,
+		a.Property.SourceType,
+		a.Property.RepositoryId,
+		a.Property.Inheritance,
+		a.Property.ChildrenOnly,
+		a.Property.System.Value,
+		a.Property.IsInherited,
+	)
 	return err
 }
 
 func (tk *treeKeeper) txPropertyNewService(a *tree.Action,
 	stm *map[string]*sql.Stmt) error {
-	var err error
+	var (
+		err       error
+		statement *sql.Stmt
+		id        string
+	)
 	switch a.Type {
 	case `repository`:
-		_, err = stm[`RepositoryPropertyServiceCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Repository.Id,
-			a.Property.View,
-			a.Property.Service.Name,
-			a.Property.Service.TeamId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`RepositoryPropertyServiceCreate`]
+		id = a.Repository.Id
 	case `bucket`:
-		_, err = stm[`BucketPropertyServiceCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Bucket.Id,
-			a.Property.View,
-			a.Property.Service.Name,
-			a.Property.Service.TeamId,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`BucketPropertyServiceCreate`]
+		id = a.Bucket.Id
 	case `group`:
-		_, err = stm[`GroupPropertyServiceCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Group.Id,
-			a.Property.View,
-			a.Property.Service.Name,
-			a.Property.Service.TeamId,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`GroupPropertyServiceCreate`]
+		id = a.Group.Id
 	case `cluster`:
-		_, err = stm[`ClusterPropertyServiceCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Cluster.Id,
-			a.Property.View,
-			a.Property.Service.Name,
-			a.Property.Service.TeamId,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`ClusterPropertyServiceCreate`]
+		id = a.Cluster.Id
 	case `node`:
-		_, err = stm[`NodePropertyServiceCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Node.Id,
-			a.Property.View,
-			a.Property.Service.Name,
-			a.Property.Service.TeamId,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`NodePropertyServiceCreate`]
+		id = a.Node.Id
 	}
+	_, err = statement.Exec(
+		a.Property.InstanceId,
+		a.Property.SourceInstanceId,
+		id,
+		a.Property.View,
+		a.Property.Service.Name,
+		a.Property.Service.TeamId,
+		a.Property.RepositoryId,
+		a.Property.Inheritance,
+		a.Property.ChildrenOnly,
+	)
 	return err
 }
 
 func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
 	stm *map[string]*sql.Stmt) error {
-	var err error
+	var (
+		err       error
+		statement *sql.Stmt
+		id        string
+	)
 	switch a.Type {
 	case `repository`:
-		_, err = stm[`RepositoryPropertyOncallCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Repository.Id,
-			a.Property.View,
-			a.Property.Oncall.Id,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`RepositoryPropertyOncallCreate`]
+		id = a.Repository.Id
 	case `bucket`:
-		_, err = stm[`BucketPropertyOncallCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Bucket.Id,
-			a.Property.View,
-			a.Property.Oncall.Id,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`BucketPropertyOncallCreate`]
+		id = a.Bucket.Id
 	case `group`:
-		_, err = stm[`GroupPropertyOncallCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Group.Id,
-			a.Property.View,
-			a.Property.Oncall.Id,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`GroupPropertyOncallCreate`]
+		id = a.Group.Id
 	case `cluster`:
-		_, err = stm[`ClusterPropertyOncallCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Cluster.Id,
-			a.Property.View,
-			a.Property.Oncall.Id,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`ClusterPropertyOncallCreate`]
+		id = a.Cluster.Id
 	case `node`:
-		_, err = stm[`NodePropertyOncallCreate`].Exec(
-			a.Property.InstanceId,
-			a.Property.SourceInstanceId,
-			a.Node.Id,
-			a.Property.View,
-			a.Property.Oncall.Id,
-			a.Property.RepositoryId,
-			a.Property.Inheritance,
-			a.Property.ChildrenOnly,
-		)
+		statement = stm[`NodePropertyOncallCreate`]
+		id = a.Node.Id
 	}
+	_, err = statement.Exec(
+		a.Property.InstanceId,
+		a.Property.SourceInstanceId,
+		a.Node.Id,
+		a.Property.View,
+		a.Property.Oncall.Id,
+		a.Property.RepositoryId,
+		a.Property.Inheritance,
+		a.Property.ChildrenOnly,
+	)
 	return err
 }
 
