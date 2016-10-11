@@ -66,6 +66,8 @@ func TestCheckerAddCheck(t *testing.T) {
 		[]string{`errorchannel`, `attached`},
 		[]string{`bucket`, `create`},
 		[]string{`group`, `create`},
+		[]string{`group`, `create`},
+		[]string{`cluster`, `create`},
 		[]string{`cluster`, `create`},
 		[]string{`bucket`, `node_assignment`}, // NewNode
 		[]string{`node`, `update`},
@@ -73,23 +75,35 @@ func TestCheckerAddCheck(t *testing.T) {
 		[]string{`node`, `update`},
 		[]string{`bucket`, `node_assignment`}, // NewNode
 		[]string{`node`, `update`},
+		[]string{`bucket`, `node_assignment`}, // NewNode
+		[]string{`node`, `update`},
+		[]string{`group`, `member_new`}, // MoveGroupToGroup
+		[]string{`group`, `update`},
 		[]string{`group`, `member_new`}, // MoveClusterToGroup
 		[]string{`cluster`, `update`},
 		[]string{`cluster`, `member_new`}, // MoveNodeToCluster
 		[]string{`node`, `update`},
 		[]string{`group`, `member_new`}, // MoveNodeToGroup
 		[]string{`node`, `update`},
+		[]string{`cluster`, `member_new`}, // MoveNodeToCluster
+		[]string{`node`, `update`},
 		[]string{`node`, `check_new`}, // SetCheck
 		[]string{`cluster`, `check_new`},
 		[]string{`node`, `check_new`},
 		[]string{`group`, `check_new`},
+		[]string{`group`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`cluster`, `check_new`},
 		[]string{`node`, `check_new`},
 		[]string{`bucket`, `check_new`},
 		[]string{`repository`, `check_new`},
 		[]string{`node`, `check_instance_create`}, // ComputeInstances
 		[]string{`node`, `check_instance_create`},
 		[]string{`node`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
 		[]string{`cluster`, `check_instance_create`},
+		[]string{`cluster`, `check_instance_create`},
+		[]string{`group`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
 	}
 	for a := range actionC {
@@ -179,6 +193,8 @@ func TestCheckerDeleteCheck(t *testing.T) {
 		[]string{`errorchannel`, `attached`},
 		[]string{`bucket`, `create`},
 		[]string{`group`, `create`},
+		[]string{`group`, `create`},
+		[]string{`cluster`, `create`},
 		[]string{`cluster`, `create`},
 		[]string{`bucket`, `node_assignment`}, // NewNode
 		[]string{`node`, `update`},
@@ -186,35 +202,53 @@ func TestCheckerDeleteCheck(t *testing.T) {
 		[]string{`node`, `update`},
 		[]string{`bucket`, `node_assignment`}, // NewNode
 		[]string{`node`, `update`},
+		[]string{`bucket`, `node_assignment`}, // NewNode
+		[]string{`node`, `update`},
+		[]string{`group`, `member_new`}, // MoveGroupToGroup
+		[]string{`group`, `update`},
 		[]string{`group`, `member_new`}, // MoveClusterToGroup
 		[]string{`cluster`, `update`},
 		[]string{`cluster`, `member_new`}, // MoveNodeToCluster
 		[]string{`node`, `update`},
 		[]string{`group`, `member_new`}, // MoveNodeToGroup
 		[]string{`node`, `update`},
+		[]string{`cluster`, `member_new`}, // MoveNodeToCluster
+		[]string{`node`, `update`},
 		[]string{`node`, `check_new`}, // SetCheck
 		[]string{`cluster`, `check_new`},
 		[]string{`node`, `check_new`},
 		[]string{`group`, `check_new`},
+		[]string{`group`, `check_new`},
+		[]string{`node`, `check_new`},
+		[]string{`cluster`, `check_new`},
 		[]string{`node`, `check_new`},
 		[]string{`bucket`, `check_new`},
 		[]string{`repository`, `check_new`},
 		[]string{`node`, `check_instance_create`}, // ComputeInstances
 		[]string{`node`, `check_instance_create`},
 		[]string{`node`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
 		[]string{`cluster`, `check_instance_create`},
+		[]string{`cluster`, `check_instance_create`},
+		[]string{`group`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
 		[]string{`node`, `check_removed`}, // DeleteCheck
 		[]string{`cluster`, `check_removed`},
 		[]string{`node`, `check_removed`},
 		[]string{`group`, `check_removed`},
+		[]string{`group`, `check_removed`},
+		[]string{`node`, `check_removed`},
+		[]string{`cluster`, `check_removed`},
 		[]string{`node`, `check_removed`},
 		[]string{`bucket`, `check_removed`},
 		[]string{`repository`, `check_removed`},
+		[]string{`node`, `check_instance_delete`}, // ComputeInstances
 		[]string{`node`, `check_instance_delete`},
 		[]string{`node`, `check_instance_delete`},
 		[]string{`node`, `check_instance_delete`},
 		[]string{`cluster`, `check_instance_delete`},
+		[]string{`cluster`, `check_instance_delete`},
+		[]string{`group`, `check_instance_delete`},
 		[]string{`group`, `check_instance_delete`},
 	}
 	for a := range actionC {
@@ -246,14 +280,18 @@ func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 	teamId := uuid.NewV4().String()
 	repoId := uuid.NewV4().String()
 	buckId := uuid.NewV4().String()
-	grpId := uuid.NewV4().String()
-	clrId := uuid.NewV4().String()
+	grp1Id := uuid.NewV4().String()
+	grp2Id := uuid.NewV4().String()
+	clr1Id := uuid.NewV4().String()
+	clr2Id := uuid.NewV4().String()
 	nod1Id := uuid.NewV4().String()
 	srv1Id := uuid.NewV4().String()
 	nod2Id := uuid.NewV4().String()
 	srv2Id := uuid.NewV4().String()
 	nod3Id := uuid.NewV4().String()
 	srv3Id := uuid.NewV4().String()
+	nod4Id := uuid.NewV4().String()
+	srv4Id := uuid.NewV4().String()
 
 	sTree := New(TreeSpec{
 		Id:     rootId,
@@ -289,8 +327,18 @@ func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 	})
 
 	NewGroup(GroupSpec{
-		Id:   grpId,
-		Name: `testGroup`,
+		Id:   grp1Id,
+		Name: `testGroup1`,
+		Team: teamId,
+	}).Attach(AttachRequest{
+		Root:       sTree,
+		ParentType: `bucket`,
+		ParentId:   buckId,
+	})
+
+	NewGroup(GroupSpec{
+		Id:   grp2Id,
+		Name: `testGroup2`,
 		Team: teamId,
 	}).Attach(AttachRequest{
 		Root:       sTree,
@@ -299,8 +347,18 @@ func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 	})
 
 	NewCluster(ClusterSpec{
-		Id:   clrId,
-		Name: `testcluster`,
+		Id:   clr1Id,
+		Name: `testcluster1`,
+		Team: teamId,
+	}).Attach(AttachRequest{
+		Root:       sTree,
+		ParentType: `bucket`,
+		ParentId:   buckId,
+	})
+
+	NewCluster(ClusterSpec{
+		Id:   clr2Id,
+		Name: `testcluster2`,
 		Team: teamId,
 	}).Attach(AttachRequest{
 		Root:       sTree,
@@ -350,13 +408,36 @@ func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 		ParentId:   buckId,
 	})
 
+	NewNode(NodeSpec{
+		Id:       nod4Id,
+		AssetId:  4,
+		Name:     `testnode4`,
+		Team:     teamId,
+		ServerId: srv4Id,
+		Online:   true,
+		Deleted:  false,
+	}).Attach(AttachRequest{
+		Root:       sTree,
+		ParentType: `bucket`,
+		ParentId:   buckId,
+	})
+
 	sTree.Find(FindRequest{
-		ElementType: `cluster`,
-		ElementId:   clrId,
+		ElementType: `group`,
+		ElementId:   grp2Id,
 	}, true).(GroupAttacher).ReAttach(AttachRequest{
 		Root:       sTree,
 		ParentType: `group`,
-		ParentId:   grpId,
+		ParentId:   grp1Id,
+	})
+
+	sTree.Find(FindRequest{
+		ElementType: `cluster`,
+		ElementId:   clr1Id,
+	}, true).(GroupAttacher).ReAttach(AttachRequest{
+		Root:       sTree,
+		ParentType: `group`,
+		ParentId:   grp2Id,
 	})
 
 	sTree.Find(FindRequest{
@@ -365,7 +446,7 @@ func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 	}, true).(ClusterAttacher).ReAttach(AttachRequest{
 		Root:       sTree,
 		ParentType: `cluster`,
-		ParentId:   clrId,
+		ParentId:   clr1Id,
 	})
 
 	sTree.Find(FindRequest{
@@ -374,7 +455,16 @@ func testSpawnCheckTree() (*Tree, chan *Action, chan *Error) {
 	}, true).(GroupAttacher).ReAttach(AttachRequest{
 		Root:       sTree,
 		ParentType: `group`,
-		ParentId:   grpId,
+		ParentId:   grp2Id,
+	})
+
+	sTree.Find(FindRequest{
+		ElementType: `node`,
+		ElementId:   nod3Id,
+	}, true).(GroupAttacher).ReAttach(AttachRequest{
+		Root:       sTree,
+		ParentType: `cluster`,
+		ParentId:   clr2Id,
 	})
 
 	return sTree, actionC, errC
