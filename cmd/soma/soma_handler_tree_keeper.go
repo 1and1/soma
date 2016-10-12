@@ -394,6 +394,10 @@ actionloop:
 			if err = tk.txProperty(a, &stm); err != nil {
 				break actionloop
 			}
+		case `check_new`, `check_removed`:
+			if err = tk.txCheck(a, &stm); err != nil {
+				break actionloop
+			}
 		}
 
 		switch a.Type {
