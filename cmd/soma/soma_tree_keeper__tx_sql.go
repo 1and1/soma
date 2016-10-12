@@ -81,7 +81,7 @@ func (tk *treeKeeper) startTx() (
 	//
 	// CHECK STATEMENTS
 	for name, stmt := range map[string]string{
-		`CreateCheck`: tkStmtCreateCheck,
+		`CreateCheck`: stmt.TxCreateCheck,
 		`DeleteCheck`: stmt.TxMarkCheckDeleted,
 	} {
 		if stMap[name], err = tx.Prepare(stmt); err != nil {
@@ -93,8 +93,8 @@ func (tk *treeKeeper) startTx() (
 	//
 	// CHECK INSTANCE STATEMENTS
 	for name, stmt := range map[string]string{
-		`CreateCheckInstance`:              tkStmtCreateCheckInstance,
-		`CreateCheckInstanceConfiguration`: tkStmtCreateCheckInstanceConfiguration,
+		`CreateCheckInstance`:              stmt.TxCreateCheckInstance,
+		`CreateCheckInstanceConfiguration`: stmt.TxCreateCheckInstanceConfiguration,
 		`DeleteCheckInstance`:              stmt.TxMarkCheckInstanceDeleted,
 	} {
 		if stMap[name], err = tx.Prepare(stmt); err != nil {
@@ -104,63 +104,25 @@ func (tk *treeKeeper) startTx() (
 	}
 
 	//
+	// CHECK CONFIGURATION STATEMENTS
+	for name, stmt := range map[string]string{
+		`CreateCheckConfigurationBase`:                stmt.TxCreateCheckConfigurationBase,
+		`CreateCheckConfigurationThreshold`:           stmt.TxCreateCheckConfigurationThreshold,
+		`CreateCheckConfigurationConstraintSystem`:    stmt.TxCreateCheckConfigurationConstraintSystem,
+		`CreateCheckConfigurationConstraintNative`:    stmt.TxCreateCheckConfigurationConstraintNative,
+		`CreateCheckConfigurationConstraintOncall`:    stmt.TxCreateCheckConfigurationConstraintOncall,
+		`CreateCheckConfigurationConstraintCustom`:    stmt.TxCreateCheckConfigurationConstraintCustom,
+		`CreateCheckConfigurationConstraintService`:   stmt.TxCreateCheckConfigurationConstraintService,
+		`CreateCheckConfigurationConstraintAttribute`: stmt.TxCreateCheckConfigurationConstraintAttribute,
+	} {
+		if stMap[name], err = tx.Prepare(stmt); err != nil {
+			delete(stMap, name)
+			goto bailout
+		}
+	}
+
 	//
-	if stMap[`CreateCheckConfigurationBase`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationBase,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationBase`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationThreshold`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationThreshold,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationThreshold`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationConstraintSystem`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationConstraintSystem,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationConstraintSystem`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationConstraintNative`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationConstraintNative,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationConstraintNative`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationConstraintOncall`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationConstraintOncall,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationConstraintOncall`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationConstraintCustom`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationConstraintCustom,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationConstraintCustom`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationConstraintService`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationConstraintService,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationConstraintService`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckConfigurationConstraintAttribute`], err = tx.Prepare(
-		tkStmtCreateCheckConfigurationConstraintAttribute,
-	); err != nil {
-		delete(stMap, `CreateCheckConfigurationConstraintAttribute`)
-		goto bailout
-	}
-
+	//
 	if stMap[`CreateBucket`], err = tx.Prepare(
 		tkStmtCreateBucket,
 	); err != nil {
