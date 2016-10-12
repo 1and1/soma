@@ -173,4 +173,69 @@ func (tk *treeKeeper) txCheckRemoved(a *tree.Action,
 	return err
 }
 
+func (tk *treeKeeper) txCheckInstance(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	switch a.Type {
+	case `repository`, `bucket`:
+		return fmt.Errorf("Illegal check instance on %s", a.Type)
+	}
+
+	switch a.Action {
+	case `check_instance_create`:
+		if err := tk.CheckInstanceCreate(a, stm); err != nil {
+			return err
+		}
+		// for a new check instance, the first instance
+		// configuration must be created alongside it
+		fallthrough
+	case `check_instance_update`:
+		return tk.CheckInstanceConfigCreate(a, stm)
+	case `check_instance_delete`:
+		return tk.CheckInstanceDelete(a, stm)
+	}
+}
+
+func (tk *treeKeeper) txCheckInstanceCreate(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	statement := stm[`CreateCheckInstance`]
+	_, err := statement.Exec(
+		a.CheckInstance.InstanceId,
+		a.CheckInstance.CheckId,
+		a.CheckInstance.ConfigId,
+		`00000000-0000-0000-0000-000000000000`,
+		time.Now().UTC(),
+	)
+	return err
+}
+
+func (tk *treeKeeper) txCheckInstanceConfigCreate(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	statement := stm[`CreateCheckInstanceConfiguration`]
+	_, err := statement.Exec(
+		a.CheckInstance.InstanceConfigId,
+		a.CheckInstance.Version,
+		a.CheckInstance.InstanceId,
+		a.CheckInstance.ConstraintHash,
+		a.CheckInstance.ConstraintValHash,
+		a.CheckInstance.InstanceService,
+		a.CheckInstance.InstanceSvcCfgHash,
+		a.CheckInstance.InstanceServiceConfig,
+		time.Now().UTC(),
+		`awaiting_computation`,
+		`none`,
+		false,
+		"{}",
+	)
+	return err
+}
+
+func (tk *treeKeeper) txCheckInstanceDelete(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	statement := stm[`DeleteCheckInstance`]
+	_, err := statement.Exec(
+		a.CheckInstance.InstanceId,
+	)
+	return err
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

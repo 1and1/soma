@@ -398,6 +398,12 @@ actionloop:
 			if err = tk.txCheck(a, &stm); err != nil {
 				break actionloop
 			}
+		case `check_instance_create`,
+			`check_instance_update`,
+			`check_instance_delete`:
+			if err = tk.txCheckInstance(a, &stm); err != nil {
+				break actionloop
+			}
 		}
 
 		switch a.Type {
@@ -546,42 +552,6 @@ actionloop:
 						break actionloop
 					}
 				}
-			case "check_instance_create":
-				if _, err = txStmtCreateCheckInstance.Exec(
-					a.CheckInstance.InstanceId,
-					a.CheckInstance.CheckId,
-					a.CheckInstance.ConfigId,
-					"00000000-0000-0000-0000-000000000000",
-					time.Now().UTC(),
-				); err != nil {
-					break actionloop
-				}
-				fallthrough
-			case "check_instance_update":
-				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
-					a.CheckInstance.InstanceConfigId,
-					a.CheckInstance.Version,
-					a.CheckInstance.InstanceId,
-					a.CheckInstance.ConstraintHash,
-					a.CheckInstance.ConstraintValHash,
-					a.CheckInstance.InstanceService,
-					a.CheckInstance.InstanceSvcCfgHash,
-					a.CheckInstance.InstanceServiceConfig,
-					time.Now().UTC(),
-					"awaiting_computation",
-					"none",
-					false,
-					"{}",
-				); err != nil {
-					fmt.Println(`Failed CreateCheckInstanceConfiguration`, a.CheckInstance.InstanceConfigId)
-					break actionloop
-				}
-			case "check_instance_delete":
-				if _, err = txStmtDeleteCheckInstance.Exec(
-					a.CheckInstance.InstanceId,
-				); err != nil {
-					break actionloop
-				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -650,42 +620,6 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-			case "check_instance_create":
-				if _, err = txStmtCreateCheckInstance.Exec(
-					a.CheckInstance.InstanceId,
-					a.CheckInstance.CheckId,
-					a.CheckInstance.ConfigId,
-					"00000000-0000-0000-0000-000000000000",
-					time.Now().UTC(),
-				); err != nil {
-					break actionloop
-				}
-				fallthrough
-			case "check_instance_update":
-				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
-					a.CheckInstance.InstanceConfigId,
-					a.CheckInstance.Version,
-					a.CheckInstance.InstanceId,
-					a.CheckInstance.ConstraintHash,
-					a.CheckInstance.ConstraintValHash,
-					a.CheckInstance.InstanceService,
-					a.CheckInstance.InstanceSvcCfgHash,
-					a.CheckInstance.InstanceServiceConfig,
-					time.Now().UTC(),
-					"awaiting_computation",
-					"none",
-					false,
-					"{}",
-				); err != nil {
-					fmt.Println(`Failed CreateCheckInstanceConfiguration`, a.CheckInstance.InstanceConfigId)
-					break actionloop
-				}
-			case "check_instance_delete":
-				if _, err = txStmtDeleteCheckInstance.Exec(
-					a.CheckInstance.InstanceId,
-				); err != nil {
-					break actionloop
-				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -715,42 +649,6 @@ actionloop:
 				if _, err = txStmtUpdateNodeState.Exec(
 					a.Node.Id,
 					a.Node.State,
-				); err != nil {
-					break actionloop
-				}
-			case "check_instance_create":
-				if _, err = txStmtCreateCheckInstance.Exec(
-					a.CheckInstance.InstanceId,
-					a.CheckInstance.CheckId,
-					a.CheckInstance.ConfigId,
-					"00000000-0000-0000-0000-000000000000",
-					time.Now().UTC(),
-				); err != nil {
-					break actionloop
-				}
-				fallthrough
-			case "check_instance_update":
-				if _, err = txStmtCreateCheckInstanceConfiguration.Exec(
-					a.CheckInstance.InstanceConfigId,
-					a.CheckInstance.Version,
-					a.CheckInstance.InstanceId,
-					a.CheckInstance.ConstraintHash,
-					a.CheckInstance.ConstraintValHash,
-					a.CheckInstance.InstanceService,
-					a.CheckInstance.InstanceSvcCfgHash,
-					a.CheckInstance.InstanceServiceConfig,
-					time.Now().UTC(),
-					"awaiting_computation",
-					"none",
-					false,
-					"{}",
-				); err != nil {
-					fmt.Println(`Failed CreateCheckInstanceConfiguration`, a.CheckInstance.InstanceConfigId)
-					break actionloop
-				}
-			case "check_instance_delete":
-				if _, err = txStmtDeleteCheckInstance.Exec(
-					a.CheckInstance.InstanceId,
 				); err != nil {
 					break actionloop
 				}

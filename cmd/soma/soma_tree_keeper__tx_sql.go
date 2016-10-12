@@ -79,6 +79,31 @@ func (tk *treeKeeper) startTx() (
 	}
 
 	//
+	// CHECK STATEMENTS
+	for name, stmt := range map[string]string{
+		`CreateCheck`: tkStmtCreateCheck,
+		`DeleteCheck`: stmt.TxMarkCheckDeleted,
+	} {
+		if stMap[name], err = tx.Prepare(stmt); err != nil {
+			delete(stMap, name)
+			goto bailout
+		}
+	}
+
+	//
+	// CHECK INSTANCE STATEMENTS
+	for name, stmt := range map[string]string{
+		`CreateCheckInstance`:              tkStmtCreateCheckInstance,
+		`CreateCheckInstanceConfiguration`: tkStmtCreateCheckInstanceConfiguration,
+		`DeleteCheckInstance`:              stmt.TxMarkCheckInstanceDeleted,
+	} {
+		if stMap[name], err = tx.Prepare(stmt); err != nil {
+			delete(stMap, name)
+			goto bailout
+		}
+	}
+
+	//
 	//
 	if stMap[`CreateCheckConfigurationBase`], err = tx.Prepare(
 		tkStmtCreateCheckConfigurationBase,
@@ -133,41 +158,6 @@ func (tk *treeKeeper) startTx() (
 		tkStmtCreateCheckConfigurationConstraintAttribute,
 	); err != nil {
 		delete(stMap, `CreateCheckConfigurationConstraintAttribute`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheck`], err = tx.Prepare(
-		tkStmtCreateCheck,
-	); err != nil {
-		delete(stMap, `CreateCheck`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckInstance`], err = tx.Prepare(
-		tkStmtCreateCheckInstance,
-	); err != nil {
-		delete(stMap, `CreateCheckInstance`)
-		goto bailout
-	}
-
-	if stMap[`CreateCheckInstanceConfiguration`], err = tx.Prepare(
-		tkStmtCreateCheckInstanceConfiguration,
-	); err != nil {
-		delete(stMap, `CreateCheckInstanceConfiguration`)
-		goto bailout
-	}
-
-	if stMap[`DeleteCheck`], err = tx.Prepare(
-		stmt.TxMarkCheckDeleted,
-	); err != nil {
-		delete(stMap, `DeleteCheck`)
-		goto bailout
-	}
-
-	if stMap[`DeleteCheckInstance`], err = tx.Prepare(
-		stmt.TxMarkCheckInstanceDeleted,
-	); err != nil {
-		delete(stMap, `DeleteCheckInstance`)
 		goto bailout
 	}
 
