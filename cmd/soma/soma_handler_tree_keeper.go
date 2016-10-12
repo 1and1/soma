@@ -342,7 +342,10 @@ func (tk *treeKeeper) process(q *treeRequest) {
 
 	// mark the check configuration as deleted
 	if strings.HasPrefix(q.Action, `remove_check_from_`) {
-		if _, err = tx.Exec(stmt.TxMarkCheckConfigDeleted, q.CheckConfig.CheckConfig.Id); err != nil {
+		if _, err = tx.Exec(
+			stmt.TxMarkCheckConfigDeleted,
+			q.CheckConfig.CheckConfig.Id,
+		); err != nil {
 			goto bailout
 		}
 	}
