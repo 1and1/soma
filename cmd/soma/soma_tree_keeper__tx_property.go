@@ -19,6 +19,8 @@ func (tk *treeKeeper) txProperty(a *tree.Action,
 	switch a.Action {
 	case `property_new`:
 		return tk.txPropertyNew(a, stm)
+	case `property_delete`:
+		return tk.txPropertyDelete(a, stm)
 	}
 }
 
@@ -197,6 +199,77 @@ func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
 		a.Property.RepositoryId,
 		a.Property.Inheritance,
 		a.Property.ChildrenOnly,
+	)
+	return err
+}
+
+//
+// PROPERTY DELETE
+func (tk *treeKeeper) txPropertyDelete(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	if err := stm[`PropertyInstanceDelete`].Exec(
+		a.Property.InstanceId,
+	); err != nil {
+		return err
+	}
+
+	var statement *sql.Stmt
+	switch a.Property.Type {
+	case `custom`:
+		switch a.Type {
+		case `repository`:
+			statement = stm[`RepositoryPropertyCustomDelete`]
+		case `bucket`:
+			statement = stm[`BucketPropertyCustomDelete`]
+		case `group`:
+			statement = stm[`GroupPropertyCustomDelete`]
+		case `cluster`:
+			statement = stm[`ClusterPropertyCustomDelete`]
+		case `node`:
+			statement = stm[`NodePropertyCustomDelete`]
+		}
+	case `system`:
+		switch a.Type {
+		case `repository`:
+			statement = stm[`RepositoryPropertySystemDelete`]
+		case `bucket`:
+			statement = stm[`BucketPropertySystemDelete`]
+		case `group`:
+			statement = stm[`GroupPropertySystemDelete`]
+		case `cluster`:
+			statement = stm[`ClusterPropertySystemDelete`]
+		case `node`:
+			statement = stm[`NodePropertySystemDelete`]
+		}
+	case `service`:
+		switch a.Type {
+		case `repository`:
+			statement = stm[`RepositoryPropertyServiceDelete`]
+		case `bucket`:
+			statement = stm[`BucketPropertyServiceDelete`]
+		case `group`:
+			statement = stm[`GroupPropertyServiceDelete`]
+		case `cluster`:
+			statement = stm[`ClusterPropertyServiceDelete`]
+		case `node`:
+			statement = stm[`NodePropertyServiceDelete`]
+		}
+	case `oncall`:
+		switch a.Type {
+		case `repository`:
+			statement = stm[`RepositoryPropertyOncallDelete`]
+		case `bucket`:
+			statement = stm[`BucketPropertyOncallDelete`]
+		case `group`:
+			statement = stm[`GroupPropertyOncallDelete`]
+		case `cluster`:
+			statement = stm[`ClusterPropertyOncallDelete`]
+		case `node`:
+			statement = stm[`NodePropertyOncallDelete`]
+		}
+	}
+	_, err := statement.Exec(
+		a.Property.InstanceId,
 	)
 	return err
 }

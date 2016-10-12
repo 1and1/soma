@@ -373,14 +373,14 @@ actionloop:
 
 		if tk.rebuild {
 			switch a.Action {
-			case `property_new`:
+			case `property_new`, `property_delete`:
 				// ignore in rebuild mode
 				continue actionloop
 			}
 		}
 
 		switch a.Action {
-		case `property_new`:
+		case `property_new`, `property_delete`:
 			if err = tk.txProperty(a, &stm); err != nil {
 				break actionloop
 			}
@@ -390,42 +390,6 @@ actionloop:
 		// REPOSITORY
 		case "repository":
 			switch a.Action {
-			case `property_delete`:
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
-					a.Property.InstanceId,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case `custom`:
-					if _, err = tx.Exec(tkStmtRepositoryPropertyCustomDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `system`:
-					if _, err = tx.Exec(tkStmtRepositoryPropertySystemDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `service`:
-					if _, err = tx.Exec(tkStmtRepositoryPropertyServiceDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `oncall`:
-					if _, err = tx.Exec(tkStmtRepositoryPropertyOncallDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				}
 			case "check_new":
 				if tk.rebuild && tk.rbLevel == `instances` {
 					// ignore in instance-rebuild mode
@@ -491,42 +455,6 @@ actionloop:
 					a.Bucket.TeamId,
 				); err != nil {
 					break actionloop
-				}
-			case `property_delete`:
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
-					a.Property.InstanceId,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case `custom`:
-					if _, err = tx.Exec(tkStmtBucketPropertyCustomDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `system`:
-					if _, err = tx.Exec(tkStmtBucketPropertySystemDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `service`:
-					if _, err = tx.Exec(tkStmtBucketPropertyServiceDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `oncall`:
-					if _, err = tx.Exec(tkStmtBucketPropertyOncallDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
 				}
 			case "check_new":
 				if tk.rebuild && tk.rbLevel == `instances` {
@@ -658,42 +586,6 @@ actionloop:
 					if _, err = txStmtGroupMemberRemoveNode.Exec(
 						a.Group.Id,
 						a.ChildNode.Id,
-					); err != nil {
-						break actionloop
-					}
-				}
-			case `property_delete`:
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
-					a.Property.InstanceId,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case `custom`:
-					if _, err = tx.Exec(tkStmtGroupPropertyCustomDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `system`:
-					if _, err = tx.Exec(tkStmtGroupPropertySystemDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `service`:
-					if _, err = tx.Exec(tkStmtGroupPropertyServiceDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `oncall`:
-					if _, err = tx.Exec(tkStmtGroupPropertyOncallDelete,
-						a.Property.InstanceId,
 					); err != nil {
 						break actionloop
 					}
@@ -831,42 +723,6 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-			case `property_delete`:
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
-					a.Property.InstanceId,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case `custom`:
-					if _, err = tx.Exec(tkStmtClusterPropertyCustomDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `system`:
-					if _, err = tx.Exec(tkStmtClusterPropertySystemDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `service`:
-					if _, err = tx.Exec(tkStmtClusterPropertyServiceDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `oncall`:
-					if _, err = tx.Exec(tkStmtClusterPropertyOncallDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				}
 			case "check_new":
 				if tk.rebuild && tk.rbLevel == `instances` {
 					// ignore in rebuild mode
@@ -965,41 +821,6 @@ actionloop:
 					break actionloop
 				}
 			case `property_delete`:
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = tx.Exec(tkStmtPropertyInstanceDelete,
-					a.Property.InstanceId,
-				); err != nil {
-					break actionloop
-				}
-				switch a.Property.Type {
-				case `custom`:
-					if _, err = tx.Exec(tkStmtNodePropertyCustomDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `system`:
-					if _, err = tx.Exec(tkStmtNodePropertySystemDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `service`:
-					if _, err = tx.Exec(tkStmtNodePropertyServiceDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				case `oncall`:
-					if _, err = tx.Exec(tkStmtNodePropertyOncallDelete,
-						a.Property.InstanceId,
-					); err != nil {
-						break actionloop
-					}
-				}
 			case "check_new":
 				if tk.rebuild && tk.rbLevel == `instances` {
 					// ignore in instance-rebuild mode

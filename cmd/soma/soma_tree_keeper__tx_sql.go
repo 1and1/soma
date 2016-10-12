@@ -26,6 +26,8 @@ func (tk *treeKeeper) startTx() (
 	}
 	open = true
 
+	//
+	// PROPERTY STATEMENTS
 	if stMap[`PropertyInstanceCreate`], err = tx.Prepare(
 		tkStmtPropertyInstanceCreate,
 	); err != nil {
@@ -33,6 +35,99 @@ func (tk *treeKeeper) startTx() (
 		goto bailout
 	}
 
+	if stMap[`PropertyInstanceDelete`], err = tx.Prepare(
+		tkStmtPropertyInstanceDelete,
+	); err != nil {
+		delete(stMap, `PropertyInstanceDelete`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertyOncallDelete`], err = tx.Prepare(
+		tkStmtGroupPropertyOncallDelete,
+	); err != nil {
+		delete(stMap, `GroupPropertyOncallDelete`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertyServiceDelete`], err = tx.Prepare(
+		tkStmtGroupPropertyServiceDelete,
+	); err != nil {
+		delete(stMap, `GroupPropertyServiceDelete`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertySystemDelete`], err = tx.Prepare(
+		tkStmtGroupPropertySystemDelete,
+	); err != nil {
+		delete(stMap, `GroupPropertySystemDelete`)
+		goto bailout
+	}
+
+	if stMap[`GroupPropertyCustomDelete`], err = tx.Prepare(
+		tkStmtGroupPropertyCustomDelete,
+	); err != nil {
+		delete(stMap, `GroupPropertyCustomDelete`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertyOncallDelete`], err = tx.Prepare(
+		tkStmtClusterPropertyOncallDelete,
+	); err != nil {
+		delete(stMap, `ClusterPropertyOncallDelete`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertyServiceDelete`], err = tx.Prepare(
+		tkStmtClusterPropertyServiceDelete,
+	); err != nil {
+		delete(stMap, `ClusterPropertyServiceDelete`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertySystemDelete`], err = tx.Prepare(
+		tkStmtClusterPropertySystemDelete,
+	); err != nil {
+		delete(stMap, `ClusterPropertySystemDelete`)
+		goto bailout
+	}
+
+	if stMap[`ClusterPropertyCustomDelete`], err = tx.Prepare(
+		tkStmtClusterPropertyCustomDelete,
+	); err != nil {
+		delete(stMap, `ClusterPropertyCustomDelete`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertyOncallDelete`], err = tx.Prepare(
+		tkStmtNodePropertyOncallDelete,
+	); err != nil {
+		delete(stMap, `NodePropertyOncallDelete`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertyServiceDelete`], err = tx.Prepare(
+		tkStmtNodePropertyServiceDelete,
+	); err != nil {
+		delete(stMap, `NodePropertyServiceDelete`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertySystemDelete`], err = tx.Prepare(
+		tkStmtNodePropertySystemDelete,
+	); err != nil {
+		delete(stMap, `NodePropertySystemDelete`)
+		goto bailout
+	}
+
+	if stMap[`NodePropertyCustomDelete`], err = tx.Prepare(
+		tkStmtNodePropertyCustomDelete,
+	); err != nil {
+		delete(stMap, `NodePropertyCustomDelete`)
+		goto bailout
+	}
+
+	//
+	//
 	if stMap[`CreateCheckConfigurationBase`], err = tx.Prepare(
 		tkStmtCreateCheckConfigurationBase,
 	); err != nil {
@@ -131,10 +226,24 @@ func (tk *treeKeeper) startTx() (
 		goto bailout
 	}
 
+	if stMap[`RepositoryPropertyOncallDelete`], err = tx.Prepare(
+		tkStmtRepositoryPropertyOncallDelete,
+	); err != nil {
+		delete(stMap, `RepositoryPropertyOncallDelete`)
+		goto bailout
+	}
+
 	if stMap[`RepositoryPropertyServiceCreate`], err = tx.Prepare(
 		tkStmtRepositoryPropertyServiceCreate,
 	); err != nil {
 		delete(stMap, `RepositoryPropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`RepositoryPropertyServiceDelete`], err = tx.Prepare(
+		tkStmtRepositoryPropertyServiceDelete,
+	); err != nil {
+		delete(stMap, `RepositoryPropertyServiceDelete`)
 		goto bailout
 	}
 
@@ -145,10 +254,24 @@ func (tk *treeKeeper) startTx() (
 		goto bailout
 	}
 
+	if stMap[`RepositoryPropertySystemDelete`], err = tx.Prepare(
+		tkStmtRepositoryPropertySystemDelete,
+	); err != nil {
+		delete(stMap, `RepositoryPropertySystemDelete`)
+		goto bailout
+	}
+
 	if stMap[`RepositoryPropertyCustomCreate`], err = tx.Prepare(
 		tkStmtRepositoryPropertyCustomCreate,
 	); err != nil {
 		delete(stMap, `RepositoryPropertyCustomCreate`)
+		goto bailout
+	}
+
+	if stMap[`RepositoryPropertyCustomDelete`], err = tx.Prepare(
+		tkStmtRepositoryPropertyCustomDelete,
+	); err != nil {
+		delete(stMap, `RepositoryPropertyCustomDelete`)
 		goto bailout
 	}
 
@@ -166,10 +289,24 @@ func (tk *treeKeeper) startTx() (
 		goto bailout
 	}
 
+	if stMap[`BucketPropertyOncallDelete`], err = tx.Prepare(
+		tkStmtBucketPropertyOncallDelete,
+	); err != nil {
+		delete(stMap, `BucketPropertyOncallDelete`)
+		goto bailout
+	}
+
 	if stMap[`BucketPropertyServiceCreate`], err = tx.Prepare(
 		tkStmtBucketPropertyServiceCreate,
 	); err != nil {
 		delete(stMap, `BucketPropertyServiceCreate`)
+		goto bailout
+	}
+
+	if stMap[`BucketPropertyServiceDelete`], err = tx.Prepare(
+		tkStmtBucketPropertyServiceDelete,
+	); err != nil {
+		delete(stMap, `BucketPropertyServiceDelete`)
 		goto bailout
 	}
 
@@ -180,10 +317,24 @@ func (tk *treeKeeper) startTx() (
 		goto bailout
 	}
 
+	if stMap[`BucketPropertySystemDelete`], err = tx.Prepare(
+		tkStmtBucketPropertySystemDelete,
+	); err != nil {
+		delete(stMap, `BucketPropertySystemDelete`)
+		goto bailout
+	}
+
 	if stMap[`BucketPropertyCustomCreate`], err = tx.Prepare(
 		tkStmtBucketPropertyCustomCreate,
 	); err != nil {
 		delete(stMap, `BucketPropertyCustomCreate`)
+		goto bailout
+	}
+
+	if stMap[`BucketPropertyCustomDelete`], err = tx.Prepare(
+		tkStmtBucketPropertyCustomDelete,
+	); err != nil {
+		delete(stMap, `BucketPropertyCustomDelete`)
 		goto bailout
 	}
 
