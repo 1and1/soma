@@ -123,4 +123,54 @@ constrloop:
 	return nil
 }
 
+func (tk *treeKeeper) txCheck(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	switch a.Action {
+	case `check_new`:
+		return tk.txCheckNew(a, stm)
+	case `check_removed`:
+		return tk.txCheckRemoved(a, stm)
+	}
+}
+
+func (tk *treeKeeper) txCheckNew(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	var id string
+	bucket := sql.NullString{String: a.Bucket.Id, Valid: true}
+	switch a.Type {
+	case `repository`:
+		id = a.Repository.Id
+		bucket = sql.NullString{String: "", Valid: false}
+	case `bucket`:
+		id = a.Bucket.Id
+	case `group`:
+		id = a.Group.Id
+	case `cluster`:
+		id = a.Cluster.Id
+	case `node`:
+		id = a.Node.Id
+	}
+	statement := stm[`CreateCheck`]
+	_, err := statement.Exec(
+		a.Check.CheckId,
+		a.Check.RepositoryId,
+		bucket,
+		a.Check.SourceCheckId,
+		a.Check.SourceType,
+		a.Check.InheritedFrom,
+		a.Check.CheckConfigId,
+		a.Check.CapabilityId,
+		id,
+		a.Type,
+	)
+	return err
+}
+
+func (tk *treeKeeper) txCheckRemoved(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	statement := stm[`DeleteCheck`]
+	_, err := statement.Exec(a.Check.CheckId)
+	return err
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

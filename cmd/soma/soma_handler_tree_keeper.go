@@ -375,6 +375,13 @@ actionloop:
 		//log.Printf("%s - Processing: %s\n", q.JobId.String(), string(jBxX))
 
 		if tk.rebuild {
+			if tk.rbLevel == `instances` {
+				switch a.Action {
+				case `check_new`, `check_removed`:
+					// ignore in instance-rebuild mode
+					continue actionloop
+				}
+			}
 			switch a.Action {
 			case `property_new`, `property_delete`:
 				// ignore in rebuild mode
@@ -393,35 +400,6 @@ actionloop:
 		// REPOSITORY
 		case "repository":
 			switch a.Action {
-			case "check_new":
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in instance-rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtCreateCheck.Exec(
-					a.Check.CheckId,
-					a.Check.RepositoryId,
-					sql.NullString{String: "", Valid: false},
-					a.Check.SourceCheckId,
-					a.Check.SourceType,
-					a.Check.InheritedFrom,
-					a.Check.CheckConfigId,
-					a.Check.CapabilityId,
-					a.Repository.Id,
-					"repository",
-				); err != nil {
-					break actionloop
-				}
-			case `check_removed`:
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtDeleteCheck.Exec(
-					a.Check.CheckId,
-				); err != nil {
-					break actionloop
-				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
@@ -456,35 +434,6 @@ actionloop:
 					a.ChildNode.Id,
 					a.Bucket.Id,
 					a.Bucket.TeamId,
-				); err != nil {
-					break actionloop
-				}
-			case "check_new":
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in instance rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtCreateCheck.Exec(
-					a.Check.CheckId,
-					a.Check.RepositoryId,
-					a.Check.BucketId,
-					a.Check.SourceCheckId,
-					a.Check.SourceType,
-					a.Check.InheritedFrom,
-					a.Check.CheckConfigId,
-					a.Check.CapabilityId,
-					a.Bucket.Id,
-					"bucket",
-				); err != nil {
-					break actionloop
-				}
-			case `check_removed`:
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtDeleteCheck.Exec(
-					a.Check.CheckId,
 				); err != nil {
 					break actionloop
 				}
@@ -593,35 +542,6 @@ actionloop:
 						break actionloop
 					}
 				}
-			case "check_new":
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtCreateCheck.Exec(
-					a.Check.CheckId,
-					a.Check.RepositoryId,
-					a.Check.BucketId,
-					a.Check.SourceCheckId,
-					a.Check.SourceType,
-					a.Check.InheritedFrom,
-					a.Check.CheckConfigId,
-					a.Check.CapabilityId,
-					a.Group.Id,
-					"group",
-				); err != nil {
-					break actionloop
-				}
-			case `check_removed`:
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtDeleteCheck.Exec(
-					a.Check.CheckId,
-				); err != nil {
-					break actionloop
-				}
 			case "check_instance_create":
 				if _, err = txStmtCreateCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -726,35 +646,6 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-			case "check_new":
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtCreateCheck.Exec(
-					a.Check.CheckId,
-					a.Check.RepositoryId,
-					a.Check.BucketId,
-					a.Check.SourceCheckId,
-					a.Check.SourceType,
-					a.Check.InheritedFrom,
-					a.Check.CheckConfigId,
-					a.Check.CapabilityId,
-					a.Cluster.Id,
-					"cluster",
-				); err != nil {
-					break actionloop
-				}
-			case `check_removed`:
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in rebuild mode
-					continue actionloop
-				}
-				if _, err = txStmtDeleteCheck.Exec(
-					a.Check.CheckId,
-				); err != nil {
-					break actionloop
-				}
 			case "check_instance_create":
 				if _, err = txStmtCreateCheckInstance.Exec(
 					a.CheckInstance.InstanceId,
@@ -820,55 +711,6 @@ actionloop:
 				if _, err = txStmtUpdateNodeState.Exec(
 					a.Node.Id,
 					a.Node.State,
-				); err != nil {
-					break actionloop
-				}
-			case `property_delete`:
-			case "check_new":
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in instance-rebuild mode
-					continue actionloop
-				}
-				log.Printf(`SQL: tkStmtCreateCheck:
-Check ID:            %s
-Repository ID:       %s
-Bucket ID:           %s
-Source Check ID:     %s
-Source Type:         %s
-Inherited From:      %s
-Check Config ID:     %s
-Check Capability ID: %s
-Node ID:             %s%s`,
-					a.Check.CheckId,
-					a.Check.RepositoryId,
-					a.Check.BucketId,
-					a.Check.SourceCheckId,
-					a.Check.SourceType,
-					a.Check.InheritedFrom,
-					a.Check.CheckConfigId,
-					a.Check.CapabilityId,
-					a.Node.Id, "\n")
-				if _, err = txStmtCreateCheck.Exec(
-					a.Check.CheckId,
-					a.Check.RepositoryId,
-					a.Check.BucketId,
-					a.Check.SourceCheckId,
-					a.Check.SourceType,
-					a.Check.InheritedFrom,
-					a.Check.CheckConfigId,
-					a.Check.CapabilityId,
-					a.Node.Id,
-					"node",
-				); err != nil {
-					break actionloop
-				}
-			case `check_removed`:
-				if tk.rebuild && tk.rbLevel == `instances` {
-					// ignore in instance-rebuild mode
-					continue actionloop
-				}
-				if _, err = tx.Exec(stmt.TxMarkCheckDeleted,
-					a.Check.CheckId,
 				); err != nil {
 					break actionloop
 				}
