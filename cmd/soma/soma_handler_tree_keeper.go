@@ -417,17 +417,16 @@ actionloop:
 			if err = tk.txTree(a, &stm, q.User); err != nil {
 				break actionloop
 			}
+		default:
+			err = fmt.Errorf(
+				"Unhandled message in action stream: %s/%s",
+				a.Type,
+				a.Action,
+			)
+			break actionloop
 		}
 
 		switch a.Type {
-		// REPOSITORY
-		case "repository":
-			switch a.Action {
-			default:
-				jB, _ := json.Marshal(a)
-				log.Printf("Unhandled message: %s\n", string(jB))
-			}
-
 		// BUCKET
 		case "bucket":
 			switch a.Action {
@@ -439,9 +438,6 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-			default:
-				jB, _ := json.Marshal(a)
-				log.Printf("Unhandled message: %s\n", string(jB))
 			}
 		// GROUP
 		case "group":
@@ -500,9 +496,6 @@ actionloop:
 						break actionloop
 					}
 				}
-			default:
-				jB, _ := json.Marshal(a)
-				log.Printf("Unhandled message: %s\n", string(jB))
 			}
 		// CLUSTER
 		case "cluster":
@@ -524,22 +517,9 @@ actionloop:
 				); err != nil {
 					break actionloop
 				}
-			default:
-				jB, _ := json.Marshal(a)
-				log.Printf("Unhandled message: %s\n", string(jB))
-			}
-		// NODE
-		case "node":
-			switch a.Action {
-			default:
-				jB, _ := json.Marshal(a)
-				log.Printf("Unhandled message: %s\n", string(jB))
 			}
 		case "errorchannel":
 			continue actionloop
-		default:
-			jB, _ := json.Marshal(a)
-			log.Printf("Unhandled message: %s\n", string(jB))
 		}
 	}
 	if err != nil {
