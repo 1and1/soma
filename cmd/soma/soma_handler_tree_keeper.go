@@ -413,8 +413,9 @@ actionloop:
 			if err = tk.txCheckInstance(a, &stm); err != nil {
 				break actionloop
 			}
-		case `create`, `update`, `delete`:
-			if err = tk.txTree(a, &stm, q.User); err != nil {
+		case `create`, `update`, `delete`, `node_assignment`,
+			`member_new`, `member_removed`:
+			if err = tk.txTree(a, stm, q.User); err != nil {
 				break actionloop
 			}
 		default:
@@ -427,97 +428,6 @@ actionloop:
 		}
 
 		switch a.Type {
-		// BUCKET
-		case "bucket":
-			switch a.Action {
-			case "node_assignment":
-				if _, err = txStmtBucketAssignNode.Exec(
-					a.ChildNode.Id,
-					a.Bucket.Id,
-					a.Bucket.TeamId,
-				); err != nil {
-					break actionloop
-				}
-			}
-		// GROUP
-		case "group":
-			switch a.Action {
-			case "member_new":
-				switch a.ChildType {
-				case "group":
-					log.Println("==> group/new membergroup")
-					if _, err = txStmtGroupMemberNewGroup.Exec(
-						a.Group.Id,
-						a.ChildGroup.Id,
-						a.Group.BucketId,
-					); err != nil {
-						break actionloop
-					}
-				case "cluster":
-					log.Println("==> group/new membercluster")
-					if _, err = txStmtGroupMemberNewCluster.Exec(
-						a.Group.Id,
-						a.ChildCluster.Id,
-						a.Group.BucketId,
-					); err != nil {
-						break actionloop
-					}
-				case "node":
-					log.Println("==> group/new membernode")
-					if _, err = txStmtGroupMemberNewNode.Exec(
-						a.Group.Id,
-						a.ChildNode.Id,
-						a.Group.BucketId,
-					); err != nil {
-						break actionloop
-					}
-				}
-			case "member_removed":
-				switch a.ChildType {
-				case "group":
-					if _, err = txStmtGroupMemberRemoveGroup.Exec(
-						a.Group.Id,
-						a.ChildGroup.Id,
-					); err != nil {
-						break actionloop
-					}
-				case "cluster":
-					if _, err = txStmtGroupMemberRemoveCluster.Exec(
-						a.Group.Id,
-						a.ChildCluster.Id,
-					); err != nil {
-						break actionloop
-					}
-				case "node":
-					if _, err = txStmtGroupMemberRemoveNode.Exec(
-						a.Group.Id,
-						a.ChildNode.Id,
-					); err != nil {
-						break actionloop
-					}
-				}
-			}
-		// CLUSTER
-		case "cluster":
-			switch a.Action {
-			case "member_new":
-				log.Println("==> cluster/new membernode")
-				if _, err = txStmtClusterMemberNew.Exec(
-					a.Cluster.Id,
-					a.ChildNode.Id,
-					a.Cluster.BucketId,
-				); err != nil {
-					break actionloop
-				}
-			case "member_removed":
-				log.Println("==> cluster/new membernode")
-				if _, err = txStmtClusterMemberRemove.Exec(
-					a.Cluster.Id,
-					a.ChildNode.Id,
-				); err != nil {
-					break actionloop
-				}
-			}
 		case "errorchannel":
 			continue actionloop
 		}

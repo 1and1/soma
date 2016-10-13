@@ -16,6 +16,10 @@ func (tk *treeKeeper) txTree(a *tree.Action,
 		return tk.txTreeUpdate(a, stm)
 	case `delete`:
 		return tk.txTreeDelete(a, stm)
+	case `member_new`, `node_assignment`:
+		return tk.txTreeMemberNew(a, stm)
+	case `member_removed`:
+		return tk.txTreeMemberRemoved(a, stm)
 	}
 }
 
@@ -107,6 +111,83 @@ func (tk *treeKeeper) txTreeDelete(a *tree.Action,
 		// node unassign requires state update
 		err = tk.txTreeUpdate(a, stm)
 	}
+	return err
+}
+
+func (tk *treeKeeper) txTreeMemberNew(a *tree.Action,
+	stm map[string]*sql.Stmt) error {
+	var (
+		err               error
+		id, child, bucket string
+		statement         *sql.Stmt
+	)
+	switch a.Type {
+	case `bucket`:
+		_, err = stm[`BucketAssignNode`].Exec(
+			a.ChildNode.Id,
+			a.Bucket.Id,
+			a.Bucket.TeamId,
+		)
+		goto exit
+	case `group`:
+		id = a.Group.Id
+		bucket = a.Group.BucketId
+		switch a.ChildType {
+		case `group`:
+			statement = stm[`GroupMemberNewGroup`]
+			child = a.ChildGroup.Id
+		case `cluster`:
+			statement = stm[`GroupMemberNewCluster`]
+			child = a.ChildCluster.Id
+		case `node`:
+			statement = stm[`GroupMemberNewNode`]
+			child = a.ChildNode.Id
+		}
+	case `cluster`:
+		id = a.Cluster.Id
+		bucket = a.Cluster.BucketId
+		child = a.ChildNode.Id
+		statement = stm[`ClusterMemberNew`]
+	}
+	_, err = statement.Exec(
+		id,
+		child,
+		bucket,
+	)
+exit:
+	return err
+}
+
+func (tk *treeKeeper) txTreeMemberRemoved(a *tree.Action,
+	stm map[string]*sql.Stmt) error {
+	var (
+		err               error
+		id, child, bucket string
+		statement         *sql.Stmt
+	)
+	switch a.Type {
+	case `group`:
+		id = a.Group.Id
+		switch a.ChildType {
+		case `group`:
+			statement = stm[`GroupMemberRemoveGroup`]
+			child = a.ChildGroup.Id
+		case `cluster`:
+			statement = stm[`GroupMemberRemoveCluster`]
+			child = a.ChildCluster.Id
+		case `node`:
+			statement = stm[`GroupMemberRemoveNode`]
+			child = a.ChildNode.Id
+		}
+	case `cluster`:
+		id = a.Cluster.Id
+		child = a.ChildNode.Id
+		statement = stm[`ClusterMemberRemove`]
+	}
+	_, err = statement.Exec(
+		id,
+		child,
+	)
 	return err
 }
 
