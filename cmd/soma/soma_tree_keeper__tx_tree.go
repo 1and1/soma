@@ -12,6 +12,10 @@ func (tk *treeKeeper) txTree(a *tree.Action,
 	switch a.Action {
 	case `create`:
 		return tk.txTreeCreate(a, stm, user)
+	case `update`:
+		return tk.txTreeUpdate(a, stm)
+	case `delete`:
+		return tk.txTreeDelete(a, stm)
 	}
 }
 
@@ -48,6 +52,60 @@ func (tk *treeKeeper) txTreeCreate(a *tree.Action,
 			a.Cluster.TeamId,
 			user,
 		)
+	}
+	return err
+}
+
+func (tk *treeKeeper) txTreeUpdate(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	var (
+		err          error
+		statement    *sql.Stmt
+		id, newState string
+	)
+	switch a.Type {
+	case `group`:
+		statement = stm[`GroupUpdate`]
+		id = a.Group.Id
+		newState = a.Group.ObjectState
+	case `cluster`:
+		statement = stm[`ClusterUpdate`]
+		id = a.Cluster.Id
+		newState = a.Cluster.ObjectState
+	case `node`:
+		statement = stm[`UpdateNodeState`]
+		id = a.Node.Id
+		newState = a.Node.State
+	}
+	_, err = statement.Exec(
+		id,
+		newState,
+	)
+	return err
+}
+
+func (tk *treeKeeper) txTreeDelete(a *tree.Action,
+	stm *map[string]*sql.Stmt) error {
+	var err error
+	switch a.Type {
+	case `group`:
+		_, err = stm[`GroupDelete`].Exec(
+			a.Group.Id,
+		)
+	case `cluster`:
+		_, err = stm[`ClusterDelete`].Exec(
+			a.Cluster.Id,
+		)
+	case `node`:
+		if _, err = stm[`NodeUnassignFromBucket`].Exec(
+			a.Node.Id,
+			a.Node.Config.BucketId,
+			a.Node.TeamId,
+		); err != nil {
+			return err
+		}
+		// node unassign requires state update
+		err = tk.txTreeUpdate(a, stm)
 	}
 	return err
 }

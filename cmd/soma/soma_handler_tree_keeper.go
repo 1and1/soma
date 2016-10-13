@@ -413,7 +413,7 @@ actionloop:
 			if err = tk.txCheckInstance(a, &stm); err != nil {
 				break actionloop
 			}
-		case `create`:
+		case `create`, `update`, `delete`:
 			if err = tk.txTree(a, &stm, q.User); err != nil {
 				break actionloop
 			}
@@ -446,19 +446,6 @@ actionloop:
 		// GROUP
 		case "group":
 			switch a.Action {
-			case "update":
-				if _, err = txStmtGroupUpdate.Exec(
-					a.Group.Id,
-					a.Group.ObjectState,
-				); err != nil {
-					break actionloop
-				}
-			case "delete":
-				if _, err = txStmtGroupDelete.Exec(
-					a.Group.Id,
-				); err != nil {
-					break actionloop
-				}
 			case "member_new":
 				switch a.ChildType {
 				case "group":
@@ -520,19 +507,6 @@ actionloop:
 		// CLUSTER
 		case "cluster":
 			switch a.Action {
-			case "update":
-				if _, err = txStmtClusterUpdate.Exec(
-					a.Cluster.Id,
-					a.Cluster.ObjectState,
-				); err != nil {
-					break actionloop
-				}
-			case "delete":
-				if _, err = txStmtClusterDelete.Exec(
-					a.Cluster.Id,
-				); err != nil {
-					break actionloop
-				}
 			case "member_new":
 				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberNew.Exec(
@@ -557,23 +531,6 @@ actionloop:
 		// NODE
 		case "node":
 			switch a.Action {
-			case "delete":
-				if _, err = txStmtNodeUnassignFromBucket.Exec(
-					a.Node.Id,
-					a.Node.Config.BucketId,
-					a.Node.TeamId,
-				); err != nil {
-					break actionloop
-				}
-				fallthrough // need to call txStmtUpdateNodeState for delete as well
-			case "update":
-				log.Println("==> node/update")
-				if _, err = txStmtUpdateNodeState.Exec(
-					a.Node.Id,
-					a.Node.State,
-				); err != nil {
-					break actionloop
-				}
 			default:
 				jB, _ := json.Marshal(a)
 				log.Printf("Unhandled message: %s\n", string(jB))
