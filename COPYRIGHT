@@ -32,8 +32,8 @@ SUCH DAMAGE.
 --------------------------------------------------------------------------
 
 The vendored software below vendor/ is subject to its own license, as
-indicated in its LICENSE file. Please consult these files for the full
-license text.
+indicated in its respective LICENSE file. Please consult these files for
+the full license text for these packages.
 
 github.com/asaskevich/govalidator: MIT License
   Copyright (c) 2014 Alex Saskevich
@@ -82,6 +82,9 @@ golang.org/x/crypto: 3-clause BSD
 
 golang.org/x/net: 3-clause BSD
   Copyright (c) 2009 The Go Authors
+
+gopkg.in/DATA-DOG/go-sqlmock.v1: 3-clause BSD
+  Copyright (c) 2013-2016, DATA-DOG team
 
 gopkg.in/asn1-ber.v1: 3-clause BSD
   Copyright (c) 2012 The Go Authors
