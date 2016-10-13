@@ -19,6 +19,92 @@ func TestTreeKeeperDBClose(t *testing.T) {
 	}
 }
 
+func TestTreeKeeperRunPreparedStmt(t *testing.T) {
+	var err error
+	tk, mock := testSpawnTreeKeeper(t)
+	mock.ExpectPrepare(tkStmtStartJob)
+	mock.ExpectPrepare(tkStmtGetViewFromCapability)
+	mock.ExpectClose()
+
+	tk.start_job, err = tk.conn.Prepare(tkStmtStartJob)
+	if err != nil {
+		t.Errorf("Error '%s' preparing statement", err)
+	}
+	if tk.start_job == nil {
+		t.Errorf("stmt was expected preparing statement")
+	}
+	err = nil
+	tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability)
+	if err != nil {
+		t.Errorf("Error '%s' preparing statement", err)
+	}
+	if tk.get_view == nil {
+		t.Errorf("stmt was expected preparing statement")
+	}
+
+	tk.conn.Close()
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Unfulfilled expectations: %s", err)
+	}
+}
+
+func TestTreeKeeperIsReady(t *testing.T) {
+	tk, _ := testSpawnTreeKeeper(t)
+	defer tk.conn.Close()
+	tk.ready = false
+	if tk.isReady() {
+		t.Errorf("TK should not be ready")
+	}
+	tk.ready = true
+	if !tk.isReady() {
+		t.Errorf("TK should be reporting ready")
+	}
+}
+
+func TestTreeKeeperIsBroken(t *testing.T) {
+	tk, _ := testSpawnTreeKeeper(t)
+	tk.conn.Close()
+	tk.broken = false
+	if tk.isBroken() {
+		t.Errorf("TK should not be broken")
+	}
+	tk.broken = true
+	if !tk.isBroken() {
+		t.Errorf("TK should be reporting broken")
+	}
+}
+
+func TestTreeKeeperIsStopped(t *testing.T) {
+	tk, _ := testSpawnTreeKeeper(t)
+	tk.conn.Close()
+	tk.stopped = false
+	if tk.isStopped() {
+		t.Errorf("TK should not be stopped")
+	}
+	tk.stopped = true
+	if !tk.isStopped() {
+		t.Errorf("TK should be reporting being stopped")
+	}
+}
+
+func TestTreeKeeperStop(t *testing.T) {
+	tk, _ := testSpawnTreeKeeper(t)
+	tk.conn.Close()
+	tk.stopped = false
+	tk.ready = true
+	tk.broken = true
+	tk.stop()
+	if !tk.isStopped() {
+		t.Errorf("TK should be stopped")
+	}
+	if tk.isReady() {
+		t.Errorf("TK should not be reporting ready")
+	}
+	if tk.isBroken() {
+		t.Errorf("TK should not be reporting broken")
+	}
+}
+
 func testSpawnTreeKeeper(t *testing.T) (*treeKeeper, sqlmock.Sqlmock) {
 	actionChan := make(chan *tree.Action, 1024000)
 	errChan := make(chan *tree.Error, 1024000)
