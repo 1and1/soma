@@ -8,17 +8,6 @@
 
 package stmt
 
-const TxDeleteCheckDetails = `
-SELECT scc.configuration_object,
-       scc.configuration_object_type,
-       sc.source_check_id
-FROM   soma.check_configurations scc
-JOIN   soma.checks sc
-  ON   scc.configuration_id = sc.configuration_id
-WHERE  scc.configuration_id = $1::uuid
-  AND  scc.repository_id    = $2::uuid
-  AND  sc.check_id          = sc.source_check_id;`
-
 const TxMarkCheckConfigDeleted = `
 UPDATE soma.check_configurations
 SET    deleted = 'yes'::boolean
