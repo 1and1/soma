@@ -16,8 +16,8 @@ import (
 func (tk *treeKeeper) startTx() (
 	*sql.Tx, map[string]*sql.Stmt, error) {
 
-	err := error
-	tx := *sql.Tx{}
+	var err error
+	var tx *sql.Tx
 	open := false
 	stMap := map[string]*sql.Stmt{}
 
@@ -249,7 +249,7 @@ func (tk *treeKeeper) startTx() (
 		goto bailout
 	}
 
-	return tx, nil, stMap
+	return tx, stMap, nil
 
 bailout:
 	if open {
@@ -258,7 +258,7 @@ bailout:
 	for _, stmt := range stMap {
 		defer stmt.Close()
 	}
-	return nil, err
+	return nil, nil, err
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

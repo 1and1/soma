@@ -15,20 +15,22 @@ import (
 )
 
 func (tk *treeKeeper) txProperty(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	switch a.Action {
 	case `property_new`:
 		return tk.txPropertyNew(a, stm)
 	case `property_delete`:
 		return tk.txPropertyDelete(a, stm)
+	default:
+		return fmt.Errorf("Illegal property action: %s", a.Action)
 	}
 }
 
 //
 // PROPERTY NEW
 func (tk *treeKeeper) txPropertyNew(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
-	if err := stm[`PropertyInstanceCreate`].Exec(
+	stm map[string]*sql.Stmt) error {
+	if _, err := stm[`PropertyInstanceCreate`].Exec(
 		a.Property.InstanceId,
 		a.Property.RepositoryId,
 		a.Property.SourceInstanceId,
@@ -52,7 +54,7 @@ func (tk *treeKeeper) txPropertyNew(a *tree.Action,
 }
 
 func (tk *treeKeeper) txPropertyNewCustom(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
 		statement *sql.Stmt
@@ -89,7 +91,7 @@ func (tk *treeKeeper) txPropertyNewCustom(a *tree.Action,
 }
 
 func (tk *treeKeeper) txPropertyNewSystem(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
 		statement *sql.Stmt
@@ -129,7 +131,7 @@ func (tk *treeKeeper) txPropertyNewSystem(a *tree.Action,
 }
 
 func (tk *treeKeeper) txPropertyNewService(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
 		statement *sql.Stmt
@@ -167,7 +169,7 @@ func (tk *treeKeeper) txPropertyNewService(a *tree.Action,
 }
 
 func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
 		statement *sql.Stmt
@@ -206,8 +208,8 @@ func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
 //
 // PROPERTY DELETE
 func (tk *treeKeeper) txPropertyDelete(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
-	if err := stm[`PropertyInstanceDelete`].Exec(
+	stm map[string]*sql.Stmt) error {
+	if _, err := stm[`PropertyInstanceDelete`].Exec(
 		a.Property.InstanceId,
 	); err != nil {
 		return err

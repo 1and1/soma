@@ -11,12 +11,18 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 )
 
 func (tk *treeKeeper) txCheckConfig(conf proto.CheckConfig,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
+	var (
+		nullBucket sql.NullString
+		err        error
+	)
 	if conf.BucketId != "" {
 		nullBucket = sql.NullString{
 			String: conf.BucketId,
@@ -30,7 +36,7 @@ func (tk *treeKeeper) txCheckConfig(conf proto.CheckConfig,
 		conf.Name,
 		int64(conf.Interval),
 		conf.RepositoryId,
-		nullbucket,
+		nullBucket,
 		conf.CapabilityId,
 		conf.ObjectId,
 		conf.ObjectType,
@@ -124,17 +130,19 @@ constrloop:
 }
 
 func (tk *treeKeeper) txCheck(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	switch a.Action {
 	case `check_new`:
 		return tk.txCheckNew(a, stm)
 	case `check_removed`:
 		return tk.txCheckRemoved(a, stm)
+	default:
+		return fmt.Errorf("Illegal check action: %s", a.Action)
 	}
 }
 
 func (tk *treeKeeper) txCheckNew(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var id string
 	bucket := sql.NullString{String: a.Bucket.Id, Valid: true}
 	switch a.Type {
@@ -167,14 +175,14 @@ func (tk *treeKeeper) txCheckNew(a *tree.Action,
 }
 
 func (tk *treeKeeper) txCheckRemoved(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	statement := stm[`DeleteCheck`]
 	_, err := statement.Exec(a.Check.CheckId)
 	return err
 }
 
 func (tk *treeKeeper) txCheckInstance(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	switch a.Type {
 	case `repository`, `bucket`:
 		return fmt.Errorf("Illegal check instance on %s", a.Type)
@@ -182,21 +190,23 @@ func (tk *treeKeeper) txCheckInstance(a *tree.Action,
 
 	switch a.Action {
 	case `check_instance_create`:
-		if err := tk.CheckInstanceCreate(a, stm); err != nil {
+		if err := tk.txCheckInstanceCreate(a, stm); err != nil {
 			return err
 		}
 		// for a new check instance, the first instance
 		// configuration must be created alongside it
 		fallthrough
 	case `check_instance_update`:
-		return tk.CheckInstanceConfigCreate(a, stm)
+		return tk.txCheckInstanceConfigCreate(a, stm)
 	case `check_instance_delete`:
-		return tk.CheckInstanceDelete(a, stm)
+		return tk.txCheckInstanceDelete(a, stm)
+	default:
+		return fmt.Errorf("Illegal check instance action: %s", a.Action)
 	}
 }
 
 func (tk *treeKeeper) txCheckInstanceCreate(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	statement := stm[`CreateCheckInstance`]
 	_, err := statement.Exec(
 		a.CheckInstance.InstanceId,
@@ -209,7 +219,7 @@ func (tk *treeKeeper) txCheckInstanceCreate(a *tree.Action,
 }
 
 func (tk *treeKeeper) txCheckInstanceConfigCreate(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	statement := stm[`CreateCheckInstanceConfiguration`]
 	_, err := statement.Exec(
 		a.CheckInstance.InstanceConfigId,
@@ -230,7 +240,7 @@ func (tk *treeKeeper) txCheckInstanceConfigCreate(a *tree.Action,
 }
 
 func (tk *treeKeeper) txCheckInstanceDelete(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	statement := stm[`DeleteCheckInstance`]
 	_, err := statement.Exec(
 		a.CheckInstance.InstanceId,

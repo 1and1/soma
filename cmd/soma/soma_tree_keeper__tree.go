@@ -9,7 +9,6 @@ package main
 
 import (
 	"github.com/1and1/soma/internal/tree"
-	"github.com/1and1/soma/lib/proto"
 	"github.com/satori/go.uuid"
 )
 

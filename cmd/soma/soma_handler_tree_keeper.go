@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"time"
 
@@ -194,11 +193,10 @@ func (tk *treeKeeper) isStopped() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err        error
-		hasErrors  bool
-		tx         *sql.Tx
-		nullBucket sql.NullString
-		stm        map[string]*sql.Stmt
+		err       error
+		hasErrors bool
+		tx        *sql.Tx
+		stm       map[string]*sql.Stmt
 	)
 
 	if !tk.rebuild {
@@ -320,7 +318,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	tk.tree.ComputeCheckInstances()
 
 	// open multi-statement transaction
-	if tx, err, stm = tk.startTx(); err != nil {
+	if tx, stm, err = tk.startTx(); err != nil {
 		goto bailout
 	}
 	defer tx.Rollback()
@@ -400,17 +398,17 @@ actionloop:
 
 		switch a.Action {
 		case `property_new`, `property_delete`:
-			if err = tk.txProperty(a, &stm); err != nil {
+			if err = tk.txProperty(a, stm); err != nil {
 				break actionloop
 			}
 		case `check_new`, `check_removed`:
-			if err = tk.txCheck(a, &stm); err != nil {
+			if err = tk.txCheck(a, stm); err != nil {
 				break actionloop
 			}
 		case `check_instance_create`,
 			`check_instance_update`,
 			`check_instance_delete`:
-			if err = tk.txCheckInstance(a, &stm); err != nil {
+			if err = tk.txCheckInstance(a, stm); err != nil {
 				break actionloop
 			}
 		case `create`, `update`, `delete`, `node_assignment`,

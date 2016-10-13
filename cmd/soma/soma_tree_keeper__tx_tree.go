@@ -7,8 +7,15 @@
  */
 package main
 
+import (
+	"database/sql"
+	"fmt"
+
+	"github.com/1and1/soma/internal/tree"
+)
+
 func (tk *treeKeeper) txTree(a *tree.Action,
-	stm *map[string]*sql.Stmt, user string) error {
+	stm map[string]*sql.Stmt, user string) error {
 	switch a.Action {
 	case `create`:
 		return tk.txTreeCreate(a, stm, user)
@@ -20,11 +27,13 @@ func (tk *treeKeeper) txTree(a *tree.Action,
 		return tk.txTreeMemberNew(a, stm)
 	case `member_removed`:
 		return tk.txTreeMemberRemoved(a, stm)
+	default:
+		return fmt.Errorf("Illegal tree action: %s", a.Action)
 	}
 }
 
 func (tk *treeKeeper) txTreeCreate(a *tree.Action,
-	stm *map[string]*sql.Stmt, user string) error {
+	stm map[string]*sql.Stmt, user string) error {
 	var err error
 	switch a.Type {
 	case `bucket`:
@@ -61,7 +70,7 @@ func (tk *treeKeeper) txTreeCreate(a *tree.Action,
 }
 
 func (tk *treeKeeper) txTreeUpdate(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var (
 		err          error
 		statement    *sql.Stmt
@@ -89,7 +98,7 @@ func (tk *treeKeeper) txTreeUpdate(a *tree.Action,
 }
 
 func (tk *treeKeeper) txTreeDelete(a *tree.Action,
-	stm *map[string]*sql.Stmt) error {
+	stm map[string]*sql.Stmt) error {
 	var err error
 	switch a.Type {
 	case `group`:
@@ -161,9 +170,9 @@ exit:
 func (tk *treeKeeper) txTreeMemberRemoved(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
-		err               error
-		id, child, bucket string
-		statement         *sql.Stmt
+		err       error
+		id, child string
+		statement *sql.Stmt
 	)
 	switch a.Type {
 	case `group`:
