@@ -413,6 +413,10 @@ actionloop:
 			if err = tk.txCheckInstance(a, &stm); err != nil {
 				break actionloop
 			}
+		case `create`:
+			if err = tk.txTree(a, &stm, q.User); err != nil {
+				break actionloop
+			}
 		}
 
 		switch a.Type {
@@ -427,19 +431,6 @@ actionloop:
 		// BUCKET
 		case "bucket":
 			switch a.Action {
-			case "create":
-				if _, err = txStmtCreateBucket.Exec(
-					a.Bucket.Id,
-					a.Bucket.Name,
-					a.Bucket.IsFrozen,
-					a.Bucket.IsDeleted,
-					a.Bucket.RepositoryId,
-					a.Bucket.Environment,
-					a.Bucket.TeamId,
-					q.User,
-				); err != nil {
-					break actionloop
-				}
 			case "node_assignment":
 				if _, err = txStmtBucketAssignNode.Exec(
 					a.ChildNode.Id,
@@ -455,17 +446,6 @@ actionloop:
 		// GROUP
 		case "group":
 			switch a.Action {
-			case "create":
-				if _, err = txStmtGroupCreate.Exec(
-					a.Group.Id,
-					a.Group.BucketId,
-					a.Group.Name,
-					a.Group.ObjectState,
-					a.Group.TeamId,
-					q.User,
-				); err != nil {
-					break actionloop
-				}
 			case "update":
 				if _, err = txStmtGroupUpdate.Exec(
 					a.Group.Id,
@@ -540,17 +520,6 @@ actionloop:
 		// CLUSTER
 		case "cluster":
 			switch a.Action {
-			case "create":
-				if _, err = txStmtClusterCreate.Exec(
-					a.Cluster.Id,
-					a.Cluster.Name,
-					a.Cluster.BucketId,
-					a.Cluster.ObjectState,
-					a.Cluster.TeamId,
-					q.User,
-				); err != nil {
-					break actionloop
-				}
 			case "update":
 				if _, err = txStmtClusterUpdate.Exec(
 					a.Cluster.Id,
