@@ -374,17 +374,26 @@ actionloop:
 		//jBxX, _ := json.Marshal(a)
 		//log.Printf("%s - Processing: %s\n", q.JobId.String(), string(jBxX))
 
+		// only check and check_instance actions are relevant during
+		// a rebuild, everything else is ignored. Even some deletes are
+		// valid, for example when a property overwrites inheritance of
+		// another property, the first will generate deletes.
+		// Other deletes should not occur, like node/delete, but will be
+		// sorted later. TODO
 		if tk.rebuild {
 			if tk.rbLevel == `instances` {
 				switch a.Action {
 				case `check_new`, `check_removed`:
-					// ignore in instance-rebuild mode
+					// ignore only in instance-rebuild mode
 					continue actionloop
 				}
 			}
 			switch a.Action {
-			case `property_new`, `property_delete`:
-				// ignore in rebuild mode
+			case `property_new`, `property_delete`,
+				`create`, `update`, `delete`,
+				`node_assignment`,
+				`member_new`, `member_removed`:
+				// ignore in all rebuild modes
 				continue actionloop
 			}
 		}
@@ -419,10 +428,6 @@ actionloop:
 		case "bucket":
 			switch a.Action {
 			case "create":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtCreateBucket.Exec(
 					a.Bucket.Id,
 					a.Bucket.Name,
@@ -436,10 +441,6 @@ actionloop:
 					break actionloop
 				}
 			case "node_assignment":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtBucketAssignNode.Exec(
 					a.ChildNode.Id,
 					a.Bucket.Id,
@@ -455,10 +456,6 @@ actionloop:
 		case "group":
 			switch a.Action {
 			case "create":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtGroupCreate.Exec(
 					a.Group.Id,
 					a.Group.BucketId,
@@ -470,10 +467,6 @@ actionloop:
 					break actionloop
 				}
 			case "update":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtGroupUpdate.Exec(
 					a.Group.Id,
 					a.Group.ObjectState,
@@ -481,20 +474,12 @@ actionloop:
 					break actionloop
 				}
 			case "delete":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtGroupDelete.Exec(
 					a.Group.Id,
 				); err != nil {
 					break actionloop
 				}
 			case "member_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				switch a.ChildType {
 				case "group":
 					log.Println("==> group/new membergroup")
@@ -525,10 +510,6 @@ actionloop:
 					}
 				}
 			case "member_removed":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				switch a.ChildType {
 				case "group":
 					if _, err = txStmtGroupMemberRemoveGroup.Exec(
@@ -560,10 +541,6 @@ actionloop:
 		case "cluster":
 			switch a.Action {
 			case "create":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtClusterCreate.Exec(
 					a.Cluster.Id,
 					a.Cluster.Name,
@@ -575,10 +552,6 @@ actionloop:
 					break actionloop
 				}
 			case "update":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtClusterUpdate.Exec(
 					a.Cluster.Id,
 					a.Cluster.ObjectState,
@@ -586,20 +559,12 @@ actionloop:
 					break actionloop
 				}
 			case "delete":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtClusterDelete.Exec(
 					a.Cluster.Id,
 				); err != nil {
 					break actionloop
 				}
 			case "member_new":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberNew.Exec(
 					a.Cluster.Id,
@@ -609,10 +574,6 @@ actionloop:
 					break actionloop
 				}
 			case "member_removed":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				log.Println("==> cluster/new membernode")
 				if _, err = txStmtClusterMemberRemove.Exec(
 					a.Cluster.Id,
@@ -628,10 +589,6 @@ actionloop:
 		case "node":
 			switch a.Action {
 			case "delete":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				if _, err = txStmtNodeUnassignFromBucket.Exec(
 					a.Node.Id,
 					a.Node.Config.BucketId,
@@ -641,10 +598,6 @@ actionloop:
 				}
 				fallthrough // need to call txStmtUpdateNodeState for delete as well
 			case "update":
-				if tk.rebuild {
-					// ignore in rebuild mode
-					continue actionloop
-				}
 				log.Println("==> node/update")
 				if _, err = txStmtUpdateNodeState.Exec(
 					a.Node.Id,
