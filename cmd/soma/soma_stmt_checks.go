@@ -115,6 +115,7 @@ JOIN   soma.checks sc
   ON   sci.check_id = sc.check_id
 JOIN   soma.check_instance_configurations scic
   ON   sci.current_instance_config_id = scic.check_instance_config_id
-WHERE  scc.configuration_id = $1::uuid;`
+WHERE  scc.configuration_id = $1::uuid
+  AND  scc.status != 'awaiting_deletion';`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
