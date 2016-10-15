@@ -1,6 +1,61 @@
 package main
 
+import (
+	"database/sql"
+	"fmt"
+)
+
 // Extract the request routing information
+func (g *guidePost) extractRouting(q *treeRequest) (string, string, error, bool) {
+	var repoId, repoName, bucketId string
+	var err error
+
+	repoId, bucketId = g.extractId(q)
+
+	// lookup repository by bucket
+	if bucketId != `` {
+		if err = g.repo_stmt.QueryRow(
+			bucketId,
+		).Scan(
+			&repoId,
+			&repoName,
+		); err != nil {
+			if err == sql.ErrNoRows {
+				return ``, ``, fmt.Errorf(
+					"No repository found for bucketId %s",
+					bucketId,
+				), true
+			}
+			return ``, ``, err, false
+		}
+	}
+
+	// lookup repository name
+	if repoName == `` && repoId != `` {
+		if err = g.name_stmt.QueryRow(
+			repoId,
+		).Scan(
+			&repoName,
+		); err != nil {
+			if err == sql.ErrNoRows {
+				return ``, ``, fmt.Errorf(
+					"No repository found with id %s",
+					repoId,
+				), true
+			}
+			return ``, ``, err, false
+		}
+	}
+
+	if repoName == `` {
+		return ``, ``, fmt.Errorf(
+			`GuidePost: unable find repository for request`,
+		), true
+	}
+	return repoId, repoName, nil, false
+}
+
+// Extract embedded IDs that can be used for routing
 func (g *guidePost) extractId(q *treeRequest) (string, string) {
 	switch q.Action {
 	case
