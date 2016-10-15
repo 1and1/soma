@@ -112,7 +112,9 @@ func SendAttributeReply(w *http.ResponseWriter, r *somaResult) {
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Errors = &[]string{}
+	if result.Errors == nil {
+		result.Errors = &[]string{}
+	}
 	result.Attributes = &[]proto.Attribute{}
 	for _, i := range (*r).Attributes {
 		*result.Attributes = append(*result.Attributes, i.Attribute)

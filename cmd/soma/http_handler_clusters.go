@@ -253,7 +253,9 @@ func SendClusterReply(w *http.ResponseWriter, r *somaResult) {
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Errors = &[]string{}
+	if result.Errors == nil {
+		result.Errors = &[]string{}
+	}
 	result.Clusters = &[]proto.Cluster{}
 	for _, i := range (*r).Clusters {
 		*result.Clusters = append(*result.Clusters, i.Cluster)

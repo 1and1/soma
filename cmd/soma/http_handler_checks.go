@@ -129,7 +129,9 @@ func SendCheckConfigurationReply(w *http.ResponseWriter, r *somaResult) {
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Errors = &[]string{}
+	if result.Errors == nil {
+		result.Errors = &[]string{}
+	}
 	result.CheckConfigs = &[]proto.CheckConfig{}
 	for _, i := range (*r).CheckConfigs {
 		*result.CheckConfigs = append(*result.CheckConfigs, i.CheckConfig)
