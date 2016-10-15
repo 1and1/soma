@@ -107,6 +107,12 @@ func (r *Result) NotFound() {
 	r.StatusText = DisplayStatus[StatusNotFound]
 }
 
+func (r *Result) NotFoundErr(err error) {
+	r.StatusCode = StatusNotFound
+	r.StatusText = DisplayStatus[StatusNotFound]
+	r.Errors = &[]string{err.Error()}
+}
+
 func (r *Result) Accepted() {
 	r.StatusCode = StatusAccepted
 	r.StatusText = DisplayStatus[StatusAccepted]
@@ -144,6 +150,11 @@ func (r *Result) Clean() {
 // Legacy interface
 func (r *Result) ErrorMark(err error, imp bool, found bool,
 	length int, jobid, jobtype string) bool {
+
+	if found && err != nil {
+		r.NotFoundErr(err)
+		return true
+	}
 
 	if r.Error(err) {
 		return true
