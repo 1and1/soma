@@ -37,106 +37,37 @@ type guidePost struct {
 func (g *guidePost) run() {
 	var err error
 
-	g.jbsv_stmt, err = g.conn.Prepare(`
-INSERT INTO soma.jobs (
-	job_id,
-	job_status,
-	job_result,
-	job_type,
-	repository_id,
-	user_id,
-	organizational_team_id,
-	job)
-SELECT	$1::uuid,
-		$2::varchar,
-		$3::varchar,
-		$4::varchar,
-		$5::uuid,
-		iu.user_id,
-		iu.organizational_team_id,
-		$7::jsonb
-FROM    inventory.users iu
-WHERE   iu.user_uid = $6::varchar;`)
-	if err != nil {
+	if g.jbsv_stmt, err = g.conn.Prepare(stmt.JobSave); err != nil {
 		log.Fatal("guide/job-save: ", err)
 	}
 	defer g.jbsv_stmt.Close()
 
-	g.repo_stmt, err = g.conn.Prepare(`
-SELECT	sb.repository_id,
-		sr.repository_name
-FROM	soma.buckets sb
-JOIN    soma.repositories sr
-ON		sb.repository_id = sr.repository_id
-WHERE	sb.bucket_id = $1::uuid;`)
-	if err != nil {
+	if g.repo_stmt, err = g.conn.Prepare(stmt.RepoByBucketId); err != nil {
 		log.Fatal("guide/repo-by-bucket: ", err)
 	}
 	defer g.repo_stmt.Close()
 
-	g.node_stmt, err = g.conn.Prepare(`
-SELECT    sn.node_asset_id,
-	      sn.node_name,
-	      sn.organizational_team_id,
-	      sn.server_id,
-	      sn.node_online,
-	      sn.node_deleted
-FROM      soma.nodes sn
-LEFT JOIN soma.node_bucket_assignment snba
-ON        sn.node_id = snba.node_id
-WHERE     sn.node_online = 'yes'
-AND       sn.node_deleted = 'false'
-AND       snba.node_id IS NULL
-AND       sn.node_id = $1::uuid;`)
-	if err != nil {
+	if g.node_stmt, err = g.conn.Prepare(stmt.NodeDetails); err != nil {
 		log.Fatal("guide/load-node-details: ", err)
 	}
 	defer g.node_stmt.Close()
 
-	g.name_stmt, err = g.conn.Prepare(`
-SELECT repository_name
-FROM   soma.repositories
-WHERE  repository_id = $1::uuid;`)
-	if err != nil {
+	if g.name_stmt, err = g.conn.Prepare(stmt.RepoNameById); err != nil {
 		log.Fatal("guide/repo-by-id: ", err)
 	}
 	defer g.name_stmt.Close()
 
-	g.serv_stmt, err = g.conn.Prepare(`
-SELECT stsp.service_property
-FROM   soma.repositories sr
-JOIN   soma.team_service_properties stsp
-ON     sr.organizational_team_id = stsp.organizational_team_id
-WHERE  sr.repository_id = $1::uuid
-AND    stsp.service_property = $2::varchar
-AND    sr.organizational_team_id = $3::uuid;`)
-	if err != nil {
+	if g.serv_stmt, err = g.conn.Prepare(stmt.ServiceLookup); err != nil {
 		log.Fatal("guide/service-lookup: ", err)
 	}
 	defer g.serv_stmt.Close()
 
-	g.attr_stmt, err = g.conn.Prepare(`
-SELECT stspv.service_property_attribute,
-       stspv.value
-FROM   soma.repositories sr
-JOIN   soma.team_service_properties stsp
-ON     sr.organizational_team_id = stsp.organizational_team_id
-JOIN   soma.team_service_property_values stspv
-ON     stsp.organizational_team_id = stspv.organizational_team_id
-AND    stsp.service_property = stspv.service_property
-WHERE  sr.repository_id = $1::uuid
-AND    stsp.service_property = $2::varchar
-AND    sr.organizational_team_id = $3::uuid;`)
-	if err != nil {
+	if g.attr_stmt, err = g.conn.Prepare(stmt.ServiceAttributes); err != nil {
 		log.Fatal("guide/populate-service-attributes: ", err)
 	}
 	defer g.attr_stmt.Close()
 
-	g.cthr_stmt, err = g.conn.Prepare(`
-SELECT threshold_amount
-FROM   soma.monitoring_capabilities
-WHERE  capability_id = $1::uuid;`)
-	if err != nil {
+	if g.cthr_stmt, err = g.conn.Prepare(stmt.CapabilityThresholds); err != nil {
 		log.Fatal("guide/capability-threshold-lookup: ", err)
 	}
 	defer g.cthr_stmt.Close()
