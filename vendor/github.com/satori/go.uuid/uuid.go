@@ -127,6 +127,13 @@ func unixTimeFunc() uint64 {
 // described in RFC 4122.
 type UUID [16]byte
 
+// NullUUID can be used with the standard sql package to represent a
+// UUID value that can be NULL in the database
+type NullUUID struct {
+	UUID  UUID
+	Valid bool
+}
+
 // The nil UUID is special form of UUID that is specified to have all
 // 128 bits set to zero.
 var Nil = UUID{}
@@ -244,18 +251,12 @@ func (u *UUID) UnmarshalText(text []byte) (err error) {
 	b := u[:]
 
 	for i, byteGroup := range byteGroups {
-		if i > 0 && t[0] == '-' {
-			t = t[1:]
-		} else if i > 0 && t[0] != '-' {
-			err = fmt.Errorf("uuid: invalid string format")
-			return
-		}
-
-		if i == 2 {
-			if !bytes.Contains([]byte("012345"), []byte{t[0]}) {
-				err = fmt.Errorf("uuid: invalid version number: %s", t[0])
+		if i > 0 {
+			if t[0] != '-' {
+				err = fmt.Errorf("uuid: invalid string format")
 				return
 			}
+			t = t[1:]
 		}
 
 		if len(t) < byteGroup {
@@ -265,12 +266,11 @@ func (u *UUID) UnmarshalText(text []byte) (err error) {
 
 		if i == 4 && len(t) > byteGroup &&
 			((braced && t[byteGroup] != '}') || len(t[byteGroup:]) > 1 || !braced) {
-			err = fmt.Errorf("uuid: UUID string too long: %s", t)
+			err = fmt.Errorf("uuid: UUID string too long: %s", text)
 			return
 		}
 
 		_, err = hex.Decode(b[:byteGroup/2], t[:byteGroup])
-
 		if err != nil {
 			return
 		}
@@ -321,6 +321,27 @@ func (u *UUID) Scan(src interface{}) error {
 	}
 
 	return fmt.Errorf("uuid: cannot convert %T to UUID", src)
+}
+
+// Value implements the driver.Valuer interface.
+func (u NullUUID) Value() (driver.Value, error) {
+	if !u.Valid {
+		return nil, nil
+	}
+	// Delegate to UUID Value function
+	return u.UUID.Value()
+}
+
+// Scan implements the sql.Scanner interface.
+func (u *NullUUID) Scan(src interface{}) error {
+	if src == nil {
+		u.UUID, u.Valid = Nil, false
+		return nil
+	}
+
+	// Delegate to UUID Scan function
+	u.Valid = true
+	return u.UUID.Scan(src)
 }
 
 // FromBytes returns UUID converted from raw byte slice input.
