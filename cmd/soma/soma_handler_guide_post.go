@@ -249,7 +249,7 @@ func (g *guidePost) process(q *treeRequest) {
 			q.reply <- result
 			return
 		}
-		fallthrough
+		bucketId = q.Group.Group.BucketId
 	case "add_cluster_to_group":
 		// retrieve bucketId for cluster
 		if err = g.bucket_for_cluster.QueryRow(
@@ -265,7 +265,7 @@ func (g *guidePost) process(q *treeRequest) {
 			q.reply <- result
 			return
 		}
-		fallthrough
+		bucketId = q.Group.Group.BucketId
 	case "add_node_to_group":
 		// retrieve bucketId for node
 		if err = g.bucket_for_node.QueryRow(
