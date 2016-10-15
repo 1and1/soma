@@ -192,7 +192,9 @@ func SendBucketReply(w *http.ResponseWriter, r *somaResult) {
 	if r.MarkErrors(&result) {
 		goto dispatch
 	}
-	result.Errors = &[]string{}
+	if result.Errors == nil {
+		result.Errors = &[]string{}
+	}
 	result.Buckets = &[]proto.Bucket{}
 	for _, i := range (*r).Buckets {
 		*result.Buckets = append(*result.Buckets, i.Bucket)
