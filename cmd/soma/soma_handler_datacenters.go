@@ -43,6 +43,9 @@ type somaDatacenterReadHandler struct {
 	show_stmt *sql.Stmt
 	grp_list  *sql.Stmt
 	grp_show  *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaDatacenterReadHandler) run() {
@@ -219,6 +222,9 @@ type somaDatacenterWriteHandler struct {
 	ren_stmt *sql.Stmt
 	grp_add  *sql.Stmt
 	grp_del  *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaDatacenterWriteHandler) run() {

@@ -18,6 +18,9 @@ type lifeCycle struct {
 	stmt_delblk  *sql.Stmt
 	stmt_delact  *sql.Stmt
 	stmt_dead    *sql.Stmt
+	appLog       *log.Logger
+	reqLog       *log.Logger
+	errLog       *log.Logger
 }
 
 type PokeMessage struct {

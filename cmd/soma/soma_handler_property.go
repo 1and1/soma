@@ -55,6 +55,9 @@ type somaPropertyReadHandler struct {
 	show_nat_stmt *sql.Stmt
 	show_tpl_stmt *sql.Stmt
 	show_cst_stmt *sql.Stmt
+	appLog        *log.Logger
+	reqLog        *log.Logger
+	errLog        *log.Logger
 }
 
 func (r *somaPropertyReadHandler) run() {
@@ -404,6 +407,9 @@ type somaPropertyWriteHandler struct {
 	del_tpl_stmt      *sql.Stmt
 	del_srv_attr_stmt *sql.Stmt
 	del_tpl_attr_stmt *sql.Stmt
+	appLog            *log.Logger
+	reqLog            *log.Logger
+	errLog            *log.Logger
 }
 
 func (w *somaPropertyWriteHandler) run() {

@@ -31,6 +31,9 @@ type guidePost struct {
 	bucket_for_node    *sql.Stmt
 	bucket_for_cluster *sql.Stmt
 	bucket_for_group   *sql.Stmt
+	appLog             *log.Logger
+	reqLog             *log.Logger
+	errLog             *log.Logger
 }
 
 func (g *guidePost) run() {

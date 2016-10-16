@@ -43,6 +43,9 @@ type somaUserReadHandler struct {
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
 	sync_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaUserReadHandler) run() {
@@ -204,6 +207,9 @@ type somaUserWriteHandler struct {
 	del_stmt *sql.Stmt
 	prg_stmt *sql.Stmt
 	upd_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaUserWriteHandler) run() {

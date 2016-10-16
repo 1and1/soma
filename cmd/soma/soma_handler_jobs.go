@@ -22,6 +22,9 @@ type jobsRead struct {
 	listscp_stmt  *sql.Stmt
 	showid_stmt   *sql.Stmt
 	showlist_stmt *sql.Stmt
+	appLog        *log.Logger
+	reqLog        *log.Logger
+	errLog        *log.Logger
 }
 
 func (j *jobsRead) run() {

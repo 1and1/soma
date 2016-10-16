@@ -43,6 +43,9 @@ type somaTeamReadHandler struct {
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
 	sync_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaTeamReadHandler) run() {
@@ -172,6 +175,9 @@ type somaTeamWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	upd_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaTeamWriteHandler) run() {

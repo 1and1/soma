@@ -23,6 +23,9 @@ type forestCustodian struct {
 	name_stmt *sql.Stmt
 	rbck_stmt *sql.Stmt
 	rbci_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (f *forestCustodian) run() {

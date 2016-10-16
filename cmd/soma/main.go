@@ -184,7 +184,7 @@ func main() {
 	connectToDatabase(appLog, errLog)
 	go pingDatabase(errLog)
 
-	startHandlers()
+	startHandlers(appLog, reqLog, errLog)
 
 	router := httprouter.New()
 

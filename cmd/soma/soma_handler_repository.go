@@ -45,6 +45,9 @@ type somaRepositoryReadHandler struct {
 	psvc_stmt *sql.Stmt
 	psys_stmt *sql.Stmt
 	pcst_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaRepositoryReadHandler) run() {

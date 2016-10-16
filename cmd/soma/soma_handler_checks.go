@@ -45,6 +45,9 @@ type somaCheckConfigurationReadHandler struct {
 	show_constr_attribute *sql.Stmt
 	show_constr_oncall    *sql.Stmt
 	show_instance_info    *sql.Stmt
+	appLog                *log.Logger
+	reqLog                *log.Logger
+	errLog                *log.Logger
 }
 
 func (r *somaCheckConfigurationReadHandler) run() {

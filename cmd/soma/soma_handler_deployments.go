@@ -43,6 +43,9 @@ type somaDeploymentHandler struct {
 	lst_stmt *sql.Stmt
 	all_stmt *sql.Stmt
 	clr_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (self *somaDeploymentHandler) run() {

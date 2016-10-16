@@ -40,6 +40,9 @@ type somaHostDeploymentHandler struct {
 	conn      *sql.DB
 	geti_stmt *sql.Stmt
 	last_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (self *somaHostDeploymentHandler) run() {

@@ -38,6 +38,9 @@ type somaUnitReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaUnitReadHandler) run() {
@@ -140,6 +143,9 @@ type somaUnitWriteHandler struct {
 	conn     *sql.DB
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaUnitWriteHandler) run() {

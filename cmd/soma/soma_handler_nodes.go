@@ -48,6 +48,9 @@ type somaNodeReadHandler struct {
 	psvc_stmt *sql.Stmt
 	psys_stmt *sql.Stmt
 	pcst_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaNodeReadHandler) run() {
@@ -406,6 +409,9 @@ type somaNodeWriteHandler struct {
 	del_stmt *sql.Stmt
 	prg_stmt *sql.Stmt
 	upd_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaNodeWriteHandler) run() {

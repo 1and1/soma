@@ -56,6 +56,9 @@ type outputTree struct {
 	stmtGrpClr   *sql.Stmt
 	stmtGrpNod   *sql.Stmt
 	stmtClrNod   *sql.Stmt
+	appLog       *log.Logger
+	reqLog       *log.Logger
+	errLog       *log.Logger
 }
 
 func (o *outputTree) run() {

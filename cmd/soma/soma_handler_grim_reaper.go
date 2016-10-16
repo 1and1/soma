@@ -16,6 +16,9 @@ import (
 type grimReaper struct {
 	system chan msg.Request
 	conn   *sql.DB
+	appLog *log.Logger
+	reqLog *log.Logger
+	errLog *log.Logger
 }
 
 func (grim *grimReaper) run() {

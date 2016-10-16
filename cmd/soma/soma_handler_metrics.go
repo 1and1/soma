@@ -38,6 +38,9 @@ type somaMetricReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaMetricReadHandler) run() {
@@ -141,6 +144,9 @@ type somaMetricWriteHandler struct {
 	del_stmt     *sql.Stmt
 	pkg_add_stmt *sql.Stmt
 	pkg_del_stmt *sql.Stmt
+	appLog       *log.Logger
+	reqLog       *log.Logger
+	errLog       *log.Logger
 }
 
 func (w *somaMetricWriteHandler) run() {

@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"time"
+
+	log "github.com/Sirupsen/logrus"
+)
 
 type jobDelay struct {
 	input    chan waitSpec
@@ -8,6 +12,9 @@ type jobDelay struct {
 	notify   chan string
 	waitList map[string][]waitSpec
 	jobDone  map[string]time.Time
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 type waitSpec struct {

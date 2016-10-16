@@ -29,6 +29,9 @@ type somaObjectStateReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaObjectStateReadHandler) run() {
@@ -123,6 +126,9 @@ type somaObjectStateWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	ren_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaObjectStateWriteHandler) run() {

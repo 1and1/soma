@@ -78,6 +78,9 @@ type supervisor struct {
 	stmt_GrantSysGlUser *sql.Stmt
 	stmt_RevkSysGlUser  *sql.Stmt
 	stmt_SrchGlSysGrant *sql.Stmt
+	appLog              *log.Logger
+	reqLog              *log.Logger
+	errLog              *log.Logger
 }
 
 func (s *supervisor) run() {

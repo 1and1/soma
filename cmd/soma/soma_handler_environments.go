@@ -29,6 +29,9 @@ type somaEnvironmentReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
+	appLog    *log.Logger
+	reqLog    *log.Logger
+	errLog    *log.Logger
 }
 
 func (r *somaEnvironmentReadHandler) run() {
@@ -123,6 +126,9 @@ type somaEnvironmentWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	ren_stmt *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
 func (w *somaEnvironmentWriteHandler) run() {
