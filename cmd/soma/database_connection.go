@@ -9,7 +9,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func connectToDatabase() {
+func connectToDatabase(appLog, errLog *log.Logger) {
 	var err error
 	var rows *sql.Rows
 	var schema string
@@ -37,12 +37,12 @@ func connectToDatabase() {
 	if err = conn.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	log.Print("Connected main pool to database")
+	appLog.Print("Connected main pool to database")
 	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
-		log.Fatal(err)
+		errLog.Fatal(err)
 	}
 	if _, err = conn.Exec(`SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`); err != nil {
-		log.Fatal(err)
+		errLog.Fatal(err)
 	}
 
 	// size the connection pool
@@ -63,7 +63,7 @@ SELECT schema,
        MAX(version) AS version
 FROM   public.schema_versions
 GROUP  BY schema;`); err != nil {
-		log.Fatal("Query db schema versions: ", err)
+		errLog.Fatal("Query db schema versions: ", err)
 	}
 
 	for rows.Next() {
@@ -71,27 +71,27 @@ GROUP  BY schema;`); err != nil {
 			&schema,
 			&schemaVer,
 		); err != nil {
-			log.Fatal("Schema check: ", err)
+			errLog.Fatal("Schema check: ", err)
 		}
 		if rsv, ok := required[schema]; ok {
 			if rsv != schemaVer {
-				log.Fatalf("Incompatible schema %s: %d != %d", schema, rsv, schemaVer)
+				errLog.Fatalf("Incompatible schema %s: %d != %d", schema, rsv, schemaVer)
 			} else {
-				log.Printf("DB Schema %s, version: %d", schema, schemaVer)
+				appLog.Printf("DB Schema %s, version: %d", schema, schemaVer)
 				delete(required, schema)
 			}
 		} else {
-			log.Fatal("Unknown schema: ", schema)
+			errLog.Fatal("Unknown schema: ", schema)
 		}
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal("Schema check: ", err)
+		errLog.Fatal("Schema check: ", err)
 	}
 	if len(required) != 0 {
 		for s, _ := range required {
-			log.Printf("Missing schema: %s", s)
+			errLog.Printf("Missing schema: %s", s)
 		}
-		log.Fatal("FATAL - database incomplete")
+		errLog.Fatal("FATAL - database incomplete")
 	}
 }
 
@@ -128,14 +128,14 @@ func newDatabaseConnection() (*sql.DB, error) {
 	return dbcon, nil
 }
 
-func pingDatabase() {
+func pingDatabase(errLog *log.Logger) {
 	ticker := time.NewTicker(time.Second).C
 
 	for {
 		<-ticker
 		err := conn.Ping()
 		if err != nil {
-			log.Print(err)
+			errLog.Print(err)
 		}
 	}
 }

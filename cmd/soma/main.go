@@ -181,8 +181,8 @@ func main() {
 		SomaCfg.Daemon.url.Scheme = "http"
 	}
 
-	connectToDatabase()
-	go pingDatabase()
+	connectToDatabase(appLog, errLog)
+	go pingDatabase(errLog)
 
 	startHandlers()
 
