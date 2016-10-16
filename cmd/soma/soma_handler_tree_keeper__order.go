@@ -3,10 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"time"
 
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 func (tk *treeKeeper) orderDeploymentDetails() {

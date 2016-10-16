@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"sync"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 type grimReaper struct {

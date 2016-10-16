@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 
 	"github.com/1and1/soma/internal/tree"
+	log "github.com/Sirupsen/logrus"
 )
 
 func (tk *treeKeeper) startupLoad() {

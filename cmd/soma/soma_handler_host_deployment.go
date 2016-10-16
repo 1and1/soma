@@ -3,10 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"log"
 	"strings"
 
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 type somaHostDeploymentRequest struct {

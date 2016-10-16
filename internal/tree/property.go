@@ -9,10 +9,10 @@
 package tree
 
 import (
-	"log"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/1and1/soma/lib/proto"
-	"github.com/satori/go.uuid"
 )
 
 type Property interface {

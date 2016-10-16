@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 type somaRepositoryRequest struct {

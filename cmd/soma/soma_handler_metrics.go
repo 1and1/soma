@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 type somaMetricRequest struct {

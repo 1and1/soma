@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/auth"
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {

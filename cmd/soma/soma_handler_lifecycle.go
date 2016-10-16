@@ -2,9 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/resty.v0"
 )
 

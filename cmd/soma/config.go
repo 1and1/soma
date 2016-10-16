@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"path/filepath"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/nahanni/go-ucl"
 )
 

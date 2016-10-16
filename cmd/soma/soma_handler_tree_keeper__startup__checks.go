@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 
-	"github.com/satori/go.uuid"
-
-	"github.com/1and1/soma/lib/proto"
 	"github.com/1and1/soma/internal/tree"
+	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 type tkLoader interface {

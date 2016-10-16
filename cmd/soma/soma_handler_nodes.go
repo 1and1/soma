@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 type somaNodeRequest struct {

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/1and1/soma/lib/auth"
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 func PanicCatcher(w http.ResponseWriter) {

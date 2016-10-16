@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/1and1/soma/internal/msg"
+	log "github.com/Sirupsen/logrus"
 )
 
 func (s *supervisor) authorize(q *msg.Request) {

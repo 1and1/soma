@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/1and1/soma/internal/tree"
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (tk *treeKeeper) startupRepositoryOncallProperties() {

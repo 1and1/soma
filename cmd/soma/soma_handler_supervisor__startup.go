@@ -28,12 +28,12 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/1and1/soma/internal/stmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/mjolnir42/scrypth64"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (s *supervisor) startupLoad() {

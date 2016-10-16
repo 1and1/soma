@@ -36,11 +36,11 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/1and1/soma/internal/msg"
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/julienschmidt/httprouter"
 )

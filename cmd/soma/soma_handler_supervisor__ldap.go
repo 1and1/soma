@@ -5,9 +5,9 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	"gopkg.in/ldap.v2"
 )
 

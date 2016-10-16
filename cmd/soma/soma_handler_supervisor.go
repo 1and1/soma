@@ -30,13 +30,13 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"math/big"
 	"time"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
+	log "github.com/Sirupsen/logrus"
 )
 
 type supervisor struct {

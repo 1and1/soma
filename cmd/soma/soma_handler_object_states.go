@@ -3,7 +3,8 @@ package main
 import (
 	"database/sql"
 	"errors"
-	"log"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // Message structs

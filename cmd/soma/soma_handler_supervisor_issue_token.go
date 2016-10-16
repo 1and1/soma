@@ -30,12 +30,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
+	log "github.com/Sirupsen/logrus"
 )
 
 func (s *supervisor) issue_token(q *msg.Request) {

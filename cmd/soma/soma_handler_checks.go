@@ -2,10 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"strconv"
 
 	"github.com/1and1/soma/lib/proto"
+	log "github.com/Sirupsen/logrus"
 )
 
 type somaCheckConfigRequest struct {

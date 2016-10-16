@@ -9,9 +9,8 @@
 package tree
 
 import (
-	"log"
-
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (ten *Node) updateCheckInstances() {
