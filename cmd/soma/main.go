@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -124,6 +126,11 @@ func main() {
 	}
 	errLog.Out = lfhErr
 	logFileMap[`error`] = lfhErr
+
+	// signal handler will reopen all logfiles on USR2
+	sigChanLogRotate := make(chan os.Signal, 1)
+	signal.Notify(sigChanLogRotate, syscall.SIGUSR2)
+	go logrotate(sigChanLogRotate)
 
 	// print selected runtime mode
 	if SomaCfg.ReadOnly {
