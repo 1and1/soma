@@ -66,4 +66,25 @@ SELECT job_id,
 FROM   soma.jobs
 WHERE  job_id = any($1::uuid[]);`
 
+const JobSave = `
+INSERT INTO soma.jobs (
+            job_id,
+            job_status,
+            job_result,
+            job_type,
+            repository_id,
+            user_id,
+            organizational_team_id,
+            job)
+SELECT $1::uuid,
+       $2::varchar,
+       $3::varchar,
+       $4::varchar,
+       $5::uuid,
+       iu.user_id,
+       iu.organizational_team_id,
+       $7::jsonb
+FROM   inventory.users iu
+WHERE  iu.user_uid = $6::varchar;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

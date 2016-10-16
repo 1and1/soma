@@ -134,4 +134,19 @@ JOIN   soma.team_service_properties stsp
 WHERE  snsp.source_instance_id = $1::uuid
   AND  snsp.source_instance_id = snsp.instance_id;`
 
+const NodeDetails = `
+SELECT    sn.node_asset_id,
+          sn.node_name,
+          sn.organizational_team_id,
+          sn.server_id,
+          sn.node_online,
+          sn.node_deleted
+FROM      soma.nodes sn
+LEFT JOIN soma.node_bucket_assignment snba
+ON        sn.node_id = snba.node_id
+WHERE     sn.node_online = 'yes'
+AND       sn.node_deleted = 'false'
+AND       snba.node_id IS NULL
+AND       sn.node_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

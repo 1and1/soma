@@ -134,4 +134,17 @@ JOIN   soma.team_service_properties stsp
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
+const RepoNameById = `
+SELECT repository_name
+FROM   soma.repositories
+WHERE  repository_id = $1::uuid;`
+
+const RepoByBucketId = `
+SELECT sb.repository_id,
+       sr.repository_name
+FROM   soma.buckets sb
+JOIN   soma.repositories sr
+  ON   sb.repository_id = sr.repository_id
+WHERE  sb.bucket_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

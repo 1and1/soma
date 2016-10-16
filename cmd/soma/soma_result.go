@@ -56,6 +56,11 @@ func (r *somaResult) SetNotFound() {
 	r.NotFound = true
 }
 
+func (r *somaResult) SetNotFoundErr(err error) {
+	r.NotFound = true
+	r.RequestError = err
+}
+
 func (r *somaResult) SetNotImplemented() {
 	r.NotImplemented = true
 }

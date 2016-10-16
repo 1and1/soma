@@ -55,4 +55,9 @@ JOIN   soma.monitoring_systems sms
 ON     smc.capability_monitoring = sms.monitoring_id
 WHERE  smc.capability_id = $1::uuid;`
 
+const CapabilityThresholds = `
+SELECT threshold_amount
+FROM   soma.monitoring_capabilities
+WHERE  capability_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
