@@ -4,13 +4,15 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/asaskevich/govalidator"
+	"github.com/client9/reopen"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -36,6 +38,8 @@ var (
 	PosTimeInf = time.Unix(1<<63-1-unixToInternalOffset, 999999999)
 	// Orderly shutdown of the system has been called. GrimReaper is active
 	ShutdownInProgress bool = false
+	// lookup table of logfile handles for logrotate reopen
+	logFileMap = make(map[string]*reopen.FileWriter)
 )
 
 const (
@@ -50,11 +54,17 @@ const (
 	LogStrErr = `Subsystem=%s, Action=%s, InternalCode=%d, Error=%s`
 )
 
+func init() {
+	log.SetOutput(os.Stderr)
+}
+
 func main() {
 	var (
 		configFlag, configFile, obsRepoFlag string
 		noPokeFlag, forcedCorruption        bool
 		err                                 error
+		appLog, reqLog, errLog              *log.Logger
+		lfhGlobal, lfhApp, lfhReq, lfhErr   *reopen.FileWriter
 	)
 
 	// Daemon command line flags
@@ -79,12 +89,49 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Open logfiles
+	if lfhGlobal, err = reopen.NewFileWriter(
+		filepath.Join(SomaCfg.LogPath, `global.log`),
+	); err != nil {
+		log.Fatalf("Unable to open global output log: %s", err)
+	}
+	log.SetOutput(lfhGlobal)
+	logFileMap[`global`] = lfhGlobal
+
+	appLog = log.New()
+	if lfhApp, err = reopen.NewFileWriter(
+		filepath.Join(SomaCfg.LogPath, `application.log`),
+	); err != nil {
+		log.Fatalf("Unable to open application log: %s", err)
+	}
+	appLog.Out = lfhApp
+	logFileMap[`application`] = lfhApp
+
+	reqLog = log.New()
+	if lfhReq, err = reopen.NewFileWriter(
+		filepath.Join(SomaCfg.LogPath, `request.log`),
+	); err != nil {
+		log.Fatalf("Unable to open request log: %s", err)
+	}
+	reqLog.Out = lfhReq
+	logFileMap[`request`] = lfhReq
+
+	errLog = log.New()
+	if lfhErr, err = reopen.NewFileWriter(
+		filepath.Join(SomaCfg.LogPath, `error.log`),
+	); err != nil {
+		log.Fatalf("Unable to open error log: %s", err)
+	}
+	errLog.Out = lfhErr
+	logFileMap[`error`] = lfhErr
+
+	// print selected runtime mode
 	if SomaCfg.ReadOnly {
-		log.Println(`Instance has been configured as: read-only mode`)
+		appLog.Println(`Instance has been configured as: read-only mode`)
 	} else if SomaCfg.Observer {
-		log.Println(`Instance has been configured as: observer mode`)
+		appLog.Println(`Instance has been configured as: observer mode`)
 	} else {
-		log.Println(`Instance has been configured as: normal mode`)
+		appLog.Println(`Instance has been configured as: normal mode`)
 	}
 
 	// single-repo cli argument overwrites config file
@@ -92,21 +139,21 @@ func main() {
 		SomaCfg.ObserverRepo = obsRepoFlag
 	}
 	if SomaCfg.ObserverRepo != `` {
-		log.Printf("Single-repository mode active for: %s", SomaCfg.ObserverRepo)
+		appLog.Printf("Single-repository mode active for: %s", SomaCfg.ObserverRepo)
 	}
 
 	// disallow single-repository mode on production r/w instances
 	if !SomaCfg.ReadOnly && !SomaCfg.Observer &&
 		SomaCfg.ObserverRepo != `` && SomaCfg.Environment == `production` &&
 		!forcedCorruption {
-		log.Fatal(`Single-repository r/w mode disallowed for production environments. ` +
+		errLog.Fatal(`Single-repository r/w mode disallowed for production environments. ` +
 			`Use the -allowdatacorruption flag if you are sure this will be the only ` +
 			`running SOMA instance.`)
 	}
 
 	if noPokeFlag {
 		SomaCfg.NoPoke = true
-		log.Println(`Instance has disabled outgoing pokes by lifeCycle manager`)
+		appLog.Println(`Instance has disabled outgoing pokes by lifeCycle manager`)
 	}
 
 	/*
@@ -117,17 +164,17 @@ func main() {
 	if SomaCfg.Daemon.Tls {
 		SomaCfg.Daemon.url.Scheme = "https"
 		if ok, pt := govalidator.IsFilePath(SomaCfg.Daemon.Cert); !ok {
-			log.Fatal("Missing required certificate configuration config/daemon/cert-file")
+			errLog.Fatal("Missing required certificate configuration config/daemon/cert-file")
 		} else {
 			if pt != govalidator.Unix {
-				log.Fatal("config/daemon/cert-File: valid Windows paths are not helpful")
+				errLog.Fatal("config/daemon/cert-File: valid Windows paths are not helpful")
 			}
 		}
 		if ok, pt := govalidator.IsFilePath(SomaCfg.Daemon.Key); !ok {
-			log.Fatal("Missing required key configuration config/daemon/key-file")
+			errLog.Fatal("Missing required key configuration config/daemon/key-file")
 		} else {
 			if pt != govalidator.Unix {
-				log.Fatal("config/daemon/key-file: valid Windows paths are not helpful")
+				errLog.Fatal("config/daemon/key-file: valid Windows paths are not helpful")
 			}
 		}
 	} else {
@@ -362,13 +409,13 @@ func main() {
 	}
 
 	if SomaCfg.Daemon.Tls {
-		log.Fatal(http.ListenAndServeTLS(
+		errLog.Fatal(http.ListenAndServeTLS(
 			SomaCfg.Daemon.url.Host,
 			SomaCfg.Daemon.Cert,
 			SomaCfg.Daemon.Key,
 			router))
 	} else {
-		log.Fatal(http.ListenAndServe(SomaCfg.Daemon.url.Host, router))
+		errLog.Fatal(http.ListenAndServe(SomaCfg.Daemon.url.Host, router))
 	}
 }
 
