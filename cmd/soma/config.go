@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"path/filepath"
 
 	"github.com/nahanni/go-ucl"
 )
@@ -22,6 +23,8 @@ type SomaConfig struct {
 	NoPoke        bool           `json:"no.poke,string"`
 	PrintChannels bool           `json:"startup.print.channel.errors,string"`
 	ShutdownDelay uint64         `json:"shutdown.delay.seconds,string"`
+	InstanceName  string         `json:"instance.name"`
+	LogPath       string         `json:"log.path"`
 	Database      SomaDbConfig   `json:"database"`
 	Daemon        SomaDaemon     `json:"daemon"`
 	Auth          SomaAuthConfig `json:"authentication"`
@@ -90,6 +93,17 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 		log.Fatal(err)
 	}
 	json.Unmarshal([]byte(uclJson), &c)
+
+	if c.InstanceName == `` {
+		log.Println(`Setting default value for instance.name: soma`)
+		c.InstanceName = `soma`
+	}
+
+	if c.LogPath == `` {
+		c.LogPath = filepath.Join(`/var/log/soma`, c.InstanceName)
+		log.Printf("Setting default value for log.path: %s\n",
+			c.LogPath)
+	}
 
 	if c.Environment == `` {
 		log.Println(`Setting default value for environment: production`)
