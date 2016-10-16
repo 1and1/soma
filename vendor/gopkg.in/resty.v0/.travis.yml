@@ -1,10 +1,11 @@
 language: go
 
-install:
-  - go get .
+sudo: false
 
-script:
-  - go test -v .
+branches:
+  only:
+    - master
+    - develop
 
 go:
   - 1.2
@@ -13,3 +14,21 @@ go:
   - 1.5
   - 1.6
   - tip
+
+before_install:
+  - go get github.com/onsi/gomega
+  - go get github.com/onsi/ginkgo
+  - go get golang.org/x/tools/cmd/cover
+
+install:
+  - go get -v ./...
+
+script:
+  - go test -v ./... -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+matrix:
+  allow_failures:
+    - go: tip
