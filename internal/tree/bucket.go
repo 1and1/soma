@@ -36,12 +36,12 @@ type Bucket struct {
 	Checks          map[string]Check
 	Children        map[string]BucketAttacher //`json:"-"`
 	Action          chan *Action              `json:"-"`
-	ordNumChildGrp int `json:"-"`
-	ordNumChildClr int `json:"-"`
-	ordNumChildNod int `json:"-"`
-	ordChildrenGrp map[int]string `json:"-"`
-	ordChildrenClr map[int]string `json:"-"`
-	ordChildrenNod map[int]string `json:"-"`
+	ordNumChildGrp  int                       `json:"-"`
+	ordNumChildClr  int                       `json:"-"`
+	ordNumChildNod  int                       `json:"-"`
+	ordChildrenGrp  map[int]string            `json:"-"`
+	ordChildrenClr  map[int]string            `json:"-"`
+	ordChildrenNod  map[int]string            `json:"-"`
 }
 
 type BucketSpec struct {
@@ -91,12 +91,12 @@ func NewBucket(spec BucketSpec) *Bucket {
 
 func (teb Bucket) CloneRepository() RepositoryAttacher {
 	cl := Bucket{
-		Name:        teb.Name,
-		Environment: teb.Environment,
-		Type:        teb.Type,
-		State:       teb.State,
-		Frozen:      teb.Frozen,
-		Deleted:     teb.Deleted,
+		Name:           teb.Name,
+		Environment:    teb.Environment,
+		Type:           teb.Type,
+		State:          teb.State,
+		Frozen:         teb.Frozen,
+		Deleted:        teb.Deleted,
 		ordNumChildGrp: teb.ordNumChildGrp,
 		ordNumChildClr: teb.ordNumChildClr,
 		ordNumChildNod: teb.ordNumChildNod,
