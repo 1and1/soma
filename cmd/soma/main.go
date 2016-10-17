@@ -16,6 +16,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/client9/reopen"
 	"github.com/julienschmidt/httprouter"
+	metrics "github.com/rcrowley/go-metrics"
 )
 
 // global variables
@@ -42,6 +43,8 @@ var (
 	ShutdownInProgress bool = false
 	// lookup table of logfile handles for logrotate reopen
 	logFileMap = make(map[string]*reopen.FileWriter)
+	// Global metrics registry
+	Metrics = make(map[string]metrics.Registry)
 )
 
 const (
@@ -162,6 +165,19 @@ func main() {
 		SomaCfg.NoPoke = true
 		appLog.Println(`Instance has disabled outgoing pokes by lifeCycle manager`)
 	}
+
+	/*
+	 * Register metrics collections
+	 */
+	Metrics[`golang`] = metrics.NewPrefixedRegistry(`golang.`)
+	metrics.RegisterRuntimeMemStats(Metrics[`golang`])
+	go metrics.CaptureRuntimeMemStats(Metrics[`golang`], time.Second*60)
+
+	Metrics[`soma`] = metrics.NewPrefixedRegistry(`soma`)
+	Metrics[`soma`].Register(`requests.latency`,
+		// TODO NewCustomTimer(Histogram, Meter) so there is access
+		// to Histogram.Clear()
+		metrics.NewTimer())
 
 	/*
 	 * Construct listen address
