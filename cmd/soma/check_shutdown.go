@@ -2,8 +2,10 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
+	metrics "github.com/rcrowley/go-metrics"
 )
 
 func Check(h httprouter.Handle) httprouter.Handle {
@@ -11,7 +13,13 @@ func Check(h httprouter.Handle) httprouter.Handle {
 		ps httprouter.Params) {
 
 		if !ShutdownInProgress {
+			metrics.GetOrRegisterCounter(`.requests`, Metrics[`soma`]).Inc(1)
+			start := time.Now()
+
 			h(w, r, ps)
+
+			metrics.GetOrRegisterTimer(`.requests.latency`,
+				Metrics[`soma`]).UpdateSince(start)
 			return
 		}
 

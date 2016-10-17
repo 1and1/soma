@@ -6,7 +6,6 @@ import (
 
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
-	metrics "github.com/rcrowley/go-metrics"
 )
 
 /* Read functions
@@ -14,9 +13,6 @@ import (
 func ListLevel(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	metrics.GetOrRegisterCounter(`.requests`, Metrics[`soma`]).Inc(1)
-	start := time.Now()
-
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`levels_list`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
@@ -51,16 +47,11 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 
 skip:
 	SendLevelReply(&w, &result)
-	metrics.GetOrRegisterTimer(`.requests.latency`,
-		Metrics[`soma`]).UpdateSince(start)
 }
 
 func ShowLevel(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	metrics.GetOrRegisterCounter(`.requests`, Metrics[`soma`]).Inc(1)
-	start := time.Now()
-
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`levels_show`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
@@ -78,8 +69,6 @@ func ShowLevel(w http.ResponseWriter, r *http.Request,
 	}
 	result := <-returnChannel
 	SendLevelReply(&w, &result)
-	metrics.GetOrRegisterTimer(`.requests.latency`,
-		Metrics[`soma`]).UpdateSince(start)
 }
 
 /* Write functions
@@ -87,9 +76,6 @@ func ShowLevel(w http.ResponseWriter, r *http.Request,
 func AddLevel(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	metrics.GetOrRegisterCounter(`.requests`, Metrics[`soma`]).Inc(1)
-	start := time.Now()
-
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`levels_create`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
@@ -116,16 +102,11 @@ func AddLevel(w http.ResponseWriter, r *http.Request,
 	}
 	result := <-returnChannel
 	SendLevelReply(&w, &result)
-	metrics.GetOrRegisterTimer(`.requests.latency`,
-		Metrics[`soma`]).UpdateSince(start)
 }
 
 func DeleteLevel(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	metrics.GetOrRegisterCounter(`.requests`, Metrics[`soma`]).Inc(1)
-	start := time.Now()
-
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`levels_delete`, ``, ``, ``); !ok {
 		DispatchForbidden(&w, nil)
@@ -143,8 +124,6 @@ func DeleteLevel(w http.ResponseWriter, r *http.Request,
 	}
 	result := <-returnChannel
 	SendLevelReply(&w, &result)
-	metrics.GetOrRegisterTimer(`.requests.latency`,
-		Metrics[`soma`]).UpdateSince(start)
 }
 
 /* Utility
