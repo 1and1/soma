@@ -10,6 +10,7 @@ import (
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	log "github.com/Sirupsen/logrus"
+	metrics "github.com/rcrowley/go-metrics"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -61,6 +62,10 @@ type treeKeeper struct {
 // appropriately.
 func (tk *treeKeeper) run() {
 	log.Printf("Starting TreeKeeper for Repo %s (%s)", tk.repoName, tk.repoId)
+	c := metrics.GetOrRegisterCounter(`.treekeeper.count`, Metrics[`soma`])
+	c.Inc(1)
+	defer c.Dec(1)
+
 	tk.startupLoad()
 	var err error
 
