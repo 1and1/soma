@@ -7,6 +7,11 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.10.0-38-g3ec0642",
+			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
+		},
+		{
 			"ImportPath": "github.com/asaskevich/govalidator",
 			"Comment": "v5",
 			"Rev": "7b3beb6df3c42abd3509abfc3bcacc0fbfb7c877"
@@ -15,6 +20,10 @@
 			"ImportPath": "github.com/boltdb/bolt",
 			"Comment": "v1.3.0",
 			"Rev": "583e8937c61f1af6513608ccc75c97b6abdf4ff9"
+		},
+		{
+			"ImportPath": "github.com/client9/reopen",
+			"Rev": "4b86f9c0ead51cc410d05655596e30f281ed9071"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/cli",
@@ -95,6 +104,10 @@
 		{
 			"ImportPath": "github.com/peterh/liner",
 			"Rev": "8975875355a81d612fafb9f5a6037bdcc2d9b073"
+		},
+		{
+			"ImportPath": "github.com/rcrowley/go-metrics",
+			"Rev": "ab2277b1c5d15c3cba104e9cbddbdfc622df5ad8"
 		},
 		{
 			"ImportPath": "github.com/satori/go.uuid",

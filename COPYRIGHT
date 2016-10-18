@@ -32,14 +32,20 @@ SUCH DAMAGE.
 --------------------------------------------------------------------------
 
 The vendored software below vendor/ is subject to its own license, as
-indicated in its LICENSE file. Please consult these files for the full
-license text.
+indicated in its respective LICENSE file. Please consult these files for
+the full license text.
+
+github.com/Sirupsen/logrus: MIT License
+  Copyright (c) 2014 Simon Eskildsen
 
 github.com/asaskevich/govalidator: MIT License
   Copyright (c) 2014 Alex Saskevich
 
 github.com/boltdb/bolt: MIT License
   Copyright (c) 2013 Ben Johnson
+
+github.com/client9/reopen: MIT License
+  Copyright (c) 2015 Nick Galbreath
 
 github.com/codegangsta/cli: MIT License
   Copyright (C) 2013 Jeremy Saenz
@@ -70,6 +76,9 @@ github.com/nbutton23/zxcvbn-go: ISC-style
 
 github.com/peterh/liner: ISC-style
   Copyright © 2012 Peter Harris
+
+github.com/rcrowley/go-metrics: 2-clause BSD style
+  Copyright 2012 Richard Crowley
 
 github.com/satori/go.uuid: ISC-style
   Copyright (C) 2013-2016 by Maxim Bublis
