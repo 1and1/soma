@@ -55,13 +55,16 @@ type treeKeeper struct {
 	actionChan chan *tree.Action
 	start_job  *sql.Stmt
 	get_view   *sql.Stmt
+	appLog     *log.Logger
+	reqLog     *log.Logger
+	errLog     *log.Logger
 }
 
 // run() is the method a treeKeeper executes in its background
 // go-routine. It checks and handles the input channels and reacts
 // appropriately.
 func (tk *treeKeeper) run() {
-	log.Printf("Starting TreeKeeper for Repo %s (%s)", tk.repoName, tk.repoId)
+	tk.appLog.Printf("Starting TreeKeeper for Repo %s (%s)", tk.repoName, tk.repoId)
 	c := metrics.GetOrRegisterCounter(`.treekeeper.count`, Metrics[`soma`])
 	c.Inc(1)
 	defer c.Dec(1)
@@ -100,7 +103,7 @@ func (tk *treeKeeper) run() {
 		for {
 			select {
 			case <-tickTack:
-				log.Printf("TK[%s]: BROKEN REPOSITORY %s flying holding patterns!\n",
+				tk.errLog.Printf("TK[%s]: BROKEN REPOSITORY %s flying holding patterns!\n",
 					tk.repoName, tk.repoId)
 			case <-tk.shutdown:
 				break hoverloop
@@ -114,21 +117,25 @@ func (tk *treeKeeper) run() {
 
 	// prepare statements
 	if tk.start_job, err = tk.conn.Prepare(tkStmtStartJob); err != nil {
-		log.Fatal("treekeeper/start-job: ", err)
+		tk.errLog.Fatal("treekeeper/start-job: ", err)
 	}
 	defer tk.start_job.Close()
 
 	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
-		log.Fatal("treekeeper/get-view-by-capability: ", err)
+		tk.errLog.Fatal("treekeeper/get-view-by-capability: ", err)
 	}
 	defer tk.get_view.Close()
 
-	log.Printf("TK[%s]: ready for service!\n", tk.repoName)
+	// TODO per-treekeeper logfiles:
+	// ${SomaCfg.LogPath}/repository/${keepername}.log  <- registered rotate
+	// ${SomaCfg.LogPath}/repository/${keepername}_startup.${rfc3339Milli}.log
+
+	tk.appLog.Printf("TK[%s]: ready for service!\n", tk.repoName)
 	tk.ready = true
 
 	if SomaCfg.Observer {
 		// XXX should listen on stopchan
-		log.Printf("TreeKeeper [%s] entered observer mode\n", tk.repoName)
+		tk.appLog.Printf("TreeKeeper [%s] entered observer mode\n", tk.repoName)
 		<-tk.shutdown
 		goto exit
 	}
@@ -148,7 +155,7 @@ stopsign:
 			goto drain
 		}
 
-		log.Printf("TreeKeeper [%s] has stopped", tk.repoName)
+		tk.appLog.Printf("TreeKeeper [%s] has stopped", tk.repoName)
 		for {
 			select {
 			case <-tk.shutdown:
@@ -206,11 +213,12 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	if !tk.rebuild {
 		_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 		if err != nil {
-			log.Println(err)
+			// XXX this should abort the job really...
+			tk.errLog.Println(err)
 		}
-		log.Printf("Processing job: %s\n", q.JobId.String())
+		tk.appLog.Printf("Processing job: %s\n", q.JobId.String())
 	} else {
-		log.Printf("Processing rebuild job: %s\n", q.JobId.String())
+		tk.appLog.Printf("Processing rebuild job: %s\n", q.JobId.String())
 	}
 
 	tk.tree.Begin()
@@ -329,7 +337,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 
 	// defer constraint checks
 	if _, err = tx.Exec(tkStmtDeferAllConstraints); err != nil {
-		log.Println("Failed to exec: tkStmtDeferAllConstraints")
+		tk.errLog.Println("Failed to exec: tkStmtDeferAllConstraints")
 		goto bailout
 	}
 
@@ -455,15 +463,15 @@ actionloop:
 	if err = tx.Commit(); err != nil {
 		goto bailout
 	}
-	log.Printf("SUCCESS - Finished job: %s\n", q.JobId.String())
+	tk.appLog.Printf("SUCCESS - Finished job: %s\n", q.JobId.String())
 
 	// accept tree changes
 	tk.tree.Commit()
 	return
 
 bailout:
-	log.Printf("FAILED - Finished job: %s\n", q.JobId.String())
-	log.Println(err)
+	tk.appLog.Printf("FAILED - Finished job: %s\n", q.JobId.String())
+	tk.errLog.Printf("Job-Error(%s): %s\n", q.JobId.String(), err)
 
 	// if this was a rebuild, the tree will not persist and the
 	// job is faked

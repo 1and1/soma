@@ -389,6 +389,9 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	tK.repoId = q.Repository.Id
 	tK.repoName = q.Repository.Name
 	tK.team = team
+	tK.appLog = f.appLog
+	tK.reqLog = f.reqLog
+	tK.errLog = f.errLog
 	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
 
 	// during rebuild the treekeeper will not run in background
