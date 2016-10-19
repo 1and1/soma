@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -204,10 +206,12 @@ func (tk *treeKeeper) isStopped() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err       error
-		hasErrors bool
-		tx        *sql.Tx
-		stm       map[string]*sql.Stmt
+		err                  error
+		hasErrors, hasJobLog bool
+		tx                   *sql.Tx
+		stm                  map[string]*sql.Stmt
+		jobLog               *log.Logger
+		lfh                  *os.File
 	)
 
 	if !tk.rebuild {
@@ -220,6 +224,22 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	} else {
 		tk.appLog.Printf("Processing rebuild job: %s\n", q.JobId.String())
 	}
+	if lfh, err = os.Create(filepath.Join(
+		SomaCfg.LogPath,
+		`job`,
+		fmt.Sprintf("%s_%s_%s.log",
+			time.Now().UTC().Format(rfc3339Milli),
+			tk.repoName,
+			q.JobId.String(),
+		),
+	)); err != nil {
+		tk.errLog.Println(err)
+	}
+	defer lfh.Close()
+	defer lfh.Sync()
+	jobLog = log.New()
+	log.SetOutput(lfh)
+	hasJobLog = true
 
 	tk.tree.Begin()
 
@@ -364,8 +384,10 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	// action channel
 	for i := len(tk.errChan); i > 0; i-- {
 		e := <-tk.errChan
-		b, _ := json.Marshal(e)
-		log.Println(string(b))
+		if hasJobLog {
+			b, _ := json.Marshal(e)
+			jobLog.Println(string(b))
+		}
 		hasErrors = true
 		if err == nil {
 			err = fmt.Errorf(e.Action)
@@ -379,10 +401,11 @@ actionloop:
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 
-		// we need all messages to figure out why for example a deferred
-		// constraint later failed
-		//jBxX, _ := json.Marshal(a)
-		//log.Printf("%s - Processing: %s\n", q.JobId.String(), string(jBxX))
+		// log all actions for the job
+		if hasJobLog {
+			b, _ := json.Marshal(a)
+			jobLog.Println(string(b))
+		}
 
 		// only check and check_instance actions are relevant during
 		// a rebuild, everything else is ignored. Even some deletes are
@@ -472,6 +495,9 @@ actionloop:
 bailout:
 	tk.appLog.Printf("FAILED - Finished job: %s\n", q.JobId.String())
 	tk.errLog.Printf("Job-Error(%s): %s\n", q.JobId.String(), err)
+	if hasJobLog {
+		jobLog.Printf("Aborting error: %s\n", err)
+	}
 
 	// if this was a rebuild, the tree will not persist and the
 	// job is faked
@@ -491,7 +517,9 @@ bailout:
 	for i := len(tk.actionChan); i > 0; i-- {
 		a := <-tk.actionChan
 		jB, _ := json.Marshal(a)
-		log.Printf("Cleaned message: %s\n", string(jB))
+		if hasJobLog {
+			jobLog.Printf("Cleaned message: %s\n", string(jB))
+		}
 	}
 	return
 }
