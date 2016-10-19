@@ -52,17 +52,17 @@ func (r *somaUserReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListUsers); err != nil {
-		log.Fatal("user/list: ", err)
+		r.errLog.Fatal("user/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowUsers); err != nil {
-		log.Fatal("user/show: ", err)
+		r.errLog.Fatal("user/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncUsers); err != nil {
-		log.Fatal("user/sync: ", err)
+		r.errLog.Fatal("user/sync: ", err)
 	}
 	defer r.sync_stmt.Close()
 
@@ -91,7 +91,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: users/list")
+		r.appLog.Printf("R: users/list")
 		rows, err = r.list_stmt.Query()
 		if result.SetRequestError(err) {
 			q.reply <- result
@@ -116,7 +116,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 			err = nil
 		}
 	case `sync`:
-		log.Printf(`R: users/sync`)
+		r.appLog.Printf(`R: users/sync`)
 		rows, err = r.sync_stmt.Query()
 		if result.SetRequestError(err) {
 			q.reply <- result
@@ -154,7 +154,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 			err = nil
 		}
 	case "show":
-		log.Printf("R: users/show for %s", q.User.Id)
+		r.appLog.Printf("R: users/show for %s", q.User.Id)
 		err = r.show_stmt.QueryRow(q.User.Id).Scan(
 			&userId,
 			&userName,
@@ -192,6 +192,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 			},
 		})
 	default:
+		r.errLog.Printf("R: unimplemented users/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -236,7 +237,7 @@ WHERE NOT EXISTS (
     OR     user_uid = $2::varchar
     OR     user_employee_number = $5::numeric);`)
 	if err != nil {
-		log.Fatal("user/add: ", err)
+		w.errLog.Fatal("user/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -250,7 +251,7 @@ SET    user_uid = $1::varchar,
        user_is_deleted = $6::boolean,
        organizational_team_id = $7::uuid
 WHERE  user_id = $8::uuid;`); err != nil {
-		log.Fatal(`user/update: `, err)
+		w.errLog.Fatal(`user/update: `, err)
 	}
 	defer w.upd_stmt.Close()
 
@@ -260,7 +261,7 @@ SET    user_is_deleted = 'yes',
        user_is_active = 'no'
 WHERE  user_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("user/delete: ", err)
+		w.errLog.Fatal("user/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -269,7 +270,7 @@ DELETE FROM inventory.users
 WHERE  user_id = $1::uuid
 AND    user_is_deleted;`)
 	if err != nil {
-		log.Fatal("user/purge: ", err)
+		w.errLog.Fatal("user/purge: ", err)
 	}
 	defer w.prg_stmt.Close()
 
@@ -304,7 +305,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: users/add for %s", q.User.UserName)
+		w.appLog.Printf("R: users/add for %s", q.User.UserName)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
@@ -321,7 +322,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 		q.User.Id = id.String()
 		notify.Super.Action = `add`
 	case `update`:
-		log.Printf("R: users/update for %s", q.User.Id)
+		w.appLog.Printf("R: users/update for %s", q.User.Id)
 		res, err = w.upd_stmt.Exec(
 			q.User.UserName,
 			q.User.FirstName,
@@ -334,18 +335,18 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 		)
 		notify.Super.Action = `update`
 	case "delete":
-		log.Printf("R: users/delete for %s", q.User.Id)
+		w.appLog.Printf("R: users/delete for %s", q.User.Id)
 		res, err = w.del_stmt.Exec(
 			q.User.Id,
 		)
 		notify.Super.Action = `delete`
 	case "purge":
-		log.Printf("R: user/purge for %s", q.User.Id)
+		w.appLog.Printf("R: user/purge for %s", q.User.Id)
 		res, err = w.prg_stmt.Exec(
 			q.User.Id,
 		)
 	default:
-		log.Printf("R: unimplemented users/%s", q.action)
+		w.errLog.Printf("R: unimplemented users/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

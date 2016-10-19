@@ -50,7 +50,7 @@ func (r *somaUnitReadHandler) run() {
 SELECT metric_unit
 FROM   soma.metric_units;`)
 	if err != nil {
-		log.Fatal("unit/list: ", err)
+		r.errLog.Fatal("unit/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -60,7 +60,7 @@ SELECT metric_unit,
 FROM   soma.metric_units
 WHERE  metric_unit = $1::varchar;`)
 	if err != nil {
-		log.Fatal("unit/show: ", err)
+		r.errLog.Fatal("unit/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -87,7 +87,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: units/list")
+		r.appLog.Printf("R: units/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -108,7 +108,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 			err = nil
 		}
 	case "show":
-		log.Printf("R: units/show for %s", q.Unit.Unit)
+		r.appLog.Printf("R: units/show for %s", q.Unit.Unit)
 		err = r.show_stmt.QueryRow(q.Unit.Unit).Scan(
 			&unit,
 			&name,
@@ -130,6 +130,7 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 			},
 		})
 	default:
+		r.errLog.Printf("R: unimplemented units/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -161,7 +162,7 @@ SELECT $1::varchar, $2::varchar WHERE NOT EXISTS (
 	WHERE  metric_unit = $1::varchar
 	OR     metric_unit_long_name = $2::varchar);`)
 	if err != nil {
-		log.Fatal("unit/add: ", err)
+		w.errLog.Fatal("unit/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -169,7 +170,7 @@ SELECT $1::varchar, $2::varchar WHERE NOT EXISTS (
 DELETE FROM soma.metric_units
 WHERE  metric_unit = $1::varchar;`)
 	if err != nil {
-		log.Fatal("unit/delete: ", err)
+		w.errLog.Fatal("unit/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -193,18 +194,18 @@ func (w *somaUnitWriteHandler) process(q *somaUnitRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: units/add for %s", q.Unit.Unit)
+		w.appLog.Printf("R: units/add for %s", q.Unit.Unit)
 		res, err = w.add_stmt.Exec(
 			q.Unit.Unit,
 			q.Unit.Name,
 		)
 	case "delete":
-		log.Printf("R: units/del for %s", q.Unit.Unit)
+		w.appLog.Printf("R: units/del for %s", q.Unit.Unit)
 		res, err = w.del_stmt.Exec(
 			q.Unit.Unit,
 		)
 	default:
-		log.Printf("R: unimplemented units/%s", q.action)
+		w.errLog.Printf("R: unimplemented units/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

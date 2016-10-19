@@ -51,7 +51,7 @@ SELECT system_property,
        object_type
 FROM   soma.system_property_validity;`)
 	if err != nil {
-		log.Fatal("validity/list: ", err)
+		r.errLog.Fatal("validity/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -62,7 +62,7 @@ SELECT system_property,
 FROM   soma.system_property_validity
 WHERE  system_property = $1;`)
 	if err != nil {
-		log.Fatal("validity/show: ", err)
+		r.errLog.Fatal("validity/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -91,7 +91,7 @@ func (r *somaValidityReadHandler) process(q *somaValidityRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: validity/list")
+		r.appLog.Printf("R: validity/list")
 		rows, err = r.list_stmt.Query()
 		if result.SetRequestError(err) {
 			q.reply <- result
@@ -114,7 +114,7 @@ func (r *somaValidityReadHandler) process(q *somaValidityRequest) {
 			return
 		}
 	case "show":
-		log.Printf("R: status/show for %s", q.Validity.SystemProperty)
+		r.appLog.Printf("R: status/show for %s", q.Validity.SystemProperty)
 		rows, err = r.show_stmt.Query(q.Validity.SystemProperty)
 		if result.SetRequestError(err) {
 			q.reply <- result
@@ -168,6 +168,7 @@ func (r *somaValidityReadHandler) process(q *somaValidityRequest) {
 			}
 		}
 	default:
+		r.errLog.Printf("R: unimplemented validity/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -205,7 +206,7 @@ WHERE NOT EXISTS (
     AND    object_type = $2::varchar
     AND    inherited = $3::boolean);`)
 	if err != nil {
-		log.Fatal("validity/add: ", err)
+		w.errLog.Fatal("validity/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -213,7 +214,7 @@ WHERE NOT EXISTS (
 DELETE FROM soma.system_property_validity
 WHERE       system_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("validity/delete: ", err)
+		w.errLog.Fatal("validity/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -237,7 +238,7 @@ func (w *somaValidityWriteHandler) process(q *somaValidityRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: validity/add for %s", q.Validity.SystemProperty)
+		w.appLog.Printf("R: validity/add for %s", q.Validity.SystemProperty)
 		if q.Validity.Direct {
 			res, err = w.add_stmt.Exec(
 				q.Validity.SystemProperty,
@@ -256,12 +257,12 @@ func (w *somaValidityWriteHandler) process(q *somaValidityRequest) {
 			)
 		}
 	case "delete":
-		log.Printf("R: validity/del for %s", q.Validity.SystemProperty)
+		w.appLog.Printf("R: validity/del for %s", q.Validity.SystemProperty)
 		res, err = w.del_stmt.Exec(
 			q.Validity.SystemProperty,
 		)
 	default:
-		log.Printf("R: unimplemented validity/%s", q.action)
+		w.errLog.Printf("R: unimplemented validity/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

@@ -52,7 +52,7 @@ func (r *somaViewReadHandler) run() {
 SELECT view
 FROM   soma.views;`)
 	if err != nil {
-		log.Fatal("view/list: ", err)
+		r.errLog.Fatal("view/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -61,7 +61,7 @@ SELECT view
 FROM   soma.views
 WHERE  view = $1::varchar;`)
 	if err != nil {
-		log.Fatal("view/show: ", err)
+		r.errLog.Fatal("view/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -87,7 +87,7 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: view/list")
+		r.appLog.Printf("R: view/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -108,7 +108,7 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 			err = nil
 		}
 	case "show":
-		log.Printf("R: view/show for %s", q.View.Name)
+		r.appLog.Printf("R: view/show for %s", q.View.Name)
 		err = r.show_stmt.QueryRow(q.View.Name).Scan(
 			&view,
 		)
@@ -128,6 +128,7 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 			},
 		})
 	default:
+		r.errLog.Printf("R: unimplemented levels/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -159,7 +160,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.views
 	WHERE  view = $1::varchar);`)
 	if err != nil {
-		log.Fatal("view/add: ", err)
+		w.errLog.Fatal("view/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -167,7 +168,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 DELETE FROM soma.views
 WHERE  view = $1::varchar;`)
 	if err != nil {
-		log.Fatal("view/delete: ", err)
+		w.errLog.Fatal("view/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -176,7 +177,7 @@ UPDATE soma.views
 SET    view = $1::varchar
 WHERE  view = $2::varchar;`)
 	if err != nil {
-		log.Fatal("view/rename: ", err)
+		w.errLog.Fatal("view/rename: ", err)
 	}
 	defer w.ren_stmt.Close()
 
@@ -200,23 +201,23 @@ func (w *somaViewWriteHandler) process(q *somaViewRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: view/add for %s", q.View.Name)
+		w.appLog.Printf("R: view/add for %s", q.View.Name)
 		res, err = w.add_stmt.Exec(
 			q.View.Name,
 		)
 	case "delete":
-		log.Printf("R: view/delete for %s", q.View.Name)
+		w.appLog.Printf("R: view/delete for %s", q.View.Name)
 		res, err = w.del_stmt.Exec(
 			q.View.Name,
 		)
 	case "rename":
-		log.Printf("R: view/rename for %s", q.name)
+		w.appLog.Printf("R: view/rename for %s", q.name)
 		res, err = w.ren_stmt.Exec(
 			q.View.Name,
 			q.name,
 		)
 	default:
-		log.Printf("R: unimplemented levels/%s", q.action)
+		w.errLog.Printf("R: unimplemented levels/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return
