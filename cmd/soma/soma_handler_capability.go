@@ -49,12 +49,12 @@ func (r *somaCapabilityReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllCapabilities); err != nil {
-		log.Fatal("capability/list: ", err)
+		r.errLog.Fatal("capability/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowCapability); err != nil {
-		log.Fatal("capability/show: ", err)
+		r.errLog.Fatal("capability/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -82,7 +82,7 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: capability/list")
+		r.appLog.Printf("R: capability/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -109,7 +109,7 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: capability/show for %s", q.Capability.Id)
+		r.appLog.Printf("R: capability/show for %s", q.Capability.Id)
 		if err = r.show_stmt.QueryRow(q.Capability.Id).Scan(
 			&id,
 			&monitoring,
@@ -138,6 +138,7 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 			},
 		})
 	default:
+		r.errLog.Printf("R: unimplemented capability/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -175,7 +176,7 @@ WHERE NOT EXISTS (
 	        AND capability_metric     = $3::varchar
 			AND capability_view       = $4::varchar));`)
 	if err != nil {
-		log.Fatal("capability/add: ", err)
+		w.errLog.Fatal("capability/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -183,7 +184,7 @@ WHERE NOT EXISTS (
 DELETE FROM soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("capability/delete: ", err)
+		w.errLog.Fatal("capability/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -208,7 +209,7 @@ func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: capability/add for %s.%s.%s",
+		w.appLog.Printf("R: capability/add for %s.%s.%s",
 			q.Capability.MonitoringId,
 			q.Capability.View,
 			q.Capability.Metric,
@@ -250,12 +251,12 @@ func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 		)
 		q.Capability.Id = id.String()
 	case "delete":
-		log.Printf("R: capability/delete for %s", q.Capability.Id)
+		w.appLog.Printf("R: capability/delete for %s", q.Capability.Id)
 		res, err = w.del_stmt.Exec(
 			q.Capability.Id,
 		)
 	default:
-		log.Printf("R: unimplemented capability/%s", q.action)
+		w.errLog.Printf("R: unimplemented capability/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

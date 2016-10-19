@@ -52,37 +52,37 @@ func (self *somaDeploymentHandler) run() {
 	var err error
 
 	if self.get_stmt, err = self.conn.Prepare(stmtGetDeployment); err != nil {
-		log.Fatal("deployment/get: ", err)
+		self.errLog.Fatal("deployment/get: ", err)
 	}
 	defer self.get_stmt.Close()
 
 	if self.upd_stmt, err = self.conn.Prepare(stmtUpdateDeployment); err != nil {
-		log.Fatal("deployment/update: ", err)
+		self.errLog.Fatal("deployment/update: ", err)
 	}
 	defer self.upd_stmt.Close()
 
 	if self.sta_stmt, err = self.conn.Prepare(stmtDeploymentStatus); err != nil {
-		log.Fatal("deployment/status: ", err)
+		self.errLog.Fatal("deployment/status: ", err)
 	}
 	defer self.sta_stmt.Close()
 
 	if self.act_stmt, err = self.conn.Prepare(stmtActivateDeployment); err != nil {
-		log.Fatal("deployment/activate: ", err)
+		self.errLog.Fatal("deployment/activate: ", err)
 	}
 	defer self.act_stmt.Close()
 
 	if self.lst_stmt, err = self.conn.Prepare(stmtGetDeploymentList); err != nil {
-		log.Fatal("deployment/list: ", err)
+		self.errLog.Fatal("deployment/list: ", err)
 	}
 	defer self.lst_stmt.Close()
 
 	if self.all_stmt, err = self.conn.Prepare(stmtGetAllDeploymentList); err != nil {
-		log.Fatal("deployment/listall: ", err)
+		self.errLog.Fatal("deployment/listall: ", err)
 	}
 	defer self.all_stmt.Close()
 
 	if self.clr_stmt, err = self.conn.Prepare(stmtDeployClearFlag); err != nil {
-		log.Fatal("deployment/clearflag: ", err)
+		self.errLog.Fatal("deployment/clearflag: ", err)
 	}
 	defer self.clr_stmt.Close()
 
@@ -109,7 +109,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 
 	switch q.action {
 	case "get":
-		log.Printf("R: deployment/get for %s", q.Deployment)
+		self.appLog.Printf("R: deployment/get for %s", q.Deployment)
 		if err = self.get_stmt.QueryRow(q.Deployment).Scan(
 			&instanceConfigID,
 			&status,
@@ -169,7 +169,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 		})
 		self.upd_stmt.Exec(next, nextNG, instanceConfigID)
 	case "update/success":
-		log.Printf("R: deployment/update/success for %s", q.Deployment)
+		self.appLog.Printf("R: deployment/update/success for %s", q.Deployment)
 		if err = self.sta_stmt.QueryRow(q.Deployment).Scan(
 			&instanceConfigID,
 			&status,
@@ -212,7 +212,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			result.SetRequestError(fmt.Errorf("Illegal current state for state update"))
 		}
 	case "update/failed":
-		log.Printf("R: deployment/update/failed for %s", q.Deployment)
+		self.appLog.Printf("R: deployment/update/failed for %s", q.Deployment)
 		if err = self.sta_stmt.QueryRow(q.Deployment).Scan(
 			&instanceConfigID,
 			&status,
@@ -254,7 +254,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			result.SetRequestError(fmt.Errorf("Illegal current state for state update"))
 		}
 	case "list":
-		log.Printf("R: deployment/list for %s", q.Deployment)
+		self.appLog.Printf("R: deployment/list for %s", q.Deployment)
 		if list, err = self.lst_stmt.Query(q.Deployment); err != nil {
 			result.SetRequestError(err)
 			q.reply <- result
@@ -281,7 +281,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			self.clr_stmt.Exec(instanceID)
 		}
 	case "listall":
-		log.Printf("R: deployment/listall for %s", q.Deployment)
+		self.appLog.Printf("R: deployment/listall for %s", q.Deployment)
 		if list, err = self.all_stmt.Query(q.Deployment); err != nil {
 			result.SetRequestError(err)
 			q.reply <- result
@@ -308,6 +308,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			self.clr_stmt.Exec(instanceID)
 		}
 	default:
+		self.errLog.Printf("R: unimplemented deployment/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result

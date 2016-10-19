@@ -48,12 +48,12 @@ func (r *somaAttributeReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmtAttributeList); err != nil {
-		log.Fatal("attribute/list: ", err)
+		r.errLog.Fatal("attribute/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmtAttributeShow); err != nil {
-		log.Fatal("attribute/show: ", err)
+		r.errLog.Fatal("attribute/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -80,7 +80,7 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: attributes/list")
+		r.appLog.Printf("R: attributes/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -98,7 +98,7 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: attribute/show for %s", q.Attribute.Name)
+		r.appLog.Printf("R: attribute/show for %s", q.Attribute.Name)
 		err = r.show_stmt.QueryRow(q.Attribute.Name).Scan(
 			&attribute,
 			&cardinality,
@@ -120,6 +120,7 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 			},
 		})
 	default:
+		r.errLog.Printf("R: unimplemented attributes/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -142,12 +143,12 @@ func (w *somaAttributeWriteHandler) run() {
 	var err error
 
 	if w.add_stmt, err = w.conn.Prepare(stmtAttributeAdd); err != nil {
-		log.Fatal("attribute/add: ", err)
+		w.errLog.Fatal("attribute/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
 	if w.del_stmt, err = w.conn.Prepare(stmtAttributeDelete); err != nil {
-		log.Fatal("attribute/delete: ", err)
+		w.errLog.Fatal("attribute/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -171,18 +172,18 @@ func (w *somaAttributeWriteHandler) process(q *somaAttributeRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: attributes/add for %s", q.Attribute.Name)
+		w.appLog.Printf("R: attributes/add for %s", q.Attribute.Name)
 		res, err = w.add_stmt.Exec(
 			q.Attribute.Name,
 			q.Attribute.Cardinality,
 		)
 	case "delete":
-		log.Printf("R: attributes/del for %s", q.Attribute.Name)
+		w.appLog.Printf("R: attributes/del for %s", q.Attribute.Name)
 		res, err = w.del_stmt.Exec(
 			q.Attribute.Name,
 		)
 	default:
-		log.Printf("R: unimplemented attributes/%s", q.action)
+		w.errLog.Printf("R: unimplemented attributes/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

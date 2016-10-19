@@ -56,7 +56,7 @@ SELECT cluster_id,
        bucket_id
 FROM soma.clusters;`)
 	if err != nil {
-		log.Fatal("cluster/list: ", err)
+		r.errLog.Fatal("cluster/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -69,7 +69,7 @@ SELECT cluster_id,
 FROM   soma.clusters
 WHERE  cluster_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("cluster/show: ", err)
+		r.errLog.Fatal("cluster/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -84,27 +84,27 @@ JOIN   soma.clusters sc
 ON     scm.cluster_id = sc.cluster_id
 WHERE  scm.cluster_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("cluster/memberlist-node: ", err)
+		r.errLog.Fatal("cluster/memberlist-node: ", err)
 	}
 	defer r.mbnl_stmt.Close()
 
 	if r.ponc_stmt, err = r.conn.Prepare(stmt.ClusterOncProps); err != nil {
-		log.Fatal(`cluster/property-oncall: `, err)
+		r.errLog.Fatal(`cluster/property-oncall: `, err)
 	}
 	defer r.ponc_stmt.Close()
 
 	if r.psvc_stmt, err = r.conn.Prepare(stmt.ClusterSvcProps); err != nil {
-		log.Fatal(`cluster/property-service: `, err)
+		r.errLog.Fatal(`cluster/property-service: `, err)
 	}
 	defer r.psvc_stmt.Close()
 
 	if r.psys_stmt, err = r.conn.Prepare(stmt.ClusterSysProps); err != nil {
-		log.Fatal(`cluster/property-system: `, err)
+		r.errLog.Fatal(`cluster/property-system: `, err)
 	}
 	defer r.psys_stmt.Close()
 
 	if r.pcst_stmt, err = r.conn.Prepare(stmt.ClusterCstProps); err != nil {
-		log.Fatal(`cluster/property-custom: `, err)
+		r.errLog.Fatal(`cluster/property-custom: `, err)
 	}
 	defer r.pcst_stmt.Close()
 
@@ -135,7 +135,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: cluster/list")
+		r.appLog.Printf("R: cluster/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -154,7 +154,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: cluster/show for %s", q.Cluster.Id)
+		r.appLog.Printf("R: cluster/show for %s", q.Cluster.Id)
 		err = r.show_stmt.QueryRow(q.Cluster.Id).Scan(
 			&clusterId,
 			&bucketId,
@@ -318,7 +318,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			Cluster: cluster,
 		})
 	case "member_list":
-		log.Printf("R: cluster/memberlist for %s", q.Cluster.Id)
+		r.appLog.Printf("R: cluster/memberlist for %s", q.Cluster.Id)
 		rows, err = r.mbnl_stmt.Query(q.Cluster.Id)
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -342,6 +342,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			Cluster: resC,
 		})
 	default:
+		r.errLog.Printf("R: unimplemented cluster/%s", q.action)
 		result.SetNotImplemented()
 	}
 dispatch:

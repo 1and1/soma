@@ -50,32 +50,32 @@ func (r *somaBucketReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmtBucketList); err != nil {
-		log.Fatal("bucket/list: ", err)
+		r.errLog.Fatal("bucket/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmtBucketShow); err != nil {
-		log.Fatal("bucket/show: ", err)
+		r.errLog.Fatal("bucket/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.ponc_stmt, err = r.conn.Prepare(stmt.BucketOncProps); err != nil {
-		log.Fatal(`bucket/property-oncall: `, err)
+		r.errLog.Fatal(`bucket/property-oncall: `, err)
 	}
 	defer r.ponc_stmt.Close()
 
 	if r.psvc_stmt, err = r.conn.Prepare(stmt.BucketSvcProps); err != nil {
-		log.Fatal(`bucket/property-service: `, err)
+		r.errLog.Fatal(`bucket/property-service: `, err)
 	}
 	defer r.psvc_stmt.Close()
 
 	if r.psys_stmt, err = r.conn.Prepare(stmt.BucketSysProps); err != nil {
-		log.Fatal(`bucket/property-system: `, err)
+		r.errLog.Fatal(`bucket/property-system: `, err)
 	}
 	defer r.psys_stmt.Close()
 
 	if r.pcst_stmt, err = r.conn.Prepare(stmt.BucketCstProps); err != nil {
-		log.Fatal(`bucket/property-custom: `, err)
+		r.errLog.Fatal(`bucket/property-custom: `, err)
 	}
 	defer r.pcst_stmt.Close()
 
@@ -106,7 +106,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: bucket/list")
+		r.appLog.Printf("R: bucket/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -123,7 +123,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 			})
 		}
 	case `show`:
-		log.Printf("R: bucket/show for %s", q.Bucket.Id)
+		r.appLog.Printf("R: bucket/show for %s", q.Bucket.Id)
 		err = r.show_stmt.QueryRow(q.Bucket.Id).Scan(
 			&bucketId,
 			&bucketName,
@@ -295,6 +295,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 			Bucket: bucket,
 		})
 	default:
+		r.errLog.Printf("R: unimplemented bucket/%s", q.action)
 		result.SetNotImplemented()
 	}
 

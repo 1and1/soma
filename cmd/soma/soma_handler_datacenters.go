@@ -56,7 +56,7 @@ func (r *somaDatacenterReadHandler) run() {
 	FROM inventory.datacenters;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	defer r.list_stmt.Close()
 
@@ -66,7 +66,7 @@ func (r *somaDatacenterReadHandler) run() {
 	WHERE datacenter = $1;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	defer r.show_stmt.Close()
 
@@ -75,7 +75,7 @@ func (r *somaDatacenterReadHandler) run() {
 	FROM soma.datacenter_groups;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	defer r.grp_list.Close()
 
@@ -85,7 +85,7 @@ func (r *somaDatacenterReadHandler) run() {
 	WHERE datacenter_group = $1;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	defer r.grp_show.Close()
 
@@ -109,12 +109,12 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 
 	switch q.action {
 	case `sync`:
-		log.Printf("R: datacenter/sync")
+		r.appLog.Printf("R: datacenter/sync")
 		// right now, sync and list are the same. This allows to later
 		// change the sync result if required without disturbing list
 		fallthrough
 	case "list":
-		log.Printf("R: datacenter/list")
+		r.appLog.Printf("R: datacenter/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -131,7 +131,7 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: datacenter/show for %s", q.Datacenter.Locode)
+		r.appLog.Printf("R: datacenter/show for %s", q.Datacenter.Locode)
 		err = r.show_stmt.QueryRow(q.Datacenter.Locode).Scan(&datacenter)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -204,6 +204,7 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 				}
 		*/
 	default:
+		r.errLog.Printf("R: unimplemented datacenter/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
@@ -237,7 +238,7 @@ func (w *somaDatacenterWriteHandler) run() {
   );
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.add_stmt.Close()
 
@@ -246,7 +247,7 @@ func (w *somaDatacenterWriteHandler) run() {
   WHERE datacenter = $1;
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.del_stmt.Close()
 
@@ -255,7 +256,7 @@ func (w *somaDatacenterWriteHandler) run() {
   WHERE datacenter = $2;
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.ren_stmt.Close()
 
@@ -268,7 +269,7 @@ func (w *somaDatacenterWriteHandler) run() {
 	);
 	`)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.grp_add.Close()
 
@@ -278,7 +279,7 @@ func (w *somaDatacenterWriteHandler) run() {
 	AND	  datacenter = $2;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.grp_del.Close()
 
@@ -309,7 +310,7 @@ func (w *somaDatacenterWriteHandler) process(q *somaDatacenterRequest) {
 	case "rename":
 		res, err = w.ren_stmt.Exec(q.rename, q.Datacenter.Locode)
 	default:
-		log.Printf("R: unimplemented datacenter/%s", q.action)
+		w.errLog.Printf("R: unimplemented datacenter/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

@@ -54,52 +54,52 @@ func (r *somaCheckConfigurationReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmtCheckConfigList); err != nil {
-		log.Fatal("checkconfig/list: ", err)
+		r.errLog.Fatal("checkconfig/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_base, err = r.conn.Prepare(stmtCheckConfigShowBase); err != nil {
-		log.Fatal("checkconfig/show-base: ", err)
+		r.errLog.Fatal("checkconfig/show-base: ", err)
 	}
 	defer r.show_base.Close()
 
 	if r.show_threshold, err = r.conn.Prepare(stmtCheckConfigShowThreshold); err != nil {
-		log.Fatal("checkconfig/show-threshold: ", err)
+		r.errLog.Fatal("checkconfig/show-threshold: ", err)
 	}
 	defer r.show_threshold.Close()
 
 	if r.show_constr_custom, err = r.conn.Prepare(stmtCheckConfigShowConstrCustom); err != nil {
-		log.Fatal("checkconfig/show-constraint-custom: ", err)
+		r.errLog.Fatal("checkconfig/show-constraint-custom: ", err)
 	}
 	defer r.show_constr_custom.Close()
 
 	if r.show_constr_system, err = r.conn.Prepare(stmtCheckConfigShowConstrSystem); err != nil {
-		log.Fatal("checkconfig/show-constraint-system: ", err)
+		r.errLog.Fatal("checkconfig/show-constraint-system: ", err)
 	}
 	defer r.show_constr_system.Close()
 
 	if r.show_constr_native, err = r.conn.Prepare(stmtCheckConfigShowConstrNative); err != nil {
-		log.Fatal("checkconfig/show-constraint-native: ", err)
+		r.errLog.Fatal("checkconfig/show-constraint-native: ", err)
 	}
 	defer r.show_constr_native.Close()
 
 	if r.show_constr_service, err = r.conn.Prepare(stmtCheckConfigShowConstrService); err != nil {
-		log.Fatal("checkconfig/show-constraint-service: ", err)
+		r.errLog.Fatal("checkconfig/show-constraint-service: ", err)
 	}
 	defer r.show_constr_service.Close()
 
 	if r.show_constr_attribute, err = r.conn.Prepare(stmtCheckConfigShowConstrAttribute); err != nil {
-		log.Fatal("checkconfig/show-constraint-attribute: ", err)
+		r.errLog.Fatal("checkconfig/show-constraint-attribute: ", err)
 	}
 	defer r.show_constr_attribute.Close()
 
 	if r.show_constr_oncall, err = r.conn.Prepare(stmtCheckConfigShowConstrOncall); err != nil {
-		log.Fatal("checkconfig/show-constraint-oncall: ", err)
+		r.errLog.Fatal("checkconfig/show-constraint-oncall: ", err)
 	}
 	defer r.show_constr_oncall.Close()
 
 	if r.show_instance_info, err = r.conn.Prepare(stmtCheckConfigInstanceInfo); err != nil {
-		log.Fatal("checkconfig/show-instance-info: ", err)
+		r.errLog.Fatal("checkconfig/show-instance-info: ", err)
 	}
 	defer r.show_instance_info.Close()
 
@@ -130,7 +130,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: checkconfig/list for %s", q.CheckConfig.RepositoryId)
+		r.appLog.Printf("R: checkconfig/list for %s", q.CheckConfig.RepositoryId)
 		rows, err = r.list_stmt.Query(q.CheckConfig.RepositoryId)
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -158,7 +158,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: checkconfig/show for %s", q.CheckConfig.Id)
+		r.appLog.Printf("R: checkconfig/show for %s", q.CheckConfig.Id)
 		if err = r.show_base.QueryRow(q.CheckConfig.Id).Scan(
 			&configId,
 			&repoId,
@@ -447,6 +447,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 			CheckConfig: chkConfig,
 		})
 	default:
+		r.errLog.Printf("R: unimplemented checkconfig/%s", q.action)
 		result.SetNotImplemented()
 	}
 	q.reply <- result
