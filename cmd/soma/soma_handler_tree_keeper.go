@@ -206,19 +206,22 @@ func (tk *treeKeeper) isStopped() bool {
 
 func (tk *treeKeeper) process(q *treeRequest) {
 	var (
-		err                  error
-		hasErrors, hasJobLog bool
-		tx                   *sql.Tx
-		stm                  map[string]*sql.Stmt
-		jobLog               *log.Logger
-		lfh                  *os.File
+		err                                   error
+		hasErrors, hasJobLog, jobNeverStarted bool
+		tx                                    *sql.Tx
+		stm                                   map[string]*sql.Stmt
+		jobLog                                *log.Logger
+		lfh                                   *os.File
 	)
 
 	if !tk.rebuild {
 		_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 		if err != nil {
-			// XXX this should abort the job really...
-			tk.errLog.Println(err)
+			tk.errLog.Println("Failed starting job %s: %s\n",
+				q.JobId.String(),
+				err)
+			jobNeverStarted = true
+			goto bailout
 		}
 		tk.appLog.Printf("Processing job: %s\n", q.JobId.String())
 	} else {
@@ -500,8 +503,9 @@ bailout:
 	}
 
 	// if this was a rebuild, the tree will not persist and the
-	// job is faked
-	if tk.rebuild {
+	// job is faked. Also if the job never actually started, then it
+	// should never be rolled back nor attempted to mark failed.
+	if tk.rebuild || jobNeverStarted {
 		return
 	}
 
