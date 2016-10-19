@@ -236,7 +236,9 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			q.JobId.String(),
 		),
 	)); err != nil {
-		tk.errLog.Println(err)
+		tk.errLog.Printf("Failed opening joblog %s: %s\n",
+			q.JobId.String(),
+			err)
 	}
 	defer lfh.Close()
 	defer lfh.Sync()
