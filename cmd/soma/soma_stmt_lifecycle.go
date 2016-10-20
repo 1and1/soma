@@ -70,7 +70,7 @@ WHERE  sci.deleted
 
 const lcStmtConfigAwaitingDeletion = `
 UPDATE soma.check_instance_configurations
-SET    status = 'awaiting_deletion"::varchar,
+SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
        awaiting_deletion = 'yes'::boolean
 WHERE  check_instance_config_id = $1::uuid;`
