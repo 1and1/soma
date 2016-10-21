@@ -17,6 +17,7 @@ JOIN   soma.checks sc
   ON   scc.configuration_id = sc.configuration_id
 WHERE  scc.configuration_id = $1::uuid
   AND  scc.repository_id    = $2::uuid
-  AND  sc.check_id          = sc.source_check_id;`
+  AND  sc.check_id          = sc.source_check_id
+  AND  NOT sc.deleted;`
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
