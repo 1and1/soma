@@ -160,29 +160,13 @@ type somaCapabilityWriteHandler struct {
 func (w *somaCapabilityWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.monitoring_capabilities (
-	capability_id,
-	capability_monitoring,
-	capability_metric,
-	capability_view,
-	threshold_amount)
-SELECT $1::uuid, $2::uuid, $3::varchar, $4::varchar, $5::integer
-WHERE NOT EXISTS (
-	SELECT capability_id
-	FROM   soma.monitoring_capabilities
-	WHERE  capability_id = $1::uuid
-	OR     (    capability_monitoring = $2::uuid
-	        AND capability_metric     = $3::varchar
-			AND capability_view       = $4::varchar));`)
+	w.add_stmt, err = w.conn.Prepare(stmt.AddCapability)
 	if err != nil {
 		w.errLog.Fatal("capability/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.monitoring_capabilities
-WHERE  capability_id = $1::uuid;`)
+	w.del_stmt, err = w.conn.Prepare(stmt.DelCapability)
 	if err != nil {
 		w.errLog.Fatal("capability/delete: ", err)
 	}
@@ -215,27 +199,39 @@ func (w *somaCapabilityWriteHandler) process(q *somaCapabilityRequest) {
 			q.Capability.Metric,
 		)
 		// input validation: MonitoringId
-		if w.conn.QueryRow("SELECT monitoring_id FROM soma.monitoring_systems WHERE monitoring_id = $1::uuid;",
-			q.Capability.MonitoringId).Scan(&inputVal); err == sql.ErrNoRows {
-			err = fmt.Errorf("Monitoring system with ID %s is not registered", q.Capability.MonitoringId)
+		if w.conn.QueryRow(
+			stmt.VerifyMonitoringSystem,
+			q.Capability.MonitoringId,
+		).Scan(&inputVal); err == sql.ErrNoRows {
+			err = fmt.Errorf(
+				"Monitoring system with ID %s is not registered",
+				q.Capability.MonitoringId)
 			goto bailout
 		} else if err != nil {
 			goto bailout
 		}
 
 		// input validation: metric
-		if w.conn.QueryRow("SELECT metric FROM soma.metrics WHERE metric = $1::varchar;",
-			q.Capability.Metric).Scan(&inputVal); err == sql.ErrNoRows {
-			err = fmt.Errorf("Metric %s is not registered", q.Capability.Metric)
+		if w.conn.QueryRow(
+			stmt.MetricVerify,
+			q.Capability.Metric,
+		).Scan(&inputVal); err == sql.ErrNoRows {
+			err = fmt.Errorf(
+				"Metric %s is not registered",
+				q.Capability.Metric)
 			goto bailout
 		} else if err != nil {
 			goto bailout
 		}
 
 		// input validation: view
-		if w.conn.QueryRow("SELECT view FROM soma.views WHERE view = $1::varchar;",
-			q.Capability.View).Scan(&inputVal); err == sql.ErrNoRows {
-			err = fmt.Errorf("View %s is not registered", q.Capability.View)
+		if w.conn.QueryRow(
+			stmt.ViewVerify,
+			q.Capability.View,
+		).Scan(&inputVal); err == sql.ErrNoRows {
+			err = fmt.Errorf(
+				"View %s is not registered",
+				q.Capability.View)
 			goto bailout
 		} else if err != nil {
 			goto bailout

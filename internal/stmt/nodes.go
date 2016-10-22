@@ -149,4 +149,55 @@ AND       sn.node_deleted = 'false'
 AND       snba.node_id IS NULL
 AND       sn.node_id = $1::uuid;`
 
+const NodeAdd = `
+INSERT INTO soma.nodes (
+            node_id,
+            node_asset_id,
+            node_name,
+            organizational_team_id,
+            server_id,
+            object_state,
+            node_online,
+            node_deleted,
+            created_by)
+SELECT $1::uuid,
+       $2::numeric,
+       $3::varchar,
+       $4,
+       $5,
+       $6,
+       $7,
+       $8,
+       user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $9::varchar
+AND    NOT EXISTS (
+         SELECT node_id
+         FROM   soma.nodes
+         WHERE  node_id = $1::uuid
+         OR     node_asset_id = $2::numeric
+         OR     (node_name = $3::varchar AND node_online)
+       );`
+
+const NodeUpdate = `
+UPDATE soma.nodes
+SET    node_asset_id = $1::numeric,
+       node_name = $2::varchar,
+       organizational_team_id = $3::uuid,
+       server_id = $4::uuid,
+       node_online = $5::boolean,
+       node_deleted = $6::boolean
+WHERE  node_id = $7::uuid;`
+
+const NodeDel = `
+UPDATE soma.nodes
+SET    node_deleted = 'yes'
+WHERE  node_id = $1
+AND    node_deleted = 'no';`
+
+const NodePurge = `
+DELETE FROM soma.nodes
+WHERE       node_id = $1
+AND         node_deleted;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -60,4 +60,24 @@ SELECT threshold_amount
 FROM   soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`
 
+const AddCapability = `
+INSERT INTO soma.monitoring_capabilities (
+            capability_id,
+            capability_monitoring,
+            capability_metric,
+            capability_view,
+            threshold_amount)
+SELECT   $1::uuid, $2::uuid, $3::varchar, $4::varchar, $5::integer
+WHERE    NOT EXISTS (
+    SELECT capability_id
+    FROM   soma.monitoring_capabilities
+    WHERE  capability_id = $1::uuid
+    OR     (    capability_monitoring = $2::uuid
+            AND capability_metric     = $3::varchar
+            AND capability_view       = $4::varchar));`
+
+const DelCapability = `
+DELETE FROM soma.monitoring_capabilities
+WHERE  capability_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

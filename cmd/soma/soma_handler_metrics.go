@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -46,20 +47,13 @@ type somaMetricReadHandler struct {
 func (r *somaMetricReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT metric
-FROM   soma.metrics;`)
+	r.list_stmt, err = r.conn.Prepare(stmt.MetricList)
 	if err != nil {
 		r.errLog.Fatal("metric/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT metric,
-       metric_unit,
-       description
-FROM   soma.metrics
-WHERE  metric = $1::varchar;`)
+	r.show_stmt, err = r.conn.Prepare(stmt.MetricShow)
 	if err != nil {
 		r.errLog.Fatal("metric/show: ", err)
 	}
@@ -152,46 +146,25 @@ type somaMetricWriteHandler struct {
 func (w *somaMetricWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.metrics (
-	metric,
-	metric_unit,
-	description)
-SELECT $1::varchar, $2::varchar, $3::text WHERE NOT EXISTS (
-	SELECT metric
-	FROM   soma.metrics
-	WHERE  metric = $1::varchar);`)
+	w.add_stmt, err = w.conn.Prepare(stmt.MetricAdd)
 	if err != nil {
 		w.errLog.Fatal("metric/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.metrics
-WHERE  metric = $1::varchar;`)
+	w.del_stmt, err = w.conn.Prepare(stmt.MetricDel)
 	if err != nil {
 		w.errLog.Fatal("metric/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
-	w.pkg_add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.metric_packages (
-	metric,
-	metric_provider,
-	package)
-SELECT $1::varchar, $2::varchar, $3::varchar WHERE NOT EXISTS (
-	SELECT metric
-	FROM   soma.metric_packages
-	WHERE  metric = $1::varchar
-	AND    metric_provider = $2::varchar);`)
+	w.pkg_add_stmt, err = w.conn.Prepare(stmt.MetricPkgAdd)
 	if err != nil {
 		w.errLog.Fatal("metric/package-add")
 	}
 	defer w.pkg_add_stmt.Close()
 
-	w.pkg_del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.metric_packages
-WHERE  metric = $1::varchar;`)
+	w.pkg_del_stmt, err = w.conn.Prepare(stmt.MetricPkgDel)
 	if err != nil {
 		w.errLog.Fatal("metric/package-del")
 	}
@@ -223,10 +196,10 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 	case "add":
 		w.reqLog.Printf("R: metrics/add for %s", q.Metric.Path)
 		// test the referenced unit exists, to prettify the error
-		w.conn.QueryRow("SELECT metric_unit FROM soma.metric_units WHERE metric_unit = $1::varchar;",
-			q.Metric.Unit).Scan(&inputVal)
+		w.conn.QueryRow(stmt.UnitVerify, q.Metric.Unit).Scan(&inputVal)
 		if err == sql.ErrNoRows {
-			err = fmt.Errorf("Unit %s is not registered", q.Metric.Unit)
+			err = fmt.Errorf("Unit %s is not registered",
+				q.Metric.Unit)
 			goto bailout
 		} else if err != nil {
 			goto bailout
@@ -235,10 +208,13 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		// test the referenced providers exist
 		if q.Metric.Packages != nil && *q.Metric.Packages != nil {
 			for _, pkg = range *q.Metric.Packages {
-				w.conn.QueryRow("SELECT metric_provider FROM soma.metric_providers WHERE metric_provider = $1::varchar;",
+				w.conn.QueryRow(
+					stmt.ProviderVerify,
 					pkg.Provider).Scan(&inputVal)
 				if err == sql.ErrNoRows {
-					err = fmt.Errorf("Provider %s is not registered", pkg.Provider)
+					err = fmt.Errorf(
+						"Provider %s is not registered",
+						pkg.Provider)
 					goto bailout
 				} else if err != nil {
 					goto bailout

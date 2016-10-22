@@ -47,4 +47,9 @@ SELECT monitoring_id,
 FROM   soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
 
+const VerifyMonitoringSystem = `
+SELECT monitoring_id
+FROM   soma.monitoring_systems
+WHERE  monitoring_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

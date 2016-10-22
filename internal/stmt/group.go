@@ -8,6 +8,54 @@
 
 package stmt
 
+const GroupList = `
+SELECT group_id,
+       group_name,
+       bucket_id
+FROM soma.groups;`
+
+const GroupShow = `
+SELECT group_id,
+       bucket_id,
+       group_name,
+       object_state,
+       organizational_team_id
+FROM   soma.groups
+WHERE  group_id = $1::uuid;`
+
+const GroupMemberGroupList = `
+SELECT sg.group_id,
+       sg.group_name,
+       osg.group_name
+FROM   soma.group_membership_groups sgmg
+JOIN   soma.groups sg
+ON     sgmg.child_group_id = sg.group_id
+JOIN   soma.groups osg
+ON     sgmg.group_id = osg.group_id
+WHERE  sgmg.group_id = $1::uuid;`
+
+const GroupMemberClusterList = `
+SELECT sc.cluster_id,
+       sc.cluster_name,
+       sg.group_name
+FROM   soma.group_membership_clusters sgmc
+JOIN   soma.clusters sc
+ON     sgmc.child_cluster_id = sc.cluster_id
+JOIN   soma.groups sg
+ON     sgmc.group_id = sg.group_id
+WHERE  sgmc.group_id = $1::uuid;`
+
+const GroupMemberNodeList = `
+SELECT sn.node_id,
+       sn.node_name,
+       sg.group_name
+FROM   soma.group_membership_nodes sgmn
+JOIN   soma.nodes sn
+ON     sgmn.child_node_id = sn.node_id
+JOIN   soma.groups sg
+ON     sgmn.group_id = sg.group_id
+WHERE  sgmn.group_id = $1::uuid;`
+
 const GroupBucketId = `
 SELECT sg.bucket_id
 FROM   soma.groups sg

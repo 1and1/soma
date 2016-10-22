@@ -56,45 +56,21 @@ type somaNodeReadHandler struct {
 func (r *somaNodeReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListNodes); err != nil {
-		r.errLog.Fatal("node/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListNodes:       r.list_stmt,
+		stmt.ShowNodes:       r.show_stmt,
+		stmt.ShowConfigNodes: r.conf_stmt,
+		stmt.SyncNodes:       r.sync_stmt,
+		stmt.NodeOncProps:    r.ponc_stmt,
+		stmt.NodeSvcProps:    r.psvc_stmt,
+		stmt.NodeSysProps:    r.psys_stmt,
+		stmt.NodeCstProps:    r.pcst_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`node`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowNodes); err != nil {
-		r.errLog.Fatal("node/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.conf_stmt, err = r.conn.Prepare(stmt.ShowConfigNodes); err != nil {
-		r.errLog.Fatal("node/get-config: ", err)
-	}
-	defer r.conf_stmt.Close()
-
-	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncNodes); err != nil {
-		r.errLog.Fatal("node/sync: ", err)
-	}
-	defer r.sync_stmt.Close()
-
-	if r.ponc_stmt, err = r.conn.Prepare(stmt.NodeOncProps); err != nil {
-		r.errLog.Fatal(`node/property-oncall: `, err)
-	}
-	defer r.ponc_stmt.Close()
-
-	if r.psvc_stmt, err = r.conn.Prepare(stmt.NodeSvcProps); err != nil {
-		r.errLog.Fatal(`node/property-service: `, err)
-	}
-	defer r.psvc_stmt.Close()
-
-	if r.psys_stmt, err = r.conn.Prepare(stmt.NodeSysProps); err != nil {
-		r.errLog.Fatal(`node/property-system: `, err)
-	}
-	defer r.psys_stmt.Close()
-
-	if r.pcst_stmt, err = r.conn.Prepare(stmt.NodeCstProps); err != nil {
-		r.errLog.Fatal(`node/property-custom: `, err)
-	}
-	defer r.pcst_stmt.Close()
 
 runloop:
 	for {
@@ -417,71 +393,17 @@ type somaNodeWriteHandler struct {
 func (w *somaNodeWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.nodes (
-            node_id,
-            node_asset_id,
-            node_name,
-            organizational_team_id,
-            server_id,
-            object_state,
-            node_online,
-            node_deleted,
-            created_by)
-SELECT $1::uuid,
-       $2::numeric,
-       $3::varchar,
-       $4,
-       $5,
-       $6,
-       $7,
-       $8,
-       user_id
-FROM   inventory.users iu
-WHERE  iu.user_uid = $9::varchar
-AND    NOT EXISTS (
-         SELECT node_id
-         FROM   soma.nodes
-         WHERE  node_id = $1::uuid
-         OR     node_asset_id = $2::numeric
-         OR     (node_name = $3::varchar AND node_online)
-       );`)
-	if err != nil {
-		w.errLog.Fatal("node/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.NodeAdd:    w.add_stmt,
+		stmt.NodeUpdate: w.upd_stmt,
+		stmt.NodeDel:    w.del_stmt,
+		stmt.NodePurge:  w.prg_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`node`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	if w.upd_stmt, err = w.conn.Prepare(`
-UPDATE soma.nodes
-SET    node_asset_id = $1::numeric,
-       node_name = $2::varchar,
-       organizational_team_id = $3::uuid,
-       server_id = $4::uuid,
-       node_online = $5::boolean,
-       node_deleted = $6::boolean
-WHERE  node_id = $7::uuid;`); err != nil {
-		w.errLog.Fatal(`node/update: `, err)
-	}
-	defer w.upd_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-UPDATE soma.nodes
-SET    node_deleted = 'yes'
-WHERE  node_id = $1
-AND    node_deleted = 'no';`)
-	if err != nil {
-		w.errLog.Fatal("node/delete: ", err)
-	}
-	defer w.del_stmt.Close()
-
-	w.prg_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.nodes
-WHERE       node_id = $1
-AND         node_deleted;`)
-	if err != nil {
-		w.errLog.Fatal("node/purge: ", err)
-	}
-	defer w.prg_stmt.Close()
 
 runloop:
 	for {

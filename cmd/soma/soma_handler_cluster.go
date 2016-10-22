@@ -50,63 +50,20 @@ type somaClusterReadHandler struct {
 func (r *somaClusterReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT cluster_id,
-       cluster_name,
-       bucket_id
-FROM soma.clusters;`)
-	if err != nil {
-		r.errLog.Fatal("cluster/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ClusterList:       r.list_stmt,
+		stmt.ClusterShow:       r.show_stmt,
+		stmt.ClusterMemberList: r.mbnl_stmt,
+		stmt.ClusterOncProps:   r.ponc_stmt,
+		stmt.ClusterSvcProps:   r.psvc_stmt,
+		stmt.ClusterSysProps:   r.psys_stmt,
+		stmt.ClusterCstProps:   r.pcst_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`cluster`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT cluster_id,
-       bucket_id,
-	   cluster_name,
-	   object_state,
-	   organizational_team_id
-FROM   soma.clusters
-WHERE  cluster_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("cluster/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	r.mbnl_stmt, err = r.conn.Prepare(`
-SELECT sn.node_id,
-       sn.node_name,
-	   sc.cluster_name
-FROM   soma.cluster_membership scm
-JOIN   soma.nodes sn
-ON     scm.node_id = sn.node_id
-JOIN   soma.clusters sc
-ON     scm.cluster_id = sc.cluster_id
-WHERE  scm.cluster_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("cluster/memberlist-node: ", err)
-	}
-	defer r.mbnl_stmt.Close()
-
-	if r.ponc_stmt, err = r.conn.Prepare(stmt.ClusterOncProps); err != nil {
-		r.errLog.Fatal(`cluster/property-oncall: `, err)
-	}
-	defer r.ponc_stmt.Close()
-
-	if r.psvc_stmt, err = r.conn.Prepare(stmt.ClusterSvcProps); err != nil {
-		r.errLog.Fatal(`cluster/property-service: `, err)
-	}
-	defer r.psvc_stmt.Close()
-
-	if r.psys_stmt, err = r.conn.Prepare(stmt.ClusterSysProps); err != nil {
-		r.errLog.Fatal(`cluster/property-system: `, err)
-	}
-	defer r.psys_stmt.Close()
-
-	if r.pcst_stmt, err = r.conn.Prepare(stmt.ClusterCstProps); err != nil {
-		r.errLog.Fatal(`cluster/property-custom: `, err)
-	}
-	defer r.pcst_stmt.Close()
 
 runloop:
 	for {

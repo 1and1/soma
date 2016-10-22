@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -48,18 +49,13 @@ type somaViewReadHandler struct {
 func (r *somaViewReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT view
-FROM   soma.views;`)
+	r.list_stmt, err = r.conn.Prepare(stmt.ViewList)
 	if err != nil {
 		r.errLog.Fatal("view/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT view
-FROM   soma.views
-WHERE  view = $1::varchar;`)
+	r.show_stmt, err = r.conn.Prepare(stmt.ViewShow)
 	if err != nil {
 		r.errLog.Fatal("view/show: ", err)
 	}
@@ -152,30 +148,19 @@ type somaViewWriteHandler struct {
 func (w *somaViewWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.views (
-	view)
-SELECT $1::varchar WHERE NOT EXISTS (
-    SELECT view
-	FROM   soma.views
-	WHERE  view = $1::varchar);`)
+	w.add_stmt, err = w.conn.Prepare(stmt.ViewAdd)
 	if err != nil {
 		w.errLog.Fatal("view/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.views
-WHERE  view = $1::varchar;`)
+	w.del_stmt, err = w.conn.Prepare(stmt.ViewDel)
 	if err != nil {
 		w.errLog.Fatal("view/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
-	w.ren_stmt, err = w.conn.Prepare(`
-UPDATE soma.views
-SET    view = $1::varchar
-WHERE  view = $2::varchar;`)
+	w.ren_stmt, err = w.conn.Prepare(stmt.ViewRename)
 	if err != nil {
 		w.errLog.Fatal("view/rename: ", err)
 	}

@@ -8,6 +8,32 @@
 
 package stmt
 
+const ClusterList = `
+SELECT cluster_id,
+       cluster_name,
+       bucket_id
+FROM   soma.clusters;`
+
+const ClusterShow = `
+SELECT cluster_id,
+       bucket_id,
+       cluster_name,
+       object_state,
+       organizational_team_id
+FROM   soma.clusters
+WHERE  cluster_id = $1::uuid;`
+
+const ClusterMemberList = `
+SELECT sn.node_id,
+       sn.node_name,
+       sc.cluster_name
+FROM   soma.cluster_membership scm
+JOIN   soma.nodes sn
+ON     scm.node_id = sn.node_id
+JOIN   soma.clusters sc
+ON     scm.cluster_id = sc.cluster_id
+WHERE  scm.cluster_id = $1::uuid;`
+
 const ClusterBucketId = `
 SELECT sc.bucket_id
 FROM   soma.clusters sc

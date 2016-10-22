@@ -52,93 +52,22 @@ type somaGroupReadHandler struct {
 func (r *somaGroupReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT group_id,
-       group_name,
-       bucket_id
-FROM soma.groups;`)
-	if err != nil {
-		r.errLog.Fatal("group/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.GroupList:              r.list_stmt,
+		stmt.GroupShow:              r.show_stmt,
+		stmt.GroupMemberGroupList:   r.mbgl_stmt,
+		stmt.GroupMemberClusterList: r.mbcl_stmt,
+		stmt.GroupMemberNodeList:    r.mbnl_stmt,
+		stmt.GroupOncProps:          r.ponc_stmt,
+		stmt.GroupSvcProps:          r.psvc_stmt,
+		stmt.GroupSysProps:          r.psys_stmt,
+		stmt.GroupCstProps:          r.pcst_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`Group`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT group_id,
-       bucket_id,
-	   group_name,
-	   object_state,
-	   organizational_team_id
-FROM   soma.groups
-WHERE  group_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("group/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	r.mbgl_stmt, err = r.conn.Prepare(`
-SELECT sg.group_id,
-       sg.group_name,
-	   osg.group_name
-FROM   soma.group_membership_groups sgmg
-JOIN   soma.groups sg
-ON     sgmg.child_group_id = sg.group_id
-JOIN   soma.groups osg
-ON     sgmg.group_id = osg.group_id
-WHERE  sgmg.group_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("group/memberlist-group: ", err)
-	}
-	defer r.mbgl_stmt.Close()
-
-	r.mbcl_stmt, err = r.conn.Prepare(`
-SELECT sc.cluster_id,
-       sc.cluster_name,
-	   sg.group_name
-FROM   soma.group_membership_clusters sgmc
-JOIN   soma.clusters sc
-ON     sgmc.child_cluster_id = sc.cluster_id
-JOIN   soma.groups sg
-ON     sgmc.group_id = sg.group_id
-WHERE  sgmc.group_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("group/memberlist-cluster: ", err)
-	}
-	defer r.mbcl_stmt.Close()
-
-	r.mbnl_stmt, err = r.conn.Prepare(`
-SELECT sn.node_id,
-       sn.node_name,
-	   sg.group_name
-FROM   soma.group_membership_nodes sgmn
-JOIN   soma.nodes sn
-ON     sgmn.child_node_id = sn.node_id
-JOIN   soma.groups sg
-ON     sgmn.group_id = sg.group_id
-WHERE  sgmn.group_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("group/memberlist-node: ", err)
-	}
-	defer r.mbnl_stmt.Close()
-
-	if r.ponc_stmt, err = r.conn.Prepare(stmt.GroupOncProps); err != nil {
-		r.errLog.Fatal(`group/property-oncall: `, err)
-	}
-	defer r.ponc_stmt.Close()
-
-	if r.psvc_stmt, err = r.conn.Prepare(stmt.GroupSvcProps); err != nil {
-		r.errLog.Fatal(`group/property-service: `, err)
-	}
-	defer r.psvc_stmt.Close()
-
-	if r.psys_stmt, err = r.conn.Prepare(stmt.GroupSysProps); err != nil {
-		r.errLog.Fatal(`group/property-system: `, err)
-	}
-	defer r.psys_stmt.Close()
-
-	if r.pcst_stmt, err = r.conn.Prepare(stmt.GroupCstProps); err != nil {
-		r.errLog.Fatal(`group/property-custom: `, err)
-	}
-	defer r.pcst_stmt.Close()
 
 runloop:
 	for {
