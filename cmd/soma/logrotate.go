@@ -8,13 +8,20 @@
 
 package main
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 func logrotate(sigChan chan os.Signal) {
 	for {
 		select {
 		case <-sigChan:
-			for _, lfHandle := range logFileMap {
+			for name, lfHandle := range logFileMap {
+				// treekeeper startup logs do not get rotated
+				if strings.HasPrefix(name, `startup_`) {
+					continue
+				}
 				lfHandle.Reopen()
 			}
 		}

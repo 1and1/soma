@@ -35,7 +35,7 @@ FROM   soma.repository_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-repository-system-properties: ", err)
+		tk.startLog.Println("treekeeper/load-repository-system-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -43,7 +43,7 @@ AND    repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-repository-system-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-repository-system-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -193,7 +193,7 @@ FROM   soma.bucket_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-bucket-system-properties: ", err)
+		tk.startLog.Println("treekeeper/load-bucket-system-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -201,7 +201,7 @@ AND    repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-bucket-system-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-bucket-system-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -351,7 +351,7 @@ FROM   soma.group_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-group-system-properties: ", err)
+		tk.startLog.Println("treekeeper/load-group-system-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -359,7 +359,7 @@ AND    repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-group-system-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-group-system-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -509,7 +509,7 @@ FROM   soma.cluster_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-cluster-system-properties: ", err)
+		tk.startLog.Println("treekeeper/load-cluster-system-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -517,7 +517,7 @@ AND    repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-cluster-system-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-cluster-system-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -667,7 +667,7 @@ FROM   soma.node_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-node-system-properties: ", err)
+		tk.startLog.Println("treekeeper/load-node-system-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -675,7 +675,7 @@ AND    repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-node-system-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-node-system-property-instances: ", err)
 		tk.broken = true
 		return
 	}

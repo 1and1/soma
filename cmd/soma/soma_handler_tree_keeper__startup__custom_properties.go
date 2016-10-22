@@ -37,7 +37,7 @@ ON     srcp.custom_property_id = scp.custom_property_id
 WHERE  srcp.instance_id = srcp.source_instance_id
 AND    srcp.repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-repository-custom-properties: ", err)
+		tk.startLog.Println("treekeeper/load-repository-custom-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -45,7 +45,7 @@ AND    srcp.repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-repository-custom-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-repository-custom-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -193,7 +193,7 @@ ON     sbcp.custom_property_id = scp.custom_property_id
 WHERE  sbcp.instance_id = sbcp.source_instance_id
 AND    sbcp.repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-bucket-custom-properties: ", err)
+		tk.startLog.Println("treekeeper/load-bucket-custom-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -201,7 +201,7 @@ AND    sbcp.repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-bucket-custom-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-bucket-custom-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -349,7 +349,7 @@ ON     sgcp.custom_property_id = scp.custom_property_id
 WHERE  sgcp.instance_id = sgcp.source_instance_id
 AND    sgcp.repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-group-custom-properties: ", err)
+		tk.startLog.Println("treekeeper/load-group-custom-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -357,7 +357,7 @@ AND    sgcp.repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-group-custom-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-group-custom-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -504,7 +504,7 @@ ON     sccp.custom_property_id = scp.custom_property_id
 WHERE  sccp.instance_id = sccp.source_instance_id
 AND    sccp.repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-cluster-custom-properties: ", err)
+		tk.startLog.Println("treekeeper/load-cluster-custom-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -512,7 +512,7 @@ AND    sccp.repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-cluster-custom-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-cluster-custom-property-instances: ", err)
 		tk.broken = true
 		return
 	}
@@ -660,7 +660,7 @@ ON     sncp.custom_property_id = scp.custom_property_id
 WHERE  sncp.instance_id = sncp.source_instance_id
 AND    sncp.repository_id = $1::uuid;`)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-node-custom-properties: ", err)
+		tk.startLog.Println("treekeeper/load-node-custom-properties: ", err)
 		tk.broken = true
 		return
 	}
@@ -668,7 +668,7 @@ AND    sncp.repository_id = $1::uuid;`)
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
 	if err != nil {
-		tk.errLog.Println("treekeeper/load-node-custom-property-instances: ", err)
+		tk.startLog.Println("treekeeper/load-node-custom-property-instances: ", err)
 		tk.broken = true
 		return
 	}

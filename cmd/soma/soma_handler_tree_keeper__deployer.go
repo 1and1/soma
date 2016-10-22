@@ -36,7 +36,7 @@ deploymentbuilder:
 			&instanceCfgId,
 		)
 		if err != nil {
-			tk.errLog.Println(`tk.stmt_List.Query().Scan():`, err)
+			tk.log.Println(`tk.stmt_List.Query().Scan():`, err)
 			break deploymentbuilder
 		}
 
@@ -101,7 +101,7 @@ deploymentbuilder:
 		thresh, err = tk.stmt_Threshold.Query(detail.CheckConfig.Id)
 		if err != nil {
 			// a check config must have 1+ thresholds
-			tk.errLog.Println(`DANGER WILL ROBINSON!`,
+			tk.log.Println(`DANGER WILL ROBINSON!`,
 				`Failed to get thresholds for:`, detail.CheckConfig.Id)
 			continue deploymentbuilder
 		}
@@ -121,7 +121,7 @@ deploymentbuilder:
 				&thr.Level.Numeric,
 			)
 			if err != nil {
-				tk.errLog.Println(`tk.stmt_Threshold.Query().Scan():`, err)
+				tk.log.Println(`tk.stmt_Threshold.Query().Scan():`, err)
 				break deploymentbuilder
 			}
 			detail.CheckConfig.Thresholds = append(detail.CheckConfig.Thresholds, thr)
@@ -180,7 +180,7 @@ deploymentbuilder:
 				&pkg.Name,
 			)
 			if err != nil {
-				tk.errLog.Println(`tk.stmt_Pkgs.Query().Scan():`, err)
+				tk.log.Println(`tk.stmt_Pkgs.Query().Scan():`, err)
 				break deploymentbuilder
 			}
 			*detail.Metric.Packages = append(*detail.Metric.Packages, pkg)
@@ -218,7 +218,7 @@ deploymentbuilder:
 			if err == sql.ErrNoRows {
 				detail.Oncall = nil
 			} else if err != nil {
-				tk.errLog.Println(`tk.stmt_GroupOncall.QueryRow():`, err)
+				tk.log.Println(`tk.stmt_GroupOncall.QueryRow():`, err)
 				break deploymentbuilder
 			}
 			// fetch service name, and attributes if applicable
@@ -233,7 +233,7 @@ deploymentbuilder:
 				if err == sql.ErrNoRows {
 					detail.Service = nil
 				} else if err != nil {
-					tk.errLog.Println(`tk.stmt_GroupService.QueryRow():`, err)
+					tk.log.Println(`tk.stmt_GroupService.QueryRow():`, err)
 					break deploymentbuilder
 				} else {
 					detail.Service.Attributes = []proto.ServiceAttribute{}
@@ -260,7 +260,7 @@ deploymentbuilder:
 					&prop.Value,
 				)
 				if err != nil {
-					tk.errLog.Println(`tk.stmt_GroupSysProp.Query().Scan():`, err)
+					tk.log.Println(`tk.stmt_GroupSysProp.Query().Scan():`, err)
 					break deploymentbuilder
 				}
 				*detail.Properties = append(*detail.Properties, prop)
@@ -284,7 +284,7 @@ deploymentbuilder:
 					&prop.Value,
 				)
 				if err != nil {
-					tk.errLog.Println(`tk.stmt_GroupCustProp.Query().Scan():`, err)
+					tk.log.Println(`tk.stmt_GroupCustProp.Query().Scan():`, err)
 					break deploymentbuilder
 				}
 				*detail.CustomProperties = append(*detail.CustomProperties, prop)
@@ -492,7 +492,7 @@ deploymentbuilder:
 		// build JSON of DeploymentDetails
 		var detailJSON []byte
 		if detailJSON, err = json.Marshal(&detail); err != nil {
-			tk.errLog.Println(`Failed to JSON marshal deployment details:`,
+			tk.log.Println(`Failed to JSON marshal deployment details:`,
 				detail.CheckInstance.InstanceConfigId, err)
 			break deploymentbuilder
 		}
@@ -501,7 +501,7 @@ deploymentbuilder:
 			detail.Monitoring.Id,
 			detail.CheckInstance.InstanceConfigId,
 		); err != nil {
-			tk.errLog.Println(`Failed to save DeploymentDetails.JSON:`,
+			tk.log.Println(`Failed to save DeploymentDetails.JSON:`,
 				detail.CheckInstance.InstanceConfigId, err)
 			break deploymentbuilder
 		}

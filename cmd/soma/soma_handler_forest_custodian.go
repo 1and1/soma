@@ -4,12 +4,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
+	"github.com/client9/reopen"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -367,9 +369,29 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	if SomaCfg.ObserverRepo != `` && q.Repository.Name != SomaCfg.ObserverRepo {
 		return
 	}
+	var (
+		err      error
+		db       *sql.DB
+		lfh, sfh *reopen.FileWriter
+	)
 
-	db, err := newDatabaseConnection()
-	if err != nil {
+	if db, err = newDatabaseConnection(); err != nil {
+		return
+	}
+
+	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
+	if lfh, err = reopen.NewFileWriter(filepath.Join(
+		SomaCfg.LogPath,
+		`repository`,
+		fmt.Sprintf("%s.log", keeperName),
+	)); err != nil {
+		return
+	}
+	if sfh, err = reopen.NewFileWriter(filepath.Join(
+		SomaCfg.LogPath,
+		`repository`,
+		fmt.Sprintf("startup_%s.log", keeperName),
+	)); err != nil {
 		return
 	}
 	tK := new(treeKeeper)
@@ -390,9 +412,14 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	tK.repoName = q.Repository.Name
 	tK.team = team
 	tK.appLog = f.appLog
-	tK.reqLog = f.reqLog
-	tK.errLog = f.errLog
-	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
+	tK.log = log.New()
+	tK.log.Out = lfh
+	tK.startLog = log.New()
+	tK.startLog.Out = sfh
+	// startup logs are not rotated, the logrotate map is just used
+	// to keep acccess to the filehandle
+	logFileMap[fmt.Sprintf("%s", keeperName)] = lfh
+	logFileMap[fmt.Sprintf("startup_%s", keeperName)] = sfh
 
 	// during rebuild the treekeeper will not run in background
 	if tK.rebuild {

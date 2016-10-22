@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -86,8 +87,8 @@ type treeKeeper struct {
 	stmt_Threshold       *sql.Stmt
 	stmt_Update          *sql.Stmt
 	appLog               *log.Logger
-	reqLog               *log.Logger
-	errLog               *log.Logger
+	log                  *log.Logger
+	startLog             *log.Logger
 }
 
 // run() is the method a treeKeeper executes in its background
@@ -100,6 +101,25 @@ func (tk *treeKeeper) run() {
 	defer c.Dec(1)
 
 	tk.startupLoad()
+
+	// render the startup logger inert without risking
+	// a nilptr dereference later
+	tk.startLog = log.New()
+	tk.startLog.Out = ioutil.Discard
+
+	// close the startup logfile
+	func() {
+		fh := logFileMap[fmt.Sprintf("startup_repository_%s", tk.repoName)]
+		delete(logFileMap, fmt.Sprintf("startup_repository_%s", tk.repoName))
+		fh.Close()
+	}()
+	// deferred close the regular logfile
+	defer func() {
+		fh := logFileMap[fmt.Sprintf("repository_%s", tk.repoName)]
+		delete(logFileMap, fmt.Sprintf("repository_%s", tk.repoName))
+		fh.Close()
+	}()
+
 	var err error
 
 	// treekeepers have a dedicated connection pool
@@ -134,7 +154,7 @@ broken:
 		for {
 			select {
 			case <-tickTack:
-				tk.errLog.Printf("TK[%s]: BROKEN REPOSITORY %s flying holding patterns!\n",
+				tk.log.Printf("TK[%s]: BROKEN REPOSITORY %s flying holding patterns!\n",
 					tk.repoName, tk.repoId)
 			case <-tk.shutdown:
 				break hoverloop
@@ -180,8 +200,8 @@ broken:
 		tkStmtStartJob:                                tk.start_job,
 	} {
 		if prepStmt, err = tk.conn.Prepare(statement); err != nil {
-			tk.errLog.Println("Error preparing SQL statement: ", err)
-			tk.errLog.Println("Failed statement: ", statement)
+			tk.log.Println("Error preparing SQL statement: ", err)
+			tk.log.Println("Failed statement: ", statement)
 			tk.broken = true
 			goto broken
 		}
@@ -286,7 +306,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	if !tk.rebuild {
 		_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 		if err != nil {
-			tk.errLog.Printf("Failed starting job %s: %s\n",
+			tk.log.Printf("Failed starting job %s: %s\n",
 				q.JobId.String(),
 				err)
 			jobNeverStarted = true
@@ -305,7 +325,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 			q.JobId.String(),
 		),
 	)); err != nil {
-		tk.errLog.Printf("Failed opening joblog %s: %s\n",
+		tk.log.Printf("Failed opening joblog %s: %s\n",
 			q.JobId.String(),
 			err)
 	}
@@ -431,7 +451,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 
 	// defer constraint checks
 	if _, err = tx.Exec(tkStmtDeferAllConstraints); err != nil {
-		tk.errLog.Println("Failed to exec: tkStmtDeferAllConstraints")
+		tk.log.Println("Failed to exec: tkStmtDeferAllConstraints")
 		goto bailout
 	}
 
@@ -568,7 +588,7 @@ actionloop:
 
 bailout:
 	tk.appLog.Printf("FAILED - Finished job: %s\n", q.JobId.String())
-	tk.errLog.Printf("Job-Error(%s): %s\n", q.JobId.String(), err)
+	tk.log.Printf("Job-Error(%s): %s\n", q.JobId.String(), err)
 	if hasJobLog {
 		jobLog.Printf("Aborting error: %s\n", err)
 	}
