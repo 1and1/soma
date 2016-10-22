@@ -312,7 +312,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	defer lfh.Close()
 	defer lfh.Sync()
 	jobLog = log.New()
-	log.SetOutput(lfh)
+	jobLog.Out = lfh
 	hasJobLog = true
 
 	tk.tree.Begin()
