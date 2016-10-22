@@ -106,7 +106,7 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 		log.Printf("Setting default value for log.path: %s\n",
 			c.LogPath)
 	}
-	for p := range []string{
+	for _, p := range []string{
 		c.LogPath,
 		filepath.Join(c.LogPath, `job`),
 		filepath.Join(c.LogPath, `repository`),
