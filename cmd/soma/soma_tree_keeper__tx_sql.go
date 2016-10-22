@@ -28,7 +28,7 @@ func (tk *treeKeeper) startTx() (
 
 	//
 	// PROPERTY STATEMENTS
-	for name, stmt := range map[string]string{
+	for name, statement := range map[string]string{
 		`PropertyInstanceCreate`:          tkStmtPropertyInstanceCreate,
 		`PropertyInstanceDelete`:          tkStmtPropertyInstanceDelete,
 		`RepositoryPropertyOncallCreate`:  tkStmtRepositoryPropertyOncallCreate,
@@ -72,7 +72,7 @@ func (tk *treeKeeper) startTx() (
 		`NodePropertyCustomCreate`:        tkStmtNodePropertyCustomCreate,
 		`NodePropertyCustomDelete`:        tkStmtNodePropertyCustomDelete,
 	} {
-		if stMap[name], err = tx.Prepare(stmt); err != nil {
+		if stMap[name], err = tx.Prepare(statement); err != nil {
 			delete(stMap, name)
 			goto bailout
 		}
@@ -80,11 +80,11 @@ func (tk *treeKeeper) startTx() (
 
 	//
 	// CHECK STATEMENTS
-	for name, stmt := range map[string]string{
+	for name, statement := range map[string]string{
 		`CreateCheck`: stmt.TxCreateCheck,
 		`DeleteCheck`: stmt.TxMarkCheckDeleted,
 	} {
-		if stMap[name], err = tx.Prepare(stmt); err != nil {
+		if stMap[name], err = tx.Prepare(statement); err != nil {
 			delete(stMap, name)
 			goto bailout
 		}
@@ -92,12 +92,12 @@ func (tk *treeKeeper) startTx() (
 
 	//
 	// CHECK INSTANCE STATEMENTS
-	for name, stmt := range map[string]string{
+	for name, statement := range map[string]string{
 		`CreateCheckInstance`:              stmt.TxCreateCheckInstance,
 		`CreateCheckInstanceConfiguration`: stmt.TxCreateCheckInstanceConfiguration,
 		`DeleteCheckInstance`:              stmt.TxMarkCheckInstanceDeleted,
 	} {
-		if stMap[name], err = tx.Prepare(stmt); err != nil {
+		if stMap[name], err = tx.Prepare(statement); err != nil {
 			delete(stMap, name)
 			goto bailout
 		}
@@ -105,7 +105,7 @@ func (tk *treeKeeper) startTx() (
 
 	//
 	// CHECK CONFIGURATION STATEMENTS
-	for name, stmt := range map[string]string{
+	for name, statement := range map[string]string{
 		`CreateCheckConfigurationBase`:                stmt.TxCreateCheckConfigurationBase,
 		`CreateCheckConfigurationThreshold`:           stmt.TxCreateCheckConfigurationThreshold,
 		`CreateCheckConfigurationConstraintSystem`:    stmt.TxCreateCheckConfigurationConstraintSystem,
@@ -115,7 +115,7 @@ func (tk *treeKeeper) startTx() (
 		`CreateCheckConfigurationConstraintService`:   stmt.TxCreateCheckConfigurationConstraintService,
 		`CreateCheckConfigurationConstraintAttribute`: stmt.TxCreateCheckConfigurationConstraintAttribute,
 	} {
-		if stMap[name], err = tx.Prepare(stmt); err != nil {
+		if stMap[name], err = tx.Prepare(statement); err != nil {
 			delete(stMap, name)
 			goto bailout
 		}
@@ -255,8 +255,8 @@ bailout:
 	if open {
 		defer tx.Rollback()
 	}
-	for _, stmt := range stMap {
-		defer stmt.Close()
+	for _, statement := range stMap {
+		defer statement.Close()
 	}
 	return nil, nil, err
 }
