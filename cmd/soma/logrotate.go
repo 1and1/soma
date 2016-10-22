@@ -11,18 +11,38 @@ package main
 import (
 	"os"
 	"strings"
+
+	"github.com/1and1/soma/internal/msg"
+	log "github.com/Sirupsen/logrus"
 )
 
 func logrotate(sigChan chan os.Signal) {
 	for {
 		select {
 		case <-sigChan:
+		fileloop:
 			for name, lfHandle := range logFileMap {
 				// treekeeper startup logs do not get rotated
 				if strings.HasPrefix(name, `startup_`) {
 					continue
 				}
-				lfHandle.Reopen()
+				err := lfHandle.Reopen()
+				if err != nil {
+					log.Print("Error rotating logfile %s: %s\n", name, err)
+					log.Println(`Shutting down system`)
+
+					returnChannel := make(chan msg.Result)
+					handler := handlerMap[`grimReaper`].(*grimReaper)
+					handler.system <- msg.Request{
+						Type:       `grimReaper`,
+						Action:     `shutdown`,
+						Reply:      returnChannel,
+						RemoteAddr: `::1`,
+						User:       `root`,
+					}
+					<-returnChannel
+					break fileloop
+				}
 			}
 		}
 	}
