@@ -39,27 +39,55 @@ type treeResult struct {
 }
 
 type treeKeeper struct {
-	repoId     string
-	repoName   string
-	team       string
-	broken     bool
-	ready      bool
-	stopped    bool
-	frozen     bool
-	rebuild    bool
-	rbLevel    string
-	input      chan treeRequest
-	shutdown   chan bool
-	stopchan   chan bool
-	conn       *sql.DB
-	tree       *tree.Tree
-	errChan    chan *tree.Error
-	actionChan chan *tree.Action
-	start_job  *sql.Stmt
-	get_view   *sql.Stmt
-	appLog     *log.Logger
-	reqLog     *log.Logger
-	errLog     *log.Logger
+	repoId               string
+	repoName             string
+	team                 string
+	rbLevel              string
+	broken               bool
+	ready                bool
+	stopped              bool
+	frozen               bool
+	rebuild              bool
+	input                chan treeRequest
+	shutdown             chan bool
+	stopchan             chan bool
+	errChan              chan *tree.Error
+	actionChan           chan *tree.Action
+	conn                 *sql.DB
+	tree                 *tree.Tree
+	get_view             *sql.Stmt
+	start_job            *sql.Stmt
+	stmt_CapMonMetric    *sql.Stmt
+	stmt_Check           *sql.Stmt
+	stmt_CheckConfig     *sql.Stmt
+	stmt_CheckInstance   *sql.Stmt
+	stmt_Cluster         *sql.Stmt
+	stmt_ClusterCustProp *sql.Stmt
+	stmt_ClusterOncall   *sql.Stmt
+	stmt_ClusterService  *sql.Stmt
+	stmt_ClusterSysProp  *sql.Stmt
+	stmt_DefaultDC       *sql.Stmt
+	stmt_DelDuplicate    *sql.Stmt
+	stmt_GetComputed     *sql.Stmt
+	stmt_GetPrevious     *sql.Stmt
+	stmt_Group           *sql.Stmt
+	stmt_GroupCustProp   *sql.Stmt
+	stmt_GroupOncall     *sql.Stmt
+	stmt_GroupService    *sql.Stmt
+	stmt_GroupSysProp    *sql.Stmt
+	stmt_List            *sql.Stmt
+	stmt_Node            *sql.Stmt
+	stmt_NodeCustProp    *sql.Stmt
+	stmt_NodeOncall      *sql.Stmt
+	stmt_NodeService     *sql.Stmt
+	stmt_NodeSysProp     *sql.Stmt
+	stmt_Pkgs            *sql.Stmt
+	stmt_Team            *sql.Stmt
+	stmt_Threshold       *sql.Stmt
+	stmt_Update          *sql.Stmt
+	appLog               *log.Logger
+	reqLog               *log.Logger
+	errLog               *log.Logger
 }
 
 // run() is the method a treeKeeper executes in its background
@@ -99,6 +127,7 @@ func (tk *treeKeeper) run() {
 
 	// there was an error during startupLoad(), the repository is
 	// considered broken.
+broken:
 	if tk.broken {
 		tickTack := time.NewTicker(time.Second * 10).C
 	hoverloop:
@@ -118,15 +147,46 @@ func (tk *treeKeeper) run() {
 	}
 
 	// prepare statements
-	if tk.start_job, err = tk.conn.Prepare(tkStmtStartJob); err != nil {
-		tk.errLog.Fatal("treekeeper/start-job: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		tkStmtDeleteDuplicateDetails:                  tk.stmt_DelDuplicate,
+		tkStmtDeployDetailClusterCustProp:             tk.stmt_ClusterCustProp,
+		tkStmtDeployDetailClusterSysProp:              tk.stmt_ClusterSysProp,
+		tkStmtDeployDetailDefaultDatacenter:           tk.stmt_DefaultDC,
+		tkStmtDeployDetailNodeCustProp:                tk.stmt_NodeCustProp,
+		tkStmtDeployDetailNodeSysProp:                 tk.stmt_NodeSysProp,
+		tkStmtDeployDetailsCapabilityMonitoringMetric: tk.stmt_CapMonMetric,
+		tkStmtDeployDetailsCheck:                      tk.stmt_Check,
+		tkStmtDeployDetailsCheckConfig:                tk.stmt_CheckConfig,
+		tkStmtDeployDetailsCheckConfigThreshold:       tk.stmt_Threshold,
+		tkStmtDeployDetailsCheckInstance:              tk.stmt_CheckInstance,
+		tkStmtDeployDetailsCluster:                    tk.stmt_Cluster,
+		tkStmtDeployDetailsClusterOncall:              tk.stmt_ClusterOncall,
+		tkStmtDeployDetailsClusterService:             tk.stmt_ClusterService,
+		tkStmtDeployDetailsComputeList:                tk.stmt_List,
+		tkStmtDeployDetailsGroup:                      tk.stmt_Group,
+		tkStmtDeployDetailsGroupCustProp:              tk.stmt_GroupCustProp,
+		tkStmtDeployDetailsGroupOncall:                tk.stmt_GroupOncall,
+		tkStmtDeployDetailsGroupService:               tk.stmt_GroupService,
+		tkStmtDeployDetailsGroupSysProp:               tk.stmt_GroupSysProp,
+		tkStmtDeployDetailsNode:                       tk.stmt_Node,
+		tkStmtDeployDetailsNodeOncall:                 tk.stmt_NodeOncall,
+		tkStmtDeployDetailsNodeService:                tk.stmt_NodeService,
+		tkStmtDeployDetailsProviders:                  tk.stmt_Pkgs,
+		tkStmtDeployDetailsTeam:                       tk.stmt_Team,
+		tkStmtDeployDetailsUpdate:                     tk.stmt_Update,
+		tkStmtGetComputedDeployments:                  tk.stmt_GetComputed,
+		tkStmtGetPreviousDeployment:                   tk.stmt_GetPrevious,
+		tkStmtGetViewFromCapability:                   tk.get_view,
+		tkStmtStartJob:                                tk.start_job,
+	} {
+		if prepStmt, err = tk.conn.Prepare(statement); err != nil {
+			tk.errLog.Println("Error preparing SQL statement: ", err)
+			tk.errLog.Println("Failed statement: ", statement)
+			tk.broken = true
+			goto broken
+		}
+		defer prepStmt.Close()
 	}
-	defer tk.start_job.Close()
-
-	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
-		tk.errLog.Fatal("treekeeper/get-view-by-capability: ", err)
-	}
-	defer tk.get_view.Close()
 
 	// TODO per-treekeeper logfiles:
 	// ${SomaCfg.LogPath}/repository/${keepername}.log  <- registered rotate
@@ -178,8 +238,17 @@ runloop:
 			tk.process(&req)
 			handlerMap[`jobDelay`].(*jobDelay).notify <- req.JobId.String()
 			if !tk.frozen {
+				// buildDeploymentDetails and orderDeploymentDetails can
+				// both mark the tree as broken if there was an error
+				// preparing required SQL statements
 				tk.buildDeploymentDetails()
+				if tk.broken {
+					goto broken
+				}
 				tk.orderDeploymentDetails()
+				if tk.broken {
+					goto broken
+				}
 			}
 		}
 	}

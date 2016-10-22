@@ -132,7 +132,9 @@ JOIN   soma.buckets sb
 ON     sr.repository_id = sb.repository_id
 WHERE  sr.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-buckets: ", err)
+		tk.errLog.Println("treekeeper/load-buckets: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_bucket.Close()
 
@@ -205,7 +207,9 @@ JOIN   soma.groups sg
 ON     sb.bucket_id = sg.bucket_id
 WHERE  sr.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-groups: ", err)
+		tk.errLog.Println("treekeeper/load-groups: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_group.Close()
 
@@ -269,7 +273,9 @@ JOIN   soma.group_membership_groups sgmg
 ON     sb.bucket_id = sgmg.bucket_id
 WHERE  sr.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-group-member-groups: ", err)
+		tk.errLog.Println("treekeeper/load-group-member-groups: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_grp_mbr_grp.Close()
 
@@ -336,7 +342,9 @@ ON     sc.bucket_id = sgmc.bucket_id
 AND    sc.cluster_id = sgmc.child_cluster_id
 WHERE  sr.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-grouped-clusters: ", err)
+		tk.errLog.Println("treekeeper/load-grouped-clusters: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_grp_cluster.Close()
 
@@ -404,7 +412,9 @@ ON     sb.bucket_id = sc.bucket_id
 WHERE  sr.repository_id = $1::uuid
 AND    sc.object_state != 'grouped';`)
 	if err != nil {
-		log.Fatal("treekeeper/load-clusters: ", err)
+		tk.errLog.Println("treekeeper/load-clusters: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_cluster.Close()
 
@@ -486,7 +496,9 @@ LEFT JOIN soma.group_membership_nodes sgmn
 ON        sn.node_id = sgmn.child_node_id
 WHERE     sr.repository_id = $1::uuid`)
 	if err != nil {
-		log.Fatal("treekeeper/load-nodes: ", err)
+		tk.errLog.Println("treekeeper/load-nodes: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_nodes.Close()
 
@@ -573,7 +585,9 @@ WHERE    repository_id = $1::uuid
 AND      job_status != 'processed'
 ORDER BY job_serial ASC;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-jobs: ", err)
+		tk.errLog.Println("treekeeper/load-jobs: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_jobs.Close()
 

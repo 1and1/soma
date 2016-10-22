@@ -6,35 +6,18 @@ import (
 	"time"
 
 	"github.com/1and1/soma/lib/proto"
-	log "github.com/Sirupsen/logrus"
 )
 
 func (tk *treeKeeper) orderDeploymentDetails() {
 
 	var (
-		stmt_GetComputed  *sql.Stmt
-		stmt_GetPrevious  *sql.Stmt
-		stmt_DelDuplicate *sql.Stmt
-		computed          *sql.Rows
-		err               error
+		computed *sql.Rows
+		err      error
 	)
-	if stmt_GetComputed, err = tk.conn.Prepare(tkStmtGetComputedDeployments); err != nil {
-		log.Fatal(err)
-	}
-	defer stmt_GetComputed.Close()
-
-	if stmt_GetPrevious, err = tk.conn.Prepare(tkStmtGetPreviousDeployment); err != nil {
-		log.Fatal(err)
-	}
-	defer stmt_GetPrevious.Close()
-
-	if stmt_DelDuplicate, err = tk.conn.Prepare(tkStmtDeleteDuplicateDetails); err != nil {
-		log.Fatal(err)
-	}
-	defer stmt_DelDuplicate.Close()
-
-	if computed, err = stmt_GetComputed.Query(tk.repoId); err != nil {
-		log.Fatal(err)
+	if computed, err = tk.stmt_GetComputed.Query(tk.repoId); err != nil {
+		tk.errLog.Println("tk.stmt_GetComputed.Query(): ", err)
+		tk.broken = true
+		return
 	}
 	defer computed.Close()
 
@@ -63,11 +46,12 @@ deployments:
 		if err == sql.ErrNoRows {
 			continue deployments
 		} else if err != nil {
-			log.Fatal(err)
+			tk.errLog.Println("tk.stmt_GetComputed.Query().Scan(): ", err)
+			break deployments
 		}
 
 		// fetch previous deployment details for this check_instance_id
-		err = stmt_GetPrevious.QueryRow(chkInstanceId).Scan(
+		err = tk.stmt_GetPrevious.QueryRow(chkInstanceId).Scan(
 			&previousChkInstanceConfigId,
 			&previousVersion,
 			&previousStatus,
@@ -76,7 +60,8 @@ deployments:
 		if err == sql.ErrNoRows {
 			noPrevious = true
 		} else if err != nil {
-			log.Fatal(err)
+			tk.errLog.Println("tk.stmt_GetPrevious.QueryRow(): ", err)
+			break deployments
 		}
 
 		/* there is no previous version of this check instance rolled
@@ -85,20 +70,23 @@ deployments:
 		if noPrevious {
 			// open multi statement transaction
 			if tx, err = tk.conn.Begin(); err != nil {
-				log.Fatal(err)
+				tk.errLog.Println("TreeKeeper/Order sql.Begin: ", err)
+				break deployments
 			}
 			defer tx.Rollback()
 
 			// prepare statements within transaction
 			if txUpdateStatus, err = tx.Prepare(tkStmtUpdateConfigStatus); err != nil {
-				log.Println("Failed to prepare: tkStmtUpdateConfigStatus")
-				log.Fatal(err)
+				tk.errLog.Printf("Failed to prepare %s: %s\n",
+					`tkStmtUpdateConfigStatus`, err)
+				break deployments
 			}
 			defer txUpdateStatus.Close()
 
 			if txUpdateInstance, err = tx.Prepare(tkStmtUpdateCheckInstance); err != nil {
-				log.Println("Failed to prepare: tkStmtUpdateCheckInstance")
-				log.Fatal(err)
+				tk.errLog.Printf("Failed to prepare %s: %s\n",
+					`tkStmtUpdateCheckInstance`, err)
+				break deployments
 			}
 			defer txUpdateInstance.Close()
 
@@ -135,7 +123,7 @@ deployments:
 		prvDetails := proto.Deployment{}
 		err = json.Unmarshal([]byte(currentDeploymentDetailsJSON), &curDetails)
 		if err != nil {
-			log.Printf("Error unmarshal/deploymentdetails %s: %s",
+			tk.errLog.Printf("Error unmarshal/deploymentdetails %s: %s",
 				currentChkInstanceConfigId,
 				err.Error(),
 			)
@@ -144,7 +132,7 @@ deployments:
 		}
 		err = json.Unmarshal([]byte(previousDeploymentDetailsJSON), &prvDetails)
 		if err != nil {
-			log.Printf("Error unmarshal/deploymentdetails %s: %s",
+			tk.errLog.Printf("Error unmarshal/deploymentdetails %s: %s",
 				previousChkInstanceConfigId,
 				err.Error(),
 			)
@@ -156,39 +144,44 @@ deployments:
 			// there is no change in deployment details, thus no point
 			// to sending the new deployment details as an update to the
 			// monitoring systems
-			stmt_DelDuplicate.Exec(currentChkInstanceConfigId)
+			tk.stmt_DelDuplicate.Exec(currentChkInstanceConfigId)
 			continue deployments
 		}
 
 		// UPDATE config status
 		// open multi statement transaction
 		if tx, err = tk.conn.Begin(); err != nil {
-			log.Fatal(err)
+			tk.errLog.Println("TreeKeeper/Order sql.Begin: ", err)
+			break deployments
 		}
 		defer tx.Rollback()
 
 		// prepare statements within transaction
 		if txUpdateStatus, err = tx.Prepare(tkStmtUpdateConfigStatus); err != nil {
-			log.Println("Failed to prepare: tkStmtUpdateConfigStatus")
-			log.Fatal(err)
+			tk.errLog.Println("Failed to prepare %s: %s\n",
+				`tkStmtUpdateConfigStatus`, err)
+			break deployments
 		}
 		defer txUpdateStatus.Close()
 
 		if txUpdateInstance, err = tx.Prepare(tkStmtUpdateCheckInstance); err != nil {
-			log.Println("Failed to prepare: tkStmtUpdateCheckInstance")
-			log.Fatal(err)
+			tk.errLog.Println("Failed to prepare %s: %s\n",
+				`tkStmtUpdateCheckInstance`, err)
+			break deployments
 		}
 		defer txUpdateInstance.Close()
 
 		if txUpdateExisting, err = tx.Prepare(tkStmtUpdateExistingCheckInstance); err != nil {
-			log.Println("Failed to prepare: tkStmtUpdateExistingCheckInstance")
-			log.Fatal(err)
+			tk.errLog.Println("Failed to prepare %s: %s\n",
+				`tkStmtUpdateExistingCheckInstance`, err)
+			break deployments
 		}
 		defer txUpdateExisting.Close()
 
 		if txDependency, err = tx.Prepare(tkStmtSetDependency); err != nil {
-			log.Println("Failed to prepare: tkStmtSetDependency")
-			log.Fatal(err)
+			tk.errLog.Println("Failed to prepare %s: %s\n",
+				`tkStmtSetDependency`, err)
+			break deployments
 		}
 		defer txDependency.Close()
 
@@ -222,6 +215,10 @@ deployments:
 	bailout_withprev:
 		tx.Rollback()
 		continue deployments
+	}
+	// mark the tree as broken to prevent further data processing
+	if err != nil {
+		tk.broken = true
 	}
 }
 

@@ -6,158 +6,29 @@ import (
 	"fmt"
 
 	"github.com/1and1/soma/lib/proto"
-	log "github.com/Sirupsen/logrus"
 )
 
 func (tk *treeKeeper) buildDeploymentDetails() {
 	var (
-		stmt_List, stmt_CheckInstance, stmt_Check, stmt_CheckConfig, stmt_CapMonMetric   *sql.Stmt
-		stmt_Threshold, stmt_Pkgs, stmt_Group, stmt_Cluster, stmt_Node, stmt_Team        *sql.Stmt
-		stmt_GroupOncall, stmt_ClusterOncall, stmt_NodeOncall                            *sql.Stmt
-		stmt_GroupService, stmt_ClusterService, stmt_NodeService                         *sql.Stmt
-		stmt_GroupSysProp, stmt_GroupCustProp, stmt_ClusterSysProp, stmt_ClusterCustProp *sql.Stmt
-		stmt_NodeSysProp, stmt_NodeCustProp, stmt_DefaultDC, stmt_Update                 *sql.Stmt
-		err                                                                              error
-		instanceCfgId                                                                    string
-		objId, objType                                                                   string
-		rows, thresh, pkgs, gSysProps, cSysProps, nSysProps                              *sql.Rows
-		gCustProps, cCustProps, nCustProps                                               *sql.Rows
-		callback                                                                         sql.NullString
+		err                                                 error
+		instanceCfgId                                       string
+		objId, objType                                      string
+		rows, thresh, pkgs, gSysProps, cSysProps, nSysProps *sql.Rows
+		gCustProps, cCustProps, nCustProps                  *sql.Rows
+		callback                                            sql.NullString
 	)
 
-	//
-	if stmt_List, err = tk.conn.Prepare(tkStmtDeployDetailsComputeList); err != nil {
-		log.Fatal("treekeeper/tkStmtDeployDetailsComputeList: ", err)
-	}
-	defer stmt_List.Close()
-	if stmt_Update, err = tk.conn.Prepare(tkStmtDeployDetailsUpdate); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsUpdate")
-		log.Fatal(err)
-	}
-	defer stmt_Update.Close()
-	if stmt_CheckInstance, err = tk.conn.Prepare(tkStmtDeployDetailsCheckInstance); err != nil {
-		log.Fatal("treekeeper/tkStmtDeployDetailsCheckInstance: ", err)
-	}
-	defer stmt_CheckInstance.Close()
+	// TODO:
+	// * refactoring switch objType {} block
+	// * SQL error handling
 
-	if stmt_Check, err = tk.conn.Prepare(tkStmtDeployDetailsCheck); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsCheck")
-		log.Fatal(err)
-	}
-	defer stmt_Check.Close()
-	if stmt_CheckConfig, err = tk.conn.Prepare(tkStmtDeployDetailsCheckConfig); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsCheckConfig")
-		log.Fatal(err)
-	}
-	defer stmt_CheckConfig.Close()
-	if stmt_Threshold, err = tk.conn.Prepare(tkStmtDeployDetailsCheckConfigThreshold); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsCheckConfigThreshold")
-		log.Fatal(err)
-	}
-	defer stmt_Threshold.Close()
-	if stmt_CapMonMetric, err = tk.conn.Prepare(tkStmtDeployDetailsCapabilityMonitoringMetric); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsCapabilityMonitoringMetric")
-		log.Fatal(err)
-	}
-	defer stmt_CapMonMetric.Close()
-	if stmt_Pkgs, err = tk.conn.Prepare(tkStmtDeployDetailsProviders); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsProviders")
-		log.Fatal(err)
-	}
-	defer stmt_Pkgs.Close()
-	if stmt_Group, err = tk.conn.Prepare(tkStmtDeployDetailsGroup); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsGroup")
-		log.Fatal(err)
-	}
-	defer stmt_Group.Close()
-	if stmt_Cluster, err = tk.conn.Prepare(tkStmtDeployDetailsCluster); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsCluster")
-		log.Fatal(err)
-	}
-	defer stmt_Cluster.Close()
-	if stmt_Node, err = tk.conn.Prepare(tkStmtDeployDetailsNode); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsNode")
-		log.Fatal(err)
-	}
-	defer stmt_Node.Close()
-	if stmt_Team, err = tk.conn.Prepare(tkStmtDeployDetailsTeam); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsTeam")
-		log.Fatal(err)
-	}
-	defer stmt_Team.Close()
-
-	if stmt_GroupOncall, err = tk.conn.Prepare(tkStmtDeployDetailsGroupOncall); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsGroupOncall")
-		log.Fatal(err)
-	}
-	defer stmt_GroupOncall.Close()
-	if stmt_GroupService, err = tk.conn.Prepare(tkStmtDeployDetailsGroupService); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsGroupService")
-		log.Fatal(err)
-	}
-	defer stmt_GroupService.Close()
-	if stmt_ClusterOncall, err = tk.conn.Prepare(tkStmtDeployDetailsClusterOncall); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsClusterOncall")
-		log.Fatal(err)
-	}
-	defer stmt_ClusterOncall.Close()
-	if stmt_ClusterService, err = tk.conn.Prepare(tkStmtDeployDetailsClusterService); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsClusterService")
-		log.Fatal(err)
-	}
-	defer stmt_ClusterService.Close()
-	if stmt_NodeOncall, err = tk.conn.Prepare(tkStmtDeployDetailsNodeOncall); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsNodeOncall")
-		log.Fatal(err)
-	}
-	defer stmt_NodeOncall.Close()
-	if stmt_NodeService, err = tk.conn.Prepare(tkStmtDeployDetailsNodeService); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsNodeService")
-		log.Fatal(err)
-	}
-	defer stmt_NodeService.Close()
-	if stmt_GroupSysProp, err = tk.conn.Prepare(tkStmtDeployDetailsGroupSysProp); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsGroupSysProp")
-		log.Fatal(err)
-	}
-	defer stmt_GroupSysProp.Close()
-	if stmt_GroupCustProp, err = tk.conn.Prepare(tkStmtDeployDetailsGroupCustProp); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailsGroupCustProp")
-		log.Fatal(err)
-	}
-	defer stmt_GroupCustProp.Close()
-	if stmt_ClusterSysProp, err = tk.conn.Prepare(tkStmtDeployDetailClusterSysProp); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailClusterSysProp")
-		log.Fatal(err)
-	}
-	defer stmt_ClusterSysProp.Close()
-	if stmt_ClusterCustProp, err = tk.conn.Prepare(tkStmtDeployDetailClusterCustProp); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailClusterCustProp")
-		log.Fatal(err)
-	}
-	defer stmt_ClusterCustProp.Close()
-	if stmt_NodeSysProp, err = tk.conn.Prepare(tkStmtDeployDetailNodeSysProp); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailNodeSysProp")
-		log.Fatal(err)
-	}
-	defer stmt_NodeSysProp.Close()
-	if stmt_NodeCustProp, err = tk.conn.Prepare(tkStmtDeployDetailNodeCustProp); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailNodeCustProp")
-		log.Fatal(err)
-	}
-	defer stmt_NodeCustProp.Close()
-	if stmt_DefaultDC, err = tk.conn.Prepare(tkStmtDeployDetailDefaultDatacenter); err != nil {
-		log.Println("Failed to prepare: tkStmtDeployDetailDefaultDatacenter")
-		log.Fatal(err)
-	}
-	defer stmt_DefaultDC.Close()
-
-	//
-	if rows, err = stmt_List.Query(tk.repoId); err != nil {
-		log.Fatal(err)
+	if rows, err = tk.stmt_List.Query(tk.repoId); err != nil {
+		tk.broken = true
+		return
 	}
 	defer rows.Close()
 
+deploymentbuilder:
 	for rows.Next() {
 		detail := proto.Deployment{}
 
@@ -169,7 +40,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 		detail.CheckInstance = &proto.CheckInstance{
 			InstanceConfigId: instanceCfgId,
 		}
-		stmt_CheckInstance.QueryRow(instanceCfgId).Scan(
+		tk.stmt_CheckInstance.QueryRow(instanceCfgId).Scan(
 			&detail.CheckInstance.Version,
 			&detail.CheckInstance.InstanceId,
 			&detail.CheckInstance.ConstraintHash,
@@ -185,7 +56,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 		detail.Check = &proto.Check{
 			CheckId: detail.CheckInstance.CheckId,
 		}
-		stmt_Check.QueryRow(detail.CheckInstance.CheckId).Scan(
+		tk.stmt_Check.QueryRow(detail.CheckInstance.CheckId).Scan(
 			&detail.Check.RepositoryId,
 			&detail.Check.SourceCheckId,
 			&detail.Check.SourceType,
@@ -213,7 +84,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			Inheritance:  detail.Check.Inheritance,
 			ChildrenOnly: detail.Check.ChildrenOnly,
 		}
-		stmt_CheckConfig.QueryRow(detail.Check.CheckConfigId).Scan(
+		tk.stmt_CheckConfig.QueryRow(detail.Check.CheckConfigId).Scan(
 			&detail.CheckConfig.Name,
 			&detail.CheckConfig.Interval,
 			&detail.CheckConfig.IsActive,
@@ -223,10 +94,12 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 
 		//
 		detail.CheckConfig.Thresholds = []proto.CheckConfigThreshold{}
-		thresh, err = stmt_Threshold.Query(detail.CheckConfig.Id)
+		thresh, err = tk.stmt_Threshold.Query(detail.CheckConfig.Id)
 		if err != nil {
-			log.Println(`DANGER WILL ROBINSON! Failed to get thresholds for:`, detail.CheckConfig.Id)
-			continue
+			// a check config must have 1+ thresholds
+			tk.errLog.Println(`DANGER WILL ROBINSON!`,
+				`Failed to get thresholds for:`, detail.CheckConfig.Id)
+			continue deploymentbuilder
 		}
 		defer thresh.Close()
 
@@ -257,7 +130,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 		detail.Monitoring = &proto.Monitoring{}
 		detail.Metric = &proto.Metric{}
 		detail.Unit = &proto.Unit{}
-		stmt_CapMonMetric.QueryRow(detail.Capability.Id).Scan(
+		tk.stmt_CapMonMetric.QueryRow(detail.Capability.Id).Scan(
 			&detail.Capability.Metric,
 			&detail.Capability.MonitoringId,
 			&detail.Capability.View,
@@ -288,7 +161,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 
 		//
 		detail.Metric.Packages = &[]proto.MetricPackage{}
-		pkgs, _ = stmt_Pkgs.Query(detail.Metric.Path)
+		pkgs, _ = tk.stmt_Pkgs.Query(detail.Metric.Path)
 		defer pkgs.Close()
 
 		for pkgs.Next() {
@@ -310,7 +183,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			detail.Group = &proto.Group{
 				Id: objId,
 			}
-			stmt_Group.QueryRow(objId).Scan(
+			tk.stmt_Group.QueryRow(objId).Scan(
 				&detail.Group.BucketId,
 				&detail.Group.Name,
 				&detail.Group.ObjectState,
@@ -325,7 +198,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch oncall information if the property is set,
 			// otherwise cleanup detail.Oncall
-			err = stmt_GroupOncall.QueryRow(detail.Group.Id, detail.View).Scan(
+			err = tk.stmt_GroupOncall.QueryRow(detail.Group.Id, detail.View).Scan(
 				&detail.Oncall.Id,
 				&detail.Oncall.Name,
 				&detail.Oncall.Number,
@@ -335,7 +208,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch service name, and attributes if applicable
 			if detail.CheckInstance.InstanceService != "" {
-				err = stmt_GroupService.QueryRow(
+				err = tk.stmt_GroupService.QueryRow(
 					detail.CheckInstance.InstanceService,
 					detail.View,
 				).Scan(
@@ -359,7 +232,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch system properties
 			detail.Properties = &[]proto.PropertySystem{}
-			gSysProps, _ = stmt_GroupSysProp.Query(detail.Group.Id, detail.View)
+			gSysProps, _ = tk.stmt_GroupSysProp.Query(detail.Group.Id, detail.View)
 			defer gSysProps.Close()
 
 			for gSysProps.Next() {
@@ -378,7 +251,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch custom properties
 			detail.CustomProperties = &[]proto.PropertyCustom{}
-			gCustProps, _ = stmt_GroupCustProp.Query(detail.Group.Id, detail.View)
+			gCustProps, _ = tk.stmt_GroupCustProp.Query(detail.Group.Id, detail.View)
 			defer gCustProps.Close()
 
 			for gCustProps.Next() {
@@ -398,7 +271,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			detail.Cluster = &proto.Cluster{
 				Id: objId,
 			}
-			stmt_Cluster.QueryRow(objId).Scan(
+			tk.stmt_Cluster.QueryRow(objId).Scan(
 				&detail.Cluster.Name,
 				&detail.Cluster.BucketId,
 				&detail.Cluster.ObjectState,
@@ -413,7 +286,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch oncall information if the property is set,
 			// otherwise cleanup detail.Oncall
-			err = stmt_ClusterOncall.QueryRow(detail.Cluster.Id, detail.View).Scan(
+			err = tk.stmt_ClusterOncall.QueryRow(detail.Cluster.Id, detail.View).Scan(
 				&detail.Oncall.Id,
 				&detail.Oncall.Name,
 				&detail.Oncall.Number,
@@ -423,7 +296,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch the service name, and attributes if applicable
 			if detail.CheckInstance.InstanceService != "" {
-				err = stmt_ClusterService.QueryRow(
+				err = tk.stmt_ClusterService.QueryRow(
 					detail.CheckInstance.InstanceService,
 					detail.View,
 				).Scan(
@@ -447,7 +320,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch system properties
 			detail.Properties = &[]proto.PropertySystem{}
-			cSysProps, _ = stmt_ClusterSysProp.Query(detail.Cluster.Id, detail.View)
+			cSysProps, _ = tk.stmt_ClusterSysProp.Query(detail.Cluster.Id, detail.View)
 			defer cSysProps.Close()
 
 			for cSysProps.Next() {
@@ -466,7 +339,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch custom properties
 			detail.CustomProperties = &[]proto.PropertyCustom{}
-			cCustProps, _ = stmt_ClusterCustProp.Query(detail.Cluster.Id, detail.View)
+			cCustProps, _ = tk.stmt_ClusterCustProp.Query(detail.Cluster.Id, detail.View)
 			defer cCustProps.Close()
 
 			for cCustProps.Next() {
@@ -487,7 +360,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			detail.Node = &proto.Node{
 				Id: objId,
 			}
-			stmt_Node.QueryRow(objId).Scan(
+			tk.stmt_Node.QueryRow(objId).Scan(
 				&detail.Node.AssetId,
 				&detail.Node.Name,
 				&detail.Node.TeamId,
@@ -513,7 +386,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch oncall information if the property is set,
 			// otherwise cleanup detail.Oncall
-			err = stmt_NodeOncall.QueryRow(detail.Node.Id, detail.View).Scan(
+			err = tk.stmt_NodeOncall.QueryRow(detail.Node.Id, detail.View).Scan(
 				&detail.Oncall.Id,
 				&detail.Oncall.Name,
 				&detail.Oncall.Number,
@@ -523,7 +396,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch the service name, and attributes if applicable
 			if detail.CheckInstance.InstanceService != "" {
-				err = stmt_NodeService.QueryRow(
+				err = tk.stmt_NodeService.QueryRow(
 					detail.CheckInstance.InstanceService,
 					detail.View,
 				).Scan(
@@ -547,7 +420,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch system properties
 			detail.Properties = &[]proto.PropertySystem{}
-			nSysProps, _ = stmt_NodeSysProp.Query(detail.Node.Id, detail.View)
+			nSysProps, _ = tk.stmt_NodeSysProp.Query(detail.Node.Id, detail.View)
 			defer nSysProps.Close()
 
 			for nSysProps.Next() {
@@ -563,7 +436,7 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 			// fetch custom properties
 			detail.CustomProperties = &[]proto.PropertyCustom{}
-			nCustProps, _ = stmt_NodeCustProp.Query(detail.Node.Id, detail.View)
+			nCustProps, _ = tk.stmt_NodeCustProp.Query(detail.Node.Id, detail.View)
 			defer nCustProps.Close()
 
 			for nCustProps.Next() {
@@ -580,28 +453,36 @@ func (tk *treeKeeper) buildDeploymentDetails() {
 			}
 		}
 
-		stmt_Team.QueryRow(detail.Team.Id).Scan(
+		tk.stmt_Team.QueryRow(detail.Team.Id).Scan(
 			&detail.Team.Name,
 			&detail.Team.LdapId,
 		)
 
 		// if no datacenter information was gathered, use the default DC
 		if detail.Datacenter == "" {
-			stmt_DefaultDC.QueryRow().Scan(&detail.Datacenter)
+			tk.stmt_DefaultDC.QueryRow().Scan(&detail.Datacenter)
 		}
 
 		// build JSON of DeploymentDetails
 		var detailJSON []byte
 		if detailJSON, err = json.Marshal(&detail); err != nil {
-			log.Fatal("Failed to JSON marshal deployment details: ", err)
+			tk.errLog.Println(`Failed to JSON marshal deployment details:`,
+				detail.CheckInstance.InstanceConfigId, err)
+			break deploymentbuilder
 		}
-		if _, err = stmt_Update.Exec(
+		if _, err = tk.stmt_Update.Exec(
 			detailJSON,
 			detail.Monitoring.Id,
 			detail.CheckInstance.InstanceConfigId,
 		); err != nil {
-			log.Fatal("Failed to save DeploymentDetails.JSON: ", err)
+			tk.errLog.Println(`Failed to save DeploymentDetails.JSON:`,
+				detail.CheckInstance.InstanceConfigId, err)
+			break deploymentbuilder
 		}
+	}
+	// mark the tree as broken to prevent further data processing
+	if err != nil {
+		tk.broken = true
 	}
 }
 

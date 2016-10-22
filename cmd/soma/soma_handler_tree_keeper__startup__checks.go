@@ -45,6 +45,9 @@ func (ld *tkLoaderChecks) GroupRelations() *sql.Stmt {
 }
 
 func (tk *treeKeeper) startupChecks() {
+	if tk.broken {
+		return
+	}
 	var (
 		err error
 		ld  tkLoaderChecks
@@ -54,91 +57,125 @@ func (tk *treeKeeper) startupChecks() {
 	// prepare all required statements into the loader structure
 	ld = tkLoaderChecks{}
 	if ld.loadChecks, err = tk.conn.Prepare(tkStmtLoadChecks); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadChecks: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadChecks: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadChecks.Close()
 
 	if ld.loadItems, err = tk.conn.Prepare(tkStmtLoadInheritedChecks); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadInheritedChecks: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadInheritedChecks: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadItems.Close()
 
 	if ld.loadConfig, err = tk.conn.Prepare(tkStmtLoadCheckConfiguration); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConfiguration: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConfiguration: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadConfig.Close()
 
 	if ld.loadAllConfigs, err = tk.conn.Prepare(tkStmtLoadAllCheckConfigurationsForType); err != nil {
-		log.Fatal(`treekeeper/tkStmtLoadAllCheckConfigurationsForType: `, err)
+		tk.errLog.Println(`treekeeper/tkStmtLoadAllCheckConfigurationsForType: `, err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadAllConfigs.Close()
 
 	if ld.loadThresh, err = tk.conn.Prepare(tkStmtLoadCheckThresholds); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckThresholds: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckThresholds: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadThresh.Close()
 
 	if ld.loadCstrCustom, err = tk.conn.Prepare(tkStmtLoadCheckConstraintCustom); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConstraintCustom: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConstraintCustom: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadCstrCustom.Close()
 
 	if ld.loadCstrNative, err = tk.conn.Prepare(tkStmtLoadCheckConstraintNative); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConstraintNative: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConstraintNative: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadCstrNative.Close()
 
 	if ld.loadCstrOncall, err = tk.conn.Prepare(tkStmtLoadCheckConstraintOncall); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConstraintOncall: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConstraintOncall: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadCstrOncall.Close()
 
 	if ld.loadCstrAttr, err = tk.conn.Prepare(tkStmtLoadCheckConstraintAttribute); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConstraintAttribute: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConstraintAttribute: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadCstrAttr.Close()
 
 	if ld.loadCstrServ, err = tk.conn.Prepare(tkStmtLoadCheckConstraintService); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConstraintService: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConstraintService: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadCstrServ.Close()
 
 	if ld.loadCstrSystem, err = tk.conn.Prepare(tkStmtLoadCheckConstraintSystem); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckConstraintSystem: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckConstraintSystem: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadCstrSystem.Close()
 
 	// the following three statements are used to load check instances
 	if ld.loadTypeChecks, err = tk.conn.Prepare(tkStmtLoadChecksForType); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadChecksForType: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadChecksForType: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadTypeChecks.Close()
 
 	if ld.loadInstances, err = tk.conn.Prepare(tkStmtLoadCheckInstances); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckInstances: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckInstances: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadInstances.Close()
 
 	if ld.loadInstConfig, err = tk.conn.Prepare(tkStmtLoadCheckInstanceConfiguration); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckInstanceConfiguration: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckInstanceConfiguration: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadInstConfig.Close()
 
 	// since groups are the only tree elements that can be stacked,
 	// additional ordering is required
 	if ld.loadGroupState, err = tk.conn.Prepare(tkStmtLoadCheckGroupState); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckGroupState: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckGroupState: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadGroupState.Close()
 
 	if ld.loadGroupRel, err = tk.conn.Prepare(tkStmtLoadCheckGroupRelations); err != nil {
-		log.Fatal("treekeeper/tkStmtLoadCheckGroupRelations: ", err)
+		tk.errLog.Println("treekeeper/tkStmtLoadCheckGroupRelations: ", err)
+		tk.broken = true
+		return
 	}
 	defer ld.loadGroupRel.Close()
 
 	// this is also needed early on
 	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
-		log.Fatal("treekeeper/tkStmtGetViewFromCapability: ", err)
+		tk.errLog.Println("treekeeper/tkStmtGetViewFromCapability: ", err)
+		tk.broken = true
+		return
 	}
 	defer tk.get_view.Close()
 

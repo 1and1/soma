@@ -37,13 +37,17 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   srop.instance_id = srop.source_instance_id
   AND   srop.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-repository-oncall-properties: ", err)
+		tk.errLog.Println("treekeeper/load-repository-oncall-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-repository-oncall-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-repository-oncall-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -189,13 +193,17 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   sgop.instance_id = sgop.source_instance_id
   AND   sgop.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-bucket-oncall-properties: ", err)
+		tk.errLog.Println("treekeeper/load-bucket-oncall-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-bucket-oncall-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-bucket-oncall-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -341,13 +349,17 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   sgop.instance_id = sgop.source_instance_id
   AND   sgop.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-group-oncall-properties: ", err)
+		tk.errLog.Println("treekeeper/load-group-oncall-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-group-oncall-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-group-oncall-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -493,13 +505,17 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   scop.instance_id = scop.source_instance_id
   AND   scop.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-cluster-oncall-properties: ", err)
+		tk.errLog.Println("treekeeper/load-cluster-oncall-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-cluster-oncall-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-cluster-oncall-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -645,13 +661,17 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   snop.instance_id = snop.source_instance_id
   AND   snop.repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-node-oncall-properties: ", err)
+		tk.errLog.Println("treekeeper/load-node-oncall-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-node-oncall-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-node-oncall-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 

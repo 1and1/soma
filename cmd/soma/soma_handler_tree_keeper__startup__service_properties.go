@@ -35,7 +35,9 @@ FROM   soma.repository_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-repository-service-properties: ", err)
+		tk.errLog.Println("treekeeper/load-repository-service-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
@@ -46,13 +48,17 @@ FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-repository-service-property-attributes: ", err)
+		tk.errLog.Println("treekeeper/load-repository-service-property-attributes: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_attributes.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-repository-service-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-repository-service-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -232,7 +238,9 @@ FROM   soma.bucket_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-bucket-service-properties: ", err)
+		tk.errLog.Println("treekeeper/load-bucket-service-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
@@ -243,13 +251,17 @@ FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-bucket-service-property-attributes: ", err)
+		tk.errLog.Println("treekeeper/load-bucket-service-property-attributes: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_attributes.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-bucket-service-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-bucket-service-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -429,7 +441,9 @@ FROM   soma.group_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-group-service-properties: ", err)
+		tk.errLog.Println("treekeeper/load-group-service-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
@@ -440,13 +454,17 @@ FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-group-service-property-attributes: ", err)
+		tk.errLog.Println("treekeeper/load-group-service-property-attributes: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_attributes.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-group-service-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-group-service-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -626,7 +644,9 @@ FROM   soma.cluster_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-cluster-service-properties: ", err)
+		tk.errLog.Println("treekeeper/load-cluster-service-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
@@ -637,13 +657,17 @@ FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-cluster-service-property-attributes: ", err)
+		tk.errLog.Println("treekeeper/load-cluster-service-property-attributes: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_attributes.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-cluster-service-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-cluster-service-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
@@ -823,7 +847,9 @@ FROM   soma.node_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-node-service-properties: ", err)
+		tk.errLog.Println("treekeeper/load-node-service-properties: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_properties.Close()
 
@@ -834,13 +860,17 @@ FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("treekeeper/load-node-service-property-attributes: ", err)
+		tk.errLog.Println("treekeeper/load-node-service-property-attributes: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_attributes.Close()
 
 	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
 	if err != nil {
-		log.Fatal("treekeeper/load-node-service-property-instances: ", err)
+		tk.errLog.Println("treekeeper/load-node-service-property-instances: ", err)
+		tk.broken = true
+		return
 	}
 	defer load_instances.Close()
 
