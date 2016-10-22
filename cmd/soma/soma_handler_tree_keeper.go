@@ -286,7 +286,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	if !tk.rebuild {
 		_, err = tk.start_job.Exec(q.JobId.String(), time.Now().UTC())
 		if err != nil {
-			tk.errLog.Println("Failed starting job %s: %s\n",
+			tk.errLog.Printf("Failed starting job %s: %s\n",
 				q.JobId.String(),
 				err)
 			jobNeverStarted = true

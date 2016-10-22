@@ -35,6 +35,10 @@ deploymentbuilder:
 		err = rows.Scan(
 			&instanceCfgId,
 		)
+		if err != nil {
+			tk.errLog.Println(`tk.stmt_List.Query().Scan():`, err)
+			break deploymentbuilder
+		}
 
 		//
 		detail.CheckInstance = &proto.CheckInstance{
@@ -116,6 +120,10 @@ deploymentbuilder:
 				&thr.Level.ShortName,
 				&thr.Level.Numeric,
 			)
+			if err != nil {
+				tk.errLog.Println(`tk.stmt_Threshold.Query().Scan():`, err)
+				break deploymentbuilder
+			}
 			detail.CheckConfig.Thresholds = append(detail.CheckConfig.Thresholds, thr)
 		}
 
@@ -171,6 +179,10 @@ deploymentbuilder:
 				&pkg.Provider,
 				&pkg.Name,
 			)
+			if err != nil {
+				tk.errLog.Println(`tk.stmt_Pkgs.Query().Scan():`, err)
+				break deploymentbuilder
+			}
 			*detail.Metric.Packages = append(*detail.Metric.Packages, pkg)
 		}
 
@@ -203,8 +215,11 @@ deploymentbuilder:
 				&detail.Oncall.Name,
 				&detail.Oncall.Number,
 			)
-			if err != nil {
+			if err == sql.ErrNoRows {
 				detail.Oncall = nil
+			} else if err != nil {
+				tk.errLog.Println(`tk.stmt_GroupOncall.QueryRow():`, err)
+				break deploymentbuilder
 			}
 			// fetch service name, and attributes if applicable
 			if detail.CheckInstance.InstanceService != "" {
@@ -215,8 +230,11 @@ deploymentbuilder:
 					&detail.Service.Name,
 					&detail.Service.TeamId,
 				)
-				if err != nil {
+				if err == sql.ErrNoRows {
 					detail.Service = nil
+				} else if err != nil {
+					tk.errLog.Println(`tk.stmt_GroupService.QueryRow():`, err)
+					break deploymentbuilder
 				} else {
 					detail.Service.Attributes = []proto.ServiceAttribute{}
 					fm := map[string]string{}
@@ -241,6 +259,10 @@ deploymentbuilder:
 					&prop.Name,
 					&prop.Value,
 				)
+				if err != nil {
+					tk.errLog.Println(`tk.stmt_GroupSysProp.Query().Scan():`, err)
+					break deploymentbuilder
+				}
 				*detail.Properties = append(*detail.Properties, prop)
 				if prop.Name == "group_datacenter" {
 					detail.Datacenter = prop.Value
@@ -256,11 +278,15 @@ deploymentbuilder:
 
 			for gCustProps.Next() {
 				prop := proto.PropertyCustom{}
-				gCustProps.Scan(
+				err = gCustProps.Scan(
 					&prop.Id,
 					&prop.Name,
 					&prop.Value,
 				)
+				if err != nil {
+					tk.errLog.Println(`tk.stmt_GroupCustProp.Query().Scan():`, err)
+					break deploymentbuilder
+				}
 				*detail.CustomProperties = append(*detail.CustomProperties, prop)
 			}
 			if len(*detail.CustomProperties) == 0 {

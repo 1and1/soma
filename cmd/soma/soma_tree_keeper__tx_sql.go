@@ -9,6 +9,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/1and1/soma/internal/stmt"
 )
@@ -73,6 +74,8 @@ func (tk *treeKeeper) startTx() (
 		`NodePropertyCustomDelete`:        tkStmtNodePropertyCustomDelete,
 	} {
 		if stMap[name], err = tx.Prepare(statement); err != nil {
+			err = fmt.Errorf("tk.Prepare(%s) error: %s",
+				name, err.Error())
 			delete(stMap, name)
 			goto bailout
 		}
@@ -85,6 +88,8 @@ func (tk *treeKeeper) startTx() (
 		`DeleteCheck`: stmt.TxMarkCheckDeleted,
 	} {
 		if stMap[name], err = tx.Prepare(statement); err != nil {
+			err = fmt.Errorf("tk.Prepare(%s) error: %s",
+				name, err.Error())
 			delete(stMap, name)
 			goto bailout
 		}
@@ -98,6 +103,8 @@ func (tk *treeKeeper) startTx() (
 		`DeleteCheckInstance`:              stmt.TxMarkCheckInstanceDeleted,
 	} {
 		if stMap[name], err = tx.Prepare(statement); err != nil {
+			err = fmt.Errorf("tk.Prepare(%s) error: %s",
+				name, err.Error())
 			delete(stMap, name)
 			goto bailout
 		}
@@ -116,6 +123,8 @@ func (tk *treeKeeper) startTx() (
 		`CreateCheckConfigurationConstraintAttribute`: stmt.TxCreateCheckConfigurationConstraintAttribute,
 	} {
 		if stMap[name], err = tx.Prepare(statement); err != nil {
+			err = fmt.Errorf("tk.Prepare(%s) error: %s",
+				name, err.Error())
 			delete(stMap, name)
 			goto bailout
 		}
