@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -46,25 +47,15 @@ type somaLevelReadHandler struct {
 func (r *somaLevelReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT level_name,
-       level_shortname
-FROM   soma.notification_levels;`)
-	if err != nil {
-		r.errLog.Fatal("level/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.LevelList: r.list_stmt,
+		stmt.LevelShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`level`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT level_name,
-       level_shortname,
-	   level_numeric
-FROM   soma.notification_levels
-WHERE  level_name = $1;`)
-	if err != nil {
-		r.errLog.Fatal("level/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -153,29 +144,15 @@ type somaLevelWriteHandler struct {
 func (w *somaLevelWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.notification_levels (
-	level_name,
-	level_shortname,
-	level_numeric)
-SELECT $1::varchar, $2::varchar, $3::smallint WHERE NOT EXISTS (
-	SELECT level_name
-	FROM soma.notification_levels
-	WHERE level_name = $1::varchar
-	OR level_shortname = $2::varchar
-	OR level_numeric = $3::smallint);`)
-	if err != nil {
-		w.errLog.Fatal("level/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.LevelAdd: w.add_stmt,
+		stmt.LevelDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`level`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.notification_levels
-WHERE  level_name = $1;`)
-	if err != nil {
-		w.errLog.Fatal("level/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

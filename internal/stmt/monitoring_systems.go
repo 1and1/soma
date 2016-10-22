@@ -52,4 +52,28 @@ SELECT monitoring_id
 FROM   soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
 
+const MonitoringSystemAdd = `
+INSERT INTO soma.monitoring_systems (
+            monitoring_id,
+            monitoring_name,
+            monitoring_system_mode,
+            monitoring_contact,
+            monitoring_owner_team,
+            monitoring_callback_uri)
+SELECT  $1::uuid,
+        $2::varchar,
+        $3::varchar,
+        $4::uuid,
+        $5::uuid,
+        $6::text
+WHERE   NOT EXISTS (
+   SELECT monitoring_id
+   FROM   soma.monitoring_systems
+   WHERE  monitoring_id = $1::uuid
+      OR  monitoring_name = $2::varchar);`
+
+const MonitoringSystemDel = `
+DELETE FROM soma.monitoring_systems
+WHERE  monitoring_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

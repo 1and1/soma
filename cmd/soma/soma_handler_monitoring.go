@@ -51,20 +51,16 @@ type somaMonitoringReadHandler struct {
 func (r *somaMonitoringReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllMonitoringSystems); err != nil {
-		r.errLog.Fatal("monitoring/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListAllMonitoringSystems:    r.list_stmt,
+		stmt.ShowMonitoringSystem:        r.show_stmt,
+		stmt.ListScopedMonitoringSystems: r.scli_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`monitoring`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowMonitoringSystem); err != nil {
-		r.errLog.Fatal("monitoring/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.scli_stmt, err = r.conn.Prepare(stmt.ListScopedMonitoringSystems); err != nil {
-		r.errLog.Fatal("monitoring/scoped-list: ", err)
-	}
-	defer r.scli_stmt.Close()
 
 runloop:
 	for {
@@ -173,32 +169,15 @@ type somaMonitoringWriteHandler struct {
 func (w *somaMonitoringWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.monitoring_systems (
-	monitoring_id,
-	monitoring_name,
-	monitoring_system_mode,
-	monitoring_contact,
-	monitoring_owner_team,
-	monitoring_callback_uri)
-SELECT $1::uuid, $2::varchar, $3::varchar, $4::uuid, $5::uuid, $6::text
-WHERE NOT EXISTS (
-	SELECT monitoring_id
-	FROM   soma.monitoring_systems
-	WHERE  monitoring_id = $1::uuid
-    OR     monitoring_name = $2::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("monitoring/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.MonitoringSystemAdd: w.add_stmt,
+		stmt.MonitoringSystemDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`monitoring`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.monitoring_systems
-WHERE  monitoring_id = $1::uuid;`)
-	if err != nil {
-		w.errLog.Fatal("monitoring/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

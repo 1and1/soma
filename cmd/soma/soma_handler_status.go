@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -46,22 +47,15 @@ type somaStatusReadHandler struct {
 func (r *somaStatusReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT status
-FROM   soma.check_instance_status;`)
-	if err != nil {
-		r.errLog.Fatal("status/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.StatusList: r.list_stmt,
+		stmt.StatusShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`status`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT status
-FROM   soma.check_instance_status
-WHERE  status = $1;`)
-	if err != nil {
-		r.errLog.Fatal("status/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -144,25 +138,15 @@ type somaStatusWriteHandler struct {
 func (w *somaStatusWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.check_instance_status (
-	status)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT status
-	FROM   soma.check_instance_status
-	WHERE  status = $1::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("status/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.StatusAdd: w.add_stmt,
+		stmt.StatusDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`status`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.check_instance_status
-WHERE  status = $1;`)
-	if err != nil {
-		w.errLog.Fatal("status/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

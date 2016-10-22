@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
@@ -63,108 +64,23 @@ type somaPropertyReadHandler struct {
 func (r *somaPropertyReadHandler) run() {
 	var err error
 
-	r.list_sys_stmt, err = r.conn.Prepare(`
-SELECT system_property
-FROM   soma.system_properties;`)
-	if err != nil {
-		r.errLog.Fatal("property/list-system: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.PropertyCustomList:   r.list_cst_stmt,
+		stmt.PropertyCustomShow:   r.show_cst_stmt,
+		stmt.PropertyNativeList:   r.list_nat_stmt,
+		stmt.PropertyNativeShow:   r.show_nat_stmt,
+		stmt.PropertyServiceList:  r.list_srv_stmt,
+		stmt.PropertyServiceShow:  r.show_srv_stmt,
+		stmt.PropertySystemList:   r.list_sys_stmt,
+		stmt.PropertySystemShow:   r.show_sys_stmt,
+		stmt.PropertyTemplateList: r.list_tpl_stmt,
+		stmt.PropertyTemplateShow: r.show_tpl_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`property`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_sys_stmt.Close()
-
-	r.list_srv_stmt, err = r.conn.Prepare(`
-SELECT service_property,
-       organizational_team_id
-FROM   soma.team_service_properties
-WHERE  organizational_team_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("property/list-service: ", err)
-	}
-	defer r.list_srv_stmt.Close()
-
-	r.list_nat_stmt, err = r.conn.Prepare(`
-SELECT native_property
-FROM   soma.native_properties;`)
-	if err != nil {
-		r.errLog.Fatal("property/list-native: ", err)
-	}
-	defer r.list_nat_stmt.Close()
-
-	r.list_tpl_stmt, err = r.conn.Prepare(`
-SELECT service_property
-FROM   soma.service_properties;`)
-	if err != nil {
-		r.errLog.Fatal("property/list-service-template: ", err)
-	}
-	defer r.list_tpl_stmt.Close()
-
-	r.list_cst_stmt, err = r.conn.Prepare(`
-SELECT custom_property_id,
-       repository_id,
-	   custom_property
-FROM   soma.custom_properties
-WHERE  repository_id = $1::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("property/list-custom: ", err)
-	}
-	defer r.list_cst_stmt.Close()
-
-	r.show_sys_stmt, err = r.conn.Prepare(`
-SELECT system_property
-FROM   soma.system_properties
-WHERE  system_property = $1::varchar;`)
-	if err != nil {
-		r.errLog.Fatal("property/show-system: ", err)
-	}
-	defer r.show_sys_stmt.Close()
-
-	r.show_nat_stmt, err = r.conn.Prepare(`
-SELECT native_property
-FROM   soma.native_properties
-WHERE  native_property = $1::varchar;`)
-	if err != nil {
-		r.errLog.Fatal("property/show-native: ", err)
-	}
-	defer r.show_nat_stmt.Close()
-
-	r.show_cst_stmt, err = r.conn.Prepare(`
-SELECT custom_property_id,
-       repository_id,
-	   custom_property
-FROM   soma.custom_properties
-WHERE  custom_property_id = $1::uuid
-AND    repository_id = $2::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("property/show-custom: ", err)
-	}
-	defer r.show_cst_stmt.Close()
-
-	r.show_srv_stmt, err = r.conn.Prepare(`
-SELECT tsp.service_property,
-       tsp.organizational_team_id,
-	   tspv.service_property_attribute,
-	   tspv.value
-FROM   soma.team_service_properties tsp
-JOIN   soma.team_service_property_values tspv
-ON     tsp.service_property = tspv.service_property
-WHERE  tsp.service_property = $1::varchar
-AND    tsp.organizational_team_id = $2::uuid;`)
-	if err != nil {
-		r.errLog.Fatal("property/show-service")
-	}
-	defer r.show_srv_stmt.Close()
-
-	r.show_tpl_stmt, err = r.conn.Prepare(`
-SELECT sp.service_property,
-	   spv.service_property_attribute,
-	   spv.value
-FROM   soma.service_properties sp
-JOIN   soma.service_property_values spv
-ON     sp.service_property = spv.service_property
-WHERE  sp.service_property = $1::varchar;`)
-	if err != nil {
-		r.errLog.Fatal("property/show-service-template")
-	}
-	defer r.show_tpl_stmt.Close()
 
 runloop:
 	for {
@@ -415,152 +331,27 @@ type somaPropertyWriteHandler struct {
 func (w *somaPropertyWriteHandler) run() {
 	var err error
 
-	w.add_sys_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.system_properties (
-	system_property)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT system_property
-	FROM   soma.system_properties
-	WHERE  system_property = $1::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("property/add-system: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.PropertyCustomAdd:            w.add_cst_stmt,
+		stmt.PropertyCustomDel:            w.del_cst_stmt,
+		stmt.PropertyNativeAdd:            w.add_nat_stmt,
+		stmt.PropertyNativeDel:            w.del_nat_stmt,
+		stmt.PropertyServiceAdd:           w.add_srv_stmt,
+		stmt.PropertyServiceAttributeAdd:  w.add_srv_attr_stmt,
+		stmt.PropertyServiceAttributeDel:  w.del_srv_attr_stmt,
+		stmt.PropertyServiceDel:           w.del_srv_stmt,
+		stmt.PropertySystemAdd:            w.add_sys_stmt,
+		stmt.PropertySystemDel:            w.del_sys_stmt,
+		stmt.PropertyTemplateAdd:          w.add_tpl_stmt,
+		stmt.PropertyTemplateAttributeAdd: w.add_tpl_attr_stmt,
+		stmt.PropertyTemplateAttributeDel: w.del_tpl_attr_stmt,
+		stmt.PropertyTemplateDel:          w.del_tpl_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`property`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_sys_stmt.Close()
-
-	w.add_nat_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.native_properties (
-	native_property)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT native_property
-	FROM   soma.native_properties
-	WHERE  native_property = $1::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("property/add-native: ", err)
-	}
-	defer w.add_nat_stmt.Close()
-
-	w.add_cst_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.custom_properties (
-	custom_property_id,
-	repository_id,
-	custom_property)
-SELECT $1::uuid, $2::uuid, $3::varchar WHERE NOT EXISTS (
-	SELECT custom_property
-	FROM   soma.custom_properties
-	WHERE  custom_property = $3::varchar
-    AND    repository_id = $2::uuid);`)
-	if err != nil {
-		w.errLog.Fatal("property/add-system: ", err)
-	}
-	defer w.add_cst_stmt.Close()
-
-	w.add_srv_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.team_service_properties (
-	organizational_team_id,
-	service_property)
-SELECT $1::uuid, $2::varchar WHERE NOT EXISTS (
-	SELECT service_property
-	FROM   soma.team_service_properties
-	WHERE  organizational_team_id = $1::uuid
-	AND    service_property = $2::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("property/add-service: ", err)
-	}
-	defer w.add_srv_stmt.Close()
-
-	w.add_srv_attr_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.team_service_property_values (
-	organizational_team_id,
-	service_property,
-	service_property_attribute,
-	value)
-SELECT $1::uuid, $2::varchar, $3::varchar, $4::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/add-service-attribute: ", err)
-	}
-	defer w.add_srv_attr_stmt.Close()
-
-	w.add_tpl_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.service_properties (
-	service_property)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT service_property
-	FROM   soma.service_properties
-	WHERE  service_property = $1::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("property/add-service-template: ", err)
-	}
-	defer w.add_tpl_stmt.Close()
-
-	w.add_tpl_attr_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.service_property_values (
-	service_property,
-	service_property_attribute,
-	value)
-SELECT $1::varchar, $2::varchar, $3::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/add-service-template-attribute: ", err)
-	}
-	defer w.add_tpl_attr_stmt.Close()
-
-	w.del_sys_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.system_properties
-WHERE  system_property = $1::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-system: ", err)
-	}
-	defer w.del_sys_stmt.Close()
-
-	w.del_nat_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.native_properties
-WHERE  native_property = $1::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-native: ", err)
-	}
-	defer w.del_nat_stmt.Close()
-
-	w.del_cst_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.custom_properties
-WHERE  repository_id = $1::uuid
-AND    custom_property_id = $2::uuid;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-custom: ", err)
-	}
-	defer w.del_cst_stmt.Close()
-
-	w.del_srv_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.team_service_properties
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-service: ", err)
-	}
-	defer w.del_srv_stmt.Close()
-
-	w.del_srv_attr_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.team_service_property_values
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-service-attributes: ", err)
-	}
-	defer w.del_srv_attr_stmt.Close()
-
-	w.del_tpl_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.service_properties
-WHERE  service_property = $1::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-service-template: ", err)
-	}
-	defer w.del_tpl_stmt.Close()
-
-	w.del_tpl_attr_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.service_property_values
-WHERE  service_property = $1::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("property/delete-service-template-attributes: ", err)
-	}
-	defer w.del_tpl_attr_stmt.Close()
 
 runloop:
 	for {

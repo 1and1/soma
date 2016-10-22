@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -47,22 +48,15 @@ type somaModeReadHandler struct {
 func (r *somaModeReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT monitoring_system_mode
-FROM   soma.monitoring_system_modes; `)
-	if err != nil {
-		r.errLog.Fatal("mode/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ModeList: r.list_stmt,
+		stmt.ModeShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`mode`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT monitoring_system_mode
-FROM   soma.monitoring_system_modes
-WHERE  monitoring_system_mode = $1;`)
-	if err != nil {
-		r.errLog.Fatal("mode/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -145,25 +139,15 @@ type somaModeWriteHandler struct {
 func (w *somaModeWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.monitoring_system_modes (
-	monitoring_system_mode)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT monitoring_system_mode
-	FROM   soma.monitoring_system_modes
-	WHERE  monitoring_system_mode = $1::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("mode/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ModeAdd: w.add_stmt,
+		stmt.ModeDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`mode`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.monitoring_system_modes
-WHERE  monitoring_system_mode = $1;`)
-	if err != nil {
-		w.errLog.Fatal("mode/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

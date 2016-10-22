@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/1and1/soma/internal/stmt"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -37,14 +38,16 @@ type somaEnvironmentReadHandler struct {
 func (r *somaEnvironmentReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare("SELECT environment FROM soma.environments;")
-	if err != nil {
-		r.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.EnvironmentList: r.list_stmt,
+		stmt.EnvironmentShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`environment`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	r.show_stmt, err = r.conn.Prepare("SELECT environment FROM soma.environments WHERE environment = $1;")
-	if err != nil {
-		r.errLog.Fatal(err)
-	}
+
 	for {
 		select {
 		case <-r.shutdown:
@@ -134,34 +137,16 @@ type somaEnvironmentWriteHandler struct {
 func (w *somaEnvironmentWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-  INSERT INTO soma.environments (environment)
-  SELECT $1 WHERE NOT EXISTS (
-    SELECT environment FROM soma.environments WHERE environment = $2
-  );
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.EnvironmentAdd:    w.add_stmt,
+		stmt.EnvironmentDel:    w.del_stmt,
+		stmt.EnvironmentRename: w.ren_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`environment`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-  DELETE FROM soma.environments
-  WHERE environment = $1;
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
-	}
-	defer w.del_stmt.Close()
-
-	w.ren_stmt, err = w.conn.Prepare(`
-  UPDATE soma.environments SET environment = $1
-  WHERE environment = $2;
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
-	}
-	defer w.ren_stmt.Close()
 
 	for {
 		select {
