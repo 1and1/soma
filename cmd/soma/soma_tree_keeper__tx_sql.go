@@ -131,131 +131,33 @@ func (tk *treeKeeper) startTx() (
 	}
 
 	//
-	//
-	if stMap[`CreateBucket`], err = tx.Prepare(
-		tkStmtCreateBucket,
-	); err != nil {
-		delete(stMap, `CreateBucket`)
-		goto bailout
-	}
-
-	if stMap[`GroupCreate`], err = tx.Prepare(
-		tkStmtGroupCreate,
-	); err != nil {
-		delete(stMap, `GroupCreate`)
-		goto bailout
-	}
-
-	if stMap[`GroupUpdate`], err = tx.Prepare(
-		tkStmtGroupUpdate,
-	); err != nil {
-		delete(stMap, `GroupUpdate`)
-		goto bailout
-	}
-
-	if stMap[`GroupDelete`], err = tx.Prepare(
-		tkStmtGroupDelete,
-	); err != nil {
-		delete(stMap, `GroupDelete`)
-		goto bailout
-	}
-
-	if stMap[`GroupMemberNewNode`], err = tx.Prepare(
-		tkStmtGroupMemberNewNode,
-	); err != nil {
-		delete(stMap, `GroupMemberNewNode`)
-		goto bailout
-	}
-
-	if stMap[`GroupMemberNewCluster`], err = tx.Prepare(
-		tkStmtGroupMemberNewCluster,
-	); err != nil {
-		delete(stMap, `GroupMemberNewCluster`)
-		goto bailout
-	}
-
-	if stMap[`GroupMemberNewGroup`], err = tx.Prepare(
-		tkStmtGroupMemberNewGroup,
-	); err != nil {
-		delete(stMap, `GroupMemberNewGroup`)
-		goto bailout
-	}
-
-	if stMap[`GroupMemberRemoveNode`], err = tx.Prepare(
-		tkStmtGroupMemberRemoveNode,
-	); err != nil {
-		delete(stMap, `GroupMemberRemoveNode`)
-		goto bailout
-	}
-
-	if stMap[`GroupMemberRemoveCluster`], err = tx.Prepare(
-		tkStmtGroupMemberRemoveCluster,
-	); err != nil {
-		delete(stMap, `GroupMemberRemoveCluster`)
-		goto bailout
-	}
-
-	if stMap[`GroupMemberRemoveGroup`], err = tx.Prepare(
-		tkStmtGroupMemberRemoveGroup,
-	); err != nil {
-		delete(stMap, `GroupMemberRemoveGroup`)
-		goto bailout
-	}
-
-	if stMap[`ClusterCreate`], err = tx.Prepare(
-		tkStmtClusterCreate,
-	); err != nil {
-		delete(stMap, `ClusterCreate`)
-		goto bailout
-	}
-
-	if stMap[`ClusterUpdate`], err = tx.Prepare(
-		tkStmtClusterUpdate,
-	); err != nil {
-		delete(stMap, `ClusterUpdate`)
-		goto bailout
-	}
-
-	if stMap[`ClusterDelete`], err = tx.Prepare(
-		tkStmtClusterDelete,
-	); err != nil {
-		delete(stMap, `ClusterDelete`)
-		goto bailout
-	}
-
-	if stMap[`ClusterMemberNew`], err = tx.Prepare(
-		tkStmtClusterMemberNew,
-	); err != nil {
-		delete(stMap, `ClusterMemberNew`)
-		goto bailout
-	}
-
-	if stMap[`ClusterMemberRemove`], err = tx.Prepare(
-		tkStmtClusterMemberRemove,
-	); err != nil {
-		delete(stMap, `ClusterMemberRemove`)
-		goto bailout
-	}
-
-	if stMap[`BucketAssignNode`], err = tx.Prepare(
-		tkStmtBucketAssignNode,
-	); err != nil {
-		delete(stMap, `BucketAssignNode`)
-		goto bailout
-	}
-
-	if stMap[`UpdateNodeState`], err = tx.Prepare(
-		tkStmtUpdateNodeState,
-	); err != nil {
-		delete(stMap, `UpdateNodeState`)
-		goto bailout
-	}
-
-	if stMap[`NodeUnassignFromBucket`], err = tx.Prepare(
-		tkStmtNodeUnassignFromBucket,
-	); err != nil {
-		delete(stMap, `NodeUnassignFromBucket`)
-		goto bailout
+	// TREE MANIPULATION STATEMENTS
+	for name, statement := range map[string]string{
+		`BucketAssignNode`:         tkStmtBucketAssignNode,
+		`ClusterCreate`:            tkStmtClusterCreate,
+		`ClusterDelete`:            tkStmtClusterDelete,
+		`ClusterMemberNew`:         tkStmtClusterMemberNew,
+		`ClusterMemberRemove`:      tkStmtClusterMemberRemove,
+		`ClusterUpdate`:            tkStmtClusterUpdate,
+		`CreateBucket`:             tkStmtCreateBucket,
+		`GroupCreate`:              tkStmtGroupCreate,
+		`GroupDelete`:              tkStmtGroupDelete,
+		`GroupMemberNewCluster`:    tkStmtGroupMemberNewCluster,
+		`GroupMemberNewGroup`:      tkStmtGroupMemberNewGroup,
+		`GroupMemberNewNode`:       tkStmtGroupMemberNewNode,
+		`GroupMemberRemoveCluster`: tkStmtGroupMemberRemoveCluster,
+		`GroupMemberRemoveGroup`:   tkStmtGroupMemberRemoveGroup,
+		`GroupMemberRemoveNode`:    tkStmtGroupMemberRemoveNode,
+		`GroupUpdate`:              tkStmtGroupUpdate,
+		`NodeUnassignFromBucket`:   tkStmtNodeUnassignFromBucket,
+		`UpdateNodeState`:          tkStmtUpdateNodeState,
+	} {
+		if stMap[name], err = tx.Prepare(statement); err != nil {
+			err = fmt.Errorf("tk.Prepare(%s) error: %s",
+				name, err.Error())
+			delete(stMap, name)
+			goto bailout
+		}
 	}
 
 	return tx, stMap, nil
