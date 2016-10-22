@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"path/filepath"
 
+	"golang.org/x/sys/unix"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/nahanni/go-ucl"
 )
@@ -100,9 +102,19 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	}
 
 	if c.LogPath == `` {
-		c.LogPath = filepath.Join(`/var/log/soma`, c.InstanceName)
+		c.LogPath = filepath.Join(`/srv/soma`, c.InstanceName, `log`)
 		log.Printf("Setting default value for log.path: %s\n",
 			c.LogPath)
+	}
+	for p := range []string{
+		c.LogPath,
+		filepath.Join(c.LogPath, `job`),
+		filepath.Join(c.LogPath, `repository`),
+	} {
+		if err := c.verifyPathWritable(p); err != nil {
+			log.Fatal(`Log directory missing or not writable:`,
+				p, `Error:`, err)
+		}
 	}
 
 	if c.Environment == `` {
@@ -134,6 +146,10 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	}
 
 	return nil
+}
+
+func (c *SomaConfig) verifyPathWritable(path string) error {
+	return unix.Access(path, unix.W_OK)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
