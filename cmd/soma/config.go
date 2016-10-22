@@ -95,8 +95,8 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	json.Unmarshal([]byte(uclJson), &c)
 
 	if c.InstanceName == `` {
-		log.Println(`Setting default value for instance.name: soma`)
-		c.InstanceName = `soma`
+		log.Println(`Setting default value for instance.name: huxley`)
+		c.InstanceName = `huxley`
 	}
 
 	if c.LogPath == `` {

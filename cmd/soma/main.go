@@ -73,7 +73,7 @@ func main() {
 	)
 
 	// Daemon command line flags
-	flag.StringVar(&configFlag, "config", "/srv/soma/conf/soma.conf", "Configuration file location")
+	flag.StringVar(&configFlag, "config", "/srv/soma/huxley/conf/soma.conf", "Configuration file location")
 	flag.StringVar(&obsRepoFlag, "repo", "", "Single-repository mode target repository")
 	flag.BoolVar(&noPokeFlag, "nopoke", false, "Disable lifecycle pokes")
 	flag.BoolVar(&forcedCorruption, `allowdatacorruption`, false, `Allow single-repo mode on production`)
