@@ -52,17 +52,17 @@ func (r *somaMonitoringReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllMonitoringSystems); err != nil {
-		log.Fatal("monitoring/list: ", err)
+		r.errLog.Fatal("monitoring/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowMonitoringSystem); err != nil {
-		log.Fatal("monitoring/show: ", err)
+		r.errLog.Fatal("monitoring/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.scli_stmt, err = r.conn.Prepare(stmt.ListScopedMonitoringSystems); err != nil {
-		log.Fatal("monitoring/scoped-list: ", err)
+		r.errLog.Fatal("monitoring/scoped-list: ", err)
 	}
 	defer r.scli_stmt.Close()
 
@@ -92,10 +92,10 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 	switch q.action {
 	case "list":
 		if q.admin {
-			log.Printf("R: monitorings/list")
+			r.reqLog.Printf("R: monitorings/list")
 			rows, err = r.list_stmt.Query()
 		} else {
-			log.Printf("R: monitorings/scoped-list for %s", q.user)
+			r.reqLog.Printf("R: monitorings/scoped-list for %s", q.user)
 			rows, err = r.scli_stmt.Query(q.user)
 		}
 		if result.SetRequestError(err) {
@@ -117,7 +117,7 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: monitoring/show for %s", q.Monitoring.Id)
+		r.reqLog.Printf("R: monitoring/show for %s", q.Monitoring.Id)
 		err = r.show_stmt.QueryRow(q.Monitoring.Id).Scan(
 			&id,
 			&name,
@@ -188,7 +188,7 @@ WHERE NOT EXISTS (
 	WHERE  monitoring_id = $1::uuid
     OR     monitoring_name = $2::varchar);`)
 	if err != nil {
-		log.Fatal("monitoring/add: ", err)
+		w.errLog.Fatal("monitoring/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -196,7 +196,7 @@ WHERE NOT EXISTS (
 DELETE FROM soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("monitoring/delete: ", err)
+		w.errLog.Fatal("monitoring/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -221,7 +221,7 @@ func (w *somaMonitoringWriteHandler) process(q *somaMonitoringRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: monitoring/add for %s", q.Monitoring.Name)
+		w.reqLog.Printf("R: monitoring/add for %s", q.Monitoring.Name)
 		id := uuid.NewV4()
 		if q.Monitoring.Callback == "" {
 			callback = sql.NullString{
@@ -244,12 +244,12 @@ func (w *somaMonitoringWriteHandler) process(q *somaMonitoringRequest) {
 		)
 		q.Monitoring.Id = id.String()
 	case "delete":
-		log.Printf("R: monitoring/delete for %s", q.Monitoring.Id)
+		w.reqLog.Printf("R: monitoring/delete for %s", q.Monitoring.Id)
 		res, err = w.del_stmt.Exec(
 			q.Monitoring.Id,
 		)
 	default:
-		log.Printf("R: unimplemented monitorings/%s", q.action)
+		w.reqLog.Printf("R: unimplemented monitorings/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

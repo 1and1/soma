@@ -51,7 +51,7 @@ runloop:
 	}
 
 	time.Sleep(time.Duration(SomaCfg.ShutdownDelay) * time.Second)
-	log.Println("grimReaper: shutdown complete")
+	grim.appLog.Println("grimReaper: shutdown complete")
 }
 
 func (grim *grimReaper) process(q *msg.Request) bool {
@@ -79,7 +79,7 @@ func (grim *grimReaper) process(q *msg.Request) bool {
 	time.Sleep(time.Duration(SomaCfg.ShutdownDelay) * time.Second)
 
 	// I have awoken.
-	log.Println(`GRIM REAPER ACTIVATED. SYSTEM SHUTDOWN INITIATED`)
+	grim.appLog.Println(`GRIM REAPER ACTIVATED. SYSTEM SHUTDOWN INITIATED`)
 
 	// stop all treeKeeper       : /^repository_.*/
 	for handler, _ := range handlerMap {
@@ -92,7 +92,7 @@ func (grim *grimReaper) process(q *msg.Request) bool {
 		if strings.HasPrefix(handler, `repository_`) {
 			handlerMap[handler].(Downer).shutdownNow()
 			delete(handlerMap, handler)
-			log.Printf("grimReaper: shut down %s", handler)
+			grim.appLog.Printf("grimReaper: shut down %s", handler)
 		}
 	}
 	// shutdown all write handler: /WriteHandler$/
@@ -102,7 +102,7 @@ func (grim *grimReaper) process(q *msg.Request) bool {
 		}
 		handlerMap[handler].(Downer).shutdownNow()
 		delete(handlerMap, handler)
-		log.Printf("grimReaper: shut down %s", handler)
+		grim.appLog.Printf("grimReaper: shut down %s", handler)
 	}
 	// shutdown all read handler : /ReadHandler$/
 	for handler, _ := range handlerMap {
@@ -112,7 +112,7 @@ func (grim *grimReaper) process(q *msg.Request) bool {
 		}
 		handlerMap[handler].(Downer).shutdownNow()
 		delete(handlerMap, handler)
-		log.Printf("grimReaper: shut down %s", handler)
+		grim.appLog.Printf("grimReaper: shut down %s", handler)
 	}
 	// shutdown special handlers
 	for _, h := range []string{
@@ -125,21 +125,21 @@ func (grim *grimReaper) process(q *msg.Request) bool {
 	} {
 		handlerMap[h].(Downer).shutdownNow()
 		delete(handlerMap, h)
-		log.Printf("grimReaper: shut down %s", h)
+		grim.appLog.Printf("grimReaper: shut down %s", h)
 	}
 
 	// shutdown supervisor -- needs handling in BasicAuth()
 	handlerMap[`supervisor`].(Downer).shutdownNow()
 	delete(handlerMap, `supervisor`)
-	log.Println(`grimReaper: shut down the supervisor`)
+	grim.appLog.Println(`grimReaper: shut down the supervisor`)
 
 	// log what we have missed
-	log.Println(`grimReaper: checking for still running handlers`)
+	grim.appLog.Println(`grimReaper: checking for still running handlers`)
 	for name, _ := range handlerMap {
 		if name == `grimReaper` {
 			continue
 		}
-		log.Printf("grimReaper: %s is still running\n", name)
+		grim.appLog.Printf("grimReaper: %s is still running\n", name)
 	}
 
 	return true

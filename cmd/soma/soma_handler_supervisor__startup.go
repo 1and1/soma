@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"github.com/1and1/soma/internal/stmt"
-	log "github.com/Sirupsen/logrus"
 	"github.com/mjolnir42/scrypth64"
 	uuid "github.com/satori/go.uuid"
 )
@@ -64,7 +63,7 @@ func (s *supervisor) startupRoot() {
 
 	rows, err = s.conn.Query(stmt.LoadRootFlags)
 	if err != nil {
-		log.Fatal(`supervisor/load-root-flags,query: `, err)
+		s.errLog.Fatal(`supervisor/load-root-flags,query: `, err)
 	}
 	defer rows.Close()
 
@@ -73,7 +72,7 @@ func (s *supervisor) startupRoot() {
 			&flag,
 			&state,
 		); err != nil {
-			log.Fatal(`supervisor/load-root-flags,scan: `, err)
+			s.errLog.Fatal(`supervisor/load-root-flags,scan: `, err)
 		}
 		switch flag {
 		case `disabled`:
@@ -83,7 +82,7 @@ func (s *supervisor) startupRoot() {
 		}
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(`supervisor/load-root-flags,next: `, err)
+		s.errLog.Fatal(`supervisor/load-root-flags,next: `, err)
 	}
 
 	// only load root credentials on master instance
@@ -96,10 +95,10 @@ func (s *supervisor) startupRoot() {
 			// root bootstrap outstanding
 			return
 		} else if err != nil {
-			log.Fatal(`supervisor/load-root-password: `, err)
+			s.errLog.Fatal(`supervisor/load-root-password: `, err)
 		}
 		if mcf, err = scrypth64.FromString(crypt); err != nil {
-			log.Fatal(`supervisor/string-to-mcf: `, err)
+			s.errLog.Fatal(`supervisor/string-to-mcf: `, err)
 		}
 		s.credentials.insert(`root`, uuid.Nil, validFrom.UTC(),
 			PosTimeInf.UTC(), mcf)
@@ -119,7 +118,7 @@ func (s *supervisor) startupCredentials() {
 
 	rows, err = s.conn.Query(stmt.LoadAllUserCredentials)
 	if err != nil {
-		log.Fatal(`supervisor/load-credentials,query: `, err)
+		s.errLog.Fatal(`supervisor/load-credentials,query: `, err)
 	}
 	defer rows.Close()
 
@@ -132,20 +131,20 @@ func (s *supervisor) startupCredentials() {
 			&expiresAt,
 			&user,
 		); err != nil {
-			log.Fatal(`supervisor/load-credentials,scan: `, err)
+			s.errLog.Fatal(`supervisor/load-credentials,scan: `, err)
 		}
 
 		if id, err = uuid.FromString(user_id); err != nil {
-			log.Fatal(`supervisor/string-to-uuid: `, err)
+			s.errLog.Fatal(`supervisor/string-to-uuid: `, err)
 		}
 		if mcf, err = scrypth64.FromString(crypt); err != nil {
-			log.Fatal(`supervisor/string-to-mcf: `, err)
+			s.errLog.Fatal(`supervisor/string-to-mcf: `, err)
 		}
 
 		s.credentials.restore(user, id, validFrom, expiresAt, mcf, reset, true)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(`supervisor/load-credentials,next: `, err)
+		s.errLog.Fatal(`supervisor/load-credentials,next: `, err)
 	}
 }
 
@@ -159,7 +158,7 @@ func (s *supervisor) startupTokens() {
 
 	rows, err = s.conn.Query(stmt.LoadAllTokens)
 	if err != nil {
-		log.Fatal(`supervisor/load-tokens,query: `, err)
+		s.errLog.Fatal(`supervisor/load-tokens,query: `, err)
 	}
 	defer rows.Close()
 
@@ -170,17 +169,17 @@ func (s *supervisor) startupTokens() {
 			&validFrom,
 			&expiresAt,
 		); err != nil {
-			log.Fatal(`supervisor/load-tokens,scan: `, err)
+			s.errLog.Fatal(`supervisor/load-tokens,scan: `, err)
 		}
 		valid = validFrom.Format(rfc3339Milli)
 		expires = expiresAt.Format(rfc3339Milli)
 
 		if err = s.tokens.insert(token, valid, expires, salt); err != nil {
-			log.Fatal(`supervisor/load-tokens,insert: `, err)
+			s.errLog.Fatal(`supervisor/load-tokens,insert: `, err)
 		}
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(`supervisor/load-tokens,next: `, err)
+		s.errLog.Fatal(`supervisor/load-tokens,next: `, err)
 	}
 }
 
@@ -193,7 +192,7 @@ func (s *supervisor) startupUsersAndTeams() {
 
 	rows, err = s.conn.Query(stmt.LoadUserTeamMapping)
 	if err != nil {
-		log.Fatal(`supervisor/load-user-team-mapping,query: `, err)
+		s.errLog.Fatal(`supervisor/load-user-team-mapping,query: `, err)
 	}
 	defer rows.Close()
 
@@ -215,7 +214,7 @@ func (s *supervisor) startupUsersAndTeams() {
 			&teamUUID,
 			&teamName,
 		); err != nil {
-			log.Fatal(`supervisor/load-user-team-mapping,scan: `, err)
+			s.errLog.Fatal(`supervisor/load-user-team-mapping,scan: `, err)
 		}
 		s.id_user.load(userUUID, userName)
 		s.id_user_rev.load(userName, userUUID)
@@ -223,7 +222,7 @@ func (s *supervisor) startupUsersAndTeams() {
 		s.id_userteam.load(userUUID, teamUUID)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(`supervisor/load-user-team-mapping,next: `, err)
+		s.errLog.Fatal(`supervisor/load-user-team-mapping,next: `, err)
 	}
 }
 
@@ -236,7 +235,7 @@ func (s *supervisor) startupPermissions() {
 
 	rows, err = s.conn.Query(stmt.LoadPermissions)
 	if err != nil {
-		log.Fatal(`supervisor/load-permissions,query: `, err)
+		s.errLog.Fatal(`supervisor/load-permissions,query: `, err)
 	}
 	defer rows.Close()
 
@@ -250,12 +249,12 @@ func (s *supervisor) startupPermissions() {
 			&permUUID,
 			&permName,
 		); err != nil {
-			log.Fatal(`supervisor/load-permissions,scan: `, err)
+			s.errLog.Fatal(`supervisor/load-permissions,scan: `, err)
 		}
 		s.id_permission.load(permName, permUUID)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(`supervisor/load-permissions,next: `, err)
+		s.errLog.Fatal(`supervisor/load-permissions,next: `, err)
 	}
 }
 
@@ -268,7 +267,7 @@ func (s *supervisor) startupGrants() {
 
 	rows, err = s.conn.Query(stmt.LoadGlobalOrSystemUserGrants)
 	if err != nil {
-		log.Fatal(`supervisor/load-user-systemglobal-grants,query: `, err)
+		s.errLog.Fatal(`supervisor/load-user-systemglobal-grants,query: `, err)
 	}
 	defer rows.Close()
 
@@ -285,13 +284,13 @@ func (s *supervisor) startupGrants() {
 			&userUUID,
 			&permUUID,
 		); err != nil {
-			log.Fatal(`supervisor/load-user-systemglobal-grants,scan: `, err)
+			s.errLog.Fatal(`supervisor/load-user-systemglobal-grants,scan: `, err)
 		}
 		s.global_permissions.load(userUUID, permUUID, grantUUID)
 		s.global_grants.load(userUUID, permUUID, grantUUID)
 	}
 	if err = rows.Err(); err != nil {
-		log.Fatal(`supervisor/load-user-systemglobal-grants,next: `, err)
+		s.errLog.Fatal(`supervisor/load-user-systemglobal-grants,next: `, err)
 	}
 }
 

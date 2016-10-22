@@ -57,42 +57,42 @@ func (r *somaNodeReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListNodes); err != nil {
-		log.Fatal("node/list: ", err)
+		r.errLog.Fatal("node/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowNodes); err != nil {
-		log.Fatal("node/show: ", err)
+		r.errLog.Fatal("node/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.conf_stmt, err = r.conn.Prepare(stmt.ShowConfigNodes); err != nil {
-		log.Fatal("node/get-config: ", err)
+		r.errLog.Fatal("node/get-config: ", err)
 	}
 	defer r.conf_stmt.Close()
 
 	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncNodes); err != nil {
-		log.Fatal("node/sync: ", err)
+		r.errLog.Fatal("node/sync: ", err)
 	}
 	defer r.sync_stmt.Close()
 
 	if r.ponc_stmt, err = r.conn.Prepare(stmt.NodeOncProps); err != nil {
-		log.Fatal(`node/property-oncall: `, err)
+		r.errLog.Fatal(`node/property-oncall: `, err)
 	}
 	defer r.ponc_stmt.Close()
 
 	if r.psvc_stmt, err = r.conn.Prepare(stmt.NodeSvcProps); err != nil {
-		log.Fatal(`node/property-service: `, err)
+		r.errLog.Fatal(`node/property-service: `, err)
 	}
 	defer r.psvc_stmt.Close()
 
 	if r.psys_stmt, err = r.conn.Prepare(stmt.NodeSysProps); err != nil {
-		log.Fatal(`node/property-system: `, err)
+		r.errLog.Fatal(`node/property-system: `, err)
 	}
 	defer r.psys_stmt.Close()
 
 	if r.pcst_stmt, err = r.conn.Prepare(stmt.NodeCstProps); err != nil {
-		log.Fatal(`node/property-custom: `, err)
+		r.errLog.Fatal(`node/property-custom: `, err)
 	}
 	defer r.pcst_stmt.Close()
 
@@ -124,7 +124,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: node/list")
+		r.reqLog.Printf("R: node/list")
 		rows, err = r.list_stmt.Query()
 		if result.SetRequestError(err) {
 			goto dispatch
@@ -141,7 +141,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			})
 		}
 	case `sync`:
-		log.Printf(`R: node/sync`)
+		r.reqLog.Printf(`R: node/sync`)
 		rows, err = r.sync_stmt.Query()
 		if result.SetRequestError(err) {
 			goto dispatch
@@ -171,7 +171,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: node/show")
+		r.reqLog.Printf("R: node/show")
 		err = r.show_stmt.QueryRow(q.Node.Id).Scan(
 			&nodeId,
 			&nodeAsset,
@@ -365,7 +365,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			Node: node,
 		})
 	case "get_config":
-		log.Printf("R: node/get_config")
+		r.reqLog.Printf("R: node/get_config")
 		err = r.conf_stmt.QueryRow(q.Node.Id).Scan(
 			&nodeId,
 			&nodeName,
@@ -447,7 +447,7 @@ AND    NOT EXISTS (
          OR     (node_name = $3::varchar AND node_online)
        );`)
 	if err != nil {
-		log.Fatal("node/add: ", err)
+		w.errLog.Fatal("node/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -460,7 +460,7 @@ SET    node_asset_id = $1::numeric,
        node_online = $5::boolean,
        node_deleted = $6::boolean
 WHERE  node_id = $7::uuid;`); err != nil {
-		log.Fatal(`node/update: `, err)
+		w.errLog.Fatal(`node/update: `, err)
 	}
 	defer w.upd_stmt.Close()
 
@@ -470,7 +470,7 @@ SET    node_deleted = 'yes'
 WHERE  node_id = $1
 AND    node_deleted = 'no';`)
 	if err != nil {
-		log.Fatal("node/delete: ", err)
+		w.errLog.Fatal("node/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -479,7 +479,7 @@ DELETE FROM soma.nodes
 WHERE       node_id = $1
 AND         node_deleted;`)
 	if err != nil {
-		log.Fatal("node/purge: ", err)
+		w.errLog.Fatal("node/purge: ", err)
 	}
 	defer w.prg_stmt.Close()
 
@@ -503,7 +503,7 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: node/add for %s", q.Node.Name)
+		w.reqLog.Printf("R: node/add for %s", q.Node.Name)
 		id := uuid.NewV4()
 		if q.Node.ServerId == "" {
 			q.Node.ServerId = "00000000-0000-0000-0000-000000000000"
@@ -521,7 +521,7 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 		)
 		q.Node.Id = id.String()
 	case `update`:
-		log.Printf("R: node/update for %s", q.Node.Id)
+		w.reqLog.Printf("R: node/update for %s", q.Node.Id)
 		res, err = w.upd_stmt.Exec(
 			q.Node.AssetId,
 			q.Node.Name,
@@ -533,18 +533,18 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 		)
 		// TODO what has to be done for this undeployment?
 	case "delete":
-		log.Printf("R: node/delete for %s", q.Node.Id)
+		w.reqLog.Printf("R: node/delete for %s", q.Node.Id)
 		res, err = w.del_stmt.Exec(
 			q.Node.Id,
 		)
 		// TODO trigger undeployment
 	case "purge":
-		log.Printf("R: node/purge for %s", q.Node.Id)
+		w.reqLog.Printf("R: node/purge for %s", q.Node.Id)
 		res, err = w.prg_stmt.Exec(
 			q.Node.Id,
 		)
 	default:
-		log.Printf("R: unimplemented node/%s", q.action)
+		w.reqLog.Printf("R: unimplemented node/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

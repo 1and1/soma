@@ -31,22 +31,22 @@ func (j *jobsRead) run() {
 	var err error
 
 	if j.listall_stmt, err = j.conn.Prepare(stmt.ListAllOutstandingJobs); err != nil {
-		log.Fatal(`jobs/list-all: `, err)
+		j.errLog.Fatal(`jobs/list-all: `, err)
 	}
 	defer j.listall_stmt.Close()
 
 	if j.listscp_stmt, err = j.conn.Prepare(stmt.ListScopedOutstandingJobs); err != nil {
-		log.Fatal(`job/list-scoped: `, err)
+		j.errLog.Fatal(`job/list-scoped: `, err)
 	}
 	defer j.listscp_stmt.Close()
 
 	if j.showid_stmt, err = j.conn.Prepare(stmt.JobResultForId); err != nil {
-		log.Fatal(`jobs/show-jobid: `, err)
+		j.errLog.Fatal(`jobs/show-jobid: `, err)
 	}
 	defer j.showid_stmt.Close()
 
 	if j.showlist_stmt, err = j.conn.Prepare(stmt.JobResultsForList); err != nil {
-		log.Fatal(`jobs/show-idlist: `, err)
+		j.errLog.Fatal(`jobs/show-idlist: `, err)
 	}
 	defer j.showlist_stmt.Close()
 
@@ -77,7 +77,7 @@ func (j *jobsRead) process(q *msg.Request) {
 
 	switch q.Action {
 	case `list`:
-		log.Printf(LogStrReq, q.Type, q.Action, q.User, q.RemoteAddr)
+		j.reqLog.Printf(LogStrReq, q.Type, q.Action, q.User, q.RemoteAddr)
 		if q.IsAdmin {
 			rows, err = j.listall_stmt.Query()
 		} else {
@@ -108,7 +108,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		}
 		result.OK()
 	case `show`:
-		log.Printf(LogStrArg, q.Type, q.Action, q.User, q.RemoteAddr, q.Job.Id)
+		j.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User, q.RemoteAddr, q.Job.Id)
 		if err = j.showid_stmt.QueryRow(q.Job.Id).Scan(
 			&jobId,
 			&jobStatus,
@@ -157,7 +157,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		result.OK()
 	case `search/idlist`:
 		idList = fmt.Sprintf("{%s}", strings.Join(q.Search.Job.IdList, `,`))
-		log.Printf(LogStrArg, q.Type, q.Action, q.User, q.RemoteAddr, idList)
+		j.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User, q.RemoteAddr, idList)
 		if rows, err = j.showlist_stmt.Query(idList); err != nil {
 			result.ServerError(err)
 			goto dispatch

@@ -54,7 +54,7 @@ SELECT oncall_duty_id,
        oncall_duty_name
 FROM   inventory.oncall_duty_teams;`)
 	if err != nil {
-		log.Fatal("oncall/list: ", err)
+		r.errLog.Fatal("oncall/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -65,7 +65,7 @@ SELECT oncall_duty_id,
 FROM   inventory.oncall_duty_teams
 WHERE  oncall_duty_id = $1;`)
 	if err != nil {
-		log.Fatal("oncall/show: ", err)
+		r.errLog.Fatal("oncall/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -93,7 +93,7 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: oncall/list")
+		r.reqLog.Printf("R: oncall/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -111,7 +111,7 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: oncall/show for %s", q.Oncall.Id)
+		r.reqLog.Printf("R: oncall/show for %s", q.Oncall.Id)
 		err = r.show_stmt.QueryRow(q.Oncall.Id).Scan(
 			&oncallId,
 			&oncallName,
@@ -169,7 +169,7 @@ SELECT $1::uuid, $2::varchar, $3::numeric WHERE NOT EXISTS (
 	OR oncall_duty_name = $2::varchar
 	OR oncall_duty_phone_number = $3::numeric);`)
 	if err != nil {
-		log.Fatal("oncall/add: ", err)
+		w.errLog.Fatal("oncall/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -183,7 +183,7 @@ SET    oncall_duty_name = CASE WHEN $1::varchar IS NOT NULL
 								  ELSE oncall_duty_phone_number END
 WHERE  oncall_duty_id = $3;`)
 	if err != nil {
-		log.Fatal("oncall/update: ", err)
+		w.errLog.Fatal("oncall/update: ", err)
 	}
 	defer w.upd_stmt.Close()
 
@@ -191,7 +191,7 @@ WHERE  oncall_duty_id = $3;`)
 DELETE FROM inventory.oncall_duty_teams
 WHERE  oncall_duty_id = $1;`)
 	if err != nil {
-		log.Fatal("oncall/delete: ", err)
+		w.errLog.Fatal("oncall/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -218,7 +218,7 @@ func (w *somaOncallWriteHandler) process(q *somaOncallRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: oncall/add for %s", q.Oncall.Name)
+		w.reqLog.Printf("R: oncall/add for %s", q.Oncall.Name)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
@@ -227,7 +227,7 @@ func (w *somaOncallWriteHandler) process(q *somaOncallRequest) {
 		)
 		q.Oncall.Id = id.String()
 	case "update":
-		log.Printf("R: oncall/update for %s", q.Oncall.Id)
+		w.reqLog.Printf("R: oncall/update for %s", q.Oncall.Id)
 		// our update statement uses NULL to check which of the values
 		// should be updated
 		if q.Oncall.Name == "" {
@@ -251,12 +251,12 @@ func (w *somaOncallWriteHandler) process(q *somaOncallRequest) {
 			q.Oncall.Id,
 		)
 	case "delete":
-		log.Printf("R: oncall/del for %s", q.Oncall.Id)
+		w.reqLog.Printf("R: oncall/del for %s", q.Oncall.Id)
 		res, err = w.del_stmt.Exec(
 			q.Oncall.Id,
 		)
 	default:
-		log.Printf("R: unimplemented oncall/%s", q.action)
+		w.reqLog.Printf("R: unimplemented oncall/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

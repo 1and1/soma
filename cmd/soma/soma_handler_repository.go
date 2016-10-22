@@ -54,32 +54,32 @@ func (r *somaRepositoryReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllRepositories); err != nil {
-		log.Fatal("repository/list: ", err)
+		r.errLog.Fatal("repository/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowRepository); err != nil {
-		log.Fatal("repository/show: ", err)
+		r.errLog.Fatal("repository/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.ponc_stmt, err = r.conn.Prepare(stmt.RepoOncProps); err != nil {
-		log.Fatal(`repository/property-oncall: `, err)
+		r.errLog.Fatal(`repository/property-oncall: `, err)
 	}
 	defer r.ponc_stmt.Close()
 
 	if r.psvc_stmt, err = r.conn.Prepare(stmt.RepoSvcProps); err != nil {
-		log.Fatal(`repository/property-service: `, err)
+		r.errLog.Fatal(`repository/property-service: `, err)
 	}
 	defer r.psvc_stmt.Close()
 
 	if r.psys_stmt, err = r.conn.Prepare(stmt.RepoSysProps); err != nil {
-		log.Fatal(`repository/property-system: `, err)
+		r.errLog.Fatal(`repository/property-system: `, err)
 	}
 	defer r.psys_stmt.Close()
 
 	if r.pcst_stmt, err = r.conn.Prepare(stmt.RepoCstProps); err != nil {
-		log.Fatal(`repository/property-custom: `, err)
+		r.errLog.Fatal(`repository/property-custom: `, err)
 	}
 	defer r.pcst_stmt.Close()
 
@@ -109,7 +109,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 
 	switch q.action {
 	case `list`:
-		log.Printf("R: repository/list")
+		r.reqLog.Printf("R: repository/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -126,7 +126,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 			})
 		}
 	case `show`:
-		log.Printf("R: repository/show for %s", q.Repository.Id)
+		r.reqLog.Printf("R: repository/show for %s", q.Repository.Id)
 		err = r.show_stmt.QueryRow(q.Repository.Id).Scan(
 			&repoId,
 			&repoName,

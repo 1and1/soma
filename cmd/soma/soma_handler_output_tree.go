@@ -66,63 +66,63 @@ func (o *outputTree) run() {
 
 	// single-object return statements
 	if o.stmtRepo, err = o.conn.Prepare(stmt.TreeShowRepository); err != nil {
-		log.Fatal(`outputTree/stmtRepo: `, err)
+		o.errLog.Fatal(`outputTree/stmtRepo: `, err)
 	}
 	defer o.stmtRepo.Close()
 	if o.stmtBucket, err = o.conn.Prepare(stmt.TreeShowBucket); err != nil {
-		log.Fatal(`outputTree/stmtBucket: `, err)
+		o.errLog.Fatal(`outputTree/stmtBucket: `, err)
 	}
 	defer o.stmtBucket.Close()
 	if o.stmtGroup, err = o.conn.Prepare(stmt.TreeShowGroup); err != nil {
-		log.Fatal(`outputTree/stmtGroup: `, err)
+		o.errLog.Fatal(`outputTree/stmtGroup: `, err)
 	}
 	defer o.stmtGroup.Close()
 	if o.stmtCluster, err = o.conn.Prepare(stmt.TreeShowCluster); err != nil {
-		log.Fatal(`outputTree/stmtCluster: `, err)
+		o.errLog.Fatal(`outputTree/stmtCluster: `, err)
 	}
 	defer o.stmtCluster.Close()
 	if o.stmtNode, err = o.conn.Prepare(stmt.TreeShowNode); err != nil {
-		log.Fatal(`outputTree/stmtNode: `, err)
+		o.errLog.Fatal(`outputTree/stmtNode: `, err)
 	}
 	defer o.stmtNode.Close()
 
 	// statement to select children of repositories
 	if o.stmtRepoBuck, err = o.conn.Prepare(stmt.TreeBucketsInRepository); err != nil {
-		log.Fatal(`outputTree/stmtRepoBuck: `, err)
+		o.errLog.Fatal(`outputTree/stmtRepoBuck: `, err)
 	}
 	defer o.stmtRepoBuck.Close()
 
 	// statements to select children of buckets
 	if o.stmtBuckGrp, err = o.conn.Prepare(stmt.TreeGroupsInBucket); err != nil {
-		log.Fatal(`outputTree/stmtBuckGrp: `, err)
+		o.errLog.Fatal(`outputTree/stmtBuckGrp: `, err)
 	}
 	defer o.stmtBuckGrp.Close()
 	if o.stmtBuckClr, err = o.conn.Prepare(stmt.TreeClustersInBucket); err != nil {
-		log.Fatal(`outputTree/stmtBuckClr: `, err)
+		o.errLog.Fatal(`outputTree/stmtBuckClr: `, err)
 	}
 	defer o.stmtBuckClr.Close()
 	if o.stmtBuckNod, err = o.conn.Prepare(stmt.TreeNodesInBucket); err != nil {
-		log.Fatal(`outputTree/stmtBuckNod: `, err)
+		o.errLog.Fatal(`outputTree/stmtBuckNod: `, err)
 	}
 	defer o.stmtBuckNod.Close()
 
 	// statements to select children of groups
 	if o.stmtGrpGrp, err = o.conn.Prepare(stmt.TreeGroupsInGroup); err != nil {
-		log.Fatal(`outputTree/stmtGrpGrp: `, err)
+		o.errLog.Fatal(`outputTree/stmtGrpGrp: `, err)
 	}
 	defer o.stmtGrpGrp.Close()
 	if o.stmtGrpClr, err = o.conn.Prepare(stmt.TreeClustersInGroup); err != nil {
-		log.Fatal(`outputTree/stmtGrpClr: `, err)
+		o.errLog.Fatal(`outputTree/stmtGrpClr: `, err)
 	}
 	defer o.stmtGrpClr.Close()
 	if o.stmtGrpNod, err = o.conn.Prepare(stmt.TreeNodesInGroup); err != nil {
-		log.Fatal(`outputTree/stmtGrpNod: `, err)
+		o.errLog.Fatal(`outputTree/stmtGrpNod: `, err)
 	}
 	defer o.stmtGrpNod.Close()
 
 	// statements to select children of clusters
 	if o.stmtClrNod, err = o.conn.Prepare(stmt.TreeNodesInCluster); err != nil {
-		log.Fatal(`outputTree/stmtClrNod: `, err)
+		o.errLog.Fatal(`outputTree/stmtClrNod: `, err)
 	}
 	defer o.stmtClrNod.Close()
 
@@ -189,7 +189,7 @@ func (o *outputTree) repository(id string, recurse bool) (*proto.Repository, err
 		&repoCreatedBy,
 		&repoCreatedAt,
 	); err != nil {
-		log.Printf("Error in outputTree.repository() for %s: %s", id, err.Error())
+		o.errLog.Printf("Error in outputTree.repository() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -244,7 +244,7 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 		&bucketCreatedBy,
 		&bucketCreatedAt,
 	); err != nil {
-		log.Printf("Error in outputTree.bucket() for %s: %s", id, err.Error())
+		o.errLog.Printf("Error in outputTree.bucket() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -320,7 +320,7 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 		&groupCreatedBy,
 		&groupCreatedAt,
 	); err != nil {
-		log.Printf("Error in outputTree.group() for %s: %s", id, err.Error())
+		o.errLog.Printf("Error in outputTree.group() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -394,7 +394,7 @@ func (o *outputTree) cluster(id string, recurse bool) (*proto.Cluster, error) {
 		&clusterCreatedBy,
 		&clusterCreatedAt,
 	); err != nil {
-		log.Printf("Error in outputTree.cluster() for %s: %s", id, err.Error())
+		o.errLog.Printf("Error in outputTree.cluster() for %s: %s", id, err.Error())
 		return nil, err
 	}
 
@@ -453,7 +453,7 @@ func (o *outputTree) node(id string, recurse bool) (*proto.Node, error) {
 		&nodeRepositoryId,
 		&nodeBucketId,
 	); err != nil {
-		log.Printf("Error in outputTree.node() for %s: %s", id, err.Error())
+		o.errLog.Printf("Error in outputTree.node() for %s: %s", id, err.Error())
 		return nil, err
 	}
 

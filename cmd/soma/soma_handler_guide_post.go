@@ -37,64 +37,64 @@ func (g *guidePost) run() {
 	var err error
 
 	if g.jbsv_stmt, err = g.conn.Prepare(stmt.JobSave); err != nil {
-		log.Fatal("guide/job-save: ", err)
+		g.errLog.Fatal("guide/job-save: ", err)
 	}
 	defer g.jbsv_stmt.Close()
 
 	if g.repo_stmt, err = g.conn.Prepare(stmt.RepoByBucketId); err != nil {
-		log.Fatal("guide/repo-by-bucket: ", err)
+		g.errLog.Fatal("guide/repo-by-bucket: ", err)
 	}
 	defer g.repo_stmt.Close()
 
 	if g.node_stmt, err = g.conn.Prepare(stmt.NodeDetails); err != nil {
-		log.Fatal("guide/load-node-details: ", err)
+		g.errLog.Fatal("guide/load-node-details: ", err)
 	}
 	defer g.node_stmt.Close()
 
 	if g.name_stmt, err = g.conn.Prepare(stmt.RepoNameById); err != nil {
-		log.Fatal("guide/repo-by-id: ", err)
+		g.errLog.Fatal("guide/repo-by-id: ", err)
 	}
 	defer g.name_stmt.Close()
 
 	if g.serv_stmt, err = g.conn.Prepare(stmt.ServiceLookup); err != nil {
-		log.Fatal("guide/service-lookup: ", err)
+		g.errLog.Fatal("guide/service-lookup: ", err)
 	}
 	defer g.serv_stmt.Close()
 
 	if g.attr_stmt, err = g.conn.Prepare(stmt.ServiceAttributes); err != nil {
-		log.Fatal("guide/populate-service-attributes: ", err)
+		g.errLog.Fatal("guide/populate-service-attributes: ", err)
 	}
 	defer g.attr_stmt.Close()
 
 	if g.cthr_stmt, err = g.conn.Prepare(stmt.CapabilityThresholds); err != nil {
-		log.Fatal("guide/capability-threshold-lookup: ", err)
+		g.errLog.Fatal("guide/capability-threshold-lookup: ", err)
 	}
 	defer g.cthr_stmt.Close()
 
 	if g.cdel_stmt, err = g.conn.Prepare(stmt.CheckDetailsForDelete); err != nil {
-		log.Fatal("guide/get-details-for-delete-check: ", err)
+		g.errLog.Fatal("guide/get-details-for-delete-check: ", err)
 	}
 	defer g.cdel_stmt.Close()
 
 	if g.bucket_for_node, err = g.conn.Prepare(stmt.NodeBucketId); err != nil {
-		log.Fatal("guide/get-bucketid-for-node: ", err)
+		g.errLog.Fatal("guide/get-bucketid-for-node: ", err)
 	}
 	defer g.bucket_for_node.Close()
 
 	if g.bucket_for_cluster, err = g.conn.Prepare(stmt.ClusterBucketId); err != nil {
-		log.Fatal("guide/get-bucketid-for-cluster: ", err)
+		g.errLog.Fatal("guide/get-bucketid-for-cluster: ", err)
 	}
 	defer g.bucket_for_cluster.Close()
 
 	if g.bucket_for_group, err = g.conn.Prepare(stmt.GroupBucketId); err != nil {
-		log.Fatal("guide/get-bucketid-for-group: ", err)
+		g.errLog.Fatal("guide/get-bucketid-for-group: ", err)
 	}
 	defer g.bucket_for_group.Close()
 
 	if SomaCfg.Observer {
 		// XXX system/stop_repository should be possible in observer
 		// mode
-		log.Println(`GuidePost entered observer mode`)
+		g.appLog.Println(`GuidePost entered observer mode`)
 		<-g.shutdown
 		goto exit
 	}
@@ -148,7 +148,7 @@ func (g *guidePost) process(q *treeRequest) {
 	handler = handlerMap[keeper].(*treeKeeper)
 
 	// store job in database
-	log.Printf("R: jobsave/%s", q.Action)
+	g.appLog.Printf("R: jobsave/%s", q.Action)
 	q.JobId = uuid.NewV4()
 	j, _ = json.Marshal(q)
 	if res, err = g.jbsv_stmt.Exec(

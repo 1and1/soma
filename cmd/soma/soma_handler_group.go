@@ -58,7 +58,7 @@ SELECT group_id,
        bucket_id
 FROM soma.groups;`)
 	if err != nil {
-		log.Fatal("group/list: ", err)
+		r.errLog.Fatal("group/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -71,7 +71,7 @@ SELECT group_id,
 FROM   soma.groups
 WHERE  group_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("group/show: ", err)
+		r.errLog.Fatal("group/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -86,7 +86,7 @@ JOIN   soma.groups osg
 ON     sgmg.group_id = osg.group_id
 WHERE  sgmg.group_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("group/memberlist-group: ", err)
+		r.errLog.Fatal("group/memberlist-group: ", err)
 	}
 	defer r.mbgl_stmt.Close()
 
@@ -101,7 +101,7 @@ JOIN   soma.groups sg
 ON     sgmc.group_id = sg.group_id
 WHERE  sgmc.group_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("group/memberlist-cluster: ", err)
+		r.errLog.Fatal("group/memberlist-cluster: ", err)
 	}
 	defer r.mbcl_stmt.Close()
 
@@ -116,27 +116,27 @@ JOIN   soma.groups sg
 ON     sgmn.group_id = sg.group_id
 WHERE  sgmn.group_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("group/memberlist-node: ", err)
+		r.errLog.Fatal("group/memberlist-node: ", err)
 	}
 	defer r.mbnl_stmt.Close()
 
 	if r.ponc_stmt, err = r.conn.Prepare(stmt.GroupOncProps); err != nil {
-		log.Fatal(`group/property-oncall: `, err)
+		r.errLog.Fatal(`group/property-oncall: `, err)
 	}
 	defer r.ponc_stmt.Close()
 
 	if r.psvc_stmt, err = r.conn.Prepare(stmt.GroupSvcProps); err != nil {
-		log.Fatal(`group/property-service: `, err)
+		r.errLog.Fatal(`group/property-service: `, err)
 	}
 	defer r.psvc_stmt.Close()
 
 	if r.psys_stmt, err = r.conn.Prepare(stmt.GroupSysProps); err != nil {
-		log.Fatal(`group/property-system: `, err)
+		r.errLog.Fatal(`group/property-system: `, err)
 	}
 	defer r.psys_stmt.Close()
 
 	if r.pcst_stmt, err = r.conn.Prepare(stmt.GroupCstProps); err != nil {
-		log.Fatal(`group/property-custom: `, err)
+		r.errLog.Fatal(`group/property-custom: `, err)
 	}
 	defer r.pcst_stmt.Close()
 
@@ -168,7 +168,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: group/list")
+		r.reqLog.Printf("R: group/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -186,7 +186,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: group/show for %s", q.Group.Id)
+		r.reqLog.Printf("R: group/show for %s", q.Group.Id)
 		err = r.show_stmt.QueryRow(q.Group.Id).Scan(
 			&groupId,
 			&bucketId,
@@ -350,7 +350,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			Group: group,
 		})
 	case "member_list":
-		log.Printf("R: group/memberlist for %s", q.Group.Id)
+		r.reqLog.Printf("R: group/memberlist for %s", q.Group.Id)
 		rows, err = r.mbgl_stmt.Query(q.Group.Id)
 		defer rows.Close()
 		if result.SetRequestError(err) {

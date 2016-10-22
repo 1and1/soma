@@ -67,7 +67,7 @@ func (r *somaPropertyReadHandler) run() {
 SELECT system_property
 FROM   soma.system_properties;`)
 	if err != nil {
-		log.Fatal("property/list-system: ", err)
+		r.errLog.Fatal("property/list-system: ", err)
 	}
 	defer r.list_sys_stmt.Close()
 
@@ -77,7 +77,7 @@ SELECT service_property,
 FROM   soma.team_service_properties
 WHERE  organizational_team_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("property/list-service: ", err)
+		r.errLog.Fatal("property/list-service: ", err)
 	}
 	defer r.list_srv_stmt.Close()
 
@@ -85,7 +85,7 @@ WHERE  organizational_team_id = $1::uuid;`)
 SELECT native_property
 FROM   soma.native_properties;`)
 	if err != nil {
-		log.Fatal("property/list-native: ", err)
+		r.errLog.Fatal("property/list-native: ", err)
 	}
 	defer r.list_nat_stmt.Close()
 
@@ -93,7 +93,7 @@ FROM   soma.native_properties;`)
 SELECT service_property
 FROM   soma.service_properties;`)
 	if err != nil {
-		log.Fatal("property/list-service-template: ", err)
+		r.errLog.Fatal("property/list-service-template: ", err)
 	}
 	defer r.list_tpl_stmt.Close()
 
@@ -104,7 +104,7 @@ SELECT custom_property_id,
 FROM   soma.custom_properties
 WHERE  repository_id = $1::uuid;`)
 	if err != nil {
-		log.Fatal("property/list-custom: ", err)
+		r.errLog.Fatal("property/list-custom: ", err)
 	}
 	defer r.list_cst_stmt.Close()
 
@@ -113,7 +113,7 @@ SELECT system_property
 FROM   soma.system_properties
 WHERE  system_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/show-system: ", err)
+		r.errLog.Fatal("property/show-system: ", err)
 	}
 	defer r.show_sys_stmt.Close()
 
@@ -122,7 +122,7 @@ SELECT native_property
 FROM   soma.native_properties
 WHERE  native_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/show-native: ", err)
+		r.errLog.Fatal("property/show-native: ", err)
 	}
 	defer r.show_nat_stmt.Close()
 
@@ -134,7 +134,7 @@ FROM   soma.custom_properties
 WHERE  custom_property_id = $1::uuid
 AND    repository_id = $2::uuid;`)
 	if err != nil {
-		log.Fatal("property/show-custom: ", err)
+		r.errLog.Fatal("property/show-custom: ", err)
 	}
 	defer r.show_cst_stmt.Close()
 
@@ -149,7 +149,7 @@ ON     tsp.service_property = tspv.service_property
 WHERE  tsp.service_property = $1::varchar
 AND    tsp.organizational_team_id = $2::uuid;`)
 	if err != nil {
-		log.Fatal("property/show-service")
+		r.errLog.Fatal("property/show-service")
 	}
 	defer r.show_srv_stmt.Close()
 
@@ -162,7 +162,7 @@ JOIN   soma.service_property_values spv
 ON     sp.service_property = spv.service_property
 WHERE  sp.service_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/show-service-template")
+		r.errLog.Fatal("property/show-service-template")
 	}
 	defer r.show_tpl_stmt.Close()
 
@@ -191,19 +191,19 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 	case "list":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/list-system")
+			r.reqLog.Printf("R: property/list-system")
 			rows, err = r.list_sys_stmt.Query()
 		case "native":
-			log.Printf("R: property/list-native")
+			r.reqLog.Printf("R: property/list-native")
 			rows, err = r.list_nat_stmt.Query()
 		case "custom":
-			log.Printf("R: property/list-custom")
+			r.reqLog.Printf("R: property/list-custom")
 			rows, err = r.list_cst_stmt.Query(q.Custom.RepositoryId)
 		case "service":
-			log.Printf("R: property/list-service")
+			r.reqLog.Printf("R: property/list-service")
 			rows, err = r.list_srv_stmt.Query(q.Service.TeamId)
 		case "template":
-			log.Printf("R: property/list-service-template")
+			r.reqLog.Printf("R: property/list-service-template")
 			rows, err = r.list_tpl_stmt.Query()
 		}
 		defer rows.Close()
@@ -262,17 +262,17 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 	case "show":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/show-system for %s", q.System.Name)
+			r.reqLog.Printf("R: property/show-system for %s", q.System.Name)
 			err = r.show_sys_stmt.QueryRow(q.System.Name).Scan(
 				&property,
 			)
 		case "native":
-			log.Printf("R: property/show-native for %s", q.Native.Name)
+			r.reqLog.Printf("R: property/show-native for %s", q.Native.Name)
 			err = r.show_nat_stmt.QueryRow(q.Native.Name).Scan(
 				&property,
 			)
 		case "custom":
-			log.Printf("R: property/show-custom for %s", q.Custom.Id)
+			r.reqLog.Printf("R: property/show-custom for %s", q.Custom.Id)
 			err = r.show_cst_stmt.QueryRow(
 				q.Custom.Id,
 				q.Custom.RepositoryId,
@@ -282,14 +282,14 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 				&property,
 			)
 		case "service":
-			log.Printf("R: property/show-service for %s/%s", q.Service.TeamId, q.Service.Name)
+			r.reqLog.Printf("R: property/show-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			rows, err = r.show_srv_stmt.Query(
 				q.Service.Name,
 				q.Service.TeamId,
 			)
 			defer rows.Close()
 		case "template":
-			log.Printf("R: property/show-service-template for %s", q.Service.Name)
+			r.reqLog.Printf("R: property/show-service-template for %s", q.Service.Name)
 			rows, err = r.show_tpl_stmt.Query(
 				q.Service.Name,
 			)
@@ -423,7 +423,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.system_properties
 	WHERE  system_property = $1::varchar);`)
 	if err != nil {
-		log.Fatal("property/add-system: ", err)
+		w.errLog.Fatal("property/add-system: ", err)
 	}
 	defer w.add_sys_stmt.Close()
 
@@ -435,7 +435,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.native_properties
 	WHERE  native_property = $1::varchar);`)
 	if err != nil {
-		log.Fatal("property/add-native: ", err)
+		w.errLog.Fatal("property/add-native: ", err)
 	}
 	defer w.add_nat_stmt.Close()
 
@@ -450,7 +450,7 @@ SELECT $1::uuid, $2::uuid, $3::varchar WHERE NOT EXISTS (
 	WHERE  custom_property = $3::varchar
     AND    repository_id = $2::uuid);`)
 	if err != nil {
-		log.Fatal("property/add-system: ", err)
+		w.errLog.Fatal("property/add-system: ", err)
 	}
 	defer w.add_cst_stmt.Close()
 
@@ -464,7 +464,7 @@ SELECT $1::uuid, $2::varchar WHERE NOT EXISTS (
 	WHERE  organizational_team_id = $1::uuid
 	AND    service_property = $2::varchar);`)
 	if err != nil {
-		log.Fatal("property/add-service: ", err)
+		w.errLog.Fatal("property/add-service: ", err)
 	}
 	defer w.add_srv_stmt.Close()
 
@@ -476,7 +476,7 @@ INSERT INTO soma.team_service_property_values (
 	value)
 SELECT $1::uuid, $2::varchar, $3::varchar, $4::varchar;`)
 	if err != nil {
-		log.Fatal("property/add-service-attribute: ", err)
+		w.errLog.Fatal("property/add-service-attribute: ", err)
 	}
 	defer w.add_srv_attr_stmt.Close()
 
@@ -488,7 +488,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.service_properties
 	WHERE  service_property = $1::varchar);`)
 	if err != nil {
-		log.Fatal("property/add-service-template: ", err)
+		w.errLog.Fatal("property/add-service-template: ", err)
 	}
 	defer w.add_tpl_stmt.Close()
 
@@ -499,7 +499,7 @@ INSERT INTO soma.service_property_values (
 	value)
 SELECT $1::varchar, $2::varchar, $3::varchar;`)
 	if err != nil {
-		log.Fatal("property/add-service-template-attribute: ", err)
+		w.errLog.Fatal("property/add-service-template-attribute: ", err)
 	}
 	defer w.add_tpl_attr_stmt.Close()
 
@@ -507,7 +507,7 @@ SELECT $1::varchar, $2::varchar, $3::varchar;`)
 DELETE FROM soma.system_properties
 WHERE  system_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/delete-system: ", err)
+		w.errLog.Fatal("property/delete-system: ", err)
 	}
 	defer w.del_sys_stmt.Close()
 
@@ -515,7 +515,7 @@ WHERE  system_property = $1::varchar;`)
 DELETE FROM soma.native_properties
 WHERE  native_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/delete-native: ", err)
+		w.errLog.Fatal("property/delete-native: ", err)
 	}
 	defer w.del_nat_stmt.Close()
 
@@ -524,7 +524,7 @@ DELETE FROM soma.custom_properties
 WHERE  repository_id = $1::uuid
 AND    custom_property_id = $2::uuid;`)
 	if err != nil {
-		log.Fatal("property/delete-custom: ", err)
+		w.errLog.Fatal("property/delete-custom: ", err)
 	}
 	defer w.del_cst_stmt.Close()
 
@@ -533,7 +533,7 @@ DELETE FROM soma.team_service_properties
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("property/delete-service: ", err)
+		w.errLog.Fatal("property/delete-service: ", err)
 	}
 	defer w.del_srv_stmt.Close()
 
@@ -542,7 +542,7 @@ DELETE FROM soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`)
 	if err != nil {
-		log.Fatal("property/delete-service-attributes: ", err)
+		w.errLog.Fatal("property/delete-service-attributes: ", err)
 	}
 	defer w.del_srv_attr_stmt.Close()
 
@@ -550,7 +550,7 @@ AND    service_property = $2::varchar;`)
 DELETE FROM soma.service_properties
 WHERE  service_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/delete-service-template: ", err)
+		w.errLog.Fatal("property/delete-service-template: ", err)
 	}
 	defer w.del_tpl_stmt.Close()
 
@@ -558,7 +558,7 @@ WHERE  service_property = $1::varchar;`)
 DELETE FROM soma.service_property_values
 WHERE  service_property = $1::varchar;`)
 	if err != nil {
-		log.Fatal("property/delete-service-template-attributes: ", err)
+		w.errLog.Fatal("property/delete-service-template-attributes: ", err)
 	}
 	defer w.del_tpl_attr_stmt.Close()
 
@@ -587,20 +587,20 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 	case "add":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/add-system for %s", q.System.Name)
+			w.reqLog.Printf("R: property/add-system for %s", q.System.Name)
 			res, err = w.add_sys_stmt.Exec(
 				q.System.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "native":
-			log.Printf("R: property/add-native for %s", q.Native.Name)
+			w.reqLog.Printf("R: property/add-native for %s", q.Native.Name)
 			res, err = w.add_nat_stmt.Exec(
 				q.Native.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
 			q.Custom.Id = uuid.NewV4().String()
-			log.Printf("R: property/add-custom for %s", q.Custom.Name)
+			w.reqLog.Printf("R: property/add-custom for %s", q.Custom.Name)
 			res, err = w.add_cst_stmt.Exec(
 				q.Custom.Id,
 				q.Custom.RepositoryId,
@@ -608,7 +608,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "service":
-			log.Printf("R: property/add-service for %s/%s", q.Service.TeamId, q.Service.Name)
+			w.reqLog.Printf("R: property/add-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -644,7 +644,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 
 			err = tx.Commit()
 		case "template":
-			log.Printf("R: property/add-service-template for %s", q.Service.Name)
+			w.reqLog.Printf("R: property/add-service-template for %s", q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -681,26 +681,26 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 	case "delete":
 		switch q.prType {
 		case "system":
-			log.Printf("R: property/delete-system for %s", q.System.Name)
+			w.reqLog.Printf("R: property/delete-system for %s", q.System.Name)
 			res, err = w.del_sys_stmt.Exec(
 				q.System.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "native":
-			log.Printf("R: property/delete-native for %s", q.Native.Name)
+			w.reqLog.Printf("R: property/delete-native for %s", q.Native.Name)
 			res, err = w.del_nat_stmt.Exec(
 				q.Native.Name,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "custom":
-			log.Printf("R: property/delete-custom for %s", q.Custom.Id)
+			w.reqLog.Printf("R: property/delete-custom for %s", q.Custom.Id)
 			res, err = w.del_cst_stmt.Exec(
 				q.Custom.RepositoryId,
 				q.Custom.Id,
 			)
 			rowCnt, _ = res.RowsAffected()
 		case "service":
-			log.Printf("R: property/delete-service for %s/%s", q.Service.TeamId, q.Service.Name)
+			w.reqLog.Printf("R: property/delete-service for %s/%s", q.Service.TeamId, q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -726,7 +726,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			rowCnt, _ = res.RowsAffected()
 			err = tx.Commit()
 		case "template":
-			log.Printf("R: property/delete-service-template for %s", q.Service.Name)
+			w.reqLog.Printf("R: property/delete-service-template for %s", q.Service.Name)
 			tx, err = w.conn.Begin()
 			if err != nil {
 				goto bailout
@@ -751,7 +751,7 @@ func (w *somaPropertyWriteHandler) process(q *somaPropertyRequest) {
 			err = tx.Commit()
 		} // switch q.prType
 	default:
-		log.Printf("R: unimplemented property/%s", q.action)
+		w.reqLog.Printf("R: unimplemented property/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

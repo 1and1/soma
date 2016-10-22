@@ -51,7 +51,7 @@ SELECT level_name,
        level_shortname
 FROM   soma.notification_levels;`)
 	if err != nil {
-		log.Fatal("level/list: ", err)
+		r.errLog.Fatal("level/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -62,7 +62,7 @@ SELECT level_name,
 FROM   soma.notification_levels
 WHERE  level_name = $1;`)
 	if err != nil {
-		log.Fatal("level/show: ", err)
+		r.errLog.Fatal("level/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -90,7 +90,7 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: levels/list")
+		r.reqLog.Printf("R: levels/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -108,7 +108,7 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: levels/show for %s", q.Level.Name)
+		r.reqLog.Printf("R: levels/show for %s", q.Level.Name)
 		err = r.show_stmt.QueryRow(q.Level.Name).Scan(
 			&level,
 			&short,
@@ -165,7 +165,7 @@ SELECT $1::varchar, $2::varchar, $3::smallint WHERE NOT EXISTS (
 	OR level_shortname = $2::varchar
 	OR level_numeric = $3::smallint);`)
 	if err != nil {
-		log.Fatal("level/add: ", err)
+		w.errLog.Fatal("level/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -173,7 +173,7 @@ SELECT $1::varchar, $2::varchar, $3::smallint WHERE NOT EXISTS (
 DELETE FROM soma.notification_levels
 WHERE  level_name = $1;`)
 	if err != nil {
-		log.Fatal("level/delete: ", err)
+		w.errLog.Fatal("level/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -197,19 +197,19 @@ func (w *somaLevelWriteHandler) process(q *somaLevelRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: levels/add for %s", q.Level.Name)
+		w.reqLog.Printf("R: levels/add for %s", q.Level.Name)
 		res, err = w.add_stmt.Exec(
 			q.Level.Name,
 			q.Level.ShortName,
 			q.Level.Numeric,
 		)
 	case "delete":
-		log.Printf("R: levels/del for %s", q.Level.Name)
+		w.reqLog.Printf("R: levels/del for %s", q.Level.Name)
 		res, err = w.del_stmt.Exec(
 			q.Level.Name,
 		)
 	default:
-		log.Printf("R: unimplemented levels/%s", q.action)
+		w.reqLog.Printf("R: unimplemented levels/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

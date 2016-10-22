@@ -35,7 +35,6 @@ import (
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
-	log "github.com/Sirupsen/logrus"
 	"github.com/mjolnir42/scrypth64"
 	uuid "github.com/satori/go.uuid"
 )
@@ -92,7 +91,7 @@ func (s *supervisor) activate_user(q *msg.Request) {
 		goto dispatch
 	}
 	// request has been decrypted, log it
-	log.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
 
 	// -> check token.UserName != `root`
 	if token.UserName == `root` {

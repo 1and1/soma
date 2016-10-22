@@ -35,7 +35,6 @@ import (
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
-	log "github.com/Sirupsen/logrus"
 )
 
 func (s *supervisor) issue_token(q *msg.Request) {
@@ -89,7 +88,7 @@ func (s *supervisor) issue_token(q *msg.Request) {
 		goto dispatch
 	}
 
-	log.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", `authenticate`, q.Action), token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", `authenticate`, q.Action), token.UserName, q.Super.RemoteAddr)
 
 	if cred = s.credentials.read(token.UserName); cred == nil {
 		result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))

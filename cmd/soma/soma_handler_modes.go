@@ -51,7 +51,7 @@ func (r *somaModeReadHandler) run() {
 SELECT monitoring_system_mode
 FROM   soma.monitoring_system_modes; `)
 	if err != nil {
-		log.Fatal("mode/list: ", err)
+		r.errLog.Fatal("mode/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -60,7 +60,7 @@ SELECT monitoring_system_mode
 FROM   soma.monitoring_system_modes
 WHERE  monitoring_system_mode = $1;`)
 	if err != nil {
-		log.Fatal("mode/show: ", err)
+		r.errLog.Fatal("mode/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -87,7 +87,7 @@ func (r *somaModeReadHandler) process(q *somaModeRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: modes/list")
+		r.reqLog.Printf("R: modes/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -104,7 +104,7 @@ func (r *somaModeReadHandler) process(q *somaModeRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: mode/show for %s", q.Mode.Mode)
+		r.reqLog.Printf("R: mode/show for %s", q.Mode.Mode)
 		err = r.show_stmt.QueryRow(q.Mode.Mode).Scan(
 			&mode,
 		)
@@ -153,7 +153,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.monitoring_system_modes
 	WHERE  monitoring_system_mode = $1::varchar);`)
 	if err != nil {
-		log.Fatal("mode/add: ", err)
+		w.errLog.Fatal("mode/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -161,7 +161,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 DELETE FROM soma.monitoring_system_modes
 WHERE  monitoring_system_mode = $1;`)
 	if err != nil {
-		log.Fatal("mode/delete: ", err)
+		w.errLog.Fatal("mode/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -185,17 +185,17 @@ func (w *somaModeWriteHandler) process(q *somaModeRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: modes/add for %s", q.Mode.Mode)
+		w.reqLog.Printf("R: modes/add for %s", q.Mode.Mode)
 		res, err = w.add_stmt.Exec(
 			q.Mode.Mode,
 		)
 	case "delete":
-		log.Printf("R: modes/del for %s", q.Mode.Mode)
+		w.reqLog.Printf("R: modes/del for %s", q.Mode.Mode)
 		res, err = w.del_stmt.Exec(
 			q.Mode.Mode,
 		)
 	default:
-		log.Printf("R: unimplemented modes/%s", q.action)
+		w.reqLog.Printf("R: unimplemented modes/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

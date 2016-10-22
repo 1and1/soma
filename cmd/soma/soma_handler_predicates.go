@@ -51,7 +51,7 @@ func (r *somaPredicateReadHandler) run() {
 SELECT predicate
 FROM   soma.configuration_predicates; `)
 	if err != nil {
-		log.Fatal("predicate/list: ", err)
+		r.errLog.Fatal("predicate/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -60,7 +60,7 @@ SELECT predicate
 FROM   soma.configuration_predicates
 WHERE  predicate = $1;`)
 	if err != nil {
-		log.Fatal("predicate/show: ", err)
+		r.errLog.Fatal("predicate/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -87,7 +87,7 @@ func (r *somaPredicateReadHandler) process(q *somaPredicateRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: predicates/list")
+		r.reqLog.Printf("R: predicates/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -104,7 +104,7 @@ func (r *somaPredicateReadHandler) process(q *somaPredicateRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: predicate/show for %s", q.Predicate.Symbol)
+		r.reqLog.Printf("R: predicate/show for %s", q.Predicate.Symbol)
 		err = r.show_stmt.QueryRow(q.Predicate.Symbol).Scan(
 			&predicate,
 		)
@@ -153,7 +153,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.configuration_predicates
 	WHERE  predicate = $1::varchar);`)
 	if err != nil {
-		log.Fatal("predicate/add: ", err)
+		w.errLog.Fatal("predicate/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -161,7 +161,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 DELETE FROM soma.configuration_predicates
 WHERE  predicate = $1;`)
 	if err != nil {
-		log.Fatal("predicate/delete: ", err)
+		w.errLog.Fatal("predicate/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -185,17 +185,17 @@ func (w *somaPredicateWriteHandler) process(q *somaPredicateRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: predicates/add for %s", q.Predicate.Symbol)
+		w.reqLog.Printf("R: predicates/add for %s", q.Predicate.Symbol)
 		res, err = w.add_stmt.Exec(
 			q.Predicate.Symbol,
 		)
 	case "delete":
-		log.Printf("R: predicates/del for %s", q.Predicate.Symbol)
+		w.reqLog.Printf("R: predicates/del for %s", q.Predicate.Symbol)
 		res, err = w.del_stmt.Exec(
 			q.Predicate.Symbol,
 		)
 	default:
-		log.Printf("R: unimplemented predicates/%s", q.action)
+		w.reqLog.Printf("R: unimplemented predicates/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

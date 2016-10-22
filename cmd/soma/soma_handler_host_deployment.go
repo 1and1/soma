@@ -49,12 +49,12 @@ func (self *somaHostDeploymentHandler) run() {
 	var err error
 
 	if self.geti_stmt, err = self.conn.Prepare(stmtGetInstancesForNode); err != nil {
-		log.Fatal("hostdeployment/get-for-node: ", err)
+		self.errLog.Fatal("hostdeployment/get-for-node: ", err)
 	}
 	defer self.geti_stmt.Close()
 
 	if self.last_stmt, err = self.conn.Prepare(stmtGetLastInstanceVersion); err != nil {
-		log.Fatal("hostdeployment/last-version: ", err)
+		self.errLog.Fatal("hostdeployment/last-version: ", err)
 	}
 	defer self.last_stmt.Close()
 
@@ -81,7 +81,7 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 
 	switch q.action {
 	case "get":
-		log.Printf("R: hostdeployment/get-for-node for %d", q.assetid)
+		self.reqLog.Printf("R: hostdeployment/get-for-node for %d", q.assetid)
 		if idList, err = self.geti_stmt.Query(
 			q.assetid,
 			q.system,
@@ -148,7 +148,7 @@ func (self *somaHostDeploymentHandler) process(q *somaHostDeploymentRequest) {
 		}
 	case "assemble":
 		idMap := map[string]bool{}
-		log.Printf("R: hostdeployment/get-for-node for %d", q.assetid)
+		self.reqLog.Printf("R: hostdeployment/get-for-node for %d", q.assetid)
 		if idList, err = self.geti_stmt.Query(
 			q.assetid,
 			q.system,

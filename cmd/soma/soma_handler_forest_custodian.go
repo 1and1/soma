@@ -36,35 +36,35 @@ func (f *forestCustodian) run() {
 	if f.add_stmt, err = f.conn.Prepare(
 		stmt.ForestAddRepository,
 	); err != nil {
-		log.Fatal("repository/add: ", err)
+		f.errLog.Fatal("repository/add: ", err)
 	}
 	defer f.add_stmt.Close()
 
 	if f.load_stmt, err = f.conn.Prepare(
 		stmt.ForestLoadRepository,
 	); err != nil {
-		log.Fatal("repository/load: ", err)
+		f.errLog.Fatal("repository/load: ", err)
 	}
 	defer f.load_stmt.Close()
 
 	if f.name_stmt, err = f.conn.Prepare(
 		stmt.ForestRepoNameById,
 	); err != nil {
-		log.Fatal("forestCustodian/reponame-by-id: ", err)
+		f.errLog.Fatal("forestCustodian/reponame-by-id: ", err)
 	}
 	defer f.name_stmt.Close()
 
 	if f.rbck_stmt, err = f.conn.Prepare(
 		stmt.ForestRebuildDeleteChecks,
 	); err != nil {
-		log.Fatal("forestCustodian/delete-checks-for-repo: ", err)
+		f.errLog.Fatal("forestCustodian/delete-checks-for-repo: ", err)
 	}
 	defer f.rbck_stmt.Close()
 
 	if f.rbci_stmt, err = f.conn.Prepare(
 		stmt.ForestRebuildDeleteInstances,
 	); err != nil {
-		log.Fatal("forestCustodian/delete-check-instances-for-repo: ",
+		f.errLog.Fatal("forestCustodian/delete-check-instances-for-repo: ",
 			err)
 	}
 	defer f.rbci_stmt.Close()
@@ -73,7 +73,7 @@ func (f *forestCustodian) run() {
 
 	if SomaCfg.Observer {
 		// XXX restart repository should be possible in observer mode
-		log.Println(`ForestCustodian entered observer mode`)
+		f.appLog.Println(`ForestCustodian entered observer mode`)
 		<-f.shutdown
 		goto exit
 	}
@@ -105,7 +105,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf(LogStrReq,
+		f.reqLog.Printf(LogStrReq,
 			`ForestCustodian`,
 			fmt.Sprintf("%s/%s", `CreateRepository`, q.Repository.Name),
 			q.user, q.remoteAddr,
@@ -154,14 +154,14 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 				}
 			case "attached":
 			default:
-				log.Printf("R: Unhandled action during tree creation: %s", q.action)
+				f.errLog.Printf("R: Unhandled action during tree creation: %s", q.action)
 				result.SetNotImplemented()
 				q.reply <- result
 				return
 			}
 		}
 	default:
-		log.Printf("R: unimplemented repository/%s", q.action)
+		f.errLog.Printf("R: unimplemented repository/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return
@@ -300,10 +300,10 @@ func (f *forestCustodian) initialLoad() {
 		repoId, repoName, teamId string
 		repoActive, repoDeleted  bool
 	)
-	log.Printf("Loading existing repositories")
+	f.appLog.Printf("Loading existing repositories")
 	rows, err = f.load_stmt.Query()
 	if err != nil {
-		log.Fatal("Error loading repositories: ", err)
+		f.errLog.Fatal("Error loading repositories: ", err)
 	}
 	defer rows.Close()
 
@@ -316,7 +316,7 @@ func (f *forestCustodian) initialLoad() {
 			&teamId,
 		)
 		if err != nil {
-			log.Printf("Error: %s", err.Error())
+			f.errLog.Printf("Error: %s", err.Error())
 		}
 		f.loadSomaTree(&somaRepositoryRequest{
 			Repository: proto.Repository{

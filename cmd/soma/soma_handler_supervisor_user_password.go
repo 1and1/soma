@@ -9,7 +9,6 @@ import (
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
-	log "github.com/Sirupsen/logrus"
 	"github.com/mjolnir42/scrypth64"
 	uuid "github.com/satori/go.uuid"
 )
@@ -69,7 +68,7 @@ func (s *supervisor) userPassword(q *msg.Request) {
 	// -- the ldap password (reset/ldap)
 	// -- the token         (reset/mailtoken)
 
-	log.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
 
 	if err = s.stmt_FindUser.QueryRow(token.UserName).
 		Scan(&userId); err == sql.ErrNoRows {

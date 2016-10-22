@@ -108,78 +108,78 @@ func (s *supervisor) run() {
 
 	// prepare SQL statements
 	if s.stmt_FToken, err = s.conn.Prepare(stmt.SelectToken); err != nil {
-		log.Fatal("supervisor/fetch-token: ", err)
+		s.errLog.Fatal("supervisor/fetch-token: ", err)
 	}
 	defer s.stmt_FToken.Close()
 
 	if s.stmt_FindUser, err = s.conn.Prepare(stmt.FindUserID); err != nil {
-		log.Fatal(`supervisor/find-userid: `, err)
+		s.errLog.Fatal(`supervisor/find-userid: `, err)
 	}
 	defer s.stmt_FindUser.Close()
 
 	if s.stmt_ListCategory, err = s.conn.Prepare(stmt.ListPermissionCategory); err != nil {
-		log.Fatal(`supervisor/list-category: `, err)
+		s.errLog.Fatal(`supervisor/list-category: `, err)
 	}
 	defer s.stmt_ListCategory.Close()
 
 	if s.stmt_ShowCategory, err = s.conn.Prepare(stmt.ShowPermissionCategory); err != nil {
-		log.Fatal(`supervisor/show-category: `, err)
+		s.errLog.Fatal(`supervisor/show-category: `, err)
 	}
 	defer s.stmt_ShowCategory.Close()
 
 	if s.stmt_ListPermission, err = s.conn.Prepare(stmt.ListPermission); err != nil {
-		log.Fatal(`supervisor/list-permission: `, err)
+		s.errLog.Fatal(`supervisor/list-permission: `, err)
 	}
 	defer s.stmt_ListPermission.Close()
 
 	if s.stmt_ShowPermission, err = s.conn.Prepare(stmt.ShowPermission); err != nil {
-		log.Fatal(`supervisor/show-permission: `, err)
+		s.errLog.Fatal(`supervisor/show-permission: `, err)
 	}
 	defer s.stmt_ShowPermission.Close()
 
 	if s.stmt_SearchPerm, err = s.conn.Prepare(stmt.SearchPermissionByName); err != nil {
-		log.Fatal(`supervisor/search-permission: `, err)
+		s.errLog.Fatal(`supervisor/search-permission: `, err)
 	}
 	defer s.stmt_SearchPerm.Close()
 
 	if s.stmt_SrchGlSysGrant, err = s.conn.Prepare(stmt.SearchGlobalSystemGrant); err != nil {
-		log.Fatal(`supervisor/search-grant: `, err)
+		s.errLog.Fatal(`supervisor/search-grant: `, err)
 	}
 	defer s.stmt_SrchGlSysGrant.Close()
 
 	if !s.readonly {
 		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {
-			log.Fatal(`supervisor/add-category: `, err)
+			s.errLog.Fatal(`supervisor/add-category: `, err)
 		}
 		defer s.stmt_AddCategory.Close()
 
 		if s.stmt_DelCategory, err = s.conn.Prepare(stmt.DeletePermissionCategory); err != nil {
-			log.Fatal(`supervisor/delete-category: `, err)
+			s.errLog.Fatal(`supervisor/delete-category: `, err)
 		}
 		defer s.stmt_DelCategory.Close()
 
 		if s.stmt_AddPermission, err = s.conn.Prepare(stmt.AddPermission); err != nil {
-			log.Fatal(`supervisor/add-permission: `, err)
+			s.errLog.Fatal(`supervisor/add-permission: `, err)
 		}
 		defer s.stmt_AddPermission.Close()
 
 		if s.stmt_DelPermission, err = s.conn.Prepare(stmt.DeletePermission); err != nil {
-			log.Fatal(`supervisor/delete-permission: `, err)
+			s.errLog.Fatal(`supervisor/delete-permission: `, err)
 		}
 		defer s.stmt_DelPermission.Close()
 
 		if s.stmt_GrantSysGlUser, err = s.conn.Prepare(stmt.GrantGlobalOrSystemToUser); err != nil {
-			log.Fatal(`supervisor/grant-user-global-system: `, err)
+			s.errLog.Fatal(`supervisor/grant-user-global-system: `, err)
 		}
 		defer s.stmt_GrantSysGlUser.Close()
 
 		if s.stmt_RevkSysGlUser, err = s.conn.Prepare(stmt.RevokeGlobalOrSystemFromUser); err != nil {
-			log.Fatal(`supervisor/revoke-user-global-system: `, err)
+			s.errLog.Fatal(`supervisor/revoke-user-global-system: `, err)
 		}
 		defer s.stmt_RevkSysGlUser.Close()
 
 		if s.stmt_CheckUser, err = s.conn.Prepare(stmt.CheckUserActive); err != nil {
-			log.Fatal(`supervisor/check-user-active: `, err)
+			s.errLog.Fatal(`supervisor/check-user-active: `, err)
 		}
 		defer s.stmt_CheckUser.Close()
 	}

@@ -50,7 +50,7 @@ func (r *somaProviderReadHandler) run() {
 SELECT metric_provider
 FROM   soma.metric_providers;`)
 	if err != nil {
-		log.Fatal("provider/list: ", err)
+		r.errLog.Fatal("provider/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -59,7 +59,7 @@ SELECT metric_provider
 FROM   soma.metric_providers
 WHERE  metric_provider = $1::varchar;`)
 	if err != nil {
-		log.Fatal("provider/show: ", err)
+		r.errLog.Fatal("provider/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -86,7 +86,7 @@ func (r *somaProviderReadHandler) process(q *somaProviderRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: providers/list")
+		r.reqLog.Printf("R: providers/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -103,7 +103,7 @@ func (r *somaProviderReadHandler) process(q *somaProviderRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: providers/show for %s", q.Provider.Name)
+		r.reqLog.Printf("R: providers/show for %s", q.Provider.Name)
 		err = r.show_stmt.QueryRow(q.Provider.Name).Scan(
 			&provider,
 		)
@@ -152,7 +152,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.metric_providers
 	WHERE  metric_provider = $1::varchar);`)
 	if err != nil {
-		log.Fatal("provider/add: ", err)
+		w.errLog.Fatal("provider/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -160,7 +160,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 DELETE FROM soma.metric_providers
 WHERE  metric_provider = $1::varchar;`)
 	if err != nil {
-		log.Fatal("provider/delete: ", err)
+		w.errLog.Fatal("provider/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -184,17 +184,17 @@ func (w *somaProviderWriteHandler) process(q *somaProviderRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: providers/add for %s", q.Provider.Name)
+		w.reqLog.Printf("R: providers/add for %s", q.Provider.Name)
 		res, err = w.add_stmt.Exec(
 			q.Provider.Name,
 		)
 	case "delete":
-		log.Printf("R: providers/del for %s", q.Provider.Name)
+		w.reqLog.Printf("R: providers/del for %s", q.Provider.Name)
 		res, err = w.del_stmt.Exec(
 			q.Provider.Name,
 		)
 	default:
-		log.Printf("R: unimplemented providers/%s", q.action)
+		w.reqLog.Printf("R: unimplemented providers/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

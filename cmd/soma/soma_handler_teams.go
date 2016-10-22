@@ -52,17 +52,17 @@ func (r *somaTeamReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListTeams); err != nil {
-		log.Fatal("team/list: ", err)
+		r.errLog.Fatal("team/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowTeams); err != nil {
-		log.Fatal("team/show: ", err)
+		r.errLog.Fatal("team/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncTeams); err != nil {
-		log.Fatal("team/sync: ", err)
+		r.errLog.Fatal("team/sync: ", err)
 	}
 	defer r.sync_stmt.Close()
 
@@ -91,7 +91,7 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: team/list")
+		r.reqLog.Printf("R: team/list")
 		rows, err = r.list_stmt.Query()
 		if result.SetRequestError(err) {
 			q.reply <- result
@@ -109,7 +109,7 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 			})
 		}
 	case `sync`:
-		log.Printf("R: team/sync")
+		r.reqLog.Printf("R: team/sync")
 		rows, err = r.sync_stmt.Query()
 		if result.SetRequestError(err) {
 			q.reply <- result
@@ -135,7 +135,7 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: team/show for %s", q.Team.Id)
+		r.reqLog.Printf("R: team/show for %s", q.Team.Id)
 		err = r.show_stmt.QueryRow(q.Team.Id).Scan(
 			&teamId,
 			&teamName,
@@ -196,7 +196,7 @@ SELECT $1::uuid, $2::varchar, $3::numeric, $4 WHERE NOT EXISTS (
 	OR     organizational_team_name = $2::varchar
 	OR     organizational_team_ldap_id = $3::numeric);`)
 	if err != nil {
-		log.Fatal("team/add: ", err)
+		w.errLog.Fatal("team/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -206,7 +206,7 @@ SET    organizational_team_name = $1::varchar,
        organizational_team_ldap_id = $2::numeric,
        organizational_team_system = $3::boolean
 WHERE  organizational_team_id = $4::uuid;`); err != nil {
-		log.Fatal(`team/update: `, err)
+		w.errLog.Fatal(`team/update: `, err)
 	}
 	defer w.upd_stmt.Close()
 
@@ -214,7 +214,7 @@ WHERE  organizational_team_id = $4::uuid;`); err != nil {
 DELETE FROM inventory.organizational_teams
 WHERE organizational_team_id = $1;`)
 	if err != nil {
-		log.Fatal("team/delete: ", err)
+		w.errLog.Fatal("team/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -249,7 +249,7 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: team/add for %s", q.Team.Name)
+		w.reqLog.Printf("R: team/add for %s", q.Team.Name)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
@@ -260,7 +260,7 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 		q.Team.Id = id.String()
 		notify.Super.Action = `add`
 	case `update`:
-		log.Printf("R: team/update for %s", q.Team.Name)
+		w.reqLog.Printf("R: team/update for %s", q.Team.Name)
 		res, err = w.upd_stmt.Exec(
 			q.Team.Name,
 			q.Team.LdapId,
@@ -269,13 +269,13 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 		)
 		notify.Super.Action = `update`
 	case "delete":
-		log.Printf("R: team/del for %s", q.Team.Id)
+		w.reqLog.Printf("R: team/del for %s", q.Team.Id)
 		res, err = w.del_stmt.Exec(
 			q.Team.Id,
 		)
 		notify.Super.Action = `delete`
 	default:
-		log.Printf("R: unimplemented team/%s", q.action)
+		w.reqLog.Printf("R: unimplemented team/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

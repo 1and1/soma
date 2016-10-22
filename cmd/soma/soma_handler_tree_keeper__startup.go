@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/1and1/soma/internal/tree"
-	log "github.com/Sirupsen/logrus"
 )
 
 func (tk *treeKeeper) startupLoad() {
@@ -18,7 +17,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupNodes()
 
 	if len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -31,7 +30,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupNodeSystemProperties()
 
 	if len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -44,7 +43,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupNodeServiceProperties()
 
 	if len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -57,7 +56,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupNodeCustomProperties()
 
 	if len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -70,7 +69,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupNodeOncallProperties()
 
 	if len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -79,7 +78,7 @@ func (tk *treeKeeper) startupLoad() {
 	tk.startupChecks()
 
 	if !tk.rebuild && len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -98,7 +97,7 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	if !tk.rebuild && len(tk.actionChan) > 0 {
-		log.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
+		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
 		tk.broken = true
 		return
 	}
@@ -138,10 +137,10 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer load_bucket.Close()
 
-	log.Printf("TK[%s]: loading buckets\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading buckets\n", tk.repoName)
 	rows, err = load_bucket.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading buckets: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading buckets: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -161,7 +160,7 @@ bucketloop:
 			if err == sql.ErrNoRows {
 				break bucketloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -213,10 +212,10 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer load_group.Close()
 
-	log.Printf("TK[%s]: loading groups\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading groups\n", tk.repoName)
 	rows, err = load_group.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading groups: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading groups: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -234,7 +233,7 @@ grouploop:
 			if err == sql.ErrNoRows {
 				break grouploop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -279,10 +278,10 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer load_grp_mbr_grp.Close()
 
-	log.Printf("TK[%s]: loading group-member-groups\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading group-member-groups\n", tk.repoName)
 	rows, err = load_grp_mbr_grp.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading groups: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading groups: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -298,7 +297,7 @@ memberloop:
 			if err == sql.ErrNoRows {
 				break memberloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -348,10 +347,10 @@ WHERE  sr.repository_id = $1::uuid;`)
 	}
 	defer load_grp_cluster.Close()
 
-	log.Printf("TK[%s]: loading grouped-clusters\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading grouped-clusters\n", tk.repoName)
 	rows, err = load_grp_cluster.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -369,7 +368,7 @@ clusterloop:
 			if err == sql.ErrNoRows {
 				break clusterloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -418,10 +417,10 @@ AND    sc.object_state != 'grouped';`)
 	}
 	defer load_cluster.Close()
 
-	log.Printf("TK[%s]: loading clusters\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading clusters\n", tk.repoName)
 	rows, err = load_cluster.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -439,7 +438,7 @@ clusterloop:
 			if err == sql.ErrNoRows {
 				break clusterloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -502,10 +501,10 @@ WHERE     sr.repository_id = $1::uuid`)
 	}
 	defer load_nodes.Close()
 
-	log.Printf("TK[%s]: loading nodes\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading nodes\n", tk.repoName)
 	rows, err = load_nodes.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading nodes: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading nodes: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -529,7 +528,7 @@ nodeloop:
 			if err == sql.ErrNoRows {
 				break nodeloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -591,10 +590,10 @@ ORDER BY job_serial ASC;`)
 	}
 	defer load_jobs.Close()
 
-	log.Printf("TK[%s]: loading pending jobs\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading pending jobs\n", tk.repoName)
 	rows, err = load_jobs.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -609,7 +608,7 @@ jobloop:
 			if err == sql.ErrNoRows {
 				break jobloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -617,12 +616,12 @@ jobloop:
 		tr := treeRequest{}
 		err = json.Unmarshal([]byte(job), &tr)
 		if err != nil {
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
 		tk.input <- tr
-		log.Printf("TK[%s] Loaded job %s (%s)\n", tk.repoName, tr.JobId, tr.Action)
+		tk.startLog.Printf("TK[%s] Loaded job %s (%s)\n", tk.repoName, tr.JobId, tr.Action)
 	}
 }
 

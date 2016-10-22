@@ -35,37 +35,37 @@ func (lc *lifeCycle) run() {
 	lc.tick = time.NewTicker(time.Duration(SomaCfg.LifeCycleTick) * time.Second).C
 
 	if lc.stmt_unblock, err = lc.conn.Prepare(lcStmtActiveUnblockCondition); err != nil {
-		log.Fatal(err)
+		lc.errLog.Fatal(err)
 	}
 	defer lc.stmt_unblock.Close()
 
 	if lc.stmt_poke, err = lc.conn.Prepare(lcStmtReadyDeployments); err != nil {
-		log.Fatal(err)
+		lc.errLog.Fatal(err)
 	}
 	defer lc.stmt_poke.Close()
 
 	if lc.stmt_clear, err = lc.conn.Prepare(lcStmtClearUpdateFlag); err != nil {
-		log.Fatal(err)
+		lc.errLog.Fatal(err)
 	}
 	defer lc.stmt_clear.Close()
 
 	if lc.stmt_delblk, err = lc.conn.Prepare(lcStmtBlockedConfigsForDeletedInstance); err != nil {
-		log.Fatal(err)
+		lc.errLog.Fatal(err)
 	}
 	defer lc.stmt_delblk.Close()
 
 	if lc.stmt_delact, err = lc.conn.Prepare(lcStmtDeprovisionDeletedActive); err != nil {
-		log.Fatal(err)
+		lc.errLog.Fatal(err)
 	}
 	defer lc.stmt_delact.Close()
 
 	if lc.stmt_dead, err = lc.conn.Prepare(lcStmtDeadLockResolver); err != nil {
-		log.Fatal(err)
+		lc.errLog.Fatal(err)
 	}
 	defer lc.stmt_dead.Close()
 
 	if SomaCfg.Observer {
-		log.Println(`LifeCycle entered observer mode`)
+		lc.appLog.Println(`LifeCycle entered observer mode`)
 		<-lc.shutdown
 		goto exit
 	}
@@ -114,7 +114,7 @@ func (lc *lifeCycle) discardDeletedBlocked() error {
 	)
 
 	if deps, err = lc.stmt_delblk.Query(); err != nil {
-		log.Printf("LifeCycle: %s\n", err.Error())
+		lc.errLog.Printf("LifeCycle: %s\n", err.Error())
 		return err
 	}
 	defer deps.Close()
@@ -123,7 +123,7 @@ func (lc *lifeCycle) discardDeletedBlocked() error {
 	// create a partial discard that awards does not hit our select
 	// statement to find it
 	if tx, err = lc.conn.Begin(); err != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		return err
 	}
 
@@ -133,33 +133,33 @@ func (lc *lifeCycle) discardDeletedBlocked() error {
 			&blockingID,
 			&state,
 		); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			tx.Rollback()
 			return err
 		}
 
 		// delete record that blockedID waits on blockingID
 		if _, err = tx.Exec(lcStmtDeleteDependency, blockedID, blockingID, state); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			tx.Rollback()
 			return err
 		}
 
 		// set blockedID to awaiting_deletion
 		if _, err = tx.Exec(lcStmtConfigAwaitingDeletion, blockedID); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			tx.Rollback()
 			return err
 		}
 	}
 	if deps.Err() != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		tx.Rollback()
 		return err
 	}
 
 	if err = tx.Commit(); err != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		tx.Rollback()
 		return err
 	}
@@ -175,13 +175,13 @@ func (lc *lifeCycle) handleDelete() {
 	)
 
 	if rows, err = lc.stmt_delact.Query(); err != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		return
 	}
 	defer rows.Close()
 
 	if tx, err = lc.conn.Begin(); err != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		return
 	}
 
@@ -191,31 +191,31 @@ cfgloop:
 			&instCfgId,
 			&instId,
 		); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			continue cfgloop
 		}
 
 		// set instance configuration to awaiting_deprovision
 		if _, err = tx.Exec(lcStmtDeprovisionConfiguration, instCfgId); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			tx.Rollback()
 			return
 		}
 
 		// set instance to update_available -> pickup by poke
 		if _, err = tx.Exec(lcStmtUpdateInstance, true, instCfgId, instId); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			tx.Rollback()
 			return
 		}
 	}
 	if rows.Err() != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		tx.Rollback()
 		return
 	}
 	if err = tx.Commit(); err != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		tx.Rollback()
 	}
 	return
@@ -232,7 +232,7 @@ func (lc *lifeCycle) unblock() {
 
 	// lcStmtActiveUnblockCondition
 	if cfgIds, err = lc.stmt_unblock.Query(); err != nil {
-		log.Println(err)
+		lc.errLog.Println(err)
 		return
 	}
 	defer cfgIds.Close()
@@ -247,27 +247,27 @@ idloop:
 			&next,
 			&instanceID,
 		); err != nil {
-			log.Println(err.Error())
+			lc.errLog.Println(err.Error())
 			continue idloop
 		}
 
 		if tx, err = lc.conn.Begin(); err != nil {
-			log.Println(err.Error())
+			lc.errLog.Println(err.Error())
 			continue idloop
 		}
 
 		if txUpdate, err = tx.Prepare(lcStmtUpdateConfig); err != nil {
-			log.Println(err.Error())
+			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
 		}
 		if txDelete, err = tx.Prepare(lcStmtDeleteDependency); err != nil {
-			log.Println(err.Error())
+			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
 		}
 		if txInstance, err = tx.Prepare(lcStmtUpdateInstance); err != nil {
-			log.Println(err.Error())
+			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -276,7 +276,7 @@ idloop:
 		case "awaiting_rollout":
 			nextNG = "rollout_in_progress"
 		default:
-			log.Printf("lifeCycle.unblock() error: blocked: %s, blocking%s, next: %s, instanceID: %s\n",
+			lc.errLog.Printf("lifeCycle.unblock() error: blocked: %s, blocking%s, next: %s, instanceID: %s\n",
 				blockedID, blockingID, next, instanceID)
 			tx.Rollback()
 			continue idloop
@@ -287,7 +287,7 @@ idloop:
 			false,
 			blockedID,
 		); err != nil {
-			log.Println(`lifeCycle.unblock(moveConfig)`, err.Error())
+			lc.errLog.Println(`lifeCycle.unblock(moveConfig)`, err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -296,7 +296,7 @@ idloop:
 			blockedID,
 			instanceID,
 		); err != nil {
-			log.Println(`lifeCycle.unblock(updateInstance)`, err.Error())
+			lc.errLog.Println(`lifeCycle.unblock(updateInstance)`, err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -305,12 +305,12 @@ idloop:
 			blockingID,
 			state,
 		); err != nil {
-			log.Println(`lifeCycle.unblock(deleteDependency)`, err.Error())
+			lc.errLog.Println(`lifeCycle.unblock(deleteDependency)`, err.Error())
 			tx.Rollback()
 			continue idloop
 		}
 		if err = tx.Commit(); err != nil {
-			log.Println(err.Error())
+			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
 		}
@@ -326,7 +326,7 @@ func (lc *lifeCycle) poke() {
 	)
 
 	if chkIds, err = lc.stmt_poke.Query(); err != nil {
-		log.Println(`lifeCycle.poke()`, err)
+		lc.errLog.Println(`lifeCycle.poke()`, err)
 	}
 	defer chkIds.Close()
 
@@ -339,7 +339,7 @@ func (lc *lifeCycle) poke() {
 			&monitoringID,
 			&callback,
 		); err != nil {
-			log.Println(err)
+			lc.errLog.Println(err)
 			continue
 		}
 
@@ -359,11 +359,11 @@ bearloop:
 			if _, err = cl.SetTimeout(500 * time.Millisecond).R().
 				SetBody(PokeMessage{Uuid: id, Path: SomaCfg.PokePath}).
 				Post(callbacks[mon]); err != nil {
-				log.Println(err)
+				lc.errLog.Println(err)
 				continue bearloop
 			}
 			// XXX TODO: MAYBE we should look at the return code. MAYBE.
-			log.Printf("Poked %s about %s", mon, id)
+			lc.appLog.Printf("Poked %s about %s", mon, id)
 			lc.stmt_clear.Exec(id)
 			i++
 			if i == SomaCfg.PokeBatchSize {
@@ -381,7 +381,7 @@ func (lc *lifeCycle) deadlockResolver() {
 	)
 
 	if rows, err = lc.stmt_dead.Query(); err != nil {
-		log.Println(`lifeCycle.deadLockResolver()`, err)
+		lc.errLog.Println(`lifeCycle.deadLockResolver()`, err)
 		return
 	}
 	defer rows.Close()
@@ -391,7 +391,7 @@ func (lc *lifeCycle) deadlockResolver() {
 			&chkInstID,
 			&chkInstConfigID,
 		); err != nil {
-			log.Println(`lifeCycle.deadLockResolver()`, err)
+			lc.errLog.Println(`lifeCycle.deadLockResolver()`, err)
 			return
 		}
 		lc.conn.Exec(lcStmtUpdateConfig,

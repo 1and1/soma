@@ -7,14 +7,13 @@ import (
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
-	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 )
 
 func (s *supervisor) permission(q *msg.Request) {
 	result := msg.Result{Type: `supervisor`, Action: `permission`}
 
-	log.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
 
 	if s.readonly && (q.Super.Action == `add` || q.Super.Action == `delete`) {
 		result.Conflict(fmt.Errorf(`Readonly instance`))

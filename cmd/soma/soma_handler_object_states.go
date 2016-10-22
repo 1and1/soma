@@ -39,11 +39,11 @@ func (r *somaObjectStateReadHandler) run() {
 
 	r.list_stmt, err = r.conn.Prepare("SELECT object_state FROM soma.object_states;")
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	r.show_stmt, err = r.conn.Prepare("SELECT object_state FROM soma.object_states WHERE object_state = $1;")
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	for {
 		select {
@@ -141,7 +141,7 @@ func (w *somaObjectStateWriteHandler) run() {
   );
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.add_stmt.Close()
 
@@ -150,7 +150,7 @@ func (w *somaObjectStateWriteHandler) run() {
   WHERE object_state = $1;
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.del_stmt.Close()
 
@@ -159,7 +159,7 @@ func (w *somaObjectStateWriteHandler) run() {
   WHERE object_state = $2;
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.ren_stmt.Close()
 

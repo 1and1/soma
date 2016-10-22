@@ -8,7 +8,6 @@ import (
 
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
-	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -52,7 +51,7 @@ func (tk *treeKeeper) startupChecks() {
 		err error
 		ld  tkLoaderChecks
 	)
-	log.Printf("TK[%s]: loading checks\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading checks\n", tk.repoName)
 
 	// prepare all required statements into the loader structure
 	ld = tkLoaderChecks{}
@@ -192,7 +191,7 @@ func (tk *treeKeeper) startupChecks() {
 	// tree again with the original CheckConfigs since all checks that
 	// could be loaded have been deleted
 	if tk.rebuild && tk.rbLevel == `checks` {
-		log.Printf("TK[%s]: starting checks rebuild", tk.repoId)
+		tk.startLog.Printf("TK[%s]: starting checks rebuild", tk.repoId)
 		for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
 			tk.startupScopedReapplyCheckConfig(typ, &ld)
 		}
@@ -217,7 +216,7 @@ func (tk *treeKeeper) startupChecks() {
 				for i := len(tk.actionChan); i > 0; i-- {
 					a := <-tk.actionChan
 					jBxX, _ := json.Marshal(a)
-					log.Printf("TK[%s], startupChecks(): leftover action in channel: %s", tk.repoName, string(jBxX))
+					tk.startLog.Printf("TK[%s], startupChecks(): leftover action in channel: %s", tk.repoName, string(jBxX))
 				}
 			}
 			if len(tk.errChan) > 0 {
@@ -225,7 +224,7 @@ func (tk *treeKeeper) startupChecks() {
 				for i := len(tk.errChan); i > 0; i-- {
 					e := <-tk.errChan
 					jBxX, _ := json.Marshal(e)
-					log.Printf("TK[%s], startupChecks(): error in channel: %s", tk.repoName, string(jBxX))
+					tk.startLog.Printf("TK[%s], startupChecks(): error in channel: %s", tk.repoName, string(jBxX))
 				}
 			}
 			if tk.broken {
@@ -235,14 +234,14 @@ func (tk *treeKeeper) startupChecks() {
 		// drain the action channel
 		if tk.drain(`action`) > 0 {
 			tk.broken = true
-			log.Printf("TK[%s], startupChecks(): leftovers in actionChannel after drain", tk.repoName)
+			tk.startLog.Printf("TK[%s], startupChecks(): leftovers in actionChannel after drain", tk.repoName)
 			return
 		}
 
 		// drain the error channel
 		if tk.drain(`error`) > 0 {
 			tk.broken = true
-			log.Printf("TK[%s], startupChecks(): leftovers in errorChannel after drain", tk.repoName)
+			tk.startLog.Printf("TK[%s], startupChecks(): leftovers in errorChannel after drain", tk.repoName)
 			return
 		}
 	}
@@ -530,7 +529,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		ckItem.ObjectId, _ = uuid.FromString(victim.ObjectId)
 		ckItem.ItemId, _ = uuid.FromString(checkId)
 		ckTree.Items = []tree.CheckItem{ckItem}
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
+		tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
 			tk.repoName,
 			`AssociateCheck`,
 			ckItem.ObjectType,
@@ -558,7 +557,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			ckItem.ObjectId, _ = uuid.FromString(objId)
 			ckItem.ItemId, _ = uuid.FromString(itemId)
 			ckTree.Items = append(ckTree.Items, ckItem)
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
+			tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
 				tk.repoName,
 				`AssociateCheck`,
 				objType,
@@ -592,7 +591,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						ElementType: cfgMap[ck].ObjectType,
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+					tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 						tk.repoName,
 						`SetCheck`,
 						typ,
@@ -602,7 +601,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					if !tk.rebuild {
 						// drain after each check
 						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
-							log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+							tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 								tk.repoName,
 								`CheckCountMismatch`,
 								`SetCheck`,
@@ -629,7 +628,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 							ElementType: cfgMap[ck].ObjectType,
 							ElementId:   cfgMap[ck].ObjectId,
 						}, true).SetCheck(ckOrder[objKey][ck])
-						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+						tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 							tk.repoName,
 							`SetCheck`,
 							typ,
@@ -640,7 +639,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 							// drain after each check
 							if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 								if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
-									log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+									tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 										tk.repoName,
 										`CheckCountMismatch`,
 										`SetCheck`,
@@ -670,7 +669,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						ElementType: cfgMap[ck].ObjectType,
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+					tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 						tk.repoName,
 						`SetCheck`,
 						typ,
@@ -680,7 +679,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					if !tk.rebuild {
 						// drain after each check
 						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
-							log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+							tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 								tk.repoName,
 								`CheckCountMismatch`,
 								`SetCheck`,
@@ -705,7 +704,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					ElementType: cfgMap[ck].ObjectType,
 					ElementId:   cfgMap[ck].ObjectId,
 				}, true).SetCheck(ckOrder[objKey][ck])
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+				tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 					tk.repoName,
 					`SetCheck`,
 					typ,
@@ -715,7 +714,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				if !tk.rebuild {
 					// drain after each check
 					if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
-						log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
+						tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 							tk.repoName,
 							`CheckCountMismatch`,
 							`SetCheck`,
@@ -824,7 +823,7 @@ directinstances:
 				ElementType: typ,
 				ElementId:   objId,
 			}, true).LoadInstance(ckInstance)
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				tk.repoName,
 				`LoadInstance`,
 				typ,
@@ -851,7 +850,7 @@ done:
 fail:
 	tk.broken = true
 	if err != nil {
-		log.Println(`BROKEN REPOSITORY ERROR: `, errLocation, err)
+		tk.startLog.Println(`BROKEN REPOSITORY ERROR: `, errLocation, err)
 	}
 	return
 }
@@ -899,7 +898,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderCh
 		); err != nil {
 			goto fail
 		}
-		log.Printf("TK[%s]: rebuild processing check configuration %s", tk.repoName, conf.Id)
+		tk.startLog.Printf("TK[%s]: rebuild processing check configuration %s", tk.repoName, conf.Id)
 		// 2. assemble proto.CheckConfig object:
 		//    + thresholds
 		if threshRows, err = ld.loadThresh.Query(conf.Id); err != nil {
@@ -1042,7 +1041,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderCh
 				ElementId:   conf.ObjectId,
 			}, true).SetCheck(*treeCheck)
 		} else {
-			log.Printf("Rebuild error during check conversion: %s", err)
+			tk.startLog.Printf("Rebuild error during check conversion: %s", err)
 		}
 	}
 	return
@@ -1050,7 +1049,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderCh
 fail:
 	tk.broken = true
 	if err != nil {
-		log.Printf("Error during rebuild loading of checks: %s", err)
+		tk.startLog.Printf("Error during rebuild loading of checks: %s", err)
 	}
 }
 

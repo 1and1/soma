@@ -5,7 +5,6 @@ import (
 
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
-	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -62,10 +61,10 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_instances.Close()
 
-	log.Printf("TK[%s]: loading repository service properties\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading repository service properties\n", tk.repoName)
 	rows, err = load_properties.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -88,7 +87,7 @@ serviceloop:
 			if err == sql.ErrNoRows {
 				break serviceloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -109,7 +108,7 @@ serviceloop:
 			serviceProperty,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading repository service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading repository service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -126,7 +125,7 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break attributeloop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -143,7 +142,7 @@ serviceloop:
 			srcInstanceId,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading repository service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading repository service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -162,19 +161,19 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break inproploop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
 			var propObjectId, propInstanceId uuid.UUID
 			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -265,10 +264,10 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_instances.Close()
 
-	log.Printf("TK[%s]: loading bucket service properties\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading bucket service properties\n", tk.repoName)
 	rows, err = load_properties.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -291,7 +290,7 @@ serviceloop:
 			if err == sql.ErrNoRows {
 				break serviceloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -312,7 +311,7 @@ serviceloop:
 			serviceProperty,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading bucket service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading bucket service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -329,7 +328,7 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break attributeloop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -346,7 +345,7 @@ serviceloop:
 			srcInstanceId,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading bucket service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading bucket service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -365,19 +364,19 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break inproploop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
 			var propObjectId, propInstanceId uuid.UUID
 			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -468,10 +467,10 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_instances.Close()
 
-	log.Printf("TK[%s]: loading group service properties\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading group service properties\n", tk.repoName)
 	rows, err = load_properties.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -494,7 +493,7 @@ serviceloop:
 			if err == sql.ErrNoRows {
 				break serviceloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -515,7 +514,7 @@ serviceloop:
 			serviceProperty,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -532,7 +531,7 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break attributeloop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -549,7 +548,7 @@ serviceloop:
 			srcInstanceId,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -568,19 +567,19 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break inproploop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
 			var propObjectId, propInstanceId uuid.UUID
 			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -671,10 +670,10 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_instances.Close()
 
-	log.Printf("TK[%s]: loading cluster service properties\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading cluster service properties\n", tk.repoName)
 	rows, err = load_properties.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -697,7 +696,7 @@ serviceloop:
 			if err == sql.ErrNoRows {
 				break serviceloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -718,7 +717,7 @@ serviceloop:
 			serviceProperty,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading cluster service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading cluster service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -735,7 +734,7 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break attributeloop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -752,7 +751,7 @@ serviceloop:
 			srcInstanceId,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading cluster service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading cluster service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -771,19 +770,19 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break inproploop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
 			var propObjectId, propInstanceId uuid.UUID
 			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -874,10 +873,10 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_instances.Close()
 
-	log.Printf("TK[%s]: loading node service properties\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading node service properties\n", tk.repoName)
 	rows, err = load_properties.Query(tk.repoId)
 	if err != nil {
-		log.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
+		tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
 		tk.broken = true
 		return
 	}
@@ -900,7 +899,7 @@ serviceloop:
 			if err == sql.ErrNoRows {
 				break serviceloop
 			}
-			log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -921,7 +920,7 @@ serviceloop:
 			serviceProperty,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -938,7 +937,7 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break attributeloop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
@@ -955,7 +954,7 @@ serviceloop:
 			srcInstanceId,
 		)
 		if err != nil {
-			log.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
 			tk.broken = true
 			return
 		}
@@ -974,19 +973,19 @@ serviceloop:
 				if err == sql.ErrNoRows {
 					break inproploop
 				}
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
 			var propObjectId, propInstanceId uuid.UUID
 			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				log.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}

@@ -53,29 +53,29 @@ func (r *somaServerReadHandler) run() {
 	var err error
 
 	if r.list_stmt, err = r.conn.Prepare(stmt.ListServers); err != nil {
-		log.Fatal("server/list: ", err)
+		r.errLog.Fatal("server/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
 	if r.show_stmt, err = r.conn.Prepare(stmt.ShowServers); err != nil {
-		log.Fatal("server/show: ", err)
+		r.errLog.Fatal("server/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
 	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncServers); err != nil {
-		log.Fatal("server/sync-list: ", err)
+		r.errLog.Fatal("server/sync-list: ", err)
 	}
 	defer r.sync_stmt.Close()
 
 	// server_name + server_online => unique
 	if r.snam_stmt, err = r.conn.Prepare(stmt.SearchServerByName); err != nil {
-		log.Fatal("server/search-name: ", err)
+		r.errLog.Fatal("server/search-name: ", err)
 	}
 	defer r.snam_stmt.Close()
 
 	// server_asset_id => unique
 	if r.sass_stmt, err = r.conn.Prepare(stmt.SearchServerByAssetId); err != nil {
-		log.Fatal("server/search-asset: ", err)
+		r.errLog.Fatal("server/search-asset: ", err)
 	}
 	defer r.sass_stmt.Close()
 
@@ -104,7 +104,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: server/list")
+		r.reqLog.Printf("R: server/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -123,7 +123,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 			})
 		}
 	case `sync`:
-		log.Printf("R: server/sync")
+		r.reqLog.Printf("R: server/sync")
 		rows, err = r.sync_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -155,7 +155,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 			})
 		}
 	case `search/name`:
-		log.Printf("R: server/search-name for %s", q.Filter.Server.Name)
+		r.reqLog.Printf("R: server/search-name for %s", q.Filter.Server.Name)
 		if err = r.snam_stmt.QueryRow(q.Filter.Server.Name).Scan(
 			&serverId,
 			&serverName,
@@ -174,7 +174,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 			})
 		}
 	case `search/asset`:
-		log.Printf("R: server/search-asset for %d", q.Filter.Server.AssetId)
+		r.reqLog.Printf("R: server/search-asset for %d", q.Filter.Server.AssetId)
 		if err = r.sass_stmt.QueryRow(q.Filter.Server.AssetId).Scan(
 			&serverId,
 			&serverName,
@@ -193,7 +193,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: server/show for %s", q.Server.Id)
+		r.reqLog.Printf("R: server/show for %s", q.Server.Id)
 		err = r.show_stmt.QueryRow(q.Server.Id).Scan(
 			&serverId,
 			&serverAsset,
@@ -249,22 +249,22 @@ func (w *somaServerWriteHandler) run() {
 	var err error
 
 	if w.add_stmt, err = w.conn.Prepare(stmt.AddServers); err != nil {
-		log.Fatal("server/add: ", err)
+		w.errLog.Fatal("server/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
 	if w.del_stmt, err = w.conn.Prepare(stmt.DeleteServers); err != nil {
-		log.Fatal("server/delete: ", err)
+		w.errLog.Fatal("server/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
 	if w.prg_stmt, err = w.conn.Prepare(stmt.PurgeServers); err != nil {
-		log.Fatal("server/purge: ", err)
+		w.errLog.Fatal("server/purge: ", err)
 	}
 	defer w.prg_stmt.Close()
 
 	if w.upd_stmt, err = w.conn.Prepare(stmt.UpdateServers); err != nil {
-		log.Fatal(`server/update: `, err)
+		w.errLog.Fatal(`server/update: `, err)
 	}
 	defer w.upd_stmt.Close()
 
@@ -290,7 +290,7 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: server/add for %s", q.Server.Name)
+		w.reqLog.Printf("R: server/add for %s", q.Server.Name)
 		id := uuid.NewV4()
 		res, err = w.add_stmt.Exec(
 			id.String(),
@@ -303,17 +303,17 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 		)
 		q.Server.Id = id.String()
 	case "delete":
-		log.Printf("R: server/delete for %s", q.Server.Id)
+		w.reqLog.Printf("R: server/delete for %s", q.Server.Id)
 		res, err = w.del_stmt.Exec(
 			q.Server.Id,
 		)
 	case "purge":
-		log.Printf("R: server/purge for %s", q.Server.Id)
+		w.reqLog.Printf("R: server/purge for %s", q.Server.Id)
 		res, err = w.del_stmt.Exec(
 			q.Server.Id,
 		)
 	case `update`:
-		log.Printf("R: server/update for %s", q.Server.Id)
+		w.reqLog.Printf("R: server/update for %s", q.Server.Id)
 		res, err = w.upd_stmt.Exec(
 			q.Server.Id,
 			q.Server.AssetId,
@@ -324,7 +324,7 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 			q.Server.IsDeleted,
 		)
 	case "insert-null":
-		log.Printf("R: server/insert-null")
+		w.reqLog.Printf("R: server/insert-null")
 		q.Server.Id = "00000000-0000-0000-0000-000000000000"
 		q.Server.AssetId = 0
 		q.Server.Location = "none"
@@ -341,7 +341,7 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 			q.Server.IsDeleted,
 		)
 	default:
-		log.Printf("R: unimplemented server/%s", q.action)
+		w.reqLog.Printf("R: unimplemented server/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

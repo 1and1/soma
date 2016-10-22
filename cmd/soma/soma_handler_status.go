@@ -50,7 +50,7 @@ func (r *somaStatusReadHandler) run() {
 SELECT status
 FROM   soma.check_instance_status;`)
 	if err != nil {
-		log.Fatal("status/list: ", err)
+		r.errLog.Fatal("status/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -59,7 +59,7 @@ SELECT status
 FROM   soma.check_instance_status
 WHERE  status = $1;`)
 	if err != nil {
-		log.Fatal("status/show: ", err)
+		r.errLog.Fatal("status/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -86,7 +86,7 @@ func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: status/list")
+		r.reqLog.Printf("R: status/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -103,7 +103,7 @@ func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: status/show for %s", q.Status.Name)
+		r.reqLog.Printf("R: status/show for %s", q.Status.Name)
 		err = r.show_stmt.QueryRow(q.Status.Name).Scan(
 			&status,
 		)
@@ -152,7 +152,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 	FROM   soma.check_instance_status
 	WHERE  status = $1::varchar);`)
 	if err != nil {
-		log.Fatal("status/add: ", err)
+		w.errLog.Fatal("status/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -160,7 +160,7 @@ SELECT $1::varchar WHERE NOT EXISTS (
 DELETE FROM soma.check_instance_status
 WHERE  status = $1;`)
 	if err != nil {
-		log.Fatal("status/delete: ", err)
+		w.errLog.Fatal("status/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -184,17 +184,17 @@ func (w *somaStatusWriteHandler) process(q *somaStatusRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: status/add for %s", q.Status.Name)
+		w.reqLog.Printf("R: status/add for %s", q.Status.Name)
 		res, err = w.add_stmt.Exec(
 			q.Status.Name,
 		)
 	case "delete":
-		log.Printf("R: status/del for %s", q.Status.Name)
+		w.reqLog.Printf("R: status/del for %s", q.Status.Name)
 		res, err = w.del_stmt.Exec(
 			q.Status.Name,
 		)
 	default:
-		log.Printf("R: unimplemented status/%s", q.action)
+		w.reqLog.Printf("R: unimplemented status/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

@@ -50,7 +50,7 @@ func (r *somaMetricReadHandler) run() {
 SELECT metric
 FROM   soma.metrics;`)
 	if err != nil {
-		log.Fatal("metric/list: ", err)
+		r.errLog.Fatal("metric/list: ", err)
 	}
 	defer r.list_stmt.Close()
 
@@ -61,7 +61,7 @@ SELECT metric,
 FROM   soma.metrics
 WHERE  metric = $1::varchar;`)
 	if err != nil {
-		log.Fatal("metric/show: ", err)
+		r.errLog.Fatal("metric/show: ", err)
 	}
 	defer r.show_stmt.Close()
 
@@ -88,7 +88,7 @@ func (r *somaMetricReadHandler) process(q *somaMetricRequest) {
 
 	switch q.action {
 	case "list":
-		log.Printf("R: metrics/list")
+		r.reqLog.Printf("R: metrics/list")
 		rows, err = r.list_stmt.Query()
 		defer rows.Close()
 		if result.SetRequestError(err) {
@@ -105,7 +105,7 @@ func (r *somaMetricReadHandler) process(q *somaMetricRequest) {
 			})
 		}
 	case "show":
-		log.Printf("R: metrics/show for %s", q.Metric.Path)
+		r.reqLog.Printf("R: metrics/show for %s", q.Metric.Path)
 		err = r.show_stmt.QueryRow(q.Metric.Path).Scan(
 			&metric,
 			&unit,
@@ -162,7 +162,7 @@ SELECT $1::varchar, $2::varchar, $3::text WHERE NOT EXISTS (
 	FROM   soma.metrics
 	WHERE  metric = $1::varchar);`)
 	if err != nil {
-		log.Fatal("metric/add: ", err)
+		w.errLog.Fatal("metric/add: ", err)
 	}
 	defer w.add_stmt.Close()
 
@@ -170,7 +170,7 @@ SELECT $1::varchar, $2::varchar, $3::text WHERE NOT EXISTS (
 DELETE FROM soma.metrics
 WHERE  metric = $1::varchar;`)
 	if err != nil {
-		log.Fatal("metric/delete: ", err)
+		w.errLog.Fatal("metric/delete: ", err)
 	}
 	defer w.del_stmt.Close()
 
@@ -185,7 +185,7 @@ SELECT $1::varchar, $2::varchar, $3::varchar WHERE NOT EXISTS (
 	WHERE  metric = $1::varchar
 	AND    metric_provider = $2::varchar);`)
 	if err != nil {
-		log.Fatal("metric/package-add")
+		w.errLog.Fatal("metric/package-add")
 	}
 	defer w.pkg_add_stmt.Close()
 
@@ -193,7 +193,7 @@ SELECT $1::varchar, $2::varchar, $3::varchar WHERE NOT EXISTS (
 DELETE FROM soma.metric_packages
 WHERE  metric = $1::varchar;`)
 	if err != nil {
-		log.Fatal("metric/package-del")
+		w.errLog.Fatal("metric/package-del")
 	}
 	defer w.pkg_del_stmt.Close()
 
@@ -221,7 +221,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 
 	switch q.action {
 	case "add":
-		log.Printf("R: metrics/add for %s", q.Metric.Path)
+		w.reqLog.Printf("R: metrics/add for %s", q.Metric.Path)
 		// test the referenced unit exists, to prettify the error
 		w.conn.QueryRow("SELECT metric_unit FROM soma.metric_units WHERE metric_unit = $1::varchar;",
 			q.Metric.Unit).Scan(&inputVal)
@@ -285,7 +285,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 		}
 		err = tx.Commit()
 	case "delete":
-		log.Printf("R: metrics/del for %s", q.Metric.Path)
+		w.reqLog.Printf("R: metrics/del for %s", q.Metric.Path)
 
 		// start transaction
 		tx, err = w.conn.Begin()
@@ -315,7 +315,7 @@ func (w *somaMetricWriteHandler) process(q *somaMetricRequest) {
 
 		err = tx.Commit()
 	default:
-		log.Printf("R: unimplemented metrics/%s", q.action)
+		w.reqLog.Printf("R: unimplemented metrics/%s", q.action)
 		result.SetNotImplemented()
 		q.reply <- result
 		return

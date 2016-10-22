@@ -42,7 +42,7 @@ func (r *somaObjectTypeReadHandler) run() {
 	FROM soma.object_types;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	r.show_stmt, err = r.conn.Prepare(`
 	SELECT object_type
@@ -50,7 +50,7 @@ func (r *somaObjectTypeReadHandler) run() {
 	WHERE object_type = $1;
 	`)
 	if err != nil {
-		log.Fatal(err)
+		r.errLog.Fatal(err)
 	}
 	for {
 		select {
@@ -150,7 +150,7 @@ func (w *somaObjectTypeWriteHandler) run() {
   );
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.add_stmt.Close()
 
@@ -159,7 +159,7 @@ func (w *somaObjectTypeWriteHandler) run() {
   WHERE object_type = $1;
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.del_stmt.Close()
 
@@ -169,7 +169,7 @@ func (w *somaObjectTypeWriteHandler) run() {
   WHERE object_type = $2;
   `)
 	if err != nil {
-		log.Fatal(err)
+		w.errLog.Fatal(err)
 	}
 	defer w.ren_stmt.Close()
 
