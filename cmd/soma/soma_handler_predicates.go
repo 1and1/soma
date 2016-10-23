@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -47,22 +48,15 @@ type somaPredicateReadHandler struct {
 func (r *somaPredicateReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT predicate
-FROM   soma.configuration_predicates; `)
-	if err != nil {
-		r.errLog.Fatal("predicate/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.PredicateList: r.list_stmt,
+		stmt.PredicateShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`predicate`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT predicate
-FROM   soma.configuration_predicates
-WHERE  predicate = $1;`)
-	if err != nil {
-		r.errLog.Fatal("predicate/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -145,25 +139,15 @@ type somaPredicateWriteHandler struct {
 func (w *somaPredicateWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.configuration_predicates (
-	predicate)
-SELECT $1::varchar WHERE NOT EXISTS (
-	SELECT predicate
-	FROM   soma.configuration_predicates
-	WHERE  predicate = $1::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("predicate/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.PredicateAdd: w.add_stmt,
+		stmt.PredicateDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`predicate`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.configuration_predicates
-WHERE  predicate = $1;`)
-	if err != nil {
-		w.errLog.Fatal("predicate/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

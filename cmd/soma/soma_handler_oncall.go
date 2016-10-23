@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
@@ -49,25 +50,15 @@ type somaOncallReadHandler struct {
 func (r *somaOncallReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT oncall_duty_id,
-       oncall_duty_name
-FROM   inventory.oncall_duty_teams;`)
-	if err != nil {
-		r.errLog.Fatal("oncall/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.OncallList: r.list_stmt,
+		stmt.OncallShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`oncall`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT oncall_duty_id,
-       oncall_duty_name,
-	   oncall_duty_phone_number
-FROM   inventory.oncall_duty_teams
-WHERE  oncall_duty_id = $1;`)
-	if err != nil {
-		r.errLog.Fatal("oncall/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -157,43 +148,16 @@ type somaOncallWriteHandler struct {
 func (w *somaOncallWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO inventory.oncall_duty_teams (
-	oncall_duty_id,
-	oncall_duty_name,
-	oncall_duty_phone_number)
-SELECT $1::uuid, $2::varchar, $3::numeric WHERE NOT EXISTS (
-	SELECT oncall_duty_id
-	FROM inventory.oncall_duty_teams
-	WHERE oncall_duty_id = $1::uuid
-	OR oncall_duty_name = $2::varchar
-	OR oncall_duty_phone_number = $3::numeric);`)
-	if err != nil {
-		w.errLog.Fatal("oncall/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.OncallAdd:    w.add_stmt,
+		stmt.OncallUpdate: w.upd_stmt,
+		stmt.OncallDel:    w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`oncall`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.upd_stmt, err = w.conn.Prepare(`
-UPDATE inventory.oncall_duty_teams
-SET    oncall_duty_name = CASE WHEN $1::varchar IS NOT NULL
-                          THEN $1::varchar
-						  ELSE oncall_duty_name END,
-       oncall_duty_phone_number = CASE WHEN $2::numeric IS NOT NULL
-	                              THEN $2::numeric
-								  ELSE oncall_duty_phone_number END
-WHERE  oncall_duty_id = $3;`)
-	if err != nil {
-		w.errLog.Fatal("oncall/update: ", err)
-	}
-	defer w.upd_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM inventory.oncall_duty_teams
-WHERE  oncall_duty_id = $1;`)
-	if err != nil {
-		w.errLog.Fatal("oncall/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

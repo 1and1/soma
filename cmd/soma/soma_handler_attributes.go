@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -47,15 +48,15 @@ type somaAttributeReadHandler struct {
 func (r *somaAttributeReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmtAttributeList); err != nil {
-		r.errLog.Fatal("attribute/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.AttributeList: r.list_stmt,
+		stmt.AttributeShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(``, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmtAttributeShow); err != nil {
-		r.errLog.Fatal("attribute/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -142,15 +143,15 @@ type somaAttributeWriteHandler struct {
 func (w *somaAttributeWriteHandler) run() {
 	var err error
 
-	if w.add_stmt, err = w.conn.Prepare(stmtAttributeAdd); err != nil {
-		w.errLog.Fatal("attribute/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.AttributeAdd:    w.add_stmt,
+		stmt.AttributeDelete: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`attribute`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	if w.del_stmt, err = w.conn.Prepare(stmtAttributeDelete); err != nil {
-		w.errLog.Fatal("attribute/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

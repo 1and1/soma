@@ -89,4 +89,20 @@ JOIN   soma.team_service_properties stsp
 WHERE  sbsp.source_instance_id = $1::uuid
   AND  sbsp.source_instance_id = sbsp.instance_id;`
 
+const BucketList = `
+SELECT bucket_id,
+       bucket_name
+FROM   soma.buckets;`
+
+const BucketShow = `
+SELECT bucket_id,
+       bucket_name,
+       bucket_frozen,
+       bucket_deleted,
+       repository_id,
+       environment,
+       organizational_team_id
+FROM   soma.buckets
+WHERE  bucket_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

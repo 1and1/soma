@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -46,23 +47,15 @@ type somaUnitReadHandler struct {
 func (r *somaUnitReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT metric_unit
-FROM   soma.metric_units;`)
-	if err != nil {
-		r.errLog.Fatal("unit/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.UnitList: r.list_stmt,
+		stmt.UnitShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`unit`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT metric_unit,
-       metric_unit_long_name
-FROM   soma.metric_units
-WHERE  metric_unit = $1::varchar;`)
-	if err != nil {
-		r.errLog.Fatal("unit/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -152,27 +145,15 @@ type somaUnitWriteHandler struct {
 func (w *somaUnitWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.metric_units (
-	metric_unit,
-	metric_unit_long_name)
-SELECT $1::varchar, $2::varchar WHERE NOT EXISTS (
-	SELECT metric_unit
-	FROM   soma.metric_units
-	WHERE  metric_unit = $1::varchar
-	OR     metric_unit_long_name = $2::varchar);`)
-	if err != nil {
-		w.errLog.Fatal("unit/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.UnitAdd: w.add_stmt,
+		stmt.UnitDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`unit`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.metric_units
-WHERE  metric_unit = $1::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("unit/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

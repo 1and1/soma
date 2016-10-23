@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/1and1/soma/internal/stmt"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -37,21 +38,16 @@ type somaObjectTypeReadHandler struct {
 func (r *somaObjectTypeReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-	SELECT object_type
-	FROM soma.object_types;
-	`)
-	if err != nil {
-		r.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ObjectTypeList: r.list_stmt,
+		stmt.ObjectTypeShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`object_type`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	r.show_stmt, err = r.conn.Prepare(`
-	SELECT object_type
-	FROM soma.object_types
-	WHERE object_type = $1;
-	`)
-	if err != nil {
-		r.errLog.Fatal(err)
-	}
+
 	for {
 		select {
 		case <-r.shutdown:
@@ -141,37 +137,16 @@ type somaObjectTypeWriteHandler struct {
 func (w *somaObjectTypeWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-  INSERT INTO soma.object_types (object_type)
-  SELECT $1 WHERE NOT EXISTS (
-    SELECT object_type
-	FROM soma.object_types
-	WHERE object_type = $2
-  );
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ObjectTypeAdd:    w.add_stmt,
+		stmt.ObjectTypeDel:    w.del_stmt,
+		stmt.ObjectTypeRename: w.ren_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`object_type`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-  DELETE FROM soma.object_types
-  WHERE object_type = $1;
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
-	}
-	defer w.del_stmt.Close()
-
-	w.ren_stmt, err = w.conn.Prepare(`
-  UPDATE soma.object_types
-  SET object_type = $1
-  WHERE object_type = $2;
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
-	}
-	defer w.ren_stmt.Close()
 
 	for {
 		select {
@@ -190,7 +165,7 @@ func (w *somaObjectTypeWriteHandler) process(q *somaObjectTypeRequest) {
 	result := make([]somaObjectTypeResult, 0)
 	switch q.action {
 	case "add":
-		res, err = w.add_stmt.Exec(q.objectType, q.objectType)
+		res, err = w.add_stmt.Exec(q.objectType)
 	case "delete":
 		res, err = w.del_stmt.Exec(q.objectType)
 	case "rename":

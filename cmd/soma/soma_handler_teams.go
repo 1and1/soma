@@ -51,20 +51,16 @@ type somaTeamReadHandler struct {
 func (r *somaTeamReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListTeams); err != nil {
-		r.errLog.Fatal("team/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListTeams: r.list_stmt,
+		stmt.ShowTeams: r.show_stmt,
+		stmt.SyncTeams: r.sync_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`team`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowTeams); err != nil {
-		r.errLog.Fatal("team/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncTeams); err != nil {
-		r.errLog.Fatal("team/sync: ", err)
-	}
-	defer r.sync_stmt.Close()
 
 runloop:
 	for {
@@ -183,40 +179,16 @@ type somaTeamWriteHandler struct {
 func (w *somaTeamWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO inventory.organizational_teams (
-	organizational_team_id,
-	organizational_team_name,
-	organizational_team_ldap_id,
-	organizational_team_system)
-SELECT $1::uuid, $2::varchar, $3::numeric, $4 WHERE NOT EXISTS (
-	SELECT organizational_team_id
-	FROM   inventory.organizational_teams
-	WHERE  organizational_team_id = $1::uuid
-	OR     organizational_team_name = $2::varchar
-	OR     organizational_team_ldap_id = $3::numeric);`)
-	if err != nil {
-		w.errLog.Fatal("team/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.TeamAdd:    w.add_stmt,
+		stmt.TeamUpdate: w.upd_stmt,
+		stmt.TeamDel:    w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`team`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	if w.upd_stmt, err = w.conn.Prepare(`
-UPDATE inventory.organizational_teams
-SET    organizational_team_name = $1::varchar,
-       organizational_team_ldap_id = $2::numeric,
-       organizational_team_system = $3::boolean
-WHERE  organizational_team_id = $4::uuid;`); err != nil {
-		w.errLog.Fatal(`team/update: `, err)
-	}
-	defer w.upd_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM inventory.organizational_teams
-WHERE organizational_team_id = $1;`)
-	if err != nil {
-		w.errLog.Fatal("team/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

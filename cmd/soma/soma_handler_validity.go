@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -46,25 +47,15 @@ type somaValidityReadHandler struct {
 func (r *somaValidityReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(`
-SELECT system_property,
-       object_type
-FROM   soma.system_property_validity;`)
-	if err != nil {
-		r.errLog.Fatal("validity/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ValidityList: r.list_stmt,
+		stmt.ValidityShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`validity`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(`
-SELECT system_property,
-       object_type,
-       inherited
-FROM   soma.system_property_validity
-WHERE  system_property = $1;`)
-	if err != nil {
-		r.errLog.Fatal("validity/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -190,33 +181,15 @@ type somaValidityWriteHandler struct {
 func (w *somaValidityWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO soma.system_property_validity (
-	system_property,
-	object_type,
-	inherited)
-SELECT $1::varchar,
-       $2::varchar,
-       $3::boolean
-WHERE NOT EXISTS (
-	SELECT system_property,
-           object_type
-	FROM   soma.system_property_validity
-	WHERE  system_property = $1::varchar
-    AND    object_type = $2::varchar
-    AND    inherited = $3::boolean);`)
-	if err != nil {
-		w.errLog.Fatal("validity/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ValidityAdd: w.add_stmt,
+		stmt.ValidityDel: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`validity`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-DELETE FROM soma.system_property_validity
-WHERE       system_property = $1::varchar;`)
-	if err != nil {
-		w.errLog.Fatal("validity/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

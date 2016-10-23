@@ -51,20 +51,16 @@ type somaUserReadHandler struct {
 func (r *somaUserReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListUsers); err != nil {
-		r.errLog.Fatal("user/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListUsers: r.list_stmt,
+		stmt.ShowUsers: r.show_stmt,
+		stmt.SyncUsers: r.sync_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`user`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowUsers); err != nil {
-		r.errLog.Fatal("user/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncUsers); err != nil {
-		r.errLog.Fatal("user/sync: ", err)
-	}
-	defer r.sync_stmt.Close()
 
 runloop:
 	for {
@@ -216,63 +212,17 @@ type somaUserWriteHandler struct {
 func (w *somaUserWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-INSERT INTO inventory.users (
-	user_id,
-	user_uid,
-	user_first_name,
-	user_last_name,
-	user_employee_number,
-	user_mail_address,
-	user_is_active,
-	user_is_system,
-	user_is_deleted,
-	organizational_team_id)
-SELECT $1::uuid, $2::varchar, $3::varchar, $4::varchar, $5::numeric,
-	   $6::text, $7::boolean, $8::boolean, $9::boolean, $10::uuid
-WHERE NOT EXISTS (
-	SELECT user_id
-	FROM   inventory.users
-	WHERE  user_id = $1::uuid
-    OR     user_uid = $2::varchar
-    OR     user_employee_number = $5::numeric);`)
-	if err != nil {
-		w.errLog.Fatal("user/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.UserAdd:    w.add_stmt,
+		stmt.UserUpdate: w.upd_stmt,
+		stmt.UserDel:    w.del_stmt,
+		stmt.UserPurge:  w.prg_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`user`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	if w.upd_stmt, err = w.conn.Prepare(`
-UPDATE inventory.users
-SET    user_uid = $1::varchar,
-       user_first_name = $2::varchar,
-       user_last_name = $3::varchar,
-       user_employee_number = $4::numeric,
-       user_mail_address = $5::text,
-       user_is_deleted = $6::boolean,
-       organizational_team_id = $7::uuid
-WHERE  user_id = $8::uuid;`); err != nil {
-		w.errLog.Fatal(`user/update: `, err)
-	}
-	defer w.upd_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-UPDATE inventory.users
-SET    user_is_deleted = 'yes',
-       user_is_active = 'no'
-WHERE  user_id = $1::uuid;`)
-	if err != nil {
-		w.errLog.Fatal("user/delete: ", err)
-	}
-	defer w.del_stmt.Close()
-
-	w.prg_stmt, err = w.conn.Prepare(`
-DELETE FROM inventory.users
-WHERE  user_id = $1::uuid
-AND    user_is_deleted;`)
-	if err != nil {
-		w.errLog.Fatal("user/purge: ", err)
-	}
-	defer w.prg_stmt.Close()
 
 runloop:
 	for {

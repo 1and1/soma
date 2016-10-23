@@ -49,35 +49,19 @@ type somaBucketReadHandler struct {
 func (r *somaBucketReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmtBucketList); err != nil {
-		r.errLog.Fatal("bucket/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.BucketList:     r.list_stmt,
+		stmt.BucketShow:     r.show_stmt,
+		stmt.BucketOncProps: r.ponc_stmt,
+		stmt.BucketSvcProps: r.psvc_stmt,
+		stmt.BucketSysProps: r.psys_stmt,
+		stmt.BucketCstProps: r.pcst_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`bucket`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmtBucketShow); err != nil {
-		r.errLog.Fatal("bucket/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.ponc_stmt, err = r.conn.Prepare(stmt.BucketOncProps); err != nil {
-		r.errLog.Fatal(`bucket/property-oncall: `, err)
-	}
-	defer r.ponc_stmt.Close()
-
-	if r.psvc_stmt, err = r.conn.Prepare(stmt.BucketSvcProps); err != nil {
-		r.errLog.Fatal(`bucket/property-service: `, err)
-	}
-	defer r.psvc_stmt.Close()
-
-	if r.psys_stmt, err = r.conn.Prepare(stmt.BucketSysProps); err != nil {
-		r.errLog.Fatal(`bucket/property-system: `, err)
-	}
-	defer r.psys_stmt.Close()
-
-	if r.pcst_stmt, err = r.conn.Prepare(stmt.BucketCstProps); err != nil {
-		r.errLog.Fatal(`bucket/property-custom: `, err)
-	}
-	defer r.pcst_stmt.Close()
 
 runloop:
 	for {

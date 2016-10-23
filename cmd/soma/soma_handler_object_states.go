@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/1and1/soma/internal/stmt"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -37,14 +38,16 @@ type somaObjectStateReadHandler struct {
 func (r *somaObjectStateReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare("SELECT object_state FROM soma.object_states;")
-	if err != nil {
-		r.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ObjectStateList: r.list_stmt,
+		stmt.ObjectStateShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`object_state`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	r.show_stmt, err = r.conn.Prepare("SELECT object_state FROM soma.object_states WHERE object_state = $1;")
-	if err != nil {
-		r.errLog.Fatal(err)
-	}
+
 	for {
 		select {
 		case <-r.shutdown:
@@ -134,34 +137,16 @@ type somaObjectStateWriteHandler struct {
 func (w *somaObjectStateWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(`
-  INSERT INTO soma.object_states (object_state)
-  SELECT $1 WHERE NOT EXISTS (
-    SELECT object_state FROM soma.object_states WHERE object_state = $2
-  );
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ObjectStateAdd:    w.add_stmt,
+		stmt.ObjectStateDel:    w.del_stmt,
+		stmt.ObjectStateRename: w.ren_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`object_state`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(`
-  DELETE FROM soma.object_states
-  WHERE object_state = $1;
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
-	}
-	defer w.del_stmt.Close()
-
-	w.ren_stmt, err = w.conn.Prepare(`
-  UPDATE soma.object_states SET object_state = $1
-  WHERE object_state = $2;
-  `)
-	if err != nil {
-		w.errLog.Fatal(err)
-	}
-	defer w.ren_stmt.Close()
 
 	for {
 		select {
@@ -180,7 +165,7 @@ func (w *somaObjectStateWriteHandler) process(q *somaObjectStateRequest) {
 	result := make([]somaObjectStateResult, 0)
 	switch q.action {
 	case "add":
-		res, err = w.add_stmt.Exec(q.state, q.state)
+		res, err = w.add_stmt.Exec(q.state)
 	case "delete":
 		res, err = w.del_stmt.Exec(q.state)
 	case "rename":
