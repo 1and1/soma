@@ -9,6 +9,9 @@ import (
 	"github.com/codegangsta/cli"
 )
 
+//go:generate go run ../../script/render_markdown.go ../../docs/somaadm/command_reference ../../internal/help/rendered
+//go:generate go-bindata -pkg help -ignore .gitignore -o ../../internal/help/bindata.go -prefix "../../internal/help/rendered/" ../../internal/help/rendered/...
+
 var Cfg Config
 var utl util.SomaUtil
 var store db.DB
@@ -16,6 +19,8 @@ var store db.DB
 const rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 
 func main() {
+	cli.CommandHelpTemplate = `{{.Description}}`
+
 	app := cli.NewApp()
 	app.Name = "somaadm"
 	app.Usage = "SOMA Administrative Interface"

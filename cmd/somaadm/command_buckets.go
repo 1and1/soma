@@ -5,6 +5,7 @@ import (
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -79,8 +80,9 @@ func registerBuckets(app cli.App) *cli.App {
 						Usage: "SUBCOMMANDS for properties",
 						Subcommands: []cli.Command{
 							{
-								Name:  "add",
-								Usage: "SUBCOMMANDS for property add",
+								Name:        "add",
+								Usage:       "SUBCOMMANDS for property add",
+								Description: help.Text(`BucketsPropertyAdd`),
 								Subcommands: []cli.Command{
 									{
 										Name:         "system",

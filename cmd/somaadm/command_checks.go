@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -20,28 +20,28 @@ func registerChecks(app cli.App) *cli.App {
 					{
 						Name:         "create",
 						Usage:        "Create a new check configuration",
-						Description:  help.CmdCheckAdd,
+						Description:  help.Text(`ChecksCreate`),
 						Action:       runtime(cmdCheckAdd),
 						BashComplete: cmpl.CheckAdd,
 					},
 					{
 						Name:         `delete`,
 						Usage:        "Delete a check configuration",
-						Description:  help.CmdCheckDelete,
+						Description:  help.Text(`ChecksDelete`),
 						Action:       runtime(cmdCheckDelete),
 						BashComplete: cmpl.In,
 					},
 					{
 						Name:         "list",
 						Usage:        "List check configurations",
-						Description:  help.CmdCheckList,
+						Description:  help.Text(`ChecksList`),
 						Action:       runtime(cmdCheckList),
 						BashComplete: cmpl.In,
 					},
 					{
 						Name:         "show",
 						Usage:        "Show details about a check configuration",
-						Description:  help.CmdCheckShow,
+						Description:  help.Text(`ChecksShow`),
 						Action:       runtime(cmdCheckShow),
 						BashComplete: cmpl.In,
 					},

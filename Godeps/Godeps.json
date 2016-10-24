@@ -35,6 +35,14 @@
 			"Rev": "3c8c640cd7bea3ca78209d812b5854442ab92fed"
 		},
 		{
+			"ImportPath": "github.com/gholt/blackfridaytext",
+			"Rev": "b10b9c02cdcb39c8b0664db48307b0b5bb9be4af"
+		},
+		{
+			"ImportPath": "github.com/gholt/brimtext",
+			"Rev": "76710fe6ae3884c59dbd0b33623eb47ed6e27c98"
+		},
+		{
 			"ImportPath": "github.com/julienschmidt/httprouter",
 			"Comment": "v1.1-34-gd8ff598",
 			"Rev": "d8ff598a019f2c7bad0980917a588193cf26666e"
@@ -110,9 +118,18 @@
 			"Rev": "ab2277b1c5d15c3cba104e9cbddbdfc622df5ad8"
 		},
 		{
+			"ImportPath": "github.com/russross/blackfriday",
+			"Comment": "v1.4-40-g5f33e7b",
+			"Rev": "5f33e7b7878355cd2b7e6b8eefc48a5472c69f70"
+		},
+		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Comment": "v1.1.0-6-gb061729",
 			"Rev": "b061729afc07e77a8aa4fad0a2fd840958f1942a"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/sanitized_anchor_name",
+			"Rev": "1dba4b3954bc059efc3991ec364f9f9a35f597d2"
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/curve25519",
@@ -140,6 +157,10 @@
 		},
 		{
 			"ImportPath": "golang.org/x/crypto/scrypt",
+			"Rev": "5f31782cfb2b6373211f8f9fbf31283fa234b570"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh/terminal",
 			"Rev": "5f31782cfb2b6373211f8f9fbf31283fa234b570"
 		},
 		{

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -21,7 +21,7 @@ func registerCapability(app cli.App) *cli.App {
 					{
 						Name:         "declare",
 						Usage:        "Declare a new monitoring system capability",
-						Description:  help.CmdCapabilityDeclare,
+						Description:  help.Text(`CapabilitiesDeclare`),
 						Action:       runtime(cmdCapabilityDeclare),
 						BashComplete: cmpl.CapabilityDeclare,
 					},

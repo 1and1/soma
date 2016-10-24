@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -21,7 +21,7 @@ func registerServers(app cli.App) *cli.App {
 					{
 						Name:         "create",
 						Usage:        "Create a new physical server",
-						Description:  help.CmdServerCreate,
+						Description:  help.Text(`ServersCreate`),
 						Action:       runtime(cmdServerCreate),
 						BashComplete: cmpl.ServerCreate,
 					},
@@ -46,7 +46,7 @@ func registerServers(app cli.App) *cli.App {
 					{
 						Name:         "update",
 						Usage:        "Full update of server attributes (replace, not merge)",
-						Description:  help.CmdServerUpdate,
+						Description:  help.Text(`ServersUpdate`),
 						Action:       runtime(cmdServerUpdate),
 						BashComplete: cmpl.ServerUpdate,
 					},

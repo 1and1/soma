@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/auth"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -94,7 +94,7 @@ func registerUsers(app cli.App) *cli.App {
 								Name:        `update`,
 								Usage:       `Update the password of one's own user account`,
 								Action:      boottime(cmdUserPasswordUpdate),
-								Description: help.CmdUserPasswordUpdate,
+								Description: help.Text(`UsersPasswordUpdate`),
 								Flags: []cli.Flag{
 									cli.BoolFlag{
 										Name:  `reset, r`,

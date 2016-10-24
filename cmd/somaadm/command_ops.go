@@ -7,9 +7,9 @@ import (
 
 	"gopkg.in/resty.v0"
 
-	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/auth"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -25,19 +25,19 @@ func registerOps(app cli.App) *cli.App {
 					{
 						Name:        "bootstrap",
 						Usage:       "Bootstrap authenticate to a new installation",
-						Description: help.CmdOpsBootstrap,
+						Description: help.Text(`OpsBootstrap`),
 						Action:      boottime(cmdOpsBootstrap),
 					},
 					{
 						Name:        "dumptoken",
 						Usage:       "Print the currently active token for a user",
-						Description: help.CmdOpsDumpToken,
+						Description: help.Text(`OpsDumptoken`),
 						Action:      runtime(cmdOpsDumpToken),
 					},
 					{
 						Name:        `shutdown`,
 						Usage:       `Controlled shutdown of a running SOMA instance`,
-						Description: help.CmdOpsShutdown,
+						Description: help.Text(`OpsShutdown`),
 						Action:      runtime(cmdOpsShutdown),
 					},
 					{
@@ -47,20 +47,20 @@ func registerOps(app cli.App) *cli.App {
 							{
 								Name:        `stop`,
 								Usage:       `Stop the TreeKeeper for a specific repository`,
-								Description: help.CmdOpsRepoStop,
+								Description: help.Text(`OpsRepositoryStop`),
 								Action:      runtime(cmdOpsRepoStop),
 							},
 							{
 								Name:         `rebuild`,
 								Usage:        `Rebuild dynamic objects in a specific repository`,
 								Action:       runtime(cmdOpsRepoRebuild),
-								Description:  help.CmdOpsRepoRebuild,
+								Description:  help.Text(`OpsRepositoryRebuild`),
 								BashComplete: cmpl.OpsRepoRebuild,
 							},
 							{
 								Name:        `restart`,
 								Usage:       `Restart the TreeKeeper for a specific repository`,
-								Description: help.CmdOpsRepoRestart,
+								Description: help.Text(`OpsRepositoryRestart`),
 								Action:      runtime(cmdOpsRepoRestart),
 							},
 						},

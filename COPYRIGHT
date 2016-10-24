@@ -53,7 +53,13 @@ github.com/codegangsta/cli: MIT License
 github.com/dchest/blake2b: Public Domain Dedication
   2012 by Dmitry Chestnykh
 
-github.com/julienschmidt: 3-clause BSD
+github.com/gholt/blackfridaytext: 3-clause BSD
+  Copyright Gregory Holt
+
+github.com/gholt/brimtext: 3-clause BSD
+  Copyright Gregory Holt
+
+github.com/julienschmidt/httprouter: 3-clause BSD
   Copyright (c) 2013 Julien Schmidt
 
 github.com/lib/pq: ISC-style
@@ -80,8 +86,14 @@ github.com/peterh/liner: ISC-style
 github.com/rcrowley/go-metrics: 2-clause BSD style
   Copyright 2012 Richard Crowley
 
+github.com/russross/blackfriday: 2-clause BSD
+  Copyright © 2011 Russ Ross
+
 github.com/satori/go.uuid: ISC-style
   Copyright (C) 2013-2016 by Maxim Bublis
+
+github.com/shurcooL/sanitized_anchor_name: MIT License
+  Copyright (c) 2015 Dmitri Shuralyov
 
 golang.org/x/sys: 3-clause BSD
   Copyright (c) 2009 The Go Authors
