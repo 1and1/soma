@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"strconv"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -53,55 +54,23 @@ type somaCheckConfigurationReadHandler struct {
 func (r *somaCheckConfigurationReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmtCheckConfigList); err != nil {
-		r.errLog.Fatal("checkconfig/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.CheckConfigList:                r.list_stmt,
+		stmt.CheckConfigShowBase:            r.show_base,
+		stmt.CheckConfigShowThreshold:       r.show_threshold,
+		stmt.CheckConfigShowConstrCustom:    r.show_constr_custom,
+		stmt.CheckConfigShowConstrSystem:    r.show_constr_system,
+		stmt.CheckConfigShowConstrNative:    r.show_constr_native,
+		stmt.CheckConfigShowConstrService:   r.show_constr_service,
+		stmt.CheckConfigShowConstrAttribute: r.show_constr_attribute,
+		stmt.CheckConfigShowConstrOncall:    r.show_constr_oncall,
+		stmt.CheckConfigInstanceInfo:        r.show_instance_info,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`checkconfig`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_base, err = r.conn.Prepare(stmtCheckConfigShowBase); err != nil {
-		r.errLog.Fatal("checkconfig/show-base: ", err)
-	}
-	defer r.show_base.Close()
-
-	if r.show_threshold, err = r.conn.Prepare(stmtCheckConfigShowThreshold); err != nil {
-		r.errLog.Fatal("checkconfig/show-threshold: ", err)
-	}
-	defer r.show_threshold.Close()
-
-	if r.show_constr_custom, err = r.conn.Prepare(stmtCheckConfigShowConstrCustom); err != nil {
-		r.errLog.Fatal("checkconfig/show-constraint-custom: ", err)
-	}
-	defer r.show_constr_custom.Close()
-
-	if r.show_constr_system, err = r.conn.Prepare(stmtCheckConfigShowConstrSystem); err != nil {
-		r.errLog.Fatal("checkconfig/show-constraint-system: ", err)
-	}
-	defer r.show_constr_system.Close()
-
-	if r.show_constr_native, err = r.conn.Prepare(stmtCheckConfigShowConstrNative); err != nil {
-		r.errLog.Fatal("checkconfig/show-constraint-native: ", err)
-	}
-	defer r.show_constr_native.Close()
-
-	if r.show_constr_service, err = r.conn.Prepare(stmtCheckConfigShowConstrService); err != nil {
-		r.errLog.Fatal("checkconfig/show-constraint-service: ", err)
-	}
-	defer r.show_constr_service.Close()
-
-	if r.show_constr_attribute, err = r.conn.Prepare(stmtCheckConfigShowConstrAttribute); err != nil {
-		r.errLog.Fatal("checkconfig/show-constraint-attribute: ", err)
-	}
-	defer r.show_constr_attribute.Close()
-
-	if r.show_constr_oncall, err = r.conn.Prepare(stmtCheckConfigShowConstrOncall); err != nil {
-		r.errLog.Fatal("checkconfig/show-constraint-oncall: ", err)
-	}
-	defer r.show_constr_oncall.Close()
-
-	if r.show_instance_info, err = r.conn.Prepare(stmtCheckConfigInstanceInfo); err != nil {
-		r.errLog.Fatal("checkconfig/show-instance-info: ", err)
-	}
-	defer r.show_instance_info.Close()
 
 runloop:
 	for {

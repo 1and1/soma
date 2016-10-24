@@ -1,12 +1,12 @@
-package main
+package stmt
 
-const lcStmtActiveUnblockCondition = `
-SELECT 	scicd.blocked_instance_config_id,
-		scicd.blocking_instance_config_id,
-		scicd.unblocking_state,
-		p.status,
-		p.next_status,
-		p.check_instance_id
+const LifecycleActiveUnblockCondition = `
+SELECT  scicd.blocked_instance_config_id,
+        scicd.blocking_instance_config_id,
+        scicd.unblocking_state,
+        p.status,
+        p.next_status,
+        p.check_instance_id
 FROM    soma.check_instance_configuration_dependencies scicd
 JOIN    soma.check_instance_configurations scic
 ON      scicd.blocking_instance_config_id = scic.check_instance_config_id
@@ -17,29 +17,29 @@ JOIN    soma.check_instances sci
 ON      p.check_instance_id = sci.check_instance_id
 AND     scicd.blocking_instance_config_id = sci.current_instance_config_id;`
 
-const lcStmtUpdateInstance = `
-UPDATE	soma.check_instances
+const LifecycleUpdateInstance = `
+UPDATE  soma.check_instances
 SET     update_available = $1::boolean,
         current_instance_config_id = $2::uuid
 WHERE   check_instance_id = $3::uuid;`
 
-const lcStmtUpdateConfig = `
+const LifecycleUpdateConfig = `
 UPDATE  soma.check_instance_configurations
 SET     status = $1::varchar,
         next_status = $2::varchar,
-		awaiting_deletion = $3::boolean
+        awaiting_deletion = $3::boolean
 WHERE   check_instance_config_id = $4::uuid;`
 
-const lcStmtDeleteDependency = `
+const LifecycleDeleteDependency = `
 DELETE FROM soma.check_instance_configuration_dependencies
 WHERE       blocked_instance_config_id = $1::uuid
 AND         blocking_instance_config_id = $2::uuid
 AND         unblocking_state = $3::varchar;`
 
-const lcStmtReadyDeployments = `
+const LifecycleReadyDeployments = `
 SELECT scic.check_instance_id,
        scic.monitoring_id,
-	   sms.monitoring_callback_uri
+       sms.monitoring_callback_uri
 FROM   soma.check_instance_configurations scic
 JOIN   soma.monitoring_systems sms
 ON     scic.monitoring_id = sms.monitoring_id
@@ -51,12 +51,12 @@ WHERE  (  scic.status = 'awaiting_rollout'
 AND    sms.monitoring_callback_uri IS NOT NULL
 AND    sci.update_available;`
 
-const lcStmtClearUpdateFlag = `
+const LifecycleClearUpdateFlag = `
 UPDATE soma.check_instances
 SET    update_available = 'false'::boolean
 WHERE  check_instance_id = $1::uuid;`
 
-const lcStmtBlockedConfigsForDeletedInstance = `
+const LifecycleBlockedConfigsForDeletedInstance = `
 SELECT scicd.blocked_instance_config_id,
        scicd.blocking_instance_config_id,
        scicd.unblocking_state
@@ -68,14 +68,14 @@ JOIN   soma.check_instance_configuration_dependencies scicd
 WHERE  sci.deleted
   AND  scic.status = 'blocked';`
 
-const lcStmtConfigAwaitingDeletion = `
+const LifecycleConfigAwaitingDeletion = `
 UPDATE soma.check_instance_configurations
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
        awaiting_deletion = 'yes'::boolean
 WHERE  check_instance_config_id = $1::uuid;`
 
-const lcStmtDeleteGhosts = `
+const LifecycleDeleteGhosts = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
@@ -86,7 +86,7 @@ AND    scic.status = 'awaiting_rollout'
 AND    sci.deleted
 AND    sci.update_available;`
 
-const lcStmtDeleteFailedRollouts = `
+const LifecycleDeleteFailedRollouts = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
@@ -96,7 +96,7 @@ WHERE  scic.check_instance_id = sci.check_instance_id
 AND    sci.deleted
 AND    scic.status = 'rollout_failed';`
 
-const lcStmtDeleteDeprovisioned = `
+const LifecycleDeleteDeprovisioned = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
@@ -107,7 +107,7 @@ AND    sci.deleted
 AND    scic.status = 'deprovisioned'
 AND    scic.next_status = 'none';`
 
-const lcStmtDeprovisionDeletedActive = `
+const LifecycleDeprovisionDeletedActive = `
 SELECT scic.check_instance_config_id,
        sci.check_instance_id
 FROM   soma.check_instance_configurations scic
@@ -118,14 +118,14 @@ WHERE  sci.deleted
   AND  scic.next_status = 'none';
 `
 
-const lcStmtDeprovisionConfiguration = `
+const LifecycleDeprovisionConfiguration = `
 UPDATE soma.check_instance_configurations
 SET    status = 'awaiting_deprovision'::varchar,
        next_status = 'deprovision_in_progress'::varchar
 WHERE  check_instance_config_id = $1::uuid;
 `
 
-const lcStmtDeadLockResolver = `
+const LifecycleDeadLockResolver = `
 SELECT ci.check_instance_id,
        ci.current_instance_config_id
 FROM   check_instances ci

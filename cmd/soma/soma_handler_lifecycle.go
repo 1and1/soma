@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/1and1/soma/internal/stmt"
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/resty.v0"
 )
@@ -34,35 +35,19 @@ func (lc *lifeCycle) run() {
 	var err error
 	lc.tick = time.NewTicker(time.Duration(SomaCfg.LifeCycleTick) * time.Second).C
 
-	if lc.stmt_unblock, err = lc.conn.Prepare(lcStmtActiveUnblockCondition); err != nil {
-		lc.errLog.Fatal(err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.LifecycleActiveUnblockCondition:           lc.stmt_unblock,
+		stmt.LifecycleReadyDeployments:                 lc.stmt_poke,
+		stmt.LifecycleClearUpdateFlag:                  lc.stmt_clear,
+		stmt.LifecycleBlockedConfigsForDeletedInstance: lc.stmt_delblk,
+		stmt.LifecycleDeprovisionDeletedActive:         lc.stmt_delact,
+		stmt.LifecycleDeadLockResolver:                 lc.stmt_dead,
+	} {
+		if prepStmt, err = lc.conn.Prepare(statement); err != nil {
+			lc.errLog.Fatal(`lifecycle`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer lc.stmt_unblock.Close()
-
-	if lc.stmt_poke, err = lc.conn.Prepare(lcStmtReadyDeployments); err != nil {
-		lc.errLog.Fatal(err)
-	}
-	defer lc.stmt_poke.Close()
-
-	if lc.stmt_clear, err = lc.conn.Prepare(lcStmtClearUpdateFlag); err != nil {
-		lc.errLog.Fatal(err)
-	}
-	defer lc.stmt_clear.Close()
-
-	if lc.stmt_delblk, err = lc.conn.Prepare(lcStmtBlockedConfigsForDeletedInstance); err != nil {
-		lc.errLog.Fatal(err)
-	}
-	defer lc.stmt_delblk.Close()
-
-	if lc.stmt_delact, err = lc.conn.Prepare(lcStmtDeprovisionDeletedActive); err != nil {
-		lc.errLog.Fatal(err)
-	}
-	defer lc.stmt_delact.Close()
-
-	if lc.stmt_dead, err = lc.conn.Prepare(lcStmtDeadLockResolver); err != nil {
-		lc.errLog.Fatal(err)
-	}
-	defer lc.stmt_dead.Close()
 
 	if SomaCfg.Observer {
 		lc.appLog.Println(`LifeCycle entered observer mode`)
@@ -96,9 +81,9 @@ exit:
 // awaiting_rollout and have update_available set, ie. they have not yet
 // been sent to the monitoring system
 func (lc *lifeCycle) ghost() {
-	lc.conn.Exec(lcStmtDeleteGhosts)
-	lc.conn.Exec(lcStmtDeleteFailedRollouts)
-	lc.conn.Exec(lcStmtDeleteDeprovisioned)
+	lc.conn.Exec(stmt.LifecycleDeleteGhosts)
+	lc.conn.Exec(stmt.LifecycleDeleteFailedRollouts)
+	lc.conn.Exec(stmt.LifecycleDeleteDeprovisioned)
 }
 
 // search if there are check instance configurations in status blocked
@@ -139,14 +124,14 @@ func (lc *lifeCycle) discardDeletedBlocked() error {
 		}
 
 		// delete record that blockedID waits on blockingID
-		if _, err = tx.Exec(lcStmtDeleteDependency, blockedID, blockingID, state); err != nil {
+		if _, err = tx.Exec(stmt.LifecycleDeleteDependency, blockedID, blockingID, state); err != nil {
 			lc.errLog.Println(err)
 			tx.Rollback()
 			return err
 		}
 
 		// set blockedID to awaiting_deletion
-		if _, err = tx.Exec(lcStmtConfigAwaitingDeletion, blockedID); err != nil {
+		if _, err = tx.Exec(stmt.LifecycleConfigAwaitingDeletion, blockedID); err != nil {
 			lc.errLog.Println(err)
 			tx.Rollback()
 			return err
@@ -196,14 +181,14 @@ cfgloop:
 		}
 
 		// set instance configuration to awaiting_deprovision
-		if _, err = tx.Exec(lcStmtDeprovisionConfiguration, instCfgId); err != nil {
+		if _, err = tx.Exec(stmt.LifecycleDeprovisionConfiguration, instCfgId); err != nil {
 			lc.errLog.Println(err)
 			tx.Rollback()
 			return
 		}
 
 		// set instance to update_available -> pickup by poke
-		if _, err = tx.Exec(lcStmtUpdateInstance, true, instCfgId, instId); err != nil {
+		if _, err = tx.Exec(stmt.LifecycleUpdateInstance, true, instCfgId, instId); err != nil {
 			lc.errLog.Println(err)
 			tx.Rollback()
 			return
@@ -256,17 +241,17 @@ idloop:
 			continue idloop
 		}
 
-		if txUpdate, err = tx.Prepare(lcStmtUpdateConfig); err != nil {
+		if txUpdate, err = tx.Prepare(stmt.LifecycleUpdateConfig); err != nil {
 			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
 		}
-		if txDelete, err = tx.Prepare(lcStmtDeleteDependency); err != nil {
+		if txDelete, err = tx.Prepare(stmt.LifecycleDeleteDependency); err != nil {
 			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
 		}
-		if txInstance, err = tx.Prepare(lcStmtUpdateInstance); err != nil {
+		if txInstance, err = tx.Prepare(stmt.LifecycleUpdateInstance); err != nil {
 			lc.errLog.Println(err.Error())
 			tx.Rollback()
 			continue idloop
@@ -394,13 +379,13 @@ func (lc *lifeCycle) deadlockResolver() {
 			lc.errLog.Println(`lifeCycle.deadLockResolver()`, err)
 			return
 		}
-		lc.conn.Exec(lcStmtUpdateConfig,
+		lc.conn.Exec(stmt.LifecycleUpdateConfig,
 			`awaiting_deprovision`,
 			`deprovision_in_progress`,
 			false,
 			chkInstConfigID,
 		)
-		lc.conn.Exec(lcStmtUpdateInstance,
+		lc.conn.Exec(stmt.LifecycleUpdateInstance,
 			true,
 			chkInstConfigID,
 			chkInstID,

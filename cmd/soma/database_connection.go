@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/1and1/soma/internal/stmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/lib/pq"
 )
@@ -38,10 +39,10 @@ func connectToDatabase(appLog, errLog *log.Logger) {
 		log.Fatal(err)
 	}
 	appLog.Print("Connected main pool to database")
-	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
+	if _, err = conn.Exec(stmt.DatabaseTimezone); err != nil {
 		errLog.Fatal(err)
 	}
-	if _, err = conn.Exec(`SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`); err != nil {
+	if _, err = conn.Exec(stmt.DatabaseIsolationLevel); err != nil {
 		errLog.Fatal(err)
 	}
 
@@ -58,11 +59,7 @@ func connectToDatabase(appLog, errLog *log.Logger) {
 		"soma":      201609120001,
 	}
 
-	if rows, err = conn.Query(`
-SELECT schema,
-       MAX(version) AS version
-FROM   public.schema_versions
-GROUP  BY schema;`); err != nil {
+	if rows, err = conn.Query(stmt.DatabaseSchemaVersion); err != nil {
 		errLog.Fatal("Query db schema versions: ", err)
 	}
 
@@ -115,10 +112,10 @@ func newDatabaseConnection() (*sql.DB, error) {
 	if err = conn.Ping(); err != nil {
 		return nil, err
 	}
-	if _, err = conn.Exec(`SET TIME ZONE 'UTC';`); err != nil {
+	if _, err = conn.Exec(stmt.DatabaseTimezone); err != nil {
 		return nil, err
 	}
-	if _, err = conn.Exec(`SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`); err != nil {
+	if _, err = conn.Exec(stmt.DatabaseIsolationLevel); err != nil {
 		log.Fatal(err)
 	}
 	dbcon.SetMaxIdleConns(1)
