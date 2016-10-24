@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	uuid "github.com/satori/go.uuid"
 )
@@ -20,19 +21,7 @@ func (tk *treeKeeper) startupRepositorySystemProperties() {
 		rows, instance_rows                                                              *sql.Rows
 		load_properties, load_instances                                                  *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   repository_id,
-	   view,
-	   system_property,
-	   source_type,
-	   inheritance_enabled,
-	   children_only,
-	   value
-FROM   soma.repository_system_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepoSysProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-system-properties: ", err)
 		tk.broken = true
@@ -40,7 +29,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-system-property-instances: ", err)
 		tk.broken = true
@@ -178,19 +167,7 @@ func (tk *treeKeeper) startupBucketSystemProperties() {
 		rows, instance_rows                                                          *sql.Rows
 		load_properties, load_instances                                              *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   bucket_id,
-	   view,
-	   system_property,
-	   source_type,
-	   inheritance_enabled,
-	   children_only,
-	   value
-FROM   soma.bucket_system_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketSysProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-system-properties: ", err)
 		tk.broken = true
@@ -198,7 +175,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-system-property-instances: ", err)
 		tk.broken = true
@@ -336,19 +313,7 @@ func (tk *treeKeeper) startupGroupSystemProperties() {
 		rows, instance_rows                                                         *sql.Rows
 		load_properties, load_instances                                             *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   group_id,
-	   view,
-	   system_property,
-	   source_type,
-	   inheritance_enabled,
-	   children_only,
-	   value
-FROM   soma.group_system_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupSysProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-system-properties: ", err)
 		tk.broken = true
@@ -356,7 +321,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-system-property-instances: ", err)
 		tk.broken = true
@@ -494,19 +459,7 @@ func (tk *treeKeeper) startupClusterSystemProperties() {
 		rows, instance_rows                                                           *sql.Rows
 		load_properties, load_instances                                               *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   cluster_id,
-	   view,
-	   system_property,
-	   source_type,
-	   inheritance_enabled,
-	   children_only,
-	   value
-FROM   soma.cluster_system_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterSysProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-system-properties: ", err)
 		tk.broken = true
@@ -514,7 +467,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-system-property-instances: ", err)
 		tk.broken = true
@@ -652,19 +605,7 @@ func (tk *treeKeeper) startupNodeSystemProperties() {
 		rows, instance_rows                                                        *sql.Rows
 		load_properties, load_instances                                            *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   node_id,
-	   view,
-	   system_property,
-	   source_type,
-	   inheritance_enabled,
-	   children_only,
-	   value
-FROM   soma.node_system_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeSysProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-system-properties: ", err)
 		tk.broken = true
@@ -672,7 +613,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadSystemPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-system-property-instances: ", err)
 		tk.broken = true

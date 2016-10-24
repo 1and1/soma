@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	uuid "github.com/satori/go.uuid"
 )
@@ -20,21 +21,8 @@ func (tk *treeKeeper) startupRepositoryCustomProperties() {
 		rows, instance_rows                                                            *sql.Rows
 		load_properties, load_instances                                                *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT srcp.instance_id,
-       srcp.source_instance_id,
-	   srcp.repository_id,
-	   srcp.view,
-	   srcp.custom_property_id,
-	   srcp.inheritance_enabled,
-	   srcp.children_only,
-	   srcp.value,
-	   scp.custom_property
-FROM   soma.repository_custom_properties srcp
-JOIN   soma.custom_properties scp
-ON     srcp.custom_property_id = scp.custom_property_id
-WHERE  srcp.instance_id = srcp.source_instance_id
-AND    srcp.repository_id = $1::uuid;`)
+
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepositoryCstProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-custom-properties: ", err)
 		tk.broken = true
@@ -42,7 +30,7 @@ AND    srcp.repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-custom-property-instances: ", err)
 		tk.broken = true
@@ -176,21 +164,8 @@ func (tk *treeKeeper) startupBucketCustomProperties() {
 		rows, instance_rows                                                        *sql.Rows
 		load_properties, load_instances                                            *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT sbcp.instance_id,
-       sbcp.source_instance_id,
-	   sbcp.bucket_id,
-	   sbcp.view,
-	   sbcp.custom_property_id,
-	   sbcp.inheritance_enabled,
-	   sbcp.children_only,
-	   sbcp.value,
-	   scp.custom_property
-FROM   soma.bucket_custom_properties sbcp
-JOIN   soma.custom_properties scp
-ON     sbcp.custom_property_id = scp.custom_property_id
-WHERE  sbcp.instance_id = sbcp.source_instance_id
-AND    sbcp.repository_id = $1::uuid;`)
+
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketCstProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-custom-properties: ", err)
 		tk.broken = true
@@ -198,7 +173,7 @@ AND    sbcp.repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-custom-property-instances: ", err)
 		tk.broken = true
@@ -332,21 +307,7 @@ func (tk *treeKeeper) startupGroupCustomProperties() {
 		rows, instance_rows                                                       *sql.Rows
 		load_properties, load_instances                                           *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT sgcp.instance_id,
-       sgcp.source_instance_id,
-	   sgcp.group_id,
-	   sgcp.view,
-	   sgcp.custom_property_id,
-	   sgcp.inheritance_enabled,
-	   sgcp.children_only,
-	   sgcp.value,
-	   scp.custom_property
-FROM   soma.group_custom_properties sgcp
-JOIN   soma.custom_properties scp
-ON     sgcp.custom_property_id = scp.custom_property_id
-WHERE  sgcp.instance_id = sgcp.source_instance_id
-AND    sgcp.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupCstProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-custom-properties: ", err)
 		tk.broken = true
@@ -354,7 +315,7 @@ AND    sgcp.repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-custom-property-instances: ", err)
 		tk.broken = true
@@ -487,21 +448,7 @@ func (tk *treeKeeper) startupClusterCustomProperties() {
 		rows, instance_rows                                                         *sql.Rows
 		load_properties, load_instances                                             *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT sccp.instance_id,
-       sccp.source_instance_id,
-	   sccp.cluster_id,
-	   sccp.view,
-	   sccp.custom_property_id,
-	   sccp.inheritance_enabled,
-	   sccp.children_only,
-	   sccp.value,
-	   scp.custom_property
-FROM   soma.cluster_custom_properties sccp
-JOIN   soma.custom_properties scp
-ON     sccp.custom_property_id = scp.custom_property_id
-WHERE  sccp.instance_id = sccp.source_instance_id
-AND    sccp.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterCstProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-custom-properties: ", err)
 		tk.broken = true
@@ -509,7 +456,7 @@ AND    sccp.repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-custom-property-instances: ", err)
 		tk.broken = true
@@ -643,21 +590,7 @@ func (tk *treeKeeper) startupNodeCustomProperties() {
 		rows, instance_rows                                                      *sql.Rows
 		load_properties, load_instances                                          *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT sncp.instance_id,
-       sncp.source_instance_id,
-	   sncp.node_id,
-	   sncp.view,
-	   sncp.custom_property_id,
-	   sncp.inheritance_enabled,
-	   sncp.children_only,
-	   sncp.value,
-	   scp.custom_property
-FROM   soma.node_custom_properties sncp
-JOIN   soma.custom_properties scp
-ON     sncp.custom_property_id = scp.custom_property_id
-WHERE  sncp.instance_id = sncp.source_instance_id
-AND    sncp.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeCstProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-custom-properties: ", err)
 		tk.broken = true
@@ -665,7 +598,7 @@ AND    sncp.repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadCustomPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-custom-property-instances: ", err)
 		tk.broken = true

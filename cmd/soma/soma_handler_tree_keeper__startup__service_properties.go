@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 	uuid "github.com/satori/go.uuid"
@@ -21,18 +22,7 @@ func (tk *treeKeeper) startupRepositoryServiceProperties() {
 		rows, attribute_rows, instance_rows                                    *sql.Rows
 		load_properties, load_attributes, load_instances                       *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   repository_id,
-	   view,
-	   service_property,
-	   organizational_team_id,
-	   inheritance_enabled,
-	   children_only
-FROM   soma.repository_service_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepoSvcProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-service-properties: ", err)
 		tk.broken = true
@@ -40,12 +30,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_attributes, err = tk.conn.Prepare(`
-SELECT service_property_attribute,
-       value
-FROM   soma.team_service_property_values
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
+	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadRepoSvcAttr)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-service-property-attributes: ", err)
 		tk.broken = true
@@ -53,7 +38,7 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-service-property-instances: ", err)
 		tk.broken = true
@@ -224,18 +209,7 @@ func (tk *treeKeeper) startupBucketServiceProperties() {
 		rows, attribute_rows, instance_rows                                *sql.Rows
 		load_properties, load_attributes, load_instances                   *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   bucket_id,
-	   view,
-	   service_property,
-	   organizational_team_id,
-	   inheritance_enabled,
-	   children_only
-FROM   soma.bucket_service_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketSvcProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-service-properties: ", err)
 		tk.broken = true
@@ -243,12 +217,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_attributes, err = tk.conn.Prepare(`
-SELECT service_property_attribute,
-       value
-FROM   soma.team_service_property_values
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
+	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadBucketSvcAttr)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-service-property-attributes: ", err)
 		tk.broken = true
@@ -256,7 +225,7 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-service-property-instances: ", err)
 		tk.broken = true
@@ -427,18 +396,7 @@ func (tk *treeKeeper) startupGroupServiceProperties() {
 		rows, attribute_rows, instance_rows                               *sql.Rows
 		load_properties, load_attributes, load_instances                  *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   group_id,
-	   view,
-	   service_property,
-	   organizational_team_id,
-	   inheritance_enabled,
-	   children_only
-FROM   soma.group_service_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupSvcProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-service-properties: ", err)
 		tk.broken = true
@@ -446,12 +404,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_attributes, err = tk.conn.Prepare(`
-SELECT service_property_attribute,
-       value
-FROM   soma.team_service_property_values
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
+	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadGroupSvcAttr)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-service-property-attributes: ", err)
 		tk.broken = true
@@ -459,7 +412,7 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-service-property-instances: ", err)
 		tk.broken = true
@@ -630,18 +583,7 @@ func (tk *treeKeeper) startupClusterServiceProperties() {
 		rows, attribute_rows, instance_rows                                 *sql.Rows
 		load_properties, load_attributes, load_instances                    *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   cluster_id,
-	   view,
-	   service_property,
-	   organizational_team_id,
-	   inheritance_enabled,
-	   children_only
-FROM   soma.cluster_service_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterSvcProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-service-properties: ", err)
 		tk.broken = true
@@ -649,12 +591,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_attributes, err = tk.conn.Prepare(`
-SELECT service_property_attribute,
-       value
-FROM   soma.team_service_property_values
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
+	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadClusterSvcAttr)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-service-property-attributes: ", err)
 		tk.broken = true
@@ -662,7 +599,7 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-service-property-instances: ", err)
 		tk.broken = true
@@ -833,18 +770,7 @@ func (tk *treeKeeper) startupNodeServiceProperties() {
 		rows, attribute_rows, instance_rows                              *sql.Rows
 		load_properties, load_attributes, load_instances                 *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT instance_id,
-       source_instance_id,
-	   node_id,
-	   view,
-	   service_property,
-	   organizational_team_id,
-	   inheritance_enabled,
-	   children_only
-FROM   soma.node_service_properties
-WHERE  instance_id = source_instance_id
-AND    repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeSvcProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-service-properties: ", err)
 		tk.broken = true
@@ -852,12 +778,7 @@ AND    repository_id = $1::uuid;`)
 	}
 	defer load_properties.Close()
 
-	load_attributes, err = tk.conn.Prepare(`
-SELECT service_property_attribute,
-       value
-FROM   soma.team_service_property_values
-WHERE  organizational_team_id = $1::uuid
-AND    service_property = $2::varchar;`)
+	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadNodeSvcAttr)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-service-property-attributes: ", err)
 		tk.broken = true
@@ -865,7 +786,7 @@ AND    service_property = $2::varchar;`)
 	}
 	defer load_attributes.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadServicePropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-service-property-instances: ", err)
 		tk.broken = true

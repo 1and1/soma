@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -48,12 +49,12 @@ type somaHostDeploymentHandler struct {
 func (self *somaHostDeploymentHandler) run() {
 	var err error
 
-	if self.geti_stmt, err = self.conn.Prepare(stmtGetInstancesForNode); err != nil {
+	if self.geti_stmt, err = self.conn.Prepare(stmt.DeploymentInstancesForNode); err != nil {
 		self.errLog.Fatal("hostdeployment/get-for-node: ", err)
 	}
 	defer self.geti_stmt.Close()
 
-	if self.last_stmt, err = self.conn.Prepare(stmtGetLastInstanceVersion); err != nil {
+	if self.last_stmt, err = self.conn.Prepare(stmt.DeploymentLastInstanceVersion); err != nil {
 		self.errLog.Fatal("hostdeployment/last-version: ", err)
 	}
 	defer self.last_stmt.Close()

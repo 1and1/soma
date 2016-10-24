@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 )
 
@@ -119,17 +120,7 @@ func (tk *treeKeeper) startupBuckets() {
 		err                                       error
 		load_bucket                               *sql.Stmt
 	)
-	load_bucket, err = tk.conn.Prepare(`
-SELECT sb.bucket_id,
-       sb.bucket_name,
-       sb.bucket_frozen,
-       sb.bucket_deleted,
-       sb.environment,
-       sb.organizational_team_id
-FROM   soma.repositories sr
-JOIN   soma.buckets sb
-ON     sr.repository_id = sb.repository_id
-WHERE  sr.repository_id = $1::uuid;`)
+	load_bucket, err = tk.conn.Prepare(stmt.TkStartLoadBuckets)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-buckets: ", err)
 		tk.broken = true
@@ -194,17 +185,7 @@ func (tk *treeKeeper) startupGroups() {
 		err                                  error
 		load_group                           *sql.Stmt
 	)
-	load_group, err = tk.conn.Prepare(`
-SELECT sg.group_id,
-       sg.group_name,
-       sg.bucket_id,
-       sg.organizational_team_id
-FROM   soma.repositories sr
-JOIN   soma.buckets sb
-ON     sr.repository_id = sb.repository_id
-JOIN   soma.groups sg
-ON     sb.bucket_id = sg.bucket_id
-WHERE  sr.repository_id = $1::uuid;`)
+	load_group, err = tk.conn.Prepare(stmt.TkStartLoadGroups)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-groups: ", err)
 		tk.broken = true
@@ -262,15 +243,7 @@ func (tk *treeKeeper) startupGroupMemberGroups() {
 		err                   error
 		load_grp_mbr_grp      *sql.Stmt
 	)
-	load_grp_mbr_grp, err = tk.conn.Prepare(`
-SELECT sgmg.group_id,
-       sgmg.child_group_id
-FROM   soma.repositories sr
-JOIN   soma.buckets sb
-ON     sr.repository_id = sb.repository_id
-JOIN   soma.group_membership_groups sgmg
-ON     sb.bucket_id = sgmg.bucket_id
-WHERE  sr.repository_id = $1::uuid;`)
+	load_grp_mbr_grp, err = tk.conn.Prepare(stmt.TkStartLoadGroupMemberGroups)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-member-groups: ", err)
 		tk.broken = true
@@ -326,20 +299,7 @@ func (tk *treeKeeper) startupGroupedClusters() {
 		clusterId, clusterName, teamId, groupId string
 		load_grp_cluster                        *sql.Stmt
 	)
-	load_grp_cluster, err = tk.conn.Prepare(`
-SELECT sc.cluster_id,
-       sc.cluster_name,
-       sc.organizational_team_id,
-       sgmc.group_id
-FROM   soma.repositories sr
-JOIN   soma.buckets sb
-ON     sr.repository_id = sb.repository_id
-JOIN   soma.clusters sc
-ON     sb.bucket_id = sc.bucket_id
-JOIN   soma.group_membership_clusters sgmc
-ON     sc.bucket_id = sgmc.bucket_id
-AND    sc.cluster_id = sgmc.child_cluster_id
-WHERE  sr.repository_id = $1::uuid;`)
+	load_grp_cluster, err = tk.conn.Prepare(stmt.TkStartLoadGroupedClusters)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-grouped-clusters: ", err)
 		tk.broken = true
@@ -398,18 +358,7 @@ func (tk *treeKeeper) startupClusters() {
 		clusterId, clusterName, bucketId, teamId string
 		load_cluster                             *sql.Stmt
 	)
-	load_cluster, err = tk.conn.Prepare(`
-SELECT sc.cluster_id,
-       sc.cluster_name,
-	   sc.bucket_id,
-	   sc.organizational_team_id
-FROM   soma.repositories sr
-JOIN   soma.buckets sb
-ON     sr.repository_id = sb.repository_id
-JOIN   soma.clusters sc
-ON     sb.bucket_id = sc.bucket_id
-WHERE  sr.repository_id = $1::uuid
-AND    sc.object_state != 'grouped';`)
+	load_cluster, err = tk.conn.Prepare(stmt.TkStartLoadCluster)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-clusters: ", err)
 		tk.broken = true
@@ -471,29 +420,7 @@ func (tk *treeKeeper) startupNodes() {
 		clusterId, groupId                           sql.NullString
 		load_nodes                                   *sql.Stmt
 	)
-	load_nodes, err = tk.conn.Prepare(`
-SELECT    sn.node_id,
-          sn.node_asset_id,
-		  sn.node_name,
-		  sn.organizational_team_id,
-		  sn.server_id,
-		  sn.node_online,
-		  sn.node_deleted,
-		  snba.bucket_id,
-		  scm.cluster_id,
-		  sgmn.group_id
-FROM      soma.repositories sr
-JOIN      soma.buckets sb
-ON        sr.repository_id = sb.repository_id
-JOIN      soma.node_bucket_assignment snba
-ON        sb.bucket_id = snba.bucket_id
-JOIN      soma.nodes sn
-ON        snba.node_id = sn.node_id
-LEFT JOIN soma.cluster_membership scm
-ON        sn.node_id = scm.node_id
-LEFT JOIN soma.group_membership_nodes sgmn
-ON        sn.node_id = sgmn.child_node_id
-WHERE     sr.repository_id = $1::uuid`)
+	load_nodes, err = tk.conn.Prepare(stmt.TkStartLoadNode)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-nodes: ", err)
 		tk.broken = true
@@ -577,12 +504,7 @@ func (tk *treeKeeper) startupJobs() {
 		job       string
 		load_jobs *sql.Stmt
 	)
-	load_jobs, err = tk.conn.Prepare(`
-SELECT   job
-FROM     soma.jobs
-WHERE    repository_id = $1::uuid
-AND      job_status != 'processed'
-ORDER BY job_serial ASC;`)
+	load_jobs, err = tk.conn.Prepare(stmt.TkStartLoadJob)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-jobs: ", err)
 		tk.broken = true

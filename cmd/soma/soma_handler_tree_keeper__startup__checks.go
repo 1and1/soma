@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 	uuid "github.com/satori/go.uuid"
@@ -55,77 +56,77 @@ func (tk *treeKeeper) startupChecks() {
 
 	// prepare all required statements into the loader structure
 	ld = tkLoaderChecks{}
-	if ld.loadChecks, err = tk.conn.Prepare(tkStmtLoadChecks); err != nil {
+	if ld.loadChecks, err = tk.conn.Prepare(stmt.TkStartLoadChecks); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadChecks: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadChecks.Close()
 
-	if ld.loadItems, err = tk.conn.Prepare(tkStmtLoadInheritedChecks); err != nil {
+	if ld.loadItems, err = tk.conn.Prepare(stmt.TkStartLoadInheritedChecks); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadInheritedChecks: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadItems.Close()
 
-	if ld.loadConfig, err = tk.conn.Prepare(tkStmtLoadCheckConfiguration); err != nil {
+	if ld.loadConfig, err = tk.conn.Prepare(stmt.TkStartLoadCheckConfiguration); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConfiguration: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadConfig.Close()
 
-	if ld.loadAllConfigs, err = tk.conn.Prepare(tkStmtLoadAllCheckConfigurationsForType); err != nil {
+	if ld.loadAllConfigs, err = tk.conn.Prepare(stmt.TkStartLoadAllCheckConfigurationsForType); err != nil {
 		tk.startLog.Println(`treekeeper/tkStmtLoadAllCheckConfigurationsForType: `, err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadAllConfigs.Close()
 
-	if ld.loadThresh, err = tk.conn.Prepare(tkStmtLoadCheckThresholds); err != nil {
+	if ld.loadThresh, err = tk.conn.Prepare(stmt.TkStartLoadCheckThresholds); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckThresholds: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadThresh.Close()
 
-	if ld.loadCstrCustom, err = tk.conn.Prepare(tkStmtLoadCheckConstraintCustom); err != nil {
+	if ld.loadCstrCustom, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintCustom); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintCustom: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadCstrCustom.Close()
 
-	if ld.loadCstrNative, err = tk.conn.Prepare(tkStmtLoadCheckConstraintNative); err != nil {
+	if ld.loadCstrNative, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintNative); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintNative: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadCstrNative.Close()
 
-	if ld.loadCstrOncall, err = tk.conn.Prepare(tkStmtLoadCheckConstraintOncall); err != nil {
+	if ld.loadCstrOncall, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintOncall); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintOncall: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadCstrOncall.Close()
 
-	if ld.loadCstrAttr, err = tk.conn.Prepare(tkStmtLoadCheckConstraintAttribute); err != nil {
+	if ld.loadCstrAttr, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintAttribute); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintAttribute: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadCstrAttr.Close()
 
-	if ld.loadCstrServ, err = tk.conn.Prepare(tkStmtLoadCheckConstraintService); err != nil {
+	if ld.loadCstrServ, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintService); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintService: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadCstrServ.Close()
 
-	if ld.loadCstrSystem, err = tk.conn.Prepare(tkStmtLoadCheckConstraintSystem); err != nil {
+	if ld.loadCstrSystem, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintSystem); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintSystem: ", err)
 		tk.broken = true
 		return
@@ -133,21 +134,21 @@ func (tk *treeKeeper) startupChecks() {
 	defer ld.loadCstrSystem.Close()
 
 	// the following three statements are used to load check instances
-	if ld.loadTypeChecks, err = tk.conn.Prepare(tkStmtLoadChecksForType); err != nil {
+	if ld.loadTypeChecks, err = tk.conn.Prepare(stmt.TkStartLoadChecksForType); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadChecksForType: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadTypeChecks.Close()
 
-	if ld.loadInstances, err = tk.conn.Prepare(tkStmtLoadCheckInstances); err != nil {
+	if ld.loadInstances, err = tk.conn.Prepare(stmt.TkStartLoadCheckInstances); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckInstances: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadInstances.Close()
 
-	if ld.loadInstConfig, err = tk.conn.Prepare(tkStmtLoadCheckInstanceConfiguration); err != nil {
+	if ld.loadInstConfig, err = tk.conn.Prepare(stmt.TkStartLoadCheckInstanceConfiguration); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckInstanceConfiguration: ", err)
 		tk.broken = true
 		return
@@ -156,14 +157,14 @@ func (tk *treeKeeper) startupChecks() {
 
 	// since groups are the only tree elements that can be stacked,
 	// additional ordering is required
-	if ld.loadGroupState, err = tk.conn.Prepare(tkStmtLoadCheckGroupState); err != nil {
+	if ld.loadGroupState, err = tk.conn.Prepare(stmt.TkStartLoadCheckGroupState); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckGroupState: ", err)
 		tk.broken = true
 		return
 	}
 	defer ld.loadGroupState.Close()
 
-	if ld.loadGroupRel, err = tk.conn.Prepare(tkStmtLoadCheckGroupRelations); err != nil {
+	if ld.loadGroupRel, err = tk.conn.Prepare(stmt.TkStartLoadCheckGroupRelations); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtLoadCheckGroupRelations: ", err)
 		tk.broken = true
 		return
@@ -171,7 +172,7 @@ func (tk *treeKeeper) startupChecks() {
 	defer ld.loadGroupRel.Close()
 
 	// this is also needed early on
-	if tk.get_view, err = tk.conn.Prepare(tkStmtGetViewFromCapability); err != nil {
+	if tk.get_view, err = tk.conn.Prepare(stmt.TreekeeperGetViewFromCapability); err != nil {
 		tk.startLog.Println("treekeeper/tkStmtGetViewFromCapability: ", err)
 		tk.broken = true
 		return

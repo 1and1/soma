@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
@@ -51,40 +52,20 @@ type somaDeploymentHandler struct {
 func (self *somaDeploymentHandler) run() {
 	var err error
 
-	if self.get_stmt, err = self.conn.Prepare(stmtGetDeployment); err != nil {
-		self.errLog.Fatal("deployment/get: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.DeploymentGet:       self.get_stmt,
+		stmt.DeploymentUpdate:    self.upd_stmt,
+		stmt.DeploymentStatus:    self.sta_stmt,
+		stmt.DeploymentActivate:  self.act_stmt,
+		stmt.DeploymentList:      self.lst_stmt,
+		stmt.DeploymentListAll:   self.all_stmt,
+		stmt.DeploymentClearFlag: self.clr_stmt,
+	} {
+		if prepStmt, err = self.conn.Prepare(statement); err != nil {
+			self.errLog.Fatal(`deployment`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer self.get_stmt.Close()
-
-	if self.upd_stmt, err = self.conn.Prepare(stmtUpdateDeployment); err != nil {
-		self.errLog.Fatal("deployment/update: ", err)
-	}
-	defer self.upd_stmt.Close()
-
-	if self.sta_stmt, err = self.conn.Prepare(stmtDeploymentStatus); err != nil {
-		self.errLog.Fatal("deployment/status: ", err)
-	}
-	defer self.sta_stmt.Close()
-
-	if self.act_stmt, err = self.conn.Prepare(stmtActivateDeployment); err != nil {
-		self.errLog.Fatal("deployment/activate: ", err)
-	}
-	defer self.act_stmt.Close()
-
-	if self.lst_stmt, err = self.conn.Prepare(stmtGetDeploymentList); err != nil {
-		self.errLog.Fatal("deployment/list: ", err)
-	}
-	defer self.lst_stmt.Close()
-
-	if self.all_stmt, err = self.conn.Prepare(stmtGetAllDeploymentList); err != nil {
-		self.errLog.Fatal("deployment/listall: ", err)
-	}
-	defer self.all_stmt.Close()
-
-	if self.clr_stmt, err = self.conn.Prepare(stmtDeployClearFlag); err != nil {
-		self.errLog.Fatal("deployment/clearflag: ", err)
-	}
-	defer self.clr_stmt.Close()
 
 runloop:
 	for {

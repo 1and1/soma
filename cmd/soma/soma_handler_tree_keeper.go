@@ -168,36 +168,36 @@ broken:
 
 	// prepare statements
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		tkStmtDeleteDuplicateDetails:                  tk.stmt_DelDuplicate,
-		tkStmtDeployDetailClusterCustProp:             tk.stmt_ClusterCustProp,
-		tkStmtDeployDetailClusterSysProp:              tk.stmt_ClusterSysProp,
-		tkStmtDeployDetailDefaultDatacenter:           tk.stmt_DefaultDC,
-		tkStmtDeployDetailNodeCustProp:                tk.stmt_NodeCustProp,
-		tkStmtDeployDetailNodeSysProp:                 tk.stmt_NodeSysProp,
-		tkStmtDeployDetailsCapabilityMonitoringMetric: tk.stmt_CapMonMetric,
-		tkStmtDeployDetailsCheck:                      tk.stmt_Check,
-		tkStmtDeployDetailsCheckConfig:                tk.stmt_CheckConfig,
-		tkStmtDeployDetailsCheckConfigThreshold:       tk.stmt_Threshold,
-		tkStmtDeployDetailsCheckInstance:              tk.stmt_CheckInstance,
-		tkStmtDeployDetailsCluster:                    tk.stmt_Cluster,
-		tkStmtDeployDetailsClusterOncall:              tk.stmt_ClusterOncall,
-		tkStmtDeployDetailsClusterService:             tk.stmt_ClusterService,
-		tkStmtDeployDetailsComputeList:                tk.stmt_List,
-		tkStmtDeployDetailsGroup:                      tk.stmt_Group,
-		tkStmtDeployDetailsGroupCustProp:              tk.stmt_GroupCustProp,
-		tkStmtDeployDetailsGroupOncall:                tk.stmt_GroupOncall,
-		tkStmtDeployDetailsGroupService:               tk.stmt_GroupService,
-		tkStmtDeployDetailsGroupSysProp:               tk.stmt_GroupSysProp,
-		tkStmtDeployDetailsNode:                       tk.stmt_Node,
-		tkStmtDeployDetailsNodeOncall:                 tk.stmt_NodeOncall,
-		tkStmtDeployDetailsNodeService:                tk.stmt_NodeService,
-		tkStmtDeployDetailsProviders:                  tk.stmt_Pkgs,
-		tkStmtDeployDetailsTeam:                       tk.stmt_Team,
-		tkStmtDeployDetailsUpdate:                     tk.stmt_Update,
-		tkStmtGetComputedDeployments:                  tk.stmt_GetComputed,
-		tkStmtGetPreviousDeployment:                   tk.stmt_GetPrevious,
-		tkStmtGetViewFromCapability:                   tk.get_view,
-		tkStmtStartJob:                                tk.start_job,
+		stmt.TreekeeperDeleteDuplicateDetails:          tk.stmt_DelDuplicate,
+		stmt.TxDeployDetailClusterCustProp:             tk.stmt_ClusterCustProp,
+		stmt.TxDeployDetailClusterSysProp:              tk.stmt_ClusterSysProp,
+		stmt.TxDeployDetailDefaultDatacenter:           tk.stmt_DefaultDC,
+		stmt.TxDeployDetailNodeCustProp:                tk.stmt_NodeCustProp,
+		stmt.TxDeployDetailNodeSysProp:                 tk.stmt_NodeSysProp,
+		stmt.TxDeployDetailsCapabilityMonitoringMetric: tk.stmt_CapMonMetric,
+		stmt.TxDeployDetailsCheck:                      tk.stmt_Check,
+		stmt.TxDeployDetailsCheckConfig:                tk.stmt_CheckConfig,
+		stmt.TxDeployDetailsCheckConfigThreshold:       tk.stmt_Threshold,
+		stmt.TxDeployDetailsCheckInstance:              tk.stmt_CheckInstance,
+		stmt.TxDeployDetailsCluster:                    tk.stmt_Cluster,
+		stmt.TxDeployDetailsClusterOncall:              tk.stmt_ClusterOncall,
+		stmt.TxDeployDetailsClusterService:             tk.stmt_ClusterService,
+		stmt.TxDeployDetailsComputeList:                tk.stmt_List,
+		stmt.TxDeployDetailsGroup:                      tk.stmt_Group,
+		stmt.TxDeployDetailsGroupCustProp:              tk.stmt_GroupCustProp,
+		stmt.TxDeployDetailsGroupOncall:                tk.stmt_GroupOncall,
+		stmt.TxDeployDetailsGroupService:               tk.stmt_GroupService,
+		stmt.TxDeployDetailsGroupSysProp:               tk.stmt_GroupSysProp,
+		stmt.TxDeployDetailsNode:                       tk.stmt_Node,
+		stmt.TxDeployDetailsNodeOncall:                 tk.stmt_NodeOncall,
+		stmt.TxDeployDetailsNodeService:                tk.stmt_NodeService,
+		stmt.TxDeployDetailsProviders:                  tk.stmt_Pkgs,
+		stmt.TxDeployDetailsTeam:                       tk.stmt_Team,
+		stmt.TxDeployDetailsUpdate:                     tk.stmt_Update,
+		stmt.TreekeeperGetComputedDeployments:          tk.stmt_GetComputed,
+		stmt.TreekeeperGetPreviousDeployment:           tk.stmt_GetPrevious,
+		stmt.TreekeeperGetViewFromCapability:           tk.get_view,
+		stmt.TreekeeperStartJob:                        tk.start_job,
 	} {
 		if prepStmt, err = tk.conn.Prepare(statement); err != nil {
 			tk.log.Println("Error preparing SQL statement: ", err)
@@ -450,7 +450,7 @@ func (tk *treeKeeper) process(q *treeRequest) {
 	defer tx.Rollback()
 
 	// defer constraint checks
-	if _, err = tx.Exec(tkStmtDeferAllConstraints); err != nil {
+	if _, err = tx.Exec(stmt.TxDeferAllConstraints); err != nil {
 		tk.log.Println("Failed to exec: tkStmtDeferAllConstraints")
 		goto bailout
 	}
@@ -566,7 +566,7 @@ actionloop:
 	if !tk.rebuild {
 		// mark job as finished
 		if _, err = tx.Exec(
-			tkStmtFinishJob,
+			stmt.TxFinishJob,
 			q.JobId.String(),
 			time.Now().UTC(),
 			"success",
@@ -603,7 +603,7 @@ bailout:
 	tk.tree.Rollback()
 	tx.Rollback()
 	tk.conn.Exec(
-		tkStmtFinishJob,
+		stmt.TxFinishJob,
 		q.JobId.String(),
 		time.Now().UTC(),
 		"failed",

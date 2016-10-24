@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 )
 
@@ -76,14 +77,14 @@ deployments:
 			defer tx.Rollback()
 
 			// prepare statements within transaction
-			if txUpdateStatus, err = tx.Prepare(tkStmtUpdateConfigStatus); err != nil {
+			if txUpdateStatus, err = tx.Prepare(stmt.TreekeeperUpdateConfigStatus); err != nil {
 				tk.log.Printf("Failed to prepare %s: %s\n",
 					`tkStmtUpdateConfigStatus`, err)
 				break deployments
 			}
 			defer txUpdateStatus.Close()
 
-			if txUpdateInstance, err = tx.Prepare(tkStmtUpdateCheckInstance); err != nil {
+			if txUpdateInstance, err = tx.Prepare(stmt.TreekeeperUpdateCheckInstance); err != nil {
 				tk.log.Printf("Failed to prepare %s: %s\n",
 					`tkStmtUpdateCheckInstance`, err)
 				break deployments
@@ -157,28 +158,28 @@ deployments:
 		defer tx.Rollback()
 
 		// prepare statements within transaction
-		if txUpdateStatus, err = tx.Prepare(tkStmtUpdateConfigStatus); err != nil {
+		if txUpdateStatus, err = tx.Prepare(stmt.TreekeeperUpdateConfigStatus); err != nil {
 			tk.log.Println("Failed to prepare %s: %s\n",
 				`tkStmtUpdateConfigStatus`, err)
 			break deployments
 		}
 		defer txUpdateStatus.Close()
 
-		if txUpdateInstance, err = tx.Prepare(tkStmtUpdateCheckInstance); err != nil {
+		if txUpdateInstance, err = tx.Prepare(stmt.TreekeeperUpdateCheckInstance); err != nil {
 			tk.log.Println("Failed to prepare %s: %s\n",
 				`tkStmtUpdateCheckInstance`, err)
 			break deployments
 		}
 		defer txUpdateInstance.Close()
 
-		if txUpdateExisting, err = tx.Prepare(tkStmtUpdateExistingCheckInstance); err != nil {
+		if txUpdateExisting, err = tx.Prepare(stmt.TreekeeperUpdateExistingCheckInstance); err != nil {
 			tk.log.Println("Failed to prepare %s: %s\n",
 				`tkStmtUpdateExistingCheckInstance`, err)
 			break deployments
 		}
 		defer txUpdateExisting.Close()
 
-		if txDependency, err = tx.Prepare(tkStmtSetDependency); err != nil {
+		if txDependency, err = tx.Prepare(stmt.TreekeeperSetDependency); err != nil {
 			tk.log.Println("Failed to prepare %s: %s\n",
 				`tkStmtSetDependency`, err)
 			break deployments

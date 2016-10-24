@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	uuid "github.com/satori/go.uuid"
 )
@@ -20,21 +21,7 @@ func (tk *treeKeeper) startupRepositoryOncallProperties() {
 		rows, instance_rows                                                               *sql.Rows
 		load_properties, load_instances                                                   *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  srop.instance_id,
-        srop.source_instance_id,
-        srop.repository_id,
-        srop.view,
-        srop.oncall_duty_id,
-        srop.inheritance_enabled,
-        srop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.repository_oncall_properties srop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    srop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   srop.instance_id = srop.source_instance_id
-  AND   srop.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepoOncProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-oncall-properties: ", err)
 		tk.broken = true
@@ -42,7 +29,7 @@ WHERE   srop.instance_id = srop.source_instance_id
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-repository-oncall-property-instances: ", err)
 		tk.broken = true
@@ -176,21 +163,7 @@ func (tk *treeKeeper) startupBucketOncallProperties() {
 		rows, instance_rows                                                           *sql.Rows
 		load_properties, load_instances                                               *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  sgop.instance_id,
-        sgop.source_instance_id,
-        sgop.bucket_id,
-        sgop.view,
-        sgop.oncall_duty_id,
-        sgop.inheritance_enabled,
-        sgop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.bucket_oncall_properties sgop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    sgop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   sgop.instance_id = sgop.source_instance_id
-  AND   sgop.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketOncProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-oncall-properties: ", err)
 		tk.broken = true
@@ -198,7 +171,7 @@ WHERE   sgop.instance_id = sgop.source_instance_id
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-bucket-oncall-property-instances: ", err)
 		tk.broken = true
@@ -332,21 +305,7 @@ func (tk *treeKeeper) startupGroupOncallProperties() {
 		rows, instance_rows                                                          *sql.Rows
 		load_properties, load_instances                                              *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  sgop.instance_id,
-        sgop.source_instance_id,
-        sgop.group_id,
-        sgop.view,
-        sgop.oncall_duty_id,
-        sgop.inheritance_enabled,
-        sgop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.group_oncall_properties sgop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    sgop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   sgop.instance_id = sgop.source_instance_id
-  AND   sgop.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupOncProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-oncall-properties: ", err)
 		tk.broken = true
@@ -354,7 +313,7 @@ WHERE   sgop.instance_id = sgop.source_instance_id
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-group-oncall-property-instances: ", err)
 		tk.broken = true
@@ -488,21 +447,7 @@ func (tk *treeKeeper) startupClusterOncallProperties() {
 		rows, instance_rows                                                            *sql.Rows
 		load_properties, load_instances                                                *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  scop.instance_id,
-        scop.source_instance_id,
-        scop.cluster_id,
-        scop.view,
-        scop.oncall_duty_id,
-        scop.inheritance_enabled,
-        scop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.cluster_oncall_properties scop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    scop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   scop.instance_id = scop.source_instance_id
-  AND   scop.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterOncProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-oncall-properties: ", err)
 		tk.broken = true
@@ -510,7 +455,7 @@ WHERE   scop.instance_id = scop.source_instance_id
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-cluster-oncall-property-instances: ", err)
 		tk.broken = true
@@ -644,21 +589,7 @@ func (tk *treeKeeper) startupNodeOncallProperties() {
 		rows, instance_rows                                                         *sql.Rows
 		load_properties, load_instances                                             *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(`
-SELECT  snop.instance_id,
-        snop.source_instance_id,
-        snop.node_id,
-        snop.view,
-        snop.oncall_duty_id,
-        snop.inheritance_enabled,
-        snop.children_only,
-        iodt.oncall_duty_name,
-        iodt.oncall_duty_phone_number
-FROM    soma.node_oncall_property snop
-JOIN    inventory.oncall_duty_teams iodt
-  ON    snop.oncall_duty_id = iodt.oncall_duty_id
-WHERE   snop.instance_id = snop.source_instance_id
-  AND   snop.repository_id = $1::uuid;`)
+	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeOncProp)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-oncall-properties: ", err)
 		tk.broken = true
@@ -666,7 +597,7 @@ WHERE   snop.instance_id = snop.source_instance_id
 	}
 	defer load_properties.Close()
 
-	load_instances, err = tk.conn.Prepare(tkStmtLoadOncallPropInstances)
+	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
 	if err != nil {
 		tk.startLog.Println("treekeeper/load-node-oncall-property-instances: ", err)
 		tk.broken = true
