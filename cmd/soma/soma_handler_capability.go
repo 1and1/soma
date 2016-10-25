@@ -48,15 +48,15 @@ type somaCapabilityReadHandler struct {
 func (r *somaCapabilityReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllCapabilities); err != nil {
-		r.errLog.Fatal("capability/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListAllCapabilities: r.list_stmt,
+		stmt.ShowCapability:      r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`capability`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowCapability); err != nil {
-		r.errLog.Fatal("capability/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -160,17 +160,15 @@ type somaCapabilityWriteHandler struct {
 func (w *somaCapabilityWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(stmt.AddCapability)
-	if err != nil {
-		w.errLog.Fatal("capability/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.AddCapability: w.add_stmt,
+		stmt.DelCapability: w.del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`capability`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(stmt.DelCapability)
-	if err != nil {
-		w.errLog.Fatal("capability/delete: ", err)
-	}
-	defer w.del_stmt.Close()
 
 runloop:
 	for {

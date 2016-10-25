@@ -30,25 +30,17 @@ type jobsRead struct {
 func (j *jobsRead) run() {
 	var err error
 
-	if j.listall_stmt, err = j.conn.Prepare(stmt.ListAllOutstandingJobs); err != nil {
-		j.errLog.Fatal(`jobs/list-all: `, err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListAllOutstandingJobs:    j.listall_stmt,
+		stmt.ListScopedOutstandingJobs: j.listscp_stmt,
+		stmt.JobResultForId:            j.showid_stmt,
+		stmt.JobResultsForList:         j.showlist_stmt,
+	} {
+		if prepStmt, err = j.conn.Prepare(statement); err != nil {
+			j.errLog.Fatal(`jobs`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer j.listall_stmt.Close()
-
-	if j.listscp_stmt, err = j.conn.Prepare(stmt.ListScopedOutstandingJobs); err != nil {
-		j.errLog.Fatal(`job/list-scoped: `, err)
-	}
-	defer j.listscp_stmt.Close()
-
-	if j.showid_stmt, err = j.conn.Prepare(stmt.JobResultForId); err != nil {
-		j.errLog.Fatal(`jobs/show-jobid: `, err)
-	}
-	defer j.showid_stmt.Close()
-
-	if j.showlist_stmt, err = j.conn.Prepare(stmt.JobResultsForList); err != nil {
-		j.errLog.Fatal(`jobs/show-idlist: `, err)
-	}
-	defer j.showlist_stmt.Close()
 
 runloop:
 	for {

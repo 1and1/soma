@@ -49,15 +49,15 @@ type somaHostDeploymentHandler struct {
 func (self *somaHostDeploymentHandler) run() {
 	var err error
 
-	if self.geti_stmt, err = self.conn.Prepare(stmt.DeploymentInstancesForNode); err != nil {
-		self.errLog.Fatal("hostdeployment/get-for-node: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.DeploymentInstancesForNode:    self.geti_stmt,
+		stmt.DeploymentLastInstanceVersion: self.last_stmt,
+	} {
+		if prepStmt, err = self.conn.Prepare(statement); err != nil {
+			self.errLog.Fatal(`hostdeployment`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer self.geti_stmt.Close()
-
-	if self.last_stmt, err = self.conn.Prepare(stmt.DeploymentLastInstanceVersion); err != nil {
-		self.errLog.Fatal("hostdeployment/last-version: ", err)
-	}
-	defer self.last_stmt.Close()
 
 runloop:
 	for {

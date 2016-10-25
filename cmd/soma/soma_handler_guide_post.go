@@ -36,60 +36,24 @@ type guidePost struct {
 func (g *guidePost) run() {
 	var err error
 
-	if g.jbsv_stmt, err = g.conn.Prepare(stmt.JobSave); err != nil {
-		g.errLog.Fatal("guide/job-save: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.JobSave:               g.jbsv_stmt,
+		stmt.RepoByBucketId:        g.repo_stmt,
+		stmt.NodeDetails:           g.node_stmt,
+		stmt.RepoNameById:          g.name_stmt,
+		stmt.ServiceLookup:         g.serv_stmt,
+		stmt.ServiceAttributes:     g.attr_stmt,
+		stmt.CapabilityThresholds:  g.cthr_stmt,
+		stmt.CheckDetailsForDelete: g.cdel_stmt,
+		stmt.NodeBucketId:          g.bucket_for_node,
+		stmt.ClusterBucketId:       g.bucket_for_cluster,
+		stmt.GroupBucketId:         g.bucket_for_group,
+	} {
+		if prepStmt, err = g.conn.Prepare(statement); err != nil {
+			g.errLog.Fatal(`guidepost`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer g.jbsv_stmt.Close()
-
-	if g.repo_stmt, err = g.conn.Prepare(stmt.RepoByBucketId); err != nil {
-		g.errLog.Fatal("guide/repo-by-bucket: ", err)
-	}
-	defer g.repo_stmt.Close()
-
-	if g.node_stmt, err = g.conn.Prepare(stmt.NodeDetails); err != nil {
-		g.errLog.Fatal("guide/load-node-details: ", err)
-	}
-	defer g.node_stmt.Close()
-
-	if g.name_stmt, err = g.conn.Prepare(stmt.RepoNameById); err != nil {
-		g.errLog.Fatal("guide/repo-by-id: ", err)
-	}
-	defer g.name_stmt.Close()
-
-	if g.serv_stmt, err = g.conn.Prepare(stmt.ServiceLookup); err != nil {
-		g.errLog.Fatal("guide/service-lookup: ", err)
-	}
-	defer g.serv_stmt.Close()
-
-	if g.attr_stmt, err = g.conn.Prepare(stmt.ServiceAttributes); err != nil {
-		g.errLog.Fatal("guide/populate-service-attributes: ", err)
-	}
-	defer g.attr_stmt.Close()
-
-	if g.cthr_stmt, err = g.conn.Prepare(stmt.CapabilityThresholds); err != nil {
-		g.errLog.Fatal("guide/capability-threshold-lookup: ", err)
-	}
-	defer g.cthr_stmt.Close()
-
-	if g.cdel_stmt, err = g.conn.Prepare(stmt.CheckDetailsForDelete); err != nil {
-		g.errLog.Fatal("guide/get-details-for-delete-check: ", err)
-	}
-	defer g.cdel_stmt.Close()
-
-	if g.bucket_for_node, err = g.conn.Prepare(stmt.NodeBucketId); err != nil {
-		g.errLog.Fatal("guide/get-bucketid-for-node: ", err)
-	}
-	defer g.bucket_for_node.Close()
-
-	if g.bucket_for_cluster, err = g.conn.Prepare(stmt.ClusterBucketId); err != nil {
-		g.errLog.Fatal("guide/get-bucketid-for-cluster: ", err)
-	}
-	defer g.bucket_for_cluster.Close()
-
-	if g.bucket_for_group, err = g.conn.Prepare(stmt.GroupBucketId); err != nil {
-		g.errLog.Fatal("guide/get-bucketid-for-group: ", err)
-	}
-	defer g.bucket_for_group.Close()
 
 	if SomaCfg.Observer {
 		// XXX system/stop_repository should be possible in observer

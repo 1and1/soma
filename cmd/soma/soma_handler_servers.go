@@ -52,32 +52,18 @@ type somaServerReadHandler struct {
 func (r *somaServerReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListServers); err != nil {
-		r.errLog.Fatal("server/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListServers:           r.list_stmt,
+		stmt.ShowServers:           r.show_stmt,
+		stmt.SyncServers:           r.sync_stmt,
+		stmt.SearchServerByName:    r.snam_stmt,
+		stmt.SearchServerByAssetId: r.sass_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`servers`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowServers); err != nil {
-		r.errLog.Fatal("server/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.sync_stmt, err = r.conn.Prepare(stmt.SyncServers); err != nil {
-		r.errLog.Fatal("server/sync-list: ", err)
-	}
-	defer r.sync_stmt.Close()
-
-	// server_name + server_online => unique
-	if r.snam_stmt, err = r.conn.Prepare(stmt.SearchServerByName); err != nil {
-		r.errLog.Fatal("server/search-name: ", err)
-	}
-	defer r.snam_stmt.Close()
-
-	// server_asset_id => unique
-	if r.sass_stmt, err = r.conn.Prepare(stmt.SearchServerByAssetId); err != nil {
-		r.errLog.Fatal("server/search-asset: ", err)
-	}
-	defer r.sass_stmt.Close()
 
 runloop:
 	for {
@@ -248,25 +234,17 @@ type somaServerWriteHandler struct {
 func (w *somaServerWriteHandler) run() {
 	var err error
 
-	if w.add_stmt, err = w.conn.Prepare(stmt.AddServers); err != nil {
-		w.errLog.Fatal("server/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.AddServers:    w.add_stmt,
+		stmt.DeleteServers: w.del_stmt,
+		stmt.PurgeServers:  w.prg_stmt,
+		stmt.UpdateServers: w.upd_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`server`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	if w.del_stmt, err = w.conn.Prepare(stmt.DeleteServers); err != nil {
-		w.errLog.Fatal("server/delete: ", err)
-	}
-	defer w.del_stmt.Close()
-
-	if w.prg_stmt, err = w.conn.Prepare(stmt.PurgeServers); err != nil {
-		w.errLog.Fatal("server/purge: ", err)
-	}
-	defer w.prg_stmt.Close()
-
-	if w.upd_stmt, err = w.conn.Prepare(stmt.UpdateServers); err != nil {
-		w.errLog.Fatal(`server/update: `, err)
-	}
-	defer w.upd_stmt.Close()
 
 runloop:
 	for {

@@ -47,17 +47,15 @@ type somaMetricReadHandler struct {
 func (r *somaMetricReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(stmt.MetricList)
-	if err != nil {
-		r.errLog.Fatal("metric/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.MetricList: r.list_stmt,
+		stmt.MetricShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`metric`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(stmt.MetricShow)
-	if err != nil {
-		r.errLog.Fatal("metric/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 runloop:
 	for {
@@ -146,29 +144,17 @@ type somaMetricWriteHandler struct {
 func (w *somaMetricWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(stmt.MetricAdd)
-	if err != nil {
-		w.errLog.Fatal("metric/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.MetricAdd:    w.add_stmt,
+		stmt.MetricDel:    w.del_stmt,
+		stmt.MetricPkgAdd: w.pkg_add_stmt,
+		stmt.MetricPkgDel: w.pkg_del_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`metric`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(stmt.MetricDel)
-	if err != nil {
-		w.errLog.Fatal("metric/delete: ", err)
-	}
-	defer w.del_stmt.Close()
-
-	w.pkg_add_stmt, err = w.conn.Prepare(stmt.MetricPkgAdd)
-	if err != nil {
-		w.errLog.Fatal("metric/package-add")
-	}
-	defer w.pkg_add_stmt.Close()
-
-	w.pkg_del_stmt, err = w.conn.Prepare(stmt.MetricPkgDel)
-	if err != nil {
-		w.errLog.Fatal("metric/package-del")
-	}
-	defer w.pkg_del_stmt.Close()
 
 runloop:
 	for {

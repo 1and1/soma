@@ -106,82 +106,37 @@ func (s *supervisor) run() {
 	// load from datbase
 	s.startupLoad()
 
-	// prepare SQL statements
-	if s.stmt_FToken, err = s.conn.Prepare(stmt.SelectToken); err != nil {
-		s.errLog.Fatal("supervisor/fetch-token: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.SelectToken:             s.stmt_FToken,
+		stmt.FindUserID:              s.stmt_FindUser,
+		stmt.ListPermissionCategory:  s.stmt_ListCategory,
+		stmt.ShowPermissionCategory:  s.stmt_ShowCategory,
+		stmt.ListPermission:          s.stmt_ListPermission,
+		stmt.ShowPermission:          s.stmt_ShowPermission,
+		stmt.SearchPermissionByName:  s.stmt_SearchPerm,
+		stmt.SearchGlobalSystemGrant: s.stmt_SrchGlSysGrant,
+	} {
+		if prepStmt, err = s.conn.Prepare(statement); err != nil {
+			s.errLog.Fatal(`supervisor`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer s.stmt_FToken.Close()
-
-	if s.stmt_FindUser, err = s.conn.Prepare(stmt.FindUserID); err != nil {
-		s.errLog.Fatal(`supervisor/find-userid: `, err)
-	}
-	defer s.stmt_FindUser.Close()
-
-	if s.stmt_ListCategory, err = s.conn.Prepare(stmt.ListPermissionCategory); err != nil {
-		s.errLog.Fatal(`supervisor/list-category: `, err)
-	}
-	defer s.stmt_ListCategory.Close()
-
-	if s.stmt_ShowCategory, err = s.conn.Prepare(stmt.ShowPermissionCategory); err != nil {
-		s.errLog.Fatal(`supervisor/show-category: `, err)
-	}
-	defer s.stmt_ShowCategory.Close()
-
-	if s.stmt_ListPermission, err = s.conn.Prepare(stmt.ListPermission); err != nil {
-		s.errLog.Fatal(`supervisor/list-permission: `, err)
-	}
-	defer s.stmt_ListPermission.Close()
-
-	if s.stmt_ShowPermission, err = s.conn.Prepare(stmt.ShowPermission); err != nil {
-		s.errLog.Fatal(`supervisor/show-permission: `, err)
-	}
-	defer s.stmt_ShowPermission.Close()
-
-	if s.stmt_SearchPerm, err = s.conn.Prepare(stmt.SearchPermissionByName); err != nil {
-		s.errLog.Fatal(`supervisor/search-permission: `, err)
-	}
-	defer s.stmt_SearchPerm.Close()
-
-	if s.stmt_SrchGlSysGrant, err = s.conn.Prepare(stmt.SearchGlobalSystemGrant); err != nil {
-		s.errLog.Fatal(`supervisor/search-grant: `, err)
-	}
-	defer s.stmt_SrchGlSysGrant.Close()
 
 	if !s.readonly {
-		if s.stmt_AddCategory, err = s.conn.Prepare(stmt.AddPermissionCategory); err != nil {
-			s.errLog.Fatal(`supervisor/add-category: `, err)
+		for statement, prepStmt := range map[string]*sql.Stmt{
+			stmt.AddPermissionCategory:        s.stmt_AddCategory,
+			stmt.DeletePermissionCategory:     s.stmt_DelCategory,
+			stmt.AddPermission:                s.stmt_AddPermission,
+			stmt.DeletePermission:             s.stmt_DelPermission,
+			stmt.GrantGlobalOrSystemToUser:    s.stmt_GrantSysGlUser,
+			stmt.RevokeGlobalOrSystemFromUser: s.stmt_RevkSysGlUser,
+			stmt.CheckUserActive:              s.stmt_CheckUser,
+		} {
+			if prepStmt, err = s.conn.Prepare(statement); err != nil {
+				s.errLog.Fatal(`supervisor`, err, statement)
+			}
+			defer prepStmt.Close()
 		}
-		defer s.stmt_AddCategory.Close()
-
-		if s.stmt_DelCategory, err = s.conn.Prepare(stmt.DeletePermissionCategory); err != nil {
-			s.errLog.Fatal(`supervisor/delete-category: `, err)
-		}
-		defer s.stmt_DelCategory.Close()
-
-		if s.stmt_AddPermission, err = s.conn.Prepare(stmt.AddPermission); err != nil {
-			s.errLog.Fatal(`supervisor/add-permission: `, err)
-		}
-		defer s.stmt_AddPermission.Close()
-
-		if s.stmt_DelPermission, err = s.conn.Prepare(stmt.DeletePermission); err != nil {
-			s.errLog.Fatal(`supervisor/delete-permission: `, err)
-		}
-		defer s.stmt_DelPermission.Close()
-
-		if s.stmt_GrantSysGlUser, err = s.conn.Prepare(stmt.GrantGlobalOrSystemToUser); err != nil {
-			s.errLog.Fatal(`supervisor/grant-user-global-system: `, err)
-		}
-		defer s.stmt_GrantSysGlUser.Close()
-
-		if s.stmt_RevkSysGlUser, err = s.conn.Prepare(stmt.RevokeGlobalOrSystemFromUser); err != nil {
-			s.errLog.Fatal(`supervisor/revoke-user-global-system: `, err)
-		}
-		defer s.stmt_RevkSysGlUser.Close()
-
-		if s.stmt_CheckUser, err = s.conn.Prepare(stmt.CheckUserActive); err != nil {
-			s.errLog.Fatal(`supervisor/check-user-active: `, err)
-		}
-		defer s.stmt_CheckUser.Close()
 	}
 
 runloop:

@@ -53,35 +53,19 @@ type somaRepositoryReadHandler struct {
 func (r *somaRepositoryReadHandler) run() {
 	var err error
 
-	if r.list_stmt, err = r.conn.Prepare(stmt.ListAllRepositories); err != nil {
-		r.errLog.Fatal("repository/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ListAllRepositories: r.list_stmt,
+		stmt.ShowRepository:      r.show_stmt,
+		stmt.RepoOncProps:        r.ponc_stmt,
+		stmt.RepoSvcProps:        r.psvc_stmt,
+		stmt.RepoSysProps:        r.psys_stmt,
+		stmt.RepoCstProps:        r.pcst_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`repository`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	if r.show_stmt, err = r.conn.Prepare(stmt.ShowRepository); err != nil {
-		r.errLog.Fatal("repository/show: ", err)
-	}
-	defer r.show_stmt.Close()
-
-	if r.ponc_stmt, err = r.conn.Prepare(stmt.RepoOncProps); err != nil {
-		r.errLog.Fatal(`repository/property-oncall: `, err)
-	}
-	defer r.ponc_stmt.Close()
-
-	if r.psvc_stmt, err = r.conn.Prepare(stmt.RepoSvcProps); err != nil {
-		r.errLog.Fatal(`repository/property-service: `, err)
-	}
-	defer r.psvc_stmt.Close()
-
-	if r.psys_stmt, err = r.conn.Prepare(stmt.RepoSysProps); err != nil {
-		r.errLog.Fatal(`repository/property-system: `, err)
-	}
-	defer r.psys_stmt.Close()
-
-	if r.pcst_stmt, err = r.conn.Prepare(stmt.RepoCstProps); err != nil {
-		r.errLog.Fatal(`repository/property-custom: `, err)
-	}
-	defer r.pcst_stmt.Close()
 
 runloop:
 	for {

@@ -65,66 +65,26 @@ func (o *outputTree) run() {
 	var err error
 
 	// single-object return statements
-	if o.stmtRepo, err = o.conn.Prepare(stmt.TreeShowRepository); err != nil {
-		o.errLog.Fatal(`outputTree/stmtRepo: `, err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.TreeShowRepository:      o.stmtRepo,
+		stmt.TreeShowBucket:          o.stmtBucket,
+		stmt.TreeShowGroup:           o.stmtGroup,
+		stmt.TreeShowCluster:         o.stmtCluster,
+		stmt.TreeShowNode:            o.stmtNode,
+		stmt.TreeBucketsInRepository: o.stmtRepoBuck,
+		stmt.TreeGroupsInBucket:      o.stmtBuckGrp,
+		stmt.TreeClustersInBucket:    o.stmtBuckClr,
+		stmt.TreeNodesInBucket:       o.stmtBuckNod,
+		stmt.TreeGroupsInGroup:       o.stmtGrpGrp,
+		stmt.TreeClustersInGroup:     o.stmtGrpClr,
+		stmt.TreeNodesInGroup:        o.stmtGrpNod,
+		stmt.TreeNodesInCluster:      o.stmtClrNod,
+	} {
+		if prepStmt, err = o.conn.Prepare(statement); err != nil {
+			o.errLog.Fatal(`outputTree`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer o.stmtRepo.Close()
-	if o.stmtBucket, err = o.conn.Prepare(stmt.TreeShowBucket); err != nil {
-		o.errLog.Fatal(`outputTree/stmtBucket: `, err)
-	}
-	defer o.stmtBucket.Close()
-	if o.stmtGroup, err = o.conn.Prepare(stmt.TreeShowGroup); err != nil {
-		o.errLog.Fatal(`outputTree/stmtGroup: `, err)
-	}
-	defer o.stmtGroup.Close()
-	if o.stmtCluster, err = o.conn.Prepare(stmt.TreeShowCluster); err != nil {
-		o.errLog.Fatal(`outputTree/stmtCluster: `, err)
-	}
-	defer o.stmtCluster.Close()
-	if o.stmtNode, err = o.conn.Prepare(stmt.TreeShowNode); err != nil {
-		o.errLog.Fatal(`outputTree/stmtNode: `, err)
-	}
-	defer o.stmtNode.Close()
-
-	// statement to select children of repositories
-	if o.stmtRepoBuck, err = o.conn.Prepare(stmt.TreeBucketsInRepository); err != nil {
-		o.errLog.Fatal(`outputTree/stmtRepoBuck: `, err)
-	}
-	defer o.stmtRepoBuck.Close()
-
-	// statements to select children of buckets
-	if o.stmtBuckGrp, err = o.conn.Prepare(stmt.TreeGroupsInBucket); err != nil {
-		o.errLog.Fatal(`outputTree/stmtBuckGrp: `, err)
-	}
-	defer o.stmtBuckGrp.Close()
-	if o.stmtBuckClr, err = o.conn.Prepare(stmt.TreeClustersInBucket); err != nil {
-		o.errLog.Fatal(`outputTree/stmtBuckClr: `, err)
-	}
-	defer o.stmtBuckClr.Close()
-	if o.stmtBuckNod, err = o.conn.Prepare(stmt.TreeNodesInBucket); err != nil {
-		o.errLog.Fatal(`outputTree/stmtBuckNod: `, err)
-	}
-	defer o.stmtBuckNod.Close()
-
-	// statements to select children of groups
-	if o.stmtGrpGrp, err = o.conn.Prepare(stmt.TreeGroupsInGroup); err != nil {
-		o.errLog.Fatal(`outputTree/stmtGrpGrp: `, err)
-	}
-	defer o.stmtGrpGrp.Close()
-	if o.stmtGrpClr, err = o.conn.Prepare(stmt.TreeClustersInGroup); err != nil {
-		o.errLog.Fatal(`outputTree/stmtGrpClr: `, err)
-	}
-	defer o.stmtGrpClr.Close()
-	if o.stmtGrpNod, err = o.conn.Prepare(stmt.TreeNodesInGroup); err != nil {
-		o.errLog.Fatal(`outputTree/stmtGrpNod: `, err)
-	}
-	defer o.stmtGrpNod.Close()
-
-	// statements to select children of clusters
-	if o.stmtClrNod, err = o.conn.Prepare(stmt.TreeNodesInCluster); err != nil {
-		o.errLog.Fatal(`outputTree/stmtClrNod: `, err)
-	}
-	defer o.stmtClrNod.Close()
 
 runloop:
 	for {

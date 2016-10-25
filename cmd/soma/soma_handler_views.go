@@ -49,17 +49,15 @@ type somaViewReadHandler struct {
 func (r *somaViewReadHandler) run() {
 	var err error
 
-	r.list_stmt, err = r.conn.Prepare(stmt.ViewList)
-	if err != nil {
-		r.errLog.Fatal("view/list: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ViewList: r.list_stmt,
+		stmt.ViewShow: r.show_stmt,
+	} {
+		if prepStmt, err = r.conn.Prepare(statement); err != nil {
+			r.errLog.Fatal(`view`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer r.list_stmt.Close()
-
-	r.show_stmt, err = r.conn.Prepare(stmt.ViewShow)
-	if err != nil {
-		r.errLog.Fatal("view/show: ", err)
-	}
-	defer r.show_stmt.Close()
 
 	for {
 		select {
@@ -148,23 +146,16 @@ type somaViewWriteHandler struct {
 func (w *somaViewWriteHandler) run() {
 	var err error
 
-	w.add_stmt, err = w.conn.Prepare(stmt.ViewAdd)
-	if err != nil {
-		w.errLog.Fatal("view/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ViewAdd:    w.add_stmt,
+		stmt.ViewDel:    w.del_stmt,
+		stmt.ViewRename: w.ren_stmt,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`view`, err, statement)
+		}
+		defer prepStmt.Close()
 	}
-	defer w.add_stmt.Close()
-
-	w.del_stmt, err = w.conn.Prepare(stmt.ViewDel)
-	if err != nil {
-		w.errLog.Fatal("view/delete: ", err)
-	}
-	defer w.del_stmt.Close()
-
-	w.ren_stmt, err = w.conn.Prepare(stmt.ViewRename)
-	if err != nil {
-		w.errLog.Fatal("view/rename: ", err)
-	}
-	defer w.ren_stmt.Close()
 
 runloop:
 	for {
