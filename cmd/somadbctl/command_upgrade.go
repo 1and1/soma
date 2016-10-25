@@ -413,7 +413,7 @@ func upgrade_root_to_201605160001(curr int, tool string, printOnly bool) int {
 	}
 	fmt.Fprintf(os.Stderr, "The generated boostrap token was: %s\n", token)
 	if printOnly {
-		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!\n")
+		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!")
 	}
 	return 201605160001
 }

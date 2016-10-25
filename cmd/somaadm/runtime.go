@@ -116,7 +116,7 @@ func runtime(action cli.ActionFunc) cli.ActionFunc {
 
 		if !c.GlobalBool(`o`) {
 			// ensure database content structure is in place
-			if err := store.EnsureBuckets(); err != nil {
+			if err = store.EnsureBuckets(); err != nil {
 				fmt.Fprintf(os.Stderr, "Database bucket error: %s\n", err)
 				return err
 			}

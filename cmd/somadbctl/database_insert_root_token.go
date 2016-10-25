@@ -36,7 +36,7 @@ func insertRootToken(printOnly, verbose bool) {
 
 	token := generateToken()
 	if token == "" {
-		fmt.Fprintln(os.Stderr, "ERROR - Failed to generate bootstrap token!\n")
+		fmt.Fprintln(os.Stderr, "ERROR - Failed to generate bootstrap token!")
 		return
 	}
 
@@ -45,7 +45,7 @@ func insertRootToken(printOnly, verbose bool) {
 	}
 	fmt.Fprintf(os.Stderr, "The generated boostrap token was: %s\n", token)
 	if printOnly {
-		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!\n")
+		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!")
 	}
 }
 

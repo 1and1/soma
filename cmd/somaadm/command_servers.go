@@ -138,7 +138,7 @@ func cmdServerCreate(c *cli.Context) error {
 func cmdServerMarkAsDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	sid := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
-	path := fmt.Sprintf("/servers/%d", sid)
+	path := fmt.Sprintf("/servers/%s", sid)
 
 	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
@@ -149,7 +149,7 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	// TODO this will currently never return a deleted server
 	sid := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
-	path := fmt.Sprintf("/servers/%d", sid)
+	path := fmt.Sprintf("/servers/%s", sid)
 	req := proto.NewServerRequest()
 	req.Flags.Purge = true
 

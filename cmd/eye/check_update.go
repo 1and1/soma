@@ -75,7 +75,6 @@ func CheckUpdateOrInsertOrDelete(details *proto.Deployment) error {
 	default:
 		return fmt.Errorf(`Unknown Task requested`)
 	}
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -31,7 +31,7 @@ func (u SomaUtil) TryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s stri
 		m   map[string]string
 	)
 	if aid, err = strconv.ParseUint(s, 10, 64); err != nil {
-		if m, err := cache.ServerByName(s); err != nil {
+		if m, err = cache.ServerByName(s); err != nil {
 			// aborts on failure
 			return u.GetServerIdByName(cache, c, s)
 		} else {

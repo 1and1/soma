@@ -10,12 +10,14 @@ import (
 )
 
 func (u *SomaUtil) GetNewPassword() string {
-	//fmt.Fprintf(os.Stdout, "Reading new password for user %s\n", user)
+	var (
+		newPassword string
+		err         error
+	)
 
-	var newPassword string
 	foundPassword := false
 	for foundPassword == false {
-		newPassword, err := u.ReadPasswordFromTerminal()
+		newPassword, err = u.ReadPasswordFromTerminal()
 		if err != nil {
 			fmt.Fprintf(os.Stdout, err.Error())
 			continue

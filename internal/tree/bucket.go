@@ -34,14 +34,14 @@ type Bucket struct {
 	PropertySystem  map[string]Property
 	PropertyCustom  map[string]Property
 	Checks          map[string]Check
-	Children        map[string]BucketAttacher //`json:"-"`
+	Children        map[string]BucketAttacher `json:"-"`
 	Action          chan *Action              `json:"-"`
-	ordNumChildGrp  int                       `json:"-"`
-	ordNumChildClr  int                       `json:"-"`
-	ordNumChildNod  int                       `json:"-"`
-	ordChildrenGrp  map[int]string            `json:"-"`
-	ordChildrenClr  map[int]string            `json:"-"`
-	ordChildrenNod  map[int]string            `json:"-"`
+	ordNumChildGrp  int
+	ordNumChildClr  int
+	ordNumChildNod  int
+	ordChildrenGrp  map[int]string
+	ordChildrenClr  map[int]string
+	ordChildrenNod  map[int]string
 }
 
 type BucketSpec struct {

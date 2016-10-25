@@ -45,32 +45,32 @@ func TestInvalidRepoSpec(t *testing.T) {
 	for i := 1; i < 4; i++ {
 		spec.Name = strings.Repeat(`x`, i)
 		if specRepoCheck(spec) {
-			t.Errorf(`Short repo name of length`, i, `did not error`)
+			t.Errorf("Short repo name of length %d did not error", i)
 		}
 	}
 
 	spec.Name = strings.Repeat(`x`, 129)
 	if specRepoCheck(spec) {
-		t.Errorf(`Long repo name of length 129 did not error`)
+		t.Error(`Long repo name of length 129 did not error`)
 	}
 
 	spec.Name = repoName
 	spec.Id = `invalid`
 	if specRepoCheck(spec) {
-		t.Errorf(`Invalid repositoryID uuid did not error`)
+		t.Error(`Invalid repositoryID uuid did not error`)
 	}
 	spec.Id = repoId
 
 	spec.Team = `invalid`
 	if specRepoCheck(spec) {
-		t.Errorf(`Invalid teamID uuid did not error`)
+		t.Error(`Invalid teamID uuid did not error`)
 	}
 	spec.Team = teamId
 
 	for i := 4; i < 129; i++ {
 		spec.Name = strings.Repeat(`x`, i)
 		if !specRepoCheck(spec) {
-			t.Errorf(`Valid reponame length`, i, `was not accepted`)
+			t.Errorf("Valid reponame length %d `was not accepted", i)
 		}
 	}
 }
@@ -118,7 +118,7 @@ func TestInvalidBucketSpec(t *testing.T) {
 	for i := 1; i < 4; i++ {
 		spec.Name = strings.Repeat(`x`, i)
 		if specBucketCheck(spec) {
-			t.Errorf(`Short bucket name of length`, i, `did not error`)
+			t.Errorf("Short bucket name of length %d did not error", i)
 		}
 	}
 
@@ -149,7 +149,7 @@ func TestInvalidBucketSpec(t *testing.T) {
 	for i := 4; i < 513; i++ {
 		spec.Name = strings.Repeat(`x`, i)
 		if !specBucketCheck(spec) {
-			t.Errorf(`Valid bucket name of length`, i, `did error`)
+			t.Errorf("Valid bucket name of length %d did error", i)
 		}
 	}
 

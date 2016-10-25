@@ -519,7 +519,7 @@ func cmdPropertyCustomShow(c *cli.Context) error {
 	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
 	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().Get(0),
 		repoId)
-	path := fmt.Sprintf("/property/custom/%s/", repoId,
+	path := fmt.Sprintf("/property/custom/%s/%s", repoId,
 		propId)
 	if resp, err := adm.GetReq(path); err != nil {
 		return err

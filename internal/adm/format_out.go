@@ -15,14 +15,15 @@ func FormatOut(c *cli.Context, resp *resty.Response, cmd string) error {
 
 	// hardwire JSON output for now
 	fmt.Println(resp)
-	return nil
 
+	/* TODO
 	switch cmd {
 	case `list`:
 	case `show`:
 	case `tree`:
 	default:
 	}
+	*/
 
 	return nil
 }

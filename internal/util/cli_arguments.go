@@ -22,7 +22,7 @@ func (u *SomaUtil) GetCliArgumentCount(c *cli.Context) int {
 func (u *SomaUtil) ValidateCliArgument(c *cli.Context, pos uint8, s string) {
 	a := c.Args()
 	if a.Get(int(pos)-1) != s {
-		u.Abort(fmt.Sprintf("Syntax error, missing keyword: ", s))
+		u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", s))
 	}
 }
 
@@ -99,9 +99,9 @@ func (u *SomaUtil) ParseVariableArguments(keys []string, rKeys []string, args []
 	}
 
 	// check we managed to collect all required keywords
-	for _, v := range argumentCheck {
+	for key, v := range argumentCheck {
 		if !v {
-			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", v))
+			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
 		}
 	}
 

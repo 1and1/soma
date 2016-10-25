@@ -25,7 +25,7 @@ type EyeConfig struct {
 	Daemon      EyeDaemon  `json:"daemon" valid:"required"`
 	Database    DbConfig   `json:"database" valid:"required"`
 	Soma        SomaConfig `json:"soma" valid:"required"`
-	run         EyeRuntime `json:"-"`
+	run         EyeRuntime
 }
 
 type DbConfig struct {
@@ -39,33 +39,33 @@ type DbConfig struct {
 }
 
 type SomaConfig struct {
-	url     *url.URL `json:"-"`
-	Address string   `json:"address" valid:"requrl"`
+	url     *url.URL
+	Address string `json:"address" valid:"requrl"`
 }
 
 type EyeDaemon struct {
-	url    *url.URL `json:"-"`
-	Listen string   `json:"listen" valid:"ip"`
-	Port   string   `json:"port" valid:"port"`
-	Tls    bool     `json:"tls,string" valid:"-"`
-	Cert   string   `json:"cert-file" valid:"optional"`
-	Key    string   `json:"key-file" valid:"optional"`
+	url    *url.URL
+	Listen string `json:"listen" valid:"ip"`
+	Port   string `json:"port" valid:"port"`
+	Tls    bool   `json:"tls,string" valid:"-"`
+	Cert   string `json:"cert-file" valid:"optional"`
+	Key    string `json:"key-file" valid:"optional"`
 }
 
 type EyeRuntime struct {
-	conn          *sql.DB   `json:"-" valid:"-"`
-	check_item    *sql.Stmt `json:"-" valid:"-"`
-	update_item   *sql.Stmt `json:"-" valid:"-"`
-	check_lookup  *sql.Stmt `json:"-" valid:"-"`
-	insert_lookup *sql.Stmt `json:"-" valid:"-"`
-	insert_item   *sql.Stmt `json:"-" valid:"-"`
-	delete_item   *sql.Stmt `json:"-" valid:"-"`
-	delete_lookup *sql.Stmt `json:"-" valid:"-"`
-	get_lookup    *sql.Stmt `json:"-" valid:"-"`
-	item_count    *sql.Stmt `json:"-" valid:"-"`
-	get_config    *sql.Stmt `json:"-" valid:"-"`
-	get_items     *sql.Stmt `json:"-" valid:"-"`
-	retrieve      *sql.Stmt `json:"-" valid:"-"`
+	conn          *sql.DB
+	check_item    *sql.Stmt
+	update_item   *sql.Stmt
+	check_lookup  *sql.Stmt
+	insert_lookup *sql.Stmt
+	insert_item   *sql.Stmt
+	delete_item   *sql.Stmt
+	delete_lookup *sql.Stmt
+	get_lookup    *sql.Stmt
+	item_count    *sql.Stmt
+	get_config    *sql.Stmt
+	get_items     *sql.Stmt
+	retrieve      *sql.Stmt
 }
 
 func (c *EyeConfig) readConfigFile(fname string) error {

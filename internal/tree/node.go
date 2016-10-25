@@ -37,7 +37,7 @@ type Node struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	loadedInstances map[string]map[string]CheckInstance `json:"-"`
+	loadedInstances map[string]map[string]CheckInstance
 }
 
 type NodeSpec struct {

@@ -34,14 +34,14 @@ type Group struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	Children        map[string]GroupAttacher            `json:"-"`
-	loadedInstances map[string]map[string]CheckInstance `json:"-"`
-	ordNumChildGrp int `json:"-"`
-	ordNumChildClr int `json:"-"`
-	ordNumChildNod int `json:"-"`
-	ordChildrenGrp map[int]string `json:"-"`
-	ordChildrenClr map[int]string `json:"-"`
-	ordChildrenNod map[int]string `json:"-"`
+	Children        map[string]GroupAttacher `json:"-"`
+	loadedInstances map[string]map[string]CheckInstance
+	ordNumChildGrp  int
+	ordNumChildClr  int
+	ordNumChildNod  int
+	ordChildrenGrp  map[int]string
+	ordChildrenClr  map[int]string
+	ordChildrenNod  map[int]string
 }
 
 type GroupSpec struct {
@@ -86,9 +86,9 @@ func NewGroup(spec GroupSpec) *Group {
 
 func (teg Group) Clone() *Group {
 	cl := Group{
-		Name:  teg.Name,
-		State: teg.State,
-		Type:  teg.Type,
+		Name:           teg.Name,
+		State:          teg.State,
+		Type:           teg.Type,
 		ordNumChildGrp: teg.ordNumChildGrp,
 		ordNumChildClr: teg.ordNumChildClr,
 		ordNumChildNod: teg.ordNumChildNod,

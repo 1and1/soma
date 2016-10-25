@@ -45,7 +45,7 @@ func (u *SomaUtil) GetValidatedUint64(s string, min uint64) uint64 {
 	i, err := strconv.ParseUint(s, 10, 64)
 	u.AbortOnError(err)
 	if i < min {
-		u.Abort(fmt.Sprintf("Error, value %s is less than the minimun %d", i, min))
+		u.Abort(fmt.Sprintf("Error, value %d is less than the minimun %d", i, min))
 	}
 	return i
 }

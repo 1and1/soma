@@ -38,6 +38,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 		client *resty.Client
 		resp   *resty.Response
 		res    proto.Result
+		ok     bool
 	)
 	dec = json.NewDecoder(r.Body)
 	if err = dec.Decode(&msg); err != nil {
@@ -49,7 +50,7 @@ func FetchConfigurationItems(w http.ResponseWriter, r *http.Request, _ httproute
 	govalidator.TagMap["abspath"] = govalidator.Validator(func(str string) bool {
 		return filepath.IsAbs(str)
 	})
-	if ok, err := govalidator.ValidateStruct(msg); !ok {
+	if ok, err = govalidator.ValidateStruct(msg); !ok {
 		log.Printf("Failed notify event verification: %s\n", err.Error())
 		dispatchBadRequest(&w, err.Error())
 		return

@@ -148,12 +148,10 @@ func (tef *Fault) updateFaultRecursive(f *Fault) {
 // Interface: Bucketeer
 func (tef *Fault) GetBucket() Receiver {
 	panic(`Fault.GetBucket`)
-	return tef
 }
 
 func (tef *Fault) GetEnvironment() string {
 	panic(`Fault.GetEnvironment`)
-	return "none"
 }
 
 func (tef *Fault) ComputeCheckInstances() {

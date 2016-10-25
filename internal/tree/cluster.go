@@ -34,10 +34,10 @@ type Cluster struct {
 	Checks          map[string]Check
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
-	Children        map[string]ClusterAttacher          `json:"-"`
-	loadedInstances map[string]map[string]CheckInstance `json:"-"`
-	ordNumChildNod int `json:"-"`
-	ordChildrenNod map[int]string `json:"-"`
+	Children        map[string]ClusterAttacher `json:"-"`
+	loadedInstances map[string]map[string]CheckInstance
+	ordNumChildNod  int
+	ordChildrenNod  map[int]string
 }
 
 type ClusterSpec struct {

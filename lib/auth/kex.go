@@ -51,11 +51,11 @@ type Kex struct {
 	Request              uuid.UUID `json:"request,omitempty"`
 	InitializationVector string    `json:"initialization_vector"`
 	// unexported private fields
-	private  string    `json:"-"`
-	peer     string    `json:"-"`
-	sourceIP net.IP    `json:"-"`
-	count    uint      `json:"-"`
-	time     time.Time `json:"-"`
+	private  string
+	peer     string
+	sourceIP net.IP
+	count    uint
+	time     time.Time
 }
 
 // NewKex returns a Kex with a set random
