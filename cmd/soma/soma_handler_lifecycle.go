@@ -212,7 +212,6 @@ func (lc *lifeCycle) unblock() {
 		blockedID, blockingID, instanceID, state, next, nextNG, status string
 		err                                                            error
 		tx                                                             *sql.Tx
-		txUpdate, txDelete, txInstance                                 *sql.Stmt
 	)
 
 	// lcStmtActiveUnblockCondition
@@ -224,6 +223,7 @@ func (lc *lifeCycle) unblock() {
 
 idloop:
 	for cfgIds.Next() {
+		txMap := map[string]*sql.Stmt{}
 		if err = cfgIds.Scan(
 			&blockedID,
 			&blockingID,
@@ -241,20 +241,16 @@ idloop:
 			continue idloop
 		}
 
-		if txUpdate, err = tx.Prepare(stmt.LifecycleUpdateConfig); err != nil {
-			lc.errLog.Println(err.Error())
-			tx.Rollback()
-			continue idloop
-		}
-		if txDelete, err = tx.Prepare(stmt.LifecycleDeleteDependency); err != nil {
-			lc.errLog.Println(err.Error())
-			tx.Rollback()
-			continue idloop
-		}
-		if txInstance, err = tx.Prepare(stmt.LifecycleUpdateInstance); err != nil {
-			lc.errLog.Println(err.Error())
-			tx.Rollback()
-			continue idloop
+		for name, statement := range map[string]string{
+			`update`:   stmt.LifecycleUpdateConfig,
+			`delete`:   stmt.LifecycleDeleteDependency,
+			`instance`: stmt.LifecycleUpdateInstance,
+		} {
+			if txMap[name], err = tx.Prepare(statement); err != nil {
+				// tx.Rollback() closes open prepared statements
+				tx.Rollback()
+				continue idloop
+			}
 		}
 
 		switch next {
@@ -266,7 +262,7 @@ idloop:
 			tx.Rollback()
 			continue idloop
 		}
-		if _, err = txUpdate.Exec(
+		if _, err = txMap[`update`].Exec(
 			next,
 			nextNG,
 			false,
@@ -276,7 +272,7 @@ idloop:
 			tx.Rollback()
 			continue idloop
 		}
-		if _, err = txInstance.Exec(
+		if _, err = txMap[`instance`].Exec(
 			true,
 			blockedID,
 			instanceID,
@@ -285,7 +281,7 @@ idloop:
 			tx.Rollback()
 			continue idloop
 		}
-		if _, err = txDelete.Exec(
+		if _, err = txMap[`delete`].Exec(
 			blockedID,
 			blockingID,
 			state,
