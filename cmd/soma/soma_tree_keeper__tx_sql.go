@@ -164,10 +164,11 @@ func (tk *treeKeeper) startTx() (
 
 bailout:
 	if open {
+		// if the transaction was opened, then tx.Rollback() will close all
+		// prepared statements. If the transaction was not opened yet, then
+		// no statements have been prepared inside it - there is nothing to
+		// close
 		defer tx.Rollback()
-	}
-	for _, statement := range stMap {
-		defer statement.Close()
 	}
 	return nil, nil, err
 }
