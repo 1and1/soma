@@ -297,7 +297,7 @@ func (g *guidePost) validateCheckObjectInBucket(q *treeRequest) (error, bool) {
 	case `repository`:
 		if q.CheckConfig.CheckConfig.RepositoryId !=
 			q.CheckConfig.CheckConfig.ObjectId {
-			return fmt.Errorf("Conflicting repository ids:",
+			return fmt.Errorf("Conflicting repository ids: %s, %s",
 				q.CheckConfig.CheckConfig.RepositoryId,
 				q.CheckConfig.CheckConfig.ObjectId,
 			), false

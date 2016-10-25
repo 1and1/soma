@@ -52,17 +52,17 @@ type supervisor struct {
 	activation          string
 	root_disabled       bool
 	root_restricted     bool
-	kex                 svKexMap
-	tokens              svTokenMap
-	credentials         svCredMap
-	global_permissions  svPermMapGlobal
-	global_grants       svGrantMapGlobal
-	limited_permissions svPermMapLimited
-	id_user             svLockMap
-	id_user_rev         svLockMap
-	id_team             svLockMap
-	id_permission       svLockMap
-	id_userteam         svLockMap
+	kex                 *svKexMap
+	tokens              *svTokenMap
+	credentials         *svCredMap
+	global_permissions  *svPermMapGlobal
+	global_grants       *svGrantMapGlobal
+	limited_permissions *svPermMapLimited
+	id_user             *svLockMap
+	id_user_rev         *svLockMap
+	id_team             *svLockMap
+	id_permission       *svLockMap
+	id_userteam         *svLockMap
 	stmt_FToken         *sql.Stmt
 	stmt_FindUser       *sql.Stmt
 	stmt_CheckUser      *sql.Stmt
@@ -201,46 +201,46 @@ func (s *supervisor) pruneKex() {
 	}
 }
 
-func (s *supervisor) newTokenMap() svTokenMap {
+func (s *supervisor) newTokenMap() *svTokenMap {
 	m := svTokenMap{}
 	m.TMap = make(map[string]svToken)
-	return m
+	return &m
 }
 
-func (s *supervisor) newCredentialMap() svCredMap {
+func (s *supervisor) newCredentialMap() *svCredMap {
 	m := svCredMap{}
 	m.CMap = make(map[string]svCredential)
-	return m
+	return &m
 }
 
-func (s *supervisor) newKexMap() svKexMap {
+func (s *supervisor) newKexMap() *svKexMap {
 	m := svKexMap{}
 	m.KMap = make(map[string]auth.Kex)
-	return m
+	return &m
 }
 
-func (s *supervisor) newLockMap() svLockMap {
+func (s *supervisor) newLockMap() *svLockMap {
 	l := svLockMap{}
 	l.LockMap = make(map[string]string)
-	return l
+	return &l
 }
 
-func (s *supervisor) newGlobalPermMap() svPermMapGlobal {
+func (s *supervisor) newGlobalPermMap() *svPermMapGlobal {
 	g := svPermMapGlobal{}
 	g.GMap = make(map[string]map[string]string)
-	return g
+	return &g
 }
 
-func (s *supervisor) newGlobalGrantMap() svGrantMapGlobal {
+func (s *supervisor) newGlobalGrantMap() *svGrantMapGlobal {
 	g := svGrantMapGlobal{}
 	g.GMap = make(map[string][]string)
-	return g
+	return &g
 }
 
-func (s *supervisor) newLimitedPermMap() svPermMapLimited {
+func (s *supervisor) newLimitedPermMap() *svPermMapLimited {
 	l := svPermMapLimited{}
 	l.LMap = make(map[string]map[string][]string)
-	return l
+	return &l
 }
 
 func (s *supervisor) fetchTokenFromDB(token string) bool {

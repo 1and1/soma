@@ -159,28 +159,28 @@ deployments:
 
 		// prepare statements within transaction
 		if txUpdateStatus, err = tx.Prepare(stmt.TreekeeperUpdateConfigStatus); err != nil {
-			tk.log.Println("Failed to prepare %s: %s\n",
+			tk.log.Printf("Failed to prepare %s: %s\n",
 				`tkStmtUpdateConfigStatus`, err)
 			break deployments
 		}
 		defer txUpdateStatus.Close()
 
 		if txUpdateInstance, err = tx.Prepare(stmt.TreekeeperUpdateCheckInstance); err != nil {
-			tk.log.Println("Failed to prepare %s: %s\n",
+			tk.log.Printf("Failed to prepare %s: %s\n",
 				`tkStmtUpdateCheckInstance`, err)
 			break deployments
 		}
 		defer txUpdateInstance.Close()
 
 		if txUpdateExisting, err = tx.Prepare(stmt.TreekeeperUpdateExistingCheckInstance); err != nil {
-			tk.log.Println("Failed to prepare %s: %s\n",
+			tk.log.Printf("Failed to prepare %s: %s\n",
 				`tkStmtUpdateExistingCheckInstance`, err)
 			break deployments
 		}
 		defer txUpdateExisting.Close()
 
 		if txDependency, err = tx.Prepare(stmt.TreekeeperSetDependency); err != nil {
-			tk.log.Println("Failed to prepare %s: %s\n",
+			tk.log.Printf("Failed to prepare %s: %s\n",
 				`tkStmtSetDependency`, err)
 			break deployments
 		}

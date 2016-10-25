@@ -28,7 +28,7 @@ func logrotate(sigChan chan os.Signal) {
 				}
 				err := lfHandle.Reopen()
 				if err != nil {
-					log.Print("Error rotating logfile %s: %s\n", name, err)
+					log.Printf("Error rotating logfile %s: %s\n", name, err)
 					log.Println(`Shutting down system`)
 
 					returnChannel := make(chan msg.Result)

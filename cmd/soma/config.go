@@ -19,7 +19,7 @@ type SomaConfig struct {
 	OpenInstance  bool           `json:"open.door.policy,string"`
 	LifeCycleTick uint64         `json:"lifecycle.tick.seconds,string"`
 	PokePath      string         `json:"notify.path.element"`
-	PokeBatchSize uint64         `json:'notify.batch.size,string"`
+	PokeBatchSize uint64         `json:"notify.batch.size,string"`
 	Observer      bool           `json:"observer,string"`
 	ObserverRepo  string         `json:"-"`
 	NoPoke        bool           `json:"no.poke,string"`
@@ -44,12 +44,12 @@ type SomaDbConfig struct {
 }
 
 type SomaDaemon struct {
-	url    *url.URL `json:"-"`
-	Listen string   `json:"listen"`
-	Port   string   `json:"port"`
-	Tls    bool     `json:"tls,string"`
-	Cert   string   `json:"cert.file"`
-	Key    string   `json:"key.file"`
+	url    *url.URL
+	Listen string `json:"listen"`
+	Port   string `json:"port"`
+	Tls    bool   `json:"tls,string"`
+	Cert   string `json:"cert.file"`
+	Key    string `json:"key.file"`
 }
 
 type SomaAuthConfig struct {
