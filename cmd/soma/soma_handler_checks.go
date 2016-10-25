@@ -108,7 +108,7 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&configId,
 				&repoId,
 				&bucketId,
@@ -221,7 +221,6 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		chkConfig.Constraints = make([]proto.CheckConfigConstraint, 0)
 		for _, tp := range []string{"custom", "system", "native", "service", "attribute", "oncall"} {
 			var (
-				err                                           error
 				configId, propertyId, repoId, property, value string
 				rows                                          *sql.Rows
 			)
@@ -377,7 +376,6 @@ func (r *somaCheckConfigurationReadHandler) process(q *somaCheckConfigRequest) {
 		if instanceInfo {
 			instances := make([]proto.CheckInstanceInfo, 0)
 			var (
-				err                                                      error
 				rows                                                     *sql.Rows
 				instanceId, instObjId, instObjType, instStatus, instNext string
 			)

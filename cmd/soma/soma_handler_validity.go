@@ -91,7 +91,7 @@ func (r *somaValidityReadHandler) process(q *somaValidityRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(&property, &object)
+			err = rows.Scan(&property, &object)
 			result.Append(err, &somaValidityResult{
 				Validity: proto.Validity{
 					SystemProperty: property,

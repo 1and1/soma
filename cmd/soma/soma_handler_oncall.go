@@ -93,7 +93,7 @@ func (r *somaOncallReadHandler) process(q *somaOncallRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&oncallId, &oncallName)
+			err = rows.Scan(&oncallId, &oncallName)
 			result.Append(err, &somaOncallResult{
 				Oncall: proto.Oncall{
 					Id:   oncallId,

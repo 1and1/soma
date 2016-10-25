@@ -101,7 +101,7 @@ func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&id,
 				&name,
 			)

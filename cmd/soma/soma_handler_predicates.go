@@ -90,7 +90,7 @@ func (r *somaPredicateReadHandler) process(q *somaPredicateRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&predicate)
+			err = rows.Scan(&predicate)
 			result.Append(err, &somaPredicateResult{
 				Predicate: proto.Predicate{
 					Symbol: predicate,

@@ -89,7 +89,7 @@ func (r *somaProviderReadHandler) process(q *somaProviderRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&provider)
+			err = rows.Scan(&provider)
 			result.Append(err, &somaProviderResult{
 				Provider: proto.Provider{
 					Name: provider,

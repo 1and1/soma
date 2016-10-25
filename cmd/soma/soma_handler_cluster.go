@@ -101,7 +101,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&clusterId, &clusterName, &bucketId)
+			err = rows.Scan(&clusterId, &clusterName, &bucketId)
 			result.Append(err, &somaClusterResult{
 				Cluster: proto.Cluster{
 					Id:       clusterId,
@@ -142,7 +142,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 			goto dispatch
 		}
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -175,7 +175,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		// service properties
 		rows, err = r.psvc_stmt.Query(q.Cluster.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -206,7 +206,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		// system properties
 		rows, err = r.psys_stmt.Query(q.Cluster.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -239,7 +239,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		// custom properties
 		rows, err = r.pcst_stmt.Query(q.Cluster.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -285,7 +285,7 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 
 		resC.Id = q.Cluster.Id
 		for rows.Next() {
-			err := rows.Scan(&mNodeId, &mNodeName, &clusterName)
+			err = rows.Scan(&mNodeId, &mNodeName, &clusterName)
 			if err == nil {
 				resC.Name = clusterName
 				*resC.Members = append(*resC.Members, proto.Node{

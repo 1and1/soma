@@ -101,7 +101,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&repoId, &repoName)
+			err = rows.Scan(&repoId, &repoName)
 			result.Append(err, &somaRepositoryResult{
 				Repository: proto.Repository{
 					Id:   repoId,
@@ -140,7 +140,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 			goto dispatch
 		}
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -173,7 +173,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		// service properties
 		rows, err = r.psvc_stmt.Query(q.Repository.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -204,7 +204,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		// system properties
 		rows, err = r.psys_stmt.Query(q.Repository.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -237,7 +237,7 @@ func (r *somaRepositoryReadHandler) process(q *somaRepositoryRequest) {
 		// custom properties
 		rows, err = r.pcst_stmt.Query(q.Repository.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,

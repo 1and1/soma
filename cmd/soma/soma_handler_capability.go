@@ -91,7 +91,7 @@ func (r *somaCapabilityReadHandler) process(q *somaCapabilityRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&id,
 				&monitoring,
 				&metric,

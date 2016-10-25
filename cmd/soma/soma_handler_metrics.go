@@ -89,7 +89,7 @@ func (r *somaMetricReadHandler) process(q *somaMetricRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&metric)
+			err = rows.Scan(&metric)
 			result.Append(err, &somaMetricResult{
 				Metric: proto.Metric{
 					Path: metric,

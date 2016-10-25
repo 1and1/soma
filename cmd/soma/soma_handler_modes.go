@@ -90,7 +90,7 @@ func (r *somaModeReadHandler) process(q *somaModeRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&mode)
+			err = rows.Scan(&mode)
 			result.Append(err, &somaModeResult{
 				Mode: proto.Mode{
 					Mode: mode,

@@ -108,7 +108,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(&nodeId, &nodeName)
+			err = rows.Scan(&nodeId, &nodeName)
 			result.Append(err, &somaNodeResult{
 				Node: proto.Node{
 					Id:   nodeId,
@@ -125,7 +125,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&nodeId,
 				&nodeAsset,
 				&nodeName,
@@ -204,7 +204,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 			goto dispatch
 		}
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -238,7 +238,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		// service properties
 		rows, err = r.psvc_stmt.Query(q.Node.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -270,7 +270,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		// system properties
 		rows, err = r.psys_stmt.Query(q.Node.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -304,7 +304,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		// custom properties
 		rows, err = r.pcst_stmt.Query(q.Node.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,

@@ -310,7 +310,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			goto fail
 		}
 		// save CheckConfig
-		victim := proto.CheckConfig{
+		victim = proto.CheckConfig{
 			Id:           configId,
 			RepositoryId: tk.repoId,
 			CapabilityId: capabilityId,

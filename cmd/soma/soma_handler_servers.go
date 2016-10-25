@@ -99,7 +99,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&serverId, &serverName, &serverAsset)
+			err = rows.Scan(&serverId, &serverName, &serverAsset)
 			result.Append(err, &somaServerResult{
 				Server: proto.Server{
 					Id:      serverId,
@@ -118,7 +118,7 @@ func (r *somaServerReadHandler) process(q *somaServerRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&serverId,
 				&serverAsset,
 				&serverDc,

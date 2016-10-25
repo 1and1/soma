@@ -96,7 +96,7 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(&teamId, &teamName)
+			err = rows.Scan(&teamId, &teamName)
 			result.Append(err, &somaTeamResult{
 				Team: proto.Team{
 					Id:   teamId,
@@ -114,7 +114,7 @@ func (r *somaTeamReadHandler) process(q *somaTeamRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&teamId,
 				&teamName,
 				&ldapId,

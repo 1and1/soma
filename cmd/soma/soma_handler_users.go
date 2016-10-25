@@ -96,7 +96,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&userId,
 				&userName,
 			)
@@ -121,7 +121,7 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 		defer rows.Close()
 
 		for rows.Next() {
-			err := rows.Scan(
+			err = rows.Scan(
 				&userId,
 				&userName,
 				&firstName,

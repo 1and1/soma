@@ -105,7 +105,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&groupId, &groupName, &bucketId)
+			err = rows.Scan(&groupId, &groupName, &bucketId)
 			result.Append(err, &somaGroupResult{
 				Group: proto.Group{
 					Id:       groupId,
@@ -146,7 +146,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			goto dispatch
 		}
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -179,7 +179,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		// service properties
 		rows, err = r.psvc_stmt.Query(q.Group.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -210,7 +210,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		// system properties
 		rows, err = r.psys_stmt.Query(q.Group.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -243,7 +243,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		// custom properties
 		rows, err = r.pcst_stmt.Query(q.Group.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -291,7 +291,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			Id: q.Group.Id,
 		}
 		for rows.Next() {
-			err := rows.Scan(&mGroupId, &mGroupName, &groupName)
+			err = rows.Scan(&mGroupId, &mGroupName, &groupName)
 			if err == nil {
 				resG.Name = groupName
 				*resG.MemberGroups = append(*resG.MemberGroups, proto.Group{
@@ -309,7 +309,7 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&mClusterId, &mClusterName, &groupName)
+			err = rows.Scan(&mClusterId, &mClusterName, &groupName)
 			if err == nil {
 				*resG.MemberClusters = append(*resG.MemberClusters, proto.Cluster{
 					Id:   mClusterId,

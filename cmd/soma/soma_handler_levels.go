@@ -90,7 +90,7 @@ func (r *somaLevelReadHandler) process(q *somaLevelRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&level, &short)
+			err = rows.Scan(&level, &short)
 			result.Append(err, &somaLevelResult{
 				Level: proto.Level{
 					Name:      level,

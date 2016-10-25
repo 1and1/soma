@@ -89,7 +89,7 @@ func (r *somaStatusReadHandler) process(q *somaStatusRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&status)
+			err = rows.Scan(&status)
 			result.Append(err, &somaStatusResult{
 				Status: proto.Status{
 					Name: status,

@@ -98,7 +98,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&bucketId, &bucketName)
+			err = rows.Scan(&bucketId, &bucketName)
 			result.Append(err, &somaBucketResult{
 				Bucket: proto.Bucket{
 					Id:   bucketId,
@@ -142,7 +142,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 			goto dispatch
 		}
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -176,7 +176,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 		// service properties
 		rows, err = r.psvc_stmt.Query(q.Bucket.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -208,7 +208,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 		// system properties
 		rows, err = r.psys_stmt.Query(q.Bucket.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,
@@ -242,7 +242,7 @@ func (r *somaBucketReadHandler) process(q *somaBucketRequest) {
 		// custom properties
 		rows, err = r.pcst_stmt.Query(q.Bucket.Id)
 		for rows.Next() {
-			if err := rows.Scan(
+			if err = rows.Scan(
 				&instanceId,
 				&sourceInstanceId,
 				&view,

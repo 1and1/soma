@@ -90,7 +90,7 @@ func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
 		}
 
 		for rows.Next() {
-			err := rows.Scan(&attribute, &cardinality)
+			err = rows.Scan(&attribute, &cardinality)
 			result.Append(err, &somaAttributeResult{
 				Attribute: proto.Attribute{
 					Name:        attribute,

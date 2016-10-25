@@ -131,7 +131,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 		for rows.Next() {
 			switch q.prType {
 			case "system":
-				err := rows.Scan(&property)
+				err = rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
 					System: proto.PropertySystem{
@@ -139,7 +139,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					},
 				})
 			case "service":
-				err := rows.Scan(&property, &team)
+				err = rows.Scan(&property, &team)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
 					Service: proto.PropertyService{
@@ -148,7 +148,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					},
 				})
 			case "native":
-				err := rows.Scan(&property)
+				err = rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
 					Native: proto.PropertyNative{
@@ -156,7 +156,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					},
 				})
 			case "template":
-				err := rows.Scan(&property)
+				err = rows.Scan(&property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
 					Service: proto.PropertyService{
@@ -164,7 +164,7 @@ func (r *somaPropertyReadHandler) process(q *somaPropertyRequest) {
 					},
 				})
 			case "custom":
-				err := rows.Scan(&id, &repository, &property)
+				err = rows.Scan(&id, &repository, &property)
 				result.Append(err, &somaPropertyResult{
 					prType: q.prType,
 					Custom: proto.PropertyCustom{
