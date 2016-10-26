@@ -25,6 +25,8 @@ func (ten *Node) updateCheckInstances() {
 			ten.Id.String(),
 			false,
 		)
+		// found nothing to do, ensure update flag is unset again
+		ten.hasUpdate = false
 		return
 	}
 
@@ -33,6 +35,12 @@ func (ten *Node) updateCheckInstances() {
 	startupLoad := false
 	if len(ten.loadedInstances) > 0 {
 		startupLoad = true
+	}
+
+	// if this is not the startupLoad and there are no updates, then there
+	// is noting to do
+	if !startupLoad && !ten.hasUpdate {
+		return
 	}
 
 	// scan over all current checkinstances if their check still exists.
@@ -606,6 +614,9 @@ checksloop:
 		delete(ten.CheckInstances, i)
 		ten.CheckInstances[i] = newCheckInstances
 	} // LOOPEND: range ten.Checks
+
+	// completed the pass, reset update flag
+	ten.hasUpdate = false
 }
 
 func (ten *Node) evalNativeProp(prop string, val string) bool {

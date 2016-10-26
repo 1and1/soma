@@ -38,6 +38,7 @@ type Node struct {
 	CheckInstances  map[string][]string
 	Instances       map[string]CheckInstance
 	loadedInstances map[string]map[string]CheckInstance
+	hasUpdate       bool
 }
 
 type NodeSpec struct {

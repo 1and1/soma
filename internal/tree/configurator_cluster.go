@@ -25,6 +25,8 @@ func (tec *Cluster) updateCheckInstances() {
 			tec.Id.String(),
 			false,
 		)
+		// found nothing to do, ensure update flag is unset again
+		tec.hasUpdate = false
 		return
 	}
 
@@ -33,6 +35,12 @@ func (tec *Cluster) updateCheckInstances() {
 	startupLoad := false
 	if len(tec.loadedInstances) > 0 {
 		startupLoad = true
+	}
+
+	// if this is not the startupLoad and there are no updates, then there
+	// is noting to do
+	if !startupLoad && !tec.hasUpdate {
+		return
 	}
 
 	// scan over all current checkinstances if their check still exists.
@@ -609,6 +617,9 @@ checksloop:
 		delete(tec.CheckInstances, i)
 		tec.CheckInstances[i] = newCheckInstances
 	} // LOOPEND: range tec.Checks
+
+	// completed the pass, reset update flag
+	tec.hasUpdate = false
 }
 
 func (tec *Cluster) evalNativeProp(

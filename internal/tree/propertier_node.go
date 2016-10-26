@@ -125,6 +125,7 @@ func (ten *Node) setPropertyOnChildren(p Property) {
 }
 
 func (ten *Node) addProperty(p Property) {
+	ten.hasUpdate = true
 	switch p.GetType() {
 	case `custom`:
 		ten.PropertyCustom[p.GetID()] = p
@@ -135,6 +136,7 @@ func (ten *Node) addProperty(p Property) {
 	case `oncall`:
 		ten.PropertyOncall[p.GetID()] = p
 	default:
+		ten.hasUpdate = false
 		ten.Fault.Error <- &Error{Action: `node.addProperty unknown type`}
 	}
 }
@@ -356,6 +358,7 @@ func (ten *Node) rmProperty(p Property) bool {
 	}
 
 	hasInheritance := false
+	ten.hasUpdate = true
 	switch p.GetType() {
 	case `custom`:
 		ten.actionPropertyDelete(
@@ -382,6 +385,7 @@ func (ten *Node) rmProperty(p Property) bool {
 		hasInheritance = ten.PropertyOncall[delId].hasInheritance()
 		delete(ten.PropertyOncall, delId)
 	default:
+		ten.hasUpdate = false
 		ten.Fault.Error <- &Error{Action: `node.rmProperty unknown type`}
 		return false
 	}

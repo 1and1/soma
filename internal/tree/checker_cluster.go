@@ -74,6 +74,7 @@ func (tec *Cluster) setCheckOnChildren(c Check) {
 }
 
 func (tec *Cluster) addCheck(c Check) {
+	tec.hasUpdate = true
 	tec.Checks[c.Id.String()] = c
 	tec.actionCheckNew(tec.setupCheckAction(c))
 }
@@ -112,6 +113,7 @@ func (tec *Cluster) deleteCheckOnChildren(c Check) {
 func (tec *Cluster) rmCheck(c Check) {
 	for id, _ := range tec.Checks {
 		if uuid.Equal(tec.Checks[id].SourceId, c.SourceId) {
+			tec.hasUpdate = true
 			tec.actionCheckRemoved(tec.setupCheckAction(tec.Checks[id]))
 			delete(tec.Checks, id)
 			return

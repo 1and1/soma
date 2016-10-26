@@ -42,6 +42,7 @@ type Group struct {
 	ordChildrenGrp  map[int]string
 	ordChildrenClr  map[int]string
 	ordChildrenNod  map[int]string
+	hasUpdate       bool
 }
 
 type GroupSpec struct {

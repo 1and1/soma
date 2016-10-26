@@ -136,6 +136,7 @@ func (teg *Group) setPropertyOnChildren(p Property) {
 }
 
 func (teg *Group) addProperty(p Property) {
+	teg.hasUpdate = true
 	switch p.GetType() {
 	case `custom`:
 		teg.PropertyCustom[p.GetID()] = p
@@ -146,6 +147,7 @@ func (teg *Group) addProperty(p Property) {
 	case `oncall`:
 		teg.PropertyOncall[p.GetID()] = p
 	default:
+		teg.hasUpdate = false
 		teg.Fault.Error <- &Error{Action: `group.addProperty unknown type`}
 	}
 }
@@ -452,6 +454,7 @@ func (teg *Group) rmProperty(p Property) bool {
 	}
 
 	hasInheritance := false
+	teg.hasUpdate = true
 	switch p.GetType() {
 	case `custom`:
 		teg.actionPropertyDelete(
@@ -478,6 +481,7 @@ func (teg *Group) rmProperty(p Property) bool {
 		hasInheritance = teg.PropertyOncall[delId].hasInheritance()
 		delete(teg.PropertyOncall, delId)
 	default:
+		teg.hasUpdate = false
 		teg.Fault.Error <- &Error{Action: `group.rmProperty unknown type`}
 		return false
 	}

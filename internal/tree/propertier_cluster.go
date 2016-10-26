@@ -136,6 +136,7 @@ func (tec *Cluster) setPropertyOnChildren(p Property) {
 }
 
 func (tec *Cluster) addProperty(p Property) {
+	tec.hasUpdate = true
 	switch p.GetType() {
 	case `custom`:
 		tec.PropertyCustom[p.GetID()] = p
@@ -146,6 +147,7 @@ func (tec *Cluster) addProperty(p Property) {
 	case `oncall`:
 		tec.PropertyOncall[p.GetID()] = p
 	default:
+		tec.hasUpdate = false
 		tec.Fault.Error <- &Error{Action: `cluster.addProperty unknown type`}
 	}
 }
@@ -452,6 +454,7 @@ func (tec *Cluster) rmProperty(p Property) bool {
 	}
 
 	hasInheritance := false
+	tec.hasUpdate = true
 	switch p.GetType() {
 	case `custom`:
 		tec.actionPropertyDelete(
@@ -478,6 +481,7 @@ func (tec *Cluster) rmProperty(p Property) bool {
 		hasInheritance = tec.PropertyOncall[delId].hasInheritance()
 		delete(tec.PropertyOncall, delId)
 	default:
+		tec.hasUpdate = false
 		tec.Fault.Error <- &Error{Action: `cluster.rmProperty unknown type`}
 		return false
 	}

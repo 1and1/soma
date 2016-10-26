@@ -86,6 +86,7 @@ func (teg *Group) setCheckOnChildren(c Check) {
 }
 
 func (teg *Group) addCheck(c Check) {
+	teg.hasUpdate = true
 	teg.Checks[c.Id.String()] = c
 	teg.actionCheckNew(c.MakeAction())
 }
@@ -137,6 +138,7 @@ func (teg *Group) deleteCheckOnChildren(c Check) {
 func (teg *Group) rmCheck(c Check) {
 	for id, _ := range teg.Checks {
 		if uuid.Equal(teg.Checks[id].SourceId, c.SourceId) {
+			teg.hasUpdate = true
 			teg.actionCheckRemoved(teg.setupCheckAction(teg.Checks[id]))
 			delete(teg.Checks, id)
 			return

@@ -25,6 +25,8 @@ func (teg *Group) updateCheckInstances() {
 			teg.Id.String(),
 			false,
 		)
+		// found nothing to do, ensure update flag is unset again
+		teg.hasUpdate = false
 		return
 	}
 
@@ -33,6 +35,12 @@ func (teg *Group) updateCheckInstances() {
 	startupLoad := false
 	if len(teg.loadedInstances) > 0 {
 		startupLoad = true
+	}
+
+	// if this is not the startupLoad and there are no updates, then there
+	// is noting to do
+	if !startupLoad && !teg.hasUpdate {
+		return
 	}
 
 	// scan over all current checkinstances if their check still exists.
@@ -609,6 +617,9 @@ checksloop:
 		delete(teg.CheckInstances, i)
 		teg.CheckInstances[i] = newCheckInstances
 	} // LOOPEND: range teg.Checks
+
+	// completed the pass, reset update flag
+	teg.hasUpdate = false
 }
 
 func (teg *Group) evalNativeProp(prop string, val string) bool {

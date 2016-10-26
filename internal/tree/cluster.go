@@ -38,6 +38,7 @@ type Cluster struct {
 	loadedInstances map[string]map[string]CheckInstance
 	ordNumChildNod  int
 	ordChildrenNod  map[int]string
+	hasUpdate       bool
 }
 
 type ClusterSpec struct {

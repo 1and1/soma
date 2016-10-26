@@ -45,6 +45,7 @@ func (ten *Node) setCheckOnChildren(c Check) {
 }
 
 func (ten *Node) addCheck(c Check) {
+	ten.hasUpdate = true
 	ten.Checks[c.Id.String()] = c
 	ten.actionCheckNew(ten.setupCheckAction(c))
 }
@@ -66,6 +67,7 @@ func (ten *Node) deleteCheckOnChildren(c Check) {
 func (ten *Node) rmCheck(c Check) {
 	for id, _ := range ten.Checks {
 		if uuid.Equal(ten.Checks[id].SourceId, c.SourceId) {
+			ten.hasUpdate = true
 			ten.actionCheckRemoved(ten.setupCheckAction(ten.Checks[id]))
 			delete(ten.Checks, id)
 			return
