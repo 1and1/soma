@@ -95,6 +95,8 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		nodeOnline, nodeDeleted                              bool
 		rows                                                 *sql.Rows
 		err                                                  error
+		tx                                                   *sql.Tx
+		checkConfigs                                         *[]proto.CheckConfig
 	)
 	result := somaResult{}
 
@@ -335,6 +337,23 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		if err = rows.Err(); err != nil {
 			result.SetRequestError(err)
 			goto dispatch
+		}
+
+		// add check configuration and instance information
+		if tx, err = r.conn.Begin(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+		checkConfigs, err = exportCheckConfigObjectTX(tx, q.Node.Id)
+		if err != nil {
+			tx.Rollback()
+			result.SetRequestError(err)
+			goto dispatch
+		}
+		if checkConfigs != nil && len(*checkConfigs) > 0 {
+			node.Details = &proto.Details{
+				CheckConfigs: checkConfigs,
+			}
 		}
 
 		result.Append(err, &somaNodeResult{
