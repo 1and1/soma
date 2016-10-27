@@ -418,4 +418,88 @@ func exportCheckConfigOncallConstraints(prepStmt *sql.Stmt,
 	return constraints, nil
 }
 
+// expects stmt.CheckConfigInstanceInfo as prepared statement
+func exportCheckInstancesForConfig(prepStmt *sql.Stmt,
+	queryId string) ([]proto.CheckInstanceInfo, error) {
+
+	var (
+		err  error
+		rows *sql.Rows
+	)
+
+	instances := make([]proto.CheckInstanceInfo, 0)
+
+	if rows, err = prepStmt.Query(queryId); err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&instanceId,
+			&objectId,
+			&objectType,
+			&currentStatus,
+			&nextStatus,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		info := proto.CheckInstanceInfo{
+			Id:            instanceId,
+			ObjectId:      objectId,
+			ObjectType:    objectType,
+			CurrentStatus: currentStatus,
+			NextStatus:    nextStatus,
+		}
+		instances = append(instances, info)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
+
+// expects stmt.CheckConfigObjectInstanceInfo as prepared statement
+func exportCheckInstancesForObject(prepStmt *sql.Stmt,
+	configId, objectId string) ([]proto.CheckInstanceInfo, error) {
+
+	var (
+		err  error
+		rows *sql.Rows
+	)
+
+	instances := make([]proto.CheckInstanceInfo, 0)
+
+	if rows, err = prepStmt.Query(configId, objectId); err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&instanceId,
+			&objectId,
+			&objectType,
+			&currentStatus,
+			&nextStatus,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		info := proto.CheckInstanceInfo{
+			Id:            instanceId,
+			ObjectId:      objectId,
+			ObjectType:    objectType,
+			CurrentStatus: currentStatus,
+			NextStatus:    nextStatus,
+		}
+		instances = append(instances, info)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return instances, nil
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
