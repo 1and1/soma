@@ -190,7 +190,8 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 			Repository: q.Repository,
 		})
 		if q.action == "add" {
-			f.spawnTreeKeeper(q, sTree, errChan, actionChan, team)
+			err = f.spawnTreeKeeper(q, sTree, errChan, actionChan, team)
+			result.SetRequestError(err)
 		}
 	}
 	q.reply <- result
@@ -261,7 +262,7 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 		}
 
 		// load the tree again, with requested rebuild active
-		f.loadSomaTree(&somaRepositoryRequest{
+		if err = f.loadSomaTree(&somaRepositoryRequest{
 			rebuild: true,
 			rbLevel: q.System.RebuildLevel,
 			Repository: proto.Repository{
@@ -271,12 +272,15 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 				IsDeleted: false,
 				IsActive:  true,
 			},
-		})
+		}); err != nil {
+			result.ServerError(err)
+			goto exit
+		}
 	}
 
 	// rebuild has finished, restart the tree. If the rebuild did not
 	// work, this will simply be a broken tree once more
-	f.loadSomaTree(&somaRepositoryRequest{
+	if err = f.loadSomaTree(&somaRepositoryRequest{
 		rebuild: false,
 		rbLevel: "",
 		Repository: proto.Repository{
@@ -286,7 +290,10 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 			IsDeleted: false,
 			IsActive:  true,
 		},
-	})
+	}); err != nil {
+		result.ServerError(err)
+		goto exit
+	}
 	result.OK()
 
 exit:
@@ -307,8 +314,9 @@ func (f *forestCustodian) initialLoad() {
 	}
 	defer rows.Close()
 
+treeloop:
 	for rows.Next() {
-		err := rows.Scan(
+		err = rows.Scan(
 			&repoId,
 			&repoName,
 			&repoDeleted,
@@ -317,8 +325,10 @@ func (f *forestCustodian) initialLoad() {
 		)
 		if err != nil {
 			f.errLog.Printf("Error: %s", err.Error())
+			err = nil
+			continue treeloop
 		}
-		f.loadSomaTree(&somaRepositoryRequest{
+		err = f.loadSomaTree(&somaRepositoryRequest{
 			Repository: proto.Repository{
 				Id:        repoId,
 				Name:      repoName,
@@ -327,10 +337,17 @@ func (f *forestCustodian) initialLoad() {
 				IsActive:  repoActive,
 			},
 		})
+		if err != nil {
+			f.errLog.Printf("fc.loadSomaTree(), error: %s", err.Error())
+			err = nil
+		}
+	}
+	if err = rows.Err(); err != nil {
+		f.errLog.Printf("fc.initialLoad(), error: %s", err.Error())
 	}
 }
 
-func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
+func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) error {
 	actionChan := make(chan *tree.Action, 1024000)
 	errChan := make(chan *tree.Error, 1024000)
 
@@ -359,15 +376,15 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) {
 		// discard actions on initial load
 		<-errChan
 	}
-	f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.TeamId)
+	return f.spawnTreeKeeper(q, sTree, errChan, actionChan, q.Repository.TeamId)
 }
 
 func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree,
-	ec chan *tree.Error, ac chan *tree.Action, team string) {
+	ec chan *tree.Error, ac chan *tree.Action, team string) error {
 
 	// only start the single requested repo
 	if SomaCfg.ObserverRepo != `` && q.Repository.Name != SomaCfg.ObserverRepo {
-		return
+		return nil
 	}
 	var (
 		err      error
@@ -376,7 +393,7 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 	)
 
 	if db, err = newDatabaseConnection(); err != nil {
-		return
+		return err
 	}
 
 	keeperName := fmt.Sprintf("repository_%s", q.Repository.Name)
@@ -385,14 +402,14 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 		`repository`,
 		fmt.Sprintf("%s.log", keeperName),
 	)); err != nil {
-		return
+		return err
 	}
 	if sfh, err = reopen.NewFileWriter(filepath.Join(
 		SomaCfg.LogPath,
 		`repository`,
 		fmt.Sprintf("startup_%s.log", keeperName),
 	)); err != nil {
-		return
+		return err
 	}
 	tK := new(treeKeeper)
 	tK.input = make(chan treeRequest, 1024)
@@ -429,6 +446,7 @@ func (f *forestCustodian) spawnTreeKeeper(q *somaRepositoryRequest, s *tree.Tree
 		handlerMap[keeperName] = tK
 		go tK.run()
 	}
+	return nil
 }
 
 /* Ops Access
