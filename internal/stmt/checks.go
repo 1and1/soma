@@ -155,4 +155,9 @@ WHERE  scc.configuration_id = $1::uuid
   AND  sc.object_id = $2::uuid
   AND  scic.status != 'awaiting_deletion';`
 
+const CheckConfigForChecksOnObject = `
+SELECT sc.configuration_id
+FROM   soma.checks sc
+WHERE  sc.object_id = $1::uuid;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
