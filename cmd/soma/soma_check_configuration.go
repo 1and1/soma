@@ -423,8 +423,10 @@ func exportCheckInstancesForConfig(prepStmt *sql.Stmt,
 	queryId string) ([]proto.CheckInstanceInfo, error) {
 
 	var (
-		err  error
-		rows *sql.Rows
+		err                              error
+		rows                             *sql.Rows
+		instanceId, objectId, objectType string
+		currentStatus, nextStatus        string
 	)
 
 	instances := make([]proto.CheckInstanceInfo, 0)
@@ -465,8 +467,10 @@ func exportCheckInstancesForObject(prepStmt *sql.Stmt,
 	configId, objectId string) ([]proto.CheckInstanceInfo, error) {
 
 	var (
-		err  error
-		rows *sql.Rows
+		err                                 error
+		rows                                *sql.Rows
+		instanceId, resObjectId, objectType string
+		currentStatus, nextStatus           string
 	)
 
 	instances := make([]proto.CheckInstanceInfo, 0)
@@ -478,7 +482,7 @@ func exportCheckInstancesForObject(prepStmt *sql.Stmt,
 	for rows.Next() {
 		if err = rows.Scan(
 			&instanceId,
-			&objectId,
+			&resObjectId,
 			&objectType,
 			&currentStatus,
 			&nextStatus,
@@ -488,7 +492,7 @@ func exportCheckInstancesForObject(prepStmt *sql.Stmt,
 		}
 		info := proto.CheckInstanceInfo{
 			Id:            instanceId,
-			ObjectId:      objectId,
+			ObjectId:      resObjectId,
 			ObjectType:    objectType,
 			CurrentStatus: currentStatus,
 			NextStatus:    nextStatus,
