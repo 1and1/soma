@@ -91,6 +91,8 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		systemProp, value, customProp                     string
 		rows                                              *sql.Rows
 		err                                               error
+		tx                                                *sql.Tx
+		checkConfigs                                      *[]proto.CheckConfig
 	)
 	result := somaResult{}
 	resG := proto.Group{}
@@ -273,6 +275,23 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		if err = rows.Err(); err != nil {
 			result.SetRequestError(err)
 			goto dispatch
+		}
+
+		// add check configuration and instance information
+		if tx, err = r.conn.Begin(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+		checkConfigs, err = exportCheckConfigObjectTX(tx, q.Group.Id)
+		if err != nil {
+			tx.Rollback()
+			result.SetRequestError(err)
+			goto dispatch
+		}
+		if checkConfigs != nil && len(*checkConfigs) > 0 {
+			group.Details = &proto.Details{
+				CheckConfigs: checkConfigs,
+			}
 		}
 
 		result.Append(err, &somaGroupResult{
