@@ -4,8 +4,103 @@ import (
 	"database/sql"
 	"strconv"
 
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 )
+
+func exportCheckConfigObjectTX(tx *sql.Tx, objectId string) (
+	*[]proto.CheckConfig, error) {
+
+	var (
+		err           error
+		checkconfigs  []proto.CheckConfig
+		checkConfigId string
+		checkConfig   *proto.CheckConfig
+		txMap         map[string]*sql.Stmt
+		instances     []proto.CheckInstanceInfo
+		rows          *sql.Rows
+	)
+
+	txMap = make(map[string]*sql.Stmt)
+	checkconfigs = make([]proto.CheckConfig, 0)
+	instances = make([]proto.CheckInstanceInfo, 0)
+
+	for name, statement := range map[string]string{
+		`configs`:       stmt.CheckConfigForChecksOnObject,
+		`base`:          stmt.CheckConfigShowBase,
+		`threshold`:     stmt.CheckConfigShowThreshold,
+		`cstrCustom`:    stmt.CheckConfigShowConstrCustom,
+		`cstrSystem`:    stmt.CheckConfigShowConstrSystem,
+		`cstrNative`:    stmt.CheckConfigShowConstrNative,
+		`cstrService`:   stmt.CheckConfigShowConstrService,
+		`cstrAttribute`: stmt.CheckConfigShowConstrAttribute,
+		`cstrOncall`:    stmt.CheckConfigShowConstrOncall,
+		`instance`:      stmt.CheckConfigObjectInstanceInfo,
+	} {
+		if txMap[name], err = tx.Prepare(statement); err != nil {
+			return nil, err
+		}
+	}
+
+	if rows, err = txMap[`configs`].Query(objectId); err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		if err = rows.Scan(
+			&checkConfigId,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+
+		if checkConfig, err = exportCheckConfig(
+			txMap[`base`],
+			checkConfigId,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		if checkConfig.Thresholds, err = exportCheckConfigThresholds(
+			txMap[`threshold`],
+			checkConfigId,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		if checkConfig.Constraints, err = exportCheckConfigConstraints(
+			txMap[`cstrCustom`],
+			txMap[`cstrSystem`],
+			txMap[`cstrNative`],
+			txMap[`cstrService`],
+			txMap[`cstrAttribute`],
+			txMap[`cstrOncall`],
+			checkConfigId,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		if instances, err = exportCheckInstancesForObject(
+			txMap[`instance`],
+			checkConfigId,
+			objectId,
+		); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		if len(instances) > 0 {
+			checkConfig.Details = &proto.CheckConfigDetails{
+				Instances: instances,
+			}
+		}
+		checkconfigs = append(checkconfigs, *checkConfig)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	tx.Commit()
+
+	return &checkconfigs, nil
+}
 
 // expects stmt.CheckConfigShowBase as prepared statement
 func exportCheckConfig(prepStmt *sql.Stmt, queryId string) (
