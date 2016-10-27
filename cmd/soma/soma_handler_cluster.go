@@ -86,6 +86,8 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		systemProp, value, customProp                          string
 		rows                                                   *sql.Rows
 		err                                                    error
+		tx                                                     *sql.Tx
+		checkConfigs                                           *[]proto.CheckConfig
 	)
 	result := somaResult{}
 	resC := proto.Cluster{}
@@ -269,6 +271,23 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		if err = rows.Err(); err != nil {
 			result.SetRequestError(err)
 			goto dispatch
+		}
+
+		// add check configuration and instance information
+		if tx, err = r.conn.Begin(); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
+		checkConfigs, err = exportCheckConfigObjectTX(tx, q.Cluster.Id)
+		if err != nil {
+			tx.Rollback()
+			result.SetRequestError(err)
+			goto dispatch
+		}
+		if checkConfigs != nil && len(*checkConfigs) > 0 {
+			cluster.Details = &proto.Details{
+				CheckConfigs: checkConfigs,
+			}
 		}
 
 		result.Append(err, &somaClusterResult{
