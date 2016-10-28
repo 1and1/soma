@@ -65,7 +65,7 @@ func (ten *Node) SetProperty(p Property) {
 			})
 		}
 	}
-	p.SetId(p.GetInstanceId(ten.Type, ten.Id))
+	p.SetId(p.GetInstanceId(ten.Type, ten.Id, ten.log))
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
@@ -91,7 +91,7 @@ func (ten *Node) SetProperty(p Property) {
 
 func (ten *Node) setPropertyInherited(p Property) {
 	f := p.Clone()
-	f.SetId(f.GetInstanceId(ten.Type, ten.Id))
+	f.SetId(f.GetInstanceId(ten.Type, ten.Id, ten.log))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
 	}

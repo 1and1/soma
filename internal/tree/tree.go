@@ -20,12 +20,14 @@ type Tree struct {
 	Child  *Repository
 	Snap   *Repository
 	Action chan *Action `json:"-"`
+	log    *log.Logger
 }
 
 type TreeSpec struct {
 	Id     string
 	Name   string
 	Action chan *Action
+	Log    *log.Logger
 }
 
 func New(spec TreeSpec) *Tree {
@@ -34,6 +36,7 @@ func New(spec TreeSpec) *Tree {
 	st.Name = spec.Name
 	st.Action = spec.Action
 	st.Type = "root"
+	st.log = spec.Log
 	return st
 }
 
@@ -68,6 +71,13 @@ func (st *Tree) Commit() {
 func (st *Tree) AttachError(err Error) {
 	if st.Child != nil {
 		st.Child.Fault.Error <- &err
+	}
+}
+
+func (st *Tree) SwitchLogger(newlog *log.Logger) {
+	st.log = newlog
+	if st.Child != nil {
+		st.Child.setLoggerDeep(newlog)
 	}
 }
 
@@ -144,6 +154,7 @@ func (st *Tree) receiveRepository(r ReceiveRequest) {
 		st.Child = r.Repository
 		r.Repository.setParent(st)
 		r.Repository.setAction(st.Action)
+		r.Repository.setLog(st.log)
 	default:
 		panic("not allowed")
 	}
@@ -181,7 +192,7 @@ func (st *Tree) ComputeCheckInstances() {
 		panic(`Tree.ComputeCheckInstances: no repository registered`)
 	}
 
-	log.Printf("Tree[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+	st.log.Printf("Tree[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
 		st.Name,
 		`ComputeCheckInstances`,
 		`tree`,

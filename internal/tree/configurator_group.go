@@ -8,17 +8,14 @@
 
 package tree
 
-import (
-	log "github.com/Sirupsen/logrus"
-	uuid "github.com/satori/go.uuid"
-)
+import uuid "github.com/satori/go.uuid"
 
 func (teg *Group) updateCheckInstances() {
 	repoName := teg.GetRepositoryName()
 
 	// object may have no checks, but there could be instances to mop up
 	if len(teg.Checks) == 0 && len(teg.Instances) == 0 {
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
+		teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
 			repoName,
 			`UpdateCheckInstances`,
 			`group`,
@@ -56,7 +53,7 @@ func (teg *Group) updateCheckInstances() {
 		inst := teg.CheckInstances[ck]
 		for _, i := range inst {
 			teg.actionCheckInstanceDelete(teg.Instances[i].MakeAction())
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`CleanupInstance`,
 				`group`,
@@ -99,7 +96,7 @@ func (teg *Group) updateCheckInstances() {
 			if instanceArray, ok := teg.CheckInstances[chk]; ok {
 				for _, i := range instanceArray {
 					teg.actionCheckInstanceDelete(teg.Instances[i].MakeAction())
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`RemoveDisabledInstance`,
 						`group`,
@@ -205,7 +202,7 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 				repoName,
 				`ConstraintEvaluation`,
 				`group`,
@@ -278,7 +275,7 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 				repoName,
 				`ConstraintEvaluation`,
 				`group`,
@@ -289,7 +286,7 @@ checksloop:
 			continue checksloop
 		}
 		// check triggered, create instances
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+		teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 			repoName,
 			`ConstraintEvaluation`,
 			`group`,
@@ -343,7 +340,7 @@ checksloop:
 						inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 						inst.Version = ldInst.Version
 						delete(teg.loadedInstances[i], ldInstId)
-						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+						teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 							repoName,
 							`ComputeInstance`,
 							`group`,
@@ -358,7 +355,7 @@ checksloop:
 				// if we hit here, then we just computed an instance
 				// that we could not match to any loaded instances
 				// -> something is wrong
-				log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+				teg.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
 				teg.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 				return
 			nosvcstartinstancematch:
@@ -384,7 +381,7 @@ checksloop:
 					inst.Version = 0
 					inst.InstanceId = uuid.NewV4()
 				}
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+				teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 					repoName,
 					`ComputeInstance`,
 					`group`,
@@ -494,7 +491,7 @@ checksloop:
 							// be equal, since InstanceSvcCfgHash is
 							// equal
 							delete(teg.loadedInstances[i], ldInstId)
-							log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+							teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 								repoName,
 								`ComputeInstance`,
 								`group`,
@@ -509,7 +506,7 @@ checksloop:
 					// if we hit here, then just computed an
 					// instance that we could not match to any
 					// loaded instances -> something is wrong
-					log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+					teg.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
 					teg.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 					return
 				startinstancematch:
@@ -533,7 +530,7 @@ checksloop:
 						inst.Version = 0
 						inst.InstanceId = uuid.NewV4()
 					}
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+					teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 						repoName,
 						`ComputeInstance`,
 						`group`,
@@ -563,7 +560,7 @@ checksloop:
 			if _, ok := newInstances[oldInstanceId]; !ok {
 				// there is no new version for this instance id
 				teg.actionCheckInstanceDelete(teg.Instances[oldInstanceId].MakeAction())
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+				teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 					repoName,
 					`DeleteInstance`,
 					`group`,
@@ -577,7 +574,7 @@ checksloop:
 			delete(teg.Instances, oldInstanceId)
 			teg.Instances[oldInstanceId] = newInstances[oldInstanceId]
 			teg.actionCheckInstanceUpdate(teg.Instances[oldInstanceId].MakeAction())
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`UpdateInstance`,
 				`group`,
@@ -594,7 +591,7 @@ checksloop:
 				// action channel is drained anyway
 				if !startupLoad {
 					teg.actionCheckInstanceCreate(teg.Instances[newInstanceId].MakeAction())
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`CreateInstance`,
 						`group`,
@@ -603,7 +600,7 @@ checksloop:
 						newInstanceId,
 					)
 				} else {
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`RecreateInstance`,
 						`group`,

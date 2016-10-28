@@ -14,8 +14,8 @@ import (
 	"sync"
 
 	"github.com/1and1/soma/lib/proto"
-
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Group struct {
@@ -43,6 +43,7 @@ type Group struct {
 	ordChildrenClr  map[int]string
 	ordChildrenNod  map[int]string
 	hasUpdate       bool
+	log             *log.Logger
 }
 
 type GroupSpec struct {
@@ -93,6 +94,7 @@ func (teg Group) Clone() *Group {
 		ordNumChildGrp: teg.ordNumChildGrp,
 		ordNumChildClr: teg.ordNumChildClr,
 		ordNumChildNod: teg.ordNumChildNod,
+		log:            teg.log,
 	}
 	cl.Id, _ = uuid.FromString(teg.Id.String())
 
@@ -216,6 +218,17 @@ func (teg *Group) setActionDeep(c chan *Action) {
 	}
 }
 
+func (g *Group) setLog(newlog *log.Logger) {
+	g.log = newlog
+}
+
+func (g *Group) setLoggerDeep(newlog *log.Logger) {
+	g.setLog(newlog)
+	for ch, _ := range g.Children {
+		g.Children[ch].setLoggerDeep(newlog)
+	}
+}
+
 // GroupReceiver == can receive Groups as children
 func (teg *Group) setGroupParent(p GroupReceiver) {
 	teg.Parent = p
@@ -286,6 +299,12 @@ func (teg *Group) GetEnvironment() string {
 //
 //
 func (teg *Group) ComputeCheckInstances() {
+	teg.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+		teg.GetRepositoryName(),
+		`ComputeCheckInstances`,
+		`group`,
+		teg.Id.String(),
+	)
 	var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)

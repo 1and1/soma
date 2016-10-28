@@ -8,17 +8,14 @@
 
 package tree
 
-import (
-	log "github.com/Sirupsen/logrus"
-	uuid "github.com/satori/go.uuid"
-)
+import uuid "github.com/satori/go.uuid"
 
 func (ten *Node) updateCheckInstances() {
 	repoName := ten.repositoryName()
 
 	// object may have no checks, but there could be instances to mop up
 	if len(ten.Checks) == 0 && len(ten.Instances) == 0 {
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
+		ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
 			repoName,
 			`UpdateCheckInstances`,
 			`node`,
@@ -56,7 +53,7 @@ func (ten *Node) updateCheckInstances() {
 		inst := ten.CheckInstances[ck]
 		for _, i := range inst {
 			ten.actionCheckInstanceDelete(ten.Instances[i].MakeAction())
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`CleanupInstance`,
 				`node`,
@@ -99,7 +96,7 @@ func (ten *Node) updateCheckInstances() {
 			if instanceArray, ok := ten.CheckInstances[chk]; ok {
 				for _, i := range instanceArray {
 					ten.actionCheckInstanceDelete(ten.Instances[i].MakeAction())
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`RemoveDisabledInstance`,
 						`node`,
@@ -202,7 +199,7 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 				repoName,
 				`ConstraintEvaluation`,
 				`node`,
@@ -275,7 +272,7 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 				repoName,
 				`ConstraintEvaluation`,
 				`node`,
@@ -286,7 +283,7 @@ checksloop:
 			continue checksloop
 		}
 		// check triggered, create instances
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+		ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 			repoName,
 			`ConstraintEvaluation`,
 			`node`,
@@ -340,7 +337,7 @@ checksloop:
 						inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 						inst.Version = ldInst.Version
 						delete(ten.loadedInstances[i], ldInstId)
-						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+						ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 							repoName,
 							`ComputeInstance`,
 							`node`,
@@ -355,7 +352,7 @@ checksloop:
 				// if we hit here, then we just computed an instance
 				// that we could not match to any loaded instances
 				// -> something is wrong
-				log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+				ten.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
 				ten.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 				return
 			nosvcstartinstancematch:
@@ -381,7 +378,7 @@ checksloop:
 					inst.Version = 0
 					inst.InstanceId = uuid.NewV4()
 				}
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+				ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 					repoName,
 					`ComputeInstance`,
 					`node`,
@@ -491,7 +488,7 @@ checksloop:
 							// be equal, since InstanceSvcCfgHash is
 							// equal
 							delete(ten.loadedInstances[i], ldInstId)
-							log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+							ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 								repoName,
 								`ComputeInstance`,
 								`node`,
@@ -506,7 +503,7 @@ checksloop:
 					// if we hit here, then just computed an
 					// instance that we could not match to any
 					// loaded instances -> something is wrong
-					log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+					ten.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
 					ten.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 					return
 				startinstancematch:
@@ -530,7 +527,7 @@ checksloop:
 						inst.Version = 0
 						inst.InstanceId = uuid.NewV4()
 					}
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+					ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 						repoName,
 						`ComputeInstance`,
 						`node`,
@@ -560,7 +557,7 @@ checksloop:
 			if _, ok := newInstances[oldInstanceId]; !ok {
 				// there is no new version for this instance id
 				ten.actionCheckInstanceDelete(ten.Instances[oldInstanceId].MakeAction())
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+				ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 					repoName,
 					`DeleteInstance`,
 					`node`,
@@ -574,7 +571,7 @@ checksloop:
 			delete(ten.Instances, oldInstanceId)
 			ten.Instances[oldInstanceId] = newInstances[oldInstanceId]
 			ten.actionCheckInstanceUpdate(ten.Instances[oldInstanceId].MakeAction())
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`UpdateInstance`,
 				`node`,
@@ -591,7 +588,7 @@ checksloop:
 				// action channel is drained anyway
 				if !startupLoad {
 					ten.actionCheckInstanceCreate(ten.Instances[newInstanceId].MakeAction())
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`CreateInstance`,
 						`node`,
@@ -600,7 +597,7 @@ checksloop:
 						newInstanceId,
 					)
 				} else {
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`RecreateInstance`,
 						`node`,

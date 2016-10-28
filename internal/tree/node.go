@@ -13,8 +13,8 @@ import (
 	"reflect"
 
 	"github.com/1and1/soma/lib/proto"
-
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Node struct {
@@ -39,6 +39,7 @@ type Node struct {
 	Instances       map[string]CheckInstance
 	loadedInstances map[string]map[string]CheckInstance
 	hasUpdate       bool
+	log             *log.Logger
 }
 
 type NodeSpec struct {
@@ -89,6 +90,7 @@ func (ten Node) Clone() *Node {
 		Online:  ten.Online,
 		Deleted: ten.Deleted,
 		Type:    ten.Type,
+		log:     ten.log,
 	}
 	cl.Id, _ = uuid.FromString(ten.Id.String())
 	cl.AssetId = ten.AssetId
@@ -195,6 +197,14 @@ func (ten *Node) setActionDeep(c chan *Action) {
 	ten.setAction(c)
 }
 
+func (n *Node) setLog(newlog *log.Logger) {
+	n.log = newlog
+}
+
+func (n *Node) setLoggerDeep(newlog *log.Logger) {
+	n.setLog(newlog)
+}
+
 func (ten *Node) updateParentRecursive(p Receiver) {
 	ten.setParent(p)
 }
@@ -219,6 +229,12 @@ func (ten *Node) updateFaultRecursive(f *Fault) {
 //
 //
 func (ten *Node) ComputeCheckInstances() {
+	ten.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+		ten.Parent.(Bucketeer).GetRepositoryName(),
+		`ComputeCheckInstances`,
+		`node`,
+		ten.Id.String(),
+	)
 	ten.updateCheckInstances()
 }
 

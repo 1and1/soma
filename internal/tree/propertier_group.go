@@ -67,7 +67,7 @@ func (teg *Group) SetProperty(p Property) {
 			})
 		}
 	}
-	p.SetId(p.GetInstanceId(teg.Type, teg.Id))
+	p.SetId(p.GetInstanceId(teg.Type, teg.Id, teg.log))
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
@@ -93,7 +93,7 @@ func (teg *Group) SetProperty(p Property) {
 
 func (teg *Group) setPropertyInherited(p Property) {
 	f := p.Clone()
-	f.SetId(f.GetInstanceId(teg.Type, teg.Id))
+	f.SetId(f.GetInstanceId(teg.Type, teg.Id, teg.log))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
 	}

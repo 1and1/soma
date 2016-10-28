@@ -67,7 +67,7 @@ func (teb *Bucket) SetProperty(p Property) {
 			})
 		}
 	}
-	p.SetId(p.GetInstanceId(teb.Type, teb.Id))
+	p.SetId(p.GetInstanceId(teb.Type, teb.Id, teb.log))
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
@@ -93,7 +93,7 @@ func (teb *Bucket) SetProperty(p Property) {
 
 func (teb *Bucket) setPropertyInherited(p Property) {
 	f := p.Clone()
-	f.SetId(f.GetInstanceId(teb.Type, teb.Id))
+	f.SetId(f.GetInstanceId(teb.Type, teb.Id, teb.log))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
 	}

@@ -8,17 +8,14 @@
 
 package tree
 
-import (
-	log "github.com/Sirupsen/logrus"
-	uuid "github.com/satori/go.uuid"
-)
+import uuid "github.com/satori/go.uuid"
 
 func (tec *Cluster) updateCheckInstances() {
 	repoName := tec.GetRepositoryName()
 
 	// object may have no checks, but there could be instances to mop up
 	if len(tec.Checks) == 0 && len(tec.Instances) == 0 {
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
+		tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, HasChecks=%t",
 			repoName,
 			`UpdateCheckInstances`,
 			`cluster`,
@@ -56,7 +53,7 @@ func (tec *Cluster) updateCheckInstances() {
 		inst := tec.CheckInstances[ck]
 		for _, i := range inst {
 			tec.actionCheckInstanceDelete(tec.Instances[i].MakeAction())
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`CleanupInstance`,
 				`cluster`,
@@ -99,7 +96,7 @@ func (tec *Cluster) updateCheckInstances() {
 			if instanceArray, ok := tec.CheckInstances[chk]; ok {
 				for _, i := range instanceArray {
 					tec.actionCheckInstanceDelete(tec.Instances[i].MakeAction())
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`RemoveDisabledInstance`,
 						`cluster`,
@@ -205,7 +202,7 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 				repoName,
 				`ConstraintEvaluation`,
 				`cluster`,
@@ -278,7 +275,7 @@ checksloop:
 			}
 		}
 		if hasBrokenConstraint {
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+			tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 				repoName,
 				`ConstraintEvaluation`,
 				`cluster`,
@@ -289,7 +286,7 @@ checksloop:
 			continue checksloop
 		}
 		// check triggered, create instances
-		log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
+		tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, Match=%t",
 			repoName,
 			`ConstraintEvaluation`,
 			`cluster`,
@@ -343,7 +340,7 @@ checksloop:
 						inst.InstanceConfigId, _ = uuid.FromString(ldInst.InstanceConfigId.String())
 						inst.Version = ldInst.Version
 						delete(tec.loadedInstances[i], ldInstId)
-						log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+						tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 							repoName,
 							`ComputeInstance`,
 							`cluster`,
@@ -358,7 +355,7 @@ checksloop:
 				// if we hit here, then we just computed an instance
 				// that we could not match to any loaded instances
 				// -> something is wrong
-				log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+				tec.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
 				tec.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 				return
 			nosvcstartinstancematch:
@@ -384,7 +381,7 @@ checksloop:
 					inst.Version = 0
 					inst.InstanceId = uuid.NewV4()
 				}
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+				tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 					repoName,
 					`ComputeInstance`,
 					`cluster`,
@@ -494,7 +491,7 @@ checksloop:
 							// be equal, since InstanceSvcCfgHash is
 							// equal
 							delete(tec.loadedInstances[i], ldInstId)
-							log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+							tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 								repoName,
 								`ComputeInstance`,
 								`cluster`,
@@ -509,7 +506,7 @@ checksloop:
 					// if we hit here, then just computed an
 					// instance that we could not match to any
 					// loaded instances -> something is wrong
-					log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+					tec.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
 					tec.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 					return
 				startinstancematch:
@@ -533,7 +530,7 @@ checksloop:
 						inst.Version = 0
 						inst.InstanceId = uuid.NewV4()
 					}
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
+					tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s, ServiceConstrained=%t",
 						repoName,
 						`ComputeInstance`,
 						`cluster`,
@@ -563,7 +560,7 @@ checksloop:
 			if _, ok := newInstances[oldInstanceId]; !ok {
 				// there is no new version for this instance id
 				tec.actionCheckInstanceDelete(tec.Instances[oldInstanceId].MakeAction())
-				log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+				tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 					repoName,
 					`DeleteInstance`,
 					`cluster`,
@@ -577,7 +574,7 @@ checksloop:
 			delete(tec.Instances, oldInstanceId)
 			tec.Instances[oldInstanceId] = newInstances[oldInstanceId]
 			tec.actionCheckInstanceUpdate(tec.Instances[oldInstanceId].MakeAction())
-			log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+			tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 				repoName,
 				`UpdateInstance`,
 				`cluster`,
@@ -594,7 +591,7 @@ checksloop:
 				// action channel is drained anyway
 				if !startupLoad {
 					tec.actionCheckInstanceCreate(tec.Instances[newInstanceId].MakeAction())
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`CreateInstance`,
 						`cluster`,
@@ -603,7 +600,7 @@ checksloop:
 						newInstanceId,
 					)
 				} else {
-					log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
+					tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
 						repoName,
 						`RecreateInstance`,
 						`cluster`,

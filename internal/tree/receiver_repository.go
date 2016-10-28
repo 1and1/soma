@@ -35,6 +35,7 @@ func (ter *Repository) receiveBucket(r ReceiveRequest) {
 			r.Bucket.setParent(ter)
 			r.Bucket.setAction(ter.Action)
 			r.Bucket.setFault(ter.Fault)
+			r.Bucket.setLoggerDeep(ter.log)
 			ter.ordChildrenBck[ter.ordNumChildBck] = r.Bucket.GetID()
 			ter.ordNumChildBck++
 		default:

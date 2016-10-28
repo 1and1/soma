@@ -67,7 +67,7 @@ func (tec *Cluster) SetProperty(p Property) {
 			})
 		}
 	}
-	p.SetId(p.GetInstanceId(tec.Type, tec.Id))
+	p.SetId(p.GetInstanceId(tec.Type, tec.Id, tec.log))
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
@@ -93,7 +93,7 @@ func (tec *Cluster) SetProperty(p Property) {
 
 func (tec *Cluster) setPropertyInherited(p Property) {
 	f := p.Clone()
-	f.SetId(f.GetInstanceId(tec.Type, tec.Id))
+	f.SetId(f.GetInstanceId(tec.Type, tec.Id, tec.log))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
 	}

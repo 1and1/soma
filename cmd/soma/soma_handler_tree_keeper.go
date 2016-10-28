@@ -100,8 +100,12 @@ func (tk *treeKeeper) run() {
 	c.Inc(1)
 	defer c.Dec(1)
 
+	// set the tree to the startup logger and load
+	tk.tree.SwitchLogger(tk.startLog)
 	tk.startupLoad()
 
+	// reset the tree to the regular logger
+	tk.tree.SwitchLogger(tk.log)
 	// render the startup logger inert without risking
 	// a nilptr dereference later
 	tk.startLog = log.New()
@@ -207,10 +211,6 @@ broken:
 		}
 		defer prepStmt.Close()
 	}
-
-	// TODO per-treekeeper logfiles:
-	// ${SomaCfg.LogPath}/repository/${keepername}.log  <- registered rotate
-	// ${SomaCfg.LogPath}/repository/${keepername}_startup.${rfc3339Milli}.log
 
 	tk.appLog.Printf("TK[%s]: ready for service!\n", tk.repoName)
 	tk.ready = true

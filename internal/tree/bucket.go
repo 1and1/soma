@@ -42,6 +42,7 @@ type Bucket struct {
 	ordChildrenGrp  map[int]string
 	ordChildrenClr  map[int]string
 	ordChildrenNod  map[int]string
+	log             *log.Logger
 }
 
 type BucketSpec struct {
@@ -100,6 +101,7 @@ func (teb Bucket) CloneRepository() RepositoryAttacher {
 		ordNumChildGrp: teb.ordNumChildGrp,
 		ordNumChildClr: teb.ordNumChildClr,
 		ordNumChildNod: teb.ordNumChildNod,
+		log:            teb.log,
 	}
 	cl.Id, _ = uuid.FromString(teb.Id.String())
 	cl.Team, _ = uuid.FromString(teb.Team.String())
@@ -187,6 +189,17 @@ func (teb *Bucket) setActionDeep(c chan *Action) {
 	}
 }
 
+func (b *Bucket) setLog(newlog *log.Logger) {
+	b.log = newlog
+}
+
+func (b *Bucket) setLoggerDeep(newlog *log.Logger) {
+	b.setLog(newlog)
+	for ch, _ := range b.Children {
+		b.Children[ch].setLoggerDeep(newlog)
+	}
+}
+
 //
 // Interface: Bucketeer
 func (teb *Bucket) GetBucket() Receiver {
@@ -208,7 +221,7 @@ func (teb *Bucket) GetRepositoryName() string {
 //
 //
 func (teb *Bucket) ComputeCheckInstances() {
-	log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+	teb.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
 		teb.GetRepositoryName(),
 		`ComputeCheckInstances`,
 		`bucket`,

@@ -67,7 +67,7 @@ func (ter *Repository) SetProperty(p Property) {
 			})
 		}
 	}
-	p.SetId(p.GetInstanceId(ter.Type, ter.Id))
+	p.SetId(p.GetInstanceId(ter.Type, ter.Id, ter.log))
 	if p.Equal(uuid.Nil) {
 		p.SetId(uuid.NewV4())
 	}
@@ -93,7 +93,7 @@ func (ter *Repository) SetProperty(p Property) {
 
 func (ter *Repository) setPropertyInherited(p Property) {
 	f := p.Clone()
-	f.SetId(f.GetInstanceId(ter.Type, ter.Id))
+	f.SetId(f.GetInstanceId(ter.Type, ter.Id, ter.log))
 	if f.Equal(uuid.Nil) {
 		f.SetId(uuid.NewV4())
 	}

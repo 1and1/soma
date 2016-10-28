@@ -12,7 +12,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Fault struct {
@@ -97,6 +98,12 @@ func (tef *Fault) setAction(c chan *Action) {
 
 func (tef *Fault) setActionDeep(c chan *Action) {
 	tef.Action = c
+}
+
+func (tef *Fault) setLog(newlog *log.Logger) {
+}
+
+func (tef *Fault) setLoggerDeep(newlog *log.Logger) {
 }
 
 func (tef *Fault) setError(c chan *Error) {

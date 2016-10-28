@@ -9,15 +9,14 @@
 package tree
 
 import (
+	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
-
-	"github.com/1and1/soma/lib/proto"
 )
 
 type Property interface {
 	GetID() string
-	GetInstanceId(objType string, objId uuid.UUID) uuid.UUID
+	GetInstanceId(objType string, objId uuid.UUID, l *log.Logger) uuid.UUID
 	GetIsInherited() bool
 	GetKey() string
 	GetSource() string
@@ -129,13 +128,13 @@ func (p *PropertyCustom) GetValueField() string {
 	return p.Value
 }
 
-func (p *PropertyCustom) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
+func (p *PropertyCustom) GetInstanceId(objType string, objId uuid.UUID, l *log.Logger) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
 		return p.Id
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
+			l.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -273,13 +272,13 @@ func (p *PropertyService) GetValue() string {
 	return p.Id.String()
 }
 
-func (p *PropertyService) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
+func (p *PropertyService) GetInstanceId(objType string, objId uuid.UUID, l *log.Logger) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
 		return p.Id
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
+			l.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -428,13 +427,13 @@ func (p *PropertySystem) GetValue() string {
 	return p.Value
 }
 
-func (p *PropertySystem) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
+func (p *PropertySystem) GetInstanceId(objType string, objId uuid.UUID, l *log.Logger) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
 		return p.Id
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
+			l.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}
@@ -577,13 +576,13 @@ func (p *PropertyOncall) GetNumber() string {
 	return p.Number
 }
 
-func (p *PropertyOncall) GetInstanceId(objType string, objId uuid.UUID) uuid.UUID {
+func (p *PropertyOncall) GetInstanceId(objType string, objId uuid.UUID, l *log.Logger) uuid.UUID {
 	if !uuid.Equal(p.Id, uuid.Nil) {
 		return p.Id
 	}
 	for _, instance := range p.Instances {
 		if objType == instance.ObjectType && uuid.Equal(instance.ObjectId, objId) {
-			log.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
+			l.Printf("tree.Property.GetInstanceId() found existing instance: %s\n", instance.InstanceId)
 			return instance.InstanceId
 		}
 	}

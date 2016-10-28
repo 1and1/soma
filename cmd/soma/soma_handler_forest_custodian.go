@@ -120,6 +120,7 @@ func (f *forestCustodian) process(q *somaRepositoryRequest) {
 			Id:     uuid.NewV4().String(),
 			Name:   fmt.Sprintf("root_%s", q.Repository.Name),
 			Action: actionChan,
+			Log:    f.appLog,
 		})
 		tree.NewRepository(tree.RepositorySpec{
 			Id:      q.Repository.Id,
@@ -355,6 +356,7 @@ func (f *forestCustodian) loadSomaTree(q *somaRepositoryRequest) error {
 		Id:     uuid.NewV4().String(),
 		Name:   fmt.Sprintf("root_%s", q.Repository.Name),
 		Action: actionChan,
+		Log:    f.appLog,
 	})
 	tree.NewRepository(tree.RepositorySpec{
 		Id:      q.Repository.Id,

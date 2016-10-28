@@ -14,8 +14,8 @@ import (
 	"sync"
 
 	"github.com/1and1/soma/lib/proto"
-
-	"github.com/satori/go.uuid"
+	log "github.com/Sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Cluster struct {
@@ -39,6 +39,7 @@ type Cluster struct {
 	ordNumChildNod  int
 	ordChildrenNod  map[int]string
 	hasUpdate       bool
+	log             *log.Logger
 }
 
 type ClusterSpec struct {
@@ -83,6 +84,7 @@ func (tec Cluster) Clone() *Cluster {
 		State:          tec.State,
 		Type:           tec.Type,
 		ordNumChildNod: tec.ordNumChildNod,
+		log:            tec.log,
 	}
 	cl.Id, _ = uuid.FromString(tec.Id.String())
 	cl.Team, _ = uuid.FromString(tec.Team.String())
@@ -195,6 +197,17 @@ func (tec *Cluster) setActionDeep(c chan *Action) {
 	}
 }
 
+func (c *Cluster) setLog(newlog *log.Logger) {
+	c.log = newlog
+}
+
+func (c *Cluster) setLoggerDeep(newlog *log.Logger) {
+	c.setLog(newlog)
+	for ch, _ := range c.Children {
+		c.Children[ch].setLoggerDeep(newlog)
+	}
+}
+
 func (tec *Cluster) updateParentRecursive(p Receiver) {
 	tec.setParent(p)
 	var wg sync.WaitGroup
@@ -265,6 +278,12 @@ func (tec *Cluster) GetEnvironment() string {
 //
 //
 func (tec *Cluster) ComputeCheckInstances() {
+	tec.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+		tec.GetRepositoryName(),
+		`ComputeCheckInstances`,
+		`cluster`,
+		tec.Id.String(),
+	)
 	var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)

@@ -37,6 +37,7 @@ type Repository struct {
 	Action          chan *Action                  `json:"-"`
 	ordNumChildBck  int
 	ordChildrenBck  map[int]string
+	log             *log.Logger
 }
 
 type RepositorySpec struct {
@@ -92,6 +93,7 @@ func (ter Repository) Clone() Repository {
 		Type:           ter.Type,
 		State:          ter.State,
 		ordNumChildBck: ter.ordNumChildBck,
+		log:            ter.log,
 	}
 	cl.Id, _ = uuid.FromString(ter.Id.String())
 	cl.Team, _ = uuid.FromString(ter.Id.String())
@@ -177,6 +179,18 @@ func (ter *Repository) setActionDeep(c chan *Action) {
 	}
 }
 
+func (r *Repository) setLog(newlog *log.Logger) {
+	r.log = newlog
+}
+
+func (r *Repository) setLoggerDeep(newlog *log.Logger) {
+	r.setLog(newlog)
+	r.Fault.setLog(newlog)
+	for ch, _ := range r.Children {
+		r.Children[ch].setLoggerDeep(newlog)
+	}
+}
+
 func (ter *Repository) setError(c chan *Error) {
 	if ter.Fault != nil {
 		ter.Fault.setError(c)
@@ -231,10 +245,8 @@ func (ter *Repository) updateFaultRecursive(f *Fault) {
 	wg.Wait()
 }
 
-//
-//
 func (ter *Repository) ComputeCheckInstances() {
-	log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
+	ter.log.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s",
 		ter.Name,
 		`ComputeCheckInstances`,
 		`repository`,
@@ -252,8 +264,6 @@ func (ter *Repository) ComputeCheckInstances() {
 	wg.Wait()
 }
 
-//
-//
 func (ter *Repository) ClearLoadInfo() {
 	var wg sync.WaitGroup
 	for child, _ := range ter.Children {
@@ -267,8 +277,6 @@ func (ter *Repository) ClearLoadInfo() {
 	wg.Wait()
 }
 
-//
-//
 func (ter *Repository) export() proto.Repository {
 	return proto.Repository{
 		Id:        ter.Id.String(),
@@ -303,7 +311,6 @@ func (ter *Repository) actionDelete() {
 	}
 }
 
-//
 func (ter *Repository) actionPropertyNew(a Action) {
 	a.Action = "property_new"
 	ter.actionProperty(a)
@@ -335,7 +342,6 @@ func (ter *Repository) actionProperty(a Action) {
 	ter.Action <- &a
 }
 
-//
 func (ter *Repository) actionCheckNew(a Action) {
 	a.Action = "check_new"
 	a.Type = ter.Type
@@ -358,22 +364,6 @@ func (ter *Repository) actionCheckRemoved(a Action) {
 
 func (ter *Repository) setupCheckAction(c Check) Action {
 	return c.MakeAction()
-	/*
-			a := Action{
-				Check: somaproto.TreeCheck{
-					CheckId:       c.GetCheckId(),
-					SourceCheckId: c.GetSourceCheckId(),
-					CheckConfigId: c.GetCheckConfigId(),
-					SourceType:    c.GetSourceType(),
-					IsInherited:   c.GetIsInherited(),
-					InheritedFrom: c.GetInheritedFrom(),
-					Inheritance:   c.GetInheritance(),
-					ChildrenOnly:  c.GetChildrenOnly(),
-					CapabilityId:  c.GetCapabilityId(),
-				},
-			}
-		return a
-	*/
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

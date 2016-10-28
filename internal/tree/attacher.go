@@ -8,6 +8,8 @@
 
 package tree
 
+import log "github.com/Sirupsen/logrus"
+
 type Attacher interface {
 	Propertier
 	Checker
@@ -20,6 +22,7 @@ type Attacher interface {
 	ClearLoadInfo()
 
 	setActionDeep(c chan *Action)
+	setLoggerDeep(l *log.Logger)
 
 	clearParent()
 	setFault(f *Fault)
@@ -33,6 +36,7 @@ type RootAttacher interface {
 	Attacher
 
 	attachToRoot(a AttachRequest)
+	setLog(l *log.Logger)
 }
 
 // implemented by: buckets
