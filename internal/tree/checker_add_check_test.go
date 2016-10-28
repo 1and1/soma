@@ -98,13 +98,13 @@ func TestCheckerAddCheck(t *testing.T) {
 		[]string{`bucket`, `check_new`},
 		[]string{`repository`, `check_new`},
 		[]string{`node`, `check_instance_create`}, // ComputeInstances
-		[]string{`node`, `check_instance_create`},
-		[]string{`node`, `check_instance_create`},
-		[]string{`node`, `check_instance_create`},
 		[]string{`cluster`, `check_instance_create`},
-		[]string{`cluster`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
+		[]string{`cluster`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
 	}
 	for a := range actionC {
 		if elem >= len(actions) {
@@ -112,12 +112,13 @@ func TestCheckerAddCheck(t *testing.T) {
 				`Received additional action`,
 				a.Type, a.Action,
 			)
+			elem++
 			continue
 		}
 
 		if a.Type != actions[elem][0] || a.Action != actions[elem][1] {
 			t.Error(
-				`Received incorrect action. Expected`,
+				`Received incorrect action`, elem, `. Expected`,
 				actions[elem][0], actions[elem][1],
 				`and received`, a.Type, a.Action,
 			)
@@ -225,13 +226,13 @@ func TestCheckerDeleteCheck(t *testing.T) {
 		[]string{`bucket`, `check_new`},
 		[]string{`repository`, `check_new`},
 		[]string{`node`, `check_instance_create`}, // ComputeInstances
-		[]string{`node`, `check_instance_create`},
-		[]string{`node`, `check_instance_create`},
-		[]string{`node`, `check_instance_create`},
 		[]string{`cluster`, `check_instance_create`},
-		[]string{`cluster`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
 		[]string{`group`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
+		[]string{`cluster`, `check_instance_create`},
+		[]string{`node`, `check_instance_create`},
 		[]string{`node`, `check_removed`}, // DeleteCheck
 		[]string{`cluster`, `check_removed`},
 		[]string{`node`, `check_removed`},
@@ -243,13 +244,13 @@ func TestCheckerDeleteCheck(t *testing.T) {
 		[]string{`bucket`, `check_removed`},
 		[]string{`repository`, `check_removed`},
 		[]string{`node`, `check_instance_delete`}, // ComputeInstances
-		[]string{`node`, `check_instance_delete`},
-		[]string{`node`, `check_instance_delete`},
-		[]string{`node`, `check_instance_delete`},
 		[]string{`cluster`, `check_instance_delete`},
-		[]string{`cluster`, `check_instance_delete`},
+		[]string{`node`, `check_instance_delete`},
 		[]string{`group`, `check_instance_delete`},
 		[]string{`group`, `check_instance_delete`},
+		[]string{`node`, `check_instance_delete`},
+		[]string{`cluster`, `check_instance_delete`},
+		[]string{`node`, `check_instance_delete`},
 	}
 	for a := range actionC {
 		if elem >= len(actions) {

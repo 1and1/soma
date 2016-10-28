@@ -264,7 +264,7 @@ func (tec *Cluster) GetEnvironment() string {
 //
 //
 func (tec *Cluster) ComputeCheckInstances() {
-	var wg sync.WaitGroup
+	/* var wg sync.WaitGroup
 	for child, _ := range tec.Children {
 		wg.Add(1)
 		c := child
@@ -273,7 +273,12 @@ func (tec *Cluster) ComputeCheckInstances() {
 			tec.Children[c].ComputeCheckInstances()
 		}()
 	}
-	wg.Wait()
+	wg.Wait() */
+	for i := 0; i < tec.ordNumChildNod; i++ {
+		if child, ok := tec.ordChildrenNod[i]; ok {
+			tec.Children[child].ComputeCheckInstances()
+		}
+	}
 	tec.updateCheckInstances()
 }
 

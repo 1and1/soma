@@ -241,16 +241,21 @@ func (ter *Repository) ComputeCheckInstances() {
 		`repository`,
 		ter.Id.String(),
 	)
-	var wg sync.WaitGroup
-	for child, _ := range ter.Children {
-		wg.Add(1)
-		c := child
-		go func() {
-			defer wg.Done()
-			ter.Children[c].ComputeCheckInstances()
-		}()
+	/*	var wg sync.WaitGroup
+		for child, _ := range ter.Children {
+			wg.Add(1)
+			c := child
+			go func() {
+				defer wg.Done()
+				ter.Children[c].ComputeCheckInstances()
+			}()
+		}
+		wg.Wait() */
+	for i := 0; i < ter.ordNumChildBck; i++ {
+		if child, ok := ter.ordChildrenBck[i]; ok {
+			ter.Children[child].ComputeCheckInstances()
+		}
 	}
-	wg.Wait()
 }
 
 //

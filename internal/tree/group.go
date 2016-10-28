@@ -285,7 +285,7 @@ func (teg *Group) GetEnvironment() string {
 //
 //
 func (teg *Group) ComputeCheckInstances() {
-	var wg sync.WaitGroup
+	/* var wg sync.WaitGroup
 	for child, _ := range teg.Children {
 		wg.Add(1)
 		c := child
@@ -294,7 +294,25 @@ func (teg *Group) ComputeCheckInstances() {
 			teg.Children[c].ComputeCheckInstances()
 		}()
 	}
-	wg.Wait()
+	wg.Wait() */
+	// groups
+	for i := 0; i < teg.ordNumChildGrp; i++ {
+		if child, ok := teg.ordChildrenGrp[i]; ok {
+			teg.Children[child].ComputeCheckInstances()
+		}
+	}
+	// clusters
+	for i := 0; i < teg.ordNumChildClr; i++ {
+		if child, ok := teg.ordChildrenClr[i]; ok {
+			teg.Children[child].ComputeCheckInstances()
+		}
+	}
+	// nodes
+	for i := 0; i < teg.ordNumChildNod; i++ {
+		if child, ok := teg.ordChildrenNod[i]; ok {
+			teg.Children[child].ComputeCheckInstances()
+		}
+	}
 	teg.updateCheckInstances()
 }
 

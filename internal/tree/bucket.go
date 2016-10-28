@@ -215,7 +215,7 @@ func (teb *Bucket) ComputeCheckInstances() {
 		`bucket`,
 		teb.Id.String(),
 	)
-	var wg sync.WaitGroup
+	/* var wg sync.WaitGroup
 	for child, _ := range teb.Children {
 		wg.Add(1)
 		c := child
@@ -224,7 +224,25 @@ func (teb *Bucket) ComputeCheckInstances() {
 			teb.Children[c].ComputeCheckInstances()
 		}()
 	}
-	wg.Wait()
+	wg.Wait() */
+	// groups
+	for i := 0; i < teb.ordNumChildGrp; i++ {
+		if child, ok := teb.ordChildrenGrp[i]; ok {
+			teb.Children[child].ComputeCheckInstances()
+		}
+	}
+	// clusters
+	for i := 0; i < teb.ordNumChildClr; i++ {
+		if child, ok := teb.ordChildrenClr[i]; ok {
+			teb.Children[child].ComputeCheckInstances()
+		}
+	}
+	// nodes
+	for i := 0; i < teb.ordNumChildNod; i++ {
+		if child, ok := teb.ordChildrenNod[i]; ok {
+			teb.Children[child].ComputeCheckInstances()
+		}
+	}
 }
 
 //
