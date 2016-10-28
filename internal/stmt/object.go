@@ -63,4 +63,17 @@ UPDATE soma.object_types
 SET    object_type = $1::varchar
 WHERE  object_type = $2::varchar;`
 
+func init() {
+	m[ObjectStateAdd] = `ObjectStateAdd`
+	m[ObjectStateDel] = `ObjectStateDel`
+	m[ObjectStateList] = `ObjectStateList`
+	m[ObjectStateRename] = `ObjectStateRename`
+	m[ObjectStateShow] = `ObjectStateShow`
+	m[ObjectTypeAdd] = `ObjectTypeAdd`
+	m[ObjectTypeDel] = `ObjectTypeDel`
+	m[ObjectTypeList] = `ObjectTypeList`
+	m[ObjectTypeRename] = `ObjectTypeRename`
+	m[ObjectTypeShow] = `ObjectTypeShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

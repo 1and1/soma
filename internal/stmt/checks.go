@@ -160,4 +160,20 @@ SELECT sc.configuration_id
 FROM   soma.checks sc
 WHERE  sc.object_id = $1::uuid;`
 
+func init() {
+	m[CheckConfigForChecksOnObject] = `CheckConfigForChecksOnObject`
+	m[CheckConfigInstanceInfo] = `CheckConfigInstanceInfo`
+	m[CheckConfigList] = `CheckConfigList`
+	m[CheckConfigObjectInstanceInfo] = `CheckConfigObjectInstanceInfo`
+	m[CheckConfigShowBase] = `CheckConfigShowBase`
+	m[CheckConfigShowConstrAttribute] = `CheckConfigShowConstrAttribute`
+	m[CheckConfigShowConstrCustom] = `CheckConfigShowConstrCustom`
+	m[CheckConfigShowConstrNative] = `CheckConfigShowConstrNative`
+	m[CheckConfigShowConstrOncall] = `CheckConfigShowConstrOncall`
+	m[CheckConfigShowConstrService] = `CheckConfigShowConstrService`
+	m[CheckConfigShowConstrSystem] = `CheckConfigShowConstrSystem`
+	m[CheckConfigShowThreshold] = `CheckConfigShowThreshold`
+	m[CheckDetailsForDelete] = `CheckDetailsForDelete`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

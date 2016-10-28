@@ -142,4 +142,21 @@ JOIN   soma.team_service_properties stsp
 WHERE  sgsp.source_instance_id = $1::uuid
   AND  sgsp.source_instance_id = sgsp.instance_id;`
 
+func init() {
+	m[GroupBucketId] = `GroupBucketId`
+	m[GroupCstProps] = `GroupCstProps`
+	m[GroupCustomPropertyForDelete] = `GroupCustomPropertyForDelete`
+	m[GroupList] = `GroupList`
+	m[GroupMemberClusterList] = `GroupMemberClusterList`
+	m[GroupMemberGroupList] = `GroupMemberGroupList`
+	m[GroupMemberNodeList] = `GroupMemberNodeList`
+	m[GroupOncProps] = `GroupOncProps`
+	m[GroupOncallPropertyForDelete] = `GroupOncallPropertyForDelete`
+	m[GroupServicePropertyForDelete] = `GroupServicePropertyForDelete`
+	m[GroupShow] = `GroupShow`
+	m[GroupSvcProps] = `GroupSvcProps`
+	m[GroupSysProps] = `GroupSysProps`
+	m[GroupSystemPropertyForDelete] = `GroupSystemPropertyForDelete`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

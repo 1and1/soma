@@ -189,4 +189,33 @@ const PropertyTemplateAttributeDel = `
 DELETE FROM soma.service_property_values
 WHERE  service_property = $1::varchar;`
 
+func init() {
+	m[PropertyCustomAdd] = `PropertyCustomAdd`
+	m[PropertyCustomDel] = `PropertyCustomDel`
+	m[PropertyCustomList] = `PropertyCustomList`
+	m[PropertyCustomShow] = `PropertyCustomShow`
+	m[PropertyNativeAdd] = `PropertyNativeAdd`
+	m[PropertyNativeDel] = `PropertyNativeDel`
+	m[PropertyNativeList] = `PropertyNativeList`
+	m[PropertyNativeShow] = `PropertyNativeShow`
+	m[PropertyServiceAdd] = `PropertyServiceAdd`
+	m[PropertyServiceAttributeAdd] = `PropertyServiceAttributeAdd`
+	m[PropertyServiceAttributeDel] = `PropertyServiceAttributeDel`
+	m[PropertyServiceDel] = `PropertyServiceDel`
+	m[PropertyServiceList] = `PropertyServiceList`
+	m[PropertyServiceShow] = `PropertyServiceShow`
+	m[PropertySystemAdd] = `PropertySystemAdd`
+	m[PropertySystemDel] = `PropertySystemDel`
+	m[PropertySystemList] = `PropertySystemList`
+	m[PropertySystemShow] = `PropertySystemShow`
+	m[PropertyTemplateAdd] = `PropertyTemplateAdd`
+	m[PropertyTemplateAttributeAdd] = `PropertyTemplateAttributeAdd`
+	m[PropertyTemplateAttributeDel] = `PropertyTemplateAttributeDel`
+	m[PropertyTemplateDel] = `PropertyTemplateDel`
+	m[PropertyTemplateList] = `PropertyTemplateList`
+	m[PropertyTemplateShow] = `PropertyTemplateShow`
+	m[ServiceAttributes] = `ServiceAttributes`
+	m[ServiceLookup] = `ServiceLookup`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

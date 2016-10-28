@@ -37,4 +37,13 @@ UPDATE soma.views
 SET    view = $1::varchar
 WHERE  view = $2::varchar;`
 
+func init() {
+	m[ViewAdd] = `ViewAdd`
+	m[ViewDel] = `ViewDel`
+	m[ViewList] = `ViewList`
+	m[ViewRename] = `ViewRename`
+	m[ViewShow] = `ViewShow`
+	m[ViewVerify] = `ViewVerify`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

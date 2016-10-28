@@ -37,4 +37,11 @@ const LevelDel = `
 DELETE FROM soma.notification_levels
 WHERE  level_name = $1;`
 
+func init() {
+	m[LevelAdd] = `LevelAdd`
+	m[LevelDel] = `LevelDel`
+	m[LevelList] = `LevelList`
+	m[LevelShow] = `LevelShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

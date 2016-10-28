@@ -136,4 +136,21 @@ JOIN   check_instance_configuration_dependencies cicd
   ON   ci.current_instance_config_id = cicd.blocking_instance_config_id
 WHERE  cic.status = 'active';`
 
+func init() {
+	m[LifecycleActiveUnblockCondition] = `LifecycleActiveUnblockCondition`
+	m[LifecycleBlockedConfigsForDeletedInstance] = `LifecycleBlockedConfigsForDeletedInstance`
+	m[LifecycleClearUpdateFlag] = `LifecycleClearUpdateFlag`
+	m[LifecycleConfigAwaitingDeletion] = `LifecycleConfigAwaitingDeletion`
+	m[LifecycleDeadLockResolver] = `LifecycleDeadLockResolver`
+	m[LifecycleDeleteDependency] = `LifecycleDeleteDependency`
+	m[LifecycleDeleteDeprovisioned] = `LifecycleDeleteDeprovisioned`
+	m[LifecycleDeleteFailedRollouts] = `LifecycleDeleteFailedRollouts`
+	m[LifecycleDeleteGhosts] = `LifecycleDeleteGhosts`
+	m[LifecycleDeprovisionConfiguration] = `LifecycleDeprovisionConfiguration`
+	m[LifecycleDeprovisionDeletedActive] = `LifecycleDeprovisionDeletedActive`
+	m[LifecycleReadyDeployments] = `LifecycleReadyDeployments`
+	m[LifecycleUpdateConfig] = `LifecycleUpdateConfig`
+	m[LifecycleUpdateInstance] = `LifecycleUpdateInstance`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -30,4 +30,11 @@ const PredicateDel = `
 DELETE FROM soma.configuration_predicates
 WHERE       predicate = $1::varchar;`
 
+func init() {
+	m[PredicateAdd] = `PredicateAdd`
+	m[PredicateDel] = `PredicateDel`
+	m[PredicateList] = `PredicateList`
+	m[PredicateShow] = `PredicateShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

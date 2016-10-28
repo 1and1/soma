@@ -107,4 +107,16 @@ AND    (   status != 'deprovisioned'
 ORDER  BY version DESC
 LIMIT  1;`
 
+func init() {
+	m[DeploymentActivate] = `DeploymentActivate`
+	m[DeploymentClearFlag] = `DeploymentClearFlag`
+	m[DeploymentGet] = `DeploymentGet`
+	m[DeploymentInstancesForNode] = `DeploymentInstancesForNode`
+	m[DeploymentLastInstanceVersion] = `DeploymentLastInstanceVersion`
+	m[DeploymentListAll] = `DeploymentListAll`
+	m[DeploymentList] = `DeploymentList`
+	m[DeploymentStatus] = `DeploymentStatus`
+	m[DeploymentUpdate] = `DeploymentUpdate`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

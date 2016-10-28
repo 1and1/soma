@@ -80,4 +80,13 @@ const DelCapability = `
 DELETE FROM soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`
 
+func init() {
+	m[AddCapability] = `AddCapability`
+	m[CapabilityThresholds] = `CapabilityThresholds`
+	m[DelCapability] = `DelCapability`
+	m[ListAllCapabilities] = `ListAllCapabilities`
+	m[ListScopedCapabilities] = `ListScopedCapabilities`
+	m[ShowCapability] = `ShowCapability`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

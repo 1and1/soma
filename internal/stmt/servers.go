@@ -98,4 +98,16 @@ WHERE  server_id = $1::uuid
   AND  server_deleted
   AND  server_id != '00000000-0000-0000-0000-000000000000'::uuid;`
 
+func init() {
+	m[AddServers] = `AddServers`
+	m[DeleteServers] = `DeleteServers`
+	m[ListServers] = `ListServers`
+	m[PurgeServers] = `PurgeServers`
+	m[SearchServerByAssetId] = `SearchServerByAssetId`
+	m[SearchServerByName] = `SearchServerByName`
+	m[ShowServers] = `ShowServers`
+	m[SyncServers] = `SyncServers`
+	m[UpdateServers] = `UpdateServers`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

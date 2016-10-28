@@ -76,4 +76,13 @@ const MonitoringSystemDel = `
 DELETE FROM soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
 
+func init() {
+	m[ListAllMonitoringSystems] = `ListAllMonitoringSystems`
+	m[ListScopedMonitoringSystems] = `ListScopedMonitoringSystems`
+	m[MonitoringSystemAdd] = `MonitoringSystemAdd`
+	m[MonitoringSystemDel] = `MonitoringSystemDel`
+	m[ShowMonitoringSystem] = `ShowMonitoringSystem`
+	m[VerifyMonitoringSystem] = `VerifyMonitoringSystem`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

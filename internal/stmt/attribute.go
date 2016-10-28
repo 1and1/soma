@@ -32,4 +32,11 @@ const AttributeDelete = `
 DELETE FROM soma.service_property_attributes
 WHERE       service_property_attribute = $1::varchar;`
 
+func init() {
+	m[AttributeAdd] = `AttributeAdd`
+	m[AttributeDelete] = `AttributeDelete`
+	m[AttributeList] = `AttributeList`
+	m[AttributeShow] = `AttributeShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

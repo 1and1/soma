@@ -60,4 +60,16 @@ DELETE FROM soma.datacenter_groups
 WHERE       datacenter_group = $1::varchar
   AND       datacenter = $2::varchar;`
 
+func init() {
+	m[DatacenterAdd] = `DatacenterAdd`
+	m[DatacenterDel] = `DatacenterDel`
+	m[DatacenterGroupAdd] = `DatacenterGroupAdd`
+	m[DatacenterGroupDel] = `DatacenterGroupDel`
+	m[DatacenterGroupList] = `DatacenterGroupList`
+	m[DatacenterGroupShow] = `DatacenterGroupShow`
+	m[DatacenterList] = `DatacenterList`
+	m[DatacenterRename] = `DatacenterRename`
+	m[DatacenterShow] = `DatacenterShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

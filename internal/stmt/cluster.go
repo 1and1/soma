@@ -120,4 +120,19 @@ JOIN   soma.team_service_properties stsp
 WHERE  scsp.source_instance_id = $1::uuid
   AND  scsp.source_instance_id = scsp.instance_id;`
 
+func init() {
+	m[ClusterBucketId] = `ClusterBucketId`
+	m[ClusterCstProps] = `ClusterCstProps`
+	m[ClusterCustomPropertyForDelete] = `ClusterCustomPropertyForDelete`
+	m[ClusterList] = `ClusterList`
+	m[ClusterMemberList] = `ClusterMemberList`
+	m[ClusterOncProps] = `ClusterOncProps`
+	m[ClusterOncallPropertyForDelete] = `ClusterOncallPropertyForDelete`
+	m[ClusterServicePropertyForDelete] = `ClusterServicePropertyForDelete`
+	m[ClusterShow] = `ClusterShow`
+	m[ClusterSvcProps] = `ClusterSvcProps`
+	m[ClusterSysProps] = `ClusterSysProps`
+	m[ClusterSystemPropertyForDelete] = `ClusterSystemPropertyForDelete`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

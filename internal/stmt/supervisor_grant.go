@@ -65,4 +65,13 @@ WHERE  permission_id = $1::uuid
         OR user_id  = $3::uuid
 		OR tool_id  = $3::uuid);`
 
+func init() {
+	m[GrantGlobalOrSystemToUser] = `GrantGlobalOrSystemToUser`
+	m[GrantLimitedRepoToUser] = `GrantLimitedRepoToUser`
+	m[LoadGlobalOrSystemUserGrants] = `LoadGlobalOrSystemUserGrants`
+	m[RevokeGlobalOrSystemFromUser] = `RevokeGlobalOrSystemFromUser`
+	m[RevokeLimitedRepoFromUser] = `RevokeLimitedRepoFromUser`
+	m[SearchGlobalSystemGrant] = `SearchGlobalSystemGrant`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

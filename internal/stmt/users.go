@@ -90,4 +90,14 @@ DELETE FROM inventory.users
 WHERE  user_id = $1::uuid
 AND    user_is_deleted;`
 
+func init() {
+	m[ListUsers] = `ListUsers`
+	m[ShowUsers] = `ShowUsers`
+	m[SyncUsers] = `SyncUsers`
+	m[UserAdd] = `UserAdd`
+	m[UserDel] = `UserDel`
+	m[UserPurge] = `UserPurge`
+	m[UserUpdate] = `UserUpdate`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

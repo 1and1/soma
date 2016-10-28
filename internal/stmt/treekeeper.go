@@ -76,4 +76,16 @@ SELECT $1::uuid,
        $2::uuid,
        $3::varchar;`
 
+func init() {
+	m[TreekeeperDeleteDuplicateDetails] = `TreekeeperDeleteDuplicateDetails`
+	m[TreekeeperGetComputedDeployments] = `TreekeeperGetComputedDeployments`
+	m[TreekeeperGetPreviousDeployment] = `TreekeeperGetPreviousDeployment`
+	m[TreekeeperGetViewFromCapability] = `TreekeeperGetViewFromCapability`
+	m[TreekeeperSetDependency] = `TreekeeperSetDependency`
+	m[TreekeeperStartJob] = `TreekeeperStartJob`
+	m[TreekeeperUpdateCheckInstance] = `TreekeeperUpdateCheckInstance`
+	m[TreekeeperUpdateConfigStatus] = `TreekeeperUpdateConfigStatus`
+	m[TreekeeperUpdateExistingCheckInstance] = `TreekeeperUpdateExistingCheckInstance`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

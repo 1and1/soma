@@ -40,4 +40,11 @@ const ValidityDel = `
 DELETE FROM soma.system_property_validity
 WHERE       system_property = $1::varchar;`
 
+func init() {
+	m[ValidityAdd] = `ValidityAdd`
+	m[ValidityDel] = `ValidityDel`
+	m[ValidityList] = `ValidityList`
+	m[ValidityShow] = `ValidityShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

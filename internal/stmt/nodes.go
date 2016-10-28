@@ -200,4 +200,25 @@ DELETE FROM soma.nodes
 WHERE       node_id = $1
 AND         node_deleted;`
 
+func init() {
+	m[ListNodes] = `ListNodes`
+	m[NodeAdd] = `NodeAdd`
+	m[NodeBucketId] = `NodeBucketId`
+	m[NodeCstProps] = `NodeCstProps`
+	m[NodeCustomPropertyForDelete] = `NodeCustomPropertyForDelete`
+	m[NodeDel] = `NodeDel`
+	m[NodeDetails] = `NodeDetails`
+	m[NodeOncProps] = `NodeOncProps`
+	m[NodeOncallPropertyForDelete] = `NodeOncallPropertyForDelete`
+	m[NodePurge] = `NodePurge`
+	m[NodeServicePropertyForDelete] = `NodeServicePropertyForDelete`
+	m[NodeSvcProps] = `NodeSvcProps`
+	m[NodeSysProps] = `NodeSysProps`
+	m[NodeSystemPropertyForDelete] = `NodeSystemPropertyForDelete`
+	m[NodeUpdate] = `NodeUpdate`
+	m[ShowConfigNodes] = `ShowConfigNodes`
+	m[ShowNodes] = `ShowNodes`
+	m[SyncNodes] = `SyncNodes`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

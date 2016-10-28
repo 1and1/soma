@@ -55,4 +55,14 @@ const MetricPkgDel = `
 DELETE FROM soma.metric_packages
 WHERE       metric = $1::varchar;`
 
+func init() {
+	m[MetricAdd] = `MetricAdd`
+	m[MetricDel] = `MetricDel`
+	m[MetricList] = `MetricList`
+	m[MetricPkgAdd] = `MetricPkgAdd`
+	m[MetricPkgDel] = `MetricPkgDel`
+	m[MetricShow] = `MetricShow`
+	m[MetricVerify] = `MetricVerify`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

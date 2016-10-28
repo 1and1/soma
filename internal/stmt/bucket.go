@@ -105,4 +105,17 @@ SELECT bucket_id,
 FROM   soma.buckets
 WHERE  bucket_id = $1::uuid;`
 
+func init() {
+	m[BucketCstProps] = `BucketCstProps`
+	m[BucketCustomPropertyForDelete] = `BucketCustomPropertyForDelete`
+	m[BucketList] = `BucketList`
+	m[BucketOncProps] = `BucketOncProps`
+	m[BucketOncallPropertyForDelete] = `BucketOncallPropertyForDelete`
+	m[BucketServicePropertyForDelete] = `BucketServicePropertyForDelete`
+	m[BucketShow] = `BucketShow`
+	m[BucketSvcProps] = `BucketSvcProps`
+	m[BucketSysProps] = `BucketSysProps`
+	m[BucketSystemPropertyForDelete] = `BucketSystemPropertyForDelete`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

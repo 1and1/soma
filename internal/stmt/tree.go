@@ -121,4 +121,20 @@ SELECT scm.node_id
 FROM   soma.cluster_membership scm
 WHERE  scm.cluster_id = $1::uuid;`
 
+func init() {
+	m[TreeBucketsInRepository] = `TreeBucketsInRepository`
+	m[TreeClustersInBucket] = `TreeClustersInBucket`
+	m[TreeClustersInGroup] = `TreeClustersInGroup`
+	m[TreeGroupsInBucket] = `TreeGroupsInBucket`
+	m[TreeGroupsInGroup] = `TreeGroupsInGroup`
+	m[TreeNodesInBucket] = `TreeNodesInBucket`
+	m[TreeNodesInCluster] = `TreeNodesInCluster`
+	m[TreeNodesInGroup] = `TreeNodesInGroup`
+	m[TreeShowBucket] = `TreeShowBucket`
+	m[TreeShowCluster] = `TreeShowCluster`
+	m[TreeShowGroup] = `TreeShowGroup`
+	m[TreeShowNode] = `TreeShowNode`
+	m[TreeShowRepository] = `TreeShowRepository`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

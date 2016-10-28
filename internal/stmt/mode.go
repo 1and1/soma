@@ -30,4 +30,11 @@ const ModeDel = `
 DELETE FROM soma.monitoring_system_modes
 WHERE  monitoring_system_mode = $1::varchar;`
 
+func init() {
+	m[ModeAdd] = `ModeAdd`
+	m[ModeDel] = `ModeDel`
+	m[ModeList] = `ModeList`
+	m[ModeShow] = `ModeShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

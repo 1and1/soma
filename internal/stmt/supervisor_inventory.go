@@ -17,4 +17,8 @@ FROM   inventory.users iu
 JOIN   inventory.organizational_teams iot
 ON     iu.organizational_team_id = iot.organizational_team_id;`
 
+func init() {
+	m[LoadUserTeamMapping] = `LoadUserTeamMapping`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

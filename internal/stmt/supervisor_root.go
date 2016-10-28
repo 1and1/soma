@@ -49,4 +49,11 @@ INSERT INTO auth.user_authentication (
             'infinity'::timestamptz
 );`
 
+func init() {
+	m[LoadRootFlags] = `LoadRootFlags`
+	m[LoadRootPassword] = `LoadRootPassword`
+	m[SelectRootToken] = `SelectRootToken`
+	m[SetRootCredentials] = `SetRootCredentials`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

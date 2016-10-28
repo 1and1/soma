@@ -66,4 +66,13 @@ WHERE  aua.user_id = iu.user_id
   AND  NOT iu.user_is_deleted
   AND  iu.user_id != '00000000-0000-0000-0000-000000000000';`
 
+func init() {
+	m[ActivateUser] = `ActivateUser`
+	m[CheckUserActive] = `CheckUserActive`
+	m[FindUserID] = `FindUserID`
+	m[InvalidateUserCredential] = `InvalidateUserCredential`
+	m[LoadAllUserCredentials] = `LoadAllUserCredentials`
+	m[SetUserCredential] = `SetUserCredential`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

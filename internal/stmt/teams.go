@@ -54,4 +54,13 @@ const TeamDel = `
 DELETE FROM inventory.organizational_teams
 WHERE       organizational_team_id = $1;`
 
+func init() {
+	m[ListTeams] = `ListTeams`
+	m[ShowTeams] = `ShowTeams`
+	m[SyncTeams] = `SyncTeams`
+	m[TeamAdd] = `TeamAdd`
+	m[TeamDel] = `TeamDel`
+	m[TeamUpdate] = `TeamUpdate`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

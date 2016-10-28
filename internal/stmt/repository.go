@@ -147,4 +147,20 @@ JOIN   soma.repositories sr
   ON   sb.repository_id = sr.repository_id
 WHERE  sb.bucket_id = $1::uuid;`
 
+func init() {
+	m[ListAllRepositories] = `ListAllRepositories`
+	m[ListScopedRepositories] = `ListScopedRepositories`
+	m[RepoByBucketId] = `RepoByBucketId`
+	m[RepoCstProps] = `RepoCstProps`
+	m[RepoCustomPropertyForDelete] = `RepoCustomPropertyForDelete`
+	m[RepoNameById] = `RepoNameById`
+	m[RepoOncProps] = `RepoOncProps`
+	m[RepoOncallPropertyForDelete] = `RepoOncallPropertyForDelete`
+	m[RepoServicePropertyForDelete] = `RepoServicePropertyForDelete`
+	m[RepoSvcProps] = `RepoSvcProps`
+	m[RepoSysProps] = `RepoSysProps`
+	m[RepoSystemPropertyForDelete] = `RepoSystemPropertyForDelete`
+	m[ShowRepository] = `ShowRepository`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -38,4 +38,12 @@ const EnvironmentRename = `
   WHERE environment = $2;
   `
 
+func init() {
+	m[EnvironmentAdd] = `EnvironmentAdd`
+	m[EnvironmentDel] = `EnvironmentDel`
+	m[EnvironmentList] = `EnvironmentList`
+	m[EnvironmentRename] = `EnvironmentRename`
+	m[EnvironmentShow] = `EnvironmentShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

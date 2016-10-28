@@ -38,4 +38,12 @@ const UnitDel = `
 DELETE FROM soma.metric_units
 WHERE       metric_unit = $1::varchar;`
 
+func init() {
+	m[UnitAdd] = `UnitAdd`
+	m[UnitDel] = `UnitDel`
+	m[UnitList] = `UnitList`
+	m[UnitShow] = `UnitShow`
+	m[UnitVerify] = `UnitVerify`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

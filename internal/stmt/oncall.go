@@ -49,4 +49,12 @@ const OncallDel = `
 DELETE FROM inventory.oncall_duty_teams
 WHERE  oncall_duty_id = $1::varchar;`
 
+func init() {
+	m[OncallAdd] = `OncallAdd`
+	m[OncallDel] = `OncallDel`
+	m[OncallList] = `OncallList`
+	m[OncallShow] = `OncallShow`
+	m[OncallUpdate] = `OncallUpdate`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

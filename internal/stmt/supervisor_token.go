@@ -39,4 +39,10 @@ SELECT token,
 FROM   auth.tokens
 WHERE  NOW() < valid_until;`
 
+func init() {
+	m[InsertToken] = `InsertToken`
+	m[LoadAllTokens] = `LoadAllTokens`
+	m[SelectToken] = `SelectToken`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

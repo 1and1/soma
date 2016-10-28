@@ -30,4 +30,11 @@ const StatusDel = `
 DELETE FROM soma.check_instance_status
 WHERE  status = $1;`
 
+func init() {
+	m[StatusAdd] = `StatusAdd`
+	m[StatusDel] = `StatusDel`
+	m[StatusList] = `StatusList`
+	m[StatusShow] = `StatusShow`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

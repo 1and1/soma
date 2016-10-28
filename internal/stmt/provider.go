@@ -35,4 +35,12 @@ const ProviderDel = `
 DELETE FROM soma.metric_providers
 WHERE  metric_provider = $1::varchar;`
 
+func init() {
+	m[ProviderAdd] = `ProviderAdd`
+	m[ProviderDel] = `ProviderDel`
+	m[ProviderList] = `ProviderList`
+	m[ProviderShow] = `ProviderShow`
+	m[ProviderVerify] = `ProviderVerify`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -816,4 +816,59 @@ FROM   soma.node_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
+func init() {
+	m[TkStartLoadAllCheckConfigurationsForType] = `TkStartLoadAllCheckConfigurationsForType`
+	m[TkStartLoadBucketCstProp] = `TkStartLoadBucketCstProp`
+	m[TkStartLoadBucketOncProp] = `TkStartLoadBucketOncProp`
+	m[TkStartLoadBucketSvcAttr] = `TkStartLoadBucketSvcAttr`
+	m[TkStartLoadBucketSvcProp] = `TkStartLoadBucketSvcProp`
+	m[TkStartLoadBucketSysProp] = `TkStartLoadBucketSysProp`
+	m[TkStartLoadBuckets] = `TkStartLoadBuckets`
+	m[TkStartLoadCheckConfiguration] = `TkStartLoadCheckConfiguration`
+	m[TkStartLoadCheckConstraintAttribute] = `TkStartLoadCheckConstraintAttribute`
+	m[TkStartLoadCheckConstraintCustom] = `TkStartLoadCheckConstraintCustom`
+	m[TkStartLoadCheckConstraintNative] = `TkStartLoadCheckConstraintNative`
+	m[TkStartLoadCheckConstraintOncall] = `TkStartLoadCheckConstraintOncall`
+	m[TkStartLoadCheckConstraintService] = `TkStartLoadCheckConstraintService`
+	m[TkStartLoadCheckConstraintSystem] = `TkStartLoadCheckConstraintSystem`
+	m[TkStartLoadCheckGroupRelations] = `TkStartLoadCheckGroupRelations`
+	m[TkStartLoadCheckGroupState] = `TkStartLoadCheckGroupState`
+	m[TkStartLoadCheckInstanceConfiguration] = `TkStartLoadCheckInstanceConfiguration`
+	m[TkStartLoadCheckInstances] = `TkStartLoadCheckInstances`
+	m[TkStartLoadCheckThresholds] = `TkStartLoadCheckThresholds`
+	m[TkStartLoadChecksForType] = `TkStartLoadChecksForType`
+	m[TkStartLoadChecks] = `TkStartLoadChecks`
+	m[TkStartLoadClusterCstProp] = `TkStartLoadClusterCstProp`
+	m[TkStartLoadClusterOncProp] = `TkStartLoadClusterOncProp`
+	m[TkStartLoadClusterSvcAttr] = `TkStartLoadClusterSvcAttr`
+	m[TkStartLoadClusterSvcProp] = `TkStartLoadClusterSvcProp`
+	m[TkStartLoadClusterSysProp] = `TkStartLoadClusterSysProp`
+	m[TkStartLoadCluster] = `TkStartLoadCluster`
+	m[TkStartLoadCustomPropInstances] = `TkStartLoadCustomPropInstances`
+	m[TkStartLoadGroupCstProp] = `TkStartLoadGroupCstProp`
+	m[TkStartLoadGroupMemberGroups] = `TkStartLoadGroupMemberGroups`
+	m[TkStartLoadGroupOncProp] = `TkStartLoadGroupOncProp`
+	m[TkStartLoadGroupSvcAttr] = `TkStartLoadGroupSvcAttr`
+	m[TkStartLoadGroupSvcProp] = `TkStartLoadGroupSvcProp`
+	m[TkStartLoadGroupSysProp] = `TkStartLoadGroupSysProp`
+	m[TkStartLoadGroupedClusters] = `TkStartLoadGroupedClusters`
+	m[TkStartLoadGroups] = `TkStartLoadGroups`
+	m[TkStartLoadInheritedChecks] = `TkStartLoadInheritedChecks`
+	m[TkStartLoadJob] = `TkStartLoadJob`
+	m[TkStartLoadNodeCstProp] = `TkStartLoadNodeCstProp`
+	m[TkStartLoadNodeOncProp] = `TkStartLoadNodeOncProp`
+	m[TkStartLoadNodeSvcAttr] = `TkStartLoadNodeSvcAttr`
+	m[TkStartLoadNodeSvcProp] = `TkStartLoadNodeSvcProp`
+	m[TkStartLoadNodeSysProp] = `TkStartLoadNodeSysProp`
+	m[TkStartLoadNode] = `TkStartLoadNode`
+	m[TkStartLoadOncallPropInstances] = `TkStartLoadOncallPropInstances`
+	m[TkStartLoadRepoOncProp] = `TkStartLoadRepoOncProp`
+	m[TkStartLoadRepoSvcAttr] = `TkStartLoadRepoSvcAttr`
+	m[TkStartLoadRepoSvcProp] = `TkStartLoadRepoSvcProp`
+	m[TkStartLoadRepoSysProp] = `TkStartLoadRepoSysProp`
+	m[TkStartLoadRepositoryCstProp] = `TkStartLoadRepositoryCstProp`
+	m[TkStartLoadServicePropInstances] = `TkStartLoadServicePropInstances`
+	m[TkStartLoadSystemPropInstances] = `TkStartLoadSystemPropInstances`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

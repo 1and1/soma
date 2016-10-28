@@ -87,4 +87,12 @@ SELECT $1::uuid,
 FROM   inventory.users iu
 WHERE  iu.user_uid = $6::varchar;`
 
+func init() {
+	m[JobResultForId] = `JobResultForId`
+	m[JobResultsForList] = `JobResultsForList`
+	m[JobSave] = `JobSave`
+	m[ListAllOutstandingJobs] = `ListAllOutstandingJobs`
+	m[ListScopedOutstandingJobs] = `ListScopedOutstandingJobs`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

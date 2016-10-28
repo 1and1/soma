@@ -83,4 +83,17 @@ SELECT permission_id,
 FROM   soma.permissions
 WHERE  permission_name = $1::varchar;`
 
+func init() {
+	m[AddPermissionCategory] = `AddPermissionCategory`
+	m[AddPermission] = `AddPermission`
+	m[DeletePermissionCategory] = `DeletePermissionCategory`
+	m[DeletePermission] = `DeletePermission`
+	m[ListPermissionCategory] = `ListPermissionCategory`
+	m[ListPermission] = `ListPermission`
+	m[LoadPermissions] = `LoadPermissions`
+	m[SearchPermissionByName] = `SearchPermissionByName`
+	m[ShowPermissionCategory] = `ShowPermissionCategory`
+	m[ShowPermission] = `ShowPermission`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

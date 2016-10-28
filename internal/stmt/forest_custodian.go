@@ -56,4 +56,12 @@ AND NOT EXISTS (
 	WHERE   repository_id   = $1::uuid
 	OR      repository_name = $2::varchar);`
 
+func init() {
+	m[ForestAddRepository] = `ForestAddRepository`
+	m[ForestLoadRepository] = `ForestLoadRepository`
+	m[ForestRebuildDeleteChecks] = `ForestRebuildDeleteChecks`
+	m[ForestRebuildDeleteInstances] = `ForestRebuildDeleteInstances`
+	m[ForestRepoNameById] = `ForestRepoNameById`
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
