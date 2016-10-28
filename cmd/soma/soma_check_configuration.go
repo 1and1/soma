@@ -21,6 +21,11 @@ func exportCheckConfigObjectTX(tx *sql.Tx, objectId string) (
 		rows          *sql.Rows
 	)
 
+	// declare this tx as deferrable read-only
+	if _, err = tx.Exec(stmt.ReadOnlyTransaction); err != nil {
+		return nil, err
+	}
+
 	txMap = make(map[string]*sql.Stmt)
 	checkconfigs = make([]proto.CheckConfig, 0)
 	instances = make([]proto.CheckInstanceInfo, 0)

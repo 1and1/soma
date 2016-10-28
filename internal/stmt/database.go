@@ -18,4 +18,6 @@ SELECT schema,
 FROM   public.schema_versions
 GROUP  BY schema;`
 
+const ReadOnlyTransaction = `SET TRANSACTION READ ONLY, DEFERRABLE;`
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
