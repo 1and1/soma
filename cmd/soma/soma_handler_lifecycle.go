@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"math"
 	"time"
 
 	"github.com/1and1/soma/internal/stmt"
@@ -344,6 +345,8 @@ func (lc *lifeCycle) pokeSystem(callback string, in chan string) {
 	for {
 		select {
 		case chkId := <-in:
+			retries := 0
+		retry:
 			client.SetTimeout(
 				time.Duration(SomaCfg.PokeTimeout) * time.Millisecond,
 			)
@@ -353,6 +356,14 @@ func (lc *lifeCycle) pokeSystem(callback string, in chan string) {
 					Path: SomaCfg.PokePath,
 				},
 			).Post(callback); err != nil {
+				// with limit 4 this implements retries with 1, 2, 4
+				// and 8 seconds sleeps between them
+				if retries < 4 {
+					timeout := math.Pow(2, float64(retries))
+					time.Sleep(time.Duration(timeout) * time.Second)
+					retries++
+					goto retry
+				}
 				lc.errLog.Println(err)
 				continue
 			}
