@@ -128,9 +128,8 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 		c.LifeCycleTick = 60
 	}
 
-	if c.PokeBatchSize == 0 {
-		log.Println(`Setting default value for notify.batch.size: 64`)
-		c.PokeBatchSize = 64
+	if c.PokeBatchSize != 0 {
+		log.Println(`Configuration value notify.batch.size is deprecated and no longer has any effect.`)
 	}
 
 	if c.PokeTimeout == 0 {
