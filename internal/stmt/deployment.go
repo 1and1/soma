@@ -33,7 +33,8 @@ AND    (  scic.status = 'awaiting_rollout'
 	DeploymentUpdate = `
 UPDATE soma.check_instance_configurations
 SET    status = $1::varchar,
-       next_status = $2::varchar
+       next_status = $2::varchar,
+       status_last_updated_at = NOW()::timestamptz
 WHERE  check_instance_config_id = $3::uuid;`
 
 	DeploymentStatus = `

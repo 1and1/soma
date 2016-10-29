@@ -85,6 +85,7 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 		instanceConfigID, instanceID, status, next, details, nextNG string
 		err                                                         error
 		list                                                        *sql.Rows
+		updated                                                     bool
 	)
 	result := somaResult{}
 
@@ -119,36 +120,42 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			next = "rollout_in_progress"
 			nextNG = "active"
 			depl.Task = "rollout"
+			updated = true
 		case "rollout_in_progress":
-			next = "rollout_in_progress"
-			nextNG = "active"
 			depl.Task = "rollout"
+			updated = false
 		case "active":
-			next = "active"
-			nextNG = "none"
 			depl.Task = "rollout"
+			updated = false
 		case "rollout_failed":
 			next = "rollout_in_progress"
 			nextNG = "active"
 			depl.Task = "rollout"
+			updated = true
 		case "awaiting_deprovision":
 			next = "deprovision_in_progress"
 			nextNG = "deprovisioned"
 			depl.Task = "deprovision"
+			updated = true
 		case "deprovision_in_progress":
-			next = "deprovision_in_progress"
-			nextNG = "deprovisioned"
 			depl.Task = "deprovision"
+			updated = false
 		case "deprovision_failed":
 			next = "deprovision_in_progress"
 			nextNG = "deprovisioned"
 			depl.Task = "deprovision"
+			updated = true
+		case `deprovisioned`:
+			depl.Task = "deprovision"
+			updated = false
 		}
 
 		result.Append(err, &somaDeploymentResult{
 			Deployment: depl,
 		})
-		self.upd_stmt.Exec(next, nextNG, instanceConfigID)
+		if updated {
+			self.upd_stmt.Exec(next, nextNG, instanceConfigID)
+		}
 	case "update/success":
 		self.appLog.Printf("R: deployment/update/success for %s", q.Deployment)
 		if err = self.sta_stmt.QueryRow(q.Deployment).Scan(
