@@ -8,12 +8,15 @@
 
 package stmt
 
-const ListAllRepositories = `
+const (
+	RepositoryStatements = ``
+
+	ListAllRepositories = `
 SELECT repository_id,
        repository_name
 FROM   soma.repositories;`
 
-const ListScopedRepositories = `
+	ListScopedRepositories = `
 -- direct user permissions
 SELECT sr.repository_id,
        sr.repository_name
@@ -44,7 +47,7 @@ WHERE  iu.user_id = $1::uuid
   AND  sr.repository_active
   AND  NOT sr.repository_deleted;`
 
-const ShowRepository = `
+	ShowRepository = `
 SELECT repository_id,
        repository_name,
        repository_active,
@@ -53,7 +56,7 @@ FROM   soma.repositories
 WHERE  repository_id = $1
 AND    NOT repository_deleted;`
 
-const RepoOncProps = `
+	RepoOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,
        op.view,
@@ -64,7 +67,7 @@ JOIN   inventory.oncall_duty_teams iodt
   ON   op.oncall_duty_id = iodt.oncall_duty_id
 WHERE  op.repository_id = $1::uuid;`
 
-const RepoSvcProps = `
+	RepoSvcProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -72,7 +75,7 @@ SELECT sp.instance_id,
 FROM   soma.repository_service_properties sp
 WHERE  sp.repository_id = $1::uuid;`
 
-const RepoSysProps = `
+	RepoSysProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -81,7 +84,7 @@ SELECT sp.instance_id,
 FROM   soma.repository_system_properties sp
 WHERE  sp.repository_id = $1::uuid;`
 
-const RepoCstProps = `
+	RepoCstProps = `
 SELECT cp.instance_id,
        cp.source_instance_id,
        cp.view,
@@ -93,7 +96,7 @@ JOIN   soma.custom_properties scp
   ON   cp.custom_property_id = scp.custom_property_id
 WHERE  cp.repository_id = $1::uuid;`
 
-const RepoSystemPropertyForDelete = `
+	RepoSystemPropertyForDelete = `
 SELECT view,
        system_property,
        value
@@ -101,7 +104,7 @@ FROM   soma.repository_system_properties
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const RepoCustomPropertyForDelete = `
+	RepoCustomPropertyForDelete = `
 SELECT srcp.view,
        srcp.custom_property_id,
        srcp.value,
@@ -113,7 +116,7 @@ JOIN   soma.custom_properties scp
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const RepoOncallPropertyForDelete = `
+	RepoOncallPropertyForDelete = `
 SELECT srop.view,
        srop.oncall_duty_id,
        iodt.oncall_duty_name,
@@ -124,7 +127,7 @@ JOIN   inventory.oncall_duty_teams iodt
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const RepoServicePropertyForDelete = `
+	RepoServicePropertyForDelete = `
 SELECT srsp.view,
        srsp.service_property
 FROM   soma.repository_service_properties srsp
@@ -134,18 +137,19 @@ JOIN   soma.team_service_properties stsp
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const RepoNameById = `
+	RepoNameById = `
 SELECT repository_name
 FROM   soma.repositories
 WHERE  repository_id = $1::uuid;`
 
-const RepoByBucketId = `
+	RepoByBucketId = `
 SELECT sb.repository_id,
        sr.repository_name
 FROM   soma.buckets sb
 JOIN   soma.repositories sr
   ON   sb.repository_id = sr.repository_id
 WHERE  sb.bucket_id = $1::uuid;`
+)
 
 func init() {
 	m[ListAllRepositories] = `ListAllRepositories`

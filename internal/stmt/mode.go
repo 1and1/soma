@@ -8,16 +8,19 @@
 
 package stmt
 
-const ModeList = `
+const (
+	ModeStatements = ``
+
+	ModeList = `
 SELECT monitoring_system_mode
 FROM   soma.monitoring_system_modes; `
 
-const ModeShow = `
+	ModeShow = `
 SELECT monitoring_system_mode
 FROM   soma.monitoring_system_modes
 WHERE  monitoring_system_mode = $1::varchar;`
 
-const ModeAdd = `
+	ModeAdd = `
 INSERT INTO soma.monitoring_system_modes (
             monitoring_system_mode)
 SELECT  $1::varchar
@@ -26,9 +29,10 @@ WHERE   NOT EXISTS (
    FROM   soma.monitoring_system_modes
    WHERE  monitoring_system_mode = $1::varchar);`
 
-const ModeDel = `
+	ModeDel = `
 DELETE FROM soma.monitoring_system_modes
 WHERE  monitoring_system_mode = $1::varchar;`
+)
 
 func init() {
 	m[ModeAdd] = `ModeAdd`

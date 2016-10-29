@@ -8,25 +8,28 @@
 
 package stmt
 
-const DatacenterList = `
+const (
+	DatacenterStatements = ``
+
+	DatacenterList = `
 SELECT datacenter
 FROM   inventory.datacenters;`
 
-const DatacenterShow = `
+	DatacenterShow = `
 SELECT datacenter
 FROM   inventory.datacenters
 WHERE  datacenter = $1::varchar;`
 
-const DatacenterGroupList = `
+	DatacenterGroupList = `
 SELECT DISTINCT datacenter_group
 FROM   soma.datacenter_groups;`
 
-const DatacenterGroupShow = `
+	DatacenterGroupShow = `
 SELECT DISTINCT datacenter
 FROM   soma.datacenter_groups
 WHERE  datacenter_group = $1::varchar;`
 
-const DatacenterAdd = `
+	DatacenterAdd = `
 INSERT INTO inventory.datacenters (
             datacenter)
 SELECT $1::varchar
@@ -35,16 +38,16 @@ WHERE  NOT EXISTS (
    FROM inventory.datacenters
    WHERE datacenter = $1::varchar);`
 
-const DatacenterDel = `
+	DatacenterDel = `
 DELETE FROM inventory.datacenters
 WHERE datacenter = $1::varchar;`
 
-const DatacenterRename = `
+	DatacenterRename = `
 UPDATE inventory.datacenters
 SET    datacenter = $1::varchar
 WHERE  datacenter = $2::varchar;`
 
-const DatacenterGroupAdd = `
+	DatacenterGroupAdd = `
 INSERT INTO soma.datacenter_groups (
             datacenter_group,
             datacenter)
@@ -55,10 +58,11 @@ WHERE  NOT EXISTS (
    WHERE  datacenter_group = $3::varchar
      AND  datacenter = $4::varchar);`
 
-const DatacenterGroupDel = `
+	DatacenterGroupDel = `
 DELETE FROM soma.datacenter_groups
 WHERE       datacenter_group = $1::varchar
   AND       datacenter = $2::varchar;`
+)
 
 func init() {
 	m[DatacenterAdd] = `DatacenterAdd`

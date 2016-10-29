@@ -8,16 +8,19 @@
 
 package stmt
 
-const PredicateList = `
+const (
+	PredicateStatements = ``
+
+	PredicateList = `
 SELECT predicate
 FROM   soma.configuration_predicates;`
 
-const PredicateShow = `
+	PredicateShow = `
 SELECT predicate
 FROM   soma.configuration_predicates
 WHERE  predicate = $1;`
 
-const PredicateAdd = `
+	PredicateAdd = `
 INSERT INTO soma.configuration_predicates (
             predicate)
 SELECT $1::varchar
@@ -26,9 +29,10 @@ WHERE  NOT EXISTS (
    FROM   soma.configuration_predicates
    WHERE  predicate = $1::varchar);`
 
-const PredicateDel = `
+	PredicateDel = `
 DELETE FROM soma.configuration_predicates
 WHERE       predicate = $1::varchar;`
+)
 
 func init() {
 	m[PredicateAdd] = `PredicateAdd`

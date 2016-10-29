@@ -6,7 +6,7 @@
  * that can be found in the LICENSE file.
  */
 
-// Package stmt provides SQL statement string constants
+// Package stmt provides SQL statement string constants for SOMA
 package stmt
 
 var m map[string]string

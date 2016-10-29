@@ -8,17 +8,21 @@
 
 package stmt
 
-const DatabaseTimezone = `SET TIME ZONE 'UTC';`
+const (
+	DatabaseStatements = ``
 
-const DatabaseIsolationLevel = `SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`
+	DatabaseTimezone = `SET TIME ZONE 'UTC';`
 
-const DatabaseSchemaVersion = `
+	DatabaseIsolationLevel = `SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL SERIALIZABLE;`
+
+	DatabaseSchemaVersion = `
 SELECT schema,
        MAX(version) AS version
 FROM   public.schema_versions
 GROUP  BY schema;`
 
-const ReadOnlyTransaction = `SET TRANSACTION READ ONLY, DEFERRABLE;`
+	ReadOnlyTransaction = `SET TRANSACTION READ ONLY, DEFERRABLE;`
+)
 
 func init() {
 	m[DatabaseTimezone] = `DatabaseTimezone`

@@ -5,12 +5,15 @@
 
 package stmt
 
-const LoadPermissions = `
+const (
+	SupervisorPermissionStatements = ``
+
+	LoadPermissions = `
 SELECT permission_id,
        permission_name
 FROM   soma.permissions;`
 
-const AddPermissionCategory = `
+	AddPermissionCategory = `
 INSERT INTO soma.permission_types (
             permission_type,
             created_by
@@ -23,15 +26,15 @@ WHERE NOT EXISTS (
       WHERE  permission_type = $1::varchar
 );`
 
-const DeletePermissionCategory = `
+	DeletePermissionCategory = `
 DELETE FROM soma.permission_types
 WHERE permission_type = $1::varchar;`
 
-const ListPermissionCategory = `
+	ListPermissionCategory = `
 SELECT spt.permission_type
 FROM   soma.permission_types spt;`
 
-const ShowPermissionCategory = `
+	ShowPermissionCategory = `
 SELECT spt.permission_type,
        iu.user_uid,
        spt.created_at
@@ -40,7 +43,7 @@ JOIN   inventory.users iu
 ON     spt.created_by = iu.user_id
 WHERE  spt.permission_type = $1::varchar;`
 
-const AddPermission = `
+	AddPermission = `
 INSERT INTO soma.permissions (
             permission_id,
             permission_name,
@@ -57,16 +60,16 @@ WHERE NOT EXISTS (
       WHERE  permission_name = $2::varchar
 );`
 
-const DeletePermission = `
+	DeletePermission = `
 DELETE FROM soma.permissions
 WHERE permission_id = $1::uuid;`
 
-const ListPermission = `
+	ListPermission = `
 SELECT permission_id,
        permission_name
 FROM   soma.permissions;`
 
-const ShowPermission = `
+	ShowPermission = `
 SELECT sp.permission_id,
        sp.permission_name,
        sp.permission_type,
@@ -77,11 +80,12 @@ JOIN   inventory.users iu
 ON     sp.created_by = iu.user_id
 WHERE  sp.permission_name = $1::varchar;`
 
-const SearchPermissionByName = `
+	SearchPermissionByName = `
 SELECT permission_id,
        permission_name
 FROM   soma.permissions
 WHERE  permission_name = $1::varchar;`
+)
 
 func init() {
 	m[AddPermissionCategory] = `AddPermissionCategory`

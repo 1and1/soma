@@ -8,7 +8,10 @@
 
 package stmt
 
-const DeploymentGet = `
+const (
+	DeploymentStatements = ``
+
+	DeploymentGet = `
 SELECT scic.check_instance_config_id,
        scic.status,
        scic.next_status,
@@ -26,13 +29,13 @@ AND    (  scic.status = 'awaiting_rollout'
        OR scic.status = 'deprovision_in_progress'
        OR scic.status = 'deprovision_failed' );`
 
-const DeploymentUpdate = `
+	DeploymentUpdate = `
 UPDATE soma.check_instance_configurations
 SET    status = $1::varchar,
        next_status = $2::varchar
 WHERE  check_instance_config_id = $3::uuid;`
 
-const DeploymentStatus = `
+	DeploymentStatus = `
 SELECT scic.check_instance_config_id,
        scic.status,
        scic.next_status
@@ -42,14 +45,14 @@ ON     sci.check_instance_id = scic.check_instance_id
 AND    sci.current_instance_config_id = scic.check_instance_config_id
 WHERE  sci.check_instance_id = $1::uuid;`
 
-const DeploymentActivate = `
+	DeploymentActivate = `
 UPDATE soma.check_instance_configurations
 SET    status = $1::varchar,
        next_status = $2::varchar,
        activated_at = $3::timestamptz
 WHERE  check_instance_config_id = $4::uuid;`
 
-const DeploymentList = `
+	DeploymentList = `
 SELECT sci.check_instance_id
 FROM   soma.monitoring_systems sms
 JOIN   soma.check_instance_configurations scic
@@ -62,7 +65,7 @@ AND    sci.update_available
 AND    (  scic.status = 'awaiting_rollout'
        OR scic.status = 'awaiting_deprovision' );`
 
-const DeploymentListAll = `
+	DeploymentListAll = `
 SELECT sci.check_instance_id
 FROM   soma.monitoring_systems sms
 JOIN   soma.check_instance_configurations scic
@@ -76,12 +79,12 @@ AND    (  scic.status = 'awaiting_rollout'
        OR scic.status = 'awaiting_deprovision'
        OR scic.status = 'deprovision_in_progress');`
 
-const DeploymentClearFlag = `
+	DeploymentClearFlag = `
 UPDATE soma.check_instances
 SET    update_available = 'false'::boolean
 WHERE  check_instance_id = $1::uuid;`
 
-const DeploymentInstancesForNode = `
+	DeploymentInstancesForNode = `
 SELECT sci.check_instance_id
 FROM   soma.nodes sn
 JOIN   soma.checks sc
@@ -95,7 +98,7 @@ AND    sc.object_type = 'node'
 AND    smc.capability_view = 'local'
 AND    smc.capability_monitoring = $2::uuid;`
 
-const DeploymentLastInstanceVersion = `
+	DeploymentLastInstanceVersion = `
 SELECT deployment_details,
        status
 FROM   soma.check_instance_configurations
@@ -106,6 +109,7 @@ AND    (   status != 'deprovisioned'
        AND status != 'computed')
 ORDER  BY version DESC
 LIMIT  1;`
+)
 
 func init() {
 	m[DeploymentActivate] = `DeploymentActivate`

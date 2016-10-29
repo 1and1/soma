@@ -8,13 +8,16 @@
 
 package stmt
 
-const ListAllOutstandingJobs = `
+const (
+	JobStatements = ``
+
+	ListAllOutstandingJobs = `
 SELECT job_id,
        job_type
 FROM   soma.jobs
 WHERE  job_status != 'processed';`
 
-const ListScopedOutstandingJobs = `
+	ListScopedOutstandingJobs = `
 SELECT sj.job_id,
        sj.job_type
 FROM   inventory.users iu
@@ -32,7 +35,7 @@ WHERE  iu.user_uid = $1::varchar
   (    SELECT user_id FROM inventory.users
        WHERE user_uid = $1::varchar);`
 
-const JobResultForId = `
+	JobResultForId = `
 SELECT job_id,
        job_status,
        job_result,
@@ -49,7 +52,7 @@ SELECT job_id,
 FROM   soma.jobs
 WHERE  job_id = $1::uuid;`
 
-const JobResultsForList = `
+	JobResultsForList = `
 SELECT job_id,
        job_status,
        job_result,
@@ -66,7 +69,7 @@ SELECT job_id,
 FROM   soma.jobs
 WHERE  job_id = any($1::uuid[]);`
 
-const JobSave = `
+	JobSave = `
 INSERT INTO soma.jobs (
             job_id,
             job_status,
@@ -86,6 +89,7 @@ SELECT $1::uuid,
        $7::jsonb
 FROM   inventory.users iu
 WHERE  iu.user_uid = $6::varchar;`
+)
 
 func init() {
 	m[JobResultForId] = `JobResultForId`

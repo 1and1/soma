@@ -8,19 +8,22 @@
 
 package stmt
 
-const ValidityList = `
+const (
+	ValidityStatements = ``
+
+	ValidityList = `
 SELECT system_property,
        object_type
 FROM   soma.system_property_validity;`
 
-const ValidityShow = `
+	ValidityShow = `
 SELECT system_property,
        object_type,
        inherited
 FROM   soma.system_property_validity
 WHERE  system_property = $1;`
 
-const ValidityAdd = `
+	ValidityAdd = `
 INSERT INTO soma.system_property_validity (
             system_property,
             object_type,
@@ -36,9 +39,10 @@ WHERE  NOT EXISTS (
     AND    object_type = $2::varchar
     AND    inherited = $3::boolean);`
 
-const ValidityDel = `
+	ValidityDel = `
 DELETE FROM soma.system_property_validity
 WHERE       system_property = $1::varchar;`
+)
 
 func init() {
 	m[ValidityAdd] = `ValidityAdd`

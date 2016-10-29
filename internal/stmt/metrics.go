@@ -8,23 +8,26 @@
 
 package stmt
 
-const MetricVerify = `
+const (
+	MetricStatements = ``
+
+	MetricVerify = `
 SELECT metric
 FROM   soma.metrics
 WHERE  metric = $1::varchar;`
 
-const MetricList = `
+	MetricList = `
 SELECT metric
 FROM   soma.metrics;`
 
-const MetricShow = `
+	MetricShow = `
 SELECT metric,
        metric_unit,
        description
 FROM   soma.metrics
 WHERE  metric = $1::varchar;`
 
-const MetricAdd = `
+	MetricAdd = `
 INSERT INTO soma.metrics (
             metric,
             metric_unit,
@@ -35,11 +38,11 @@ WHERE    NOT EXISTS (
    FROM   soma.metrics
    WHERE  metric = $1::varchar);`
 
-const MetricDel = `
+	MetricDel = `
 DELETE FROM soma.metrics
 WHERE       metric = $1::varchar;`
 
-const MetricPkgAdd = `
+	MetricPkgAdd = `
 INSERT INTO soma.metric_packages (
             metric,
             metric_provider,
@@ -51,9 +54,10 @@ WHERE    NOT EXISTS (
    WHERE  metric = $1::varchar
    AND    metric_provider = $2::varchar);`
 
-const MetricPkgDel = `
+	MetricPkgDel = `
 DELETE FROM soma.metric_packages
 WHERE       metric = $1::varchar;`
+)
 
 func init() {
 	m[MetricAdd] = `MetricAdd`

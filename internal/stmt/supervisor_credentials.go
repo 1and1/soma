@@ -8,7 +8,10 @@
 
 package stmt
 
-const LoadAllUserCredentials = `
+const (
+	SupervisorCredentialStatements = ``
+
+	LoadAllUserCredentials = `
 SELECT aua.user_id,
        aua.crypt,
        aua.reset_pending,
@@ -23,19 +26,19 @@ AND    NOW() < aua.valid_until
 AND    NOT iu.user_is_deleted
 AND    iu.user_is_active;`
 
-const FindUserID = `
+	FindUserID = `
 SELECT user_id
 FROM   inventory.users
 WHERE  user_uid = $1::varchar
 AND    NOT user_is_deleted;`
 
-const CheckUserActive = `
+	CheckUserActive = `
 SELECT user_is_active
 FROM   inventory.users
 WHERE  user_id = $1::uuid
 AND    NOT user_is_deleted;`
 
-const SetUserCredential = `
+	SetUserCredential = `
 INSERT INTO auth.user_authentication (
             user_id,
             crypt,
@@ -50,12 +53,12 @@ INSERT INTO auth.user_authentication (
 			$4::timestamptz
 );`
 
-const ActivateUser = `
+	ActivateUser = `
 UPDATE inventory.users
 SET    user_is_active = 'yes'::boolean
 WHERE  user_id = $1::uuid;`
 
-const InvalidateUserCredential = `
+	InvalidateUserCredential = `
 UPDATE auth.user_authentication aua
 SET    valid_until = $1::timestamptz
 FROM   inventory.users iu
@@ -65,6 +68,7 @@ WHERE  aua.user_id = iu.user_id
   AND  iu.user_is_active = 'yes'::boolean
   AND  NOT iu.user_is_deleted
   AND  iu.user_id != '00000000-0000-0000-0000-000000000000';`
+)
 
 func init() {
 	m[ActivateUser] = `ActivateUser`

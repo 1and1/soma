@@ -8,13 +8,16 @@
 
 package stmt
 
-const ClusterList = `
+const (
+	ClusterStatements = ``
+
+	ClusterList = `
 SELECT cluster_id,
        cluster_name,
        bucket_id
 FROM   soma.clusters;`
 
-const ClusterShow = `
+	ClusterShow = `
 SELECT cluster_id,
        bucket_id,
        cluster_name,
@@ -23,7 +26,7 @@ SELECT cluster_id,
 FROM   soma.clusters
 WHERE  cluster_id = $1::uuid;`
 
-const ClusterMemberList = `
+	ClusterMemberList = `
 SELECT sn.node_id,
        sn.node_name,
        sc.cluster_name
@@ -34,12 +37,12 @@ JOIN   soma.clusters sc
 ON     scm.cluster_id = sc.cluster_id
 WHERE  scm.cluster_id = $1::uuid;`
 
-const ClusterBucketId = `
+	ClusterBucketId = `
 SELECT sc.bucket_id
 FROM   soma.clusters sc
 WHERE  sc.cluster_id = $1;`
 
-const ClusterOncProps = `
+	ClusterOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,
        op.view,
@@ -50,7 +53,7 @@ JOIN   inventory.oncall_duty_teams iodt
   ON   op.oncall_duty_id = iodt.oncall_duty_id
 WHERE  op.cluster_id = $1::uuid;`
 
-const ClusterSvcProps = `
+	ClusterSvcProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -58,7 +61,7 @@ SELECT sp.instance_id,
 FROM   soma.cluster_service_properties sp
 WHERE  sp.cluster_id = $1::uuid;`
 
-const ClusterSysProps = `
+	ClusterSysProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -67,7 +70,7 @@ SELECT sp.instance_id,
 FROM   soma.cluster_system_properties sp
 WHERE  sp.cluster_id = $1::uuid;`
 
-const ClusterCstProps = `
+	ClusterCstProps = `
 SELECT cp.instance_id,
        cp.source_instance_id,
        cp.view,
@@ -79,7 +82,7 @@ JOIN   soma.custom_properties scp
   ON   cp.custom_property_id = scp.custom_property_id
 WHERE  cp.cluster_id = $1::uuid;`
 
-const ClusterSystemPropertyForDelete = `
+	ClusterSystemPropertyForDelete = `
 SELECT view,
        system_property,
        value
@@ -87,7 +90,7 @@ FROM   soma.cluster_system_properties
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const ClusterCustomPropertyForDelete = `
+	ClusterCustomPropertyForDelete = `
 SELECT sccp.view,
        sccp.custom_property_id,
        sccp.value,
@@ -99,7 +102,7 @@ JOIN   soma.custom_properties scp
 WHERE  sccp.source_instance_id = $1::uuid
   AND  sccp.source_instance_id = sccp.instance_id;`
 
-const ClusterOncallPropertyForDelete = `
+	ClusterOncallPropertyForDelete = `
 SELECT scop.view,
        scop.oncall_duty_id,
        iodt.oncall_duty_name,
@@ -110,7 +113,7 @@ JOIN   inventory.oncall_duty_teams iodt
 WHERE  scop.source_instance_id = $1::uuid
   AND  scop.source_instance_id = scop.instance_id;`
 
-const ClusterServicePropertyForDelete = `
+	ClusterServicePropertyForDelete = `
 SELECT scsp.view,
        scsp.service_property
 FROM   soma.cluster_service_properties scsp
@@ -119,6 +122,7 @@ JOIN   soma.team_service_properties stsp
  AND   scsp.service_property = stsp.service_property
 WHERE  scsp.source_instance_id = $1::uuid
   AND  scsp.source_instance_id = scsp.instance_id;`
+)
 
 func init() {
 	m[ClusterBucketId] = `ClusterBucketId`

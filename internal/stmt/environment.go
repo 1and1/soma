@@ -8,16 +8,19 @@
 
 package stmt
 
-const EnvironmentList = `
+const (
+	EnvironmentStatements = ``
+
+	EnvironmentList = `
 SELECT environment
 FROM   soma.environments;`
 
-const EnvironmentShow = `
+	EnvironmentShow = `
 SELECT environment
 FROM   soma.environments
 WHERE  environment = $1::varchar;`
 
-const EnvironmentAdd = `
+	EnvironmentAdd = `
 INSERT INTO soma.environments (
             environment
 )
@@ -28,15 +31,14 @@ WHERE NOT EXISTS (
     WHERE  environment = $2::varchar
 );`
 
-const EnvironmentDel = `
-  DELETE FROM soma.environments
-  WHERE environment = $1;
-  `
+	EnvironmentDel = `
+DELETE FROM soma.environments
+WHERE environment = $1;`
 
-const EnvironmentRename = `
-  UPDATE soma.environments SET environment = $1
-  WHERE environment = $2;
-  `
+	EnvironmentRename = `
+UPDATE soma.environments SET environment = $1
+WHERE environment = $2;`
+)
 
 func init() {
 	m[EnvironmentAdd] = `EnvironmentAdd`

@@ -8,19 +8,22 @@
 
 package stmt
 
-// the bootstrap token to initialize the system
-const SelectRootToken = `
+const (
+	SupervisorRootStatements = ``
+
+	// the bootstrap token to initialize the system
+	SelectRootToken = `
 SELECT token
 FROM   root.token;`
 
-// 'restricted' => true|false
-// 'disabled' => true|false
-const LoadRootFlags = `
+	// 'restricted' => true|false
+	// 'disabled' => true|false
+	LoadRootFlags = `
 SELECT flag,
        status
 FROM   root.flags;`
 
-const LoadRootPassword = `
+	LoadRootPassword = `
 SELECT aua.crypt,
        aua.valid_from,
        aua.valid_until
@@ -34,7 +37,7 @@ AND    ui.user_is_active
 AND    aua.valid_from < NOW()
 AND    aua.valid_until > NOW();`
 
-const SetRootCredentials = `
+	SetRootCredentials = `
 INSERT INTO auth.user_authentication (
             user_id,
             crypt,
@@ -46,8 +49,8 @@ INSERT INTO auth.user_authentication (
             $2::text,
             'no'::boolean,
             $3::timestamptz,
-            'infinity'::timestamptz
-);`
+            'infinity'::timestamptz);`
+)
 
 func init() {
 	m[LoadRootFlags] = `LoadRootFlags`

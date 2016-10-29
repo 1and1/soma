@@ -8,7 +8,10 @@
 
 package stmt
 
-const LoadUserTeamMapping = `
+const (
+	SupervisorInventoryStatements = ``
+
+	LoadUserTeamMapping = `
 SELECT iu.user_id,
        iu.user_uid,
        iu.organizational_team_id,
@@ -16,6 +19,7 @@ SELECT iu.user_id,
 FROM   inventory.users iu
 JOIN   inventory.organizational_teams iot
 ON     iu.organizational_team_id = iot.organizational_team_id;`
+)
 
 func init() {
 	m[LoadUserTeamMapping] = `LoadUserTeamMapping`

@@ -8,7 +8,10 @@
 
 package stmt
 
-const ServiceLookup = `
+const (
+	PropertyStatements = ``
+
+	ServiceLookup = `
 SELECT stsp.service_property
 FROM   soma.repositories sr
 JOIN   soma.team_service_properties stsp
@@ -17,7 +20,7 @@ WHERE  sr.repository_id = $1::uuid
 AND    stsp.service_property = $2::varchar
 AND    sr.organizational_team_id = $3::uuid;`
 
-const ServiceAttributes = `
+	ServiceAttributes = `
 SELECT stspv.service_property_attribute,
        stspv.value
 FROM   soma.repositories sr
@@ -30,42 +33,42 @@ WHERE  sr.repository_id = $1::uuid
 AND    stsp.service_property = $2::varchar
 AND    sr.organizational_team_id = $3::uuid;`
 
-const PropertySystemList = `
+	PropertySystemList = `
 SELECT system_property
 FROM   soma.system_properties;`
 
-const PropertyServiceList = `
+	PropertyServiceList = `
 SELECT service_property,
        organizational_team_id
 FROM   soma.team_service_properties
 WHERE  organizational_team_id = $1::uuid;`
 
-const PropertyNativeList = `
+	PropertyNativeList = `
 SELECT native_property
 FROM   soma.native_properties;`
 
-const PropertyTemplateList = `
+	PropertyTemplateList = `
 SELECT service_property
 FROM   soma.service_properties;`
 
-const PropertyCustomList = `
+	PropertyCustomList = `
 SELECT custom_property_id,
        repository_id,
        custom_property
 FROM   soma.custom_properties
 WHERE  repository_id = $1::uuid;`
 
-const PropertySystemShow = `
+	PropertySystemShow = `
 SELECT system_property
 FROM   soma.system_properties
 WHERE  system_property = $1::varchar;`
 
-const PropertyNativeShow = `
+	PropertyNativeShow = `
 SELECT native_property
 FROM   soma.native_properties
 WHERE  native_property = $1::varchar;`
 
-const PropertyCustomShow = `
+	PropertyCustomShow = `
 SELECT custom_property_id,
        repository_id,
        custom_property
@@ -73,7 +76,7 @@ FROM   soma.custom_properties
 WHERE  custom_property_id = $1::uuid
 AND    repository_id = $2::uuid;`
 
-const PropertyServiceShow = `
+	PropertyServiceShow = `
 SELECT tsp.service_property,
        tsp.organizational_team_id,
        tspv.service_property_attribute,
@@ -84,7 +87,7 @@ ON     tsp.service_property = tspv.service_property
 WHERE  tsp.service_property = $1::varchar
 AND    tsp.organizational_team_id = $2::uuid;`
 
-const PropertyTemplateShow = `
+	PropertyTemplateShow = `
 SELECT sp.service_property,
        spv.service_property_attribute,
        spv.value
@@ -93,7 +96,7 @@ JOIN   soma.service_property_values spv
 ON     sp.service_property = spv.service_property
 WHERE  sp.service_property = $1::varchar;`
 
-const PropertySystemAdd = `
+	PropertySystemAdd = `
 INSERT INTO soma.system_properties (
             system_property)
 SELECT $1::varchar
@@ -102,7 +105,7 @@ WHERE  NOT EXISTS (
    FROM   soma.system_properties
    WHERE  system_property = $1::varchar);`
 
-const PropertyNativeAdd = `
+	PropertyNativeAdd = `
 INSERT INTO soma.native_properties (
             native_property)
 SELECT $1::varchar
@@ -111,7 +114,7 @@ WHERE  NOT EXISTS (
    FROM   soma.native_properties
    WHERE  native_property = $1::varchar);`
 
-const PropertyCustomAdd = `
+	PropertyCustomAdd = `
 INSERT INTO soma.custom_properties (
             custom_property_id,
             repository_id,
@@ -123,7 +126,7 @@ WHERE  NOT EXISTS (
    WHERE  custom_property = $3::varchar
      AND  repository_id = $2::uuid);`
 
-const PropertyServiceAdd = `
+	PropertyServiceAdd = `
 INSERT INTO soma.team_service_properties (
             organizational_team_id,
             service_property)
@@ -134,7 +137,7 @@ WHERE  NOT EXISTS (
    WHERE  organizational_team_id = $1::uuid
    AND    service_property = $2::varchar);`
 
-const PropertyServiceAttributeAdd = `
+	PropertyServiceAttributeAdd = `
 INSERT INTO soma.team_service_property_values (
             organizational_team_id,
             service_property,
@@ -142,7 +145,7 @@ INSERT INTO soma.team_service_property_values (
             value)
 SELECT $1::uuid, $2::varchar, $3::varchar, $4::varchar;`
 
-const PropertyTemplateAdd = `
+	PropertyTemplateAdd = `
 INSERT INTO soma.service_properties (
             service_property)
 SELECT $1::varchar
@@ -151,43 +154,44 @@ WHERE  NOT EXISTS (
    FROM   soma.service_properties
    WHERE  service_property = $1::varchar);`
 
-const PropertyTemplateAttributeAdd = `
+	PropertyTemplateAttributeAdd = `
 INSERT INTO soma.service_property_values (
             service_property,
             service_property_attribute,
             value)
 SELECT $1::varchar, $2::varchar, $3::varchar;`
 
-const PropertySystemDel = `
+	PropertySystemDel = `
 DELETE FROM soma.system_properties
 WHERE  system_property = $1::varchar;`
 
-const PropertyNativeDel = `
+	PropertyNativeDel = `
 DELETE FROM soma.native_properties
 WHERE  native_property = $1::varchar;`
 
-const PropertyCustomDel = `
+	PropertyCustomDel = `
 DELETE FROM soma.custom_properties
 WHERE  repository_id = $1::uuid
 AND    custom_property_id = $2::uuid;`
 
-const PropertyServiceDel = `
+	PropertyServiceDel = `
 DELETE FROM soma.team_service_properties
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const PropertyServiceAttributeDel = `
+	PropertyServiceAttributeDel = `
 DELETE FROM soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const PropertyTemplateDel = `
+	PropertyTemplateDel = `
 DELETE FROM soma.service_properties
 WHERE  service_property = $1::varchar;`
 
-const PropertyTemplateAttributeDel = `
+	PropertyTemplateAttributeDel = `
 DELETE FROM soma.service_property_values
 WHERE  service_property = $1::varchar;`
+)
 
 func init() {
 	m[PropertyCustomAdd] = `PropertyCustomAdd`

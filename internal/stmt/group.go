@@ -8,13 +8,16 @@
 
 package stmt
 
-const GroupList = `
+const (
+	GroupStatements = ``
+
+	GroupList = `
 SELECT group_id,
        group_name,
        bucket_id
 FROM soma.groups;`
 
-const GroupShow = `
+	GroupShow = `
 SELECT group_id,
        bucket_id,
        group_name,
@@ -23,7 +26,7 @@ SELECT group_id,
 FROM   soma.groups
 WHERE  group_id = $1::uuid;`
 
-const GroupMemberGroupList = `
+	GroupMemberGroupList = `
 SELECT sg.group_id,
        sg.group_name,
        osg.group_name
@@ -34,7 +37,7 @@ JOIN   soma.groups osg
 ON     sgmg.group_id = osg.group_id
 WHERE  sgmg.group_id = $1::uuid;`
 
-const GroupMemberClusterList = `
+	GroupMemberClusterList = `
 SELECT sc.cluster_id,
        sc.cluster_name,
        sg.group_name
@@ -45,7 +48,7 @@ JOIN   soma.groups sg
 ON     sgmc.group_id = sg.group_id
 WHERE  sgmc.group_id = $1::uuid;`
 
-const GroupMemberNodeList = `
+	GroupMemberNodeList = `
 SELECT sn.node_id,
        sn.node_name,
        sg.group_name
@@ -56,12 +59,12 @@ JOIN   soma.groups sg
 ON     sgmn.group_id = sg.group_id
 WHERE  sgmn.group_id = $1::uuid;`
 
-const GroupBucketId = `
+	GroupBucketId = `
 SELECT sg.bucket_id
 FROM   soma.groups sg
 WHERE  sg.group_id = $1;`
 
-const GroupOncProps = `
+	GroupOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,
        op.view,
@@ -72,7 +75,7 @@ JOIN   inventory.oncall_duty_teams iodt
   ON   op.oncall_duty_id = iodt.oncall_duty_id
 WHERE  op.group_id = $1::uuid;`
 
-const GroupSvcProps = `
+	GroupSvcProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -80,7 +83,7 @@ SELECT sp.instance_id,
 FROM   soma.group_service_properties sp
 WHERE  sp.group_id = $1::uuid;`
 
-const GroupSysProps = `
+	GroupSysProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -89,7 +92,7 @@ SELECT sp.instance_id,
 FROM   soma.group_system_properties sp
 WHERE  sp.group_id = $1::uuid;`
 
-const GroupCstProps = `
+	GroupCstProps = `
 SELECT cp.instance_id,
        cp.source_instance_id,
        cp.view,
@@ -101,7 +104,7 @@ JOIN   soma.custom_properties scp
   ON   cp.custom_property_id = scp.custom_property_id
 WHERE  cp.group_id = $1::uuid;`
 
-const GroupSystemPropertyForDelete = `
+	GroupSystemPropertyForDelete = `
 SELECT view,
        system_property,
        value
@@ -109,7 +112,7 @@ FROM   soma.group_system_properties
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const GroupCustomPropertyForDelete = `
+	GroupCustomPropertyForDelete = `
 SELECT sgcp.view,
        sgcp.custom_property_id,
        sgcp.value,
@@ -121,7 +124,7 @@ JOIN   soma.custom_properties scp
 WHERE  sgcp.source_instance_id = $1::uuid
   AND  sgcp.source_instance_id = sgcp.instance_id;`
 
-const GroupOncallPropertyForDelete = `
+	GroupOncallPropertyForDelete = `
 SELECT sgop.view,
        sgop.oncall_duty_id,
        iodt.oncall_duty_name,
@@ -132,7 +135,7 @@ JOIN   inventory.oncall_duty_teams iodt
 WHERE  sgop.source_instance_id = $1::uuid
   AND  sgop.source_instance_id = sgop.instance_id;`
 
-const GroupServicePropertyForDelete = `
+	GroupServicePropertyForDelete = `
 SELECT sgsp.view,
        sgsp.service_property
 FROM   soma.group_service_properties sgsp
@@ -141,6 +144,7 @@ JOIN   soma.team_service_properties stsp
  AND   sgsp.service_property = stsp.service_property
 WHERE  sgsp.source_instance_id = $1::uuid
   AND  sgsp.source_instance_id = sgsp.instance_id;`
+)
 
 func init() {
 	m[GroupBucketId] = `GroupBucketId`

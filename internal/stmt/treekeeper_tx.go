@@ -8,12 +8,15 @@
 
 package stmt
 
-const TxMarkCheckConfigDeleted = `
+const (
+	TreekeeperTransactionStatements = ``
+
+	TxMarkCheckConfigDeleted = `
 UPDATE soma.check_configurations
 SET    deleted = 'yes'::boolean
 WHERE  configuration_id = $1::uuid;`
 
-const TxCreateCheck = `
+	TxCreateCheck = `
 INSERT INTO soma.checks (
             check_id,
             repository_id,
@@ -36,12 +39,12 @@ SELECT $1::uuid,
        $9::uuid,
        $10::varchar;`
 
-const TxMarkCheckDeleted = `
+	TxMarkCheckDeleted = `
 UPDATE soma.checks
 SET    deleted = 'yes'::boolean
 WHERE  check_id = $1::uuid;`
 
-const TxCreateCheckInstance = `
+	TxCreateCheckInstance = `
 INSERT INTO soma.check_instances (
             check_instance_id,
             check_id,
@@ -54,12 +57,12 @@ SELECT $1::uuid,
        $4::uuid,
        $5::timestamptz;`
 
-const TxMarkCheckInstanceDeleted = `
+	TxMarkCheckInstanceDeleted = `
 UPDATE soma.check_instances
 SET    deleted = 'yes'::boolean
 WHERE  check_instance_id = $1::uuid;`
 
-const TxCreateCheckInstanceConfiguration = `
+	TxCreateCheckInstanceConfiguration = `
 INSERT INTO soma.check_instance_configurations (
             check_instance_config_id,
             version,
@@ -88,7 +91,7 @@ SELECT $1::uuid,
        $12::boolean,
        $13::jsonb;`
 
-const TxCreateCheckConfigurationBase = `
+	TxCreateCheckConfigurationBase = `
 INSERT INTO soma.check_configurations (
             configuration_id,
             configuration_name,
@@ -117,7 +120,7 @@ SELECT $1::uuid,
        $12::boolean,
        $13::varchar;`
 
-const TxCreateCheckConfigurationThreshold = `
+	TxCreateCheckConfigurationThreshold = `
 INSERT INTO soma.configuration_thresholds (
             configuration_id,
             predicate,
@@ -128,7 +131,7 @@ SELECT $1::uuid,
        $3::varchar,
        $4::varchar;`
 
-const TxCreateCheckConfigurationConstraintSystem = `
+	TxCreateCheckConfigurationConstraintSystem = `
 INSERT INTO soma.constraints_system_property (
             configuration_id,
             system_property,
@@ -137,7 +140,7 @@ SELECT $1::uuid,
        $2::varchar,
        $3::text;`
 
-const TxCreateCheckConfigurationConstraintNative = `
+	TxCreateCheckConfigurationConstraintNative = `
 INSERT INTO soma.constraints_native_property (
             configuration_id,
             native_property,
@@ -146,14 +149,14 @@ SELECT $1::uuid,
        $2::varchar,
        $3::text;`
 
-const TxCreateCheckConfigurationConstraintOncall = `
+	TxCreateCheckConfigurationConstraintOncall = `
 INSERT INTO soma.constraints_oncall_property (
             configuration_id,
             oncall_duty_id)
 SELECT $1::uuid,
        $2::uuid;`
 
-const TxCreateCheckConfigurationConstraintCustom = `
+	TxCreateCheckConfigurationConstraintCustom = `
 INSERT INTO soma.constraints_custom_property (
             configuration_id,
             custom_property_id,
@@ -164,7 +167,7 @@ SELECT $1::uuid,
        $3::uuid,
        $4::text;`
 
-const TxCreateCheckConfigurationConstraintService = `
+	TxCreateCheckConfigurationConstraintService = `
 INSERT INTO soma.constraints_service_property (
             configuration_id,
             organizational_team_id,
@@ -173,7 +176,7 @@ SELECT $1::uuid,
        $2::uuid,
        $3::varchar;`
 
-const TxCreateCheckConfigurationConstraintAttribute = `
+	TxCreateCheckConfigurationConstraintAttribute = `
 INSERT INTO soma.constraints_service_attribute (
             configuration_id,
             service_property_attribute,
@@ -182,7 +185,7 @@ SELECT $1::uuid,
        $2::varchar,
        $3::varchar;`
 
-const TxPropertyInstanceCreate = `
+	TxPropertyInstanceCreate = `
 INSERT INTO soma.property_instances (
             instance_id,
             repository_id,
@@ -195,11 +198,11 @@ SELECT $1::uuid,
        $4::varchar,
        $5::uuid;`
 
-const TxPropertyInstanceDelete = `
+	TxPropertyInstanceDelete = `
 DELETE FROM soma.property_instances
 WHERE       instance_id = $1::uuid;`
 
-const TxFinishJob = `
+	TxFinishJob = `
 UPDATE soma.jobs
 SET    job_finished = $2::timestamptz,
        job_status = 'processed',
@@ -207,10 +210,10 @@ SET    job_finished = $2::timestamptz,
        job_error = $4::text
 WHERE  job_id = $1::uuid;`
 
-const TxDeferAllConstraints = `
+	TxDeferAllConstraints = `
 SET CONSTRAINTS ALL DEFERRED;`
 
-const TxRepositoryPropertyOncallCreate = `
+	TxRepositoryPropertyOncallCreate = `
 INSERT INTO soma.repository_oncall_properties (
             instance_id,
             source_instance_id,
@@ -227,11 +230,11 @@ SELECT $1::uuid,
        $6::boolean,
        $7::boolean;`
 
-const TxRepositoryPropertyOncallDelete = `
+	TxRepositoryPropertyOncallDelete = `
 DELETE FROM soma.repository_oncall_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxRepositoryPropertyServiceCreate = `
+	TxRepositoryPropertyServiceCreate = `
 INSERT INTO soma.repository_service_properties (
             instance_id,
             source_instance_id,
@@ -250,11 +253,11 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-const TxRepositoryPropertyServiceDelete = `
+	TxRepositoryPropertyServiceDelete = `
 DELETE FROM soma.repository_service_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxRepositoryPropertySystemCreate = `
+	TxRepositoryPropertySystemCreate = `
 INSERT INTO soma.repository_system_properties (
             instance_id,
             source_instance_id,
@@ -277,11 +280,11 @@ SELECT $1::uuid,
        $9::text,
        $10::boolean;`
 
-const TxRepositoryPropertySystemDelete = `
+	TxRepositoryPropertySystemDelete = `
 DELETE FROM soma.repository_system_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxRepositoryPropertyCustomCreate = `
+	TxRepositoryPropertyCustomCreate = `
 INSERT INTO soma.repository_custom_properties (
             instance_id,
             source_instance_id,
@@ -300,22 +303,22 @@ SELECT $1::uuid,
        $7::boolean,
        $8::text;`
 
-const TxRepositoryPropertyCustomDelete = `
+	TxRepositoryPropertyCustomDelete = `
 DELETE FROM soma.repository_custom_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxUpdateNodeState = `
+	TxUpdateNodeState = `
 UPDATE soma.nodes
 SET    object_state = $2::varchar
 WHERE  node_id = $1::uuid;`
 
-const TxNodeUnassignFromBucket = `
+	TxNodeUnassignFromBucket = `
 DELETE FROM soma.node_bucket_assignment
 WHERE       node_id = $1::uuid
 AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`
 
-const TxNodePropertyOncallCreate = `
+	TxNodePropertyOncallCreate = `
 INSERT INTO soma.node_oncall_property (
             instance_id,
             source_instance_id,
@@ -334,11 +337,11 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-const TxNodePropertyOncallDelete = `
+	TxNodePropertyOncallDelete = `
 DELETE FROM soma.node_oncall_property
 WHERE       instance_id = $1::uuid;`
 
-const TxNodePropertyServiceCreate = `
+	TxNodePropertyServiceCreate = `
 INSERT INTO soma.node_service_properties (
             instance_id,
             source_instance_id,
@@ -359,11 +362,11 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-const TxNodePropertyServiceDelete = `
+	TxNodePropertyServiceDelete = `
 DELETE FROM soma.node_service_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxNodePropertySystemCreate = `
+	TxNodePropertySystemCreate = `
 INSERT INTO soma.node_system_properties (
             instance_id,
             source_instance_id,
@@ -388,11 +391,11 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-const TxNodePropertySystemDelete = `
+	TxNodePropertySystemDelete = `
 DELETE FROM soma.node_system_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxNodePropertyCustomCreate = `
+	TxNodePropertyCustomCreate = `
 INSERT INTO soma.node_custom_properties (
             instance_id,
             source_instance_id,
@@ -415,11 +418,11 @@ SELECT $1::uuid,
        $9::boolean,
        $10::text;`
 
-const TxNodePropertyCustomDelete = `
+	TxNodePropertyCustomDelete = `
 DELETE FROM soma.node_custom_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxGroupCreate = `
+	TxGroupCreate = `
 INSERT INTO soma.groups (
             group_id,
             bucket_id,
@@ -436,16 +439,16 @@ SELECT $1::uuid,
 FROM   inventory.users iu
 WHERE  iu.user_uid = $6::varchar;`
 
-const TxGroupUpdate = `
+	TxGroupUpdate = `
 UPDATE soma.groups
 SET    object_state = $2::varchar
 WHERE  group_id = $1::uuid;`
 
-const TxGroupDelete = `
+	TxGroupDelete = `
 DELETE FROM soma.groups
 WHERE       group_id = $1::uuid;`
 
-const TxGroupMemberNewNode = `
+	TxGroupMemberNewNode = `
 INSERT INTO soma.group_membership_nodes (
             group_id,
             child_node_id,
@@ -454,7 +457,7 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-const TxGroupMemberNewCluster = `
+	TxGroupMemberNewCluster = `
 INSERT INTO soma.group_membership_clusters (
             group_id,
             child_cluster_id,
@@ -463,7 +466,7 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-const TxGroupMemberNewGroup = `
+	TxGroupMemberNewGroup = `
 INSERT INTO soma.group_membership_groups (
             group_id,
             child_group_id,
@@ -472,22 +475,22 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-const TxGroupMemberRemoveNode = `
+	TxGroupMemberRemoveNode = `
 DELETE FROM soma.group_membership_nodes
 WHERE       group_id = $1::uuid
 AND         child_node_id = $2::uuid;`
 
-const TxGroupMemberRemoveCluster = `
+	TxGroupMemberRemoveCluster = `
 DELETE FROM soma.group_membership_clusters
 WHERE       group_id = $1::uuid
 AND         child_cluster_id = $2::uuid;`
 
-const TxGroupMemberRemoveGroup = `
+	TxGroupMemberRemoveGroup = `
 DELETE FROM soma.group_membership_groups
 WHERE       group_id = $1::uuid
 AND         child_group_id = $2::uuid;`
 
-const TxGroupPropertyOncallCreate = `
+	TxGroupPropertyOncallCreate = `
 INSERT INTO soma.group_oncall_properties (
             instance_id,
             source_instance_id,
@@ -506,11 +509,11 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-const TxGroupPropertyOncallDelete = `
+	TxGroupPropertyOncallDelete = `
 DELETE FROM soma.group_oncall_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxGroupPropertyServiceCreate = `
+	TxGroupPropertyServiceCreate = `
 INSERT INTO soma.group_service_properties (
             instance_id,
             source_instance_id,
@@ -531,11 +534,11 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-const TxGroupPropertyServiceDelete = `
+	TxGroupPropertyServiceDelete = `
 DELETE FROM soma.group_service_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxGroupPropertySystemCreate = `
+	TxGroupPropertySystemCreate = `
 INSERT INTO soma.group_system_properties (
             instance_id,
             source_instance_id,
@@ -560,11 +563,11 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-const TxGroupPropertySystemDelete = `
+	TxGroupPropertySystemDelete = `
 DELETE FROM soma.group_system_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxGroupPropertyCustomCreate = `
+	TxGroupPropertyCustomCreate = `
 INSERT INTO soma.group_custom_properties (
             instance_id,
             source_instance_id,
@@ -587,11 +590,11 @@ SELECT $1::uuid,
        $9::boolean,
        $10::text;`
 
-const TxGroupPropertyCustomDelete = `
+	TxGroupPropertyCustomDelete = `
 DELETE FROM soma.group_custom_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxClusterCreate = `
+	TxClusterCreate = `
 INSERT INTO soma.clusters (
             cluster_id,
             cluster_name,
@@ -608,16 +611,16 @@ SELECT $1::uuid,
 FROM   inventory.users iu
 WHERE  iu.user_uid = $6::varchar;`
 
-const TxClusterUpdate = `
+	TxClusterUpdate = `
 UPDATE soma.clusters
 SET    object_state = $2::varchar
 WHERE  cluster_id = $1::uuid;`
 
-const TxClusterDelete = `
+	TxClusterDelete = `
 DELETE FROM soma.clusters
 WHERE       cluster_id = $1::uuid;`
 
-const TxClusterMemberNew = `
+	TxClusterMemberNew = `
 INSERT INTO soma.cluster_membership (
             cluster_id,
             node_id,
@@ -626,12 +629,12 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-const TxClusterMemberRemove = `
+	TxClusterMemberRemove = `
 DELETE FROM soma.cluster_membership
 WHERE       cluster_id = $1::uuid
 AND         node_id = $2::uuid;`
 
-const TxClusterPropertyOncallCreate = `
+	TxClusterPropertyOncallCreate = `
 INSERT INTO soma.cluster_oncall_properties (
             instance_id,
             source_instance_id,
@@ -650,11 +653,11 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-const TxClusterPropertyOncallDelete = `
+	TxClusterPropertyOncallDelete = `
 DELETE FROM soma.cluster_oncall_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxClusterPropertyServiceCreate = `
+	TxClusterPropertyServiceCreate = `
 INSERT INTO soma.cluster_service_properties (
             instance_id,
             source_instance_id,
@@ -675,11 +678,11 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-const TxClusterPropertyServiceDelete = `
+	TxClusterPropertyServiceDelete = `
 DELETE FROM soma.cluster_service_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxClusterPropertySystemCreate = `
+	TxClusterPropertySystemCreate = `
 INSERT INTO soma.cluster_system_properties (
             instance_id,
             source_instance_id,
@@ -704,11 +707,11 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-const TxClusterPropertySystemDelete = `
+	TxClusterPropertySystemDelete = `
 DELETE FROM soma.cluster_system_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxClusterPropertyCustomCreate = `
+	TxClusterPropertyCustomCreate = `
 INSERT INTO soma.cluster_custom_properties (
             instance_id,
             source_instance_id,
@@ -731,11 +734,11 @@ SELECT $1::uuid,
        $9::boolean,
        $10::text;`
 
-const TxClusterPropertyCustomDelete = `
+	TxClusterPropertyCustomDelete = `
 DELETE FROM soma.cluster_custom_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxCreateBucket = `
+	TxCreateBucket = `
 INSERT INTO soma.buckets (
             bucket_id,
             bucket_name,
@@ -756,7 +759,7 @@ SELECT $1::uuid,
 FROM   inventory.users iu
 WHERE  iu.user_uid = $8::varchar;`
 
-const TxBucketAssignNode = `
+	TxBucketAssignNode = `
 INSERT INTO soma.node_bucket_assignment (
             node_id,
             bucket_id,
@@ -765,13 +768,13 @@ SELECT $1::uuid,
        $2::uuid,
        $3::uuid;`
 
-const TxBucketRemoveNode = `
+	TxBucketRemoveNode = `
 DELETE FROM soma.node_bucket_assignment (
 WHERE       node_id = $1::uuid
 AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`
 
-const TxBucketPropertyOncallCreate = `
+	TxBucketPropertyOncallCreate = `
 INSERT INTO soma.bucket_oncall_properties (
             instance_id,
             source_instance_id,
@@ -790,11 +793,11 @@ SELECT $1::uuid,
        $7::boolean,
        $8::boolean;`
 
-const TxBucketPropertyOncallDelete = `
+	TxBucketPropertyOncallDelete = `
 DELETE FROM soma.bucket_oncall_properties (
 WHERE       instance_id = $1::uuid;`
 
-const TxBucketPropertyServiceCreate = `
+	TxBucketPropertyServiceCreate = `
 INSERT INTO soma.bucket_service_properties (
             instance_id,
             source_instance_id,
@@ -815,11 +818,11 @@ SELECT $1::uuid,
        $8::boolean,
        $9::boolean;`
 
-const TxBucketPropertyServiceDelete = `
+	TxBucketPropertyServiceDelete = `
 DELETE FROM soma.bucket_service_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxBucketPropertySystemCreate = `
+	TxBucketPropertySystemCreate = `
 INSERT INTO soma.bucket_system_properties (
             instance_id,
             source_instance_id,
@@ -844,11 +847,11 @@ SELECT $1::uuid,
        $10::text,
        $11::boolean;`
 
-const TxBucketPropertySystemDelete = `
+	TxBucketPropertySystemDelete = `
 DELETE FROM soma.bucket_system_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxBucketPropertyCustomCreate = `
+	TxBucketPropertyCustomCreate = `
 INSERT INTO soma.bucket_custom_properties (
             instance_id,
             source_instance_id,
@@ -869,11 +872,11 @@ SELECT $1::uuid,
        $8::boolean,
        $9::text;`
 
-const TxBucketPropertyCustomDelete = `
+	TxBucketPropertyCustomDelete = `
 DELETE FROM soma.bucket_custom_properties
 WHERE       instance_id = $1::uuid;`
 
-const TxDeployDetailsComputeList = `
+	TxDeployDetailsComputeList = `
 SELECT scic.check_instance_config_id
 FROM   soma.checks sc
 JOIN   soma.check_instances sci
@@ -883,14 +886,14 @@ JOIN   soma.check_instance_configurations scic
 WHERE  scic.status = 'awaiting_computation'
   AND  sc.repository_id = $1::uuid;`
 
-const TxDeployDetailsUpdate = `
+	TxDeployDetailsUpdate = `
 UPDATE soma.check_instance_configurations
 SET    status = 'computed',
        deployment_details = $1::jsonb,
 	   monitoring_id = $2::uuid
 WHERE  check_instance_config_id = $3::uuid;`
 
-const TxDeployDetailsCheckInstance = `
+	TxDeployDetailsCheckInstance = `
 SELECT scic.version,
 	   scic.check_instance_id,
 	   scic.constraint_hash,
@@ -905,7 +908,7 @@ JOIN   soma.check_instances sci
 ON     scic.check_instance_id = sci.check_instance_id
 WHERE  scic.check_instance_config_id = $1::uuid;`
 
-const TxDeployDetailsCheck = `
+	TxDeployDetailsCheck = `
 SELECT sc.repository_id,
 	   sc.source_check_id,
 	   sc.source_object_type,
@@ -920,7 +923,7 @@ JOIN   soma.check_configurations scc
 ON     sc.configuration_id = scc.configuration_id
 WHERE  sc.check_id = $1::uuid;`
 
-const TxDeployDetailsCheckConfig = `
+	TxDeployDetailsCheckConfig = `
 SELECT configuration_name,
        interval,
 	   configuration_active,
@@ -929,7 +932,7 @@ SELECT configuration_name,
 FROM   soma.check_configurations
 WHERE  configuration_id = $1::uuid;`
 
-const TxDeployDetailsCheckConfigThreshold = `
+	TxDeployDetailsCheckConfigThreshold = `
 SELECT sct.predicate,
 	   sct.threshold,
 	   sct.notification_level,
@@ -940,7 +943,7 @@ JOIN   soma.notification_levels snl
 ON     sct.notification_level = snl.level_name
 WHERE  sct.configuration_id = $1::uuid;`
 
-const TxDeployDetailsCapabilityMonitoringMetric = `
+	TxDeployDetailsCapabilityMonitoringMetric = `
 SELECT smc.capability_metric,
        smc.capability_monitoring,
 	   smc.capability_view,
@@ -962,13 +965,13 @@ JOIN   soma.metric_units smu
 ON     sm.metric_unit = smu.metric_unit
 WHERE  smc.capability_id = $1::uuid;`
 
-const TxDeployDetailsProviders = `
+	TxDeployDetailsProviders = `
 SELECT metric_provider,
        package
 FROM   soma.metric_packages
 WHERE  metric = $1::varchar;`
 
-const TxDeployDetailsGroup = `
+	TxDeployDetailsGroup = `
 SELECT sg.bucket_id,
 	   sg.group_name,
 	   sg.object_state,
@@ -983,7 +986,7 @@ JOIN   soma.repositories sr
 ON     sb.repository_id = sr.repository_id
 WHERE  sg.group_id = $1::uuid;`
 
-const TxDeployDetailsCluster = `
+	TxDeployDetailsCluster = `
 SELECT sc.cluster_name,
        sc.bucket_id,
 	   sc.object_state,
@@ -998,7 +1001,7 @@ JOIN   soma.repositories sr
 ON     sb.repository_id = sr.repository_id
 WHERE  sc.cluster_id = $1::uuid;`
 
-const TxDeployDetailsNode = `
+	TxDeployDetailsNode = `
 SELECT sn.node_asset_id,
        sn.node_name,
 	   sn.organizational_team_id,
@@ -1026,13 +1029,13 @@ JOIN  inventory.servers ins
 ON    sn.server_id = ins.server_id
 WHERE sn.node_id = $1::uuid;`
 
-const TxDeployDetailsTeam = `
+	TxDeployDetailsTeam = `
 SELECT organizational_team_name,
        organizational_team_ldap_id
 FROM   inventory.organizational_teams
 WHERE  organizational_team_id = $1::uuid;`
 
-const TxDeployDetailsNodeOncall = `
+	TxDeployDetailsNodeOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
        iodt.oncall_duty_phone_number
@@ -1042,7 +1045,7 @@ ON     snop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  snop.node_id = $1::uuid
 AND    snop.view = $2::varchar;`
 
-const TxDeployDetailsClusterOncall = `
+	TxDeployDetailsClusterOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
 	   iodt.oncall_duty_phone_number
@@ -1052,7 +1055,7 @@ ON     scop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  scop.cluster_id = $1::uuid
 AND    (scop.view = $2::varchar OR scop.view = 'any');`
 
-const TxDeployDetailsGroupOncall = `
+	TxDeployDetailsGroupOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
 	   iodt.oncall_duty_phone_number
@@ -1062,35 +1065,35 @@ ON     sgop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  sgop.group_id = $1::uuid
 AND    (sgop.view = $2::varchar OR sgop.view = 'any');`
 
-const TxDeployDetailsGroupService = `
+	TxDeployDetailsGroupService = `
 SELECT service_property,
        organizational_team_id
 FROM   soma.group_service_properties
 WHERE  instance_id = $1::uuid
 AND    (view = $2::varchar OR view = 'any');`
 
-const TxDeployDetailsClusterService = `
+	TxDeployDetailsClusterService = `
 SELECT service_property,
        organizational_team_id
 FROM   soma.cluster_service_properties
 WHERE  instance_id = $1::uuid
 AND    (view = $2::varchar OR view = 'any');`
 
-const TxDeployDetailsNodeService = `
+	TxDeployDetailsNodeService = `
 SELECT service_property,
        organizational_team_id
 FROM   soma.node_service_properties
 WHERE  instance_id = $1::uuid
 AND    (view = $2::varchar OR view = 'any');`
 
-const TxDeployDetailsGroupSysProp = `
+	TxDeployDetailsGroupSysProp = `
 SELECT system_property,
        value
 FROM   soma.group_system_properties
 WHERE  group_id = $1::uuid
 AND    (view = $2::varchar OR view = 'any');`
 
-const TxDeployDetailsGroupCustProp = `
+	TxDeployDetailsGroupCustProp = `
 SELECT sgcp.custom_property_id,
        scp.custom_property,
        sgcp.value
@@ -1101,14 +1104,14 @@ AND    sgcp.repository_id = scp.repository_id
 WHERE  sgcp.group_id = $1::uuid
 AND    (sgcp.view = $2::varchar OR sgcp.view = 'any');`
 
-const TxDeployDetailClusterSysProp = `
+	TxDeployDetailClusterSysProp = `
 SELECT system_property,
        value
 FROM   soma.cluster_system_properties
 WHERE  cluster_id = $1::uuid
 AND    (view = $2::varchar OR view = 'any');`
 
-const TxDeployDetailClusterCustProp = `
+	TxDeployDetailClusterCustProp = `
 SELECT sccp.custom_property_id,
        scp.custom_property,
 	   sccp.value
@@ -1119,14 +1122,14 @@ AND    sccp.repository_id = scp.repository_id
 WHERE  sccp.cluster_id = $1::uuid
 AND    (sccp.view = $2::varchar OR sccp.view = 'any');`
 
-const TxDeployDetailNodeSysProp = `
+	TxDeployDetailNodeSysProp = `
 SELECT system_property,
        value
 FROM   soma.node_system_properties
 WHERE  node_id = $1::uuid
 AND    (view = $2::varchar OR view = 'any');`
 
-const TxDeployDetailNodeCustProp = `
+	TxDeployDetailNodeCustProp = `
 SELECT sncp.custom_property_id,
        scp.custom_property,
 	   sncp.value
@@ -1137,12 +1140,13 @@ AND    sncp.repository_id = scp.repository_id
 WHERE  sncp.node_id = $1::uuid
 AND    (sncp.view = $2::varchar OR sncp.view = 'any');`
 
-const TxDeployDetailDefaultDatacenter = `
+	TxDeployDetailDefaultDatacenter = `
 SELECT server_datacenter_name
 FROM   inventory.servers
 WHERE  server_asset_id = 0
 AND    server_datacenter_location = 'none'
 AND    server_name = 'soma-null-server';`
+)
 
 func init() {
 	m[TxBucketAssignNode] = `TxBucketAssignNode`

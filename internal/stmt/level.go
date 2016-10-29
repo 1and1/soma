@@ -8,19 +8,22 @@
 
 package stmt
 
-const LevelList = `
+const (
+	LevelStatements = ``
+
+	LevelList = `
 SELECT level_name,
        level_shortname
 FROM   soma.notification_levels;`
 
-const LevelShow = `
+	LevelShow = `
 SELECT level_name,
        level_shortname,
        level_numeric
 FROM   soma.notification_levels
 WHERE  level_name = $1;`
 
-const LevelAdd = `
+	LevelAdd = `
 INSERT INTO soma.notification_levels (
             level_name,
             level_shortname,
@@ -33,9 +36,10 @@ WHERE  NOT EXISTS (
       OR  level_shortname = $2::varchar
       OR  level_numeric = $3::smallint);`
 
-const LevelDel = `
+	LevelDel = `
 DELETE FROM soma.notification_levels
 WHERE  level_name = $1;`
+)
 
 func init() {
 	m[LevelAdd] = `LevelAdd`

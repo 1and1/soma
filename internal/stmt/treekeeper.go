@@ -8,19 +8,22 @@
 
 package stmt
 
-const TreekeeperStartJob = `
+const (
+	TreekeeperStatements = ``
+
+	TreekeeperStartJob = `
 UPDATE soma.jobs
 SET    job_started = $2::timestamptz,
        job_status = 'in_progress'
 WHERE  job_id = $1::uuid
 AND    job_started IS NULL;`
 
-const TreekeeperGetViewFromCapability = `
+	TreekeeperGetViewFromCapability = `
 SELECT capability_view
 FROM   soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`
 
-const TreekeeperGetComputedDeployments = `
+	TreekeeperGetComputedDeployments = `
 SELECT scic.check_instance_id,
        scic.check_instance_config_id,
        scic.deployment_details
@@ -32,7 +35,7 @@ JOIN   soma.check_instance_configurations scic
 WHERE  scic.status = 'computed'
   AND  sc.repository_id = $1::uuid;`
 
-const TreekeeperGetPreviousDeployment = `
+	TreekeeperGetPreviousDeployment = `
 SELECT check_instance_config_id,
        version,
        status,
@@ -44,30 +47,30 @@ AND    check_instance_id = $1::uuid
 ORDER  BY version DESC
 LIMIT  1;`
 
-const TreekeeperUpdateConfigStatus = `
+	TreekeeperUpdateConfigStatus = `
 UPDATE soma.check_instance_configurations
 SET    status = $1::varchar,
        next_status = $2::varchar
 WHERE  check_instance_config_id = $3::uuid;`
 
-const TreekeeperUpdateCheckInstance = `
+	TreekeeperUpdateCheckInstance = `
 UPDATE soma.check_instances
 SET    last_configuration_created = $1::timestamptz,
        update_available = $2::boolean,
        current_instance_config_id = $3::uuid
 WHERE  check_instance_id = $4::uuid;`
 
-const TreekeeperUpdateExistingCheckInstance = `
+	TreekeeperUpdateExistingCheckInstance = `
 UPDATE soma.check_instances
 SET    last_configuration_created = $1::timestamptz,
        update_available = $2::boolean
 WHERE  check_instance_id = $3::uuid;`
 
-const TreekeeperDeleteDuplicateDetails = `
+	TreekeeperDeleteDuplicateDetails = `
 DELETE FROM soma.check_instance_configurations
 WHERE       check_instance_config_id = $1::uuid;`
 
-const TreekeeperSetDependency = `
+	TreekeeperSetDependency = `
 INSERT INTO soma.check_instance_configuration_dependencies (
             blocked_instance_config_id,
             blocking_instance_config_id,
@@ -75,6 +78,7 @@ INSERT INTO soma.check_instance_configuration_dependencies (
 SELECT $1::uuid,
        $2::uuid,
        $3::varchar;`
+)
 
 func init() {
 	m[TreekeeperDeleteDuplicateDetails] = `TreekeeperDeleteDuplicateDetails`

@@ -8,21 +8,24 @@
 
 package stmt
 
-const ProviderVerify = `
+const (
+	ProviderStatements = ``
+
+	ProviderVerify = `
 SELECT metric_provider
 FROM   soma.metric_providers
 WHERE  metric_provider = $1::varchar;`
 
-const ProviderList = `
+	ProviderList = `
 SELECT metric_provider
 FROM   soma.metric_providers;`
 
-const ProviderShow = `
+	ProviderShow = `
 SELECT metric_provider
 FROM   soma.metric_providers
 WHERE  metric_provider = $1::varchar;`
 
-const ProviderAdd = `
+	ProviderAdd = `
 INSERT INTO soma.metric_providers (
             metric_provider)
 SELECT $1::varchar
@@ -31,9 +34,10 @@ WHERE NOT EXISTS (
    FROM   soma.metric_providers
    WHERE  metric_provider = $1::varchar);`
 
-const ProviderDel = `
+	ProviderDel = `
 DELETE FROM soma.metric_providers
 WHERE  metric_provider = $1::varchar;`
+)
 
 func init() {
 	m[ProviderAdd] = `ProviderAdd`

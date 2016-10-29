@@ -8,12 +8,15 @@
 
 package stmt
 
-const ListUsers = `
+const (
+	UserStatements = ``
+
+	ListUsers = `
 SELECT user_id,
        user_uid
 FROM   inventory.users;`
 
-const ShowUsers = `
+	ShowUsers = `
 SELECT user_id,
        user_uid,
        user_first_name,
@@ -27,7 +30,7 @@ SELECT user_id,
 FROM   inventory.users
 WHERE  user_id = $1::uuid;`
 
-const SyncUsers = `
+	SyncUsers = `
 SELECT user_id,
        user_uid,
        user_first_name,
@@ -39,7 +42,7 @@ SELECT user_id,
 FROM   inventory.users
 WHERE  NOT user_is_system;`
 
-const UserAdd = `
+	UserAdd = `
 INSERT INTO inventory.users (
             user_id,
             user_uid,
@@ -68,7 +71,7 @@ WHERE  NOT EXISTS (
      OR  user_uid = $2::varchar
      OR  user_employee_number = $5::numeric);`
 
-const UserUpdate = `
+	UserUpdate = `
 UPDATE inventory.users
 SET    user_uid = $1::varchar,
        user_first_name = $2::varchar,
@@ -79,16 +82,17 @@ SET    user_uid = $1::varchar,
        organizational_team_id = $7::uuid
 WHERE  user_id = $8::uuid;`
 
-const UserDel = `
+	UserDel = `
 UPDATE inventory.users
 SET    user_is_deleted = 'yes',
        user_is_active = 'no'
 WHERE  user_id = $1::uuid;`
 
-const UserPurge = `
+	UserPurge = `
 DELETE FROM inventory.users
 WHERE  user_id = $1::uuid
 AND    user_is_deleted;`
+)
 
 func init() {
 	m[ListUsers] = `ListUsers`

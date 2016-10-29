@@ -8,18 +8,21 @@
 
 package stmt
 
-const ViewVerify = `
+const (
+	ViewStatements = ``
+
+	ViewVerify = `
 SELECT view
 FROM   soma.views
 WHERE  view = $1::varchar;`
 
-const ViewList = `
+	ViewList = `
 SELECT view
 FROM   soma.views;`
 
-const ViewShow = ViewVerify
+	ViewShow = ViewVerify
 
-const ViewAdd = `
+	ViewAdd = `
 INSERT INTO soma.views (
             view)
 SELECT   $1::varchar
@@ -28,14 +31,15 @@ WHERE    NOT EXISTS (
     FROM    soma.views
     WHERE   view = $1::varchar);`
 
-const ViewDel = `
+	ViewDel = `
 DELETE FROM soma.views
 WHERE  view = $1::varchar;`
 
-const ViewRename = `
+	ViewRename = `
 UPDATE soma.views
 SET    view = $1::varchar
 WHERE  view = $2::varchar;`
+)
 
 func init() {
 	m[ViewAdd] = `ViewAdd`

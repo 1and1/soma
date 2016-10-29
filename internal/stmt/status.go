@@ -8,16 +8,19 @@
 
 package stmt
 
-const StatusList = `
+const (
+	StatusStatements = ``
+
+	StatusList = `
 SELECT status
 FROM   soma.check_instance_status;`
 
-const StatusShow = `
+	StatusShow = `
 SELECT status
 FROM   soma.check_instance_status
 WHERE  status = $1;`
 
-const StatusAdd = `
+	StatusAdd = `
 INSERT INTO soma.check_instance_status (
             status)
 SELECT $1::varchar
@@ -26,9 +29,10 @@ WHERE  NOT EXISTS (
    FROM   soma.check_instance_status
    WHERE  status = $1::varchar);`
 
-const StatusDel = `
+	StatusDel = `
 DELETE FROM soma.check_instance_status
 WHERE  status = $1;`
+)
 
 func init() {
 	m[StatusAdd] = `StatusAdd`

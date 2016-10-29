@@ -1,6 +1,9 @@
 package stmt
 
-const LifecycleActiveUnblockCondition = `
+const (
+	LifecycleStatements = ``
+
+	LifecycleActiveUnblockCondition = `
 SELECT  scicd.blocked_instance_config_id,
         scicd.blocking_instance_config_id,
         scicd.unblocking_state,
@@ -17,26 +20,26 @@ JOIN    soma.check_instances sci
 ON      p.check_instance_id = sci.check_instance_id
 AND     scicd.blocking_instance_config_id = sci.current_instance_config_id;`
 
-const LifecycleUpdateInstance = `
+	LifecycleUpdateInstance = `
 UPDATE  soma.check_instances
 SET     update_available = $1::boolean,
         current_instance_config_id = $2::uuid
 WHERE   check_instance_id = $3::uuid;`
 
-const LifecycleUpdateConfig = `
+	LifecycleUpdateConfig = `
 UPDATE  soma.check_instance_configurations
 SET     status = $1::varchar,
         next_status = $2::varchar,
         awaiting_deletion = $3::boolean
 WHERE   check_instance_config_id = $4::uuid;`
 
-const LifecycleDeleteDependency = `
+	LifecycleDeleteDependency = `
 DELETE FROM soma.check_instance_configuration_dependencies
 WHERE       blocked_instance_config_id = $1::uuid
 AND         blocking_instance_config_id = $2::uuid
 AND         unblocking_state = $3::varchar;`
 
-const LifecycleReadyDeployments = `
+	LifecycleReadyDeployments = `
 SELECT scic.check_instance_id,
        scic.monitoring_id,
        sms.monitoring_callback_uri
@@ -51,12 +54,12 @@ WHERE  (  scic.status = 'awaiting_rollout'
 AND    sms.monitoring_callback_uri IS NOT NULL
 AND    sci.update_available;`
 
-const LifecycleClearUpdateFlag = `
+	LifecycleClearUpdateFlag = `
 UPDATE soma.check_instances
 SET    update_available = 'false'::boolean
 WHERE  check_instance_id = $1::uuid;`
 
-const LifecycleBlockedConfigsForDeletedInstance = `
+	LifecycleBlockedConfigsForDeletedInstance = `
 SELECT scicd.blocked_instance_config_id,
        scicd.blocking_instance_config_id,
        scicd.unblocking_state
@@ -68,14 +71,14 @@ JOIN   soma.check_instance_configuration_dependencies scicd
 WHERE  sci.deleted
   AND  scic.status = 'blocked';`
 
-const LifecycleConfigAwaitingDeletion = `
+	LifecycleConfigAwaitingDeletion = `
 UPDATE soma.check_instance_configurations
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
        awaiting_deletion = 'yes'::boolean
 WHERE  check_instance_config_id = $1::uuid;`
 
-const LifecycleDeleteGhosts = `
+	LifecycleDeleteGhosts = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
@@ -86,7 +89,7 @@ AND    scic.status = 'awaiting_rollout'
 AND    sci.deleted
 AND    sci.update_available;`
 
-const LifecycleDeleteFailedRollouts = `
+	LifecycleDeleteFailedRollouts = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
@@ -96,7 +99,7 @@ WHERE  scic.check_instance_id = sci.check_instance_id
 AND    sci.deleted
 AND    scic.status = 'rollout_failed';`
 
-const LifecycleDeleteDeprovisioned = `
+	LifecycleDeleteDeprovisioned = `
 UPDATE soma.check_instance_configurations scic
 SET    status = 'awaiting_deletion'::varchar,
        next_status = 'none'::varchar,
@@ -107,7 +110,7 @@ AND    sci.deleted
 AND    scic.status = 'deprovisioned'
 AND    scic.next_status = 'none';`
 
-const LifecycleDeprovisionDeletedActive = `
+	LifecycleDeprovisionDeletedActive = `
 SELECT scic.check_instance_config_id,
        sci.check_instance_id
 FROM   soma.check_instance_configurations scic
@@ -115,17 +118,15 @@ JOIN   soma.check_instances sci
   ON   scic.check_instance_id = sci.check_instance_id
 WHERE  sci.deleted
   AND  scic.status = 'active'
-  AND  scic.next_status = 'none';
-`
+  AND  scic.next_status = 'none';`
 
-const LifecycleDeprovisionConfiguration = `
+	LifecycleDeprovisionConfiguration = `
 UPDATE soma.check_instance_configurations
 SET    status = 'awaiting_deprovision'::varchar,
        next_status = 'deprovision_in_progress'::varchar
-WHERE  check_instance_config_id = $1::uuid;
-`
+WHERE  check_instance_config_id = $1::uuid;`
 
-const LifecycleDeadLockResolver = `
+	LifecycleDeadLockResolver = `
 SELECT ci.check_instance_id,
        ci.current_instance_config_id
 FROM   check_instances ci
@@ -135,6 +136,7 @@ JOIN   check_instance_configurations cic
 JOIN   check_instance_configuration_dependencies cicd
   ON   ci.current_instance_config_id = cicd.blocking_instance_config_id
 WHERE  cic.status = 'active';`
+)
 
 func init() {
 	m[LifecycleActiveUnblockCondition] = `LifecycleActiveUnblockCondition`

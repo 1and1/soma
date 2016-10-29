@@ -8,7 +8,10 @@
 
 package stmt
 
-const SyncServers = `
+const (
+	ServerStatements = ``
+
+	SyncServers = `
 SELECT server_id,
        server_asset_id,
        server_datacenter_name,
@@ -19,7 +22,7 @@ SELECT server_id,
 FROM   inventory.servers
 WHERE  server_id != '00000000-0000-0000-0000-000000000000'::uuid;`
 
-const ListServers = `
+	ListServers = `
 SELECT server_id,
        server_name,
        server_asset_id
@@ -28,7 +31,7 @@ WHERE  server_online
 AND    NOT server_deleted
 AND    NOT server_id = '00000000-0000-0000-0000-000000000000'::uuid;`
 
-const ShowServers = `
+	ShowServers = `
 SELECT server_id,
        server_asset_id,
        server_datacenter_name,
@@ -39,7 +42,7 @@ SELECT server_id,
 FROM   inventory.servers
 WHERE  server_id = $1::uuid;`
 
-const SearchServerByName = `
+	SearchServerByName = `
 SELECT server_id,
        server_name,
        server_asset_id
@@ -49,7 +52,7 @@ AND    NOT server_deleted
 AND    NOT server_id = '00000000-0000-0000-0000-000000000000'
 AND    server_name = $1::varchar;`
 
-const SearchServerByAssetId = `
+	SearchServerByAssetId = `
 SELECT server_id,
        server_name,
        server_asset_id
@@ -59,7 +62,7 @@ AND    NOT server_deleted
 AND    NOT server_id = '00000000-0000-0000-0000-000000000000'
 AND    server_asset_id = $1::numeric;`
 
-const AddServers = `
+	AddServers = `
 INSERT INTO inventory.servers (
             server_id,
             server_asset_id,
@@ -75,7 +78,7 @@ WHERE NOT   EXISTS(
     WHERE   server_id = $1::uuid
        OR   server_asset_id = $2::numeric);`
 
-const UpdateServers = `
+	UpdateServers = `
 UPDATE inventory.servers
 SET    server_asset_id = $2::numeric,
        server_datacenter_name = $3::varchar,
@@ -85,18 +88,19 @@ SET    server_asset_id = $2::numeric,
        server_deleted = $7::boolean
 WHERE  server_id = $1::uuid;`
 
-const DeleteServers = `
+	DeleteServers = `
 UPDATE inventory.servers
 SET    server_deleted = 'yes'::boolean,
        server_online = 'no'::boolean
 WHERE  server_id = $1::uuid
 AND    server_id != '00000000-0000-0000-0000-000000000000'::uuid;`
 
-const PurgeServers = `
+	PurgeServers = `
 DELETE FROM inventory.servers
 WHERE  server_id = $1::uuid
   AND  server_deleted
   AND  server_id != '00000000-0000-0000-0000-000000000000'::uuid;`
+)
 
 func init() {
 	m[AddServers] = `AddServers`

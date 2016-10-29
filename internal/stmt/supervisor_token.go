@@ -8,8 +8,11 @@
 
 package stmt
 
-// insert a new token into the database
-const InsertToken = `
+const (
+	SupervisorTokenStatements = ``
+
+	// insert a new token into the database
+	InsertToken = `
 INSERT INTO auth.tokens (
     token,
     salt,
@@ -19,25 +22,25 @@ INSERT INTO auth.tokens (
     $1::varchar,
     $2::varchar,
     $3::timestamptz,
-    $4::timestamptz
-);`
+    $4::timestamptz);`
 
-// lookup a specific token (readonly instances)
-const SelectToken = `
+	// lookup a specific token (readonly instances)
+	SelectToken = `
 SELECT salt,
        valid_from,
        valid_until
 FROM   auth.tokens
 WHERE  token = $1::varchar;`
 
-// startup loading all tokens
-const LoadAllTokens = `
+	// startup loading all tokens
+	LoadAllTokens = `
 SELECT token,
        salt,
        valid_from,
        valid_until
 FROM   auth.tokens
 WHERE  NOW() < valid_until;`
+)
 
 func init() {
 	m[InsertToken] = `InsertToken`

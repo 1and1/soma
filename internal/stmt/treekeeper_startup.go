@@ -8,7 +8,10 @@
 
 package stmt
 
-const TkStartLoadChecks = `
+const (
+	TreekeeperStartupStatements = ``
+
+	TkStartLoadChecks = `
 SELECT check_id,
        bucket_id,
        source_check_id,
@@ -24,7 +27,7 @@ AND    check_id = source_check_id
 AND    source_object_type = $2::varchar
 AND    NOT deleted;`
 
-const TkStartLoadInheritedChecks = `
+	TkStartLoadInheritedChecks = `
 SELECT check_id,
        object_id,
        object_type
@@ -34,7 +37,7 @@ AND    source_check_id = $2::uuid
 AND    source_check_id != check_id
 AND    NOT deleted;`
 
-const TkStartLoadChecksForType = `
+	TkStartLoadChecksForType = `
 SELECT check_id,
        object_id
 FROM   soma.checks
@@ -42,7 +45,7 @@ WHERE  repository_id = $1::uuid
 AND    object_type = $2::varchar
 AND    NOT deleted;`
 
-const TkStartLoadCheckConfiguration = `
+	TkStartLoadCheckConfiguration = `
 SELECT bucket_id,
        configuration_name,
        configuration_object,
@@ -59,7 +62,7 @@ WHERE  configuration_id = $1::uuid
 AND    repository_id = $2::uuid
 AND    NOT deleted;`
 
-const TkStartLoadAllCheckConfigurationsForType = `
+	TkStartLoadAllCheckConfigurationsForType = `
 SELECT configuration_id,
        bucket_id,
        configuration_name,
@@ -75,7 +78,7 @@ WHERE  configuration_object_type = $1::varchar
 AND    repository_id = $2::uuid
 AND    NOT deleted;`
 
-const TkStartLoadCheckThresholds = `
+	TkStartLoadCheckThresholds = `
 SELECT sct.predicate,
        sct.threshold,
        snl.level_name,
@@ -86,7 +89,7 @@ JOIN   soma.notification_levels snl
 ON     sct.notification_level = snl.level_name
 WHERE  configuration_id = $1::uuid;`
 
-const TkStartLoadCheckConstraintCustom = `
+	TkStartLoadCheckConstraintCustom = `
 SELECT sccp.custom_property_id,
        scp.custom_property,
        sccp.property_value
@@ -96,18 +99,18 @@ ON     sccp.custom_property_id = scp.custom_property_id
 AND    sccp.repository_id = scp.repository_id
 WHERE  configuration_id = $1::uuid;`
 
-// do not get distracted by the squirrels! All constraint
-// statements are constructed to use three result variables,
-// so they can be loaded in one unified loop.
-const TkStartLoadCheckConstraintNative = `
+	// do not get distracted by the squirrels! All constraint
+	// statements are constructed to use three result variables,
+	// so they can be loaded in one unified loop.
+	TkStartLoadCheckConstraintNative = `
 SELECT native_property,
        property_value,
        'squirrel'
 FROM   soma.constraints_native_property
 WHERE  configuration_id = $1::uuid;`
 
-// return configuration id: every constraint query has 2 columns
-const TkStartLoadCheckConstraintOncall = `
+	// return configuration id: every constraint query has 2 columns
+	TkStartLoadCheckConstraintOncall = `
 SELECT scop.oncall_duty_id,
        oncall_duty_name,
        oncall_duty_phone_number
@@ -116,38 +119,38 @@ JOIN   inventory.oncall_duty_teams iodt
 ON     scop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  scop.configuration_id = $1::uuid;`
 
-const TkStartLoadCheckConstraintAttribute = `
+	TkStartLoadCheckConstraintAttribute = `
 SELECT service_property_attribute,
        attribute_value,
        'squirrel'
 FROM   soma.constraints_service_attribute
 WHERE  configuration_id = $1::uuid;`
 
-const TkStartLoadCheckConstraintService = `
+	TkStartLoadCheckConstraintService = `
 SELECT organizational_team_id,
        service_property,
        'squirrel'
 FROM   soma.constraints_service_property
 WHERE  configuration_id = $1::uuid;`
 
-const TkStartLoadCheckConstraintSystem = `
+	TkStartLoadCheckConstraintSystem = `
 SELECT system_property,
        property_value,
        'squirrel'
 FROM   soma.constraints_system_property
 WHERE  configuration_id = $1::uuid;`
 
-const TkStartLoadCheckInstances = `
+	TkStartLoadCheckInstances = `
 SELECT check_instance_id,
        check_configuration_id
 FROM   soma.check_instances
 WHERE  check_id = $1::uuid
 AND    NOT deleted;`
 
-// load the most recent configuration for this instance, which is
-// not always the current one, since a newer version could be blocked
-// by the current versions rollout
-const TkStartLoadCheckInstanceConfiguration = `
+	// load the most recent configuration for this instance, which is
+	// not always the current one, since a newer version could be blocked
+	// by the current versions rollout
+	TkStartLoadCheckInstanceConfiguration = `
 SELECT check_instance_config_id,
        version,
        monitoring_id,
@@ -161,7 +164,7 @@ WHERE  check_instance_id = $1::uuid
 ORDER  BY created DESC
 LIMIT  1;`
 
-const TkStartLoadCheckGroupState = `
+	TkStartLoadCheckGroupState = `
 SELECT sg.group_id,
        sg.object_state
 FROM   soma.buckets sb
@@ -169,7 +172,7 @@ JOIN   soma.groups  sg
 ON     sb.bucket_id = sg.bucket_id
 WHERE  sb.repository_id = $1::uuid;`
 
-const TkStartLoadCheckGroupRelations = `
+	TkStartLoadCheckGroupRelations = `
 SELECT sgmg.group_id,
        sgmg.child_group_id
 FROM   soma.buckets sb
@@ -177,7 +180,7 @@ JOIN   soma.group_membership_groups sgmg
 ON     sb.bucket_id = sgmg.bucket_id
 WHERE  sb.repository_id = $1::uuid;`
 
-const TkStartLoadBuckets = `
+	TkStartLoadBuckets = `
 SELECT sb.bucket_id,
        sb.bucket_name,
        sb.bucket_frozen,
@@ -189,7 +192,7 @@ JOIN   soma.buckets sb
 ON     sr.repository_id = sb.repository_id
 WHERE  sr.repository_id = $1::uuid;`
 
-const TkStartLoadGroups = `
+	TkStartLoadGroups = `
 SELECT sg.group_id,
        sg.group_name,
        sg.bucket_id,
@@ -201,7 +204,7 @@ JOIN   soma.groups sg
 ON     sb.bucket_id = sg.bucket_id
 WHERE  sr.repository_id = $1::uuid;`
 
-const TkStartLoadGroupMemberGroups = `
+	TkStartLoadGroupMemberGroups = `
 SELECT sgmg.group_id,
        sgmg.child_group_id
 FROM   soma.repositories sr
@@ -211,7 +214,7 @@ JOIN   soma.group_membership_groups sgmg
 ON     sb.bucket_id = sgmg.bucket_id
 WHERE  sr.repository_id = $1::uuid;`
 
-const TkStartLoadGroupedClusters = `
+	TkStartLoadGroupedClusters = `
 SELECT sc.cluster_id,
        sc.cluster_name,
        sc.organizational_team_id,
@@ -226,7 +229,7 @@ ON     sc.bucket_id = sgmc.bucket_id
 AND    sc.cluster_id = sgmc.child_cluster_id
 WHERE  sr.repository_id = $1::uuid;`
 
-const TkStartLoadCluster = `
+	TkStartLoadCluster = `
 SELECT sc.cluster_id,
        sc.cluster_name,
        sc.bucket_id,
@@ -239,7 +242,7 @@ ON     sb.bucket_id = sc.bucket_id
 WHERE  sr.repository_id = $1::uuid
 AND    sc.object_state != 'grouped';`
 
-const TkStartLoadNode = `
+	TkStartLoadNode = `
 SELECT    sn.node_id,
           sn.node_asset_id,
           sn.node_name,
@@ -263,14 +266,14 @@ LEFT JOIN soma.group_membership_nodes sgmn
 ON        sn.node_id = sgmn.child_node_id
 WHERE     sr.repository_id = $1::uuid`
 
-const TkStartLoadJob = `
+	TkStartLoadJob = `
 SELECT   job
 FROM     soma.jobs
 WHERE    repository_id = $1::uuid
 AND      job_status != 'processed'
 ORDER BY job_serial ASC;`
 
-var TkStartLoadSystemPropInstances = `
+	TkStartLoadSystemPropInstances = `
 SELECT      CASE WHEN srsp.instance_id IS NOT NULL THEN srsp.instance_id
             ELSE CASE WHEN sbsp.instance_id IS NOT NULL THEN sbsp.instance_id
                  ELSE CASE WHEN sgsp.instance_id IS NOT NULL THEN sgsp.instance_id
@@ -324,7 +327,7 @@ WHERE       spi.instance_id != spi.source_instance_id
   AND       spi.repository_id = $1::uuid
   AND       spi.source_instance_id = $2::uuid;`
 
-var TkStartLoadCustomPropInstances = `
+	TkStartLoadCustomPropInstances = `
 SELECT      CASE WHEN srsp.instance_id IS NOT NULL THEN srsp.instance_id
             ELSE CASE WHEN sbsp.instance_id IS NOT NULL THEN sbsp.instance_id
                  ELSE CASE WHEN sgsp.instance_id IS NOT NULL THEN sgsp.instance_id
@@ -378,7 +381,7 @@ WHERE       spi.instance_id != spi.source_instance_id
   AND       spi.repository_id = $1::uuid
   AND       spi.source_instance_id = $2::uuid;`
 
-var TkStartLoadServicePropInstances = `
+	TkStartLoadServicePropInstances = `
 SELECT      CASE WHEN srsp.instance_id IS NOT NULL THEN srsp.instance_id
             ELSE CASE WHEN sbsp.instance_id IS NOT NULL THEN sbsp.instance_id
                  ELSE CASE WHEN sgsp.instance_id IS NOT NULL THEN sgsp.instance_id
@@ -432,7 +435,7 @@ WHERE       spi.instance_id != spi.source_instance_id
   AND       spi.repository_id = $1::uuid
   AND       spi.source_instance_id = $2::uuid;`
 
-var TkStartLoadOncallPropInstances = `
+	TkStartLoadOncallPropInstances = `
 SELECT      CASE WHEN srsp.instance_id IS NOT NULL THEN srsp.instance_id
             ELSE CASE WHEN sbsp.instance_id IS NOT NULL THEN sbsp.instance_id
                  ELSE CASE WHEN sgsp.instance_id IS NOT NULL THEN sgsp.instance_id
@@ -486,7 +489,7 @@ WHERE       spi.instance_id != spi.source_instance_id
   AND       spi.repository_id = $1::uuid
   AND       spi.source_instance_id = $2::uuid;`
 
-const TkStartLoadRepositoryCstProp = `
+	TkStartLoadRepositoryCstProp = `
 SELECT srcp.instance_id,
        srcp.source_instance_id,
        srcp.repository_id,
@@ -502,7 +505,7 @@ ON     srcp.custom_property_id = scp.custom_property_id
 WHERE  srcp.instance_id = srcp.source_instance_id
 AND    srcp.repository_id = $1::uuid;`
 
-const TkStartLoadBucketCstProp = `
+	TkStartLoadBucketCstProp = `
 SELECT sbcp.instance_id,
        sbcp.source_instance_id,
        sbcp.bucket_id,
@@ -518,7 +521,7 @@ ON     sbcp.custom_property_id = scp.custom_property_id
 WHERE  sbcp.instance_id = sbcp.source_instance_id
 AND    sbcp.repository_id = $1::uuid;`
 
-const TkStartLoadGroupCstProp = `
+	TkStartLoadGroupCstProp = `
 SELECT sgcp.instance_id,
        sgcp.source_instance_id,
        sgcp.group_id,
@@ -534,7 +537,7 @@ ON     sgcp.custom_property_id = scp.custom_property_id
 WHERE  sgcp.instance_id = sgcp.source_instance_id
 AND    sgcp.repository_id = $1::uuid;`
 
-const TkStartLoadClusterCstProp = `
+	TkStartLoadClusterCstProp = `
 SELECT sccp.instance_id,
        sccp.source_instance_id,
        sccp.cluster_id,
@@ -550,7 +553,7 @@ ON     sccp.custom_property_id = scp.custom_property_id
 WHERE  sccp.instance_id = sccp.source_instance_id
 AND    sccp.repository_id = $1::uuid;`
 
-const TkStartLoadNodeCstProp = `
+	TkStartLoadNodeCstProp = `
 SELECT sncp.instance_id,
        sncp.source_instance_id,
        sncp.node_id,
@@ -566,7 +569,7 @@ ON     sncp.custom_property_id = scp.custom_property_id
 WHERE  sncp.instance_id = sncp.source_instance_id
 AND    sncp.repository_id = $1::uuid;`
 
-const TkStartLoadRepoOncProp = `
+	TkStartLoadRepoOncProp = `
 SELECT  srop.instance_id,
         srop.source_instance_id,
         srop.repository_id,
@@ -582,7 +585,7 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   srop.instance_id = srop.source_instance_id
   AND   srop.repository_id = $1::uuid;`
 
-const TkStartLoadBucketOncProp = `
+	TkStartLoadBucketOncProp = `
 SELECT  sgop.instance_id,
         sgop.source_instance_id,
         sgop.bucket_id,
@@ -598,7 +601,7 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   sgop.instance_id = sgop.source_instance_id
   AND   sgop.repository_id = $1::uuid;`
 
-const TkStartLoadGroupOncProp = `
+	TkStartLoadGroupOncProp = `
 SELECT  sgop.instance_id,
         sgop.source_instance_id,
         sgop.group_id,
@@ -614,7 +617,7 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   sgop.instance_id = sgop.source_instance_id
   AND   sgop.repository_id = $1::uuid;`
 
-const TkStartLoadClusterOncProp = `
+	TkStartLoadClusterOncProp = `
 SELECT  scop.instance_id,
         scop.source_instance_id,
         scop.cluster_id,
@@ -630,7 +633,7 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   scop.instance_id = scop.source_instance_id
   AND   scop.repository_id = $1::uuid;`
 
-const TkStartLoadNodeOncProp = `
+	TkStartLoadNodeOncProp = `
 SELECT  snop.instance_id,
         snop.source_instance_id,
         snop.node_id,
@@ -646,7 +649,7 @@ JOIN    inventory.oncall_duty_teams iodt
 WHERE   snop.instance_id = snop.source_instance_id
   AND   snop.repository_id = $1::uuid;`
 
-const TkStartLoadRepoSvcProp = `
+	TkStartLoadRepoSvcProp = `
 SELECT instance_id,
        source_instance_id,
        repository_id,
@@ -659,14 +662,14 @@ FROM   soma.repository_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadRepoSvcAttr = `
+	TkStartLoadRepoSvcAttr = `
 SELECT service_property_attribute,
        value
 FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const TkStartLoadBucketSvcProp = `
+	TkStartLoadBucketSvcProp = `
 SELECT instance_id,
        source_instance_id,
        bucket_id,
@@ -679,14 +682,14 @@ FROM   soma.bucket_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadBucketSvcAttr = `
+	TkStartLoadBucketSvcAttr = `
 SELECT service_property_attribute,
        value
 FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const TkStartLoadGroupSvcProp = `
+	TkStartLoadGroupSvcProp = `
 SELECT instance_id,
        source_instance_id,
        group_id,
@@ -699,14 +702,14 @@ FROM   soma.group_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadGroupSvcAttr = `
+	TkStartLoadGroupSvcAttr = `
 SELECT service_property_attribute,
        value
 FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const TkStartLoadClusterSvcProp = `
+	TkStartLoadClusterSvcProp = `
 SELECT instance_id,
        source_instance_id,
        cluster_id,
@@ -719,14 +722,14 @@ FROM   soma.cluster_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadClusterSvcAttr = `
+	TkStartLoadClusterSvcAttr = `
 SELECT service_property_attribute,
        value
 FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const TkStartLoadNodeSvcProp = `
+	TkStartLoadNodeSvcProp = `
 SELECT instance_id,
        source_instance_id,
        node_id,
@@ -739,14 +742,14 @@ FROM   soma.node_service_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadNodeSvcAttr = `
+	TkStartLoadNodeSvcAttr = `
 SELECT service_property_attribute,
        value
 FROM   soma.team_service_property_values
 WHERE  organizational_team_id = $1::uuid
 AND    service_property = $2::varchar;`
 
-const TkStartLoadRepoSysProp = `
+	TkStartLoadRepoSysProp = `
 SELECT instance_id,
        source_instance_id,
        repository_id,
@@ -760,7 +763,7 @@ FROM   soma.repository_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadBucketSysProp = `
+	TkStartLoadBucketSysProp = `
 SELECT instance_id,
        source_instance_id,
        bucket_id,
@@ -774,7 +777,7 @@ FROM   soma.bucket_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadGroupSysProp = `
+	TkStartLoadGroupSysProp = `
 SELECT instance_id,
        source_instance_id,
        group_id,
@@ -788,7 +791,7 @@ FROM   soma.group_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadClusterSysProp = `
+	TkStartLoadClusterSysProp = `
 SELECT instance_id,
        source_instance_id,
        cluster_id,
@@ -802,7 +805,7 @@ FROM   soma.cluster_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
 
-const TkStartLoadNodeSysProp = `
+	TkStartLoadNodeSysProp = `
 SELECT instance_id,
        source_instance_id,
        node_id,
@@ -815,6 +818,7 @@ SELECT instance_id,
 FROM   soma.node_system_properties
 WHERE  instance_id = source_instance_id
 AND    repository_id = $1::uuid;`
+)
 
 func init() {
 	m[TkStartLoadAllCheckConfigurationsForType] = `TkStartLoadAllCheckConfigurationsForType`

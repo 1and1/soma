@@ -8,12 +8,15 @@
 
 package stmt
 
-const ListAllMonitoringSystems = `
+const (
+	MonitoringSystemStatements = ``
+
+	ListAllMonitoringSystems = `
 SELECT monitoring_id,
        monitoring_name
 FROM   soma.monitoring_systems;`
 
-const ListScopedMonitoringSystems = `
+	ListScopedMonitoringSystems = `
 SELECT sms.monitoring_id,
        sms.monitoring_name
 FROM   inventory.users iu
@@ -37,7 +40,7 @@ SELECT sms.monitoring_id,
 FROM   soma.monitoring_systems sms
 WHERE  sms.monitoring_system_mode = 'public';`
 
-const ShowMonitoringSystem = `
+	ShowMonitoringSystem = `
 SELECT monitoring_id,
        monitoring_name,
        monitoring_system_mode,
@@ -47,12 +50,12 @@ SELECT monitoring_id,
 FROM   soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
 
-const VerifyMonitoringSystem = `
+	VerifyMonitoringSystem = `
 SELECT monitoring_id
 FROM   soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
 
-const MonitoringSystemAdd = `
+	MonitoringSystemAdd = `
 INSERT INTO soma.monitoring_systems (
             monitoring_id,
             monitoring_name,
@@ -72,9 +75,10 @@ WHERE   NOT EXISTS (
    WHERE  monitoring_id = $1::uuid
       OR  monitoring_name = $2::varchar);`
 
-const MonitoringSystemDel = `
+	MonitoringSystemDel = `
 DELETE FROM soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
+)
 
 func init() {
 	m[ListAllMonitoringSystems] = `ListAllMonitoringSystems`

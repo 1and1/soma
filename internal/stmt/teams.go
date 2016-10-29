@@ -8,12 +8,15 @@
 
 package stmt
 
-const ListTeams = `
+const (
+	TeamStatements = ``
+
+	ListTeams = `
 SELECT organizational_team_id,
        organizational_team_name
 FROM   inventory.organizational_teams;`
 
-const ShowTeams = `
+	ShowTeams = `
 SELECT organizational_team_id,
        organizational_team_name,
        organizational_team_ldap_id,
@@ -21,7 +24,7 @@ SELECT organizational_team_id,
 FROM   inventory.organizational_teams
 WHERE  organizational_team_id = $1;`
 
-const SyncTeams = `
+	SyncTeams = `
 SELECT organizational_team_id,
        organizational_team_name,
        organizational_team_ldap_id,
@@ -29,7 +32,7 @@ SELECT organizational_team_id,
 FROM   inventory.organizational_teams
 WHERE  NOT organizational_team_system;`
 
-const TeamAdd = `
+	TeamAdd = `
 INSERT INTO inventory.organizational_teams (
             organizational_team_id,
             organizational_team_name,
@@ -43,16 +46,17 @@ WHERE  NOT EXISTS (
       OR  organizational_team_name = $2::varchar
       OR  organizational_team_ldap_id = $3::numeric);`
 
-const TeamUpdate = `
+	TeamUpdate = `
 UPDATE inventory.organizational_teams
 SET    organizational_team_name = $1::varchar,
        organizational_team_ldap_id = $2::numeric,
        organizational_team_system = $3::boolean
 WHERE  organizational_team_id = $4::uuid;`
 
-const TeamDel = `
+	TeamDel = `
 DELETE FROM inventory.organizational_teams
 WHERE       organizational_team_id = $1;`
+)
 
 func init() {
 	m[ListTeams] = `ListTeams`

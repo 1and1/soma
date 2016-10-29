@@ -8,7 +8,10 @@
 
 package stmt
 
-const CheckDetailsForDelete = `
+const (
+	CheckStatements = ``
+
+	CheckDetailsForDelete = `
 SELECT scc.configuration_object,
        scc.configuration_object_type,
        sc.source_check_id
@@ -20,7 +23,7 @@ WHERE  scc.configuration_id = $1::uuid
   AND  sc.check_id          = sc.source_check_id
   AND  NOT sc.deleted;`
 
-const CheckConfigList = `
+	CheckConfigList = `
 SELECT configuration_id,
        repository_id,
        bucket_id,
@@ -29,7 +32,7 @@ FROM   soma.check_configurations
 WHERE  repository_id = $1::uuid
 AND    NOT deleted;`
 
-const CheckConfigShowBase = `
+	CheckConfigShowBase = `
 SELECT configuration_id,
        repository_id,
        bucket_id,
@@ -46,7 +49,7 @@ SELECT configuration_id,
 FROM   soma.check_configurations
 WHERE  configuration_id = $1::uuid;`
 
-const CheckConfigShowThreshold = `
+	CheckConfigShowThreshold = `
 SELECT scc.configuration_id,
        sct.predicate,
        sct.threshold,
@@ -60,7 +63,7 @@ JOIN   soma.notification_levels snl
 ON     sct.notification_level = snl.level_name
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigShowConstrCustom = `
+	CheckConfigShowConstrCustom = `
 SELECT scc.configuration_id,
        sccp.custom_property_id,
        sccp.repository_id,
@@ -74,7 +77,7 @@ ON     sccp.custom_property_id = scp.custom_property_id
 AND    sccp.repository_id = scp.repository_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigShowConstrSystem = `
+	CheckConfigShowConstrSystem = `
 SELECT scc.configuration_id,
        scsp.system_property,
        scsp.property_value
@@ -83,7 +86,7 @@ JOIN   soma.constraints_system_property scsp
 ON     scc.configuration_id = scsp.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigShowConstrNative = `
+	CheckConfigShowConstrNative = `
 SELECT scc.configuration_id,
        scnp.native_property,
        scnp.property_value
@@ -92,7 +95,7 @@ JOIN   soma.constraints_native_property scnp
 ON     scc.configuration_id = scnp.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigShowConstrService = `
+	CheckConfigShowConstrService = `
 SELECT scc.configuration_id,
        scsvp.organizational_team_id,
        scsvp.service_property
@@ -101,7 +104,7 @@ JOIN   soma.constraints_service_property scsvp
 ON     scc.configuration_id = scsvp.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigShowConstrAttribute = `
+	CheckConfigShowConstrAttribute = `
 SELECT scc.configuration_id,
        scsa.service_property_attribute,
        scsa.attribute_value
@@ -110,7 +113,7 @@ JOIN   soma.constraints_service_attribute scsa
 ON     scc.configuration_id = scsa.configuration_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigShowConstrOncall = `
+	CheckConfigShowConstrOncall = `
 SELECT scc.configuration_id,
        scop.oncall_duty_id,
        iodt.oncall_duty_name,
@@ -122,7 +125,7 @@ JOIN   inventory.oncall_duty_teams iodt
 ON     scop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  scc.configuration_id = $1::uuid;`
 
-const CheckConfigInstanceInfo = `
+	CheckConfigInstanceInfo = `
 SELECT sci.check_instance_id,
        sc.object_id,
        sc.object_type,
@@ -138,7 +141,7 @@ JOIN   soma.check_instance_configurations scic
 WHERE  scc.configuration_id = $1::uuid
   AND  scic.status != 'awaiting_deletion';`
 
-const CheckConfigObjectInstanceInfo = `
+	CheckConfigObjectInstanceInfo = `
 SELECT sci.check_instance_id,
        sc.object_id,
        sc.object_type,
@@ -155,10 +158,11 @@ WHERE  scc.configuration_id = $1::uuid
   AND  sc.object_id = $2::uuid
   AND  scic.status != 'awaiting_deletion';`
 
-const CheckConfigForChecksOnObject = `
+	CheckConfigForChecksOnObject = `
 SELECT sc.configuration_id
 FROM   soma.checks sc
 WHERE  sc.object_id = $1::uuid;`
+)
 
 func init() {
 	m[CheckConfigForChecksOnObject] = `CheckConfigForChecksOnObject`

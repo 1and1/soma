@@ -8,19 +8,22 @@
 
 package stmt
 
-const OncallList = `
+const (
+	OncallStatements = ``
+
+	OncallList = `
 SELECT oncall_duty_id,
        oncall_duty_name
 FROM   inventory.oncall_duty_teams;`
 
-const OncallShow = `
+	OncallShow = `
 SELECT oncall_duty_id,
        oncall_duty_name,
        oncall_duty_phone_number
 FROM   inventory.oncall_duty_teams
 WHERE  oncall_duty_id = $1::varchar;`
 
-const OncallAdd = `
+	OncallAdd = `
 INSERT INTO inventory.oncall_duty_teams (
             oncall_duty_id,
             oncall_duty_name,
@@ -33,7 +36,7 @@ WHERE  NOT EXISTS (
       OR  oncall_duty_name = $2::varchar
       OR  oncall_duty_phone_number = $3::numeric);`
 
-const OncallUpdate = `
+	OncallUpdate = `
 UPDATE inventory.oncall_duty_teams
 SET    oncall_duty_name = CASE WHEN $1::varchar IS NOT NULL
                           THEN      $1::varchar
@@ -45,9 +48,10 @@ SET    oncall_duty_name = CASE WHEN $1::varchar IS NOT NULL
                                   END
 WHERE  oncall_duty_id = $3::uuid;`
 
-const OncallDel = `
+	OncallDel = `
 DELETE FROM inventory.oncall_duty_teams
 WHERE  oncall_duty_id = $1::varchar;`
+)
 
 func init() {
 	m[OncallAdd] = `OncallAdd`

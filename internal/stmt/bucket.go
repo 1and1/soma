@@ -8,7 +8,10 @@
 
 package stmt
 
-const BucketOncProps = `
+const (
+	BucketStatements = ``
+
+	BucketOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,
        op.view,
@@ -19,7 +22,7 @@ JOIN   inventory.oncall_duty_teams iodt
   ON   op.oncall_duty_id = iodt.oncall_duty_id
 WHERE  op.bucket_id = $1::uuid;`
 
-const BucketSvcProps = `
+	BucketSvcProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -27,7 +30,7 @@ SELECT sp.instance_id,
 FROM   soma.bucket_service_properties sp
 WHERE  sp.bucket_id = $1::uuid;`
 
-const BucketSysProps = `
+	BucketSysProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -36,7 +39,7 @@ SELECT sp.instance_id,
 FROM   soma.bucket_system_properties sp
 WHERE  sp.bucket_id = $1::uuid;`
 
-const BucketCstProps = `
+	BucketCstProps = `
 SELECT cp.instance_id,
        cp.source_instance_id,
        cp.view,
@@ -48,7 +51,7 @@ JOIN   soma.custom_properties scp
   ON   cp.custom_property_id = scp.custom_property_id
 WHERE  cp.bucket_id = $1::uuid;`
 
-const BucketSystemPropertyForDelete = `
+	BucketSystemPropertyForDelete = `
 SELECT view,
        system_property,
        value
@@ -56,7 +59,7 @@ FROM   soma.bucket_system_properties
 WHERE  source_instance_id = $1::uuid
   AND  source_instance_id = instance_id;`
 
-const BucketCustomPropertyForDelete = `
+	BucketCustomPropertyForDelete = `
 SELECT sbcp.view,
        sbcp.custom_property_id,
        sbcp.value,
@@ -68,7 +71,7 @@ JOIN   soma.custom_properties scp
 WHERE  sbcp.source_instance_id = $1::uuid
   AND  sbcp.source_instance_id = sbcp.instance_id;`
 
-const BucketOncallPropertyForDelete = `
+	BucketOncallPropertyForDelete = `
 SELECT sbop.view,
        sbop.oncall_duty_id,
        iodt.oncall_duty_name,
@@ -79,7 +82,7 @@ JOIN   inventory.oncall_duty_teams iodt
 WHERE  sbop.source_instance_id = $1::uuid
   AND  sbop.source_instance_id = sbop.instance_id;`
 
-const BucketServicePropertyForDelete = `
+	BucketServicePropertyForDelete = `
 SELECT sbsp.view,
        sbsp.service_property
 FROM   soma.bucket_service_properties sbsp
@@ -89,12 +92,12 @@ JOIN   soma.team_service_properties stsp
 WHERE  sbsp.source_instance_id = $1::uuid
   AND  sbsp.source_instance_id = sbsp.instance_id;`
 
-const BucketList = `
+	BucketList = `
 SELECT bucket_id,
        bucket_name
 FROM   soma.buckets;`
 
-const BucketShow = `
+	BucketShow = `
 SELECT bucket_id,
        bucket_name,
        bucket_frozen,
@@ -104,6 +107,7 @@ SELECT bucket_id,
        organizational_team_id
 FROM   soma.buckets
 WHERE  bucket_id = $1::uuid;`
+)
 
 func init() {
 	m[BucketCstProps] = `BucketCstProps`

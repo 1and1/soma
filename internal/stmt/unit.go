@@ -8,22 +8,25 @@
 
 package stmt
 
-const UnitVerify = `
+const (
+	UnitStatements = ``
+
+	UnitVerify = `
 SELECT metric_unit
 FROM   soma.metric_units
 WHERE  metric_unit = $1::varchar;`
 
-const UnitList = `
+	UnitList = `
 SELECT metric_unit
 FROM   soma.metric_units;`
 
-const UnitShow = `
+	UnitShow = `
 SELECT metric_unit,
        metric_unit_long_name
 FROM   soma.metric_units
 WHERE  metric_unit = $1::varchar;`
 
-const UnitAdd = `
+	UnitAdd = `
 INSERT INTO soma.metric_units (
             metric_unit,
             metric_unit_long_name)
@@ -34,9 +37,10 @@ WHERE NOT EXISTS (
    WHERE  metric_unit = $1::varchar
    OR     metric_unit_long_name = $2::varchar);`
 
-const UnitDel = `
+	UnitDel = `
 DELETE FROM soma.metric_units
 WHERE       metric_unit = $1::varchar;`
+)
 
 func init() {
 	m[UnitAdd] = `UnitAdd`

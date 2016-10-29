@@ -8,16 +8,19 @@
 
 package stmt
 
-const ObjectStateList = `
+const (
+	ObjectStatements = ``
+
+	ObjectStateList = `
 SELECT object_state
 FROM   soma.object_states;`
 
-const ObjectStateShow = `
+	ObjectStateShow = `
 SELECT object_state
 FROM   soma.object_states
 WHERE  object_state = $1::varchar;`
 
-const ObjectStateAdd = `
+	ObjectStateAdd = `
 INSERT INTO soma.object_states (
             object_state)
 SELECT $1::varchar
@@ -26,25 +29,25 @@ WHERE  NOT EXISTS (
    FROM   soma.object_states
    WHERE  object_state = $1::varchar);`
 
-const ObjectStateDel = `
+	ObjectStateDel = `
 DELETE FROM soma.object_states
 WHERE       object_state = $1::varchar;`
 
-const ObjectStateRename = `
+	ObjectStateRename = `
 UPDATE soma.object_states
 SET    object_state = $1::varchar
 WHERE  object_state = $2::varchar;`
 
-const ObjectTypeList = `
+	ObjectTypeList = `
 SELECT object_type
 FROM   soma.object_types;`
 
-const ObjectTypeShow = `
+	ObjectTypeShow = `
 SELECT object_type
 FROM   soma.object_types
 WHERE  object_type = $1::varchar;`
 
-const ObjectTypeAdd = `
+	ObjectTypeAdd = `
 INSERT INTO soma.object_types (
             object_type)
 SELECT $1::varchar
@@ -53,15 +56,15 @@ WHERE NOT EXISTS (
    FROM   soma.object_types
    WHERE  object_type = $1::varchar);`
 
-const ObjectTypeDel = `
+	ObjectTypeDel = `
 DELETE FROM soma.object_types
-WHERE       object_type = $1::varchar;
-  `
+WHERE       object_type = $1::varchar;`
 
-const ObjectTypeRename = `
+	ObjectTypeRename = `
 UPDATE soma.object_types
 SET    object_type = $1::varchar
 WHERE  object_type = $2::varchar;`
+)
 
 func init() {
 	m[ObjectStateAdd] = `ObjectStateAdd`

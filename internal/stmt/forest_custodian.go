@@ -8,25 +8,28 @@
 
 package stmt
 
-const ForestRebuildDeleteChecks = `
+const (
+	ForestCustodianStatements = ``
+
+	ForestRebuildDeleteChecks = `
 UPDATE soma.checks sc
 SET    deleted = 'yes'::boolean
 WHERE  sc.repository_id = $1::uuid;`
 
-const ForestRebuildDeleteInstances = `
+	ForestRebuildDeleteInstances = `
 UPDATE soma.check_instances sci
 SET    deleted = 'yes'::boolean
 FROM   soma.checks sc
 WHERE  sci.check_id = sc.check_id
 AND    sc.repository_id = $1::uuid;`
 
-const ForestRepoNameById = `
+	ForestRepoNameById = `
 SELECT repository_name,
        organizational_team_id
 FROM   soma.repositories
 WHERE  repository_id = $1::uuid;`
 
-const ForestLoadRepository = `
+	ForestLoadRepository = `
 SELECT repository_id,
        repository_name,
        repository_deleted,
@@ -34,7 +37,7 @@ SELECT repository_id,
        organizational_team_id
 FROM   soma.repositories;`
 
-const ForestAddRepository = `
+	ForestAddRepository = `
 INSERT INTO soma.repositories (
             repository_id,
             repository_name,
@@ -55,6 +58,7 @@ AND NOT EXISTS (
 	FROM    soma.repositories
 	WHERE   repository_id   = $1::uuid
 	OR      repository_name = $2::varchar);`
+)
 
 func init() {
 	m[ForestAddRepository] = `ForestAddRepository`

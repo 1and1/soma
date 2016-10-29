@@ -8,7 +8,10 @@
 
 package stmt
 
-const TreeShowRepository = `
+const (
+	TreeStatements = ``
+
+	TreeShowRepository = `
 SELECT repository_name,
        repository_active,
        organizational_team_id,
@@ -18,7 +21,7 @@ SELECT repository_name,
 FROM   soma.repositories
 WHERE  repository_id = $1::uuid;`
 
-const TreeShowBucket = `
+	TreeShowBucket = `
 SELECT bucket_name,
 	   bucket_frozen,
 	   bucket_deleted,
@@ -30,7 +33,7 @@ SELECT bucket_name,
 FROM   soma.buckets
 WHERE  bucket_id = $1::uuid;`
 
-const TreeShowGroup = `
+	TreeShowGroup = `
 SELECT sg.bucket_id,
        sg.group_name,
 	   sg.object_state,
@@ -40,7 +43,7 @@ SELECT sg.bucket_id,
 FROM   soma.groups sg
 WHERE  sg.group_id = $1::uuid;`
 
-const TreeShowCluster = `
+	TreeShowCluster = `
 SELECT sc.cluster_name,
        sc.bucket_id,
 	   sc.object_state,
@@ -50,7 +53,7 @@ SELECT sc.cluster_name,
 FROM   soma.clusters sc
 WHERE  sc.cluster_id = $1::uuid;`
 
-const TreeShowNode = `
+	TreeShowNode = `
 SELECT sn.node_asset_id,
        sn.node_name,
        sn.organizational_team_id,
@@ -70,26 +73,26 @@ JOIN   soma.buckets sb
   ON   snba.bucket_id = sb.bucket_id
 WHERE  sn.node_id = $1::uuid;`
 
-//
-//
-const TreeBucketsInRepository = `
+	//
+	//
+	TreeBucketsInRepository = `
 SELECT bucket_id
 FROM   soma.buckets
 WHERE  repository_id = $1::uuid;`
 
-const TreeGroupsInBucket = `
+	TreeGroupsInBucket = `
 SELECT group_id
 FROM   soma.groups
 WHERE  bucket_id = $1::uuid
 AND    object_state = 'standalone';`
 
-const TreeClustersInBucket = `
+	TreeClustersInBucket = `
 SELECT cluster_id
 FROM   soma.clusters
 WHERE  bucket_id = $1::uuid
 AND    object_state = 'standalone';`
 
-const TreeNodesInBucket = `
+	TreeNodesInBucket = `
 SELECT snba.node_id
 FROM   soma.node_bucket_assignment snba
 JOIN   soma.nodes sn
@@ -97,29 +100,30 @@ JOIN   soma.nodes sn
 WHERE  snba.bucket_id = $1::uuid
   AND  sn.object_state = 'standalone';`
 
-// groupsingroup
-const TreeGroupsInGroup = `
+	// groupsingroup
+	TreeGroupsInGroup = `
 SELECT sgmg.child_group_id
 FROM   soma.group_membership_groups sgmg
 WHERE  sgmg.group_id = $1::uuid;`
 
-// clustersingroup
-const TreeClustersInGroup = `
+	// clustersingroup
+	TreeClustersInGroup = `
 SELECT sgmc.child_cluster_id
 FROM   soma.group_membership_clusters sgmc
 WHERE  sgmc.group_id = $1::uuid;`
 
-// nodesingroup
-const TreeNodesInGroup = `
+	// nodesingroup
+	TreeNodesInGroup = `
 SELECT sgmn.child_node_id
 FROM   soma.group_membership_nodes sgmn
 WHERE  sgmn.group_id = $1::uuid;`
 
-// nodesincluster
-const TreeNodesInCluster = `
+	// nodesincluster
+	TreeNodesInCluster = `
 SELECT scm.node_id
 FROM   soma.cluster_membership scm
 WHERE  scm.cluster_id = $1::uuid;`
+)
 
 func init() {
 	m[TreeBucketsInRepository] = `TreeBucketsInRepository`

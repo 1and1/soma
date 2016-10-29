@@ -8,7 +8,10 @@
 
 package stmt
 
-const ListAllCapabilities = `
+const (
+	CapabilityStatements = ``
+
+	ListAllCapabilities = `
 SELECT smc.capability_id,
        smc.capability_monitoring,
        smc.capability_metric,
@@ -18,7 +21,7 @@ FROM   soma.monitoring_capabilities smc
 JOIN   soma.monitoring_systems sms
   ON   smc.capability_monitoring = sms.monitoring_id;`
 
-const ListScopedCapabilities = `
+	ListScopedCapabilities = `
 WITH sysid AS (
     SELECT sms.monitoring_id
     FROM   inventory.users iu
@@ -43,7 +46,7 @@ JOIN   soma.monitoring_systems sms
   ON   smc.capability_monitoring = sms.monitoring_id
 WHERE  smc.capability_monitoring IN (SELECT monitoring_id FROM sysid);`
 
-const ShowCapability = `
+	ShowCapability = `
 SELECT smc.capability_id,
        smc.capability_monitoring,
        smc.capability_metric,
@@ -55,12 +58,12 @@ JOIN   soma.monitoring_systems sms
 ON     smc.capability_monitoring = sms.monitoring_id
 WHERE  smc.capability_id = $1::uuid;`
 
-const CapabilityThresholds = `
+	CapabilityThresholds = `
 SELECT threshold_amount
 FROM   soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`
 
-const AddCapability = `
+	AddCapability = `
 INSERT INTO soma.monitoring_capabilities (
             capability_id,
             capability_monitoring,
@@ -76,9 +79,10 @@ WHERE    NOT EXISTS (
             AND capability_metric     = $3::varchar
             AND capability_view       = $4::varchar));`
 
-const DelCapability = `
+	DelCapability = `
 DELETE FROM soma.monitoring_capabilities
 WHERE  capability_id = $1::uuid;`
+)
 
 func init() {
 	m[AddCapability] = `AddCapability`

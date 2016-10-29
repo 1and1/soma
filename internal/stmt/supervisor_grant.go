@@ -8,7 +8,10 @@
 
 package stmt
 
-const GrantGlobalOrSystemToUser = `
+const (
+	SupervisorGrantStatements = ``
+
+	GrantGlobalOrSystemToUser = `
 INSERT INTO soma.authorizations_global (
     grant_id,
     user_id,
@@ -24,17 +27,17 @@ VALUES (
     $5::uuid
 );`
 
-const RevokeGlobalOrSystemFromUser = `
+	RevokeGlobalOrSystemFromUser = `
 DELETE FROM soma.authorizations_global
 WHERE grant_id = $1::uuid;`
 
-const LoadGlobalOrSystemUserGrants = `
+	LoadGlobalOrSystemUserGrants = `
 SELECT grant_id,
        user_id,
        permission_id
 FROM   soma.authorizations_global;`
 
-const GrantLimitedRepoToUser = `
+	GrantLimitedRepoToUser = `
 INSERT INTO soma.authorizations_repository (
 	grant_id,
 	user_id,
@@ -52,11 +55,11 @@ VALUES (
 	$6::uuid
 );`
 
-const RevokeLimitedRepoFromUser = `
+	RevokeLimitedRepoFromUser = `
 DELETE FROM soma.authorizations_repository
 WHERE grant_id = $1::uuid;`
 
-const SearchGlobalSystemGrant = `
+	SearchGlobalSystemGrant = `
 SELECT grant_id
 FROM   soma.authorizations_global
 WHERE  permission_id = $1::uuid
@@ -64,6 +67,7 @@ WHERE  permission_id = $1::uuid
   AND  (   admin_id = $3::uuid
         OR user_id  = $3::uuid
 		OR tool_id  = $3::uuid);`
+)
 
 func init() {
 	m[GrantGlobalOrSystemToUser] = `GrantGlobalOrSystemToUser`

@@ -8,13 +8,16 @@
 
 package stmt
 
-const ListNodes = `
+const (
+	NodeStatements = ``
+
+	ListNodes = `
 SELECT node_id,
        node_name
 FROM   soma.nodes
 WHERE  node_online;`
 
-const ShowNodes = `
+	ShowNodes = `
 SELECT node_id,
        node_asset_id,
        node_name,
@@ -26,7 +29,7 @@ SELECT node_id,
 FROM   soma.nodes
 WHERE  node_id = $1;`
 
-const ShowConfigNodes = `
+	ShowConfigNodes = `
 SELECT nodes.node_id,
        nodes.node_name,
        buckets.bucket_id,
@@ -38,12 +41,12 @@ JOIN   soma.buckets
   ON   node_bucket_assignment.bucket_id = buckets.bucket_id
 WHERE  nodes.node_id = $1;`
 
-const NodeBucketId = `
+	NodeBucketId = `
 SELECT snba.bucket_id
 FROM   soma.node_bucket_assignment snba
 WHERE  snba.node_id = $1;`
 
-const SyncNodes = `
+	SyncNodes = `
 SELECT node_id,
        node_asset_id,
        node_name,
@@ -53,7 +56,7 @@ SELECT node_id,
        node_deleted
 FROM   soma.nodes;`
 
-const NodeOncProps = `
+	NodeOncProps = `
 SELECT op.instance_id,
        op.source_instance_id,
        op.view,
@@ -64,7 +67,7 @@ JOIN   inventory.oncall_duty_teams iodt
   ON   op.oncall_duty_id = iodt.oncall_duty_id
 WHERE  op.node_id = $1::uuid;`
 
-const NodeSvcProps = `
+	NodeSvcProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -72,7 +75,7 @@ SELECT sp.instance_id,
 FROM   soma.node_service_properties sp
 WHERE  sp.node_id = $1::uuid;`
 
-const NodeSysProps = `
+	NodeSysProps = `
 SELECT sp.instance_id,
        sp.source_instance_id,
        sp.view,
@@ -81,7 +84,7 @@ SELECT sp.instance_id,
 FROM   soma.node_system_properties sp
 WHERE  sp.node_id = $1::uuid;`
 
-const NodeCstProps = `
+	NodeCstProps = `
 SELECT cp.instance_id,
        cp.source_instance_id,
        cp.view,
@@ -93,7 +96,7 @@ JOIN   soma.custom_properties scp
   ON   cp.custom_property_id = scp.custom_property_id
 WHERE  cp.node_id = $1::uuid;`
 
-const NodeSystemPropertyForDelete = `
+	NodeSystemPropertyForDelete = `
 SELECT snsp.view,
        snsp.system_property,
        snsp.value
@@ -101,7 +104,7 @@ FROM   soma.node_system_properties snsp
 WHERE  snsp.source_instance_id = $1::uuid
   AND  snsp.source_instance_id = snsp.instance_id;`
 
-const NodeCustomPropertyForDelete = `
+	NodeCustomPropertyForDelete = `
 SELECT sncp.view,
        sncp.custom_property_id,
        sncp.value,
@@ -113,7 +116,7 @@ JOIN   soma.custom_properties scp
 WHERE  sncp.source_instance_id = $1::uuid
   AND  sncp.source_instance_id = sncp.instance_id;`
 
-const NodeOncallPropertyForDelete = `
+	NodeOncallPropertyForDelete = `
 SELECT snop.view,
        snop.oncall_duty_id,
        iodt.oncall_duty_name,
@@ -124,7 +127,7 @@ JOIN   inventory.oncall_duty_teams iodt
 WHERE  snop.source_instance_id = $1::uuid
   AND  snop.source_instance_id = snop.instance_id;`
 
-const NodeServicePropertyForDelete = `
+	NodeServicePropertyForDelete = `
 SELECT snsp.view,
        snsp.service_property
 FROM   soma.node_service_properties snsp
@@ -134,7 +137,7 @@ JOIN   soma.team_service_properties stsp
 WHERE  snsp.source_instance_id = $1::uuid
   AND  snsp.source_instance_id = snsp.instance_id;`
 
-const NodeDetails = `
+	NodeDetails = `
 SELECT    sn.node_asset_id,
           sn.node_name,
           sn.organizational_team_id,
@@ -149,7 +152,7 @@ AND       sn.node_deleted = 'false'
 AND       snba.node_id IS NULL
 AND       sn.node_id = $1::uuid;`
 
-const NodeAdd = `
+	NodeAdd = `
 INSERT INTO soma.nodes (
             node_id,
             node_asset_id,
@@ -179,7 +182,7 @@ AND    NOT EXISTS (
          OR     (node_name = $3::varchar AND node_online)
        );`
 
-const NodeUpdate = `
+	NodeUpdate = `
 UPDATE soma.nodes
 SET    node_asset_id = $1::numeric,
        node_name = $2::varchar,
@@ -189,16 +192,17 @@ SET    node_asset_id = $1::numeric,
        node_deleted = $6::boolean
 WHERE  node_id = $7::uuid;`
 
-const NodeDel = `
+	NodeDel = `
 UPDATE soma.nodes
 SET    node_deleted = 'yes'
 WHERE  node_id = $1
 AND    node_deleted = 'no';`
 
-const NodePurge = `
+	NodePurge = `
 DELETE FROM soma.nodes
 WHERE       node_id = $1
 AND         node_deleted;`
+)
 
 func init() {
 	m[ListNodes] = `ListNodes`
