@@ -7,632 +7,138 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupRepositoryCustomProperties(stMap map[string]*sql.Stmt) {
+func (tk *treeKeeper) startupCustomProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
 
 	var (
-		err                                                                            error
-		instanceId, srcInstanceId, repositoryId, view, customId, customProperty, value string
-		inInstanceId, inObjectType, inObjId                                            string
-		inheritance, childrenOnly                                                      bool
-		rows, instance_rows                                                            *sql.Rows
+		err                                                        error
+		instanceId, srcInstanceId, objectId, view, customId        string
+		inInstanceId, inObjectType, inObjId, customProperty, value string
+		inheritance, childrenOnly                                  bool
+		rows, instance_rows                                        *sql.Rows
 	)
 
-	tk.startLog.Printf("TK[%s]: loading repository custom properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropRepoCustom`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
+	for loopType, loopStmt := range map[string]string{
+		`repository`: `LoadPropRepoCustom`,
+		`bucket`:     `LoadPropBuckCustom`,
+		`group`:      `LoadPropGrpCustom`,
+		`cluster`:    `LoadPropClrCustom`,
+		`node`:       `LoadPropNodeCustom`,
+	} {
 
-customloop:
-	// load all custom properties defined directly on repository objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&repositoryId,
-			&view,
-			&customId,
-			&inheritance,
-			&childrenOnly,
-			&value,
-			&customProperty,
-		)
+		tk.startLog.Printf("TK[%s]: loading %s custom properties\n", tk.repoName, loopType)
+		rows, err = stMap[loopStmt].Query(tk.repoId)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				break customloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading %s custom properties: %s", tk.repoName, loopType, err.Error())
 			tk.broken = true
 			return
 		}
+		defer rows.Close()
 
-		// build the property
-		prop := tree.PropertyCustom{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Key:          customProperty,
-			Value:        value,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current repository custom property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
+	customloop:
+		// load all custom properties defined directly on objects
+		for rows.Next() {
+			err = rows.Scan(
+				&instanceId,
+				&srcInstanceId,
+				&objectId,
+				&view,
+				&customId,
+				&inheritance,
+				&childrenOnly,
+				&value,
+				&customProperty,
 			)
 			if err != nil {
 				if err == sql.ErrNoRows {
-					break inproploop
+					break customloop
 				}
 				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
+			// build the property
+			prop := tree.PropertyCustom{
+				Inheritance:  inheritance,
+				ChildrenOnly: childrenOnly,
+				View:         view,
+				Key:          customProperty,
+				Value:        value,
 			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
+			prop.Id, _ = uuid.FromString(instanceId)
+			prop.CustomId, _ = uuid.FromString(customId)
+			prop.Instances = make([]tree.PropertyInstance, 0)
 
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the repository and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `repository`,
-			ElementId:   repositoryId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
-	}
-}
-
-func (tk *treeKeeper) startupBucketCustomProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                        error
-		instanceId, srcInstanceId, bucketId, view, customId, customProperty, value string
-		inInstanceId, inObjectType, inObjId                                        string
-		inheritance, childrenOnly                                                  bool
-		rows, instance_rows                                                        *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading bucket custom properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropBuckCustom`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-customloop:
-	// load all custom properties defined directly on bucket objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&bucketId,
-			&view,
-			&customId,
-			&inheritance,
-			&childrenOnly,
-			&value,
-			&customProperty,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break customloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyCustom{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Key:          customProperty,
-			Value:        value,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current bucket custom property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
+			instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
+				tk.repoId,
+				srcInstanceId,
 			)
 			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				tk.startLog.Printf("TK[%s] Error loading %s custom properties: %s", tk.repoName, loopType, err.Error())
+				tk.broken = true
+				return
+			}
+			defer instance_rows.Close()
+
+		inproploop:
+			// load all all ids for properties that were inherited from the
+			// current object custom property so the IDs can be set correctly
+			for instance_rows.Next() {
+				err = instance_rows.Scan(
+					&inInstanceId,
+					&inObjectType,
+					&inObjId,
+				)
+				if err != nil {
+					if err == sql.ErrNoRows {
+						break inproploop
+					}
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
 
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the bucket and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `bucket`,
-			ElementId:   bucketId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
-	}
-}
-
-func (tk *treeKeeper) startupGroupCustomProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                       error
-		instanceId, srcInstanceId, groupId, view, customId, customProperty, value string
-		inInstanceId, inObjectType, inObjId                                       string
-		inheritance, childrenOnly                                                 bool
-		rows, instance_rows                                                       *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading group custom properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropGrpCustom`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-customloop:
-	// load all system properties defined directly on group objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&groupId,
-			&view,
-			&customId,
-			&inheritance,
-			&childrenOnly,
-			&value,
-			&customProperty,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break customloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyCustom{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Key:          customProperty,
-			Value:        value,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current group system property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				var propObjectId, propInstanceId uuid.UUID
+				if propObjectId, err = uuid.FromString(inObjId); err != nil {
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the group and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: groupId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
-	}
-}
-
-func (tk *treeKeeper) startupClusterCustomProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                         error
-		instanceId, srcInstanceId, clusterId, view, customId, customProperty, value string
-		inInstanceId, inObjectType, inObjId                                         string
-		inheritance, childrenOnly                                                   bool
-		rows, instance_rows                                                         *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading cluster custom properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropClrCustom`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-customloop:
-	// load all custom properties defined directly on cluster objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&clusterId,
-			&view,
-			&customId,
-			&inheritance,
-			&childrenOnly,
-			&value,
-			&customProperty,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break customloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyCustom{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Key:          customProperty,
-			Value:        value,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current cluster custom property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the cluster and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `cluster`,
-			ElementId:   clusterId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
-	}
-}
-
-func (tk *treeKeeper) startupNodeCustomProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                      error
-		instanceId, srcInstanceId, nodeId, view, customId, customProperty, value string
-		inInstanceId, inObjectType, inObjId                                      string
-		inheritance, childrenOnly                                                bool
-		rows, instance_rows                                                      *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading node custom properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropNodeCustom`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading node custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-customloop:
-	// load all custom properties defined directly on node objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&nodeId,
-			&view,
-			&customId,
-			&inheritance,
-			&childrenOnly,
-			&value,
-			&customProperty,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break customloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyCustom{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Key:          customProperty,
-			Value:        value,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.CustomId, _ = uuid.FromString(customId)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading node custom properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current node custom property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
+					continue inproploop
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
+				if inObjectType == "MAGIC_NO_RESULT_VALUE" {
+					continue inproploop
+				}
+
+				pi := tree.PropertyInstance{
+					ObjectId:   propObjectId,
+					ObjectType: inObjectType,
+					InstanceId: propInstanceId,
+				}
+				prop.Instances = append(prop.Instances, pi)
 			}
 
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
+			// lookup the object and set the prepared property
+			tk.tree.Find(tree.FindRequest{
+				ElementType: loopType,
+				ElementId:   objectId,
+			}, true).SetProperty(&prop)
 
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
+			// throw away all generated actions, we do this for every
+			// property since with inheritance this can create a lot of
+			// actions
+			tk.drain(`action`)
+			tk.drain(`error`)
 		}
-
-		// lookup the node and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementType: `node`,
-			ElementId:   nodeId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		tk.drain(`action`)
-		tk.drain(`error`)
 	}
 }
 

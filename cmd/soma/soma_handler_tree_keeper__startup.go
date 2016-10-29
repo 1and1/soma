@@ -51,11 +51,7 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach custom properties
-	tk.startupRepositoryCustomProperties(stMap)
-	tk.startupBucketCustomProperties(stMap)
-	tk.startupGroupCustomProperties(stMap)
-	tk.startupClusterCustomProperties(stMap)
-	tk.startupNodeCustomProperties(stMap)
+	tk.startupCustomProperties(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
