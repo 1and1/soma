@@ -897,14 +897,14 @@ WHERE  check_instance_config_id = $3::uuid;`
 
 	TxDeployDetailsCheckInstance = `
 SELECT scic.version,
-	   scic.check_instance_id,
-	   scic.constraint_hash,
-	   scic.constraint_val_hash,
-	   scic.instance_service,
-	   scic.instance_service_cfg_hash,
-	   scic.instance_service_cfg,
-	   sci.check_id,
-	   sci.check_configuration_id
+       scic.check_instance_id,
+       scic.constraint_hash,
+       scic.constraint_val_hash,
+       scic.instance_service,
+       scic.instance_service_cfg_hash,
+       scic.instance_service_cfg,
+       sci.check_id,
+       sci.check_configuration_id
 FROM   soma.check_instance_configurations scic
 JOIN   soma.check_instances sci
 ON     scic.check_instance_id = sci.check_instance_id
@@ -912,14 +912,14 @@ WHERE  scic.check_instance_config_id = $1::uuid;`
 
 	TxDeployDetailsCheck = `
 SELECT sc.repository_id,
-	   sc.source_check_id,
-	   sc.source_object_type,
-	   sc.source_object_id,
-	   sc.capability_id,
-	   sc.object_id,
-	   sc.object_type,
-	   scc.inheritance_enabled,
-	   scc.children_only
+       sc.source_check_id,
+       sc.source_object_type,
+       sc.source_object_id,
+       sc.capability_id,
+       sc.object_id,
+       sc.object_type,
+       scc.inheritance_enabled,
+       scc.children_only
 FROM   soma.checks sc
 JOIN   soma.check_configurations scc
 ON     sc.configuration_id = scc.configuration_id
@@ -928,18 +928,18 @@ WHERE  sc.check_id = $1::uuid;`
 	TxDeployDetailsCheckConfig = `
 SELECT configuration_name,
        interval,
-	   configuration_active,
-	   enabled,
-	   external_id
+       configuration_active,
+       enabled,
+       external_id
 FROM   soma.check_configurations
 WHERE  configuration_id = $1::uuid;`
 
 	TxDeployDetailsCheckConfigThreshold = `
 SELECT sct.predicate,
-	   sct.threshold,
-	   sct.notification_level,
-	   snl.level_shortname,
-	   snl.level_numeric
+       sct.threshold,
+       sct.notification_level,
+       snl.level_shortname,
+       snl.level_numeric
 FROM   soma.configuration_thresholds sct
 JOIN   soma.notification_levels snl
 ON     sct.notification_level = snl.level_name
@@ -948,16 +948,16 @@ WHERE  sct.configuration_id = $1::uuid;`
 	TxDeployDetailsCapabilityMonitoringMetric = `
 SELECT smc.capability_metric,
        smc.capability_monitoring,
-	   smc.capability_view,
-	   smc.threshold_amount,
-	   sms.monitoring_name,
-	   sms.monitoring_system_mode,
-	   sms.monitoring_contact,
-	   sms.monitoring_owner_team,
-	   sms.monitoring_callback_uri,
-	   sm.metric_unit,
-	   sm.description,
-	   smu.metric_unit_long_name
+       smc.capability_view,
+       smc.threshold_amount,
+       sms.monitoring_name,
+       sms.monitoring_system_mode,
+       sms.monitoring_contact,
+       sms.monitoring_owner_team,
+       sms.monitoring_callback_uri,
+       sm.metric_unit,
+       sm.description,
+       smu.metric_unit_long_name
 FROM   soma.monitoring_capabilities smc
 JOIN   soma.monitoring_systems sms
 ON     smc.capability_monitoring = sms.monitoring_id
@@ -975,12 +975,12 @@ WHERE  metric = $1::varchar;`
 
 	TxDeployDetailsGroup = `
 SELECT sg.bucket_id,
-	   sg.group_name,
-	   sg.object_state,
-	   sg.organizational_team_id,
-	   sb.bucket_name,
-	   sb.environment,
-	   sr.repository_name
+       sg.group_name,
+       sg.object_state,
+       sg.organizational_team_id,
+       sb.bucket_name,
+       sb.environment,
+       sr.repository_name
 FROM   soma.groups sg
 JOIN   soma.buckets sb
 ON     sg.bucket_id = sb.bucket_id
@@ -991,11 +991,11 @@ WHERE  sg.group_id = $1::uuid;`
 	TxDeployDetailsCluster = `
 SELECT sc.cluster_name,
        sc.bucket_id,
-	   sc.object_state,
-	   sc.organizational_team_id,
-	   sb.bucket_name,
-	   sb.environment,
-	   sr.repository_name
+       sc.object_state,
+       sc.organizational_team_id,
+       sb.bucket_name,
+       sb.environment,
+       sr.repository_name
 FROM   soma.clusters sc
 JOIN   soma.buckets sb
 ON     sc.bucket_id = sb.bucket_id
@@ -1006,20 +1006,20 @@ WHERE  sc.cluster_id = $1::uuid;`
 	TxDeployDetailsNode = `
 SELECT sn.node_asset_id,
        sn.node_name,
-	   sn.organizational_team_id,
-	   sn.server_id,
-	   sn.object_state,
-	   sn.node_online,
-	   sn.node_deleted,
-	   sb.bucket_name,
-	   sb.environment,
-	   sr.repository_name,
-	   ins.server_asset_id,
-	   ins.server_datacenter_name,
-	   ins.server_datacenter_location,
-	   ins.server_name,
-	   ins.server_online,
-	   ins.server_deleted
+       sn.organizational_team_id,
+       sn.server_id,
+       sn.object_state,
+       sn.node_online,
+       sn.node_deleted,
+       sb.bucket_name,
+       sb.environment,
+       sr.repository_name,
+       ins.server_asset_id,
+       ins.server_datacenter_name,
+       ins.server_datacenter_location,
+       ins.server_name,
+       ins.server_online,
+       ins.server_deleted
 FROM  soma.nodes sn
 JOIN  soma.node_bucket_assignment snba
 ON    sn.node_id = snba.node_id
@@ -1050,7 +1050,7 @@ AND    snop.view = $2::varchar;`
 	TxDeployDetailsClusterOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
-	   iodt.oncall_duty_phone_number
+       iodt.oncall_duty_phone_number
 FROM   soma.cluster_oncall_properties scop
 JOIN   inventory.oncall_duty_teams iodt
 ON     scop.oncall_duty_id = iodt.oncall_duty_id
@@ -1060,7 +1060,7 @@ AND    (scop.view = $2::varchar OR scop.view = 'any');`
 	TxDeployDetailsGroupOncall = `
 SELECT iodt.oncall_duty_id,
        iodt.oncall_duty_name,
-	   iodt.oncall_duty_phone_number
+       iodt.oncall_duty_phone_number
 FROM   soma.group_oncall_properties sgop
 JOIN   inventory.oncall_duty_teams iodt
 ON     sgop.oncall_duty_id = iodt.oncall_duty_id
@@ -1116,7 +1116,7 @@ AND    (view = $2::varchar OR view = 'any');`
 	TxDeployDetailClusterCustProp = `
 SELECT sccp.custom_property_id,
        scp.custom_property,
-	   sccp.value
+       sccp.value
 FROM   soma.cluster_custom_properties sccp
 JOIN   soma.custom_properties scp
 ON     sccp.custom_property_id = scp.custom_property_id
@@ -1134,7 +1134,7 @@ AND    (view = $2::varchar OR view = 'any');`
 	TxDeployDetailNodeCustProp = `
 SELECT sncp.custom_property_id,
        scp.custom_property,
-	   sncp.value
+       sncp.value
 FROM   soma.node_custom_properties sncp
 JOIN   soma.custom_properties scp
 ON     sncp.custom_property_id = scp.custom_property_id
