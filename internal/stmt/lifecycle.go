@@ -39,7 +39,8 @@ WHERE   check_instance_id = $3::uuid;`
 UPDATE  soma.check_instance_configurations
 SET     status = $1::varchar,
         next_status = $2::varchar,
-        awaiting_deletion = $3::boolean
+        awaiting_deletion = $3::boolean,
+        status_last_updated_at = NOW()::timestamptz
 WHERE   check_instance_config_id = $4::uuid;`
 
 	LifecycleDeleteDependency = `

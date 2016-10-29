@@ -891,7 +891,8 @@ WHERE  scic.status = 'awaiting_computation'
 UPDATE soma.check_instance_configurations
 SET    status = 'computed',
        deployment_details = $1::jsonb,
-	   monitoring_id = $2::uuid
+       monitoring_id = $2::uuid,
+       status_last_updated_at = NOW()::timestamptz
 WHERE  check_instance_config_id = $3::uuid;`
 
 	TxDeployDetailsCheckInstance = `
