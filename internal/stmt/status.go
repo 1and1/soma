@@ -1,4 +1,5 @@
 /*-
+ * Copyright (c) 2016, 1&1 Internet SE
  * Copyright (c) 2016, Jörg Pernfuß <joerg.pernfuss@1und1.de>
  * All rights reserved
  *
