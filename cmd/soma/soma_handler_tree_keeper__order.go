@@ -34,10 +34,6 @@ deployments:
 			previousDeploymentDetailsJSON string
 			noPrevious                    bool
 			tx                            *sql.Tx
-			txUpdateStatus                *sql.Stmt
-			txUpdateInstance              *sql.Stmt
-			txUpdateExisting              *sql.Stmt
-			txDependency                  *sql.Stmt
 		)
 		err = computed.Scan(
 			&chkInstanceId,
@@ -70,29 +66,26 @@ deployments:
 		 */
 		if noPrevious {
 			// open multi statement transaction
+			txMap := map[string]*sql.Stmt{}
 			if tx, err = tk.conn.Begin(); err != nil {
 				tk.log.Println("TreeKeeper/Order sql.Begin: ", err)
 				break deployments
 			}
-			defer tx.Rollback()
 
 			// prepare statements within transaction
-			if txUpdateStatus, err = tx.Prepare(stmt.TreekeeperUpdateConfigStatus); err != nil {
-				tk.log.Printf("Failed to prepare %s: %s\n",
-					`tkStmtUpdateConfigStatus`, err)
-				break deployments
+			for name, statement := range map[string]string{
+				`UpdateStatus`:   stmt.TreekeeperUpdateConfigStatus,
+				`UpdateInstance`: stmt.TreekeeperUpdateCheckInstance,
+			} {
+				if txMap[name], err = tx.Prepare(statement); err != nil {
+					tk.log.Println(`treekeeper/order/tx`, err, stmt.Name(statement))
+					tx.Rollback()
+					break deployments
+				}
 			}
-			defer txUpdateStatus.Close()
-
-			if txUpdateInstance, err = tx.Prepare(stmt.TreekeeperUpdateCheckInstance); err != nil {
-				tk.log.Printf("Failed to prepare %s: %s\n",
-					`tkStmtUpdateCheckInstance`, err)
-				break deployments
-			}
-			defer txUpdateInstance.Close()
 
 			//
-			if _, err = txUpdateStatus.Exec(
+			if _, err = txMap[`UpdateStatus`].Exec(
 				"awaiting_rollout",
 				"rollout_in_progress",
 				currentChkInstanceConfigId,
@@ -100,7 +93,7 @@ deployments:
 				goto bailout_noprev
 			}
 
-			if _, err = txUpdateInstance.Exec(
+			if _, err = txMap[`UpdateInstance`].Exec(
 				time.Now().UTC(),
 				true,
 				currentChkInstanceConfigId,
@@ -151,56 +144,40 @@ deployments:
 
 		// UPDATE config status
 		// open multi statement transaction
+		txMap := map[string]*sql.Stmt{}
 		if tx, err = tk.conn.Begin(); err != nil {
 			tk.log.Println("TreeKeeper/Order sql.Begin: ", err)
 			break deployments
 		}
-		defer tx.Rollback()
 
 		// prepare statements within transaction
-		if txUpdateStatus, err = tx.Prepare(stmt.TreekeeperUpdateConfigStatus); err != nil {
-			tk.log.Printf("Failed to prepare %s: %s\n",
-				`tkStmtUpdateConfigStatus`, err)
-			break deployments
+		for name, statement := range map[string]string{
+			`UpdateStatus`:   stmt.TreekeeperUpdateConfigStatus,
+			`UpdateExisting`: stmt.TreekeeperUpdateExistingCheckInstance,
+			`SetDependency`:  stmt.TreekeeperSetDependency,
+		} {
+			if txMap[name], err = tx.Prepare(statement); err != nil {
+				tk.log.Println(`treekeeper/order/tx`, err, stmt.Name(statement))
+				tx.Rollback()
+				break deployments
+			}
 		}
-		defer txUpdateStatus.Close()
 
-		if txUpdateInstance, err = tx.Prepare(stmt.TreekeeperUpdateCheckInstance); err != nil {
-			tk.log.Printf("Failed to prepare %s: %s\n",
-				`tkStmtUpdateCheckInstance`, err)
-			break deployments
-		}
-		defer txUpdateInstance.Close()
-
-		if txUpdateExisting, err = tx.Prepare(stmt.TreekeeperUpdateExistingCheckInstance); err != nil {
-			tk.log.Printf("Failed to prepare %s: %s\n",
-				`tkStmtUpdateExistingCheckInstance`, err)
-			break deployments
-		}
-		defer txUpdateExisting.Close()
-
-		if txDependency, err = tx.Prepare(stmt.TreekeeperSetDependency); err != nil {
-			tk.log.Printf("Failed to prepare %s: %s\n",
-				`tkStmtSetDependency`, err)
-			break deployments
-		}
-		defer txDependency.Close()
-
-		if _, err = txUpdateStatus.Exec(
+		if _, err = txMap[`UpdateStatus`].Exec(
 			"blocked",
 			"awaiting_rollout",
 			currentChkInstanceConfigId,
 		); err != nil {
 			goto bailout_withprev
 		}
-		if _, err = txUpdateExisting.Exec(
+		if _, err = txMap[`UpdateExisting`].Exec(
 			time.Now().UTC(),
 			true,
 			chkInstanceId,
 		); err != nil {
 			goto bailout_withprev
 		}
-		if _, err = txDependency.Exec(
+		if _, err = txMap[`SetDependency`].Exec(
 			currentChkInstanceConfigId,
 			previousChkInstanceConfigId,
 			"deprovisioned",
