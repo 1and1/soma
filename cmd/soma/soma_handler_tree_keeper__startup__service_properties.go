@@ -8,817 +8,180 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupRepositoryServiceProperties(stMap map[string]*sql.Stmt) {
+func (tk *treeKeeper) startupServiceProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
 
 	var (
-		err                                                                    error
-		instanceId, srcInstanceId, repositoryId, view, serviceProperty, teamId string
-		inInstanceId, inObjectType, inObjId, attrKey, attrValue                string
-		inheritance, childrenOnly                                              bool
-		rows, attribute_rows, instance_rows                                    *sql.Rows
+		err                                          error
+		instanceId, srcInstanceId, objectId, view    string
+		inInstanceId, inObjectType, inObjId, attrKey string
+		serviceProperty, teamId, attrValue           string
+		inheritance, childrenOnly                    bool
+		rows, attribute_rows, instance_rows          *sql.Rows
 	)
 
-	tk.startLog.Printf("TK[%s]: loading repository service properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropRepoService`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
+	for loopType, loopStmt := range map[string][2]string{
+		`repository`: [2]string{
+			`LoadPropRepoService`,
+			`LoadPropRepoSvcAttr`},
+		`bucket`: [2]string{
+			`LoadPropBuckService`,
+			`LoadPropBuckSvcAttr`},
+		`group`: [2]string{
+			`LoadPropGrpService`,
+			`LoadPropGrpSvcAttr`},
+		`cluster`: [2]string{
+			`LoadPropClrService`,
+			`LoadPropClrSvcAttr`},
+		`node`: [2]string{
+			`LoadPropNodeService`,
+			`LoadPropNodeSvcAttr`},
+	} {
 
-serviceloop:
-	// load all service properties defined directly on repository objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&repositoryId,
-			&view,
-			&serviceProperty,
-			&teamId,
-			&inheritance,
-			&childrenOnly,
-		)
+		tk.startLog.Printf("TK[%s]: loading %s service properties\n", tk.repoName, loopType)
+		rows, err = stMap[loopStmt[0]].Query(tk.repoId)
 		if err != nil {
-			if err == sql.ErrNoRows {
-				break serviceloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+			tk.startLog.Printf("TK[%s] Error loading %s service properties: %s", tk.repoName, loopType, err.Error())
 			tk.broken = true
 			return
 		}
+		defer rows.Close()
 
-		// build the property
-		prop := tree.PropertyService{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Service:      serviceProperty,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		attribute_rows, err = stMap[`LoadPropRepoSvcAttr`].Query(
-			teamId,
-			serviceProperty,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading repository service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer attribute_rows.Close()
-
-	attributeloop:
-		// load service attributes
-		for attribute_rows.Next() {
-			err = attribute_rows.Scan(
-				&attrKey,
-				&attrValue,
+	serviceloop:
+		// load all service properties defined directly on the object
+		for rows.Next() {
+			err = rows.Scan(
+				&instanceId,
+				&srcInstanceId,
+				&objectId,
+				&view,
+				&serviceProperty,
+				&teamId,
+				&inheritance,
+				&childrenOnly,
 			)
 			if err != nil {
 				if err == sql.ErrNoRows {
-					break attributeloop
+					break serviceloop
 				}
 				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
 				tk.broken = true
 				return
 			}
 
-			pa := proto.ServiceAttribute{
-				Name:  attrKey,
-				Value: attrValue,
+			// build the property
+			prop := tree.PropertyService{
+				Inheritance:  inheritance,
+				ChildrenOnly: childrenOnly,
+				View:         view,
+				Service:      serviceProperty,
 			}
-			prop.Attributes = append(prop.Attributes, pa)
-		}
+			prop.Id, _ = uuid.FromString(instanceId)
+			prop.Attributes = make([]proto.ServiceAttribute, 0)
+			prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading repository service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current repository service property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
+			attribute_rows, err = stMap[loopStmt[1]].Query(
+				teamId,
+				serviceProperty,
 			)
 			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				tk.startLog.Printf("TK[%s] Error loading %s service properties: %s", tk.repoName, loopType, err.Error())
+				tk.broken = true
+				return
+			}
+			defer attribute_rows.Close()
+
+		attributeloop:
+			// load service attributes
+			for attribute_rows.Next() {
+				err = attribute_rows.Scan(
+					&attrKey,
+					&attrValue,
+				)
+				if err != nil {
+					if err == sql.ErrNoRows {
+						break attributeloop
+					}
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
+
+				pa := proto.ServiceAttribute{
+					Name:  attrKey,
+					Value: attrValue,
+				}
+				prop.Attributes = append(prop.Attributes, pa)
 			}
 
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the repository and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: repositoryId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			//a := <-tk.actionChan
-			//log.Printf("%s -> %s\n", a.Action, a.Type)
-			<-tk.actionChan
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
-	}
-}
-
-func (tk *treeKeeper) startupBucketServiceProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                error
-		instanceId, srcInstanceId, bucketId, view, serviceProperty, teamId string
-		inInstanceId, inObjectType, inObjId, attrKey, attrValue            string
-		inheritance, childrenOnly                                          bool
-		rows, attribute_rows, instance_rows                                *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading bucket service properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropBuckService`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-serviceloop:
-	// load all service properties defined directly on bucket objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&bucketId,
-			&view,
-			&serviceProperty,
-			&teamId,
-			&inheritance,
-			&childrenOnly,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break serviceloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyService{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Service:      serviceProperty,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		attribute_rows, err = stMap[`LoadPropBuckSvcAttr`].Query(
-			teamId,
-			serviceProperty,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading bucket service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer attribute_rows.Close()
-
-	attributeloop:
-		// load service attributes
-		for attribute_rows.Next() {
-			err = attribute_rows.Scan(
-				&attrKey,
-				&attrValue,
+			instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
+				tk.repoId,
+				srcInstanceId,
 			)
 			if err != nil {
-				if err == sql.ErrNoRows {
-					break attributeloop
+				tk.startLog.Printf("TK[%s] Error loading %s service properties: %s", tk.repoName, loopType, err.Error())
+				tk.broken = true
+				return
+			}
+			defer instance_rows.Close()
+
+		inproploop:
+			// load all all ids for properties that were inherited from the
+			// current service property so the IDs can be set correctly
+			for instance_rows.Next() {
+				err = instance_rows.Scan(
+					&inInstanceId,
+					&inObjectType,
+					&inObjId,
+				)
+				if err != nil {
+					if err == sql.ErrNoRows {
+						break inproploop
+					}
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
 
-			pa := proto.ServiceAttribute{
-				Name:  attrKey,
-				Value: attrValue,
-			}
-			prop.Attributes = append(prop.Attributes, pa)
-		}
-
-		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading bucket service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current bucket service property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				var propObjectId, propInstanceId uuid.UUID
+				if propObjectId, err = uuid.FromString(inObjId); err != nil {
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the bucket and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: bucketId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			<-tk.actionChan
-			//a := <-tk.actionChan
-			//log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
-	}
-}
-
-func (tk *treeKeeper) startupGroupServiceProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                               error
-		instanceId, srcInstanceId, groupId, view, serviceProperty, teamId string
-		inInstanceId, inObjectType, inObjId, attrKey, attrValue           string
-		inheritance, childrenOnly                                         bool
-		rows, attribute_rows, instance_rows                               *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading group service properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropGrpService`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-serviceloop:
-	// load all service properties defined directly on group objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&groupId,
-			&view,
-			&serviceProperty,
-			&teamId,
-			&inheritance,
-			&childrenOnly,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break serviceloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyService{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Service:      serviceProperty,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		attribute_rows, err = stMap[`LoadPropGrpSvcAttr`].Query(
-			teamId,
-			serviceProperty,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer attribute_rows.Close()
-
-	attributeloop:
-		// load service attributes
-		for attribute_rows.Next() {
-			err = attribute_rows.Scan(
-				&attrKey,
-				&attrValue,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break attributeloop
+				if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
+					tk.broken = true
+					return
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			pa := proto.ServiceAttribute{
-				Name:  attrKey,
-				Value: attrValue,
-			}
-			prop.Attributes = append(prop.Attributes, pa)
-		}
-
-		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading group service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current group service property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
+					continue inproploop
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the group and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: groupId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			<-tk.actionChan
-			//a := <-tk.actionChan
-			//log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
-	}
-}
-
-func (tk *treeKeeper) startupClusterServiceProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                                 error
-		instanceId, srcInstanceId, clusterId, view, serviceProperty, teamId string
-		inInstanceId, inObjectType, inObjId, attrKey, attrValue             string
-		inheritance, childrenOnly                                           bool
-		rows, attribute_rows, instance_rows                                 *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading cluster service properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropClrService`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-serviceloop:
-	// load all service properties defined directly on cluster objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&clusterId,
-			&view,
-			&serviceProperty,
-			&teamId,
-			&inheritance,
-			&childrenOnly,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break serviceloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyService{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Service:      serviceProperty,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		attribute_rows, err = stMap[`LoadPropClrSvcAttr`].Query(
-			teamId,
-			serviceProperty,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading cluster service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer attribute_rows.Close()
-
-	attributeloop:
-		// load service attributes
-		for attribute_rows.Next() {
-			err = attribute_rows.Scan(
-				&attrKey,
-				&attrValue,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break attributeloop
+				if inObjectType == "MAGIC_NO_RESULT_VALUE" {
+					continue inproploop
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
 
-			pa := proto.ServiceAttribute{
-				Name:  attrKey,
-				Value: attrValue,
-			}
-			prop.Attributes = append(prop.Attributes, pa)
-		}
-
-		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading cluster service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current cluster service property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
+				pi := tree.PropertyInstance{
+					ObjectId:   propObjectId,
+					ObjectType: inObjectType,
+					InstanceId: propInstanceId,
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
+				prop.Instances = append(prop.Instances, pi)
 			}
 
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
+			// lookup the object and set the prepared property
+			tk.tree.Find(tree.FindRequest{
+				ElementType: loopType,
+				ElementId:   objectId,
+			}, true).SetProperty(&prop)
 
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the cluster and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: clusterId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			<-tk.actionChan
-			//a := <-tk.actionChan
-			//log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
-		}
-	}
-}
-
-func (tk *treeKeeper) startupNodeServiceProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
-		return
-	}
-
-	var (
-		err                                                              error
-		instanceId, srcInstanceId, nodeId, view, serviceProperty, teamId string
-		inInstanceId, inObjectType, inObjId, attrKey, attrValue          string
-		inheritance, childrenOnly                                        bool
-		rows, attribute_rows, instance_rows                              *sql.Rows
-	)
-
-	tk.startLog.Printf("TK[%s]: loading node service properties\n", tk.repoName)
-	rows, err = stMap[`LoadPropNodeService`].Query(tk.repoId)
-	if err != nil {
-		tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
-		tk.broken = true
-		return
-	}
-	defer rows.Close()
-
-serviceloop:
-	// load all service properties defined directly on node objects
-	for rows.Next() {
-		err = rows.Scan(
-			&instanceId,
-			&srcInstanceId,
-			&nodeId,
-			&view,
-			&serviceProperty,
-			&teamId,
-			&inheritance,
-			&childrenOnly,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				break serviceloop
-			}
-			tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-
-		// build the property
-		prop := tree.PropertyService{
-			Inheritance:  inheritance,
-			ChildrenOnly: childrenOnly,
-			View:         view,
-			Service:      serviceProperty,
-		}
-		prop.Id, _ = uuid.FromString(instanceId)
-		prop.Attributes = make([]proto.ServiceAttribute, 0)
-		prop.Instances = make([]tree.PropertyInstance, 0)
-
-		attribute_rows, err = stMap[`LoadPropNodeSvcAttr`].Query(
-			teamId,
-			serviceProperty,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer attribute_rows.Close()
-
-	attributeloop:
-		// load service attributes
-		for attribute_rows.Next() {
-			err = attribute_rows.Scan(
-				&attrKey,
-				&attrValue,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break attributeloop
-				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			pa := proto.ServiceAttribute{
-				Name:  attrKey,
-				Value: attrValue,
-			}
-			prop.Attributes = append(prop.Attributes, pa)
-		}
-
-		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
-			tk.repoId,
-			srcInstanceId,
-		)
-		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
-			tk.broken = true
-			return
-		}
-		defer instance_rows.Close()
-
-	inproploop:
-		// load all all ids for properties that were inherited from the
-		// current node service property so the IDs can be set correctly
-		for instance_rows.Next() {
-			err = instance_rows.Scan(
-				&inInstanceId,
-				&inObjectType,
-				&inObjId,
-			)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					break inproploop
-				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-
-			var propObjectId, propInstanceId uuid.UUID
-			if propObjectId, err = uuid.FromString(inObjId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
-				return
-			}
-			if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
-				continue inproploop
-			}
-			if inObjectType == "MAGIC_NO_RESULT_VALUE" {
-				continue inproploop
-			}
-
-			pi := tree.PropertyInstance{
-				ObjectId:   propObjectId,
-				ObjectType: inObjectType,
-				InstanceId: propInstanceId,
-			}
-			prop.Instances = append(prop.Instances, pi)
-		}
-
-		// lookup the node and set the prepared property
-		tk.tree.Find(tree.FindRequest{
-			ElementId: nodeId,
-		}, true).SetProperty(&prop)
-
-		// throw away all generated actions, we do this for every
-		// property since with inheritance this can create a lot of
-		// actions
-		for i := len(tk.actionChan); i > 0; i-- {
-			<-tk.actionChan
-			//a := <-tk.actionChan
-			//log.Printf("%s -> %s\n", a.Action, a.Type)
-		}
-		for i := len(tk.errChan); i > 0; i-- {
-			<-tk.errChan
+			// throw away all generated actions, we do this for every
+			// property since with inheritance this can create a lot of
+			// actions
+			tk.drain(`action`)
+			tk.drain(`error`)
 		}
 	}
 }
