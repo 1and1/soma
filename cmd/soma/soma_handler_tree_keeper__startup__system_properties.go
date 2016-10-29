@@ -134,12 +134,8 @@ func (tk *treeKeeper) startupSystemProperties(stMap map[string]*sql.Stmt) {
 			// throw away all generated actions, we do this for every
 			// property since with inheritance this can create a lot of
 			// actions
-			for i := len(tk.actionChan); i > 0; i-- {
-				<-tk.actionChan
-			}
-			for i := len(tk.errChan); i > 0; i-- {
-				<-tk.errChan
-			}
+			tk.drain(`action`)
+			tk.drain(`error`)
 		}
 	}
 }
