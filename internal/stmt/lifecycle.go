@@ -63,6 +63,32 @@ WHERE  (  scic.status = 'awaiting_rollout'
 AND    sms.monitoring_callback_uri IS NOT NULL
 AND    sci.update_available;`
 
+	LifecycleRescheduleDeployments = `
+SELECT scic.check_instance_id,
+       scic.monitoring_id,
+       sms.monitoring_callback_uri
+FROM   soma.check_instance_configurations scic
+JOIN   soma.monitoring_systems sms
+ON     scic.monitoring_id = sms.monitoring_id
+JOIN   soma.check_instances sci
+ON     scic.check_instance_id = sci.check_instance_id
+AND    scic.check_instance_config_id = sci.current_instance_config_id
+WHERE  (  scic.status = 'rollout_in_progress'
+       OR scic.status = 'awaiting_rollout'
+       OR scic.status = 'awaiting_deprovision'
+       OR scic.status = 'deprovision_in_progress' )
+AND    sms.monitoring_callback_uri IS NOT NULL
+AND    scic.status_last_updated_at IS NOT NULL
+AND    scic.notified_at IS NOT NULL
+AND    NOW() > (scic.status_last_updated_at + '5 minute'::interval)
+AND    NOW() > (scic.scic.notified_at + '5 minute'::interval)
+AND    NOT sci.update_available;`
+
+	LifecycleSetNotified = `
+UPDATE soma.check_instances
+SET    update_available = 'true'::boolean
+WHERE  check_instance_id = $1::uuid;`
+
 	LifecycleClearUpdateFlag = `
 UPDATE soma.check_instances
 SET    update_available = 'false'::boolean
@@ -160,6 +186,8 @@ func init() {
 	m[LifecycleDeprovisionConfiguration] = `LifecycleDeprovisionConfiguration`
 	m[LifecycleDeprovisionDeletedActive] = `LifecycleDeprovisionDeletedActive`
 	m[LifecycleReadyDeployments] = `LifecycleReadyDeployments`
+	m[LifecycleRescheduleDeployments] = `LifecycleRescheduleDeployments`
+	m[LifecycleSetNotified] = `LifecycleSetNotified`
 	m[LifecycleUpdateConfig] = `LifecycleUpdateConfig`
 	m[LifecycleUpdateInstance] = `LifecycleUpdateInstance`
 }

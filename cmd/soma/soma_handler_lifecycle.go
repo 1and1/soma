@@ -20,6 +20,8 @@ type lifeCycle struct {
 	stmt_delblk  *sql.Stmt
 	stmt_delact  *sql.Stmt
 	stmt_dead    *sql.Stmt
+	stmt_sched   *sql.Stmt
+	stmt_notify  *sql.Stmt
 	appLog       *log.Logger
 	reqLog       *log.Logger
 	errLog       *log.Logger
@@ -46,6 +48,8 @@ func (lc *lifeCycle) run() {
 		stmt.LifecycleBlockedConfigsForDeletedInstance: lc.stmt_delblk,
 		stmt.LifecycleDeprovisionDeletedActive:         lc.stmt_delact,
 		stmt.LifecycleDeadLockResolver:                 lc.stmt_dead,
+		stmt.LifecycleRescheduleDeployments:            lc.stmt_sched,
+		stmt.LifecycleSetNotified:                      lc.stmt_notify,
 	} {
 		if prepStmt, err = lc.conn.Prepare(statement); err != nil {
 			lc.errLog.Fatal(`lifecycle`, err, stmt.Name(statement))
@@ -310,32 +314,53 @@ func (lc *lifeCycle) poke() {
 		chkID, monitoringID, callback string
 	)
 
-	if chkIds, err = lc.stmt_poke.Query(); err != nil {
-		lc.errLog.Println(`lifeCycle.poke()`, err)
-	}
-	defer chkIds.Close()
+	for _, mode := range []string{`reschedule`, `poke`} {
+		switch mode {
+		case `reschedule`:
+			// reschedule picks up configurations that have been
+			// previously notified, have no update_available unset
+			// and have not moved along in > 5 minutes
+			if chkIds, err = lc.stmt_sched.Query(); err != nil {
+				lc.errLog.Println(`lifeCycle.reschedule()`, err)
+			}
+		case `poke`:
+			// poke picks up configurations that have update_available
+			// set and have not been notified before
+			if chkIds, err = lc.stmt_poke.Query(); err != nil {
+				lc.errLog.Println(`lifeCycle.poke()`, err)
+			}
+		}
 
-	for chkIds.Next() {
-		if err = chkIds.Scan(
-			&chkID,
-			&monitoringID,
-			&callback,
-		); err != nil {
+		for chkIds.Next() {
+			if err = chkIds.Scan(
+				&chkID,
+				&monitoringID,
+				&callback,
+			); err != nil {
+				lc.errLog.Println(err)
+				continue
+			}
+
+			// there is no goroutine running for the system yet
+			if _, ok := lc.pokers[monitoringID]; !ok {
+				lc.pokers[monitoringID] = make(chan string, 4096)
+				go lc.pokeSystem(callback, lc.pokers[monitoringID])
+			}
+
+			// if the channel is full we skip the checkid and pick it
+			// up on the next lifecycle tick, otherwise an unresponsive
+			// monitoring system could block the lifecycle system
+			if len(lc.pokers[monitoringID]) < 4095 {
+				lc.pokers[monitoringID] <- chkID
+				if mode == `poke` {
+					// notify has been triggered,
+					// clear update available flag
+					lc.stmt_clear.Exec(chkID)
+				}
+			}
+		}
+		if err = chkIds.Err(); err != nil {
 			lc.errLog.Println(err)
-			continue
-		}
-
-		// there is no goroutine running for the system yet
-		if _, ok := lc.pokers[monitoringID]; !ok {
-			lc.pokers[monitoringID] = make(chan string, 4096)
-			go lc.pokeSystem(callback, lc.pokers[monitoringID])
-		}
-
-		// if the channel is full we skip the checkid and pick it
-		// up on the next lifecycle tick, otherwise an unresponsive
-		// monitoring system could block the lifecycle system
-		if len(lc.pokers[monitoringID]) < 4095 {
-			lc.pokers[monitoringID] <- chkID
 		}
 	}
 }
@@ -368,7 +393,7 @@ func (lc *lifeCycle) pokeSystem(callback string, in chan string) {
 				continue
 			}
 			lc.appLog.Printf("Poked %s (%s)", callback, chkId)
-			lc.stmt_clear.Exec(chkId)
+			lc.stmt_notify.Exec(chkId)
 		}
 	}
 }
