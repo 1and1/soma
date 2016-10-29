@@ -38,11 +38,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach service properties
-	tk.startupRepositoryServiceProperties()
-	tk.startupBucketServiceProperties()
-	tk.startupGroupServiceProperties()
-	tk.startupClusterServiceProperties()
-	tk.startupNodeServiceProperties()
+	tk.startupRepositoryServiceProperties(stMap)
+	tk.startupBucketServiceProperties(stMap)
+	tk.startupGroupServiceProperties(stMap)
+	tk.startupClusterServiceProperties(stMap)
+	tk.startupNodeServiceProperties(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -51,11 +51,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach custom properties
-	tk.startupRepositoryCustomProperties()
-	tk.startupBucketCustomProperties()
-	tk.startupGroupCustomProperties()
-	tk.startupClusterCustomProperties()
-	tk.startupNodeCustomProperties()
+	tk.startupRepositoryCustomProperties(stMap)
+	tk.startupBucketCustomProperties(stMap)
+	tk.startupGroupCustomProperties(stMap)
+	tk.startupClusterCustomProperties(stMap)
+	tk.startupNodeCustomProperties(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -64,11 +64,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach oncall properties
-	tk.startupRepositoryOncallProperties()
-	tk.startupBucketOncallProperties()
-	tk.startupGroupOncallProperties()
-	tk.startupClusterOncallProperties()
-	tk.startupNodeOncallProperties()
+	tk.startupRepositoryOncallProperties(stMap)
+	tk.startupBucketOncallProperties(stMap)
+	tk.startupGroupOncallProperties(stMap)
+	tk.startupClusterOncallProperties(stMap)
+	tk.startupNodeOncallProperties(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -523,6 +523,29 @@ func (tk *treeKeeper) prepareStartupStatements() map[string]*sql.Stmt {
 		`LoadPropClrSystem`:      stmt.TkStartLoadClusterSysProp,
 		`LoadPropNodeSystem`:     stmt.TkStartLoadNodeSysProp,
 		`LoadPropSystemInstance`: stmt.TkStartLoadSystemPropInstances,
+		`LoadPropRepoCustom`:     stmt.TkStartLoadRepositoryCstProp,
+		`LoadPropBuckCustom`:     stmt.TkStartLoadBucketCstProp,
+		`LoadPropGrpCustom`:      stmt.TkStartLoadGroupCstProp,
+		`LoadPropClrCustom`:      stmt.TkStartLoadClusterCstProp,
+		`LoadPropNodeCustom`:     stmt.TkStartLoadNodeCstProp,
+		`LoadPropCustomInstance`: stmt.TkStartLoadCustomPropInstances,
+		`LoadPropRepoOncall`:     stmt.TkStartLoadRepoOncProp,
+		`LoadPropBuckOncall`:     stmt.TkStartLoadBucketOncProp,
+		`LoadPropGrpOncall`:      stmt.TkStartLoadGroupOncProp,
+		`LoadPropClrOncall`:      stmt.TkStartLoadClusterOncProp,
+		`LoadPropNodeOncall`:     stmt.TkStartLoadNodeOncProp,
+		`LoadPropOncallInstance`: stmt.TkStartLoadOncallPropInstances,
+		`LoadPropRepoService`:    stmt.TkStartLoadRepoSvcProp,
+		`LoadPropBuckService`:    stmt.TkStartLoadBucketSvcProp,
+		`LoadPropGrpService`:     stmt.TkStartLoadGroupSvcProp,
+		`LoadPropClrService`:     stmt.TkStartLoadClusterSvcProp,
+		`LoadPropNodeService`:    stmt.TkStartLoadNodeSvcProp,
+		`LoadPropRepoSvcAttr`:    stmt.TkStartLoadRepoSvcAttr,
+		`LoadPropBuckSvcAttr`:    stmt.TkStartLoadBucketSvcAttr,
+		`LoadPropGrpSvcAttr`:     stmt.TkStartLoadGroupSvcAttr,
+		`LoadPropClrSvcAttr`:     stmt.TkStartLoadClusterSvcAttr,
+		`LoadPropNodeSvcAttr`:    stmt.TkStartLoadNodeSvcAttr,
+		`LoadPropSvcInstance`:    stmt.TkStartLoadServicePropInstances,
 	} {
 		if stMap[name], err = tk.conn.Prepare(statement); err != nil {
 			tk.startLog.Println(`treekeeper startup`, err,

@@ -3,12 +3,11 @@ package main
 import (
 	"database/sql"
 
-	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupRepositoryOncallProperties() {
+func (tk *treeKeeper) startupRepositoryOncallProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -19,26 +18,10 @@ func (tk *treeKeeper) startupRepositoryOncallProperties() {
 		inInstanceId, inObjectType, inObjId                                               string
 		inheritance, childrenOnly                                                         bool
 		rows, instance_rows                                                               *sql.Rows
-		load_properties, load_instances                                                   *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepoOncProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-oncall-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-oncall-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading repository oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropRepoOncall`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading repository oncall properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -81,7 +64,7 @@ oncallloop:
 		prop.OncallId, _ = uuid.FromString(oncallId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropOncallInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -150,7 +133,7 @@ oncallloop:
 	}
 }
 
-func (tk *treeKeeper) startupBucketOncallProperties() {
+func (tk *treeKeeper) startupBucketOncallProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -161,26 +144,10 @@ func (tk *treeKeeper) startupBucketOncallProperties() {
 		inInstanceId, inObjectType, inObjId                                           string
 		inheritance, childrenOnly                                                     bool
 		rows, instance_rows                                                           *sql.Rows
-		load_properties, load_instances                                               *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketOncProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-oncall-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-oncall-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading bucket oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropBuckOncall`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading bucket oncall properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -223,7 +190,7 @@ oncallloop:
 		prop.OncallId, _ = uuid.FromString(oncallId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropOncallInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -292,7 +259,7 @@ oncallloop:
 	}
 }
 
-func (tk *treeKeeper) startupGroupOncallProperties() {
+func (tk *treeKeeper) startupGroupOncallProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -303,26 +270,10 @@ func (tk *treeKeeper) startupGroupOncallProperties() {
 		inInstanceId, inObjectType, inObjId                                          string
 		inheritance, childrenOnly                                                    bool
 		rows, instance_rows                                                          *sql.Rows
-		load_properties, load_instances                                              *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupOncProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-oncall-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-oncall-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading group oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropGrpOncall`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading group oncall properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -365,7 +316,7 @@ oncallloop:
 		prop.OncallId, _ = uuid.FromString(oncallId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropOncallInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -434,7 +385,7 @@ oncallloop:
 	}
 }
 
-func (tk *treeKeeper) startupClusterOncallProperties() {
+func (tk *treeKeeper) startupClusterOncallProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -445,26 +396,10 @@ func (tk *treeKeeper) startupClusterOncallProperties() {
 		inInstanceId, inObjectType, inObjId                                            string
 		inheritance, childrenOnly                                                      bool
 		rows, instance_rows                                                            *sql.Rows
-		load_properties, load_instances                                                *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterOncProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-oncall-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-oncall-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading cluster oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropClrOncall`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading cluster oncall properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -507,7 +442,7 @@ oncallloop:
 		prop.OncallId, _ = uuid.FromString(oncallId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropOncallInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -576,7 +511,7 @@ oncallloop:
 	}
 }
 
-func (tk *treeKeeper) startupNodeOncallProperties() {
+func (tk *treeKeeper) startupNodeOncallProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -587,26 +522,10 @@ func (tk *treeKeeper) startupNodeOncallProperties() {
 		inInstanceId, inObjectType, inObjId                                         string
 		inheritance, childrenOnly                                                   bool
 		rows, instance_rows                                                         *sql.Rows
-		load_properties, load_instances                                             *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeOncProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-oncall-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadOncallPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-oncall-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading node oncall properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropNodeOncall`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading group oncall properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -649,7 +568,7 @@ oncallloop:
 		prop.OncallId, _ = uuid.FromString(oncallId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropOncallInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)

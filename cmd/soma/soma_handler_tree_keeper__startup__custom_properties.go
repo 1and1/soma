@@ -3,12 +3,11 @@ package main
 import (
 	"database/sql"
 
-	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupRepositoryCustomProperties() {
+func (tk *treeKeeper) startupRepositoryCustomProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -19,27 +18,10 @@ func (tk *treeKeeper) startupRepositoryCustomProperties() {
 		inInstanceId, inObjectType, inObjId                                            string
 		inheritance, childrenOnly                                                      bool
 		rows, instance_rows                                                            *sql.Rows
-		load_properties, load_instances                                                *sql.Stmt
 	)
 
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepositoryCstProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-custom-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-custom-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
-
 	tk.startLog.Printf("TK[%s]: loading repository custom properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropRepoCustom`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -82,7 +64,7 @@ customloop:
 		prop.CustomId, _ = uuid.FromString(customId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -151,7 +133,7 @@ customloop:
 	}
 }
 
-func (tk *treeKeeper) startupBucketCustomProperties() {
+func (tk *treeKeeper) startupBucketCustomProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -162,27 +144,10 @@ func (tk *treeKeeper) startupBucketCustomProperties() {
 		inInstanceId, inObjectType, inObjId                                        string
 		inheritance, childrenOnly                                                  bool
 		rows, instance_rows                                                        *sql.Rows
-		load_properties, load_instances                                            *sql.Stmt
 	)
 
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketCstProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-custom-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-custom-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
-
 	tk.startLog.Printf("TK[%s]: loading bucket custom properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropBuckCustom`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -225,7 +190,7 @@ customloop:
 		prop.CustomId, _ = uuid.FromString(customId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -294,7 +259,7 @@ customloop:
 	}
 }
 
-func (tk *treeKeeper) startupGroupCustomProperties() {
+func (tk *treeKeeper) startupGroupCustomProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -305,26 +270,10 @@ func (tk *treeKeeper) startupGroupCustomProperties() {
 		inInstanceId, inObjectType, inObjId                                       string
 		inheritance, childrenOnly                                                 bool
 		rows, instance_rows                                                       *sql.Rows
-		load_properties, load_instances                                           *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupCstProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-custom-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-custom-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading group custom properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropGrpCustom`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -367,7 +316,7 @@ customloop:
 		prop.CustomId, _ = uuid.FromString(customId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -435,7 +384,7 @@ customloop:
 	}
 }
 
-func (tk *treeKeeper) startupClusterCustomProperties() {
+func (tk *treeKeeper) startupClusterCustomProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -446,26 +395,10 @@ func (tk *treeKeeper) startupClusterCustomProperties() {
 		inInstanceId, inObjectType, inObjId                                         string
 		inheritance, childrenOnly                                                   bool
 		rows, instance_rows                                                         *sql.Rows
-		load_properties, load_instances                                             *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterCstProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-custom-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-custom-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading cluster custom properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropClrCustom`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -508,7 +441,7 @@ customloop:
 		prop.CustomId, _ = uuid.FromString(customId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -577,7 +510,7 @@ customloop:
 	}
 }
 
-func (tk *treeKeeper) startupNodeCustomProperties() {
+func (tk *treeKeeper) startupNodeCustomProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -588,26 +521,10 @@ func (tk *treeKeeper) startupNodeCustomProperties() {
 		inInstanceId, inObjectType, inObjId                                      string
 		inheritance, childrenOnly                                                bool
 		rows, instance_rows                                                      *sql.Rows
-		load_properties, load_instances                                          *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeCstProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-custom-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadCustomPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-custom-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading node custom properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropNodeCustom`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading node custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -650,7 +567,7 @@ customloop:
 		prop.CustomId, _ = uuid.FromString(customId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)

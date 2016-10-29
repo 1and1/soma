@@ -3,13 +3,12 @@ package main
 import (
 	"database/sql"
 
-	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupRepositoryServiceProperties() {
+func (tk *treeKeeper) startupRepositoryServiceProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -20,34 +19,10 @@ func (tk *treeKeeper) startupRepositoryServiceProperties() {
 		inInstanceId, inObjectType, inObjId, attrKey, attrValue                string
 		inheritance, childrenOnly                                              bool
 		rows, attribute_rows, instance_rows                                    *sql.Rows
-		load_properties, load_attributes, load_instances                       *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepoSvcProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-service-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadRepoSvcAttr)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-service-property-attributes: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_attributes.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-service-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading repository service properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropRepoService`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading repository custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -88,7 +63,7 @@ serviceloop:
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		attribute_rows, err = load_attributes.Query(
+		attribute_rows, err = stMap[`LoadPropRepoSvcAttr`].Query(
 			teamId,
 			serviceProperty,
 		)
@@ -122,7 +97,7 @@ serviceloop:
 			prop.Attributes = append(prop.Attributes, pa)
 		}
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -196,7 +171,7 @@ serviceloop:
 	}
 }
 
-func (tk *treeKeeper) startupBucketServiceProperties() {
+func (tk *treeKeeper) startupBucketServiceProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -207,34 +182,10 @@ func (tk *treeKeeper) startupBucketServiceProperties() {
 		inInstanceId, inObjectType, inObjId, attrKey, attrValue            string
 		inheritance, childrenOnly                                          bool
 		rows, attribute_rows, instance_rows                                *sql.Rows
-		load_properties, load_attributes, load_instances                   *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketSvcProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-service-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadBucketSvcAttr)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-service-property-attributes: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_attributes.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-service-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading bucket service properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropBuckService`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading bucket custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -275,7 +226,7 @@ serviceloop:
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		attribute_rows, err = load_attributes.Query(
+		attribute_rows, err = stMap[`LoadPropBuckSvcAttr`].Query(
 			teamId,
 			serviceProperty,
 		)
@@ -309,7 +260,7 @@ serviceloop:
 			prop.Attributes = append(prop.Attributes, pa)
 		}
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -383,7 +334,7 @@ serviceloop:
 	}
 }
 
-func (tk *treeKeeper) startupGroupServiceProperties() {
+func (tk *treeKeeper) startupGroupServiceProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -394,34 +345,10 @@ func (tk *treeKeeper) startupGroupServiceProperties() {
 		inInstanceId, inObjectType, inObjId, attrKey, attrValue           string
 		inheritance, childrenOnly                                         bool
 		rows, attribute_rows, instance_rows                               *sql.Rows
-		load_properties, load_attributes, load_instances                  *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupSvcProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-service-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadGroupSvcAttr)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-service-property-attributes: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_attributes.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-service-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading group service properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropGrpService`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading group custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -462,7 +389,7 @@ serviceloop:
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		attribute_rows, err = load_attributes.Query(
+		attribute_rows, err = stMap[`LoadPropGrpSvcAttr`].Query(
 			teamId,
 			serviceProperty,
 		)
@@ -496,7 +423,7 @@ serviceloop:
 			prop.Attributes = append(prop.Attributes, pa)
 		}
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -570,7 +497,7 @@ serviceloop:
 	}
 }
 
-func (tk *treeKeeper) startupClusterServiceProperties() {
+func (tk *treeKeeper) startupClusterServiceProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -581,34 +508,10 @@ func (tk *treeKeeper) startupClusterServiceProperties() {
 		inInstanceId, inObjectType, inObjId, attrKey, attrValue             string
 		inheritance, childrenOnly                                           bool
 		rows, attribute_rows, instance_rows                                 *sql.Rows
-		load_properties, load_attributes, load_instances                    *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterSvcProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-service-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadClusterSvcAttr)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-service-property-attributes: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_attributes.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-service-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading cluster service properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropClrService`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading cluster custom properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -649,7 +552,7 @@ serviceloop:
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		attribute_rows, err = load_attributes.Query(
+		attribute_rows, err = stMap[`LoadPropClrSvcAttr`].Query(
 			teamId,
 			serviceProperty,
 		)
@@ -683,7 +586,7 @@ serviceloop:
 			prop.Attributes = append(prop.Attributes, pa)
 		}
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -757,7 +660,7 @@ serviceloop:
 	}
 }
 
-func (tk *treeKeeper) startupNodeServiceProperties() {
+func (tk *treeKeeper) startupNodeServiceProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -768,34 +671,10 @@ func (tk *treeKeeper) startupNodeServiceProperties() {
 		inInstanceId, inObjectType, inObjId, attrKey, attrValue          string
 		inheritance, childrenOnly                                        bool
 		rows, attribute_rows, instance_rows                              *sql.Rows
-		load_properties, load_attributes, load_instances                 *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeSvcProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-service-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_attributes, err = tk.conn.Prepare(stmt.TkStartLoadNodeSvcAttr)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-service-property-attributes: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_attributes.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadServicePropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-service-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading node service properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropNodeService`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading node service properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -836,7 +715,7 @@ serviceloop:
 		prop.Attributes = make([]proto.ServiceAttribute, 0)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		attribute_rows, err = load_attributes.Query(
+		attribute_rows, err = stMap[`LoadPropNodeSvcAttr`].Query(
 			teamId,
 			serviceProperty,
 		)
@@ -870,7 +749,7 @@ serviceloop:
 			prop.Attributes = append(prop.Attributes, pa)
 		}
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSvcInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
