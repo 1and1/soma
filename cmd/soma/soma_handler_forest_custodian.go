@@ -33,41 +33,18 @@ type forestCustodian struct {
 func (f *forestCustodian) run() {
 	var err error
 
-	if f.add_stmt, err = f.conn.Prepare(
-		stmt.ForestAddRepository,
-	); err != nil {
-		f.errLog.Fatal("repository/add: ", err)
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.ForestAddRepository:          f.add_stmt,
+		stmt.ForestLoadRepository:         f.load_stmt,
+		stmt.ForestRepoNameById:           f.name_stmt,
+		stmt.ForestRebuildDeleteChecks:    f.rbck_stmt,
+		stmt.ForestRebuildDeleteInstances: f.rbci_stmt,
+	} {
+		if prepStmt, err = f.conn.Prepare(statement); err != nil {
+			f.errLog.Fatal(`forestcustodian`, err, stmt.Name(statement))
+		}
+		defer prepStmt.Close()
 	}
-	defer f.add_stmt.Close()
-
-	if f.load_stmt, err = f.conn.Prepare(
-		stmt.ForestLoadRepository,
-	); err != nil {
-		f.errLog.Fatal("repository/load: ", err)
-	}
-	defer f.load_stmt.Close()
-
-	if f.name_stmt, err = f.conn.Prepare(
-		stmt.ForestRepoNameById,
-	); err != nil {
-		f.errLog.Fatal("forestCustodian/reponame-by-id: ", err)
-	}
-	defer f.name_stmt.Close()
-
-	if f.rbck_stmt, err = f.conn.Prepare(
-		stmt.ForestRebuildDeleteChecks,
-	); err != nil {
-		f.errLog.Fatal("forestCustodian/delete-checks-for-repo: ", err)
-	}
-	defer f.rbck_stmt.Close()
-
-	if f.rbci_stmt, err = f.conn.Prepare(
-		stmt.ForestRebuildDeleteInstances,
-	); err != nil {
-		f.errLog.Fatal("forestCustodian/delete-check-instances-for-repo: ",
-			err)
-	}
-	defer f.rbci_stmt.Close()
 
 	f.initialLoad()
 

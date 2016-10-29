@@ -10,12 +10,17 @@ import (
 
 func (tk *treeKeeper) startupLoad() {
 
-	tk.startupBuckets()
-	tk.startupGroups()
-	tk.startupGroupMemberGroups()
-	tk.startupGroupedClusters()
-	tk.startupClusters()
-	tk.startupNodes()
+	stMap := tk.prepareStartupStatements()
+	for n, _ := range stMap {
+		defer stMap[n].Close()
+	}
+
+	tk.startupBuckets(stMap)
+	tk.startupGroups(stMap)
+	tk.startupGroupMemberGroups(stMap)
+	tk.startupGroupedClusters(stMap)
+	tk.startupClusters(stMap)
+	tk.startupNodes(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -24,11 +29,11 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach system properties
-	tk.startupRepositorySystemProperties()
-	tk.startupBucketSystemProperties()
-	tk.startupGroupSystemProperties()
-	tk.startupClusterSystemProperties()
-	tk.startupNodeSystemProperties()
+	tk.startupRepositorySystemProperties(stMap)
+	tk.startupBucketSystemProperties(stMap)
+	tk.startupGroupSystemProperties(stMap)
+	tk.startupClusterSystemProperties(stMap)
+	tk.startupNodeSystemProperties(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -76,7 +81,7 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach checks
-	tk.startupChecks()
+	tk.startupChecks(stMap)
 
 	if !tk.rebuild && len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
@@ -94,7 +99,7 @@ func (tk *treeKeeper) startupLoad() {
 	// preload pending/unfinished jobs if not rebuilding the tree or
 	// running in observer mode
 	if !tk.rebuild && !SomaCfg.Observer {
-		tk.startupJobs()
+		tk.startupJobs(stMap)
 	}
 
 	if !tk.rebuild && len(tk.actionChan) > 0 {
@@ -102,13 +107,9 @@ func (tk *treeKeeper) startupLoad() {
 		tk.broken = true
 		return
 	}
-
-	// XXX DEBUG: enable/disable dumping JSON of the entire tree after startup
-	//b, _ := json.Marshal(tk.tree)
-	//log.Println(string(b))
 }
 
-func (tk *treeKeeper) startupBuckets() {
+func (tk *treeKeeper) startupBuckets(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -118,18 +119,10 @@ func (tk *treeKeeper) startupBuckets() {
 		bucketId, bucketName, environment, teamId string
 		frozen, deleted                           bool
 		err                                       error
-		load_bucket                               *sql.Stmt
 	)
-	load_bucket, err = tk.conn.Prepare(stmt.TkStartLoadBuckets)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-buckets: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_bucket.Close()
 
 	tk.startLog.Printf("TK[%s]: loading buckets\n", tk.repoName)
-	rows, err = load_bucket.Query(tk.repoId)
+	rows, err = stMap[`LoadBucket`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading buckets: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -174,7 +167,7 @@ bucketloop:
 	}
 }
 
-func (tk *treeKeeper) startupGroups() {
+func (tk *treeKeeper) startupGroups(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -183,18 +176,10 @@ func (tk *treeKeeper) startupGroups() {
 		rows                                 *sql.Rows
 		groupId, groupName, bucketId, teamId string
 		err                                  error
-		load_group                           *sql.Stmt
 	)
-	load_group, err = tk.conn.Prepare(stmt.TkStartLoadGroups)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-groups: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_group.Close()
 
 	tk.startLog.Printf("TK[%s]: loading groups\n", tk.repoName)
-	rows, err = load_group.Query(tk.repoId)
+	rows, err = stMap[`LoadGroup`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading groups: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -232,7 +217,7 @@ grouploop:
 	}
 }
 
-func (tk *treeKeeper) startupGroupMemberGroups() {
+func (tk *treeKeeper) startupGroupMemberGroups(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -241,18 +226,10 @@ func (tk *treeKeeper) startupGroupMemberGroups() {
 		rows                  *sql.Rows
 		groupId, childGroupId string
 		err                   error
-		load_grp_mbr_grp      *sql.Stmt
 	)
-	load_grp_mbr_grp, err = tk.conn.Prepare(stmt.TkStartLoadGroupMemberGroups)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-member-groups: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_grp_mbr_grp.Close()
 
 	tk.startLog.Printf("TK[%s]: loading group-member-groups\n", tk.repoName)
-	rows, err = load_grp_mbr_grp.Query(tk.repoId)
+	rows, err = stMap[`LoadGroupMbrGroup`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading groups: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -288,7 +265,7 @@ memberloop:
 	tk.drain(`error`)
 }
 
-func (tk *treeKeeper) startupGroupedClusters() {
+func (tk *treeKeeper) startupGroupedClusters(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -297,18 +274,10 @@ func (tk *treeKeeper) startupGroupedClusters() {
 		err                                     error
 		rows                                    *sql.Rows
 		clusterId, clusterName, teamId, groupId string
-		load_grp_cluster                        *sql.Stmt
 	)
-	load_grp_cluster, err = tk.conn.Prepare(stmt.TkStartLoadGroupedClusters)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-grouped-clusters: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_grp_cluster.Close()
 
 	tk.startLog.Printf("TK[%s]: loading grouped-clusters\n", tk.repoName)
-	rows, err = load_grp_cluster.Query(tk.repoId)
+	rows, err = stMap[`LoadGroupMbrCluster`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -347,7 +316,7 @@ clusterloop:
 	tk.drain(`error`)
 }
 
-func (tk *treeKeeper) startupClusters() {
+func (tk *treeKeeper) startupClusters(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -356,18 +325,10 @@ func (tk *treeKeeper) startupClusters() {
 		err                                      error
 		rows                                     *sql.Rows
 		clusterId, clusterName, bucketId, teamId string
-		load_cluster                             *sql.Stmt
 	)
-	load_cluster, err = tk.conn.Prepare(stmt.TkStartLoadCluster)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-clusters: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_cluster.Close()
 
 	tk.startLog.Printf("TK[%s]: loading clusters\n", tk.repoName)
-	rows, err = load_cluster.Query(tk.repoId)
+	rows, err = stMap[`LoadCluster`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -406,7 +367,7 @@ clusterloop:
 	tk.drain(`error`)
 }
 
-func (tk *treeKeeper) startupNodes() {
+func (tk *treeKeeper) startupNodes(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -418,18 +379,10 @@ func (tk *treeKeeper) startupNodes() {
 		assetId                                      int
 		nodeOnline, nodeDeleted                      bool
 		clusterId, groupId                           sql.NullString
-		load_nodes                                   *sql.Stmt
 	)
-	load_nodes, err = tk.conn.Prepare(stmt.TkStartLoadNode)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-nodes: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_nodes.Close()
 
 	tk.startLog.Printf("TK[%s]: loading nodes\n", tk.repoName)
-	rows, err = load_nodes.Query(tk.repoId)
+	rows, err = stMap[`LoadNode`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading nodes: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -493,27 +446,19 @@ nodeloop:
 	tk.drain(`error`)
 }
 
-func (tk *treeKeeper) startupJobs() {
+func (tk *treeKeeper) startupJobs(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
 
 	var (
-		err       error
-		rows      *sql.Rows
-		job       string
-		load_jobs *sql.Stmt
+		err  error
+		rows *sql.Rows
+		job  string
 	)
-	load_jobs, err = tk.conn.Prepare(stmt.TkStartLoadJob)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-jobs: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_jobs.Close()
 
 	tk.startLog.Printf("TK[%s]: loading pending jobs\n", tk.repoName)
-	rows, err = load_jobs.Query(tk.repoId)
+	rows, err = stMap[`LoadJob`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading clusters: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -545,6 +490,52 @@ jobloop:
 		tk.input <- tr
 		tk.startLog.Printf("TK[%s] Loaded job %s (%s)\n", tk.repoName, tr.JobId, tr.Action)
 	}
+}
+
+func (tk *treeKeeper) prepareStartupStatements() map[string]*sql.Stmt {
+	var err error
+	stMap := map[string]*sql.Stmt{}
+
+	for name, statement := range map[string]string{
+		`LoadBucket`:             stmt.TkStartLoadBuckets,
+		`LoadGroup`:              stmt.TkStartLoadGroups,
+		`LoadGroupMbrGroup`:      stmt.TkStartLoadGroupMemberGroups,
+		`LoadGroupMbrCluster`:    stmt.TkStartLoadGroupedClusters,
+		`LoadCluster`:            stmt.TkStartLoadCluster,
+		`LoadNode`:               stmt.TkStartLoadNode,
+		`LoadJob`:                stmt.TkStartLoadJob,
+		`LoadChecks`:             stmt.TkStartLoadChecks,
+		`LoadItems`:              stmt.TkStartLoadInheritedChecks,
+		`LoadConfig`:             stmt.TkStartLoadCheckConfiguration,
+		`LoadAllConfigsForType`:  stmt.TkStartLoadAllCheckConfigurationsForType,
+		`LoadThreshold`:          stmt.TkStartLoadCheckThresholds,
+		`LoadCustomCstr`:         stmt.TkStartLoadCheckConstraintCustom,
+		`LoadNativeCstr`:         stmt.TkStartLoadCheckConstraintNative,
+		`LoadOncallCstr`:         stmt.TkStartLoadCheckConstraintOncall,
+		`LoadAttributeCstr`:      stmt.TkStartLoadCheckConstraintAttribute,
+		`LoadServiceCstr`:        stmt.TkStartLoadCheckConstraintService,
+		`LoadSystemCstr`:         stmt.TkStartLoadCheckConstraintSystem,
+		`LoadChecksForType`:      stmt.TkStartLoadChecksForType,
+		`LoadInstances`:          stmt.TkStartLoadCheckInstances,
+		`LoadInstanceCfg`:        stmt.TkStartLoadCheckInstanceConfiguration,
+		`LoadGroupState`:         stmt.TkStartLoadCheckGroupState,
+		`LoadGroupRelations`:     stmt.TkStartLoadCheckGroupRelations,
+		`CapabilityView`:         stmt.TreekeeperGetViewFromCapability,
+		`LoadPropRepoSystem`:     stmt.TkStartLoadRepoSysProp,
+		`LoadPropBuckSystem`:     stmt.TkStartLoadBucketSysProp,
+		`LoadPropGrpSystem`:      stmt.TkStartLoadGroupSysProp,
+		`LoadPropClrSystem`:      stmt.TkStartLoadClusterSysProp,
+		`LoadPropNodeSystem`:     stmt.TkStartLoadNodeSysProp,
+		`LoadPropSystemInstance`: stmt.TkStartLoadSystemPropInstances,
+	} {
+		if stMap[name], err = tk.conn.Prepare(statement); err != nil {
+			tk.startLog.Println(`treekeeper startup`, err,
+				stmt.Name(statement))
+			tk.broken = true
+			return map[string]*sql.Stmt{}
+		}
+	}
+	return stMap
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

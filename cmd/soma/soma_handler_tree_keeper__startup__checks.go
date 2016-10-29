@@ -6,185 +6,23 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 	uuid "github.com/satori/go.uuid"
 )
 
-type tkLoader interface {
-	GroupState() *sql.Stmt
-	GroupRelations() *sql.Stmt
-}
-
-type tkLoaderChecks struct {
-	loadChecks     *sql.Stmt
-	loadItems      *sql.Stmt
-	loadConfig     *sql.Stmt
-	loadAllConfigs *sql.Stmt
-	loadThresh     *sql.Stmt
-	loadCstrCustom *sql.Stmt
-	loadCstrNative *sql.Stmt
-	loadCstrOncall *sql.Stmt
-	loadCstrAttr   *sql.Stmt
-	loadCstrServ   *sql.Stmt
-	loadCstrSystem *sql.Stmt
-	loadInstances  *sql.Stmt
-	loadInstConfig *sql.Stmt
-	loadGroupState *sql.Stmt
-	loadGroupRel   *sql.Stmt
-	loadTypeChecks *sql.Stmt
-}
-
-func (ld *tkLoaderChecks) GroupState() *sql.Stmt {
-	return ld.loadGroupState
-}
-
-func (ld *tkLoaderChecks) GroupRelations() *sql.Stmt {
-	return ld.loadGroupRel
-}
-
-func (tk *treeKeeper) startupChecks() {
+func (tk *treeKeeper) startupChecks(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
-	var (
-		err error
-		ld  tkLoaderChecks
-	)
 	tk.startLog.Printf("TK[%s]: loading checks\n", tk.repoName)
-
-	// prepare all required statements into the loader structure
-	ld = tkLoaderChecks{}
-	if ld.loadChecks, err = tk.conn.Prepare(stmt.TkStartLoadChecks); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadChecks: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadChecks.Close()
-
-	if ld.loadItems, err = tk.conn.Prepare(stmt.TkStartLoadInheritedChecks); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadInheritedChecks: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadItems.Close()
-
-	if ld.loadConfig, err = tk.conn.Prepare(stmt.TkStartLoadCheckConfiguration); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConfiguration: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadConfig.Close()
-
-	if ld.loadAllConfigs, err = tk.conn.Prepare(stmt.TkStartLoadAllCheckConfigurationsForType); err != nil {
-		tk.startLog.Println(`treekeeper/tkStmtLoadAllCheckConfigurationsForType: `, err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadAllConfigs.Close()
-
-	if ld.loadThresh, err = tk.conn.Prepare(stmt.TkStartLoadCheckThresholds); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckThresholds: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadThresh.Close()
-
-	if ld.loadCstrCustom, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintCustom); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintCustom: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadCstrCustom.Close()
-
-	if ld.loadCstrNative, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintNative); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintNative: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadCstrNative.Close()
-
-	if ld.loadCstrOncall, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintOncall); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintOncall: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadCstrOncall.Close()
-
-	if ld.loadCstrAttr, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintAttribute); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintAttribute: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadCstrAttr.Close()
-
-	if ld.loadCstrServ, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintService); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintService: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadCstrServ.Close()
-
-	if ld.loadCstrSystem, err = tk.conn.Prepare(stmt.TkStartLoadCheckConstraintSystem); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckConstraintSystem: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadCstrSystem.Close()
-
-	// the following three statements are used to load check instances
-	if ld.loadTypeChecks, err = tk.conn.Prepare(stmt.TkStartLoadChecksForType); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadChecksForType: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadTypeChecks.Close()
-
-	if ld.loadInstances, err = tk.conn.Prepare(stmt.TkStartLoadCheckInstances); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckInstances: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadInstances.Close()
-
-	if ld.loadInstConfig, err = tk.conn.Prepare(stmt.TkStartLoadCheckInstanceConfiguration); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckInstanceConfiguration: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadInstConfig.Close()
-
-	// since groups are the only tree elements that can be stacked,
-	// additional ordering is required
-	if ld.loadGroupState, err = tk.conn.Prepare(stmt.TkStartLoadCheckGroupState); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckGroupState: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadGroupState.Close()
-
-	if ld.loadGroupRel, err = tk.conn.Prepare(stmt.TkStartLoadCheckGroupRelations); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtLoadCheckGroupRelations: ", err)
-		tk.broken = true
-		return
-	}
-	defer ld.loadGroupRel.Close()
-
-	// this is also needed early on
-	if tk.get_view, err = tk.conn.Prepare(stmt.TreekeeperGetViewFromCapability); err != nil {
-		tk.startLog.Println("treekeeper/tkStmtGetViewFromCapability: ", err)
-		tk.broken = true
-		return
-	}
-	defer tk.get_view.Close()
 
 	//
 	// load checks for the entire tree, in order from root to leaf.
 	// Afterwards, load all check instances. This does not require
 	// ordering.
 	for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
-		tk.startupScopedChecks(typ, &ld)
+		tk.startupScopedChecks(typ, stMap)
 	}
 
 	//
@@ -194,7 +32,7 @@ func (tk *treeKeeper) startupChecks() {
 	if tk.rebuild && tk.rbLevel == `checks` {
 		tk.startLog.Printf("TK[%s]: starting checks rebuild", tk.repoId)
 		for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
-			tk.startupScopedReapplyCheckConfig(typ, &ld)
+			tk.startupScopedReapplyCheckConfig(typ, stMap)
 		}
 	}
 
@@ -248,7 +86,7 @@ func (tk *treeKeeper) startupChecks() {
 	}
 }
 
-func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
+func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -280,12 +118,12 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 
 	switch typ {
 	case "group":
-		if err, grOrder, grWeird = tk.orderGroups(ld); err != nil {
+		if err, grOrder, grWeird = tk.orderGroups(stMap); err != nil {
 			goto fail
 		}
 	}
 
-	if ckRows, err = ld.loadChecks.Query(tk.repoId, typ); err == sql.ErrNoRows {
+	if ckRows, err = stMap[`LoadChecks`].Query(tk.repoId, typ); err == sql.ErrNoRows {
 		// go directly to loading instances since there are no source
 		// checks on this type
 		goto directinstances
@@ -329,7 +167,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// iterate over the loaded checks and continue assembly with values
 	// from the stored checkconfiguration
 	for checkId, _ = range cfgMap {
-		if err = ld.loadConfig.QueryRow(cfgMap[checkId].Id, tk.repoId).Scan(
+		if err = stMap[`LoadConfig`].QueryRow(cfgMap[checkId].Id, tk.repoId).Scan(
 			&nullBucketId,
 			&cfgName,
 			&cfgObjId,
@@ -361,7 +199,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 	// iterate over the loaded checks and continue assembly with values
 	// from the stored thresholds
 	for checkId, _ = range cfgMap {
-		if thrRows, err = ld.loadThresh.Query(cfgMap[checkId].Id); err != nil {
+		if thrRows, err = stMap[`LoadThreshold`].Query(cfgMap[checkId].Id); err != nil {
 			// sql.ErrNoRows is fatal here since a check without
 			// thresholds is rather useless
 			goto fail
@@ -414,17 +252,17 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 		for _, cstrType = range []string{`custom`, `native`, `oncall`, `attribute`, `service`, `system`} {
 			switch cstrType {
 			case `custom`:
-				cstrRows, err = ld.loadCstrCustom.Query(cfgMap[checkId].Id)
+				cstrRows, err = stMap[`LoadCustomCstr`].Query(cfgMap[checkId].Id)
 			case `native`:
-				cstrRows, err = ld.loadCstrNative.Query(cfgMap[checkId].Id)
+				cstrRows, err = stMap[`LoadNativeCstr`].Query(cfgMap[checkId].Id)
 			case `oncall`:
-				cstrRows, err = ld.loadCstrOncall.Query(cfgMap[checkId].Id)
+				cstrRows, err = stMap[`LoadOncallCstr`].Query(cfgMap[checkId].Id)
 			case `attribute`:
-				cstrRows, err = ld.loadCstrAttr.Query(cfgMap[checkId].Id)
+				cstrRows, err = stMap[`LoadAttributeCstr`].Query(cfgMap[checkId].Id)
 			case `service`:
-				cstrRows, err = ld.loadCstrServ.Query(cfgMap[checkId].Id)
+				cstrRows, err = stMap[`LoadServiceCstr`].Query(cfgMap[checkId].Id)
 			case `system`:
-				cstrRows, err = ld.loadCstrSystem.Query(cfgMap[checkId].Id)
+				cstrRows, err = stMap[`LoadSystemCstr`].Query(cfgMap[checkId].Id)
 			}
 			if err != nil {
 				goto fail
@@ -539,7 +377,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 			ckItem.ItemId,
 		)
 
-		if itRows, err = ld.loadItems.Query(tk.repoId, checkId); err != nil {
+		if itRows, err = stMap[`LoadItems`].Query(tk.repoId, checkId); err != nil {
 			goto fail
 		}
 
@@ -743,7 +581,7 @@ directinstances:
 
 	// iterate over all checks on this object type and load the check
 	// instances they have created
-	if tckRows, err = ld.loadTypeChecks.Query(tk.repoId, typ); err != nil {
+	if tckRows, err = stMap[`LoadChecksForType`].Query(tk.repoId, typ); err != nil {
 		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `loadTypeChecks.Query()`, tk.repoId, typ)
 		goto fail
 	}
@@ -760,7 +598,7 @@ directinstances:
 		}
 
 		// lookup instances for that check
-		if inRows, err = ld.loadInstances.Query(checkId); err != nil {
+		if inRows, err = stMap[`LoadInstances`].Query(checkId); err != nil {
 			tckRows.Close()
 			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `loadInstances.Query()`, tk.repoId, typ, checkId)
 			goto fail
@@ -778,7 +616,7 @@ directinstances:
 			}
 
 			// load configuration for check instance
-			if err = ld.loadInstConfig.QueryRow(itemId).Scan(
+			if err = stMap[`LoadInstanceCfg`].QueryRow(itemId).Scan(
 				&itemCfgId,
 				&version,
 				&monitoringId,
@@ -841,7 +679,6 @@ directinstances:
 	}
 	if err = tckRows.Err(); err != nil {
 		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `checksForType.Iterate.Error()`, tk.repoId, typ)
-		fmt.Println(`line746`)
 		goto fail
 	}
 
@@ -856,7 +693,7 @@ fail:
 	return
 }
 
-func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderChecks) {
+func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -874,7 +711,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderCh
 	//    select configuration_id from soma.check_configurations where
 	//    configuration_object_type = typ and repository_id =
 	//    tk.repoId and not deleted
-	if configRows, err = ld.loadAllConfigs.Query(typ, tk.repoId); err != nil {
+	if configRows, err = stMap[`LoadAllConfigsForType`].Query(typ, tk.repoId); err != nil {
 		goto fail
 	}
 	defer configRows.Close()
@@ -902,7 +739,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderCh
 		tk.startLog.Printf("TK[%s]: rebuild processing check configuration %s", tk.repoName, conf.Id)
 		// 2. assemble proto.CheckConfig object:
 		//    + thresholds
-		if threshRows, err = ld.loadThresh.Query(conf.Id); err != nil {
+		if threshRows, err = stMap[`LoadThreshold`].Query(conf.Id); err != nil {
 			goto fail
 		}
 
@@ -943,17 +780,17 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, ld *tkLoaderCh
 		for _, cstrType = range []string{`custom`, `native`, `oncall`, `attribute`, `service`, `system`} {
 			switch cstrType {
 			case `custom`:
-				cstrRows, err = ld.loadCstrCustom.Query(conf.Id)
+				cstrRows, err = stMap[`LoadCustomCstr`].Query(conf.Id)
 			case `native`:
-				cstrRows, err = ld.loadCstrNative.Query(conf.Id)
+				cstrRows, err = stMap[`LoadNativeCstr`].Query(conf.Id)
 			case `oncall`:
-				cstrRows, err = ld.loadCstrOncall.Query(conf.Id)
+				cstrRows, err = stMap[`LoadOncallCstr`].Query(conf.Id)
 			case `attribute`:
-				cstrRows, err = ld.loadCstrAttr.Query(conf.Id)
+				cstrRows, err = stMap[`LoadAttributeCstr`].Query(conf.Id)
 			case `service`:
-				cstrRows, err = ld.loadCstrServ.Query(conf.Id)
+				cstrRows, err = stMap[`LoadServiceCstr`].Query(conf.Id)
 			case `system`:
-				cstrRows, err = ld.loadCstrSystem.Query(conf.Id)
+				cstrRows, err = stMap[`LoadSystemCstr`].Query(conf.Id)
 			}
 			if err != nil {
 				goto fail
@@ -1056,7 +893,7 @@ fail:
 
 // orderGroups orders the groups in a repository so they can be
 // processed from root to leaf
-func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[string]string) {
+func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string][]string, map[string]string) {
 	if tk.broken {
 		return fmt.Errorf("Broken tree detected"), nil, nil
 	}
@@ -1079,7 +916,7 @@ func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[
 	children = []string{}
 
 	// load groups in this repository
-	if stRows, err = ld.GroupState().Query(tk.repoId); err != nil {
+	if stRows, err = stMap[`LoadGroupState`].Query(tk.repoId); err != nil {
 		tk.broken = true
 		return err, nil, nil
 	}
@@ -1103,7 +940,7 @@ func (tk *treeKeeper) orderGroups(ld tkLoader) (error, map[string][]string, map[
 	}
 
 	// load relations between groups in this repository
-	if rlRows, err = ld.GroupRelations().Query(tk.repoId); err != nil {
+	if rlRows, err = stMap[`LoadGroupRelations`].Query(tk.repoId); err != nil {
 		tk.broken = true
 		return err, nil, nil
 	}

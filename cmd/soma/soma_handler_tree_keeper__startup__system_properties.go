@@ -3,12 +3,11 @@ package main
 import (
 	"database/sql"
 
-	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/internal/tree"
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupRepositorySystemProperties() {
+func (tk *treeKeeper) startupRepositorySystemProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -19,26 +18,10 @@ func (tk *treeKeeper) startupRepositorySystemProperties() {
 		inInstanceId, inObjectType, inObjId                                              string
 		inheritance, childrenOnly                                                        bool
 		rows, instance_rows                                                              *sql.Rows
-		load_properties, load_instances                                                  *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadRepoSysProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-system-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-repository-system-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading repository system properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropRepoSystem`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading repository system properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -80,7 +63,7 @@ systemloop:
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSystemInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -154,7 +137,7 @@ systemloop:
 	}
 }
 
-func (tk *treeKeeper) startupBucketSystemProperties() {
+func (tk *treeKeeper) startupBucketSystemProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -165,26 +148,10 @@ func (tk *treeKeeper) startupBucketSystemProperties() {
 		inInstanceId, inObjectType, inObjId                                          string
 		inheritance, childrenOnly                                                    bool
 		rows, instance_rows                                                          *sql.Rows
-		load_properties, load_instances                                              *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadBucketSysProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-system-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-bucket-system-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading bucket system properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropBuckSystem`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading bucket system properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -226,7 +193,7 @@ systemloop:
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSystemInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -300,7 +267,7 @@ systemloop:
 	}
 }
 
-func (tk *treeKeeper) startupGroupSystemProperties() {
+func (tk *treeKeeper) startupGroupSystemProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -311,26 +278,10 @@ func (tk *treeKeeper) startupGroupSystemProperties() {
 		inInstanceId, inObjectType, inObjId                                         string
 		inheritance, childrenOnly                                                   bool
 		rows, instance_rows                                                         *sql.Rows
-		load_properties, load_instances                                             *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadGroupSysProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-system-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-group-system-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading group system properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropGrpSystem`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading group system properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -372,7 +323,7 @@ systemloop:
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSystemInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -446,7 +397,7 @@ systemloop:
 	}
 }
 
-func (tk *treeKeeper) startupClusterSystemProperties() {
+func (tk *treeKeeper) startupClusterSystemProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -457,26 +408,10 @@ func (tk *treeKeeper) startupClusterSystemProperties() {
 		inInstanceId, inObjectType, inObjId                                           string
 		inheritance, childrenOnly                                                     bool
 		rows, instance_rows                                                           *sql.Rows
-		load_properties, load_instances                                               *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadClusterSysProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-system-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-cluster-system-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading cluster system properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropClrSystem`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading cluster system properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -518,7 +453,7 @@ systemloop:
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSystemInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
@@ -592,7 +527,7 @@ systemloop:
 	}
 }
 
-func (tk *treeKeeper) startupNodeSystemProperties() {
+func (tk *treeKeeper) startupNodeSystemProperties(stMap map[string]*sql.Stmt) {
 	if tk.broken {
 		return
 	}
@@ -603,26 +538,10 @@ func (tk *treeKeeper) startupNodeSystemProperties() {
 		inInstanceId, inObjectType, inObjId                                        string
 		inheritance, childrenOnly                                                  bool
 		rows, instance_rows                                                        *sql.Rows
-		load_properties, load_instances                                            *sql.Stmt
 	)
-	load_properties, err = tk.conn.Prepare(stmt.TkStartLoadNodeSysProp)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-system-properties: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_properties.Close()
-
-	load_instances, err = tk.conn.Prepare(stmt.TkStartLoadSystemPropInstances)
-	if err != nil {
-		tk.startLog.Println("treekeeper/load-node-system-property-instances: ", err)
-		tk.broken = true
-		return
-	}
-	defer load_instances.Close()
 
 	tk.startLog.Printf("TK[%s]: loading node system properties\n", tk.repoName)
-	rows, err = load_properties.Query(tk.repoId)
+	rows, err = stMap[`LoadPropNodeSystem`].Query(tk.repoId)
 	if err != nil {
 		tk.startLog.Printf("TK[%s] Error loading node system properties: %s", tk.repoName, err.Error())
 		tk.broken = true
@@ -664,7 +583,7 @@ systemloop:
 		prop.Id, _ = uuid.FromString(instanceId)
 		prop.Instances = make([]tree.PropertyInstance, 0)
 
-		instance_rows, err = load_instances.Query(
+		instance_rows, err = stMap[`LoadPropSystemInstance`].Query(
 			tk.repoId,
 			srcInstanceId,
 		)
