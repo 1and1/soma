@@ -92,8 +92,10 @@ AND    (  scic.status = 'awaiting_rollout'
 
 	DeploymentClearFlag = `
 UPDATE soma.check_instances
-SET    update_available = 'false'::boolean
-WHERE  check_instance_id = $1::uuid;`
+SET    update_available = 'false'::boolean,
+       notified_at = NOW()::timestamptz
+WHERE  check_instance_id = $1::uuid
+  AND  update_available = 'true'::boolean;`
 
 	DeploymentInstancesForNode = `
 SELECT sci.check_instance_id
