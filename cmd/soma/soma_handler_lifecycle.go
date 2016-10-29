@@ -22,6 +22,7 @@ type lifeCycle struct {
 	appLog       *log.Logger
 	reqLog       *log.Logger
 	errLog       *log.Logger
+	pokers       map[string]chan string
 }
 
 type PokeMessage struct {
@@ -33,6 +34,8 @@ type PokeMessage struct {
 
 func (lc *lifeCycle) run() {
 	var err error
+	lc.pokers = make(map[string]chan string)
+
 	lc.tick = time.NewTicker(time.Duration(SomaCfg.LifeCycleTick) * time.Second).C
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
@@ -304,16 +307,12 @@ func (lc *lifeCycle) poke() {
 		chkIds                        *sql.Rows
 		err                           error
 		chkID, monitoringID, callback string
-		cl                            *resty.Client
 	)
 
 	if chkIds, err = lc.stmt_poke.Query(); err != nil {
 		lc.errLog.Println(`lifeCycle.poke()`, err)
 	}
 	defer chkIds.Close()
-
-	callbacks := map[string]string{}
-	pokeIDs := map[string][]string{}
 
 	for chkIds.Next() {
 		if err = chkIds.Scan(
@@ -325,32 +324,40 @@ func (lc *lifeCycle) poke() {
 			continue
 		}
 
-		callbacks[monitoringID] = callback
-		if pokeIDs[monitoringID] == nil {
-			pokeIDs[monitoringID] = []string{}
+		// there is no goroutine running for the system yet
+		if _, ok := lc.pokers[monitoringID]; !ok {
+			lc.pokers[monitoringID] = make(chan string, 4096)
+			go lc.pokeSystem(callback, lc.pokers[monitoringID])
 		}
-		pokeIDs[monitoringID] = append(pokeIDs[monitoringID], chkID)
-	}
 
-	// do not poke the bear
-bearloop:
-	for mon, idList := range pokeIDs {
-		var i uint64 = 0
-		for _, id := range idList {
-			cl = resty.New()
-			if _, err = cl.SetTimeout(500 * time.Millisecond).R().
-				SetBody(PokeMessage{Uuid: id, Path: SomaCfg.PokePath}).
-				Post(callbacks[mon]); err != nil {
+		// if the channel is full we skip the checkid and pick it
+		// up on the next lifecycle tick, otherwise an unresponsive
+		// monitoring system could block the lifecycle system
+		if len(lc.pokers[monitoringID]) < 4095 {
+			lc.pokers[monitoringID] <- chkID
+		}
+	}
+}
+
+func (lc *lifeCycle) pokeSystem(callback string, in chan string) {
+	client := resty.New()
+	for {
+		select {
+		case chkId := <-in:
+			client.SetTimeout(
+				time.Duration(SomaCfg.PokeTimeout) * time.Millisecond,
+			)
+			if _, err := client.R().SetBody(
+				PokeMessage{
+					Uuid: chkId,
+					Path: SomaCfg.PokePath,
+				},
+			).Post(callback); err != nil {
 				lc.errLog.Println(err)
-				continue bearloop
+				continue
 			}
-			// XXX TODO: MAYBE we should look at the return code. MAYBE.
-			lc.appLog.Printf("Poked %s about %s", mon, id)
-			lc.stmt_clear.Exec(id)
-			i++
-			if i == SomaCfg.PokeBatchSize {
-				continue bearloop
-			}
+			lc.appLog.Printf("Poked %s (%s)", callback, chkId)
+			lc.stmt_clear.Exec(chkId)
 		}
 	}
 }

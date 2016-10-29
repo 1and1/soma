@@ -20,6 +20,7 @@ type SomaConfig struct {
 	LifeCycleTick uint64         `json:"lifecycle.tick.seconds,string"`
 	PokePath      string         `json:"notify.path.element"`
 	PokeBatchSize uint64         `json:"notify.batch.size,string"`
+	PokeTimeout   uint64         `json:"notify.timeout.ms,string"`
 	Observer      bool           `json:"observer,string"`
 	ObserverRepo  string         `json:"-"`
 	NoPoke        bool           `json:"no.poke,string"`
@@ -130,6 +131,11 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	if c.PokeBatchSize == 0 {
 		log.Println(`Setting default value for notify.batch.size: 64`)
 		c.PokeBatchSize = 64
+	}
+
+	if c.PokeTimeout == 0 {
+		log.Println(`Setting default value for notify.timeout.ms: 1000`)
+		c.PokeTimeout = 1000
 	}
 
 	if c.PokePath == `` {
