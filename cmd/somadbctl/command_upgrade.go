@@ -29,6 +29,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201606210001: upgrade_soma_to_201607070001,
 		201607070001: upgrade_soma_to_201609080001,
 		201609080001: upgrade_soma_to_201609120001,
+		201609120001: upgrade_soma_to_201610290001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -370,6 +371,26 @@ func upgrade_soma_to_201609120001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201609120001
+}
+
+func upgrade_soma_to_201610290001(curr int, tool string, printOnly bool) int {
+	if curr != 201609120001 {
+		return 0
+	}
+	stmts := []string{
+		`ALTER TABLE soma.check_instance_configurations ADD COLUMN deprovisioned_at timestamptz(3) NULL;`,
+		`ALTER TABLE soma.check_instance_configurations ADD COLUMN status_last_updated_at timestamptz(3) NULL;`,
+		`ALTER TABLE soma.check_instance_configurations ADD COLUMN notified_at timestamptz(3) NULL;`,
+		`SET TIME ZONE 'UTC';`,
+		`UPDATE soma.check_instance_configurations SET deprovisioned_at = NOW()::timestamptz(3), status_last_updated_at = NOW()::timestamptz(3) WHERE status IN ('deprovisioned', 'awaiting_deletion');`,
+		`UPDATE soma.check_instance_configurations SET status_last_updated_at = NOW()::timestamptz(3) WHERE status IN ('awaiting_rollout', 'rollout_in_progress', 'rollout_failed', 'active', 'awaiting_deprovision', 'deprovision_in_progress','deprovision_failed');`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201610290001, 'Upgrade - somadbctl %s');", tool),
+	)
+	executeUpgrades(stmts, printOnly)
+
+	return 201610290001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {
