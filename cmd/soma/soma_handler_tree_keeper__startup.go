@@ -60,11 +60,7 @@ func (tk *treeKeeper) startupLoad() {
 	}
 
 	// attach oncall properties
-	tk.startupRepositoryOncallProperties(stMap)
-	tk.startupBucketOncallProperties(stMap)
-	tk.startupGroupOncallProperties(stMap)
-	tk.startupClusterOncallProperties(stMap)
-	tk.startupNodeOncallProperties(stMap)
+	tk.startupOncallProperties(stMap)
 
 	if len(tk.actionChan) > 0 {
 		tk.startLog.Printf("TK[%s] ERROR! Stray startup actions pending in action queue!", tk.repoName)
