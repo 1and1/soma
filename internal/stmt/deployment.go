@@ -51,7 +51,16 @@ WHERE  sci.check_instance_id = $1::uuid;`
 UPDATE soma.check_instance_configurations
 SET    status = $1::varchar,
        next_status = $2::varchar,
-       activated_at = $3::timestamptz
+       activated_at = $3::timestamptz,
+       status_last_updated_at = NOW()::timestamptz,
+WHERE  check_instance_config_id = $4::uuid;`
+
+	DeploymentDeprovision = `
+UPDATE soma.check_instance_configurations
+SET    status = $1::varchar,
+       next_status = $2::varchar,
+       deprovisioned_at = $3::timestamptz,
+       status_last_updated_at = NOW()::timestamptz,
 WHERE  check_instance_config_id = $4::uuid;`
 
 	DeploymentList = `
@@ -116,6 +125,7 @@ LIMIT  1;`
 func init() {
 	m[DeploymentActivate] = `DeploymentActivate`
 	m[DeploymentClearFlag] = `DeploymentClearFlag`
+	m[DeploymentDeprovision] = `DeploymentDeprovision`
 	m[DeploymentGet] = `DeploymentGet`
 	m[DeploymentInstancesForNode] = `DeploymentInstancesForNode`
 	m[DeploymentLastInstanceVersion] = `DeploymentLastInstanceVersion`

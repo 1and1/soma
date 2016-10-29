@@ -44,6 +44,7 @@ type somaDeploymentHandler struct {
 	lst_stmt *sql.Stmt
 	all_stmt *sql.Stmt
 	clr_stmt *sql.Stmt
+	dpr_stmt *sql.Stmt
 	appLog   *log.Logger
 	reqLog   *log.Logger
 	errLog   *log.Logger
@@ -53,13 +54,14 @@ func (self *somaDeploymentHandler) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.DeploymentGet:       self.get_stmt,
-		stmt.DeploymentUpdate:    self.upd_stmt,
-		stmt.DeploymentStatus:    self.sta_stmt,
-		stmt.DeploymentActivate:  self.act_stmt,
-		stmt.DeploymentList:      self.lst_stmt,
-		stmt.DeploymentListAll:   self.all_stmt,
-		stmt.DeploymentClearFlag: self.clr_stmt,
+		stmt.DeploymentGet:         self.get_stmt,
+		stmt.DeploymentUpdate:      self.upd_stmt,
+		stmt.DeploymentStatus:      self.sta_stmt,
+		stmt.DeploymentActivate:    self.act_stmt,
+		stmt.DeploymentList:        self.lst_stmt,
+		stmt.DeploymentListAll:     self.all_stmt,
+		stmt.DeploymentClearFlag:   self.clr_stmt,
+		stmt.DeploymentDeprovision: self.dpr_stmt,
 	} {
 		if prepStmt, err = self.conn.Prepare(statement); err != nil {
 			self.errLog.Fatal(`deployment`, err, stmt.Name(statement))
@@ -186,9 +188,10 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 				},
 			})
 		case "deprovision_in_progress":
-			self.upd_stmt.Exec(
+			self.dpr_stmt.Exec(
 				next,
 				"none",
+				time.Now().UTC(),
 				instanceConfigID,
 			)
 			result.Append(nil, &somaDeploymentResult{
