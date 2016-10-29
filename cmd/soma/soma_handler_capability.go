@@ -53,7 +53,7 @@ func (r *somaCapabilityReadHandler) run() {
 		stmt.ShowCapability:      r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`capability`, err, statement)
+			r.errLog.Fatal(`capability`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -165,7 +165,7 @@ func (w *somaCapabilityWriteHandler) run() {
 		stmt.DelCapability: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`capability`, err, statement)
+			w.errLog.Fatal(`capability`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

@@ -60,7 +60,7 @@ func (r *somaServerReadHandler) run() {
 		stmt.SearchServerByAssetId: r.sass_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`servers`, err, statement)
+			r.errLog.Fatal(`servers`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -241,7 +241,7 @@ func (w *somaServerWriteHandler) run() {
 		stmt.UpdateServers: w.upd_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`server`, err, statement)
+			w.errLog.Fatal(`server`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

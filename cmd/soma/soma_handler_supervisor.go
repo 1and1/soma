@@ -117,7 +117,7 @@ func (s *supervisor) run() {
 		stmt.SearchGlobalSystemGrant: s.stmt_SrchGlSysGrant,
 	} {
 		if prepStmt, err = s.conn.Prepare(statement); err != nil {
-			s.errLog.Fatal(`supervisor`, err, statement)
+			s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -133,7 +133,7 @@ func (s *supervisor) run() {
 			stmt.CheckUserActive:              s.stmt_CheckUser,
 		} {
 			if prepStmt, err = s.conn.Prepare(statement); err != nil {
-				s.errLog.Fatal(`supervisor`, err, statement)
+				s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))
 			}
 			defer prepStmt.Close()
 		}

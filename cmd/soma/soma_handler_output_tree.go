@@ -81,7 +81,7 @@ func (o *outputTree) run() {
 		stmt.TreeNodesInCluster:      o.stmtClrNod,
 	} {
 		if prepStmt, err = o.conn.Prepare(statement); err != nil {
-			o.errLog.Fatal(`outputTree`, err, statement)
+			o.errLog.Fatal(`outputTree`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

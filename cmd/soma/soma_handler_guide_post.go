@@ -50,7 +50,7 @@ func (g *guidePost) run() {
 		stmt.GroupBucketId:         g.bucket_for_group,
 	} {
 		if prepStmt, err = g.conn.Prepare(statement); err != nil {
-			g.errLog.Fatal(`guidepost`, err, statement)
+			g.errLog.Fatal(`guidepost`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

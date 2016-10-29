@@ -53,7 +53,7 @@ func (r *somaModeReadHandler) run() {
 		stmt.ModeShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`mode`, err, statement)
+			r.errLog.Fatal(`mode`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -144,7 +144,7 @@ func (w *somaModeWriteHandler) run() {
 		stmt.ModeDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`mode`, err, statement)
+			w.errLog.Fatal(`mode`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

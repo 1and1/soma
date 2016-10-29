@@ -57,7 +57,7 @@ func (r *somaTeamReadHandler) run() {
 		stmt.SyncTeams: r.sync_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`team`, err, statement)
+			r.errLog.Fatal(`team`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -185,7 +185,7 @@ func (w *somaTeamWriteHandler) run() {
 		stmt.TeamDel:    w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`team`, err, statement)
+			w.errLog.Fatal(`team`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

@@ -55,7 +55,7 @@ func (r *somaOncallReadHandler) run() {
 		stmt.OncallShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`oncall`, err, statement)
+			r.errLog.Fatal(`oncall`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -154,7 +154,7 @@ func (w *somaOncallWriteHandler) run() {
 		stmt.OncallDel:    w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`oncall`, err, statement)
+			w.errLog.Fatal(`oncall`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

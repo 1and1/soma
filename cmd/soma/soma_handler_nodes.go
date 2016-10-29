@@ -67,7 +67,7 @@ func (r *somaNodeReadHandler) run() {
 		stmt.NodeCstProps:    r.pcst_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`node`, err, statement)
+			r.errLog.Fatal(`node`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -419,7 +419,7 @@ func (w *somaNodeWriteHandler) run() {
 		stmt.NodePurge:  w.prg_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`node`, err, statement)
+			w.errLog.Fatal(`node`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

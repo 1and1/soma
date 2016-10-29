@@ -43,7 +43,7 @@ func (r *somaObjectTypeReadHandler) run() {
 		stmt.ObjectTypeShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`object_type`, err, statement)
+			r.errLog.Fatal(`object_type`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -143,7 +143,7 @@ func (w *somaObjectTypeWriteHandler) run() {
 		stmt.ObjectTypeRename: w.ren_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`object_type`, err, statement)
+			w.errLog.Fatal(`object_type`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

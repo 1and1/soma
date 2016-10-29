@@ -53,7 +53,7 @@ func (r *somaPredicateReadHandler) run() {
 		stmt.PredicateShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`predicate`, err, statement)
+			r.errLog.Fatal(`predicate`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -144,7 +144,7 @@ func (w *somaPredicateWriteHandler) run() {
 		stmt.PredicateDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`predicate`, err, statement)
+			w.errLog.Fatal(`predicate`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

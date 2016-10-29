@@ -52,7 +52,7 @@ func (r *somaUnitReadHandler) run() {
 		stmt.UnitShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`unit`, err, statement)
+			r.errLog.Fatal(`unit`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -150,7 +150,7 @@ func (w *somaUnitWriteHandler) run() {
 		stmt.UnitDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`unit`, err, statement)
+			w.errLog.Fatal(`unit`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

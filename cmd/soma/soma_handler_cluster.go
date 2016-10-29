@@ -60,7 +60,7 @@ func (r *somaClusterReadHandler) run() {
 		stmt.ClusterCstProps:   r.pcst_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`cluster`, err, statement)
+			r.errLog.Fatal(`cluster`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

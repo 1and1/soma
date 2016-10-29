@@ -62,7 +62,7 @@ func (r *somaRepositoryReadHandler) run() {
 		stmt.RepoCstProps:        r.pcst_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`repository`, err, statement)
+			r.errLog.Fatal(`repository`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

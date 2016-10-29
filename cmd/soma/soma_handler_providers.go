@@ -52,7 +52,7 @@ func (r *somaProviderReadHandler) run() {
 		stmt.ProviderShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`provider`, err, statement)
+			r.errLog.Fatal(`provider`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -143,7 +143,7 @@ func (w *somaProviderWriteHandler) run() {
 		stmt.ProviderDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`provider`, err, statement)
+			w.errLog.Fatal(`provider`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

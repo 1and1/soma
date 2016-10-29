@@ -52,7 +52,7 @@ func (r *somaStatusReadHandler) run() {
 		stmt.StatusShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`status`, err, statement)
+			r.errLog.Fatal(`status`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -143,7 +143,7 @@ func (w *somaStatusWriteHandler) run() {
 		stmt.StatusDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`status`, err, statement)
+			w.errLog.Fatal(`status`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

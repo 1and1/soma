@@ -54,7 +54,7 @@ func (r *somaViewReadHandler) run() {
 		stmt.ViewShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`view`, err, statement)
+			r.errLog.Fatal(`view`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -152,7 +152,7 @@ func (w *somaViewWriteHandler) run() {
 		stmt.ViewRename: w.ren_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`view`, err, statement)
+			w.errLog.Fatal(`view`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

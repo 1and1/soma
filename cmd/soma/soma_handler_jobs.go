@@ -37,7 +37,7 @@ func (j *jobsRead) run() {
 		stmt.JobResultsForList:         j.showlist_stmt,
 	} {
 		if prepStmt, err = j.conn.Prepare(statement); err != nil {
-			j.errLog.Fatal(`jobs`, err, statement)
+			j.errLog.Fatal(`jobs`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

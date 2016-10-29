@@ -59,7 +59,7 @@ func (r *somaDatacenterReadHandler) run() {
 		stmt.DatacenterGroupShow: r.grp_show,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`datacenter`, err, statement)
+			r.errLog.Fatal(`datacenter`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -214,7 +214,7 @@ func (w *somaDatacenterWriteHandler) run() {
 		stmt.DatacenterGroupDel: w.grp_del,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`datacenter`, err, statement)
+			w.errLog.Fatal(`datacenter`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

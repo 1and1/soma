@@ -77,7 +77,7 @@ func (r *somaPropertyReadHandler) run() {
 		stmt.PropertyTemplateShow: r.show_tpl_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`property`, err, statement)
+			r.errLog.Fatal(`property`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -348,7 +348,7 @@ func (w *somaPropertyWriteHandler) run() {
 		stmt.PropertyTemplateDel:          w.del_tpl_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`property`, err, statement)
+			w.errLog.Fatal(`property`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

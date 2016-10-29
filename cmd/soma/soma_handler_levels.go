@@ -52,7 +52,7 @@ func (r *somaLevelReadHandler) run() {
 		stmt.LevelShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`level`, err, statement)
+			r.errLog.Fatal(`level`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -149,7 +149,7 @@ func (w *somaLevelWriteHandler) run() {
 		stmt.LevelDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`level`, err, statement)
+			w.errLog.Fatal(`level`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

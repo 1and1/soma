@@ -52,7 +52,7 @@ func (r *somaValidityReadHandler) run() {
 		stmt.ValidityShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`validity`, err, statement)
+			r.errLog.Fatal(`validity`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -186,7 +186,7 @@ func (w *somaValidityWriteHandler) run() {
 		stmt.ValidityDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`validity`, err, statement)
+			w.errLog.Fatal(`validity`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

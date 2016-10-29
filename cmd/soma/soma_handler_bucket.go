@@ -58,7 +58,7 @@ func (r *somaBucketReadHandler) run() {
 		stmt.BucketCstProps: r.pcst_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`bucket`, err, statement)
+			r.errLog.Fatal(`bucket`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

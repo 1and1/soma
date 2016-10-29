@@ -44,7 +44,7 @@ func (lc *lifeCycle) run() {
 		stmt.LifecycleDeadLockResolver:                 lc.stmt_dead,
 	} {
 		if prepStmt, err = lc.conn.Prepare(statement); err != nil {
-			lc.errLog.Fatal(`lifecycle`, err, statement)
+			lc.errLog.Fatal(`lifecycle`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -247,6 +247,7 @@ idloop:
 			`instance`: stmt.LifecycleUpdateInstance,
 		} {
 			if txMap[name], err = tx.Prepare(statement); err != nil {
+				lc.errLog.Println(`aborting lifecycle transaction`, err, stmt.Name(statement))
 				// tx.Rollback() closes open prepared statements
 				tx.Rollback()
 				continue idloop

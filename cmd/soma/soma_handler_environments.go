@@ -43,7 +43,7 @@ func (r *somaEnvironmentReadHandler) run() {
 		stmt.EnvironmentShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`environment`, err, statement)
+			r.errLog.Fatal(`environment`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -143,7 +143,7 @@ func (w *somaEnvironmentWriteHandler) run() {
 		stmt.EnvironmentRename: w.ren_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`environment`, err, statement)
+			w.errLog.Fatal(`environment`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

@@ -53,7 +53,7 @@ func (r *somaAttributeReadHandler) run() {
 		stmt.AttributeShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(``, err, statement)
+			r.errLog.Fatal(`attribute`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -148,7 +148,7 @@ func (w *somaAttributeWriteHandler) run() {
 		stmt.AttributeDelete: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`attribute`, err, statement)
+			w.errLog.Fatal(`attribute`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

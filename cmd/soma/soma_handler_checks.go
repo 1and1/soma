@@ -67,7 +67,7 @@ func (r *somaCheckConfigurationReadHandler) run() {
 		stmt.CheckConfigInstanceInfo:        r.show_instance_info,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`checkconfig`, err, statement)
+			r.errLog.Fatal(`checkconfig`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

@@ -54,7 +54,7 @@ func (self *somaHostDeploymentHandler) run() {
 		stmt.DeploymentLastInstanceVersion: self.last_stmt,
 	} {
 		if prepStmt, err = self.conn.Prepare(statement); err != nil {
-			self.errLog.Fatal(`hostdeployment`, err, statement)
+			self.errLog.Fatal(`hostdeployment`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

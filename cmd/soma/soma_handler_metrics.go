@@ -52,7 +52,7 @@ func (r *somaMetricReadHandler) run() {
 		stmt.MetricShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`metric`, err, statement)
+			r.errLog.Fatal(`metric`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -151,7 +151,7 @@ func (w *somaMetricWriteHandler) run() {
 		stmt.MetricPkgDel: w.pkg_del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`metric`, err, statement)
+			w.errLog.Fatal(`metric`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

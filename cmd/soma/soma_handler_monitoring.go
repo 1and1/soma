@@ -57,7 +57,7 @@ func (r *somaMonitoringReadHandler) run() {
 		stmt.ListScopedMonitoringSystems: r.scli_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`monitoring`, err, statement)
+			r.errLog.Fatal(`monitoring`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -174,7 +174,7 @@ func (w *somaMonitoringWriteHandler) run() {
 		stmt.MonitoringSystemDel: w.del_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`monitoring`, err, statement)
+			w.errLog.Fatal(`monitoring`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

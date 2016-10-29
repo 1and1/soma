@@ -43,7 +43,7 @@ func (r *somaObjectStateReadHandler) run() {
 		stmt.ObjectStateShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`object_state`, err, statement)
+			r.errLog.Fatal(`object_state`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -143,7 +143,7 @@ func (w *somaObjectStateWriteHandler) run() {
 		stmt.ObjectStateRename: w.ren_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`object_state`, err, statement)
+			w.errLog.Fatal(`object_state`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

@@ -57,7 +57,7 @@ func (r *somaUserReadHandler) run() {
 		stmt.SyncUsers: r.sync_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`user`, err, statement)
+			r.errLog.Fatal(`user`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
@@ -219,7 +219,7 @@ func (w *somaUserWriteHandler) run() {
 		stmt.UserPurge:  w.prg_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`user`, err, statement)
+			w.errLog.Fatal(`user`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}

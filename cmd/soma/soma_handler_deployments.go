@@ -62,7 +62,7 @@ func (self *somaDeploymentHandler) run() {
 		stmt.DeploymentClearFlag: self.clr_stmt,
 	} {
 		if prepStmt, err = self.conn.Prepare(statement); err != nil {
-			self.errLog.Fatal(`deployment`, err, statement)
+			self.errLog.Fatal(`deployment`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
