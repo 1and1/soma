@@ -335,7 +335,7 @@ func cmdRepositoryShow(c *cli.Context) error {
 func cmdRepositoryTree(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
-	path := fmt.Sprintf("/repository/%s/tree", id)
+	path := fmt.Sprintf("/repository/%s/tree/tree", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
