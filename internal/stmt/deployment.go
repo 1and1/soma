@@ -122,6 +122,13 @@ AND    (   status != 'deprovisioned'
        AND status != 'computed')
 ORDER  BY version DESC
 LIMIT  1;`
+
+	DeploymentDeprovisionStyle = `
+SELECT EXISTS(SELECT scicd.blocked_instance_config_id
+FROM   soma.check_instances sci
+JOIN   soma.check_instance_configuration_dependencies scicd
+  ON   sci.current_instance_config_id = scicd.blocking_instance_config_id
+WHERE  sci.check_instance_id = $1::uuid)::boolean AS result;`
 )
 
 func init() {
@@ -134,6 +141,7 @@ func init() {
 	m[DeploymentListAll] = `DeploymentListAll`
 	m[DeploymentList] = `DeploymentList`
 	m[DeploymentStatus] = `DeploymentStatus`
+	m[DeploymentDeprovisionStyle] = `DeploymentDeprovisionStyle`
 	m[DeploymentUpdate] = `DeploymentUpdate`
 }
 

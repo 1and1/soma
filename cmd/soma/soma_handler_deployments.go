@@ -45,6 +45,7 @@ type somaDeploymentHandler struct {
 	all_stmt *sql.Stmt
 	clr_stmt *sql.Stmt
 	dpr_stmt *sql.Stmt
+	sty_stmt *sql.Stmt
 	appLog   *log.Logger
 	reqLog   *log.Logger
 	errLog   *log.Logger
@@ -54,14 +55,15 @@ func (self *somaDeploymentHandler) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.DeploymentGet:         self.get_stmt,
-		stmt.DeploymentUpdate:      self.upd_stmt,
-		stmt.DeploymentStatus:      self.sta_stmt,
-		stmt.DeploymentActivate:    self.act_stmt,
-		stmt.DeploymentList:        self.lst_stmt,
-		stmt.DeploymentListAll:     self.all_stmt,
-		stmt.DeploymentClearFlag:   self.clr_stmt,
-		stmt.DeploymentDeprovision: self.dpr_stmt,
+		stmt.DeploymentGet:              self.get_stmt,
+		stmt.DeploymentUpdate:           self.upd_stmt,
+		stmt.DeploymentStatus:           self.sta_stmt,
+		stmt.DeploymentActivate:         self.act_stmt,
+		stmt.DeploymentList:             self.lst_stmt,
+		stmt.DeploymentListAll:          self.all_stmt,
+		stmt.DeploymentClearFlag:        self.clr_stmt,
+		stmt.DeploymentDeprovision:      self.dpr_stmt,
+		stmt.DeploymentDeprovisionStyle: self.sty_stmt,
 	} {
 		if prepStmt, err = self.conn.Prepare(statement); err != nil {
 			self.errLog.Fatal(`deployment`, err, stmt.Name(statement))
@@ -84,10 +86,11 @@ runloop:
 
 func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 	var (
-		instanceConfigID, instanceID, status, next, details, nextNG string
-		err                                                         error
-		list                                                        *sql.Rows
-		updated                                                     bool
+		instanceConfigID, instanceID, status string
+		next, details, nextNG, deprStyle     string
+		err                                  error
+		list                                 *sql.Rows
+		updated, blocksRollout               bool
 	)
 	result := somaResult{}
 
@@ -117,6 +120,19 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 			return
 		}
 
+		// returns true if there is a updated version blocked, ie.
+		// after this deprovisioning a new version will be rolled out
+		if err = self.sty_stmt.QueryRow(q.Deployment).Scan(
+			&blocksRollout,
+		); result.SetRequestError(err) {
+			q.reply <- result
+			return
+		}
+		deprStyle = `deprovision`
+		if !blocksRollout {
+			deprStyle = `delete`
+		}
+
 		switch status {
 		case "awaiting_rollout":
 			next = "rollout_in_progress"
@@ -137,18 +153,18 @@ func (self *somaDeploymentHandler) process(q *somaDeploymentRequest) {
 		case "awaiting_deprovision":
 			next = "deprovision_in_progress"
 			nextNG = "deprovisioned"
-			depl.Task = "deprovision"
+			depl.Task = deprStyle
 			updated = true
 		case "deprovision_in_progress":
-			depl.Task = "deprovision"
+			depl.Task = deprStyle
 			updated = false
 		case "deprovision_failed":
 			next = "deprovision_in_progress"
 			nextNG = "deprovisioned"
-			depl.Task = "deprovision"
+			depl.Task = deprStyle
 			updated = true
 		case `deprovisioned`:
-			depl.Task = "deprovision"
+			depl.Task = deprStyle
 			updated = false
 		}
 
