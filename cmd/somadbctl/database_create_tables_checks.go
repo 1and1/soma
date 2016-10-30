@@ -109,7 +109,7 @@ create table if not exists soma.checks (
 	queryMap[`createIndexRepoToChecks`] = `
 create index _repo_to_checks
     on soma.checks (
-	repository_id,
+    repository_id,
     check_id
 );`
 	queries[idx] = `createIndexRepoToChecks`
@@ -128,7 +128,7 @@ create table if not exists soma.configuration_thresholds (
 	queryMap[`createIndexConfigurationLevelsById`] = `
 create index _configuration_id_levels
     on soma.configuration_thresholds (
-	configuration_id,
+    configuration_id,
     notification_level
 );`
 	queries[idx] = `createIndexConfigurationLevelsById`

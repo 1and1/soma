@@ -93,7 +93,7 @@ create unique index _instance_config_version
 	queryMap[`createIndexInstanceConfigStatus`] = `
 create index _instance_config_status
     on soma.check_instance_configurations (
-	status,
+    status,
     check_instance_id
 );`
 	queries[idx] = `createIndexInstanceConfigStatus`
@@ -111,7 +111,7 @@ create table if not exists soma.check_instance_configuration_dependencies (
 	queryMap[`createIndexConfigurationDependencies`] = `
 create index _config_dependencies
     on soma.check_instance_configuration_dependencies (
-	blocked_instance_config_id,
+    blocked_instance_config_id,
     blocking_instance_config_id
 );`
 	queries[idx] = `createIndexConfigurationDependencies`

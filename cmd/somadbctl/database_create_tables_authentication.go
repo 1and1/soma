@@ -100,7 +100,7 @@ create table if not exists auth.admin_keys (
     admin_id                    uuid            NOT NULL REFERENCES auth.admins ( admin_id ) ON DELETE CASCADE DEFERRABLE,
     admin_key_fingerprint       varchar(128)    NOT NULL,
     admin_key_public            text            NOT NULL,
-    admin_key_active            boolean         NOT NULL DEFAULT 'yes' 
+    admin_key_active            boolean         NOT NULL DEFAULT 'yes'
 );`
 	queries[idx] = "createTableAdminKeys"
 	idx++
