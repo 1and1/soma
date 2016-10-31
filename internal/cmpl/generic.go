@@ -65,7 +65,7 @@ func GenericMulti(c *cli.Context, singlewords, multiwords []string) {
 		match[t] = true
 		continue
 	}
-	// do not complete in porisitons where arguments are expected
+	// do not complete in positions where arguments are expected
 	if skip > 0 {
 		return
 	}
