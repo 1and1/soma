@@ -41,6 +41,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	spawnHostDeploymentHandler(appLog, reqLog, errLog)
 	spawnJobReadHandler(appLog, reqLog, errLog)
 	spawnOutputTreeHandler(appLog, reqLog, errLog)
+	spawnInstanceReadHandler(appLog, reqLog, errLog)
 
 	if !SomaCfg.ReadOnly {
 		if !SomaCfg.Observer {
@@ -799,6 +800,18 @@ func spawnGrimReaperHandler(appLog, reqLog, errLog *log.Logger) {
 	reaper.errLog = errLog
 	handlerMap[`grimReaper`] = &reaper
 	go reaper.run()
+}
+
+func spawnInstanceReadHandler(appLog, reqLog, errLog *log.Logger) {
+	var handler instance
+	handler.input = make(chan msg.Request, 128)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`instance_r`] = &handler
+	go handler.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
