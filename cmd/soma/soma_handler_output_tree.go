@@ -101,7 +101,7 @@ runloop:
 
 //
 func (o *outputTree) process(q *msg.Request) {
-	result := msg.Result{Type: `tree`, Action: q.Type}
+	result := msg.Result{Type: q.Type, Action: q.Action}
 	tree := proto.Tree{
 		Id:   q.Tree.Id,
 		Type: q.Tree.Type,
