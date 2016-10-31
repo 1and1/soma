@@ -19,13 +19,17 @@ type Request struct {
 	Reply      chan Result
 	Search     Filter
 
-	Super      *Supervisor
+	Super *Supervisor
+
+	Bucket     proto.Bucket
 	Category   proto.Category
-	Permission proto.Permission
 	Grant      proto.Grant
+	Instance   proto.Instance
 	Job        proto.Job
-	Tree       proto.Tree
+	Permission proto.Permission
+	Repository proto.Repository
 	System     proto.SystemOperation
+	Tree       proto.Tree
 }
 
 type Filter struct {

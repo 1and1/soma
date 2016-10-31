@@ -21,13 +21,15 @@ type Result struct {
 	Error  error
 	JobId  string
 
-	Super      *Supervisor
-	Tree       proto.Tree
+	Super *Supervisor
+
 	Category   []proto.Category
-	Permission []proto.Permission
 	Grant      []proto.Grant
+	Instance   []proto.Instance
 	Job        []proto.Job
+	Permission []proto.Permission
 	System     []proto.SystemOperation
+	Tree       proto.Tree
 }
 
 func (r *Result) RowCnt(i int64, err error) bool {
@@ -52,10 +54,16 @@ func (r *Result) Clear(s string) {
 	switch s {
 	case `category`:
 		r.Category = []proto.Category{}
-	case `permission`:
-		r.Permission = []proto.Permission{}
+	case `grant`:
+		r.Grant = []proto.Grant{}
+	case `instance`:
+		r.Instance = []proto.Instance{}
 	case `job`:
 		r.Job = []proto.Job{}
+	case `permission`:
+		r.Permission = []proto.Permission{}
+	case `system`:
+		r.System = []proto.SystemOperation{}
 	}
 }
 
