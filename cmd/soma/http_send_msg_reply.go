@@ -95,6 +95,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		result = proto.NewSystemOperationResult()
 		*result.SystemOperations = append(*result.SystemOperations, r.System...)
 		goto UnmaskedReply
+	case `instance`:
+		result = proto.NewInstanceResult()
+		*result.Instances = append(*result.Instances, r.Instance...)
+		goto UnmaskedReply
 	default:
 		log.Printf(LogStrErr, r.Type, ``, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)
