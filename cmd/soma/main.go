@@ -243,6 +243,7 @@ func main() {
 	router.GET(`/groups/:group`, Check(BasicAuth(ShowGroup)))
 	router.GET(`/groups/`, Check(BasicAuth(ListGroup)))
 	router.GET(`/hostdeployment/:system/:assetid`, Check(GetHostDeployment))
+	router.GET(`/instances/:instance/versions`, Check(BasicAuth(InstanceVersions)))
 	router.GET(`/instances/:instance`, Check(BasicAuth(InstanceShow)))
 	router.GET(`/instances/`, Check(BasicAuth(InstanceListAll)))
 	router.GET(`/jobs/:jobid`, Check(BasicAuth(ShowJob)))

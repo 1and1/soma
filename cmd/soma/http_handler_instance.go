@@ -46,6 +46,37 @@ func InstanceShow(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// InstanceVersions returns information about a check instance's
+// version history
+func InstanceVersions(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	/* repository scope is currently not checked
+	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
+		`instance_show`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+	*/
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`instance_r`].(*instance)
+	handler.input <- msg.Request{
+		Type:       `instance`,
+		Action:     `versions`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		IsAdmin:    false,
+		Instance: proto.Instance{
+			Id: params.ByName(`instance`),
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
 // InstanceList returns the list of instances in the subtree
 // below the queried object.
 // Currently only supports repositories and buckets as target.

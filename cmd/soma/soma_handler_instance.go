@@ -16,6 +16,7 @@ import (
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
+	"github.com/lib/pq"
 )
 
 type instance struct {
@@ -24,6 +25,7 @@ type instance struct {
 	conn      *sql.DB
 	stmt_show *sql.Stmt
 	stmt_list *sql.Stmt
+	stmt_vers *sql.Stmt
 	appLog    *log.Logger
 	reqLog    *log.Logger
 	errLog    *log.Logger
@@ -35,6 +37,7 @@ func (i *instance) run() {
 	for statement, prepStmt := range map[string]*sql.Stmt{
 		stmt.InstanceScopedList: i.stmt_list,
 		stmt.InstanceShow:       i.stmt_show,
+		stmt.InstanceVersions:   i.stmt_vers,
 	} {
 		if prepStmt, err = i.conn.Prepare(statement); err != nil {
 			i.errLog.Fatal(`instance`, err, stmt.Name(statement))
@@ -60,14 +63,16 @@ func (i *instance) process(q *msg.Request) {
 	result := msg.Result{Type: q.Type, Action: q.Action,
 		Instance: []proto.Instance{}}
 	var (
-		err                                      error
-		version                                  int64
-		isInherited                              bool
-		rows                                     *sql.Rows
-		nullRepositoryId, nullBucketId           *sql.NullString
-		instanceId, checkId, configId            string
-		objectId, objectType, status, nextStatus string
-		repositoryId, bucketId, instanceConfigId string
+		err                                           error
+		version                                       int64
+		isInherited                                   bool
+		rows                                          *sql.Rows
+		nullRepositoryId, nullBucketId                *sql.NullString
+		instanceId, checkId, configId                 string
+		objectId, objectType, status, nextStatus      string
+		repositoryId, bucketId, instanceConfigId      string
+		createdNull, activatedNull, deprovisionedNull pq.NullTime
+		updatedNull, notifiedNull                     pq.NullTime
 	)
 
 	nullRepositoryId.String = ``
@@ -125,6 +130,69 @@ func (i *instance) process(q *msg.Request) {
 			NextStatus:       nextStatus,
 			IsInherited:      isInherited,
 		}}
+		result.OK()
+	case `versions`:
+		i.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
+			q.RemoteAddr, q.Job.Id)
+
+		if rows, err = i.stmt_vers.Query(q.Instance.Id); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+		for rows.Next() {
+			if err = rows.Scan(
+				&instanceConfigId,
+				&version,
+				&instanceId,
+				&createdNull,
+				&activatedNull,
+				&deprovisionedNull,
+				&updatedNull,
+				&notifiedNull,
+				&status,
+				&nextStatus,
+				&isInherited,
+			); err != nil {
+				rows.Close()
+				result.ServerError(err)
+				result.Clear(q.Type)
+				goto dispatch
+			}
+			inst := proto.Instance{
+				InstanceConfigId: instanceConfigId,
+				Version:          uint64(version),
+				Id:               instanceId,
+				CurrentStatus:    status,
+				NextStatus:       nextStatus,
+				IsInherited:      isInherited,
+				Info: &proto.InstanceVersionInfo{
+					// created timestamp is a not null column
+					CreatedAt: createdNull.Time.Format(rfc3339Milli),
+				},
+			}
+			if activatedNull.Valid {
+				inst.Info.ActivatedAt = activatedNull.Time.Format(
+					rfc3339Milli)
+			}
+			if deprovisionedNull.Valid {
+				inst.Info.DeprovisionedAt = deprovisionedNull.Time.
+					Format(rfc3339Milli)
+			}
+			if updatedNull.Valid {
+				inst.Info.StatusLastUpdatedAt = updatedNull.Time.
+					Format(rfc3339Milli)
+			}
+			if notifiedNull.Valid {
+				inst.Info.NotifiedAt = notifiedNull.Time.Format(
+					rfc3339Milli)
+			}
+			result.Instance = append(result.Instance, inst)
+		}
+		if err = rows.Err(); err != nil {
+			result.ServerError(err)
+			result.Clear(q.Type)
+			goto dispatch
+		}
 		result.OK()
 	case `list`:
 		switch q.Instance.ObjectType {
