@@ -52,9 +52,11 @@ func cmdPredicateCreate(c *cli.Context) error {
 	req.Predicate = &proto.Predicate{}
 	req.Predicate.Symbol = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/predicates/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/predicates/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdPredicateDelete(c *cli.Context) error {
@@ -63,16 +65,23 @@ func cmdPredicateDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdPredicateList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/predicates/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	if resp, err := adm.GetReq(`/predicates/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdPredicateShow(c *cli.Context) error {
@@ -81,10 +90,11 @@ func cmdPredicateShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
