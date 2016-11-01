@@ -108,7 +108,10 @@ func cmdOnCallDel(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/oncall/%s", id)
 
 	resp := utl.DeleteRequest(Client, path)
@@ -124,7 +127,10 @@ func cmdOnCallRename(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/oncall/%s", id)
 
 	req := proto.Request{}
@@ -144,7 +150,10 @@ func cmdOnCallUpdate(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/oncall/%s", id)
 
 	req := proto.Request{}
@@ -183,7 +192,10 @@ func cmdOnCallShow(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/oncall/%s", id)
 
 	resp := utl.GetRequest(Client, path)
@@ -202,7 +214,10 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 		return err
 	}
 	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, opts[`to`][0])
+	oncallId, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Oncall = &proto.Oncall{}
@@ -228,7 +243,10 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 		return err
 	}
 	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, opts[`from`][0])
+	oncallId, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId)
 
@@ -241,7 +259,10 @@ func cmdOnCallMemberList(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(0))
+	oncallId, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/oncall/%s/members/", oncallId)
 

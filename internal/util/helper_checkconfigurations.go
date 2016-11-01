@@ -63,9 +63,9 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 		case "oncall":
 			oc := proto.PropertyOncall{}
 			if prop.Oncall.Name != "" {
-				oc.Id = u.TryGetOncallByUUIDOrName(c, prop.Oncall.Name)
+				oc.Id = u.tryGetOncallByUUIDOrName(c, prop.Oncall.Name)
 			} else if prop.Oncall.Id != "" {
-				oc.Id = u.TryGetOncallByUUIDOrName(c, prop.Oncall.Id)
+				oc.Id = u.tryGetOncallByUUIDOrName(c, prop.Oncall.Id)
 			}
 			clean = append(clean, proto.CheckConfigConstraint{
 				ConstraintType: prop.ConstraintType,

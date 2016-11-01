@@ -8,14 +8,14 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetOncallByUUIDOrName(c *resty.Client, s string) string {
+func (u SomaUtil) tryGetOncallByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetOncallIdByName(c, s)
+	return u.getOncallIdByName(c, s)
 }
 
-func (u SomaUtil) GetOncallIdByName(c *resty.Client, oncall string) string {
+func (u SomaUtil) getOncallIdByName(c *resty.Client, oncall string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Oncall: &proto.OncallFilter{
@@ -25,7 +25,7 @@ func (u SomaUtil) GetOncallIdByName(c *resty.Client, oncall string) string {
 	}
 
 	resp := u.PostRequestWithBody(c, req, "/filter/oncall/")
-	oncallResult := u.DecodeProtoResultOncallFromResponse(resp)
+	oncallResult := u.decodeProtoResultOncallFromResponse(resp)
 
 	if oncall != (*oncallResult.Oncalls)[0].Name {
 		u.abort("Received result set for incorrect oncall duty")
@@ -44,7 +44,7 @@ func (u SomaUtil) GetOncallDetailsById(c *resty.Client, oncallid string) (string
 	return (*res.Oncalls)[0].Name, (*res.Oncalls)[0].Number
 }
 
-func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultOncallFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 
