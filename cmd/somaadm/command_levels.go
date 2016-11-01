@@ -63,13 +63,20 @@ func cmdLevelCreate(c *cli.Context) error {
 	req.Level = &proto.Level{}
 	req.Level.Name = c.Args().First()
 	req.Level.ShortName = opts["shortname"][0]
+
 	l, err := strconv.ParseUint(opts["numeric"][0], 10, 16)
-	adm.AbortOnError(err, "Syntax error, numeric argument not numeric")
+	if err != nil {
+		return fmt.Errorf(
+			"Syntax error, numeric argument not numeric: %s",
+			err.Error())
+	}
 	req.Level.Numeric = uint16(l)
 
-	resp := utl.PostRequestWithBody(Client, req, "/levels/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/levels/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdLevelDelete(c *cli.Context) error {
@@ -78,16 +85,23 @@ func cmdLevelDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdLevelList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/levels/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	if resp, err := adm.GetReq(`/levels/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdLevelShow(c *cli.Context) error {
@@ -96,10 +110,11 @@ func cmdLevelShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
