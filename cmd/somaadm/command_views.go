@@ -58,7 +58,7 @@ func cmdViewsAdd(c *cli.Context) error {
 	req.View = &proto.View{}
 	req.View.Name = c.Args().First()
 	if strings.Contains(req.View.Name, `.`) {
-		adm.Abort(`Views must not contain the character '.'`)
+		return fmt.Errorf(`Views must not contain the character '.'`)
 	}
 
 	if resp, err := adm.PostReqBody(req, `/views/`); err != nil {
