@@ -218,7 +218,7 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 		return err
 	}
 	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
-	oncallId, err := adm.LookupOncallId(c.Args().First())
+	oncallId, err := adm.LookupOncallId(opts[`to`][0])
 	if err != nil {
 		return err
 	}
@@ -247,7 +247,7 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 		return err
 	}
 	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
-	oncallId, err := adm.LookupOncallId(c.Args().First())
+	oncallId, err := adm.LookupOncallId(opts[`from`][0])
 	if err != nil {
 		return err
 	}
