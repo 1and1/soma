@@ -52,9 +52,11 @@ func cmdModeCreate(c *cli.Context) error {
 	req.Mode = &proto.Mode{}
 	req.Mode.Mode = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/modes/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/modes/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdModeDelete(c *cli.Context) error {
@@ -63,19 +65,23 @@ func cmdModeDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdModeList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, "/modes/")
-	fmt.Println(resp)
-	return nil
+
+	if resp, err := adm.GetReq(`/modes/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdModeShow(c *cli.Context) error {
@@ -84,10 +90,11 @@ func cmdModeShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
