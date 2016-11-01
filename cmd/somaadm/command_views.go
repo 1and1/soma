@@ -113,7 +113,7 @@ func cmdViewsList(c *cli.Context) error {
 	if resp, err := adm.GetReq(`/views/`); err != nil {
 		return err
 	} else {
-		return adm.FormatOut(c, resp, `show`)
+		return adm.FormatOut(c, resp, `list`)
 	}
 }
 
