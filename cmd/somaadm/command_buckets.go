@@ -151,12 +151,12 @@ func registerBuckets(app cli.App) *cli.App {
 
 func cmdBucketCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
-	multKeys := []string{"repository", "environment"}
-	uniqKeys := []string{}
+	uniqKeys := []string{"repository", "environment"}
+	multKeys := []string{}
 
 	opts := adm.ParseVariadicArguments(multKeys,
 		uniqKeys,
-		multKeys, // as reqKeys
+		uniqKeys, // as reqKeys
 		c.Args().Tail())
 
 	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
