@@ -40,6 +40,7 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 
 	if params.ByName(`tree`) != `tree` {
 		DispatchBadRequest(&w, nil)
+		return
 	}
 	treeT := ``
 	switch {
@@ -55,6 +56,7 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 		treeT = `node`
 	default:
 		DispatchBadRequest(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan msg.Result)
