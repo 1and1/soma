@@ -48,7 +48,7 @@ func (u SomaUtil) decodeProtoResultOncallFromResponse(resp *resty.Response) *pro
 	return u.DecodeResultFromResponse(resp)
 }
 
-func (u SomaUtil) ValidatePhoneNumber(n string) {
+func (u SomaUtil) validatePhoneNumber(n string) {
 	num, err := strconv.Atoi(n)
 	u.abortOnError(err, "Syntax error, argument is not a number")
 	if num <= 0 || num > 9999 {

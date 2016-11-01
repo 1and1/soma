@@ -92,7 +92,9 @@ func cmdOnCallAdd(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	utl.ValidatePhoneNumber(opts["phone"][0])
+	if err := adm.ValidateOncallNumber(opts["phone"][0]); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Oncall = &proto.Oncall{}
@@ -160,7 +162,9 @@ func cmdOnCallUpdate(c *cli.Context) error {
 	req.Oncall = &proto.Oncall{}
 	validUpdate := false
 	if len(opts["phone"]) > 0 {
-		utl.ValidatePhoneNumber(opts["phone"][0])
+		if err := adm.ValidateOncallNumber(opts["phone"][0]); err != nil {
+			return err
+		}
 		req.Oncall.Number = opts["phone"][0]
 		validUpdate = true
 	}

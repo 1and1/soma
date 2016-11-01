@@ -11,6 +11,7 @@ package adm
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"unicode/utf8"
 )
 
@@ -43,6 +44,19 @@ func isUUID(s string) bool {
 	re := regexp.MustCompile(fmt.Sprintf("%s|%s", reUUID, reUNIL))
 
 	return re.MatchString(s)
+}
+
+// ValidateOncallNumber tests if a string is a 4 digit number
+func ValidateOncallNumber(n string) error {
+	num, err := strconv.Atoi(n)
+	if err != nil {
+		return fmt.Errorf("Syntax error, argument is not a number: %s", err.Error())
+	}
+
+	if num <= 0 || num > 9999 {
+		return fmt.Errorf("Phone number must be 4-digit extension")
+	}
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
