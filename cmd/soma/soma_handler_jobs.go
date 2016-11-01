@@ -206,7 +206,7 @@ func (j *jobsRead) process(q *msg.Request) {
 			}
 			result.Job = append(result.Job, job)
 		}
-		if rows.Err() != nil {
+		if err = rows.Err(); err != nil {
 			result.ServerError(err)
 			result.Clear(q.Type)
 			goto dispatch
