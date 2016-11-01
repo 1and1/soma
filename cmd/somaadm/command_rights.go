@@ -71,7 +71,8 @@ func cmdRightGrant(c *cli.Context, cat string) error {
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
-		[]string{}, []string{`user`},
+		[]string{},
+		[]string{`user`},
 		[]string{`user`},
 		c.Args().Tail()); err != nil {
 		return err
@@ -79,11 +80,14 @@ func cmdRightGrant(c *cli.Context, cat string) error {
 
 	req := proto.NewGrantRequest()
 	req.Grant.RecipientType = `user`
-	req.Grant.RecipientId = utl.TryGetUserByUUIDOrName(Client, opts[`user`][0])
-	req.Grant.PermissionId = utl.TryGetPermissionByUUIDOrName(Client, c.Args().First())
+	req.Grant.RecipientId = utl.TryGetUserByUUIDOrName(Client,
+		opts[`user`][0])
+	req.Grant.PermissionId = utl.TryGetPermissionByUUIDOrName(Client,
+		c.Args().First())
 	req.Grant.Category = cat
 
-	path := fmt.Sprintf("/grant/%s/%s/%s/", req.Grant.Category, req.Grant.RecipientType, req.Grant.RecipientId)
+	path := fmt.Sprintf("/grant/%s/%s/%s/", req.Grant.Category,
+		req.Grant.RecipientType, req.Grant.RecipientId)
 	resp := utl.PostRequestWithBody(Client, req, path)
 	fmt.Println(resp)
 	return nil
@@ -101,7 +105,8 @@ func cmdRightRevoke(c *cli.Context, cat string) error {
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
-		[]string{}, []string{`user`},
+		[]string{},
+		[]string{`user`},
 		[]string{`user`},
 		c.Args().Tail()); err != nil {
 		return err
