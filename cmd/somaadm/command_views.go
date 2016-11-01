@@ -61,9 +61,11 @@ func cmdViewsAdd(c *cli.Context) error {
 		adm.Abort(`Views must not contain the character '.'`)
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/views/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/views/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdViewsRemove(c *cli.Context) error {
@@ -72,10 +74,11 @@ func cmdViewsRemove(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdViewsRename(c *cli.Context) error {
@@ -97,17 +100,25 @@ func cmdViewsRename(c *cli.Context) error {
 	req := proto.Request{}
 	req.View = &proto.View{}
 	req.View.Name = opts["to"][0]
-	path := fmt.Sprintf("/views/%s", c.Args().First())
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/views/%s", c.Args().First())
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdViewsList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/views/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	if resp, err := adm.GetReq(`/views/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 func cmdViewsShow(c *cli.Context) error {
@@ -116,10 +127,11 @@ func cmdViewsShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
