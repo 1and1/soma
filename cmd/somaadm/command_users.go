@@ -198,7 +198,13 @@ func cmdUserMarkDeleted(c *cli.Context) error {
 		return err
 	}
 
-	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
+	var (
+		err    error
+		userId string
+	)
+	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/users/%s", userId)
 
 	resp := utl.DeleteRequest(Client, path)
@@ -211,7 +217,13 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 		return err
 	}
 
-	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
+	var (
+		err    error
+		userId string
+	)
+	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/users/%s", userId)
 
 	req := proto.Request{
@@ -337,7 +349,13 @@ func cmdUserShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
+	var (
+		err error
+		id  string
+	)
+	if id, err = adm.LookupUserId(c.Args().First()); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/users/%s", id)
 
 	resp := utl.GetRequest(Client, path)

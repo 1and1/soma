@@ -80,8 +80,10 @@ func cmdRightGrant(c *cli.Context, cat string) error {
 
 	req := proto.NewGrantRequest()
 	req.Grant.RecipientType = `user`
-	req.Grant.RecipientId = utl.TryGetUserByUUIDOrName(Client,
-		opts[`user`][0])
+	var err error
+	if req.Grant.RecipientId, err = adm.LookupUserId(opts[`user`][0]); err != nil {
+		return err
+	}
 	req.Grant.PermissionId = utl.TryGetPermissionByUUIDOrName(Client,
 		c.Args().First())
 	req.Grant.Category = cat
@@ -113,7 +115,13 @@ func cmdRightRevoke(c *cli.Context, cat string) error {
 	}
 
 	permId := utl.TryGetPermissionByUUIDOrName(Client, c.Args().First())
-	userId := utl.TryGetUserByUUIDOrName(Client, opts[`user`][0])
+	var (
+		err    error
+		userId string
+	)
+	if userId, err = adm.LookupUserId(opts[`user`][0]); err != nil {
+		return err
+	}
 	grantId := utl.TryResolveGrantId(Client, `user`, userId, permId, cat)
 
 	path := fmt.Sprintf("/grant/%s/%s/%s/%s", cat, `user`, userId, grantId)

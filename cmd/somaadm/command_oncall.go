@@ -217,9 +217,15 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
-	oncallId, err := adm.LookupOncallId(opts[`to`][0])
-	if err != nil {
+
+	var (
+		err              error
+		userId, oncallId string
+	)
+	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
+		return err
+	}
+	if oncallId, err = adm.LookupOncallId(opts[`to`][0]); err != nil {
 		return err
 	}
 
@@ -246,9 +252,15 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
-	oncallId, err := adm.LookupOncallId(opts[`from`][0])
-	if err != nil {
+
+	var (
+		err              error
+		userId, oncallId string
+	)
+	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
+		return err
+	}
+	if oncallId, err = adm.LookupOncallId(opts[`from`][0]); err != nil {
 		return err
 	}
 

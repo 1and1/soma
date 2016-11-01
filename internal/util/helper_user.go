@@ -5,14 +5,14 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetUserByUUIDOrName(c *resty.Client, s string) string {
+func (u *SomaUtil) tryGetUserByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetUserIdByName(c, s)
+	return u.getUserIdByName(c, s)
 }
 
-func (u *SomaUtil) GetUserIdByName(c *resty.Client, user string) string {
+func (u *SomaUtil) getUserIdByName(c *resty.Client, user string) string {
 	req := proto.NewUserFilter()
 	req.Filter.User.UserName = user
 
