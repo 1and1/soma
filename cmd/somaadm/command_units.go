@@ -46,7 +46,6 @@ func registerUnits(app cli.App) *cli.App {
 }
 
 func cmdUnitCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"name"}
 
 	opts := map[string][]string{}
@@ -66,7 +65,9 @@ func cmdUnitCreate(c *cli.Context) error {
 }
 
 func cmdUnitDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/units/%s", esc)
@@ -83,7 +84,9 @@ func cmdUnitList(c *cli.Context) error {
 }
 
 func cmdUnitShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/units/%s", esc)

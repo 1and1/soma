@@ -47,7 +47,6 @@ func registerLevels(app cli.App) *cli.App {
 }
 
 func cmdLevelCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}
 	opts := map[string][]string{}
 
@@ -74,7 +73,9 @@ func cmdLevelCreate(c *cli.Context) error {
 }
 
 func cmdLevelDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 
@@ -90,7 +91,9 @@ func cmdLevelList(c *cli.Context) error {
 }
 
 func cmdLevelShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
 

@@ -108,8 +108,6 @@ func registerServers(app cli.App) *cli.App {
 }
 
 func cmdServerCreate(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
-
 	multiple := []string{}
 	unique := []string{`assetid`, `datacenter`, `location`, `online`}
 	required := []string{`assetid`, `datacenter`, `location`}
@@ -139,7 +137,9 @@ func cmdServerCreate(c *cli.Context) error {
 }
 
 func cmdServerMarkAsDeleted(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	sid := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
 	path := fmt.Sprintf("/servers/%s", sid)
 
@@ -149,7 +149,9 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 }
 
 func cmdServerPurgeDeleted(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	// TODO this will currently never return a deleted server
 	sid := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
 	path := fmt.Sprintf("/servers/%s", sid)
@@ -162,7 +164,6 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 }
 
 func cmdServerUpdate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 13)
 
 	if !utl.IsUUID(c.Args().First()) {
 		adm.Abort(
@@ -211,7 +212,9 @@ func cmdServerMove(c *cli.Context) error {
 }
 
 func cmdServerList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp, err := adm.GetReq(`/servers/`)
 	if err != nil {
@@ -222,7 +225,9 @@ func cmdServerList(c *cli.Context) error {
 }
 
 func cmdServerSync(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp, err := adm.GetReq(`/sync/servers/`)
 	if err != nil {
@@ -233,7 +238,9 @@ func cmdServerSync(c *cli.Context) error {
 }
 
 func cmdServerShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	serverId := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
 	path := fmt.Sprintf("/servers/%s", serverId)
@@ -248,7 +255,6 @@ func cmdServerSyncRequest(c *cli.Context) error {
 }
 
 func cmdServerNull(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 2)
 	key := []string{"datacenter"}
 
 	opts := map[string][]string{}

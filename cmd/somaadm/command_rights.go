@@ -68,7 +68,6 @@ func cmdRightGrantSystem(c *cli.Context) error {
 }
 
 func cmdRightGrant(c *cli.Context, cat string) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
@@ -99,7 +98,6 @@ func cmdRightRevokeSystem(c *cli.Context) error {
 }
 
 func cmdRightRevoke(c *cli.Context, cat string) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,

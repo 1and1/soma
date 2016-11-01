@@ -51,7 +51,9 @@ func registerStates(app cli.App) *cli.App {
 }
 
 func cmdObjectStatesAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewStateRequest()
 	req.State.Name = c.Args().First()
@@ -62,7 +64,9 @@ func cmdObjectStatesAdd(c *cli.Context) error {
 }
 
 func cmdObjectStatesRemove(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/objstates/%s", c.Args().First())
 
@@ -72,7 +76,6 @@ func cmdObjectStatesRemove(c *cli.Context) error {
 }
 
 func cmdObjectStatesRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{`to`}
 
 	opts := map[string][]string{}
@@ -92,14 +95,18 @@ func cmdObjectStatesRename(c *cli.Context) error {
 }
 
 func cmdObjectStatesList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, "/objstates/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdObjectStatesShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/objstates/%s", c.Args().First())
 

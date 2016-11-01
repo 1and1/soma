@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -43,7 +44,9 @@ func registerModes(app cli.App) *cli.App {
 }
 
 func cmdModeCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Mode = &proto.Mode{}
@@ -55,7 +58,9 @@ func cmdModeCreate(c *cli.Context) error {
 }
 
 func cmdModeDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 
@@ -65,13 +70,18 @@ func cmdModeDelete(c *cli.Context) error {
 }
 
 func cmdModeList(c *cli.Context) error {
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, "/modes/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdModeShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/modes/%s", c.Args().First())
 

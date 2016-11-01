@@ -49,7 +49,6 @@ func registerCapability(app cli.App) *cli.App {
 }
 
 func cmdCapabilityDeclare(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{"metric", "view", "thresholds"}
 	required := []string{"metric", "view", "thresholds"}
@@ -84,7 +83,9 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 }
 
 func cmdCapabilityRevoke(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/capability/%s", id)
@@ -95,13 +96,18 @@ func cmdCapabilityRevoke(c *cli.Context) error {
 }
 
 func cmdCapabilityList(c *cli.Context) error {
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, "/capability/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdCapabilityShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/capability/%s", id)

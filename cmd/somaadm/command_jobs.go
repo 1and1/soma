@@ -69,7 +69,9 @@ func registerJobs(app cli.App) *cli.App {
 }
 
 func cmdJobList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	if resp, err := adm.GetReq(`/jobs/`); err != nil {
 		return err
 	} else {
@@ -79,7 +81,9 @@ func cmdJobList(c *cli.Context) error {
 }
 
 func cmdJobShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	if !utl.IsUUID(c.Args().First()) {
 		return fmt.Errorf("Argument is not a UUID: %s", c.Args().First())
 	}

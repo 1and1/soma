@@ -150,7 +150,6 @@ func registerBuckets(app cli.App) *cli.App {
 }
 
 func cmdBucketCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	uniqKeys := []string{"repository", "environment"}
 	multKeys := []string{}
 	opts := map[string][]string{}
@@ -189,11 +188,18 @@ func cmdBucketCreate(c *cli.Context) error {
 }
 
 func cmdBucketDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`repository`},
+		[]string{`repository`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().Get(0),
+		c.Args().First(),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
@@ -206,11 +212,18 @@ func cmdBucketDelete(c *cli.Context) error {
 }
 
 func cmdBucketRestore(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`repository`},
+		[]string{`repository`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().Get(0),
+		c.Args().First(),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
@@ -229,9 +242,16 @@ func cmdBucketRestore(c *cli.Context) error {
 }
 
 func cmdBucketPurge(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`repository`},
+		[]string{`repository`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
@@ -252,9 +272,16 @@ func cmdBucketPurge(c *cli.Context) error {
 }
 
 func cmdBucketFreeze(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`repository`},
+		[]string{`repository`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
@@ -275,9 +302,16 @@ func cmdBucketFreeze(c *cli.Context) error {
 }
 
 func cmdBucketThaw(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`repository`},
+		[]string{`repository`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
@@ -298,18 +332,24 @@ func cmdBucketThaw(c *cli.Context) error {
 }
 
 func cmdBucketRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
-	utl.ValidateCliArgument(c, 2, "to")
-	utl.ValidateCliArgument(c, 4, "repository")
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().Get(4))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`repository`, `to`},
+		[]string{`repository`, `to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().Get(0),
+		c.Args().First(),
 		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
 		Bucket: &proto.Bucket{
-			Name: c.Args().Get(2),
+			Name: opts[`to`][0],
 		},
 	}
 
@@ -322,7 +362,9 @@ func cmdBucketRename(c *cli.Context) error {
 }
 
 func cmdBucketList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	if resp, err := adm.GetReq(`/buckets/`); err != nil {
 		return err
@@ -332,7 +374,9 @@ func cmdBucketList(c *cli.Context) error {
 }
 
 func cmdBucketShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
@@ -344,7 +388,9 @@ func cmdBucketShow(c *cli.Context) error {
 }
 
 func cmdBucketTree(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
 
 	path := fmt.Sprintf("/buckets/%s/tree/tree", bucketId)
@@ -392,7 +438,6 @@ func cmdBucketCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}

@@ -47,7 +47,6 @@ func registerMonitoring(app cli.App) *cli.App {
 }
 
 func cmdMonitoringCreate(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{"mode", "contact", "team", "callback"}
 	required := []string{"mode", "contact", "team"}
@@ -83,7 +82,9 @@ func cmdMonitoringCreate(c *cli.Context) error {
 }
 
 func cmdMonitoringDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	userId := utl.TryGetMonitoringByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/monitoring/%s", userId)
@@ -100,7 +101,9 @@ func cmdMonitoringList(c *cli.Context) error {
 }
 
 func cmdMonitoringShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetMonitoringByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/monitoring/%s", id)
 

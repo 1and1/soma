@@ -50,7 +50,9 @@ func registerViews(app cli.App) *cli.App {
 }
 
 func cmdViewsAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.View = &proto.View{}
@@ -65,7 +67,9 @@ func cmdViewsAdd(c *cli.Context) error {
 }
 
 func cmdViewsRemove(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 
@@ -75,7 +79,9 @@ func cmdViewsRemove(c *cli.Context) error {
 }
 
 func cmdViewsRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	key := []string{"to"}
 
 	opts := map[string][]string{}
@@ -105,7 +111,9 @@ func cmdViewsList(c *cli.Context) error {
 }
 
 func cmdViewsShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/views/%s", c.Args().First())
 

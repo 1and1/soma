@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -43,7 +44,9 @@ func registerStatus(app cli.App) *cli.App {
 }
 
 func cmdStatusCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Status = &proto.Status{}
@@ -55,7 +58,9 @@ func cmdStatusCreate(c *cli.Context) error {
 }
 
 func cmdStatusDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 
@@ -71,7 +76,9 @@ func cmdStatusList(c *cli.Context) error {
 }
 
 func cmdStatusShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/status/%s", c.Args().First())
 

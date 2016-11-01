@@ -47,7 +47,6 @@ func registerMetrics(app cli.App) *cli.App {
 }
 
 func cmdMetricCreate(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{"package"}
 	unique := []string{"unit", "description"}
 	required := []string{"unit", "description"}
@@ -93,7 +92,9 @@ func cmdMetricCreate(c *cli.Context) error {
 }
 
 func cmdMetricDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
 
@@ -109,7 +110,9 @@ func cmdMetricList(c *cli.Context) error {
 }
 
 func cmdMetricShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
 

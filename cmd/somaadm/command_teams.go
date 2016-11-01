@@ -69,13 +69,6 @@ func registerTeams(app cli.App) *cli.App {
 }
 
 func cmdTeamAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 3)
-	switch utl.GetCliArgumentCount(c) {
-	case 3, 5:
-		break // nop
-	default:
-		adm.Abort("Syntax error, unexpected argument count")
-	}
 	multi := []string{}
 	required := []string{"ldap"}
 	unique := []string{"ldap", "system"}
@@ -108,7 +101,6 @@ func cmdTeamAdd(c *cli.Context) error {
 }
 
 func cmdTeamUpdate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multi := []string{}
 	unique := []string{`name`, `ldap`, `system`}
 	required := []string{`name`, `ldap`}
@@ -133,7 +125,9 @@ func cmdTeamUpdate(c *cli.Context) error {
 }
 
 func cmdTeamDel(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)
 
@@ -143,7 +137,6 @@ func cmdTeamDel(c *cli.Context) error {
 }
 
 func cmdTeamRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"to"}
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(opts, key, key, key,
@@ -170,7 +163,9 @@ func cmdTeamMigrate(c *cli.Context) error {
 }
 
 func cmdTeamList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp, err := adm.GetReq(`/teams/`)
 	if err != nil {
@@ -181,7 +176,9 @@ func cmdTeamList(c *cli.Context) error {
 }
 
 func cmdTeamSync(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp, err := adm.GetReq(`/sync/teams/`)
 	if err != nil {
@@ -192,7 +189,9 @@ func cmdTeamSync(c *cli.Context) error {
 }
 
 func cmdTeamShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)

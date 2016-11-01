@@ -77,7 +77,9 @@ func registerOps(app cli.App) *cli.App {
 
 func cmdOpsBootstrap(c *cli.Context) error {
 	// no command line arguments
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	var (
 		err             error
 		happy           bool
@@ -224,7 +226,9 @@ Suggested next steps:
 }
 
 func cmdOpsDumpToken(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	// this is running wrapped in runtime(), there _is_ a token
 	token, _ := store.GetActiveToken(Cfg.Auth.User)
@@ -234,7 +238,9 @@ func cmdOpsDumpToken(c *cli.Context) error {
 }
 
 func cmdOpsRepoStop(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewSystemOperationRequest()
 	req.SystemOperation.Request = `stop_repository`
@@ -243,7 +249,9 @@ func cmdOpsRepoStop(c *cli.Context) error {
 }
 
 func cmdOpsRepoRestart(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewSystemOperationRequest()
 	req.SystemOperation.Request = `restart_repository`
@@ -291,7 +299,9 @@ func cmdOpsRepo(c *cli.Context, req proto.Request) error {
 }
 
 func cmdOpsShutdown(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewSystemOperationRequest()
 	req.SystemOperation.Request = `shutdown`

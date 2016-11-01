@@ -150,7 +150,6 @@ func registerClusters(app cli.App) *cli.App {
 }
 
 func cmdClusterCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -179,7 +178,6 @@ func cmdClusterCreate(c *cli.Context) error {
 }
 
 func cmdClusterDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -206,7 +204,6 @@ func cmdClusterDelete(c *cli.Context) error {
 }
 
 func cmdClusterRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
@@ -237,7 +234,9 @@ func cmdClusterRename(c *cli.Context) error {
 }
 
 func cmdClusterList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	if resp, err := adm.GetReq(`/clusters/`); err != nil {
 		return err
 	} else {
@@ -246,7 +245,6 @@ func cmdClusterList(c *cli.Context) error {
 }
 
 func cmdClusterShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -273,7 +271,6 @@ func cmdClusterShow(c *cli.Context) error {
 }
 
 func cmdClusterTree(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -300,7 +297,6 @@ func cmdClusterTree(c *cli.Context) error {
 }
 
 func cmdClusterMemberAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
@@ -343,7 +339,6 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 }
 
 func cmdClusterMemberDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
@@ -373,7 +368,6 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 }
 
 func cmdClusterMemberList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -436,7 +430,6 @@ func cmdClusterCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{`from`, `view`, `in`}
 	required := []string{`from`, `view`, `in`}

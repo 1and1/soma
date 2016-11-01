@@ -53,8 +53,6 @@ func registerChecks(app cli.App) *cli.App {
 }
 
 func cmdCheckAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 8)
-
 	opts, constraints, thresholds := utl.ParseVariadicCheckArguments(c.Args().Tail())
 
 	req := proto.Request{}
@@ -118,7 +116,6 @@ func cmdCheckAdd(c *cli.Context) error {
 }
 
 func cmdCheckDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"in"}
 	required := []string{"in"}
@@ -146,7 +143,6 @@ func cmdCheckDelete(c *cli.Context) error {
 }
 
 func cmdCheckList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 2)
 	multiple := []string{}
 	unique := []string{"in"}
 	required := []string{"in"}
@@ -173,7 +169,6 @@ func cmdCheckList(c *cli.Context) error {
 }
 
 func cmdCheckShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"in"}
 	required := []string{"in"}

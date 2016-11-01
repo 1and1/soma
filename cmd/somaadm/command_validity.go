@@ -45,7 +45,6 @@ func registerValidity(app cli.App) *cli.App {
 }
 
 func cmdValidityCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{"on", "direct", "inherited"}
 	required := []string{"on", "direct", "inherited"}
@@ -74,7 +73,9 @@ func cmdValidityCreate(c *cli.Context) error {
 }
 
 func cmdValidityDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/validity/%s", c.Args().First())
 
@@ -90,7 +91,9 @@ func cmdValidityList(c *cli.Context) error {
 }
 
 func cmdValidityShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/validity/%s", c.Args().First())
 

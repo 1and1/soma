@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -43,7 +44,9 @@ func registerPredicates(app cli.App) *cli.App {
 }
 
 func cmdPredicateCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Predicate = &proto.Predicate{}
@@ -55,7 +58,9 @@ func cmdPredicateCreate(c *cli.Context) error {
 }
 
 func cmdPredicateDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 
@@ -71,7 +76,9 @@ func cmdPredicateList(c *cli.Context) error {
 }
 
 func cmdPredicateShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/predicates/%s", c.Args().First())
 

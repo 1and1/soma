@@ -81,7 +81,6 @@ func registerOncall(app cli.App) *cli.App {
 }
 
 func cmdOnCallAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"phone"}
 
 	opts := map[string][]string{}
@@ -106,7 +105,9 @@ func cmdOnCallAdd(c *cli.Context) error {
 }
 
 func cmdOnCallDel(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
 
@@ -116,7 +117,6 @@ func cmdOnCallDel(c *cli.Context) error {
 }
 
 func cmdOnCallRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"to"}
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(opts, key, key, key,
@@ -140,7 +140,6 @@ func cmdOnCallUpdate(c *cli.Context) error {
 	allowed := []string{"phone", "name"}
 	unique := []string{"phone", "name"}
 	required := []string{}
-	utl.ValidateCliMinArgumentCount(c, 3)
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(opts, allowed, unique, required,
 		c.Args().Tail()); err != nil {
@@ -172,7 +171,9 @@ func cmdOnCallUpdate(c *cli.Context) error {
 }
 
 func cmdOnCallList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp := utl.GetRequest(Client, "/oncall/")
 	fmt.Println(resp)
@@ -180,7 +181,9 @@ func cmdOnCallList(c *cli.Context) error {
 }
 
 func cmdOnCallShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
@@ -191,10 +194,17 @@ func cmdOnCallShow(c *cli.Context) error {
 }
 
 func cmdOnCallMemberAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to")
-	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().Get(0))
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, opts[`to`][0])
 
 	req := proto.Request{}
 	req.Oncall = &proto.Oncall{}
@@ -210,10 +220,17 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 }
 
 func cmdOnCallMemberDel(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "from")
-	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().Get(0))
-	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(2))
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`from`},
+		[]string{`from`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
+	oncallId := utl.TryGetOncallByUUIDOrName(Client, opts[`from`][0])
 
 	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId)
 
@@ -223,7 +240,9 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 }
 
 func cmdOnCallMemberList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	oncallId := utl.TryGetOncallByUUIDOrName(Client, c.Args().Get(0))
 
 	path := fmt.Sprintf("/oncall/%s/members/", oncallId)

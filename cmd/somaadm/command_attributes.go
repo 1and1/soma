@@ -46,7 +46,6 @@ func registerAttributes(app cli.App) *cli.App {
 }
 
 func cmdAttributeCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"cardinality"}
 	required := []string{"cardinality"}
@@ -83,7 +82,9 @@ func cmdAttributeCreate(c *cli.Context) error {
 }
 
 func cmdAttributeDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 
@@ -99,7 +100,9 @@ func cmdAttributeList(c *cli.Context) error {
 }
 
 func cmdAttributeShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
 

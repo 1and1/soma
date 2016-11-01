@@ -163,10 +163,17 @@ func registerRepository(app cli.App) *cli.App {
 }
 
 func cmdRepositoryCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "team")
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`team`},
+		[]string{`team`},
+		adm.AllArguments(c)); err != nil {
+		return err
+	}
 
-	teamId := utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
+	teamId := utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
@@ -183,7 +190,9 @@ func cmdRepositoryCreate(c *cli.Context) error {
 }
 
 func cmdRepositoryDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
@@ -195,7 +204,9 @@ func cmdRepositoryDelete(c *cli.Context) error {
 }
 
 func cmdRepositoryRestore(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
@@ -213,7 +224,9 @@ func cmdRepositoryRestore(c *cli.Context) error {
 }
 
 func cmdRepositoryPurge(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
@@ -231,7 +244,9 @@ func cmdRepositoryPurge(c *cli.Context) error {
 }
 
 func cmdRepositoryClear(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
@@ -249,14 +264,21 @@ func cmdRepositoryClear(c *cli.Context) error {
 }
 
 func cmdRepositoryRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to")
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
-	req.Repository.Name = c.Args().Get(2)
+	req.Repository.Name = opts[`to`][0]
 
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
@@ -266,15 +288,22 @@ func cmdRepositoryRename(c *cli.Context) error {
 }
 
 func cmdRepositoryRepossess(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to")
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
-	_ = utl.TryGetTeamByUUIDOrName(Client, c.Args().Get(2))
+	_ = utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
 	path := fmt.Sprintf("/repository/%s", id)
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
-	req.Repository.TeamId = c.Args().Get(2)
+	req.Repository.TeamId = opts[`to`][0]
 
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
@@ -289,7 +318,9 @@ func cmdRepositoryClone(c *cli.Context) error {
 }
 
 func cmdRepositoryActivate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
@@ -312,7 +343,9 @@ func cmdRepositoryWipe(c *cli.Context) error {
 }
 
 func cmdRepositoryList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	if resp, err := adm.GetReq("/repository/"); err != nil {
 		return err
 	} else {
@@ -321,7 +354,9 @@ func cmdRepositoryList(c *cli.Context) error {
 }
 
 func cmdRepositoryShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s", id)
 
@@ -333,7 +368,9 @@ func cmdRepositoryShow(c *cli.Context) error {
 }
 
 func cmdRepositoryTree(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/repository/%s/tree/tree", id)
 
@@ -381,7 +418,6 @@ func cmdRepositoryCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdRepositoryPropertyDelete(c *cli.Context, pType string) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}

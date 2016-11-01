@@ -51,7 +51,9 @@ func registerEnvironments(app cli.App) *cli.App {
 }
 
 func cmdEnvironmentsAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewEnvironmentRequest()
 	req.Environment.Name = c.Args().First()
@@ -62,7 +64,9 @@ func cmdEnvironmentsAdd(c *cli.Context) error {
 }
 
 func cmdEnvironmentsRemove(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
 
@@ -72,7 +76,6 @@ func cmdEnvironmentsRemove(c *cli.Context) error {
 }
 
 func cmdEnvironmentsRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{`to`}
 	opts := map[string][]string{}
 
@@ -92,14 +95,18 @@ func cmdEnvironmentsRename(c *cli.Context) error {
 }
 
 func cmdEnvironmentsList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, "/environments/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdEnvironmentsShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
 

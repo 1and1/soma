@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -43,7 +44,9 @@ func registerProviders(app cli.App) *cli.App {
 }
 
 func cmdProviderCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Provider = &proto.Provider{}
@@ -55,7 +58,9 @@ func cmdProviderCreate(c *cli.Context) error {
 }
 
 func cmdProviderDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
 
@@ -71,7 +76,9 @@ func cmdProviderList(c *cli.Context) error {
 }
 
 func cmdProviderShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
 

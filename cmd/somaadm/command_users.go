@@ -139,7 +139,6 @@ func registerUsers(app cli.App) *cli.App {
 }
 
 func cmdUserAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 11)
 	multiple := []string{}
 	unique := []string{"firstname", "lastname", "employeenr",
 		"mailaddr", "team", "active", "system"}
@@ -192,7 +191,6 @@ func cmdUserAdd(c *cli.Context) error {
 }
 
 func cmdUserUpdate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 15)
 	multiple := []string{}
 	unique := []string{`username`, "firstname", "lastname", "employeenr",
 		"mailaddr", "team", `deleted`}
@@ -233,7 +231,9 @@ func cmdUserUpdate(c *cli.Context) error {
 }
 
 func cmdUserMarkDeleted(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
@@ -244,7 +244,9 @@ func cmdUserMarkDeleted(c *cli.Context) error {
 }
 
 func cmdUserPurgeDeleted(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	userId := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", userId)
@@ -373,12 +375,16 @@ func cmdUserRename(c *cli.Context) {
 func cmdUserActivate(c *cli.Context) error {
 	// administrative use, full runtime is available
 	if c.GlobalIsSet(`admin`) {
-		utl.ValidateCliArgumentCount(c, 1)
+		if err := adm.VerifySingleArgument(c); err != nil {
+			return err
+		}
 		return runtime(cmdUserActivateAdmin)(c)
 	}
 	// user trying to activate the account for the first
 	// time, reduced runtime
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	return boottime(cmdUserActivateUser)(c)
 }
 
@@ -470,21 +476,27 @@ func cmdUserDeactivate(c *cli.Context) {
 */
 
 func cmdUserList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, "/users/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdUserSync(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, `/sync/users/`)
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdUserShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetUserByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/users/%s", id)
 

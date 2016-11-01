@@ -213,21 +213,13 @@ func registerNodes(app cli.App) *cli.App {
 }
 
 func cmdNodeAdd(c *cli.Context) error {
+	opts := map[string][]string{}
 	multKeys := []string{}
 	uniqKeys := []string{`assetid`, `name`, `team`, `server`, `online`}
 	reqKeys := []string{`assetid`, `name`, `team`}
 
-	switch utl.GetCliArgumentCount(c) {
-	case 6, 8, 10:
-		break
-	default:
-		adm.Abort("Syntax error, unexpected argument count")
-	}
-	argSlice := utl.GetFullArgumentSlice(c)
-	opts := map[string][]string{}
-
 	if err := adm.ParseVariadicArguments(opts, multKeys, uniqKeys, reqKeys,
-		argSlice); err != nil {
+		adm.AllArguments(c)); err != nil {
 		return err
 	}
 	req := proto.Request{}
@@ -256,7 +248,6 @@ func cmdNodeAdd(c *cli.Context) error {
 }
 
 func cmdNodeUpdate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 13)
 	multiple := []string{}
 	unique := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
 	required := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
@@ -287,7 +278,9 @@ func cmdNodeUpdate(c *cli.Context) error {
 }
 
 func cmdNodeDel(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
@@ -304,10 +297,14 @@ func cmdNodePurge(c *cli.Context) error {
 		req  proto.Request
 	)
 	if c.Bool("all") {
-		utl.ValidateCliArgumentCount(c, 0)
+		if err := adm.VerifyNoArgument(c); err != nil {
+			return err
+		}
 		path = "/nodes/"
 	} else {
-		utl.ValidateCliArgumentCount(c, 1)
+		if err := adm.VerifySingleArgument(c); err != nil {
+			return err
+		}
 		id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 		path = fmt.Sprintf("/nodes/%s", id)
 	}
@@ -331,10 +328,14 @@ func cmdNodeRestore(c *cli.Context) error {
 		req  proto.Request
 	)
 	if c.Bool("all") {
-		utl.ValidateCliArgumentCount(c, 0)
+		if err := adm.VerifyNoArgument(c); err != nil {
+			return err
+		}
 		path = "/nodes/"
 	} else {
-		utl.ValidateCliArgumentCount(c, 1)
+		if err := adm.VerifySingleArgument(c); err != nil {
+			return err
+		}
 		id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 		path = fmt.Sprintf("/nodes/%s", id)
 	}
@@ -353,14 +354,21 @@ func cmdNodeRestore(c *cli.Context) error {
 }
 
 func cmdNodeRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to")
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
-	req.Node.Name = c.Args().Get(2)
+	req.Node.Name = opts[`to`][0]
 
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
@@ -370,10 +378,17 @@ func cmdNodeRename(c *cli.Context) error {
 }
 
 func cmdNodeRepo(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().Get(0))
-	team := c.Args().Get(2)
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	team := opts[`to`][0]
 	// try resolving team name to uuid as name validation
 	_ = utl.GetTeamIdByName(Client, team)
 	path := fmt.Sprintf("/nodes/%s", id)
@@ -390,10 +405,17 @@ func cmdNodeRepo(c *cli.Context) error {
 }
 
 func cmdNodeMove(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
-	utl.ValidateCliArgument(c, 2, "to")
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().Get(0))
-	server := c.Args().Get(2)
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
+	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	server := opts[`to`][0]
 	// try resolving server name to uuid as name validation
 	_ = utl.GetServerAssetIdByName(Client, server)
 	path := fmt.Sprintf("/nodes/%s", id)
@@ -410,7 +432,9 @@ func cmdNodeMove(c *cli.Context) error {
 }
 
 func cmdNodeOnline(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
@@ -426,7 +450,9 @@ func cmdNodeOnline(c *cli.Context) error {
 }
 
 func cmdNodeOffline(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
@@ -442,7 +468,6 @@ func cmdNodeOffline(c *cli.Context) error {
 }
 
 func cmdNodeAssign(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{"to"}
 	required := []string{"to"}
@@ -478,7 +503,9 @@ func cmdNodeAssign(c *cli.Context) error {
 }
 
 func cmdNodeList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	if resp, err := adm.GetReq("/nodes/"); err != nil {
 		return err
@@ -488,7 +515,9 @@ func cmdNodeList(c *cli.Context) error {
 }
 
 func cmdNodeShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s", id)
 
@@ -500,7 +529,9 @@ func cmdNodeShow(c *cli.Context) error {
 }
 
 func cmdNodeTree(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/tree/tree", id)
 
@@ -512,7 +543,9 @@ func cmdNodeTree(c *cli.Context) error {
 }
 
 func cmdNodeSync(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	if resp, err := adm.GetReq(`/sync/nodes/`); err != nil {
 		return err
@@ -522,7 +555,9 @@ func cmdNodeSync(c *cli.Context) error {
 }
 
 func cmdNodeConfig(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/nodes/%s/config", id)
 
@@ -570,7 +605,6 @@ func cmdNodeCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdNodePropertyDelete(c *cli.Context, pType string) error {
-	utl.ValidateCliMinArgumentCount(c, 5)
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}

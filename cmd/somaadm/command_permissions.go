@@ -131,7 +131,9 @@ func registerPermissions(app cli.App) *cli.App {
 }
 
 func cmdPermissionCategoryAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewCategoryRequest()
 	req.Category.Name = c.Args().First()
@@ -142,7 +144,9 @@ func cmdPermissionCategoryAdd(c *cli.Context) error {
 }
 
 func cmdPermissionCategoryDel(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/category/%s", c.Args().First())
 
@@ -152,7 +156,9 @@ func cmdPermissionCategoryDel(c *cli.Context) error {
 }
 
 func cmdPermissionCategoryList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp := utl.GetRequest(Client, `/category/`)
 	fmt.Println(resp)
@@ -160,7 +166,9 @@ func cmdPermissionCategoryList(c *cli.Context) error {
 }
 
 func cmdPermissionCategoryShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/category/%s", c.Args().First())
 
@@ -170,7 +178,6 @@ func cmdPermissionCategoryShow(c *cli.Context) error {
 }
 
 func cmdPermissionAdd(c *cli.Context) error {
-	utl.ValidateCliMinArgumentCount(c, 3)
 	multiple := []string{}
 	unique := []string{`category`, `grants`}
 	required := []string{`category`}
@@ -198,7 +205,9 @@ func cmdPermissionAdd(c *cli.Context) error {
 }
 
 func cmdPermissionDel(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/permission/%s", c.Args().First())
 
@@ -208,7 +217,9 @@ func cmdPermissionDel(c *cli.Context) error {
 }
 
 func cmdPermissionList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 
 	resp := utl.GetRequest(Client, `/permission/`)
 	fmt.Println(resp)
@@ -216,7 +227,9 @@ func cmdPermissionList(c *cli.Context) error {
 }
 
 func cmdPermissionShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/permission/%s", c.Args().First())
 

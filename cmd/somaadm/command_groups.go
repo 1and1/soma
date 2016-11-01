@@ -186,7 +186,6 @@ func registerGroups(app cli.App) *cli.App {
 }
 
 func cmdGroupCreate(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -216,7 +215,6 @@ func cmdGroupCreate(c *cli.Context) error {
 }
 
 func cmdGroupDelete(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -243,7 +241,6 @@ func cmdGroupDelete(c *cli.Context) error {
 }
 
 func cmdGroupRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
@@ -274,7 +271,9 @@ func cmdGroupRename(c *cli.Context) error {
 }
 
 func cmdGroupList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	if resp, err := adm.GetReq("/groups/"); err != nil {
 		return err
 	} else {
@@ -283,7 +282,6 @@ func cmdGroupList(c *cli.Context) error {
 }
 
 func cmdGroupShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -311,7 +309,6 @@ func cmdGroupShow(c *cli.Context) error {
 }
 
 func cmdGroupTree(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -338,7 +335,6 @@ func cmdGroupTree(c *cli.Context) error {
 }
 
 func cmdGroupMemberAddGroup(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
@@ -377,7 +373,6 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 }
 
 func cmdGroupMemberAddCluster(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
@@ -416,7 +411,6 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 }
 
 func cmdGroupMemberAddNode(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
@@ -453,7 +447,6 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 }
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
@@ -485,7 +478,6 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 }
 
 func cmdGroupMemberDeleteCluster(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
@@ -517,7 +509,6 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 }
 
 func cmdGroupMemberDeleteNode(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
@@ -547,7 +538,6 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 }
 
 func cmdGroupMemberList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 	opts := map[string][]string{}
 
@@ -611,7 +601,6 @@ func cmdGroupCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
-	utl.ValidateCliMinArgumentCount(c, 7)
 	multiple := []string{}
 	unique := []string{`from`, `view`, `in`}
 	required := []string{`from`, `view`, `in`}

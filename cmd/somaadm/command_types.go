@@ -51,7 +51,9 @@ func registerTypes(app cli.App) *cli.App {
 }
 
 func cmdObjectTypesAdd(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	req := proto.NewEntityRequest()
 	req.Entity.Name = c.Args().First()
@@ -62,7 +64,9 @@ func cmdObjectTypesAdd(c *cli.Context) error {
 }
 
 func cmdObjectTypesRemove(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
 
@@ -72,7 +76,6 @@ func cmdObjectTypesRemove(c *cli.Context) error {
 }
 
 func cmdObjectTypesRename(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{`to`}
 
 	opts := map[string][]string{}
@@ -92,14 +95,18 @@ func cmdObjectTypesRename(c *cli.Context) error {
 }
 
 func cmdObjectTypesList(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 0)
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
 	resp := utl.GetRequest(Client, "/objtypes/")
 	fmt.Println(resp)
 	return nil
 }
 
 func cmdObjectTypesShow(c *cli.Context) error {
-	utl.ValidateCliArgumentCount(c, 1)
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
 
