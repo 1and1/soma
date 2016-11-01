@@ -340,7 +340,7 @@ func cmdBucketTree(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 1)
 	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
 
-	path := fmt.Sprintf("/buckets/%s/tree", bucketId)
+	path := fmt.Sprintf("/buckets/%s/tree/tree", bucketId)
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
