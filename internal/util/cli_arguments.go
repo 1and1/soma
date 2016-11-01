@@ -11,7 +11,7 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-func (u *SomaUtil) GetCliArgumentCount(c *cli.Context) int {
+func (u *SomaUtil) getCliArgumentCount(c *cli.Context) int {
 	a := c.Args()
 	if !a.Present() {
 		return 0
@@ -19,15 +19,15 @@ func (u *SomaUtil) GetCliArgumentCount(c *cli.Context) int {
 	return len(a.Tail()) + 1
 }
 
-func (u *SomaUtil) ValidateCliArgument(c *cli.Context, pos uint8, s string) {
+func (u *SomaUtil) validateCliArgument(c *cli.Context, pos uint8, s string) {
 	a := c.Args()
 	if a.Get(int(pos)-1) != s {
 		u.abort(fmt.Sprintf("Syntax error, missing keyword: %s", s))
 	}
 }
 
-func (u *SomaUtil) ValidateCliMinArgumentCount(c *cli.Context, i uint8) {
-	ct := u.GetCliArgumentCount(c)
+func (u *SomaUtil) validateCliMinArgumentCount(c *cli.Context, i uint8) {
+	ct := u.getCliArgumentCount(c)
 	if ct < int(i) {
 		u.abort(fmt.Sprintf(
 			"Syntax error, incorrect argument count (%d < %d+ expected)",
@@ -37,7 +37,7 @@ func (u *SomaUtil) ValidateCliMinArgumentCount(c *cli.Context, i uint8) {
 	}
 }
 
-func (u *SomaUtil) ValidateCliArgumentCount(c *cli.Context, i uint8) {
+func (u *SomaUtil) validateCliArgumentCount(c *cli.Context, i uint8) {
 	a := c.Args()
 	if i == 0 {
 		if a.Present() {
