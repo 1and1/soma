@@ -10,6 +10,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 
 	"github.com/1and1/soma/internal/msg"
@@ -68,7 +69,7 @@ func (i *instance) process(q *msg.Request) {
 		isInherited                                   bool
 		rows                                          *sql.Rows
 		nullRepositoryId, nullBucketId                *sql.NullString
-		instanceId, checkId, configId                 string
+		instanceId, checkId, configId, details        string
 		objectId, objectType, status, nextStatus      string
 		repositoryId, bucketId, instanceConfigId      string
 		createdNull, activatedNull, deprovisionedNull pq.NullTime
@@ -98,6 +99,7 @@ func (i *instance) process(q *msg.Request) {
 			&status,
 			&nextStatus,
 			&isInherited,
+			&details,
 		); err == sql.ErrNoRows {
 			result.NotFound(err)
 			goto dispatch
@@ -116,6 +118,13 @@ func (i *instance) process(q *msg.Request) {
 			bucketId = nullBucketId.String
 		}
 
+		// unmarhal JSONB deployment details
+		depl := proto.Deployment{}
+		if err = json.Unmarshal([]byte(details), &depl); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+
 		result.Instance = []proto.Instance{proto.Instance{
 			Id:               instanceId,
 			Version:          uint64(version),
@@ -129,6 +138,7 @@ func (i *instance) process(q *msg.Request) {
 			CurrentStatus:    status,
 			NextStatus:       nextStatus,
 			IsInherited:      isInherited,
+			Deployment:       &depl,
 		}}
 		result.OK()
 	case `versions`:

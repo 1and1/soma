@@ -23,6 +23,7 @@ type Instance struct {
 	NextStatus       string               `json:"nextStatus,omitempty"`
 	IsInherited      bool                 `json:"isInherited"`
 	Info             *InstanceVersionInfo `json:"instanceVersionInfo,omitempty"`
+	Deployment       *Deployment          `json:"deployment,omitempty"`
 }
 
 type InstanceVersionInfo struct {

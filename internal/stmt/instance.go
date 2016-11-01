@@ -55,7 +55,8 @@ SELECT sci.check_instance_id,
        sc.object_type,
        scic.status,
        scic.next_status,
-       (sc.object_id = sc.source_object_id)::boolean
+       (sc.object_id = sc.source_object_id)::boolean,
+       scic.deployment_details
 FROM   soma.checks sc
 JOIN   soma.check_instances sci
   ON   sc.check_id = sci.check_id
