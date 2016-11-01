@@ -21,24 +21,24 @@ func (u *SomaUtil) GetMonitoringIdByName(c *resty.Client, monitoring string) str
 
 	resp, err := adm.PostReqBody(req, `/filter/monitoring/`)
 	if err != nil {
-		u.Abort(fmt.Sprintf("Monitoring lookup request error: %s", err.Error()))
+		u.abort(fmt.Sprintf("Monitoring lookup request error: %s", err.Error()))
 	}
 	result, err := u.ResultFromResponse(resp)
 	if se, ok := err.(SomaError); ok {
 		if se.RequestError() {
-			u.Abort(fmt.Sprintf("Monitoring lookup request error: %s", se.Error()))
+			u.abort(fmt.Sprintf("Monitoring lookup request error: %s", se.Error()))
 		}
 		if se.Code() == 404 {
-			u.Abort(fmt.Sprintf(
+			u.abort(fmt.Sprintf(
 				"Could not find monitoring system with name %s",
 				monitoring,
 			))
 		}
-		u.Abort(fmt.Sprintf("Monitoring lookup application error: %s", err.Error()))
+		u.abort(fmt.Sprintf("Monitoring lookup application error: %s", err.Error()))
 	}
 
 	if monitoring != (*result.Monitorings)[0].Name {
-		u.Abort(fmt.Sprintf(
+		u.abort(fmt.Sprintf(
 			"Monitoring system ID lookup failed. Wanted %s, received %s",
 			monitoring,
 			(*result.Monitorings)[0].Name,

@@ -20,7 +20,7 @@ func (u *SomaUtil) GetPermissionIdByName(c *resty.Client, perm string) string {
 	res := u.DecodeResultFromResponse(resp)
 
 	if perm != (*res.Permissions)[0].Name {
-		u.Abort(`Received result set for incorrect permission`)
+		u.abort(`Received result set for incorrect permission`)
 	}
 	return (*res.Permissions)[0].Id
 }

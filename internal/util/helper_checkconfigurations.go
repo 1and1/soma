@@ -20,7 +20,7 @@ func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b str
 	case "node":
 		return u.TryGetNodeByUUIDOrName(c, n)
 	default:
-		u.Abort(fmt.Sprintf("Error, unknown object type: %s", t))
+		u.abort(fmt.Sprintf("Error, unknown object type: %s", t))
 	}
 	return ""
 }
@@ -117,7 +117,7 @@ func (u *SomaUtil) GetCheckByName(c *resty.Client, ck string, r string) string {
 	checkResult := u.DecodeCheckConfigurationResultFromResponse(resp)
 
 	if ck != (*checkResult.CheckConfigs)[0].Name {
-		u.Abort("Received result set for incorrect check configuration")
+		u.abort("Received result set for incorrect check configuration")
 	}
 	return (*checkResult.CheckConfigs)[0].Id
 }

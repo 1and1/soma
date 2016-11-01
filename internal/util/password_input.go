@@ -38,10 +38,10 @@ func (u *SomaUtil) ReadPasswordFromTerminal() (string, error) {
 	line.SetCtrlCAborts(true)
 
 	inpass01, err := line.PasswordPrompt("Enter new password: ")
-	u.AbortOnError(err)
+	u.abortOnError(err)
 
 	inpass02, err := line.PasswordPrompt("Repeat new password: ")
-	u.AbortOnError(err)
+	u.abortOnError(err)
 
 	if inpass01 == inpass02 {
 		return inpass01, nil

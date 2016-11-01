@@ -27,7 +27,7 @@ func (u SomaUtil) GetRepositoryIdByName(c *resty.Client, repo string) string {
 	repoResult := u.DecodeProtoResultRepositoryFromResponse(resp)
 
 	if repo != (*repoResult.Repositories)[0].Name {
-		u.Abort("Received result set for incorrect repository")
+		u.abort("Received result set for incorrect repository")
 	}
 	return (*repoResult.Repositories)[0].Id
 }

@@ -16,7 +16,7 @@ func (u *SomaUtil) TryResolveGrantId(c *resty.Client, rtyp, rid, pid, cat string
 	res := u.DecodeResultFromResponse(resp)
 
 	if pid != (*res.Grants)[0].PermissionId {
-		u.Abort(`Received result set for incorrect grant`)
+		u.abort(`Received result set for incorrect grant`)
 	}
 	return (*res.Grants)[0].Id
 }

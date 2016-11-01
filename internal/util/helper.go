@@ -9,7 +9,7 @@ import (
 
 func (u *SomaUtil) CheckRestyResponse(resp *resty.Response) {
 	if resp.StatusCode() >= 400 {
-		u.Abort(fmt.Sprintf("Request error: %s\n", resp.Status()))
+		u.abort(fmt.Sprintf("Request error: %s\n", resp.Status()))
 	}
 }
 

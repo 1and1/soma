@@ -52,7 +52,7 @@ func (u SomaUtil) GetServerIdByAssetId(cache *db.DB, c *resty.Client, aid uint64
 	res := u.DecodeResultFromResponse(resp)
 
 	if aid != (*res.Servers)[0].AssetId {
-		u.Abort("Received result set for incorrect server")
+		u.abort("Received result set for incorrect server")
 	}
 	cache.Server(
 		(*res.Servers)[0].Name,
@@ -70,7 +70,7 @@ func (u SomaUtil) GetServerIdByName(cache *db.DB, c *resty.Client, server string
 	serverResult := u.DecodeProtoResultServerFromResponse(resp)
 
 	if server != (*serverResult.Servers)[0].Name {
-		u.Abort("Received result set for incorrect server")
+		u.abort("Received result set for incorrect server")
 	}
 	cache.Server(
 		(*serverResult.Servers)[0].Name,

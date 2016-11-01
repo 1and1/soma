@@ -21,7 +21,7 @@ func (u *SomaUtil) GetCapabilityIdByName(c *resty.Client, capability string) str
 
 	split := strings.SplitN(capability, ".", 3)
 	if len(split) != 3 {
-		u.Abort("Capability split failed, name invalid")
+		u.abort("Capability split failed, name invalid")
 	}
 	req.Filter.Capability.MonitoringId = u.TryGetMonitoringByUUIDOrName(c, split[0])
 	req.Filter.Capability.View = split[1]
@@ -29,24 +29,24 @@ func (u *SomaUtil) GetCapabilityIdByName(c *resty.Client, capability string) str
 
 	resp, err := adm.PostReqBody(req, `/filter/capability/`)
 	if err != nil {
-		u.Abort(fmt.Sprintf("Capability lookup request error: %s", err.Error()))
+		u.abort(fmt.Sprintf("Capability lookup request error: %s", err.Error()))
 	}
 	result, err := u.ResultFromResponse(resp)
 	if se, ok := err.(SomaError); ok {
 		if se.RequestError() {
-			u.Abort(fmt.Sprintf("Capability lookup request error: %s", se.Error()))
+			u.abort(fmt.Sprintf("Capability lookup request error: %s", se.Error()))
 		}
 		if se.Code() == 404 {
-			u.Abort(fmt.Sprintf(
+			u.abort(fmt.Sprintf(
 				"Could not find capability with name %s",
 				capability,
 			))
 		}
-		u.Abort(fmt.Sprintf("Capability lookup application error: %s", err.Error()))
+		u.abort(fmt.Sprintf("Capability lookup application error: %s", err.Error()))
 	}
 
 	if capability != (*result.Capabilities)[0].Name {
-		u.Abort(fmt.Sprintf(
+		u.abort(fmt.Sprintf(
 			"Capability lookup failed. Wanted %s, received %s",
 			capability,
 			(*result.Capabilities)[0].Name,

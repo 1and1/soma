@@ -15,24 +15,24 @@ func (u *SomaUtil) TryGetLevelNameByNameOrShort(c *resty.Client, s string) strin
 
 	resp, err := adm.PostReqBody(req, `/filter/levels/`)
 	if err != nil {
-		u.Abort(fmt.Sprintf("Level lookup request error: %s", err.Error()))
+		u.abort(fmt.Sprintf("Level lookup request error: %s", err.Error()))
 	}
 	result, err := u.ResultFromResponse(resp)
 	if se, ok := err.(SomaError); ok {
 		if se.RequestError() {
-			u.Abort(fmt.Sprintf("Level lookup request error: %s", se.Error()))
+			u.abort(fmt.Sprintf("Level lookup request error: %s", se.Error()))
 		}
 		if se.Code() == 404 {
-			u.Abort(fmt.Sprintf(
+			u.abort(fmt.Sprintf(
 				"Could not find notification level with name %s",
 				s,
 			))
 		}
-		u.Abort(fmt.Sprintf("Level lookup application error: %s", err.Error()))
+		u.abort(fmt.Sprintf("Level lookup application error: %s", err.Error()))
 	}
 
 	if s != (*result.Levels)[0].Name && s != (*result.Levels)[0].ShortName {
-		u.Abort(fmt.Sprintf(
+		u.abort(fmt.Sprintf(
 			"Notification level lookup failed. Wanted %s, received %s/%s",
 			s,
 			(*result.Levels)[0].Name,

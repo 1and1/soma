@@ -22,14 +22,14 @@ func (u *SomaUtil) GetCliArgumentCount(c *cli.Context) int {
 func (u *SomaUtil) ValidateCliArgument(c *cli.Context, pos uint8, s string) {
 	a := c.Args()
 	if a.Get(int(pos)-1) != s {
-		u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", s))
+		u.abort(fmt.Sprintf("Syntax error, missing keyword: %s", s))
 	}
 }
 
 func (u *SomaUtil) ValidateCliMinArgumentCount(c *cli.Context, i uint8) {
 	ct := u.GetCliArgumentCount(c)
 	if ct < int(i) {
-		u.Abort(fmt.Sprintf(
+		u.abort(fmt.Sprintf(
 			"Syntax error, incorrect argument count (%d < %d+ expected)",
 			ct,
 			i,
@@ -41,11 +41,11 @@ func (u *SomaUtil) ValidateCliArgumentCount(c *cli.Context, i uint8) {
 	a := c.Args()
 	if i == 0 {
 		if a.Present() {
-			u.Abort("Syntax error, command takes no arguments")
+			u.abort("Syntax error, command takes no arguments")
 		}
 	} else {
 		if !a.Present() || len(a.Tail()) != (int(i)-1) {
-			u.Abort(fmt.Sprintf(
+			u.abort(fmt.Sprintf(
 				"Syntax error, incorrect argument count (expected: %d, received %d)",
 				i,
 				len(a.Tail()),
@@ -101,7 +101,7 @@ func (u *SomaUtil) ParseVariadicArguments(
 		if u.SliceContainsString(val, keys) {
 			// there must be at least one arguments left
 			if len(args[pos+1:]) < 1 {
-				u.Abort("Syntax error, incomplete key/value specification (too few items left to parse)")
+				u.abort("Syntax error, incomplete key/value specification (too few items left to parse)")
 			}
 			// check for back-to-back keyswords
 			u.CheckStringNotAKeyword(args[pos+1], keys)
@@ -114,21 +114,21 @@ func (u *SomaUtil) ParseVariadicArguments(
 		// keywords trigger continue before this
 		// values after keywords are skip'ed
 		// reaching this is an error
-		u.Abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
+		u.abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
 	}
 
 	// check if we managed to collect all required keywords
 	for _, key := range reqKeys {
 		// ok is false if slice is nil
 		if _, ok := result[key]; !ok {
-			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
+			u.abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
 		}
 	}
 
 	// check if unique keywords were only specified once
 	for _, key := range uniqKeys {
 		if sl, ok := result[key]; ok && (len(sl) > 1) {
-			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
+			u.abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
 		}
 	}
 
@@ -172,7 +172,7 @@ argloop:
 		if u.SliceContainsString(val, keys) {
 			// there must be at least one arguments left
 			if len(args[pos+1:]) < 1 {
-				u.Abort("Syntax error, incomplete key/value specification (too few items left to parse)")
+				u.abort("Syntax error, incomplete key/value specification (too few items left to parse)")
 			}
 			// check for back-to-back keyswords
 			u.CheckStringNotAKeyword(args[pos+1], keys)
@@ -180,7 +180,7 @@ argloop:
 			switch val {
 			case "threshold":
 				if len(args[pos+1:]) < 6 {
-					u.Abort("Syntax error, incomplete threshold specification")
+					u.abort("Syntax error, incomplete threshold specification")
 				}
 				t := u.ParseVariadicArguments(
 					[]string{},
@@ -191,7 +191,7 @@ argloop:
 				thr.Predicate.Symbol = t["predicate"][0]
 				thr.Level.Name = t["level"][0]
 				if thr.Value, err = strconv.ParseInt(t["value"][0], 10, 64); err != nil {
-					u.Abort(fmt.Sprintf("Syntax error, value argument not numeric: %s",
+					u.abort(fmt.Sprintf("Syntax error, value argument not numeric: %s",
 						t["value"][0]))
 				}
 				thresholds = append(thresholds, thr)
@@ -202,11 +202,11 @@ argloop:
 				// argument is the start of a constraint specification.
 				// check we have enough arguments left
 				if len(args[pos+1:]) < 3 {
-					u.Abort("Syntax error, incomplete constraint specification")
+					u.abort("Syntax error, incomplete constraint specification")
 				}
 				// check constraint type specification
 				if !u.SliceContainsString(args[pos+1], constraintTypes) {
-					u.Abort(fmt.Sprintf("Syntax error, unknown contraint type: %s",
+					u.abort(fmt.Sprintf("Syntax error, unknown contraint type: %s",
 						args[pos+1]))
 				}
 				constr := proto.CheckConfigConstraint{}
@@ -218,7 +218,7 @@ argloop:
 					case "name":
 						constr.Service.Name = args[pos+3]
 					default:
-						u.Abort(fmt.Sprintf("Syntax error, can not constraint service to %s",
+						u.abort(fmt.Sprintf("Syntax error, can not constraint service to %s",
 							args[pos+2]))
 					}
 				case "attribute":
@@ -244,7 +244,7 @@ argloop:
 					case "name":
 						constr.Oncall.Name = args[pos+3]
 					default:
-						u.Abort(fmt.Sprintf("Syntax error, can not constraint oncall to %s",
+						u.abort(fmt.Sprintf("Syntax error, can not constraint oncall to %s",
 							args[pos+2]))
 					}
 				case "native":
@@ -274,13 +274,13 @@ argloop:
 		}
 		// error is reached if argument was not skipped and not a
 		// recognized keyword
-		u.Abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
+		u.abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
 	}
 
 	// check if all required keywords were collected
 	for _, key := range required {
 		if _, ok := result[key]; !ok {
-			u.Abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
+			u.abort(fmt.Sprintf("Syntax error, missing keyword: %s", key))
 		}
 	}
 
@@ -288,7 +288,7 @@ argloop:
 	for _, key := range unique {
 		// check ok since unique may still be optional
 		if sl, ok := result[key]; ok && (len(sl) > 1) {
-			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
+			u.abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
 		}
 	}
 
@@ -327,7 +327,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 		if u.SliceContainsString(val, keys) {
 			// there must be at least one arguments left
 			if len(args[pos+1:]) < 1 {
-				u.Abort("Syntax error, incomplete key/value specification (too few items left to parse)")
+				u.abort("Syntax error, incomplete key/value specification (too few items left to parse)")
 			}
 			// check for back-to-back keyswords
 			u.CheckStringNotAKeyword(args[pos+1], keys)
@@ -336,7 +336,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 			case "constraint":
 				// must be at least 3 items left
 				if len(args[pos+1:]) < 3 {
-					u.Abort("Syntax error, incomplete constraint specification")
+					u.abort("Syntax error, incomplete constraint specification")
 				}
 				// constraint must be type `system` or `attribute`
 				switch args[pos+1] {
@@ -345,7 +345,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 				case "attribute":
 					u.CheckStringIsServiceAttribute(c, args[pos+2])
 				default:
-					u.Abort(fmt.Sprintf("Syntax error, invalid constraint type: %s", args[pos+1]))
+					u.abort(fmt.Sprintf("Syntax error, invalid constraint type: %s", args[pos+1]))
 				}
 				constr = append(constr, proto.CapabilityConstraint{
 					Type:  args[pos+1],
@@ -370,21 +370,21 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 		// keywords trigger continue before this
 		// values after keywords are skip'ed
 		// reaching this is an error
-		u.Abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
+		u.abort(fmt.Sprintf("Syntax error, erroneus argument: %s", val))
 	}
 
 	// check if we managed to collect all required keywords
 	for _, key := range reqKeys {
 		// ok is false if slice is nil
 		if _, ok := result[key]; !ok {
-			u.Abort(fmt.Sprintf("Syntax error, missing required keyword: %s", key))
+			u.abort(fmt.Sprintf("Syntax error, missing required keyword: %s", key))
 		}
 	}
 
 	// check if unique keywords were only specified once
 	for _, key := range uniqKeys {
 		if sl, ok := result[key]; ok && (len(sl) > 1) {
-			u.Abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
+			u.abort(fmt.Sprintf("Syntax error, keyword must only be provided once: %s", key))
 		}
 	}
 

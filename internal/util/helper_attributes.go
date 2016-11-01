@@ -16,7 +16,7 @@ func (u SomaUtil) CheckStringIsServiceAttribute(c *resty.Client, s string) {
 			return
 		}
 	}
-	u.Abort(fmt.Sprintf("Invalid service attribute requested: %s", s))
+	u.abort(fmt.Sprintf("Invalid service attribute requested: %s", s))
 }
 
 func (u SomaUtil) DecodeProtoResultAttributeFromResponse(resp *resty.Response) *proto.Result {

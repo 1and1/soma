@@ -35,7 +35,7 @@ func (u SomaUtil) GetBucketIdByName(c *resty.Client, bucket string, repoId strin
 	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if bucket != (*repoResult.Buckets)[0].Name {
-		u.Abort("Received result set for incorrect bucket")
+		u.abort("Received result set for incorrect bucket")
 	}
 	return (*repoResult.Buckets)[0].Id
 }
@@ -53,7 +53,7 @@ func (u SomaUtil) BucketIdByName(c *resty.Client, bucket string) string {
 	repoResult := u.DecodeProtoResultBucketFromResponse(resp)
 
 	if bucket != (*repoResult.Buckets)[0].Name {
-		u.Abort("Received result set for incorrect bucket")
+		u.abort("Received result set for incorrect bucket")
 	}
 	return (*repoResult.Buckets)[0].Id
 }
@@ -67,7 +67,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(c *resty.Client, bucket string) strin
 		resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 		bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 		if bucket != (*bucketResult.Buckets)[0].Name {
-			u.Abort("Received result set for incorrect bucket")
+			u.abort("Received result set for incorrect bucket")
 		}
 		b = (*bucketResult.Buckets)[0].Id
 	} else {
@@ -90,7 +90,7 @@ func (u SomaUtil) TeamIdForBucket(c *resty.Client, bucket string) string {
 		resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 		bucketResult := u.DecodeProtoResultBucketFromResponse(resp)
 		if bucket != (*bucketResult.Buckets)[0].Name {
-			u.Abort("Received result set for incorrect bucket")
+			u.abort("Received result set for incorrect bucket")
 		}
 		b = (*bucketResult.Buckets)[0].Id
 	} else {

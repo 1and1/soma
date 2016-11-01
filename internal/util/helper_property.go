@@ -65,17 +65,17 @@ func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string
 		ctxIdString = u.TryGetTeamByUUIDOrName(c, ctx)
 		path = fmt.Sprintf("/filter/property/service/team/%s/", ctxIdString)
 	default:
-		u.Abort("Unsupported property type in util.GetPropertyIdByName()")
+		u.abort("Unsupported property type in util.GetPropertyIdByName()")
 	}
 
 	resp := u.PostRequestWithBody(c, req, path)
 	res := u.DecodeProtoResultPropertyFromResponse(resp)
 
 	if res.Properties == nil || *res.Properties == nil {
-		u.Abort("Property lookup result contained no properties")
+		u.abort("Property lookup result contained no properties")
 	}
 	if len(*res.Properties) != 1 {
-		u.Abort(fmt.Sprintf("Property lookup expected 1 result, received: %d",
+		u.abort(fmt.Sprintf("Property lookup expected 1 result, received: %d",
 			len(*res.Properties)))
 	}
 
@@ -103,7 +103,7 @@ func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string
 	}
 
 fail:
-	u.Abort("Received result set for incorrect property")
+	u.abort("Received result set for incorrect property")
 
 	// required to silence the compiler, since ending in a switch is not
 	// analyzed to always return:
@@ -120,7 +120,7 @@ func (u SomaUtil) CheckStringIsSystemProperty(c *resty.Client, s string) {
 			return
 		}
 	}
-	u.Abort(fmt.Sprintf("Invalid system property requested: %s", s))
+	u.abort(fmt.Sprintf("Invalid system property requested: %s", s))
 }
 
 func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *proto.Result {

@@ -28,7 +28,7 @@ func (u SomaUtil) GetOncallIdByName(c *resty.Client, oncall string) string {
 	oncallResult := u.DecodeProtoResultOncallFromResponse(resp)
 
 	if oncall != (*oncallResult.Oncalls)[0].Name {
-		u.Abort("Received result set for incorrect oncall duty")
+		u.abort("Received result set for incorrect oncall duty")
 	}
 	return (*oncallResult.Oncalls)[0].Id
 }
@@ -39,7 +39,7 @@ func (u SomaUtil) GetOncallDetailsById(c *resty.Client, oncallid string) (string
 	res := u.DecodeResultFromResponse(resp)
 
 	if oncallid != (*res.Oncalls)[0].Id {
-		u.Abort(`Received result set for incorrect oncall duty`)
+		u.abort(`Received result set for incorrect oncall duty`)
 	}
 	return (*res.Oncalls)[0].Name, (*res.Oncalls)[0].Number
 }
@@ -50,9 +50,9 @@ func (u SomaUtil) DecodeProtoResultOncallFromResponse(resp *resty.Response) *pro
 
 func (u SomaUtil) ValidatePhoneNumber(n string) {
 	num, err := strconv.Atoi(n)
-	u.AbortOnError(err, "Syntax error, argument is not a number")
+	u.abortOnError(err, "Syntax error, argument is not a number")
 	if num <= 0 || num > 9999 {
-		u.Abort("Phone number must be 4-digit extension")
+		u.abort("Phone number must be 4-digit extension")
 	}
 }
 

@@ -20,7 +20,7 @@ func (u *SomaUtil) GetUserIdByName(c *resty.Client, user string) string {
 	res := u.DecodeResultFromResponse(resp)
 
 	if user != (*res.Users)[0].UserName {
-		u.Abort("Received result set for incorrect user")
+		u.abort("Received result set for incorrect user")
 	}
 	return (*res.Users)[0].Id
 }

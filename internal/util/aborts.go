@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func (u *SomaUtil) AbortOnError(err error, txt ...string) {
+func (u *SomaUtil) abortOnError(err error, txt ...string) {
 	if err != nil {
 		for _, s := range txt {
 			fmt.Fprintf(os.Stderr, "%s\n", s)
@@ -15,7 +15,7 @@ func (u *SomaUtil) AbortOnError(err error, txt ...string) {
 	}
 }
 
-func (u *SomaUtil) Abort(txt ...string) {
+func (u *SomaUtil) abort(txt ...string) {
 	for _, s := range txt {
 		fmt.Fprintf(os.Stderr, "%s\n", s)
 	}
