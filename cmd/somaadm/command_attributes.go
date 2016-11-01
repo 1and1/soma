@@ -64,7 +64,8 @@ func cmdAttributeCreate(c *cli.Context) error {
 	case "once":
 	case "multi":
 	default:
-		adm.Abort("Illegal value for cardinality")
+		return fmt.Errorf("Illegal value for cardinality: %s."+
+			" Accepted: once, multi", opts["cardinality"][0])
 	}
 
 	req := proto.Request{
@@ -73,11 +74,20 @@ func cmdAttributeCreate(c *cli.Context) error {
 			Cardinality: opts["cardinality"][0],
 		},
 	}
-	utl.ValidateRuneCount(req.Attribute.Name, 128)
 
-	resp := utl.PostRequestWithBody(Client, req, "/attributes/")
-	fmt.Println(resp)
-	return nil
+	// check attribute length
+	if err := adm.ValidateRuneCount(
+		req.Attribute.Name,
+		128,
+	); err != nil {
+		return err
+	}
+
+	if resp, err := adm.PostReqBody(req, `/attributes/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdAttributeDelete(c *cli.Context) error {
@@ -86,16 +96,23 @@ func cmdAttributeDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdAttributeList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/attributes/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	if resp, err := adm.GetReq(`/attributes/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdAttributeShow(c *cli.Context) error {
@@ -104,10 +121,11 @@ func cmdAttributeShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/attributes/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return nil
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
