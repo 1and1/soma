@@ -147,15 +147,15 @@ func (o *outputTree) process(q *msg.Request) {
 
 	switch tree.Type {
 	case `repository`:
-		tree.Repository, err = o.repository(tree.Id, true)
+		tree.Repository, err = o.repository(tree.Id, true, 0)
 	case `bucket`:
-		tree.Bucket, err = o.bucket(tree.Id, true)
+		tree.Bucket, err = o.bucket(tree.Id, true, 0)
 	case `group`:
-		tree.Group, err = o.group(tree.Id, true)
+		tree.Group, err = o.group(tree.Id, true, 0)
 	case `cluster`:
-		tree.Cluster, err = o.cluster(tree.Id, true)
+		tree.Cluster, err = o.cluster(tree.Id, true, 0)
 	case `node`:
-		tree.Node, err = o.node(tree.Id, true)
+		tree.Node, err = o.node(tree.Id, true, 0)
 	}
 	if err == sql.ErrNoRows {
 		result.NotFound(fmt.Errorf(`Tree starting point not found`))
@@ -170,12 +170,16 @@ func (o *outputTree) process(q *msg.Request) {
 }
 
 //
-func (o *outputTree) repository(id string, recurse bool) (*proto.Repository, error) {
+func (o *outputTree) repository(id string, recurse bool, depth int) (*proto.Repository, error) {
 	var (
 		repoName, teamId, repoCreatedBy string
 		repoActive, repoDeleted         bool
 		repoCreatedAt                   time.Time
 	)
+
+	if depth >= 64 {
+		return nil, fmt.Errorf(`Maximum recursion depth exceeded`)
+	}
 
 	//
 	if err := o.stmtRepo.QueryRow(id).Scan(
@@ -207,12 +211,13 @@ func (o *outputTree) repository(id string, recurse bool) (*proto.Repository, err
 	if !recurse {
 		return &repo, nil
 	}
+	depth++
 	repo.Members = &[]proto.Bucket{}
 
 	//
 	buckets := o.bucketsInRepository(id)
 	for i, _ := range buckets {
-		b, err := o.bucket(buckets[i], recurse)
+		b, err := o.bucket(buckets[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -222,13 +227,17 @@ func (o *outputTree) repository(id string, recurse bool) (*proto.Repository, err
 }
 
 //
-func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
+func (o *outputTree) bucket(id string, recurse bool, depth int) (*proto.Bucket, error) {
 	var (
 		bucketName, bucketRepositoryId, bucketEnvironment string
 		bucketTeamId, bucketCreatedBy                     string
 		bucketIsFrozen, bucketIsDeleted                   bool
 		bucketCreatedAt                                   time.Time
 	)
+
+	if depth >= 64 {
+		return nil, fmt.Errorf(`Maximum recursion depth exceeded`)
+	}
 
 	//
 	if err := o.stmtBucket.QueryRow(id).Scan(
@@ -264,6 +273,7 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 	if !recurse {
 		return &bucket, nil
 	}
+	depth++
 	bucket.MemberGroups = &[]proto.Group{}
 	bucket.MemberClusters = &[]proto.Cluster{}
 	bucket.MemberNodes = &[]proto.Node{}
@@ -271,7 +281,7 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 	//
 	groups := o.groupsInBucket(id)
 	for i, _ := range groups {
-		g, err := o.group(groups[i], recurse)
+		g, err := o.group(groups[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -281,7 +291,7 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 	//
 	clusters := o.clustersInBucket(id)
 	for i, _ := range clusters {
-		c, err := o.cluster(clusters[i], recurse)
+		c, err := o.cluster(clusters[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -291,7 +301,7 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 	//
 	nodes := o.nodesInBucket(id)
 	for i, _ := range nodes {
-		n, err := o.node(nodes[i], recurse)
+		n, err := o.node(nodes[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -301,12 +311,16 @@ func (o *outputTree) bucket(id string, recurse bool) (*proto.Bucket, error) {
 }
 
 //
-func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
+func (o *outputTree) group(id string, recurse bool, depth int) (*proto.Group, error) {
 	var (
 		groupBucketId, groupName, groupObjectState string
 		groupTeamId, groupCreatedBy                string
 		groupCreatedAt                             time.Time
 	)
+
+	if depth >= 64 {
+		return nil, fmt.Errorf(`Maximum recursion depth exceeded`)
+	}
 
 	//
 	if err := o.stmtGroup.QueryRow(id).Scan(
@@ -338,6 +352,7 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 	if !recurse {
 		return &group, nil
 	}
+	depth++
 	group.MemberGroups = &[]proto.Group{}
 	group.MemberClusters = &[]proto.Cluster{}
 	group.MemberNodes = &[]proto.Node{}
@@ -345,7 +360,7 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 	//
 	groups := o.groupsInGroup(id)
 	for i, _ := range groups {
-		g, err := o.group(groups[i], recurse)
+		g, err := o.group(groups[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -355,7 +370,7 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 	//
 	clusters := o.clustersInGroup(id)
 	for i, _ := range clusters {
-		c, err := o.cluster(clusters[i], recurse)
+		c, err := o.cluster(clusters[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -365,7 +380,7 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 	//
 	nodes := o.nodesInGroup(id)
 	for i, _ := range nodes {
-		n, err := o.node(nodes[i], recurse)
+		n, err := o.node(nodes[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -375,12 +390,16 @@ func (o *outputTree) group(id string, recurse bool) (*proto.Group, error) {
 }
 
 //
-func (o *outputTree) cluster(id string, recurse bool) (*proto.Cluster, error) {
+func (o *outputTree) cluster(id string, recurse bool, depth int) (*proto.Cluster, error) {
 	var (
 		clusterName, clusterBucketId                        string
 		clusterObjectState, clusterTeamId, clusterCreatedBy string
 		clusterCreatedAt                                    time.Time
 	)
+
+	if depth >= 64 {
+		return nil, fmt.Errorf(`Maximum recursion depth exceeded`)
+	}
 
 	//
 	if err := o.stmtCluster.QueryRow(id).Scan(
@@ -412,12 +431,13 @@ func (o *outputTree) cluster(id string, recurse bool) (*proto.Cluster, error) {
 	if !recurse {
 		return &cluster, nil
 	}
+	depth++
 	cluster.Members = &[]proto.Node{}
 
 	//
 	nodes := o.nodesInCluster(id)
 	for i, _ := range nodes {
-		n, err := o.node(nodes[i], recurse)
+		n, err := o.node(nodes[i], recurse, depth)
 		if err != nil {
 			return nil, err
 		}
@@ -427,7 +447,7 @@ func (o *outputTree) cluster(id string, recurse bool) (*proto.Cluster, error) {
 }
 
 //
-func (o *outputTree) node(id string, recurse bool) (*proto.Node, error) {
+func (o *outputTree) node(id string, recurse bool, depth int) (*proto.Node, error) {
 	var (
 		nodeAssetId                                   int
 		nodeName, nodeTeamId, nodeServerId, nodeState string
@@ -435,6 +455,10 @@ func (o *outputTree) node(id string, recurse bool) (*proto.Node, error) {
 		nodeCreatedBy, nodeRepositoryId, nodeBucketId string
 		nodeCreatedAt                                 time.Time
 	)
+
+	if depth >= 64 {
+		return nil, fmt.Errorf(`Maximum recursion depth exceeded`)
+	}
 
 	//
 	if err := o.stmtNode.QueryRow(id).Scan(
