@@ -11,6 +11,8 @@ package adm
 import (
 	"fmt"
 	"strings"
+
+	"github.com/codegangsta/cli"
 )
 
 // ParseVariadicArguments parses split up argument lists of
@@ -100,6 +102,40 @@ abort:
 	}
 
 	return nil
+}
+
+// VerifySingleArgument takes a context and verifies there is only one
+// commandline argument
+func VerifySingleArgument(c *cli.Context) error {
+	a := c.Args()
+	if !a.Present() {
+		return fmt.Errorf(`Syntax error, command requires argument`)
+	}
+
+	if len(a.Tail()) != 0 {
+		return fmt.Errorf(
+			"Syntax error, too many arguments (expected: 1, received %d)",
+			len(a.Tail())+1,
+		)
+	}
+	return nil
+}
+
+// VerifyNoArgument takes a context and verifies there is no
+// commandline argument
+func VerifyNoArgument(c *cli.Context) error {
+	a := c.Args()
+	if a.Present() {
+		return fmt.Errorf(`Syntax error, command takes no arguments`)
+	}
+
+	return nil
+}
+
+func AllArguments(c *cli.Context) []string {
+	sl := []string{c.Args().First()}
+	sl = append(sl, c.Args().Tail()...)
+	return sl
 }
 
 func sliceContainsString(s string, sl []string) bool {
