@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -138,9 +139,11 @@ func cmdPermissionCategoryAdd(c *cli.Context) error {
 	req := proto.NewCategoryRequest()
 	req.Category.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, `/category/`)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/category/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdPermissionCategoryDel(c *cli.Context) error {
@@ -148,11 +151,13 @@ func cmdPermissionCategoryDel(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/category/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/category/%s", esc)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdPermissionCategoryList(c *cli.Context) error {
@@ -160,9 +165,11 @@ func cmdPermissionCategoryList(c *cli.Context) error {
 		return err
 	}
 
-	resp := utl.GetRequest(Client, `/category/`)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(`/category/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdPermissionCategoryShow(c *cli.Context) error {
@@ -170,25 +177,26 @@ func cmdPermissionCategoryShow(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/category/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/category/%s", esc)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 func cmdPermissionAdd(c *cli.Context) error {
-	multiple := []string{}
 	unique := []string{`category`, `grants`}
 	required := []string{`category`}
-
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -199,9 +207,11 @@ func cmdPermissionAdd(c *cli.Context) error {
 		req.Permission.Grants = opts[`grants`][0]
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, `/permission/`)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/permission/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdPermissionDel(c *cli.Context) error {
@@ -209,11 +219,13 @@ func cmdPermissionDel(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/permission/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/permission/%s", esc)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdPermissionList(c *cli.Context) error {
@@ -221,9 +233,11 @@ func cmdPermissionList(c *cli.Context) error {
 		return err
 	}
 
-	resp := utl.GetRequest(Client, `/permission/`)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(`/permission/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdPermissionShow(c *cli.Context) error {
@@ -231,11 +245,13 @@ func cmdPermissionShow(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/permission/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/permission/%s", esc)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 /*
