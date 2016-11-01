@@ -331,7 +331,7 @@ FROM   soma.node_oncall_property snop
 JOIN   inventory.oncall_duty_teams iodt
 ON     snop.oncall_duty_id = iodt.oncall_duty_id
 WHERE  snop.node_id = $1::uuid
-AND    snop.view = $2::varchar;`
+AND    (snop.view = $2::varchar OR snop.view = 'any');`
 
 const tkStmtDeployDetailsClusterOncall = `
 SELECT iodt.oncall_duty_id,
