@@ -54,7 +54,7 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 	unique := []string{"metric", "view", "thresholds"}
 	required := []string{"metric", "view", "thresholds"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

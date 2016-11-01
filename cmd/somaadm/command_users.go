@@ -147,7 +147,7 @@ func cmdUserAdd(c *cli.Context) error {
 		"mailaddr", "team"}
 	var err error
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
@@ -195,7 +195,7 @@ func cmdUserUpdate(c *cli.Context) error {
 	required := []string{`username`, "firstname", "lastname", "employeenr",
 		"mailaddr", "team", `deleted`}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

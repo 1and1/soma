@@ -51,7 +51,7 @@ func cmdAttributeCreate(c *cli.Context) error {
 	unique := []string{"cardinality"}
 	required := []string{"cardinality"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

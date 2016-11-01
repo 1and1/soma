@@ -52,7 +52,7 @@ func cmdMonitoringCreate(c *cli.Context) error {
 	unique := []string{"mode", "contact", "team", "callback"}
 	required := []string{"mode", "contact", "team"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

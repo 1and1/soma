@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -174,7 +175,7 @@ func cmdPermissionAdd(c *cli.Context) error {
 	unique := []string{`category`, `grants`}
 	required := []string{`category`}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

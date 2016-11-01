@@ -212,7 +212,7 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 	unique := []string{"repository"}
 	required := []string{"repository"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
@@ -315,7 +315,7 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	}
 
 	// parse command line
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
@@ -413,7 +413,7 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 	unique := []string{"repository"}
 	required := []string{"repository"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
@@ -692,7 +692,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	case `group`, `cluster`:
 		required = append(required, `in`)
 	}
-	opts := utl.ParseVariadicArguments(multiple, unique, required,
+	opts := adm.ParseVariadicArguments(multiple, unique, required,
 		c.Args().Tail())
 
 	// deprecation warning

@@ -189,7 +189,7 @@ func cmdGroupCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
@@ -214,7 +214,7 @@ func cmdGroupDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
@@ -236,7 +236,7 @@ func cmdGroupRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
@@ -271,7 +271,7 @@ func cmdGroupShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -293,7 +293,7 @@ func cmdGroupTree(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -315,7 +315,7 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -349,7 +349,7 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -383,7 +383,7 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -415,7 +415,7 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -442,7 +442,7 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -469,7 +469,7 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -494,7 +494,7 @@ func cmdGroupMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -554,7 +554,7 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`, `in`}
 	required := []string{`from`, `view`, `in`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
 	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
 

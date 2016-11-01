@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -49,7 +50,7 @@ func cmdValidityCreate(c *cli.Context) error {
 	unique := []string{"on", "direct", "inherited"}
 	required := []string{"on", "direct", "inherited"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

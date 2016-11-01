@@ -52,7 +52,7 @@ func cmdMetricCreate(c *cli.Context) error {
 	unique := []string{"unit", "description"}
 	required := []string{"unit", "description"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

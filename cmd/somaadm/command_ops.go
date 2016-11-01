@@ -252,7 +252,7 @@ func cmdOpsRepoRestart(c *cli.Context) error {
 }
 
 func cmdOpsRepoRebuild(c *cli.Context) error {
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		[]string{},        // more than once
 		[]string{`level`}, // at most once
 		[]string{`level`}, // at least once

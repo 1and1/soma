@@ -225,7 +225,7 @@ func cmdNodeAdd(c *cli.Context) error {
 	}
 	argSlice := utl.GetFullArgumentSlice(c)
 
-	opts := utl.ParseVariadicArguments(multKeys, uniqKeys, reqKeys, argSlice)
+	opts := adm.ParseVariadicArguments(multKeys, uniqKeys, reqKeys, argSlice)
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 
@@ -257,7 +257,7 @@ func cmdNodeUpdate(c *cli.Context) error {
 	unique := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
 	required := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
 
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
 	req := proto.NewNodeRequest()
 	if !utl.IsUUID(c.Args().First()) {
@@ -439,7 +439,7 @@ func cmdNodeAssign(c *cli.Context) error {
 	unique := []string{"to"}
 	required := []string{"to"}
 
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
@@ -562,7 +562,7 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts[`from`][0])
 	config := utl.GetNodeConfigById(Client, nodeId)
 

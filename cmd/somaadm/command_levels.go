@@ -50,7 +50,7 @@ func cmdLevelCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())

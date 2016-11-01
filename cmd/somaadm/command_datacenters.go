@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -101,7 +102,7 @@ func cmdDatacentersRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{`to`}
 
-	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
 	req := proto.NewDatacenterRequest()
 	req.Datacenter.Locode = opts[`to`][0]

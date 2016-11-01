@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -68,7 +69,7 @@ func cmdRightGrantSystem(c *cli.Context) error {
 
 func cmdRightGrant(c *cli.Context, cat string) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		[]string{}, []string{`user`},
 		[]string{`user`}, c.Args().Tail())
 
@@ -94,7 +95,7 @@ func cmdRightRevokeSystem(c *cli.Context) error {
 
 func cmdRightRevoke(c *cli.Context, cat string) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		[]string{}, []string{`user`},
 		[]string{`user`}, c.Args().Tail())
 

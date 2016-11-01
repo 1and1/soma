@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -48,7 +49,7 @@ func cmdUnitCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"name"}
 
-	opts := utl.ParseVariadicArguments(key, key, key, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(key, key, key, c.Args().Tail())
 
 	req := proto.Request{}
 	req.Unit = &proto.Unit{}

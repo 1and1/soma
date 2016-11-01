@@ -113,7 +113,7 @@ func cmdServerCreate(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{`assetid`, `datacenter`, `location`, `online`}
 	required := []string{`assetid`, `datacenter`, `location`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required,
+	opts := adm.ParseVariadicArguments(multiple, unique, required,
 		c.Args().Tail())
 
 	req := proto.NewServerRequest()
@@ -170,7 +170,7 @@ func cmdServerUpdate(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{`name`, `assetid`, `datacenter`, `location`, `online`, `deleted`}
 	required := []string{`name`, `assetid`, `datacenter`, `location`, `online`, `deleted`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required,
+	opts := adm.ParseVariadicArguments(multiple, unique, required,
 		c.Args().Tail())
 
 	req := proto.NewServerRequest()
@@ -245,7 +245,7 @@ func cmdServerNull(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 2)
 	key := []string{"datacenter"}
 
-	opts := utl.ParseVariadicArguments(key, key, key, c.Args())
+	opts := adm.ParseVariadicArguments(key, key, key, c.Args())
 
 	req := proto.Request{}
 	req.Server = &proto.Server{}

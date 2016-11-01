@@ -76,7 +76,7 @@ func (u *SomaUtil) GetFullArgumentSlice(c *cli.Context) []string {
  *           result["port"] = [ "53" ]
  *           result["transport"] = [ "tcp", "udp" ]
  */
-func (u *SomaUtil) ParseVariadicArguments(
+func (u *SomaUtil) parseVariadicArguments(
 	multKeys []string, // keys that may appear multiple times
 	uniqKeys []string, // keys that are allowed at most once
 	reqKeys []string, // keys that are required at least one
@@ -182,7 +182,7 @@ argloop:
 				if len(args[pos+1:]) < 6 {
 					u.abort("Syntax error, incomplete threshold specification")
 				}
-				t := u.ParseVariadicArguments(
+				t := u.parseVariadicArguments(
 					[]string{},
 					[]string{"predicate", "level", "value"},
 					[]string{"predicate", "level", "value"},

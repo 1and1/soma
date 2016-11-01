@@ -123,7 +123,7 @@ func cmdCheckDelete(c *cli.Context) error {
 	unique := []string{"in"}
 	required := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
@@ -147,7 +147,7 @@ func cmdCheckList(c *cli.Context) error {
 	unique := []string{"in"}
 	required := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,
@@ -170,7 +170,7 @@ func cmdCheckShow(c *cli.Context) error {
 	unique := []string{"in"}
 	required := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(
+	opts := adm.ParseVariadicArguments(
 		multiple,
 		unique,
 		required,

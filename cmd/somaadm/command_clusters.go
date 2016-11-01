@@ -153,7 +153,7 @@ func cmdClusterCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
@@ -178,7 +178,7 @@ func cmdClusterDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
@@ -200,7 +200,7 @@ func cmdClusterRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
 		c.Args().Tail())
@@ -235,7 +235,7 @@ func cmdClusterShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -257,7 +257,7 @@ func cmdClusterTree(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -279,7 +279,7 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -317,7 +317,7 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -342,7 +342,7 @@ func cmdClusterMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
 
-	opts := utl.ParseVariadicArguments(multKeys,
+	opts := adm.ParseVariadicArguments(multKeys,
 		multKeys,
 		multKeys,
 		c.Args().Tail())
@@ -401,7 +401,7 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`, `in`}
 	required := []string{`from`, `view`, `in`}
-	opts := utl.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
 	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
 
