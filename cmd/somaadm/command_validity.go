@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -45,17 +47,16 @@ func registerValidity(app cli.App) *cli.App {
 }
 
 func cmdValidityCreate(c *cli.Context) error {
-	multiple := []string{}
 	unique := []string{"on", "direct", "inherited"}
 	required := []string{"on", "direct", "inherited"}
-
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -63,13 +64,25 @@ func cmdValidityCreate(c *cli.Context) error {
 	req.Validity = &proto.Validity{
 		SystemProperty: c.Args().First(),
 		ObjectType:     opts["on"][0],
-		Direct:         utl.GetValidatedBool(opts["direct"][0]),
-		Inherited:      utl.GetValidatedBool(opts["inherited"][0]),
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/validity/")
-	fmt.Println(resp)
-	return nil
+	{
+		var err error
+		if req.Validity.Direct, err = strconv.ParseBool(
+			opts[`direct`][0]); err != nil {
+			return err
+		}
+		if req.Validity.Inherited, err = strconv.ParseBool(
+			opts[`inherited`][0]); err != nil {
+			return err
+		}
+	}
+
+	if resp, err := adm.PostReqBody(req, `/validity/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdValidityDelete(c *cli.Context) error {
@@ -77,17 +90,25 @@ func cmdValidityDelete(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/validity/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/validity/%s", esc)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdValidityList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/validity/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	if resp, err := adm.GetReq(`/validity/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdValidityShow(c *cli.Context) error {
@@ -95,11 +116,13 @@ func cmdValidityShow(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/validity/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/validity/%s", esc)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
