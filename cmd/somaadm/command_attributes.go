@@ -46,14 +46,13 @@ func registerAttributes(app cli.App) *cli.App {
 }
 
 func cmdAttributeCreate(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{"cardinality"}
-	required := []string{"cardinality"}
+	unique := []string{`cardinality`}
+	required := []string{`cardinality`}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
 		c.Args().Tail(),

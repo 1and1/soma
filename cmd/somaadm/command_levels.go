@@ -47,14 +47,14 @@ func registerLevels(app cli.App) *cli.App {
 }
 
 func cmdLevelCreate(c *cli.Context) error {
-	multKeys := []string{"shortname", "numeric"}
+	uniqKeys := []string{"shortname", "numeric"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}

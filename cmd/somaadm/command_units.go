@@ -49,7 +49,7 @@ func cmdUnitCreate(c *cli.Context) error {
 	key := []string{"name"}
 
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, key, key, key,
+	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
 		c.Args().Tail()); err != nil {
 		return err
 	}

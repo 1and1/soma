@@ -79,7 +79,7 @@ func cmdEnvironmentsRename(c *cli.Context) error {
 	key := []string{`to`}
 	opts := map[string][]string{}
 
-	if err := adm.ParseVariadicArguments(opts, key, key, key,
+	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
 		c.Args().Tail()); err != nil {
 		return err
 	}

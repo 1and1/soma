@@ -150,14 +150,14 @@ func registerBuckets(app cli.App) *cli.App {
 }
 
 func cmdBucketCreate(c *cli.Context) error {
-	uniqKeys := []string{"repository", "environment"}
-	multKeys := []string{}
+	uniqKeys := []string{`repository`, `environment`}
 	opts := map[string][]string{}
 
-	if err := adm.ParseVariadicArguments(opts,
-		multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
 		uniqKeys,
-		uniqKeys, // as reqKeys
+		uniqKeys,
 		c.Args().Tail(),
 	); err != nil {
 		return err

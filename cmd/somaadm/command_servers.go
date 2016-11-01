@@ -258,8 +258,8 @@ func cmdServerNull(c *cli.Context) error {
 	key := []string{"datacenter"}
 
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, key, key, key,
-		c.Args()); err != nil {
+	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
+		adm.AllArguments(c)); err != nil {
 		return err
 	}
 

@@ -186,14 +186,14 @@ func registerGroups(app cli.App) *cli.App {
 }
 
 func cmdGroupCreate(c *cli.Context) error {
-	multKeys := []string{"in"}
+	uniqKeys := []string{"in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys, // as uniqKeys
-		multKeys, // as reqKeys
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -215,14 +215,14 @@ func cmdGroupCreate(c *cli.Context) error {
 }
 
 func cmdGroupDelete(c *cli.Context) error {
-	multKeys := []string{"in"}
+	uniqKeys := []string{"in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys, // as uniqKeys
-		multKeys, // as reqKeys
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -241,14 +241,14 @@ func cmdGroupDelete(c *cli.Context) error {
 }
 
 func cmdGroupRename(c *cli.Context) error {
-	multKeys := []string{"to", "in"}
+	uniqKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys, // as uniqKeys
-		multKeys, // as reqKeys
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -282,14 +282,14 @@ func cmdGroupList(c *cli.Context) error {
 }
 
 func cmdGroupShow(c *cli.Context) error {
-	multKeys := []string{"in"}
+	uniqKeys := []string{"in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail(),
 	); err != nil {
 		return err
@@ -309,14 +309,14 @@ func cmdGroupShow(c *cli.Context) error {
 }
 
 func cmdGroupTree(c *cli.Context) error {
-	multKeys := []string{"in"}
+	uniqKeys := []string{"in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -335,14 +335,14 @@ func cmdGroupTree(c *cli.Context) error {
 }
 
 func cmdGroupMemberAddGroup(c *cli.Context) error {
-	multKeys := []string{"to", "in"}
+	uniqKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -373,14 +373,14 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 }
 
 func cmdGroupMemberAddCluster(c *cli.Context) error {
-	multKeys := []string{"to", "in"}
+	uniqKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -411,14 +411,14 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 }
 
 func cmdGroupMemberAddNode(c *cli.Context) error {
-	multKeys := []string{"to", "in"}
+	uniqKeys := []string{"to", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -447,14 +447,14 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 }
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) error {
-	multKeys := []string{"from", "in"}
+	uniqKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -478,14 +478,14 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 }
 
 func cmdGroupMemberDeleteCluster(c *cli.Context) error {
-	multKeys := []string{"from", "in"}
+	uniqKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -509,14 +509,14 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 }
 
 func cmdGroupMemberDeleteNode(c *cli.Context) error {
-	multKeys := []string{"from", "in"}
+	uniqKeys := []string{"from", "in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -538,14 +538,14 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 }
 
 func cmdGroupMemberList(c *cli.Context) error {
-	multKeys := []string{"in"}
+	uniqKeys := []string{"in"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multKeys,
-		multKeys,
-		multKeys,
+		[]string{},
+		uniqKeys,
+		uniqKeys,
 		c.Args().Tail()); err != nil {
 		return err
 	}

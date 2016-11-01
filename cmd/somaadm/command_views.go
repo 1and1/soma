@@ -87,7 +87,7 @@ func cmdViewsRename(c *cli.Context) error {
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
-		key,
+		[]string{},
 		key,
 		key,
 		c.Args().Tail()); err != nil {

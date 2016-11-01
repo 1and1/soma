@@ -86,7 +86,7 @@ func cmdOnCallAdd(c *cli.Context) error {
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
-		key, //allowed
+		[]string{},
 		key, //unique
 		key, //required
 		c.Args().Tail()); err != nil {
@@ -119,7 +119,7 @@ func cmdOnCallDel(c *cli.Context) error {
 func cmdOnCallRename(c *cli.Context) error {
 	key := []string{"to"}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, key, key, key,
+	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -137,12 +137,10 @@ func cmdOnCallRename(c *cli.Context) error {
 }
 
 func cmdOnCallUpdate(c *cli.Context) error {
-	allowed := []string{"phone", "name"}
 	unique := []string{"phone", "name"}
-	required := []string{}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, allowed, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(opts, []string{}, unique,
+		[]string{}, c.Args().Tail()); err != nil {
 		return err
 	}
 
