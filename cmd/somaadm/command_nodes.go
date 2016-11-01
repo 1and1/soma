@@ -213,8 +213,9 @@ func registerNodes(app cli.App) *cli.App {
 }
 
 func cmdNodeAdd(c *cli.Context) error {
-	keySlice := []string{"assetid", "name", "team", "server", "online"}
-	reqSlice := []string{"assetid", "name", "team"}
+	multKeys := []string{}
+	uniqKeys := []string{`assetid`, `name`, `team`, `server`, `online`}
+	reqKeys := []string{`assetid`, `name`, `team`}
 
 	switch utl.GetCliArgumentCount(c) {
 	case 6, 8, 10:
@@ -224,23 +225,24 @@ func cmdNodeAdd(c *cli.Context) error {
 	}
 	argSlice := utl.GetFullArgumentSlice(c)
 
-	options, optional := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
+	opts := utl.ParseVariadicArguments(multKeys, uniqKeys, reqKeys, argSlice)
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 
-	utl.ValidateStringAsNodeAssetId(options["assetid"])
-	if utl.SliceContainsString("online", optional) {
-		utl.ValidateStringAsBool(options["online"])
-		req.Node.IsOnline, _ = strconv.ParseBool(options["online"])
+	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
+	if _, ok := opts[`online`]; ok {
+		utl.ValidateStringAsBool(opts[`online`][0])
+		req.Node.IsOnline, _ = strconv.ParseBool(opts[`online`][0])
 	} else {
 		req.Node.IsOnline = true
 	}
-	if utl.SliceContainsString("server", optional) {
-		req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, options["server"])
+	if _, ok := opts[`server`]; ok {
+		req.Node.ServerId = utl.TryGetServerByUUIDOrName(
+			&store, Client, opts[`server`][0])
 	}
-	req.Node.AssetId, _ = strconv.ParseUint(options["assetid"], 10, 64)
-	req.Node.Name = options["name"]
-	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, options["team"])
+	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
+	req.Node.Name = opts[`name`][0]
+	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
 
 	if resp, err := adm.PostReqBody(req, "/nodes/"); err != nil {
 		return err
