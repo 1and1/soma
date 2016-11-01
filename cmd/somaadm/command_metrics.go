@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -70,7 +71,7 @@ func cmdMetricCreate(c *cli.Context) error {
 			split := strings.SplitN(p, "::", 2)
 			if len(split) != 2 {
 				// coult not split
-				utl.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
+				adm.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
 					p))
 			}
 			utl.ValidateProviderExists(Client, split[0])

@@ -74,7 +74,7 @@ func cmdTeamAdd(c *cli.Context) error {
 	case 3, 5:
 		break // nop
 	default:
-		utl.Abort("Syntax error, unexpected argument count")
+		adm.Abort("Syntax error, unexpected argument count")
 	}
 	multi := []string{}
 	required := []string{"ldap"}
@@ -93,7 +93,7 @@ func cmdTeamAdd(c *cli.Context) error {
 	if len(opts["system"]) > 0 {
 		bl, err := strconv.ParseBool(opts["system"][0])
 		if err != nil {
-			utl.Abort("Argument to system parameter must be boolean")
+			adm.Abort("Argument to system parameter must be boolean")
 		}
 		req.Team.IsSystem = bl
 	}
@@ -153,7 +153,7 @@ func cmdTeamRename(c *cli.Context) error {
 
 func cmdTeamMigrate(c *cli.Context) error {
 	// XXX
-	utl.Abort("Not implemented")
+	adm.Abort("Not implemented")
 	return nil
 }
 

@@ -221,7 +221,7 @@ func cmdNodeAdd(c *cli.Context) error {
 	case 6, 8, 10:
 		break
 	default:
-		utl.Abort("Syntax error, unexpected argument count")
+		adm.Abort("Syntax error, unexpected argument count")
 	}
 	argSlice := utl.GetFullArgumentSlice(c)
 
@@ -447,7 +447,7 @@ func cmdNodeAssign(c *cli.Context) error {
 	bucketTeamId := utl.TeamIdForBucket(Client, bucketId)
 	nodeTeamId := utl.TeamIdForNode(Client, nodeId)
 	if bucketTeamId != nodeTeamId {
-		utl.Abort(`Cannot assign node since node and bucket belong to different teams.`)
+		adm.Abort(`Cannot assign node since node and bucket belong to different teams.`)
 	}
 
 	req := proto.Request{}

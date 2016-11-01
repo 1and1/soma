@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -60,7 +61,7 @@ func cmdAttributeCreate(c *cli.Context) error {
 	case "once":
 	case "multi":
 	default:
-		utl.Abort("Illegal value for cardinality")
+		adm.Abort("Illegal value for cardinality")
 	}
 
 	req := proto.Request{

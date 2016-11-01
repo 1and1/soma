@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -64,7 +65,7 @@ func cmdMonitoringCreate(c *cli.Context) error {
 	req.Monitoring.Contact = utl.TryGetUserByUUIDOrName(Client, opts["contact"][0])
 	req.Monitoring.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	if strings.Contains(req.Monitoring.Name, `.`) {
-		utl.Abort(`Monitoring system names must not contain the character '.'`)
+		adm.Abort(`Monitoring system names must not contain the character '.'`)
 	}
 
 	// optional arguments

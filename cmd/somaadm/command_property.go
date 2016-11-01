@@ -282,7 +282,7 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	attrs := proto.Result{}
 	err := json.Unmarshal(attrResponse.Body(), &attrs)
 	if err != nil {
-		utl.Abort("Failed to unmarshal Service Attribute data")
+		adm.Abort("Failed to unmarshal Service Attribute data")
 	}
 
 	// sort attributes based on their cardinality so we can use them
@@ -296,7 +296,7 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 		case "multi":
 			multiple = append(multiple, attr.Name)
 		default:
-			utl.Abort()
+			adm.Abort()
 		}
 	}
 	required := []string{}
@@ -308,7 +308,7 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 		unique = append(unique, "team")
 	case "template":
 	default:
-		utl.Abort(
+		adm.Abort(
 			fmt.Sprintf("cmdPropertyServiceCreate called from unknown action %s",
 				c.Command.Name),
 		)
@@ -385,7 +385,7 @@ func bashCompSvcCreate(c *cli.Context) {
 	attrs := proto.Result{}
 	err := json.Unmarshal(attrResponse.Body(), &attrs)
 	if err != nil {
-		utl.Abort("Failed to unmarshal Service Attribute data")
+		adm.Abort("Failed to unmarshal Service Attribute data")
 	}
 
 	// sort attributes based on their cardinality so we can use them
@@ -399,7 +399,7 @@ func bashCompSvcCreate(c *cli.Context) {
 		case "multi":
 			multiple = append(multiple, attr.Name)
 		default:
-			utl.Abort()
+			adm.Abort()
 		}
 	}
 	cmpl.GenericMulti(c, unique, multiple)
@@ -656,7 +656,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		case `oncall`:
 			utl.ValidateCliMinArgumentCount(c, 5)
 		default:
-			utl.Abort(`Unknown property type`)
+			adm.Abort(`Unknown property type`)
 		}
 	case `group`, `cluster`:
 		switch pType {
@@ -669,10 +669,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		case `oncall`:
 			utl.ValidateCliMinArgumentCount(c, 7)
 		default:
-			utl.Abort(`Unknown property type`)
+			adm.Abort(`Unknown property type`)
 		}
 	default:
-		utl.Abort(`Unknown object type`)
+		adm.Abort(`Unknown object type`)
 	}
 
 	// argument parsing

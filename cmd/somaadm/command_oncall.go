@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -150,7 +151,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 		validUpdate = true
 	}
 	if !validUpdate {
-		utl.Abort("Syntax error, specify name or phone to update")
+		adm.Abort("Syntax error, specify name or phone to update")
 	}
 
 	resp := utl.PatchRequestWithBody(Client, req, path)

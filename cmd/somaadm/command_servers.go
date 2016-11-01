@@ -162,7 +162,7 @@ func cmdServerUpdate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 13)
 
 	if !utl.IsUUID(c.Args().First()) {
-		utl.Abort(
+		adm.Abort(
 			fmt.Sprintf("Server to update not referenced by UUID: %s",
 				c.Args().First()))
 	}

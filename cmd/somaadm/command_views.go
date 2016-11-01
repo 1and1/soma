@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -55,7 +56,7 @@ func cmdViewsAdd(c *cli.Context) error {
 	req.View = &proto.View{}
 	req.View.Name = c.Args().First()
 	if strings.Contains(req.View.Name, `.`) {
-		utl.Abort(`Views must not contain the character '.'`)
+		adm.Abort(`Views must not contain the character '.'`)
 	}
 
 	resp := utl.PostRequestWithBody(Client, req, "/views/")

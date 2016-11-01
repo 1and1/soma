@@ -170,14 +170,14 @@ func cmdUserAdd(c *cli.Context) error {
 	// optional arguments
 	if _, ok := opts["active"]; ok {
 		req.User.IsActive, err = strconv.ParseBool(opts["active"][0])
-		utl.AbortOnError(err, "Syntax error, active argument not boolean")
+		adm.AbortOnError(err, "Syntax error, active argument not boolean")
 	} else {
 		req.User.IsActive = true
 	}
 
 	if _, ok := opts["system"]; ok {
 		req.User.IsSystem, err = strconv.ParseBool(opts["system"][0])
-		utl.AbortOnError(err, "Syntax error, system argument not boolean")
+		adm.AbortOnError(err, "Syntax error, system argument not boolean")
 	} else {
 		req.User.IsSystem = false
 	}
