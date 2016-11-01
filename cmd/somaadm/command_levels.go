@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -59,7 +60,7 @@ func cmdLevelCreate(c *cli.Context) error {
 	req.Level.Name = c.Args().First()
 	req.Level.ShortName = opts["shortname"][0]
 	l, err := strconv.ParseUint(opts["numeric"][0], 10, 16)
-	utl.AbortOnError(err, "Syntax error, numeric argument not numeric")
+	adm.AbortOnError(err, "Syntax error, numeric argument not numeric")
 	req.Level.Numeric = uint16(l)
 
 	resp := utl.PostRequestWithBody(Client, req, "/levels/")
