@@ -82,11 +82,7 @@ func cmdViewsRemove(c *cli.Context) error {
 }
 
 func cmdViewsRename(c *cli.Context) error {
-	if err := adm.VerifySingleArgument(c); err != nil {
-		return err
-	}
 	key := []string{"to"}
-
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
