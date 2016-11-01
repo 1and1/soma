@@ -46,11 +46,14 @@ func registerUnits(app cli.App) *cli.App {
 }
 
 func cmdUnitCreate(c *cli.Context) error {
-	key := []string{"name"}
-
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`name`},
+		[]string{`name`},
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -59,9 +62,11 @@ func cmdUnitCreate(c *cli.Context) error {
 	req.Unit.Unit = c.Args().First()
 	req.Unit.Name = opts["name"][0]
 
-	resp := utl.PostRequestWithBody(Client, req, "/units/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/units/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdUnitDelete(c *cli.Context) error {
@@ -71,16 +76,23 @@ func cmdUnitDelete(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/units/%s", esc)
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdUnitList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/units/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	if resp, err := adm.GetReq(`/units/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdUnitShow(c *cli.Context) error {
@@ -90,10 +102,11 @@ func cmdUnitShow(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/units/%s", esc)
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
