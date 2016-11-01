@@ -180,29 +180,6 @@ func registerNodes(app cli.App) *cli.App {
 									},
 								},
 							},
-							/*
-								{
-									Name:   "get",
-									Usage:  "Get the value of a node's specific property",
-									Action: cmdNodePropertyGet,
-								},
-								{
-									Name:   "list",
-									Usage:  "List a nodes' local properties",
-									Action: cmdNodePropertyList,
-									Flags: []cli.Flag{
-										cli.BoolFlag{
-											Name:  "all, a",
-											Usage: "List a nodes full properties (incl. inherited)",
-										},
-									},
-								},
-								{
-									Name:   "show",
-									Usage:  "Show details about a nodes properties",
-									Action: cmdNodePropertyShow,
-								},
-							*/
 						},
 					}, // end nodes property
 				},

@@ -30,19 +30,6 @@ func registerServers(app cli.App) *cli.App {
 						Usage:  "Mark an existing physical server as deleted",
 						Action: runtime(cmdServerMarkAsDeleted),
 					},
-					/*
-						{
-							Name:   "purge",
-							Usage:  "Remove all unreferenced servers marked as deleted",
-							Action: runtime(cmdServerPurgeDeleted),
-							Flags: []cli.Flag{
-								cli.BoolFlag{
-									Name:  "all, a",
-									Usage: "Purge all deleted servers",
-								},
-							},
-						},
-					*/
 					{
 						Name:         "update",
 						Usage:        "Full update of server attributes (replace, not merge)",
@@ -50,28 +37,6 @@ func registerServers(app cli.App) *cli.App {
 						Action:       runtime(cmdServerUpdate),
 						BashComplete: cmpl.ServerUpdate,
 					},
-					/*
-						{
-							Name:   "rename",
-							Usage:  "Rename an existing server",
-							Action: runtime(cmdServerRename),
-						},
-						{
-							Name:   "online",
-							Usage:  "Set an existing server to online",
-							Action: runtime(cmdServerOnline),
-						},
-						{
-							Name:   "offline",
-							Usage:  "Set an existing server to offline",
-							Action: runtime(cmdServerOffline),
-						},
-						{
-							Name:   "move",
-							Usage:  "Change a server's registered location",
-							Action: runtime(cmdServerMove),
-						},
-					*/
 					{
 						Name:   "list",
 						Usage:  "List all servers, see full description for possible filters",
@@ -87,13 +52,6 @@ func registerServers(app cli.App) *cli.App {
 						Usage:  "Show details about a specific server",
 						Action: runtime(cmdServerShow),
 					},
-					/*
-						{
-							Name:   "sync",
-							Usage:  "Request a data sync for a server",
-							Action: runtime(cmdServerSyncRequest),
-						},
-					*/
 					{
 						Name:         "null",
 						Usage:        "Bootstrap the null server",

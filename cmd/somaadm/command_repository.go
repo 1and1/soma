@@ -55,25 +55,11 @@ func registerRepository(app cli.App) *cli.App {
 						Action:       runtime(cmdRepositoryRepossess),
 						BashComplete: cmpl.To,
 					},
-					/*
-						{
-							Name:   "clone",
-							Usage:  "Create a clone of an existing repository",
-							Action: cmdRepositoryClone,
-						},
-					*/
 					{
 						Name:   "activate",
 						Usage:  "Activate a cloned repository",
 						Action: runtime(cmdRepositoryActivate),
 					},
-					/*
-						{
-							Name:   "wipe",
-							Usage:  "Clear all repository contents",
-							Action: cmdRepositoryWipe,
-						},
-					*/
 					{
 						Name:   "list",
 						Usage:  "List all existing repositories",

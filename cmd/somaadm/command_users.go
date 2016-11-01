@@ -50,24 +50,6 @@ func registerUsers(app cli.App) *cli.App {
 						Action:       runtime(cmdUserUpdate),
 						BashComplete: cmpl.UserUpdate,
 					},
-					/*
-						{
-							Name:   "restore",
-							Usage:  "Restore a user marked as deleted",
-							Action: cmdUserRestoreDeleted,
-							Flags: []cli.Flag{
-								cli.BoolFlag{
-									Name:  "all, a",
-									Usage: "Restore all deleted users",
-								},
-							},
-						},
-						{
-							Name:   "rename",
-							Usage:  "Change a user's username",
-							Action: cmdUserRename,
-						},
-					*/
 					{
 						Name:   "activate",
 						Usage:  "Activate a deativated user",
@@ -79,13 +61,6 @@ func registerUsers(app cli.App) *cli.App {
 							},
 						},
 					},
-					/*
-						{
-							Name:   "deactivate",
-							Usage:  "Deactivate a user account",
-							Action: cmdUserDeactivate,
-						},
-					*/
 					{
 						Name:  `password`,
 						Usage: "SUBCOMMANDS for user passwords",
@@ -102,18 +77,6 @@ func registerUsers(app cli.App) *cli.App {
 									},
 								},
 							},
-							/*
-								{
-									Name:   `reset`,
-									Usage:  `Trigger a password reset for a user`,
-									Action: cmdUserPasswordReset,
-								},
-								{
-									Name:   `force`,
-									Usage:  `Forcefully set the password of a user`,
-									Action: cmdUserPasswordForce,
-								},
-							*/
 						},
 					}, // end users password
 					{
@@ -262,116 +225,6 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 	return nil
 }
 
-/*
-func cmdUserRestoreDeleted(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
-
-	if c.Bool("all") {
-		utl.ValidateCliArgumentCount(c, 0)
-		url.Path = fmt.Sprintf("/users")
-	} else {
-		switch utl.GetCliArgumentCount(c) {
-		case 1:
-			id, err = uuid.FromString(c.Args().First())
-			utl.AbortOnError(err, "Syntax error, argument not a uuid")
-		case 2:
-			utl.ValidateCliArgument(c, 1, "by-name")
-			id = utl.GetUserIdByName(c.Args().Get(1))
-		default:
-			utl.Abort("Syntax error, unexpected argument count")
-		}
-		url.Path = fmt.Sprintf("/users/%s", id.String())
-	}
-
-	var req somaproto.ProtoRequestUser
-	req.Restore = true
-
-	_ = utl.PatchRequestWithBody(Client, req, url.String())
-}
-
-func cmdUserUpdate(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id  uuid.UUID
-		err error
-	)
-
-	argSlice := make([]string, 0)
-	keySlice := []string{"firstname", "lastname", "employeenr", "mailaddr", "team"}
-	reqSlice := make([]string, 0)
-
-	switch utl.GetCliArgumentCount(c) {
-	case 1, 3, 5, 7, 9, 11:
-		id, err = uuid.FromString(c.Args().First())
-		utl.AbortOnError(err, "Syntax error, argument not a uuid")
-		argSlice = c.Args().Tail()
-	case 2, 4, 6, 8, 10, 12:
-		utl.ValidateCliArgument(c, 1, "by-name")
-		id = utl.GetUserIdByName(c.Args().Tail()[0])
-		argSlice = c.Args().Tail()[1:]
-	default:
-		utl.Abort("Syntax error, unexpected argument count")
-	}
-	url.Path = fmt.Sprintf("/users/%s", id.String())
-
-	options, opts := utl.ParseVariableArguments(keySlice, reqSlice, argSlice)
-	var req somaproto.ProtoRequestUser
-
-	for _, v := range opts {
-		switch v {
-		case "firstname":
-			req.User.FirstName = options["firstname"]
-		case "lastname":
-			req.User.LastName = options["lastname"]
-		case "employeenr":
-			utl.ValidateStringAsEmployeeNumber(options["employeenr"])
-			req.User.EmployeeNumber = options["employeenr"]
-		case "mailaddr":
-			utl.ValidateStringAsMailAddress(options["mailaddr"])
-			req.User.MailAddress = options["mailaddr"]
-		case "team":
-			req.User.Team = options["team"]
-		}
-	}
-
-	_ = utl.PatchRequestWithBody(Client, req, url.String())
-}
-
-func cmdUserRename(c *cli.Context) {
-	url := getApiUrl()
-	var (
-		id      uuid.UUID
-		err     error
-		newName string
-	)
-
-	switch utl.GetCliArgumentCount(c) {
-	case 3:
-		utl.ValidateCliArgument(c, 2, "to")
-		id, err = uuid.FromString(c.Args().First())
-		utl.AbortOnError(err, "Syntax error, argument not a uuid")
-		newName = c.Args().Get(2)
-	case 4:
-		utl.ValidateCliArgument(c, 1, "by-name")
-		utl.ValidateCliArgument(c, 3, "to")
-		id = utl.GetUserIdByName(c.Args().Get(1))
-		newName = c.Args().Get(3)
-	default:
-		utl.Abort("Syntax error, unexpected argument count")
-	}
-	url.Path = fmt.Sprintf("/users/%s", id.String())
-
-	var req somaproto.ProtoRequestUser
-	req.User.UserName = newName
-
-	_ = utl.PatchRequestWithBody(Client, req, url.String())
-}
-*/
-
 func cmdUserActivate(c *cli.Context) error {
 	// administrative use, full runtime is available
 	if c.GlobalIsSet(`admin`) {
@@ -462,19 +315,6 @@ func cmdUserActivateAdmin(c *cli.Context) error {
 	return nil
 }
 
-/*
-func cmdUserDeactivate(c *cli.Context) {
-	url := getApiUrl()
-	id := utl.UserIdByUuidOrName(c)
-	url.Path = fmt.Sprintf("/users/%s", id.String())
-
-	var req somaproto.ProtoRequestUser
-	req.User.IsActive = false
-
-	_ = utl.PatchRequestWithBody(Client, req, url.String())
-}
-*/
-
 func cmdUserList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
@@ -504,30 +344,6 @@ func cmdUserShow(c *cli.Context) error {
 	fmt.Println(resp)
 	return nil
 }
-
-/*
-func cmdUserPasswordReset(c *cli.Context) {
-	id := utl.UserIdByUuidOrName(c)
-	path := fmt.Sprintf("/users/%s/password", id.String())
-
-	var req somaproto.ProtoRequestUser
-	req.Credentials.Reset = true
-
-	_ = utl.PutRequestWithBody(Client, req, path)
-}
-
-func cmdUserPasswordForce(c *cli.Context) {
-	id := utl.UserIdByUuidOrName(c)
-	path := fmt.Sprintf("/users/%s/password", id.String())
-	pass := utl.GetNewPassword()
-
-	var req somaproto.ProtoRequestUser
-	req.Credentials.Force = true
-	req.Credentials.Password = pass
-
-	_ = utl.PutRequestWithBody(Client, req, path)
-}
-*/
 
 func cmdUserPasswordUpdate(c *cli.Context) error {
 	var (

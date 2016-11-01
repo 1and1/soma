@@ -85,52 +85,6 @@ func registerProperty(app cli.App) *cli.App {
 							},
 						},
 					}, // end property delete
-					/* XXX NOT IMPLEMENTED YET
-					{
-						Name:  "edit",
-						Usage: "SUBCOMMANDS for property edit",
-						Subcommands: []cli.Command{
-							{
-								Name:   "service",
-								Usage:  "Edit a service property",
-								Action: cmdPropertyServiceEdit,
-							},
-							{
-								Name:   "template",
-								Usage:  "Edit a service property template",
-								Action: cmdPropertyTemplateEdit,
-							},
-						},
-					}, // end property edit
-					*/
-					/* XXX NOT IMPLEMENTED YET
-					{
-						Name:  "rename",
-						Usage: "SUBCOMMANDS for property rename",
-						Subcommands: []cli.Command{
-							{
-								Name:   "service",
-								Usage:  "Rename a service property",
-								Action: cmdPropertyServiceRename,
-							},
-							{
-								Name:   "custom",
-								Usage:  "Rename a custom property",
-								Action: cmdPropertyCustomRename,
-							},
-							{
-								Name:   "system",
-								Usage:  "Rename a system property",
-								Action: cmdPropertySystemRename,
-							},
-							{
-								Name:   "template",
-								Usage:  "Rename a service property template",
-								Action: cmdPropertyTemplateRename,
-							},
-						},
-					}, // end property rename
-					*/
 					{
 						Name:  "show",
 						Usage: "SUBCOMMANDS for property show",
@@ -509,32 +463,6 @@ func cmdPropertyTemplateDelete(c *cli.Context) error {
 	}
 	return nil
 }
-
-/*
-func cmdPropertyServiceEdit(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertyTemplateEdit(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertyCustomRename(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertySystemRename(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertyServiceRename(c *cli.Context) {
-	utl.NotImplemented()
-}
-
-func cmdPropertyTemplateRename(c *cli.Context) {
-	utl.NotImplemented()
-}
-*/
 
 /* SHOW
  */

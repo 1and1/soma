@@ -48,28 +48,6 @@ func registerDatacenters(app cli.App) *cli.App {
 						Usage:  "List all datacenters suitable for sync",
 						Action: runtime(cmdDatacentersSync),
 					},
-					/*
-						{
-							Name:   "groupadd",
-							Usage:  "Add a datacenter to a datacenter group",
-							Action: runtime(cmdDatacentersAddToGroup),
-						},
-						{
-							Name:   "groupdel",
-							Usage:  "Remove a datacenter from a datacenter group",
-							Action: runtime(cmdDatacentersRemoveFromGroup),
-						},
-						{
-							Name:   "grouplist",
-							Usage:  "List all datacenter groups",
-							Action: runtime(cmdDatacentersListGroups),
-						},
-						{
-							Name:   "groupshow",
-							Usage:  "Show information about a datacenter group",
-							Action: runtime(cmdDatacentersShowGroup),
-						},
-					*/
 				},
 			}, // end datacenters
 		}...,
@@ -153,95 +131,18 @@ func cmdDatacentersShow(c *cli.Context) error {
 // DC:group
 
 func cmdDatacentersAddToGroup(c *cli.Context) error {
-	/*
-		url, err := url.Parse(Cfg.Api)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		a := c.Args()
-		// we expected exactly 3 arguments
-		if len(a) != 3 {
-			log.Fatal("Syntax error")
-		}
-		// second arg must be `to`
-		if a.Get(1) != "group" {
-			log.Fatal("Syntax error")
-		}
-		log.Printf("Command: add datacenter [%s] to group [%s]", a.Get(0), a.Get(2))
-
-		var req proto.Request
-		req.Datacenter = &proto.Datacenter{}
-		req.Datacenter.Locode = a.Get(0)
-		url.Path = fmt.Sprintf("/datacentergroups/%s", a.Get(2))
-
-		resp, err := resty.New().
-			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-			R().
-			SetBody(req).
-			Patch(url.String())
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Response: %s", resp.Status())
-	*/
 	return nil
 }
 
 func cmdDatacentersRemoveFromGroup(c *cli.Context) error {
-	/*
-		url, err := url.Parse(Cfg.Api)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		a := c.Args()
-		// we expected exactly 3 arguments
-		if len(a) != 3 {
-			log.Fatal("Syntax error")
-		}
-		// second arg must be `to`
-		if a.Get(1) != "group" {
-			log.Fatal("Syntax error")
-		}
-		log.Printf("Command: remove datacenter [%s] from group [%s]", a.Get(0), a.Get(2))
-
-		var req proto.Request
-		req.Datacenter = &proto.Datacenter{}
-		req.Datacenter.Locode = a.Get(0)
-		url.Path = fmt.Sprintf("/datacentergroups/%s", a.Get(2))
-
-		resp, err := resty.New().
-			SetRedirectPolicy(resty.FlexibleRedirectPolicy(3)).
-			R().
-			SetBody(req).
-			Delete(url.String())
-		if err != nil {
-			log.Fatal(err)
-		}
-		log.Printf("Response: %s", resp.Status())
-	*/
 	return nil
 }
 
 func cmdDatacentersListGroups(c *cli.Context) error {
-	/*
-		utl.ValidateCliArgumentCount(c, 0)
-
-		resp := utl.GetRequest(Client, "/datacentergroups/")
-		fmt.Println(resp)
-	*/
 	return nil
 }
 
 func cmdDatacentersShowGroup(c *cli.Context) error {
-	/*
-		utl.ValidateCliArgumentCount(c, 1)
-
-		path := fmt.Sprintf("/datacentergroups/%s", c.Args().First())
-		resp := utl.GetRequest(Client, path)
-		fmt.Println(resp)
-	*/
 	return nil
 }
 
