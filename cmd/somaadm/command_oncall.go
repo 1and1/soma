@@ -84,11 +84,15 @@ func cmdOnCallAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"phone"}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		key, //allowed
 		key, //unique
 		key, //required
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	utl.ValidatePhoneNumber(opts["phone"][0])
 
 	req := proto.Request{}
@@ -114,7 +118,11 @@ func cmdOnCallDel(c *cli.Context) error {
 func cmdOnCallRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"to"}
-	opts := adm.ParseVariadicArguments(key, key, key, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, key, key, key,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)
@@ -133,7 +141,11 @@ func cmdOnCallUpdate(c *cli.Context) error {
 	unique := []string{"phone", "name"}
 	required := []string{}
 	utl.ValidateCliMinArgumentCount(c, 3)
-	opts := adm.ParseVariadicArguments(allowed, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, allowed, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	id := utl.TryGetOncallByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/oncall/%s", id)

@@ -147,11 +147,15 @@ func cmdUserAdd(c *cli.Context) error {
 		"mailaddr", "team"}
 	var err error
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	// validate
 	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])
@@ -195,11 +199,15 @@ func cmdUserUpdate(c *cli.Context) error {
 	required := []string{`username`, "firstname", "lastname", "employeenr",
 		"mailaddr", "team", `deleted`}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	// validate
 	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])

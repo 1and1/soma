@@ -50,12 +50,17 @@ func cmdAttributeCreate(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{"cardinality"}
 	required := []string{"cardinality"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
 
 	switch opts["cardinality"][0] {
 	case "once":

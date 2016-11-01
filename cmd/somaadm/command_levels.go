@@ -49,11 +49,16 @@ func registerLevels(app cli.App) *cli.App {
 func cmdLevelCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"shortname", "numeric"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multKeys,
 		multKeys,
-		c.Args().Tail())
+		multKeys,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Level = &proto.Level{}

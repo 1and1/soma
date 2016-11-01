@@ -175,11 +175,15 @@ func cmdPermissionAdd(c *cli.Context) error {
 	unique := []string{`category`, `grants`}
 	required := []string{`category`}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.NewPermissionRequest()
 	req.Permission.Name = c.Args().First()

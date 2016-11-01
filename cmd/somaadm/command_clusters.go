@@ -152,11 +152,15 @@ func registerClusters(app cli.App) *cli.App {
 func cmdClusterCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(opts,
+		multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 
@@ -177,11 +181,16 @@ func cmdClusterCreate(c *cli.Context) error {
 func cmdClusterDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
+		multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
@@ -199,11 +208,16 @@ func cmdClusterDelete(c *cli.Context) error {
 func cmdClusterRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
+		multKeys,
 		multKeys, // as uniqKeys
 		multKeys, // as reqKeys
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
@@ -234,11 +248,16 @@ func cmdClusterList(c *cli.Context) error {
 func cmdClusterShow(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multKeys,
 		multKeys,
-		c.Args().Tail())
+		multKeys,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
@@ -256,11 +275,16 @@ func cmdClusterShow(c *cli.Context) error {
 func cmdClusterTree(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multKeys,
 		multKeys,
-		c.Args().Tail())
+		multKeys,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
@@ -278,11 +302,16 @@ func cmdClusterTree(c *cli.Context) error {
 func cmdClusterMemberAdd(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"to", "in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multKeys,
 		multKeys,
-		c.Args().Tail())
+		multKeys,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	//TODO: get bucketId via node
@@ -316,11 +345,16 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 func cmdClusterMemberDelete(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	multKeys := []string{"from", "in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multKeys,
 		multKeys,
-		c.Args().Tail())
+		multKeys,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	//TODO: get bucketId via node
@@ -341,11 +375,16 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 func cmdClusterMemberList(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	multKeys := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multKeys,
 		multKeys,
-		c.Args().Tail())
+		multKeys,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
@@ -401,7 +440,15 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`, `in`}
 	required := []string{`from`, `view`, `in`}
-	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		multiple,
+		unique,
+		required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
 	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
 

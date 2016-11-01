@@ -50,11 +50,15 @@ func cmdValidityCreate(c *cli.Context) error {
 	unique := []string{"on", "direct", "inherited"}
 	required := []string{"on", "direct", "inherited"}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Validity = &proto.Validity{

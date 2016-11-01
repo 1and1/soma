@@ -51,12 +51,16 @@ func cmdMetricCreate(c *cli.Context) error {
 	multiple := []string{"package"}
 	unique := []string{"unit", "description"}
 	required := []string{"unit", "description"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	utl.ValidateUnitExists(Client, opts["unit"][0])
 	req := proto.Request{}

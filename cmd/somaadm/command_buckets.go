@@ -153,11 +153,16 @@ func cmdBucketCreate(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 5)
 	uniqKeys := []string{"repository", "environment"}
 	multKeys := []string{}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys,
+	if err := adm.ParseVariadicArguments(opts,
+		multKeys,
 		uniqKeys,
 		uniqKeys, // as reqKeys
-		c.Args().Tail())
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
 
 	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
@@ -391,7 +396,11 @@ func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}
-	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, opts[`from`][0])
 
 	if pType == `system` {

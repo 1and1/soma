@@ -385,7 +385,11 @@ func cmdRepositoryPropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}
-	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`from`][0])
 
 	if pType == `system` {

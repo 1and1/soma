@@ -69,9 +69,14 @@ func cmdRightGrantSystem(c *cli.Context) error {
 
 func cmdRightGrant(c *cli.Context, cat string) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		[]string{}, []string{`user`},
-		[]string{`user`}, c.Args().Tail())
+		[]string{`user`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.NewGrantRequest()
 	req.Grant.RecipientType = `user`
@@ -95,9 +100,14 @@ func cmdRightRevokeSystem(c *cli.Context) error {
 
 func cmdRightRevoke(c *cli.Context, cat string) error {
 	utl.ValidateCliArgumentCount(c, 3)
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		[]string{}, []string{`user`},
-		[]string{`user`}, c.Args().Tail())
+		[]string{`user`},
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	permId := utl.TryGetPermissionByUUIDOrName(Client, c.Args().First())
 	userId := utl.TryGetUserByUUIDOrName(Client, opts[`user`][0])

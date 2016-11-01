@@ -224,8 +224,12 @@ func cmdNodeAdd(c *cli.Context) error {
 		adm.Abort("Syntax error, unexpected argument count")
 	}
 	argSlice := utl.GetFullArgumentSlice(c)
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multKeys, uniqKeys, reqKeys, argSlice)
+	if err := adm.ParseVariadicArguments(opts, multKeys, uniqKeys, reqKeys,
+		argSlice); err != nil {
+		return err
+	}
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 
@@ -256,8 +260,12 @@ func cmdNodeUpdate(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
 	required := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
 	req := proto.NewNodeRequest()
 	if !utl.IsUUID(c.Args().First()) {
@@ -439,7 +447,11 @@ func cmdNodeAssign(c *cli.Context) error {
 	unique := []string{"to"}
 	required := []string{"to"}
 
-	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
@@ -562,7 +574,11 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}
-	opts := adm.ParseVariadicArguments(multiple, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts[`from`][0])
 	config := utl.GetNodeConfigById(Client, nodeId)
 

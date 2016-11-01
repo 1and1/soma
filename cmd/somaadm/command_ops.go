@@ -252,11 +252,15 @@ func cmdOpsRepoRestart(c *cli.Context) error {
 }
 
 func cmdOpsRepoRebuild(c *cli.Context) error {
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		[]string{},        // more than once
 		[]string{`level`}, // at most once
 		[]string{`level`}, // at least once
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	// validate requested rebuild level
 	switch opts[`level`][0] {

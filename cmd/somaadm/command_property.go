@@ -212,11 +212,15 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 	unique := []string{"repository"}
 	required := []string{"repository"}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
 	req := proto.Request{}
@@ -315,11 +319,15 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	}
 
 	// parse command line
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	// team lookup only for service
 	var teamId string
 	if c.Command.Name == "service" {
@@ -413,11 +421,15 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 	unique := []string{"repository"}
 	required := []string{"repository"}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
 
@@ -692,8 +704,11 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	case `group`, `cluster`:
 		required = append(required, `in`)
 	}
-	opts := adm.ParseVariadicArguments(multiple, unique, required,
-		c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	// deprecation warning
 	switch oType {

@@ -122,12 +122,16 @@ func cmdCheckDelete(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{"in"}
 	required := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
@@ -146,12 +150,16 @@ func cmdCheckList(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{"in"}
 	required := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args())
+		c.Args()); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 
@@ -169,12 +177,16 @@ func cmdCheckShow(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{"in"}
 	required := []string{"in"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)

@@ -51,12 +51,16 @@ func cmdMonitoringCreate(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{"mode", "contact", "team", "callback"}
 	required := []string{"mode", "contact", "team"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Monitoring = &proto.Monitoring{}

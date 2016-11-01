@@ -53,12 +53,16 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 	multiple := []string{}
 	unique := []string{"metric", "view", "thresholds"}
 	required := []string{"metric", "view", "thresholds"}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	thresholds, err := strconv.ParseUint(opts["thresholds"][0], 10, 64)
 	adm.AbortOnError(err, "Syntax error, threshold argument not numeric")

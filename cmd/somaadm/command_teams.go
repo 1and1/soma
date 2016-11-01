@@ -80,11 +80,15 @@ func cmdTeamAdd(c *cli.Context) error {
 	required := []string{"ldap"}
 	unique := []string{"ldap", "system"}
 
-	opts := adm.ParseVariadicArguments(
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
 		multi,
 		unique,
 		required,
-		c.Args().Tail())
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Team = &proto.Team{}
@@ -109,7 +113,11 @@ func cmdTeamUpdate(c *cli.Context) error {
 	unique := []string{`name`, `ldap`, `system`}
 	required := []string{`name`, `ldap`}
 
-	opts := adm.ParseVariadicArguments(multi, unique, required, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, multi, unique, required,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	teamid := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	req := proto.NewTeamRequest()
@@ -137,7 +145,11 @@ func cmdTeamDel(c *cli.Context) error {
 func cmdTeamRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{"to"}
-	opts := adm.ParseVariadicArguments(key, key, key, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, key, key, key,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/teams/%s", id)

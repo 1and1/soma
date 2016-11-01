@@ -75,7 +75,11 @@ func cmdObjectTypesRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{`to`}
 
-	opts := adm.ParseVariadicArguments(key, key, key, c.Args().Tail())
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(opts, key, key, key,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.NewEntityRequest()
 	req.Entity.Name = opts[`to`][0]

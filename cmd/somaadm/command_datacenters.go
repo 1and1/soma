@@ -101,8 +101,12 @@ func cmdDatacentersRemove(c *cli.Context) error {
 func cmdDatacentersRename(c *cli.Context) error {
 	utl.ValidateCliArgumentCount(c, 3)
 	key := []string{`to`}
+	opts := map[string][]string{}
 
-	opts := adm.ParseVariadicArguments(key, key, key, c.Args().Tail())
+	if err := adm.ParseVariadicArguments(opts, key, key, key,
+		c.Args().Tail()); err != nil {
+		return err
+	}
 
 	req := proto.NewDatacenterRequest()
 	req.Datacenter.Locode = opts[`to`][0]
