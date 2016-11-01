@@ -716,10 +716,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		switch pType {
 		case `system`, `custom`, `service`, `oncall`:
 		default:
-			adm.Abort(`Unknown property type`)
+			return fmt.Errorf("Unknown property type: %s", pType)
 		}
 	default:
-		adm.Abort(`Unknown object type`)
+		return fmt.Errorf("Unknown object type: %s", oType)
 	}
 
 	// argument parsing

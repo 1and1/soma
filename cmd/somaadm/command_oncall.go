@@ -160,7 +160,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 		validUpdate = true
 	}
 	if !validUpdate {
-		adm.Abort("Syntax error, specify name or phone to update")
+		return fmt.Errorf("Syntax error, specify name or phone to update")
 	}
 
 	resp := utl.PatchRequestWithBody(Client, req, path)
