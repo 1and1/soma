@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -58,9 +59,11 @@ func cmdObjectStatesAdd(c *cli.Context) error {
 	req := proto.NewStateRequest()
 	req.State.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, `/objstates/`)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/objstates/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdObjectStatesRemove(c *cli.Context) error {
@@ -68,39 +71,49 @@ func cmdObjectStatesRemove(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/objstates/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/objstates/%s", esc)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdObjectStatesRename(c *cli.Context) error {
-	key := []string{`to`}
-
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
 	req := proto.NewStateRequest()
 	req.State.Name = opts[`to`][0]
 
-	path := fmt.Sprintf("/objstates/%s", c.Args().First())
-
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/objstates/%s", esc)
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdObjectStatesList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, "/objstates/")
-	fmt.Println(resp)
-	return nil
+
+	if resp, err := adm.GetReq(`/objstates/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdObjectStatesShow(c *cli.Context) error {
@@ -108,11 +121,13 @@ func cmdObjectStatesShow(c *cli.Context) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/objstates/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	esc := url.QueryEscape(c.Args().First())
+	path := fmt.Sprintf("/objstates/%s", esc)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
