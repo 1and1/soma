@@ -26,11 +26,21 @@ func LookupOncallId(s string) (string, error) {
 	return oncallIdByName(s)
 }
 
+// LookupOncallId looks up the UUID for a user on the server
+// with username s. Error is set if no such user was found
+// or an error occured.
+// If s is already a UUID, then s is immediately returned.
+func LookupUserId(s string) (string, error) {
+	if isUUID(s) {
+		return s, nil
+	}
+	return userIdByUserName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
-	req := proto.Request{}
-	req.Filter = &proto.Filter{}
+	req := proto.NewOncallFilter()
 	req.Filter.Oncall = &proto.OncallFilter{Name: oncall}
 
 	var (
@@ -48,17 +58,7 @@ func oncallIdByName(oncall string) (string, error) {
 		goto abort
 	}
 
-	if res.StatusCode >= 300 {
-		// application errors
-		s := fmt.Sprintf("Request failed: %d - %s",
-			res.StatusCode, res.StatusText)
-		m := []string{s}
-
-		if res.Errors != nil {
-			m = append(m, *res.Errors...)
-		}
-
-		err = fmt.Errorf(combineStrings(m...))
+	if err = checkApplicationError(res); err != nil {
 		goto abort
 	}
 
@@ -72,6 +72,61 @@ func oncallIdByName(oncall string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("OncallId lookup failed: %s", err.Error())
+}
+
+// userIdByUserName implements the actual serverside lookup of the
+// user's UUID
+func userIdByUserName(user string) (string, error) {
+	req := proto.NewUserFilter()
+	req.Filter.User.UserName = user
+
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	if resp, err = PostReqBody(req, `/filter/users/`); err != nil {
+		// transport errors
+		goto abort
+	}
+
+	if res, err = decodeResponse(resp); err != nil {
+		// http code errors
+		goto abort
+	}
+
+	if err = checkApplicationError(res); err != nil {
+		goto abort
+	}
+
+	// check the received record against the input
+	if user != (*res.Users)[0].UserName {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			user, (*res.Users)[0].UserName)
+		goto abort
+	}
+	return (*res.Users)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("UserId lookup failed: %s", err.Error())
+}
+
+// checkApplicationError tests the server result for
+// application errors
+func checkApplicationError(result *proto.Result) error {
+	if result.StatusCode >= 300 {
+		// application errors
+		s := fmt.Sprintf("Request failed: %d - %s",
+			result.StatusCode, result.StatusText)
+		m := []string{s}
+
+		if result.Errors != nil {
+			m = append(m, *result.Errors...)
+		}
+
+		return fmt.Errorf(combineStrings(m...))
+	}
+	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
