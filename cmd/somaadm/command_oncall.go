@@ -81,14 +81,12 @@ func registerOncall(app cli.App) *cli.App {
 }
 
 func cmdOnCallAdd(c *cli.Context) error {
-	key := []string{"phone"}
-
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
 		[]string{},
-		key, //unique
-		key, //required
+		[]string{`phone`},
+		[]string{`phone`},
 		c.Args().Tail()); err != nil {
 		return err
 	}
@@ -96,36 +94,44 @@ func cmdOnCallAdd(c *cli.Context) error {
 		return err
 	}
 
-	req := proto.Request{}
-	req.Oncall = &proto.Oncall{}
+	req := proto.NewOncallRequest()
 	req.Oncall.Name = c.Args().First()
 	req.Oncall.Number = opts["phone"][0]
 
-	resp := utl.PostRequestWithBody(Client, req, "/oncall/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/oncall/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdOnCallDel(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
+
 	id, err := adm.LookupOncallId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/oncall/%s", id)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/oncall/%s", id)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdOnCallRename(c *cli.Context) error {
-	key := []string{"to"}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -133,33 +139,32 @@ func cmdOnCallRename(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/oncall/%s", id)
 
-	req := proto.Request{}
-	req.Oncall = &proto.Oncall{}
+	req := proto.NewOncallRequest()
 	req.Oncall.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/oncall/%s", id)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdOnCallUpdate(c *cli.Context) error {
 	unique := []string{"phone", "name"}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, []string{}, unique,
-		[]string{}, c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		[]string{},
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
-	id, err := adm.LookupOncallId(c.Args().First())
-	if err != nil {
-		return err
-	}
-	path := fmt.Sprintf("/oncall/%s", id)
-
-	req := proto.Request{}
-	req.Oncall = &proto.Oncall{}
+	req := proto.NewOncallRequest()
 	validUpdate := false
 	if len(opts["phone"]) > 0 {
 		if err := adm.ValidateOncallNumber(opts["phone"][0]); err != nil {
@@ -176,9 +181,17 @@ func cmdOnCallUpdate(c *cli.Context) error {
 		return fmt.Errorf("Syntax error, specify name or phone to update")
 	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	id, err := adm.LookupOncallId(c.Args().First())
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/oncall/%s", id)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdOnCallList(c *cli.Context) error {
@@ -186,9 +199,11 @@ func cmdOnCallList(c *cli.Context) error {
 		return err
 	}
 
-	resp := utl.GetRequest(Client, "/oncall/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(`/oncall/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdOnCallShow(c *cli.Context) error {
@@ -200,11 +215,13 @@ func cmdOnCallShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/oncall/%s", id)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/oncall/%s", id)
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 func cmdOnCallMemberAdd(c *cli.Context) error {
@@ -229,17 +246,17 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 		return err
 	}
 
-	req := proto.Request{}
-	req.Oncall = &proto.Oncall{}
-	member := proto.OncallMember{}
-	member.UserId = userId
-	reqMembers := []proto.OncallMember{member}
-	req.Oncall.Members = &reqMembers
-	path := fmt.Sprintf("/oncall/%s/members", oncallId)
+	req := proto.NewOncallRequest()
+	req.Oncall.Members = &[]proto.OncallMember{
+		proto.OncallMember{UserId: userId},
+	}
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/oncall/%s/members", oncallId)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdOnCallMemberDel(c *cli.Context) error {
@@ -249,7 +266,8 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 		[]string{},
 		[]string{`from`},
 		[]string{`from`},
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -265,26 +283,29 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId)
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdOnCallMemberList(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
+
 	oncallId, err := adm.LookupOncallId(c.Args().First())
 	if err != nil {
 		return err
 	}
 
 	path := fmt.Sprintf("/oncall/%s/members/", oncallId)
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
