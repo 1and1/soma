@@ -58,9 +58,11 @@ func cmdEnvironmentsAdd(c *cli.Context) error {
 	req := proto.NewEnvironmentRequest()
 	req.Environment.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/environments/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/environments/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdEnvironmentsRemove(c *cli.Context) error {
@@ -69,10 +71,11 @@ func cmdEnvironmentsRemove(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdEnvironmentsRename(c *cli.Context) error {
@@ -88,19 +91,23 @@ func cmdEnvironmentsRename(c *cli.Context) error {
 	req.Environment.Name = opts[`to`][0]
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
-
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdEnvironmentsList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, "/environments/")
-	fmt.Println(resp)
-	return nil
+
+	if resp, err := adm.GetReq(`/environments/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdEnvironmentsShow(c *cli.Context) error {
@@ -109,10 +116,11 @@ func cmdEnvironmentsShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
