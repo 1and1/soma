@@ -11,6 +11,7 @@ package adm
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
 // ParseVariadicArguments parses whitespace separated argument lists
@@ -99,6 +100,19 @@ func CheckStringNotAKeyword(s string, keys []string) {
 	if SliceContainsString(s, keys) {
 		log.Fatal(`Syntax error, back-to-back keywords`) // XXX
 	}
+}
+
+// combineStrings takes an arbitray number of strings and combines them
+// into one, separated by `.\n`
+func combineStrings(s ...string) string {
+	var out string
+	spacer := ``
+	for _, in := range s {
+		// ensure a single trailing .
+		out = fmt.Sprintf("%s%s", out+spacer, strings.TrimRight(in, `.`)+`.`)
+		spacer = "\n"
+	}
+	return out
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
