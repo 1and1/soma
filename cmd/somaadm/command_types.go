@@ -58,9 +58,11 @@ func cmdObjectTypesAdd(c *cli.Context) error {
 	req := proto.NewEntityRequest()
 	req.Entity.Name = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, "/objtypes/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/objtypes/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdObjectTypesRemove(c *cli.Context) error {
@@ -69,18 +71,22 @@ func cmdObjectTypesRemove(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdObjectTypesRename(c *cli.Context) error {
-	key := []string{`to`}
-
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, key, key, key,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`to`},
+		[]string{`to`},
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -88,19 +94,23 @@ func cmdObjectTypesRename(c *cli.Context) error {
 	req.Entity.Name = opts[`to`][0]
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
-
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdObjectTypesList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, "/objtypes/")
-	fmt.Println(resp)
-	return nil
+
+	if resp, err := adm.GetReq(`/objtypes/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdObjectTypesShow(c *cli.Context) error {
@@ -109,10 +119,11 @@ func cmdObjectTypesShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
