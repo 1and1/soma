@@ -13,6 +13,10 @@ import (
 )
 
 func configSetup(c *cli.Context) error {
+	if c.GlobalBool(`no-execute`) {
+		return nil
+	}
+
 	var (
 		configFile, home, wd string
 		err                  error
