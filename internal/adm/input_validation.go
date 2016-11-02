@@ -10,6 +10,7 @@ package adm
 
 import (
 	"fmt"
+	"net/mail"
 	"regexp"
 	"strconv"
 	"unicode/utf8"
@@ -55,6 +56,26 @@ func ValidateOncallNumber(n string) error {
 
 	if num <= 0 || num > 9999 {
 		return fmt.Errorf("Phone number must be 4-digit extension")
+	}
+	return nil
+}
+
+// ValidateEmployeeNumber tests if a string is a non-negative number
+func ValidateEmployeeNumber(s string) error {
+	employeeNumber, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("Error: employeenr argument not a number")
+	}
+	if employeeNumber < 0 {
+		return fmt.Errorf("Negative employee number is not allowed")
+	}
+	return nil
+}
+
+// ValidateMailAddress tests if a string is a mail address
+func ValidateMailAddress(s string) error {
+	if _, err := mail.ParseAddress(s); err != nil {
+		return fmt.Errorf("Error: mailaddr does not parse as RFC 5322 address")
 	}
 	return nil
 }

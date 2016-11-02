@@ -50,7 +50,7 @@ func (u *SomaUtil) GetValidatedUint64(s string, min uint64) uint64 {
 	return i
 }
 
-func (u *SomaUtil) ValidateStringAsEmployeeNumber(s string) {
+func (u *SomaUtil) validateStringAsEmployeeNumber(s string) {
 	employeeNumber, err := strconv.Atoi(s)
 	u.abortOnError(err, "Syntax error, employeenr argument not a number")
 	if employeeNumber < 0 {
@@ -58,7 +58,7 @@ func (u *SomaUtil) ValidateStringAsEmployeeNumber(s string) {
 	}
 }
 
-func (u *SomaUtil) ValidateStringAsMailAddress(s string) {
+func (u *SomaUtil) validateStringAsMailAddress(s string) {
 	_, err := mail.ParseAddress(s)
 	u.abortOnError(err, "Syntax error, mailaddr does not parse as RFC 5322 address")
 }

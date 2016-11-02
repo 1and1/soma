@@ -120,8 +120,12 @@ func cmdUserAdd(c *cli.Context) error {
 	}
 
 	// validate
-	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])
-	utl.ValidateStringAsMailAddress(opts["mailaddr"][0])
+	if err = adm.ValidateEmployeeNumber(opts[`employeenr`][0]); err != nil {
+		return err
+	}
+	if err = adm.ValidateMailAddress(opts[`mailaddr`][0]); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.User = &proto.User{}
@@ -171,8 +175,12 @@ func cmdUserUpdate(c *cli.Context) error {
 	}
 
 	// validate
-	utl.ValidateStringAsEmployeeNumber(opts["employeenr"][0])
-	utl.ValidateStringAsMailAddress(opts["mailaddr"][0])
+	if err := adm.ValidateEmployeeNumber(opts[`employeenr`][0]); err != nil {
+		return err
+	}
+	if err := adm.ValidateMailAddress(opts[`mailaddr`][0]); err != nil {
+		return err
+	}
 	if !utl.IsUUID(c.Args().First()) {
 		return fmt.Errorf(`users update requiress UUID as first argument`)
 	}
