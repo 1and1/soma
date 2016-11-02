@@ -80,4 +80,28 @@ func ValidateMailAddress(s string) error {
 	return nil
 }
 
+// ValidateBool tests that string s represents and bool and sets
+// its value in b.
+// Returns error if s could not be parsed as bool.
+func ValidateBool(s string, b *bool) error {
+	var err error
+	*b, err = strconv.ParseBool(s)
+	return err
+}
+
+// ValidateLBoundUint64 tests that string s is an unsigned number
+// with a specific minimum value and sets it in i.
+// Returns error if the number conversion failed or the minimum
+// value was not reached.
+func ValidateLBoundUint64(s string, i *uint64, min uint64) error {
+	var err error
+	if *i, err = strconv.ParseUint(s, 10, 64); err != nil {
+		return err
+	}
+	if *i < min {
+		return fmt.Errorf("Error, value %d is less than the minimun %d", i, min)
+	}
+	return nil
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

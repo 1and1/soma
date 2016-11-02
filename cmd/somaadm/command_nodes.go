@@ -204,8 +204,10 @@ func cmdNodeAdd(c *cli.Context) error {
 
 	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
 	if _, ok := opts[`online`]; ok {
-		utl.ValidateStringAsBool(opts[`online`][0])
-		req.Node.IsOnline, _ = strconv.ParseBool(opts[`online`][0])
+		if err := adm.ValidateBool(opts[`online`][0],
+			&req.Node.IsOnline); err != nil {
+			return err
+		}
 	} else {
 		req.Node.IsOnline = true
 	}
@@ -245,8 +247,14 @@ func cmdNodeUpdate(c *cli.Context) error {
 	}
 	req.Node.Id = c.Args().First()
 	req.Node.Name = opts[`name`][0]
-	req.Node.IsOnline = utl.GetValidatedBool(opts[`online`][0])
-	req.Node.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
+	if err := adm.ValidateBool(opts[`online`][0],
+		&req.Node.IsOnline); err != nil {
+		return err
+	}
+	if err := adm.ValidateBool(opts[`deleted`][0],
+		&req.Node.IsDeleted); err != nil {
+		return err
+	}
 	req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, opts[`server`][0])
 	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
 	{

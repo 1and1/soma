@@ -57,9 +57,12 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	req := proto.Request{}
 	req.CheckConfig = &proto.CheckConfig{
-		Interval:     utl.GetValidatedUint64(opts["interval"][0], 1),
 		CapabilityId: utl.TryGetCapabilityByUUIDOrName(Client, opts["with"][0]),
 		ObjectType:   opts["on/type"][0],
+	}
+	if err := adm.ValidateLBoundUint64(opts["interval"][0],
+		&req.CheckConfig.Interval, 1); err != nil {
+		return err
 	}
 	if err := adm.ValidateRuneCount(c.Args().First(), 256); err != nil {
 		return err
@@ -85,7 +88,10 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	// optional argument: inheritance
 	if iv, ok := opts["inheritance"]; ok {
-		req.CheckConfig.Inheritance = utl.GetValidatedBool(iv[0])
+		if err := adm.ValidateBool(iv[0],
+			&req.CheckConfig.Inheritance); err != nil {
+			return err
+		}
 	} else {
 		// inheritance defaults to true
 		req.CheckConfig.Inheritance = true
@@ -93,7 +99,10 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	// optional argument: childrenonly
 	if co, ok := opts["childrenonly"]; ok {
-		req.CheckConfig.ChildrenOnly = utl.GetValidatedBool(co[0])
+		if err := adm.ValidateBool(co[0],
+			&req.CheckConfig.ChildrenOnly); err != nil {
+			return err
+		}
 	} else {
 		// childrenonly defaults to false
 		req.CheckConfig.ChildrenOnly = false

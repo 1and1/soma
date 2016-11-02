@@ -766,12 +766,18 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	}
 	// property assembly, optional arguments
 	if _, ok := opts[`childrenonly`]; ok {
-		prop.ChildrenOnly = utl.GetValidatedBool(opts[`childrenonly`][0])
+		if err := adm.ValidateBool(opts[`childrenonly`][0],
+			&prop.ChildrenOnly); err != nil {
+			return err
+		}
 	} else {
 		prop.ChildrenOnly = false
 	}
 	if _, ok := opts[`inheritance`]; ok {
-		prop.Inheritance = utl.GetValidatedBool(opts[`inheritance`][0])
+		if err := adm.ValidateBool(opts[`inheritance`][0],
+			&prop.Inheritance); err != nil {
+			return err
+		}
 	} else {
 		prop.Inheritance = true
 	}

@@ -77,13 +77,18 @@ func cmdServerCreate(c *cli.Context) error {
 
 	req := proto.NewServerRequest()
 	req.Server.Name = c.Args().First()
-	req.Server.AssetId = utl.GetValidatedUint64(opts[`assetid`][0], 1)
+	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
+		&req.Server.AssetId, 1); err != nil {
+		return err
+	}
 	req.Server.Datacenter = opts[`datacenter`][0]
 	req.Server.Location = opts[`location`][0]
 
 	// optional argument: online
 	if ov, ok := opts[`online`]; ok {
-		req.Server.IsOnline = utl.GetValidatedBool(ov[0])
+		if err := adm.ValidateBool(ov[0], &req.Server.IsOnline); err != nil {
+			return err
+		}
 	} else {
 		// online defaults to true
 		req.Server.IsOnline = true
@@ -141,11 +146,20 @@ func cmdServerUpdate(c *cli.Context) error {
 	req := proto.NewServerRequest()
 	req.Server.Id = c.Args().First()
 	req.Server.Name = opts[`name`][0]
-	req.Server.AssetId = utl.GetValidatedUint64(opts[`assetid`][0], 1)
 	req.Server.Datacenter = opts[`datacenter`][0]
 	req.Server.Location = opts[`location`][0]
-	req.Server.IsOnline = utl.GetValidatedBool(opts[`online`][0])
-	req.Server.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
+	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
+		&req.Server.AssetId, 1); err != nil {
+		return err
+	}
+	if err := adm.ValidateBool(opts[`online`][0],
+		&req.Server.IsOnline); err != nil {
+		return err
+	}
+	if err := adm.ValidateBool(opts[`deleted`][0],
+		&req.Server.IsDeleted); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/servers/%s", c.Args().First())
 	resp := utl.PutRequestWithBody(Client, req, path)

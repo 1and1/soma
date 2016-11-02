@@ -20,7 +20,7 @@ func (u *SomaUtil) ValidateStringAsBool(s string) {
 	u.abortOnError(err)
 }
 
-func (u *SomaUtil) GetValidatedBool(s string) bool {
+func (u *SomaUtil) getValidatedBool(s string) bool {
 	b, err := strconv.ParseBool(s)
 	u.abortOnError(err)
 	return b
@@ -41,7 +41,7 @@ func (u *SomaUtil) validateRuneCountRange(s string, lower, higher int) {
 	}
 }
 
-func (u *SomaUtil) GetValidatedUint64(s string, min uint64) uint64 {
+func (u *SomaUtil) getValidatedUint64(s string, min uint64) uint64 {
 	i, err := strconv.ParseUint(s, 10, 64)
 	u.abortOnError(err)
 	if i < min {
