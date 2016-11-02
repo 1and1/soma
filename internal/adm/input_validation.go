@@ -38,7 +38,7 @@ func ValidateRuneCountRange(s string, lower, higher int) error {
 // isUUID validates if a string is one very narrow formatting of a UUID,
 // namely the one used by the server. Other valid formats with braces etc
 // are not accepted
-func isUUID(s string) bool {
+func IsUUID(s string) bool {
 	const reUUID string = `^[[:xdigit:]]{8}-[[:xdigit:]]{4}-[1-5][[:xdigit:]]{3}-[[:xdigit:]]{4}-[[:xdigit:]]{12}$`
 	const reUNIL string = `^0{8}-0{4}-0{4}-0{4}-0{12}$`
 	re := regexp.MustCompile(fmt.Sprintf("%s|%s", reUUID, reUNIL))

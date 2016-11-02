@@ -20,7 +20,7 @@ import (
 // found or an error occured.
 // If s is already a UUID, then s is immediately returned.
 func LookupOncallId(s string) (string, error) {
-	if isUUID(s) {
+	if IsUUID(s) {
 		return s, nil
 	}
 	return oncallIdByName(s)
@@ -31,7 +31,7 @@ func LookupOncallId(s string) (string, error) {
 // or an error occured.
 // If s is already a UUID, then s is immediately returned.
 func LookupUserId(s string) (string, error) {
-	if isUUID(s) {
+	if IsUUID(s) {
 		return s, nil
 	}
 	return userIdByUserName(s)
