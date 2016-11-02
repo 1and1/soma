@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -143,15 +142,21 @@ func cmdUserAdd(c *cli.Context) error {
 
 	// optional arguments
 	if _, ok := opts["active"]; ok {
-		req.User.IsActive, err = strconv.ParseBool(opts["active"][0])
-		return fmt.Errorf("Syntax error, active argument not boolean")
+		if err := adm.ValidateBool(opts["active"][0],
+			&req.User.IsActive); err != nil {
+			return fmt.Errorf("Syntax error, active argument not boolean: %s, %s",
+				opts["active"][0], err.Error())
+		}
 	} else {
 		req.User.IsActive = true
 	}
 
 	if _, ok := opts["system"]; ok {
-		req.User.IsSystem, err = strconv.ParseBool(opts["system"][0])
-		return fmt.Errorf("Syntax error, system argument not boolean")
+		if err := adm.ValidateBool(opts["system"][0],
+			&req.User.IsSystem); err != nil {
+			return fmt.Errorf("Syntax error, system argument not boolean: %s, %s",
+				opts["active"][0], err.Error())
+		}
 	} else {
 		req.User.IsSystem = false
 	}
@@ -205,9 +210,10 @@ func cmdUserUpdate(c *cli.Context) error {
 		if err != nil {
 			return err
 		}
-		req.User.IsDeleted, err = strconv.ParseBool(opts[`deleted`][0])
-		if err != nil {
-			return err
+		if err = adm.ValidateBool(opts[`deleted`][0],
+			&req.User.IsDeleted); err != nil {
+			return fmt.Errorf("Syntax error, deleted argument not boolean: %s, %s",
+				opts[`deleted`][0], err.Error())
 		}
 	}
 

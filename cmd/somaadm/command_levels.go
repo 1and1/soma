@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -64,11 +63,10 @@ func cmdLevelCreate(c *cli.Context) error {
 	req.Level.Name = c.Args().First()
 	req.Level.ShortName = opts["shortname"][0]
 
-	l, err := strconv.ParseUint(opts["numeric"][0], 10, 16)
-	if err != nil {
-		return fmt.Errorf(
-			"Syntax error, numeric argument not numeric: %s",
-			err.Error())
+	var l uint64
+	if err := adm.ValidateLBoundUint64(opts["numeric"][0],
+		&l, 0); err != nil {
+		return err
 	}
 	req.Level.Numeric = uint16(l)
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -87,11 +86,10 @@ func cmdTeamAdd(c *cli.Context) error {
 	req.Team.Name = c.Args().First()
 	req.Team.LdapId = opts["ldap"][0]
 	if len(opts["system"]) > 0 {
-		bl, err := strconv.ParseBool(opts["system"][0])
-		if err != nil {
-			return fmt.Errorf("Argument to system parameter must be boolean")
+		if err := adm.ValidateBool(opts["system"][0],
+			&req.Team.IsSystem); err != nil {
+			return err
 		}
-		req.Team.IsSystem = bl
 	}
 
 	if resp, err := adm.PostReqBody(req, `/teams/`); err != nil {
@@ -120,9 +118,8 @@ func cmdTeamUpdate(c *cli.Context) error {
 	req.Team.Name = opts[`name`][0]
 	req.Team.LdapId = opts[`ldap`][0]
 	if len(opts[`system`]) > 0 {
-		var err error
-		req.Team.IsSystem, err = strconv.ParseBool(opts[`system`][0])
-		if err != nil {
+		if err := adm.ValidateBool(opts["system"][0],
+			&req.Team.IsSystem); err != nil {
 			return fmt.Errorf("Argument to system parameter must be boolean")
 		}
 	}

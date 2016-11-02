@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/util"
@@ -156,7 +155,10 @@ func cmdJobLocalUpdate(c *cli.Context) error {
 			continue
 		}
 		strID := jobMap[j.Id]
-		storeID, _ := strconv.ParseUint(strID, 10, 64)
+		var storeID uint64
+		if err := adm.ValidateLBoundUint64(strID, &storeID, 0); err != nil {
+			return fmt.Errorf("somaadm: Job update cache error: %s", err.Error())
+		}
 		if err := store.FinishJob(storeID, &j); err != nil {
 			return fmt.Errorf("somaadm: Job update cache error: %s", err.Error())
 		}

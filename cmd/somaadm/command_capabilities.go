@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -63,8 +62,11 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 		return err
 	}
 
-	thresholds, err := strconv.ParseUint(opts["thresholds"][0], 10, 64)
-	adm.AbortOnError(err, "Syntax error, threshold argument not numeric")
+	var thresholds uint64
+	if err := adm.ValidateLBoundUint64(opts["thresholds"][0],
+		&thresholds, 1); err != nil {
+		return err
+	}
 
 	req := proto.Request{
 		Capability: &proto.Capability{

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -66,16 +65,13 @@ func cmdValidityCreate(c *cli.Context) error {
 		ObjectType:     opts["on"][0],
 	}
 
-	{
-		var err error
-		if req.Validity.Direct, err = strconv.ParseBool(
-			opts[`direct`][0]); err != nil {
-			return err
-		}
-		if req.Validity.Inherited, err = strconv.ParseBool(
-			opts[`inherited`][0]); err != nil {
-			return err
-		}
+	if err := adm.ValidateBool(opts[`direct`][0],
+		&req.Validity.Direct); err != nil {
+		return err
+	}
+	if err := adm.ValidateBool(opts[`inherited`][0],
+		&req.Validity.Inherited); err != nil {
+		return err
 	}
 
 	if resp, err := adm.PostReqBody(req, `/validity/`); err != nil {
