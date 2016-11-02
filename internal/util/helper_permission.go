@@ -9,10 +9,10 @@ func (u *SomaUtil) TryGetPermissionByUUIDOrName(c *resty.Client, s string) strin
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetPermissionIdByName(c, s)
+	return u.getPermissionIdByName(c, s)
 }
 
-func (u *SomaUtil) GetPermissionIdByName(c *resty.Client, perm string) string {
+func (u *SomaUtil) getPermissionIdByName(c *resty.Client, perm string) string {
 	req := proto.NewPermissionFilter()
 	req.Filter.Permission.Name = perm
 

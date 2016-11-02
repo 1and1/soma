@@ -63,8 +63,8 @@ func (u *SomaUtil) validateStringAsMailAddress(s string) {
 	u.abortOnError(err, "Syntax error, mailaddr does not parse as RFC 5322 address")
 }
 
-func (u *SomaUtil) ValidateStringInSlice(s string, sl []string) {
-	if !u.SliceContainsString(s, sl) {
+func (u *SomaUtil) validateStringInSlice(s string, sl []string) {
+	if !u.sliceContainsString(s, sl) {
 		if len(sl) == 0 {
 			u.abort("Error, cannot compare '%s' to empty keyword list")
 		}

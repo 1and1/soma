@@ -33,7 +33,7 @@ func (u SomaUtil) TryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s stri
 	if aid, err = strconv.ParseUint(s, 10, 64); err != nil {
 		if m, err = cache.ServerByName(s); err != nil {
 			// aborts on failure
-			return u.GetServerIdByName(cache, c, s)
+			return u.getServerIdByName(cache, c, s)
 		} else {
 			return m[`id`]
 		}
@@ -62,7 +62,7 @@ func (u SomaUtil) GetServerIdByAssetId(cache *db.DB, c *resty.Client, aid uint64
 	return (*res.Servers)[0].Id
 }
 
-func (u SomaUtil) GetServerIdByName(cache *db.DB, c *resty.Client, server string) string {
+func (u SomaUtil) getServerIdByName(cache *db.DB, c *resty.Client, server string) string {
 	req := proto.NewServerFilter()
 	req.Filter.Server.Name = server
 

@@ -11,31 +11,31 @@ func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r 
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetPropertyIdByName(c, "custom", s, r)
+	return u.getPropertyIdByName(c, "custom", s, r)
 }
 
 func (u SomaUtil) TryGetServicePropertyByUUIDOrName(c *resty.Client, s string, t string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetPropertyIdByName(c, "service", s, t)
+	return u.getPropertyIdByName(c, "service", s, t)
 }
 
-func (u SomaUtil) TryGetSystemPropertyByUUIDOrName(c *resty.Client, s string) string {
+func (u SomaUtil) tryGetSystemPropertyByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetPropertyIdByName(c, "system", s, "none")
+	return u.getPropertyIdByName(c, "system", s, "none")
 }
 
 func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetPropertyIdByName(c, "template", s, "none")
+	return u.getPropertyIdByName(c, "template", s, "none")
 }
 
-func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string, ctx string) string {
+func (u SomaUtil) getPropertyIdByName(c *resty.Client, pType string, prop string, ctx string) string {
 	var (
 		req         proto.Request
 		ctxIdString string

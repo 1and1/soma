@@ -13,10 +13,10 @@ func (u *SomaUtil) TryGetCapabilityByUUIDOrName(c *resty.Client, s string) strin
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetCapabilityIdByName(c, s)
+	return u.getCapabilityIdByName(c, s)
 }
 
-func (u *SomaUtil) GetCapabilityIdByName(c *resty.Client, capability string) string {
+func (u *SomaUtil) getCapabilityIdByName(c *resty.Client, capability string) string {
 	req := proto.NewCapabilityFilter()
 
 	split := strings.SplitN(capability, ".", 3)

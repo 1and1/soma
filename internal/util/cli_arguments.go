@@ -54,7 +54,7 @@ func (u *SomaUtil) validateCliArgumentCount(c *cli.Context, i uint8) {
 	}
 }
 
-func (u *SomaUtil) GetFullArgumentSlice(c *cli.Context) []string {
+func (u *SomaUtil) getFullArgumentSlice(c *cli.Context) []string {
 	sl := []string{c.Args().First()}
 	sl = append(sl, c.Args().Tail()...)
 	return sl
@@ -98,7 +98,7 @@ func (u *SomaUtil) parseVariadicArguments(
 			continue
 		}
 
-		if u.SliceContainsString(val, keys) {
+		if u.sliceContainsString(val, keys) {
 			// there must be at least one arguments left
 			if len(args[pos+1:]) < 1 {
 				u.abort("Syntax error, incomplete key/value specification (too few items left to parse)")
@@ -169,7 +169,7 @@ argloop:
 			continue
 		}
 
-		if u.SliceContainsString(val, keys) {
+		if u.sliceContainsString(val, keys) {
 			// there must be at least one arguments left
 			if len(args[pos+1:]) < 1 {
 				u.abort("Syntax error, incomplete key/value specification (too few items left to parse)")
@@ -205,7 +205,7 @@ argloop:
 					u.abort("Syntax error, incomplete constraint specification")
 				}
 				// check constraint type specification
-				if !u.SliceContainsString(args[pos+1], constraintTypes) {
+				if !u.sliceContainsString(args[pos+1], constraintTypes) {
 					u.abort(fmt.Sprintf("Syntax error, unknown contraint type: %s",
 						args[pos+1]))
 				}
@@ -324,7 +324,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 			continue
 		}
 
-		if u.SliceContainsString(val, keys) {
+		if u.sliceContainsString(val, keys) {
 			// there must be at least one arguments left
 			if len(args[pos+1:]) < 1 {
 				u.abort("Syntax error, incomplete key/value specification (too few items left to parse)")

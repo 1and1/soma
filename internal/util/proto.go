@@ -44,7 +44,7 @@ func (u SomaUtil) DecodeResultFromResponse(resp *resty.Response) *proto.Result {
 	return &res
 }
 
-func (u SomaUtil) UnfilteredResultFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) unfilteredResultFromResponse(resp *resty.Response) *proto.Result {
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))
 	res := proto.Result{}
 	err := decoder.Decode(&res)

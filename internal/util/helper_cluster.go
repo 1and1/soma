@@ -12,10 +12,10 @@ func (u SomaUtil) TryGetClusterByUUIDOrName(c *resty.Client, cl string, b string
 		return cl
 	}
 	bId := u.bucketByUUIDOrName(c, b)
-	return u.GetClusterIdByName(c, cl, bId)
+	return u.getClusterIdByName(c, cl, bId)
 }
 
-func (u SomaUtil) GetClusterIdByName(c *resty.Client, cl string, bId string) string {
+func (u SomaUtil) getClusterIdByName(c *resty.Client, cl string, bId string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Cluster: &proto.ClusterFilter{
@@ -31,14 +31,14 @@ func (u SomaUtil) GetClusterIdByName(c *resty.Client, cl string, bId string) str
 	return (*clusterResult.Clusters)[0].Id
 }
 
-func (u SomaUtil) GetClusterDetails(c *resty.Client, clusterId string) *proto.Cluster {
+func (u SomaUtil) getClusterDetails(c *resty.Client, clusterId string) *proto.Cluster {
 	resp := u.GetRequest(c, fmt.Sprintf("/clusters/%s", clusterId))
 	res := u.DecodeResultFromResponse(resp)
 	return &(*res.Clusters)[0]
 }
 
 func (u SomaUtil) FindSourceForClusterProperty(c *resty.Client, pTyp, pName, view, clusterId string) string {
-	cluster := u.GetClusterDetails(c, clusterId)
+	cluster := u.getClusterDetails(c, clusterId)
 	if cluster == nil {
 		return ``
 	}

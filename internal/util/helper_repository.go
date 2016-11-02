@@ -40,14 +40,14 @@ func (u SomaUtil) GetTeamIdByRepositoryId(c *resty.Client, repo string) string {
 	return (*repoResult.Repositories)[0].TeamId
 }
 
-func (u SomaUtil) GetRepositoryDetails(c *resty.Client, repoId string) *proto.Repository {
+func (u SomaUtil) getRepositoryDetails(c *resty.Client, repoId string) *proto.Repository {
 	resp := u.GetRequest(c, fmt.Sprintf("/repository/%s", repoId))
 	res := u.DecodeResultFromResponse(resp)
 	return &(*res.Repositories)[0]
 }
 
 func (u SomaUtil) FindSourceForRepoProperty(c *resty.Client, pTyp, pName, view, repoId string) string {
-	repo := u.GetRepositoryDetails(c, repoId)
+	repo := u.getRepositoryDetails(c, repoId)
 	if repo == nil {
 		return ``
 	}

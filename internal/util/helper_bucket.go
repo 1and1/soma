@@ -104,14 +104,14 @@ func (u SomaUtil) TeamIdForBucket(c *resty.Client, bucket string) string {
 	return (*bucketResult.Buckets)[0].TeamId
 }
 
-func (u SomaUtil) GetBucketDetails(c *resty.Client, bucketId string) *proto.Bucket {
+func (u SomaUtil) getBucketDetails(c *resty.Client, bucketId string) *proto.Bucket {
 	resp := u.GetRequest(c, fmt.Sprintf("/buckets/%s", bucketId))
 	res := u.DecodeResultFromResponse(resp)
 	return &(*res.Buckets)[0]
 }
 
 func (u SomaUtil) FindSourceForBucketProperty(c *resty.Client, pTyp, pName, view, bucketId string) string {
-	bucket := u.GetBucketDetails(c, bucketId)
+	bucket := u.getBucketDetails(c, bucketId)
 	if bucket == nil {
 		return ``
 	}

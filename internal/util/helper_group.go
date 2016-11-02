@@ -12,10 +12,10 @@ func (u SomaUtil) TryGetGroupByUUIDOrName(c *resty.Client, g string, b string) s
 		return g
 	}
 	bId := u.bucketByUUIDOrName(c, b)
-	return u.GetGroupIdByName(c, g, bId)
+	return u.getGroupIdByName(c, g, bId)
 }
 
-func (u SomaUtil) GetGroupIdByName(c *resty.Client, g string, bId string) string {
+func (u SomaUtil) getGroupIdByName(c *resty.Client, g string, bId string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Group: &proto.GroupFilter{
@@ -31,14 +31,14 @@ func (u SomaUtil) GetGroupIdByName(c *resty.Client, g string, bId string) string
 	return (*groupResult.Groups)[0].Id
 }
 
-func (u SomaUtil) GetGroupDetails(c *resty.Client, groupId string) *proto.Group {
+func (u SomaUtil) getGroupDetails(c *resty.Client, groupId string) *proto.Group {
 	resp := u.GetRequest(c, fmt.Sprintf("/groups/%s", groupId))
 	res := u.DecodeResultFromResponse(resp)
 	return &(*res.Groups)[0]
 }
 
 func (u SomaUtil) FindSourceForGroupProperty(c *resty.Client, pTyp, pName, view, groupId string) string {
-	group := u.GetGroupDetails(c, groupId)
+	group := u.getGroupDetails(c, groupId)
 	if group == nil {
 		return ``
 	}

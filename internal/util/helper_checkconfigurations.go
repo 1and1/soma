@@ -35,7 +35,7 @@ func (u SomaUtil) CleanThresholds(c *resty.Client, thresholds []proto.CheckConfi
 				Symbol: thr.Predicate.Symbol,
 			},
 			Level: proto.Level{
-				Name: u.TryGetLevelNameByNameOrShort(c, thr.Level.Name),
+				Name: u.tryGetLevelNameByNameOrShort(c, thr.Level.Name),
 			},
 		}
 		clean = append(clean, c)
@@ -99,10 +99,10 @@ func (u *SomaUtil) TryGetCheckByUUIDOrName(c *resty.Client, ck string, r string)
 	if u.IsUUID(ck) {
 		return ck
 	}
-	return u.GetCheckByName(c, ck, r)
+	return u.getCheckByName(c, ck, r)
 }
 
-func (u *SomaUtil) GetCheckByName(c *resty.Client, ck string, r string) string {
+func (u *SomaUtil) getCheckByName(c *resty.Client, ck string, r string) string {
 	repo := u.tryGetRepositoryByUUIDOrName(c, r)
 	req := proto.Request{
 		Filter: &proto.Filter{

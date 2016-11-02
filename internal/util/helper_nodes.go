@@ -11,10 +11,10 @@ func (u SomaUtil) TryGetNodeByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetNodeIdByName(c, s)
+	return u.getNodeIdByName(c, s)
 }
 
-func (u SomaUtil) GetNodeIdByName(c *resty.Client, node string) string {
+func (u SomaUtil) getNodeIdByName(c *resty.Client, node string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Node: &proto.NodeFilter{
@@ -34,11 +34,11 @@ func (u SomaUtil) GetNodeIdByName(c *resty.Client, node string) string {
 
 func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeConfig {
 	if !u.IsUUID(node) {
-		node = u.GetNodeIdByName(c, node)
+		node = u.getNodeIdByName(c, node)
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)
 	resp := u.GetRequest(c, path)
-	nodeResult := u.UnfilteredResultFromResponse(resp)
+	nodeResult := u.unfilteredResultFromResponse(resp)
 	if nodeResult.StatusCode == 404 {
 		u.abort(`Node is not assigned to a configuration repository yet.`)
 	} else if nodeResult.StatusCode > 299 {
@@ -62,14 +62,14 @@ func (u SomaUtil) TeamIdForNode(c *resty.Client, node string) string {
 	return (*res.Nodes)[0].TeamId
 }
 
-func (u SomaUtil) GetNodeDetails(c *resty.Client, nodeId string) *proto.Node {
+func (u SomaUtil) getNodeDetails(c *resty.Client, nodeId string) *proto.Node {
 	resp := u.GetRequest(c, fmt.Sprintf("/nodes/%s", nodeId))
 	res := u.DecodeResultFromResponse(resp)
 	return &(*res.Nodes)[0]
 }
 
 func (u SomaUtil) FindSourceForNodeProperty(c *resty.Client, pTyp, pName, view, nodeId string) string {
-	node := u.GetNodeDetails(c, nodeId)
+	node := u.getNodeDetails(c, nodeId)
 	if node == nil {
 		return ``
 	}

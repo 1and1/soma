@@ -9,7 +9,7 @@ import (
 	"github.com/peterh/liner"
 )
 
-func (u *SomaUtil) GetNewPassword() string {
+func (u *SomaUtil) getNewPassword() string {
 	var (
 		newPassword string
 		err         error
@@ -17,12 +17,12 @@ func (u *SomaUtil) GetNewPassword() string {
 
 	foundPassword := false
 	for foundPassword == false {
-		newPassword, err = u.ReadPasswordFromTerminal()
+		newPassword, err = u.readPasswordFromTerminal()
 		if err != nil {
 			fmt.Fprintf(os.Stdout, err.Error())
 			continue
 		}
-		foundPassword = u.ValidatePasswordStrength(newPassword)
+		foundPassword = u.validatePasswordStrength(newPassword)
 
 		if !foundPassword {
 			fmt.Fprintf(os.Stdout, "Password entropy appears too low, try another one!\n\n")
@@ -31,7 +31,7 @@ func (u *SomaUtil) GetNewPassword() string {
 	return newPassword
 }
 
-func (u *SomaUtil) ReadPasswordFromTerminal() (string, error) {
+func (u *SomaUtil) readPasswordFromTerminal() (string, error) {
 	line := liner.NewLiner()
 	defer line.Close()
 
@@ -51,7 +51,7 @@ func (u *SomaUtil) ReadPasswordFromTerminal() (string, error) {
 	}
 }
 
-func (u *SomaUtil) ValidatePasswordStrength(pass string) bool {
+func (u *SomaUtil) validatePasswordStrength(pass string) bool {
 	matchLower := regexp.MustCompile(`[a-z]`)
 	matchUpper := regexp.MustCompile(`[A-Z]`)
 	matchNumber := regexp.MustCompile(`[0-9]`)

@@ -8,7 +8,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetLevelNameByNameOrShort(c *resty.Client, s string) string {
+func (u *SomaUtil) tryGetLevelNameByNameOrShort(c *resty.Client, s string) string {
 	req := proto.NewLevelFilter()
 	req.Filter.Level.Name = s
 	req.Filter.Level.ShortName = s

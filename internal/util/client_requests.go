@@ -12,7 +12,7 @@ func (u SomaUtil) GetRequest(c *resty.Client, p string) *resty.Response {
 	return resp
 }
 
-func (u SomaUtil) GetRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+func (u SomaUtil) getRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
 	resp, err := c.R().SetBody(body).SetContentLength(true).Get(p)
 	u.abortOnError(err)
 	u.CheckRestyResponse(resp)
@@ -20,7 +20,7 @@ func (u SomaUtil) GetRequestWithBody(c *resty.Client, body interface{}, p string
 }
 
 // PUT
-func (u SomaUtil) PutRequest(c *resty.Client, p string) *resty.Response {
+func (u SomaUtil) putRequest(c *resty.Client, p string) *resty.Response {
 	resp, err := c.R().Put(p)
 	u.abortOnError(err)
 	u.CheckRestyResponse(resp)
@@ -35,7 +35,7 @@ func (u SomaUtil) PutRequestWithBody(c *resty.Client, body interface{}, p string
 }
 
 // PATCH
-func (u SomaUtil) PatchRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
+func (u SomaUtil) patchRequestWithBody(c *resty.Client, body interface{}, p string) *resty.Response {
 	resp, err := c.R().SetBody(body).SetContentLength(true).Patch(p)
 	u.abortOnError(err)
 	u.CheckRestyResponse(resp)

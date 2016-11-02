@@ -12,10 +12,10 @@ func (u *SomaUtil) TryGetMonitoringByUUIDOrName(c *resty.Client, s string) strin
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetMonitoringIdByName(c, s)
+	return u.getMonitoringIdByName(c, s)
 }
 
-func (u *SomaUtil) GetMonitoringIdByName(c *resty.Client, monitoring string) string {
+func (u *SomaUtil) getMonitoringIdByName(c *resty.Client, monitoring string) string {
 	req := proto.NewMonitoringFilter()
 	req.Filter.Monitoring.Name = monitoring
 

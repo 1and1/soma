@@ -13,7 +13,7 @@ func (u *SomaUtil) CheckRestyResponse(resp *resty.Response) {
 	}
 }
 
-func (u *SomaUtil) SliceContainsString(s string, sl []string) bool {
+func (u *SomaUtil) sliceContainsString(s string, sl []string) bool {
 	for _, v := range sl {
 		if v == s {
 			return true
@@ -23,13 +23,13 @@ func (u *SomaUtil) SliceContainsString(s string, sl []string) bool {
 }
 
 func (u *SomaUtil) CheckStringNotAKeyword(s string, keys []string) {
-	if u.SliceContainsString(s, keys) {
+	if u.sliceContainsString(s, keys) {
 		log.Fatal(`Syntax error, back-to-back keywords`)
 	}
 }
 
 // XXX DEPRECATED FOR SliceContainsString
-func (u *SomaUtil) StringIsKeyword(s string, keys []string) bool {
+func (u *SomaUtil) stringIsKeyword(s string, keys []string) bool {
 	for _, key := range keys {
 		if key == s {
 			return true
