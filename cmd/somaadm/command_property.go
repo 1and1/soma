@@ -723,17 +723,26 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		repoId = config.RepositoryId
 		bucketId = config.BucketId
 	case `cluster`:
-		bucketId = utl.BucketByUUIDOrName(Client, opts[`in`][0])
+		bucketId, err := adm.LookupBucketId(opts["in"][0])
+		if err != nil {
+			return err
+		}
 		objectId = utl.TryGetClusterByUUIDOrName(Client, opts[`to`][0],
 			bucketId)
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	case `group`:
-		bucketId = utl.BucketByUUIDOrName(Client, opts[`in`][0])
+		bucketId, err := adm.LookupBucketId(opts["in"][0])
+		if err != nil {
+			return err
+		}
 		objectId = utl.TryGetGroupByUUIDOrName(Client, opts[`to`][0],
 			bucketId)
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	case `bucket`:
-		bucketId = utl.BucketByUUIDOrName(Client, opts[`to`][0])
+		bucketId, err := adm.LookupBucketId(opts["to"][0])
+		if err != nil {
+			return err
+		}
 		objectId = bucketId
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	case `repository`:

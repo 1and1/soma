@@ -11,7 +11,7 @@ func (u SomaUtil) TryGetGroupByUUIDOrName(c *resty.Client, g string, b string) s
 	if u.IsUUID(g) {
 		return g
 	}
-	bId := u.BucketByUUIDOrName(c, b)
+	bId := u.bucketByUUIDOrName(c, b)
 	return u.GetGroupIdByName(c, g, bId)
 }
 

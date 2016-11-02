@@ -465,7 +465,10 @@ func cmdNodeAssign(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts["to"][0])
+	bucketId, err := adm.LookupBucketId(opts["to"][0])
+	if err != nil {
+		return err
+	}
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 

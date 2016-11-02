@@ -198,7 +198,10 @@ func cmdGroupCreate(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 
 	var req proto.Request
 	req.Group = &proto.Group{}
@@ -227,7 +230,10 @@ func cmdGroupDelete(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -253,7 +259,10 @@ func cmdGroupRename(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -295,7 +304,10 @@ func cmdGroupShow(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -321,7 +333,10 @@ func cmdGroupTree(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -347,7 +362,10 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -385,7 +403,10 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -423,7 +444,10 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["to"][0],
@@ -459,7 +483,10 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -490,7 +517,10 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -521,7 +551,10 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		opts["from"][0],
@@ -550,7 +583,10 @@ func cmdGroupMemberList(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	groupId := utl.TryGetGroupByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -609,7 +645,10 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 		required, c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
 
 	if pType == `system` {

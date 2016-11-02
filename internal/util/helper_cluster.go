@@ -11,7 +11,7 @@ func (u SomaUtil) TryGetClusterByUUIDOrName(c *resty.Client, cl string, b string
 	if u.IsUUID(cl) {
 		return cl
 	}
-	bId := u.BucketByUUIDOrName(c, b)
+	bId := u.bucketByUUIDOrName(c, b)
 	return u.GetClusterIdByName(c, cl, bId)
 }
 

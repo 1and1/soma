@@ -200,13 +200,10 @@ func cmdBucketDelete(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().First(),
-		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -227,13 +224,10 @@ func cmdBucketRestore(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().First(),
-		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
@@ -260,13 +254,10 @@ func cmdBucketPurge(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().Get(0),
-		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
@@ -293,13 +284,10 @@ func cmdBucketFreeze(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().Get(0),
-		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
@@ -326,13 +314,10 @@ func cmdBucketThaw(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().Get(0),
-		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
@@ -359,13 +344,10 @@ func cmdBucketRename(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	buckId := utl.TryGetBucketByUUIDOrName(Client,
-		c.Args().First(),
-		repoId)
 	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
@@ -398,7 +380,10 @@ func cmdBucketShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
+	bucketId, err := adm.LookupBucketId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
 	if resp, err := adm.GetReq(path); err != nil {
@@ -412,7 +397,10 @@ func cmdBucketTree(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, c.Args().First())
+	bucketId, err := adm.LookupBucketId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/buckets/%s/tree/tree", bucketId)
 	if resp, err := adm.GetReq(path); err != nil {
@@ -467,7 +455,10 @@ func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`from`][0])
+	bucketId, err := adm.LookupBucketId(opts[`from`][0])
+	if err != nil {
+		return err
+	}
 
 	if pType == `system` {
 		utl.CheckStringIsSystemProperty(Client, c.Args().First())

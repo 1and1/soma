@@ -59,6 +59,17 @@ func LookupRepoId(s string) (string, error) {
 	return repoIdByName(s)
 }
 
+// LookupBucketId looks up the UUID for a bucket on the server
+// with bucketname s. Error is set if no such bucket was found
+// or an error occured.
+// If s is already a UUID, then s is immediately returned.
+func LookupBucketId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return bucketIdByName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -206,6 +217,44 @@ func repoIdByName(repo string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("RepositoryId lookup failed: %s",
+		err.Error())
+}
+
+// bucketIdByName implements the actual serverside lookup of the
+// bucket's UUID
+func bucketIdByName(bucket string) (string, error) {
+	req := proto.NewBucketFilter()
+	req.Filter.Bucket.Name = bucket
+
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	if resp, err = PostReqBody(req, `/filter/buckets/`); err != nil {
+		// transport errors
+		goto abort
+	}
+
+	if res, err = decodeResponse(resp); err != nil {
+		// http code errors
+		goto abort
+	}
+
+	if err = checkApplicationError(res); err != nil {
+		goto abort
+	}
+
+	// check the received record against the input
+	if bucket != (*res.Buckets)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			bucket, (*res.Buckets)[0].Name)
+		goto abort
+	}
+	return (*res.Buckets)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("BucketId lookup failed: %s",
 		err.Error())
 }
 

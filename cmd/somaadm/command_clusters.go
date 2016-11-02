@@ -161,7 +161,10 @@ func cmdClusterCreate(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 
 	var req proto.Request
 	req.Cluster = &proto.Cluster{}
@@ -190,7 +193,10 @@ func cmdClusterDelete(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -216,7 +222,10 @@ func cmdClusterRename(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -257,7 +266,10 @@ func cmdClusterShow(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -283,7 +295,10 @@ func cmdClusterTree(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(),
 		bucketId)
@@ -311,7 +326,10 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	//TODO: get bucketId via node
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		opts["to"][0], bucketId)
 
@@ -353,7 +371,10 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 
 	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
 	//TODO: get bucketId via node
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		opts["from"][0], bucketId)
 
@@ -380,7 +401,10 @@ func cmdClusterMemberList(c *cli.Context) error {
 		return err
 	}
 
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client,
 		c.Args().First(), bucketId)
 
@@ -442,7 +466,10 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts[`in`][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
 
 	if pType == `system` {

@@ -59,9 +59,13 @@ func cmdCheckAdd(c *cli.Context) error {
 	req.CheckConfig = &proto.CheckConfig{
 		Name:         utl.ValidateRuneCount(c.Args().First(), 256),
 		Interval:     utl.GetValidatedUint64(opts["interval"][0], 1),
-		BucketId:     utl.BucketByUUIDOrName(Client, opts["in"][0]),
 		CapabilityId: utl.TryGetCapabilityByUUIDOrName(Client, opts["with"][0]),
 		ObjectType:   opts["on/type"][0],
+	}
+	var err error
+	req.CheckConfig.BucketId, err = adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
 	}
 	req.CheckConfig.RepositoryId = utl.GetRepositoryIdForBucket(
 		Client, req.CheckConfig.BucketId)
@@ -129,7 +133,10 @@ func cmdCheckDelete(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 
@@ -156,7 +163,10 @@ func cmdCheckList(c *cli.Context) error {
 		c.Args()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 
 	path := fmt.Sprintf("/checks/%s/", repoId)
@@ -182,7 +192,10 @@ func cmdCheckShow(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId := utl.BucketByUUIDOrName(Client, opts["in"][0])
+	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	if err != nil {
+		return err
+	}
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
 	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 

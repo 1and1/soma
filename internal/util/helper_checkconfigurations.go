@@ -12,7 +12,7 @@ func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b str
 	case "repository":
 		return u.tryGetRepositoryByUUIDOrName(c, n)
 	case "bucket":
-		return u.BucketByUUIDOrName(c, n)
+		return u.bucketByUUIDOrName(c, n)
 	case "group":
 		return u.TryGetGroupByUUIDOrName(c, n, b)
 	case "cluster":
