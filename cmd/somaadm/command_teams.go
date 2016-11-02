@@ -83,21 +83,22 @@ func cmdTeamAdd(c *cli.Context) error {
 		return err
 	}
 
-	req := proto.Request{}
-	req.Team = &proto.Team{}
+	req := proto.NewTeamRequest()
 	req.Team.Name = c.Args().First()
 	req.Team.LdapId = opts["ldap"][0]
 	if len(opts["system"]) > 0 {
 		bl, err := strconv.ParseBool(opts["system"][0])
 		if err != nil {
-			adm.Abort("Argument to system parameter must be boolean")
+			return fmt.Errorf("Argument to system parameter must be boolean")
 		}
 		req.Team.IsSystem = bl
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/teams/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/teams/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdTeamUpdate(c *cli.Context) error {
@@ -119,12 +120,18 @@ func cmdTeamUpdate(c *cli.Context) error {
 	req.Team.Name = opts[`name`][0]
 	req.Team.LdapId = opts[`ldap`][0]
 	if len(opts[`system`]) > 0 {
-		req.Team.IsSystem = utl.GetValidatedBool(opts[`system`][0])
+		var err error
+		req.Team.IsSystem, err = strconv.ParseBool(opts[`system`][0])
+		if err != nil {
+			return fmt.Errorf("Argument to system parameter must be boolean")
+		}
 	}
 	path := fmt.Sprintf("/teams/%s", teamid)
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdTeamDel(c *cli.Context) error {
@@ -135,11 +142,13 @@ func cmdTeamDel(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/teams/%s", id)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/teams/%s", id)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdTeamRename(c *cli.Context) error {
@@ -154,21 +163,20 @@ func cmdTeamRename(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/teams/%s", id)
 
-	req := proto.Request{}
-	req.Team = &proto.Team{}
+	req := proto.NewTeamRequest()
 	req.Team.Name = opts["to"][0]
 
-	resp := utl.PatchRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/teams/%s", id)
+	if resp, err := adm.PatchReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdTeamMigrate(c *cli.Context) error {
-	// XXX
-	adm.Abort("Not implemented")
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdTeamList(c *cli.Context) error {
@@ -176,12 +184,11 @@ func cmdTeamList(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := adm.GetReq(`/teams/`)
-	if err != nil {
+	if resp, err := adm.GetReq(`/teams/`); err != nil {
 		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
 	}
-	fmt.Println(resp)
-	return nil
 }
 
 func cmdTeamSync(c *cli.Context) error {
@@ -189,12 +196,11 @@ func cmdTeamSync(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := adm.GetReq(`/sync/teams/`)
-	if err != nil {
+	if resp, err := adm.GetReq(`/sync/teams/`); err != nil {
 		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
 	}
-	fmt.Println(resp)
-	return nil
 }
 
 func cmdTeamShow(c *cli.Context) error {
@@ -206,14 +212,13 @@ func cmdTeamShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/teams/%s", id)
 
-	resp, err := adm.GetReq(path)
-	if err != nil {
+	path := fmt.Sprintf("/teams/%s", id)
+	if resp, err := adm.GetReq(path); err != nil {
 		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
 	}
-	fmt.Println(resp)
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
