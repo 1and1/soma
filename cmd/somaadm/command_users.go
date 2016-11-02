@@ -110,12 +110,13 @@ func cmdUserAdd(c *cli.Context) error {
 	var err error
 
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(
+	if err = adm.ParseVariadicArguments(
 		opts,
 		multiple,
 		unique,
 		required,
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -143,21 +144,23 @@ func cmdUserAdd(c *cli.Context) error {
 	// optional arguments
 	if _, ok := opts["active"]; ok {
 		req.User.IsActive, err = strconv.ParseBool(opts["active"][0])
-		adm.AbortOnError(err, "Syntax error, active argument not boolean")
+		return fmt.Errorf("Syntax error, active argument not boolean")
 	} else {
 		req.User.IsActive = true
 	}
 
 	if _, ok := opts["system"]; ok {
 		req.User.IsSystem, err = strconv.ParseBool(opts["system"][0])
-		adm.AbortOnError(err, "Syntax error, system argument not boolean")
+		return fmt.Errorf("Syntax error, system argument not boolean")
 	} else {
 		req.User.IsSystem = false
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/users/")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/users/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdUserUpdate(c *cli.Context) error {
@@ -173,7 +176,8 @@ func cmdUserUpdate(c *cli.Context) error {
 		multiple,
 		unique,
 		required,
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -195,19 +199,24 @@ func cmdUserUpdate(c *cli.Context) error {
 	req.User.LastName = opts["lastname"][0]
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
-	req.User.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
 	{
 		var err error
 		req.User.TeamId, err = adm.LookupTeamId(opts[`team`][0])
 		if err != nil {
 			return err
 		}
+		req.User.IsDeleted, err = strconv.ParseBool(opts[`deleted`][0])
+		if err != nil {
+			return err
+		}
 	}
 
 	path := fmt.Sprintf("/users/%s", req.User.Id)
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdUserMarkDeleted(c *cli.Context) error {
@@ -222,11 +231,13 @@ func cmdUserMarkDeleted(c *cli.Context) error {
 	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/users/%s", userId)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/users/%s", userId)
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdUserPurgeDeleted(c *cli.Context) error {
@@ -241,7 +252,6 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/users/%s", userId)
 
 	req := proto.Request{
 		Flags: &proto.Flags{
@@ -249,9 +259,12 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 		},
 	}
 
-	resp := utl.DeleteRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/users/%s", userId)
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdUserActivate(c *cli.Context) error {
@@ -348,18 +361,24 @@ func cmdUserList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, "/users/")
-	fmt.Println(resp)
-	return nil
+
+	if resp, err := adm.GetReq(`/users/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdUserSync(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, `/sync/users/`)
-	fmt.Println(resp)
-	return nil
+
+	if resp, err := adm.GetReq(`/sync/users/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
+	}
 }
 
 func cmdUserShow(c *cli.Context) error {
@@ -375,9 +394,11 @@ func cmdUserShow(c *cli.Context) error {
 	}
 	path := fmt.Sprintf("/users/%s", id)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 func cmdUserPasswordUpdate(c *cli.Context) error {
