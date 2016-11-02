@@ -9,7 +9,7 @@ import (
 )
 
 func (u *SomaUtil) TryGetMonitoringByUUIDOrName(c *resty.Client, s string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getMonitoringIdByName(c, s)

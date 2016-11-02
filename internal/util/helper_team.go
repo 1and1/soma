@@ -8,7 +8,7 @@ import (
 )
 
 func (u SomaUtil) tryGetTeamByUUIDOrName(c *resty.Client, s string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getTeamIdByName(c, s)

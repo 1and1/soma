@@ -8,7 +8,7 @@ import (
 )
 
 func (u SomaUtil) TryGetGroupByUUIDOrName(c *resty.Client, g string, b string) string {
-	if u.IsUUID(g) {
+	if u.isUUID(g) {
 		return g
 	}
 	bId := u.bucketByUUIDOrName(c, b)

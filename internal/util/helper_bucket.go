@@ -8,14 +8,14 @@ import (
 )
 
 func (u SomaUtil) tryGetBucketByUUIDOrName(c *resty.Client, b string, r string) string {
-	if u.IsUUID(b) {
+	if u.isUUID(b) {
 		return b
 	}
 	return u.getBucketIdByName(c, b, r)
 }
 
 func (u SomaUtil) bucketByUUIDOrName(c *resty.Client, b string) string {
-	if u.IsUUID(b) {
+	if u.isUUID(b) {
 		return b
 	}
 	return u.bucketIdByName(c, b)
@@ -62,7 +62,7 @@ func (u SomaUtil) GetRepositoryIdForBucket(c *resty.Client, bucket string) strin
 	req := proto.NewBucketFilter()
 	var b string
 
-	if !u.IsUUID(bucket) {
+	if !u.isUUID(bucket) {
 		req.Filter.Bucket.Name = bucket
 		resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 		bucketResult := u.decodeProtoResultBucketFromResponse(resp)
@@ -85,7 +85,7 @@ func (u SomaUtil) TeamIdForBucket(c *resty.Client, bucket string) string {
 	req := proto.NewBucketFilter()
 	var b string
 
-	if !u.IsUUID(bucket) {
+	if !u.isUUID(bucket) {
 		req.Filter.Bucket.Name = bucket
 		resp := u.PostRequestWithBody(c, req, "/filter/buckets/")
 		bucketResult := u.decodeProtoResultBucketFromResponse(resp)

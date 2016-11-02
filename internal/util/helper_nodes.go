@@ -8,7 +8,7 @@ import (
 )
 
 func (u SomaUtil) TryGetNodeByUUIDOrName(c *resty.Client, s string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getNodeIdByName(c, s)
@@ -33,7 +33,7 @@ func (u SomaUtil) getNodeIdByName(c *resty.Client, node string) string {
 }
 
 func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeConfig {
-	if !u.IsUUID(node) {
+	if !u.isUUID(node) {
 		node = u.getNodeIdByName(c, node)
 	}
 	path := fmt.Sprintf("/nodes/%s/config", node)

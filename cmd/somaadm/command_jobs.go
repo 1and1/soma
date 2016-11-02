@@ -84,7 +84,7 @@ func cmdJobShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	if !utl.IsUUID(c.Args().First()) {
+	if !adm.IsUUID(c.Args().First()) {
 		return fmt.Errorf("Argument is not a UUID: %s", c.Args().First())
 	}
 	path := fmt.Sprintf("/jobs/%s", c.Args().First())

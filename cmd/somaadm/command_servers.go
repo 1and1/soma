@@ -128,7 +128,7 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 
 func cmdServerUpdate(c *cli.Context) error {
 
-	if !utl.IsUUID(c.Args().First()) {
+	if !adm.IsUUID(c.Args().First()) {
 		adm.Abort(
 			fmt.Sprintf("Server to update not referenced by UUID: %s",
 				c.Args().First()))

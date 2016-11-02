@@ -8,28 +8,28 @@ import (
 )
 
 func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getPropertyIdByName(c, "custom", s, r)
 }
 
 func (u SomaUtil) TryGetServicePropertyByUUIDOrName(c *resty.Client, s string, t string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getPropertyIdByName(c, "service", s, t)
 }
 
 func (u SomaUtil) tryGetSystemPropertyByUUIDOrName(c *resty.Client, s string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getPropertyIdByName(c, "system", s, "none")
 }
 
 func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(c *resty.Client, s string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	return u.getPropertyIdByName(c, "template", s, "none")

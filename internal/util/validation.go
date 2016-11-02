@@ -107,7 +107,7 @@ func (u *SomaUtil) ValidateUnitExists(c *resty.Client, s string) {
 	u.abort(fmt.Sprintf("Referenced unit %s is not registered with SOMA, see `somaadm units help create`", s))
 }
 
-func (u *SomaUtil) IsUUID(s string) bool {
+func (u *SomaUtil) isUUID(s string) bool {
 	const reUUID string = `^[[:xdigit:]]{8}-[[:xdigit:]]{4}-[1-5][[:xdigit:]]{3}-[[:xdigit:]]{4}-[[:xdigit:]]{12}$`
 	const reUNIL string = `^0{8}-0{4}-0{4}-0{4}-0{12}$`
 	re := regexp.MustCompile(fmt.Sprintf("%s|%s", reUUID, reUNIL))

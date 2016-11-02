@@ -8,7 +8,7 @@ import (
 )
 
 func (u SomaUtil) TryGetClusterByUUIDOrName(c *resty.Client, cl string, b string) string {
-	if u.IsUUID(cl) {
+	if u.isUUID(cl) {
 		return cl
 	}
 	bId := u.bucketByUUIDOrName(c, b)

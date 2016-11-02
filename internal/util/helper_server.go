@@ -22,7 +22,7 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 }
 
 func (u SomaUtil) TryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s string) string {
-	if u.IsUUID(s) {
+	if u.isUUID(s) {
 		return s
 	}
 	var (

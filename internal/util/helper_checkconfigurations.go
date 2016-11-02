@@ -96,7 +96,7 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 }
 
 func (u *SomaUtil) TryGetCheckByUUIDOrName(c *resty.Client, ck string, r string) string {
-	if u.IsUUID(ck) {
+	if u.isUUID(ck) {
 		return ck
 	}
 	return u.getCheckByName(c, ck, r)

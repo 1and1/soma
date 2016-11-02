@@ -242,7 +242,7 @@ func cmdNodeUpdate(c *cli.Context) error {
 	}
 	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
 	req := proto.NewNodeRequest()
-	if !utl.IsUUID(c.Args().First()) {
+	if !adm.IsUUID(c.Args().First()) {
 		return fmt.Errorf(`Node/update command requires UUID as first argument`)
 	}
 	req.Node.Id = c.Args().First()
