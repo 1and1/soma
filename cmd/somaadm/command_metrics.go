@@ -61,7 +61,9 @@ func cmdMetricCreate(c *cli.Context) error {
 		return err
 	}
 
-	utl.ValidateUnitExists(Client, opts["unit"][0])
+	if err := adm.ValidateUnit(opts["unit"][0]); err != nil {
+		return err
+	}
 	req := proto.Request{}
 	req.Metric = &proto.Metric{}
 	req.Metric.Path = c.Args().First()
@@ -77,7 +79,9 @@ func cmdMetricCreate(c *cli.Context) error {
 				adm.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
 					p))
 			}
-			utl.ValidateProviderExists(Client, split[0])
+			if err := adm.ValidateProvider(split[0]); err != nil {
+				return err
+			}
 			pkgs = append(pkgs, proto.MetricPackage{
 				Provider: split[0],
 				Name:     split[1],

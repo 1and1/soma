@@ -10,12 +10,12 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) ValidateStringAsNodeAssetId(s string) {
+func (u *SomaUtil) validateStringAsNodeAssetId(s string) {
 	_, err := strconv.ParseUint(s, 10, 64)
 	u.abortOnError(err)
 }
 
-func (u *SomaUtil) ValidateStringAsBool(s string) {
+func (u *SomaUtil) validateStringAsBool(s string) {
 	_, err := strconv.ParseBool(s)
 	u.abortOnError(err)
 }
@@ -79,7 +79,7 @@ func (u *SomaUtil) validateStringInSlice(s string, sl []string) {
 	}
 }
 
-func (u *SomaUtil) ValidateProviderExists(c *resty.Client, s string) {
+func (u *SomaUtil) validateProviderExists(c *resty.Client, s string) {
 	resp := u.GetRequest(c, "/providers/")
 	res := u.DecodeResultFromResponse(resp)
 
@@ -93,7 +93,7 @@ func (u *SomaUtil) ValidateProviderExists(c *resty.Client, s string) {
 	u.abort(fmt.Sprintf("Referenced provider %s is not registered with SOMA, see `somaadm providers help create`", s))
 }
 
-func (u *SomaUtil) ValidateUnitExists(c *resty.Client, s string) {
+func (u *SomaUtil) validateUnitExists(c *resty.Client, s string) {
 	resp := u.GetRequest(c, "/units/")
 	res := u.DecodeResultFromResponse(resp)
 

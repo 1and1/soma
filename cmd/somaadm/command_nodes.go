@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -202,7 +201,6 @@ func cmdNodeAdd(c *cli.Context) error {
 	req := proto.Request{}
 	req.Node = &proto.Node{}
 
-	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
 	if _, ok := opts[`online`]; ok {
 		if err := adm.ValidateBool(opts[`online`][0],
 			&req.Node.IsOnline); err != nil {
@@ -215,7 +213,10 @@ func cmdNodeAdd(c *cli.Context) error {
 		req.Node.ServerId = utl.TryGetServerByUUIDOrName(
 			&store, Client, opts[`server`][0])
 	}
-	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
+	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
+		&req.Node.AssetId, 1); err != nil {
+		return err
+	}
 	req.Node.Name = opts[`name`][0]
 	var err error
 	req.Node.TeamId, err = adm.LookupTeamId(opts[`team`][0])
@@ -240,7 +241,7 @@ func cmdNodeUpdate(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	utl.ValidateStringAsNodeAssetId(opts[`assetid`][0])
+
 	req := proto.NewNodeRequest()
 	if !adm.IsUUID(c.Args().First()) {
 		return fmt.Errorf(`Node/update command requires UUID as first argument`)
@@ -256,7 +257,10 @@ func cmdNodeUpdate(c *cli.Context) error {
 		return err
 	}
 	req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, opts[`server`][0])
-	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
+	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
+		&req.Node.AssetId, 1); err != nil {
+		return err
+	}
 	{
 		var err error
 		req.Node.TeamId, err = adm.LookupTeamId(opts[`team`][0])

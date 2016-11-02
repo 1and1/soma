@@ -14,6 +14,9 @@ import (
 	"regexp"
 	"strconv"
 	"unicode/utf8"
+
+	"github.com/1and1/soma/lib/proto"
+	resty "gopkg.in/resty.v0"
 )
 
 // ValidateRuneCount tests if a string's number of unicode runes is
@@ -102,6 +105,61 @@ func ValidateLBoundUint64(s string, i *uint64, min uint64) error {
 		return fmt.Errorf("Error, value %d is less than the minimun %d", i, min)
 	}
 	return nil
+}
+
+// ValidateUnit tests against the server if string s is a valid
+// unit.
+func ValidateUnit(s string) error {
+	res, err := fetchObjList(`/units/`)
+	if err != nil {
+		return err
+	}
+
+	if res.Units != nil {
+		for _, unit := range *res.Units {
+			if unit.Unit == s {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("Value %s is not a valid unit", s)
+}
+
+// ValidateProvider tests aginst the server if string s is a valid
+// provider.
+func ValidateProvider(s string) error {
+	res, err := fetchObjList(`/providers/`)
+	if err != nil {
+		return err
+	}
+
+	if res.Providers != nil {
+		for _, prov := range *res.Providers {
+			if prov.Name == s {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("Value %s is not a valid provider", s)
+}
+
+// fetchObjList is a helper for ValidateUnit and ValidateProvider
+func fetchObjList(path string) (*proto.Result, error) {
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	if resp, err = GetReq(path); err != nil {
+		return nil, err
+	}
+	if res, err = decodeResponse(resp); err != nil {
+		return nil, err
+	}
+	if err = checkApplicationError(res); err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
