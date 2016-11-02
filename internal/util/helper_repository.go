@@ -7,14 +7,14 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetRepositoryByUUIDOrName(c *resty.Client, s string) string {
+func (u SomaUtil) tryGetRepositoryByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetRepositoryIdByName(c, s)
+	return u.getRepositoryIdByName(c, s)
 }
 
-func (u SomaUtil) GetRepositoryIdByName(c *resty.Client, repo string) string {
+func (u SomaUtil) getRepositoryIdByName(c *resty.Client, repo string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Repository: &proto.RepositoryFilter{
@@ -24,7 +24,7 @@ func (u SomaUtil) GetRepositoryIdByName(c *resty.Client, repo string) string {
 	}
 
 	resp := u.PostRequestWithBody(c, req, "/filter/repository/")
-	repoResult := u.DecodeProtoResultRepositoryFromResponse(resp)
+	repoResult := u.decodeProtoResultRepositoryFromResponse(resp)
 
 	if repo != (*repoResult.Repositories)[0].Name {
 		u.abort("Received result set for incorrect repository")
@@ -33,7 +33,7 @@ func (u SomaUtil) GetRepositoryIdByName(c *resty.Client, repo string) string {
 }
 
 func (u SomaUtil) GetTeamIdByRepositoryId(c *resty.Client, repo string) string {
-	repoId := u.TryGetRepositoryByUUIDOrName(c, repo)
+	repoId := u.tryGetRepositoryByUUIDOrName(c, repo)
 
 	resp := u.GetRequest(c, fmt.Sprintf("/repository/%s", repoId))
 	repoResult := u.DecodeResultFromResponse(resp)
@@ -86,7 +86,7 @@ func (u SomaUtil) FindSourceForRepoProperty(c *resty.Client, pTyp, pName, view, 
 	return ``
 }
 
-func (u SomaUtil) DecodeProtoResultRepositoryFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultRepositoryFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

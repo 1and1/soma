@@ -163,7 +163,10 @@ func cmdBucketCreate(c *cli.Context) error {
 		return err
 	}
 
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 
 	// fetch list of environments from SOMA to check if a valid
 	// environment was requested
@@ -197,7 +200,10 @@ func cmdBucketDelete(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().First(),
 		repoId)
@@ -221,7 +227,10 @@ func cmdBucketRestore(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().First(),
 		repoId)
@@ -251,7 +260,10 @@ func cmdBucketPurge(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
@@ -281,7 +293,10 @@ func cmdBucketFreeze(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
@@ -311,7 +326,10 @@ func cmdBucketThaw(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().Get(0),
 		repoId)
@@ -341,7 +359,10 @@ func cmdBucketRename(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	buckId := utl.TryGetBucketByUUIDOrName(Client,
 		c.Args().First(),
 		repoId)

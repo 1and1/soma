@@ -287,8 +287,10 @@ func cmdOpsRepoRebuild(c *cli.Context) error {
 func cmdOpsRepo(c *cli.Context, req proto.Request) error {
 
 	// lookup requested repository
-	repoId := utl.TryGetRepositoryByUUIDOrName(
-		Client, c.Args().First())
+	repoId, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	req.SystemOperation.RepositoryId = repoId
 
 	if resp, err := adm.PostReqBody(req, `/system/`); err != nil {

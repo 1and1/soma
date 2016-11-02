@@ -174,7 +174,10 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	req.Property = &proto.Property{}
@@ -388,7 +391,10 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 		return err
 	}
 
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts["repository"][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 
 	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(),
 		repoId)
@@ -483,7 +489,10 @@ func cmdPropertyCustomShow(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(),
 		repoId)
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId,
@@ -575,7 +584,10 @@ func cmdPropertyCustomList(c *cli.Context) error {
 		adm.AllArguments(c)); err != nil {
 		return err
 	}
-	repoId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`repository`][0])
+	repoId, err := adm.LookupRepoId(opts[`repository`][0])
+	if err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
 
@@ -725,7 +737,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		objectId = bucketId
 		repoId = utl.GetRepositoryIdForBucket(Client, bucketId)
 	case `repository`:
-		repoId = utl.TryGetRepositoryByUUIDOrName(Client, opts[`to`][0])
+		repoId, err := adm.LookupRepoId(opts[`to`][0])
+		if err != nil {
+			return err
+		}
 		objectId = repoId
 	}
 

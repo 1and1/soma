@@ -10,7 +10,7 @@ import (
 func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b string) string {
 	switch t {
 	case "repository":
-		return u.TryGetRepositoryByUUIDOrName(c, n)
+		return u.tryGetRepositoryByUUIDOrName(c, n)
 	case "bucket":
 		return u.BucketByUUIDOrName(c, n)
 	case "group":
@@ -103,7 +103,7 @@ func (u *SomaUtil) TryGetCheckByUUIDOrName(c *resty.Client, ck string, r string)
 }
 
 func (u *SomaUtil) GetCheckByName(c *resty.Client, ck string, r string) string {
-	repo := u.TryGetRepositoryByUUIDOrName(c, r)
+	repo := u.tryGetRepositoryByUUIDOrName(c, r)
 	req := proto.Request{
 		Filter: &proto.Filter{
 			CheckConfig: &proto.CheckConfigFilter{

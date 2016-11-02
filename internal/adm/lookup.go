@@ -48,6 +48,17 @@ func LookupTeamId(s string) (string, error) {
 	return teamIdByName(s)
 }
 
+// LookupRepoId looks up the UUID for a repository on the server
+// with reponame s. Error is set if no such repository was found
+// or an error occured.
+// If s is already a UUID, then s is immediately returned.
+func LookupRepoId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return repoIdByName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -157,6 +168,45 @@ func teamIdByName(team string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("TeamId lookup failed: %s", err.Error())
+}
+
+// repoIdByName implements the actual serverside lookup of the
+// repo's UUID
+func repoIdByName(repo string) (string, error) {
+	req := proto.NewRepositoryFilter()
+	req.Filter.Repository.Name = repo
+
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	if resp, err = PostReqBody(req,
+		`/filter/repository/`); err != nil {
+		// transport errors
+		goto abort
+	}
+
+	if res, err = decodeResponse(resp); err != nil {
+		// http code errors
+		goto abort
+	}
+
+	if err = checkApplicationError(res); err != nil {
+		goto abort
+	}
+
+	// check the received record against the input
+	if repo != (*res.Repositories)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			repo, (*res.Repositories)[0].Name)
+		goto abort
+	}
+	return (*res.Repositories)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("RepositoryId lookup failed: %s",
+		err.Error())
 }
 
 // checkApplicationError tests the server result for

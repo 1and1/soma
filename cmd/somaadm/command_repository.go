@@ -182,7 +182,10 @@ func cmdRepositoryDelete(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -196,7 +199,10 @@ func cmdRepositoryRestore(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -216,7 +222,10 @@ func cmdRepositoryPurge(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -236,7 +245,10 @@ func cmdRepositoryClear(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -262,7 +274,10 @@ func cmdRepositoryRename(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	var req proto.Request
@@ -286,7 +301,10 @@ func cmdRepositoryRepossess(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	teamId, err := adm.LookupTeamId(opts[`team`][0])
 	if err != nil {
 		return err
@@ -313,7 +331,10 @@ func cmdRepositoryActivate(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	req := proto.Request{
@@ -349,7 +370,10 @@ func cmdRepositoryShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -363,7 +387,10 @@ func cmdRepositoryTree(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s/tree/tree", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -418,7 +445,10 @@ func cmdRepositoryPropertyDelete(c *cli.Context, pType string) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	repositoryId := utl.TryGetRepositoryByUUIDOrName(Client, opts[`from`][0])
+	repositoryId, err := adm.LookupRepoId(opts[`from`][0])
+	if err != nil {
+		return err
+	}
 
 	if pType == `system` {
 		utl.CheckStringIsSystemProperty(Client, c.Args().First())

@@ -53,7 +53,7 @@ func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string
 	switch pType {
 	case "custom":
 		// context ctx is repository
-		ctxIdString = u.TryGetRepositoryByUUIDOrName(c, ctx)
+		ctxIdString = u.tryGetRepositoryByUUIDOrName(c, ctx)
 		path = fmt.Sprintf("/filter/property/custom/%s/", ctxIdString)
 		req.Filter.Property.RepositoryId = ctxIdString
 	case "system":
