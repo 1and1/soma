@@ -7,14 +7,14 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetTeamByUUIDOrName(c *resty.Client, s string) string {
+func (u SomaUtil) tryGetTeamByUUIDOrName(c *resty.Client, s string) string {
 	if u.IsUUID(s) {
 		return s
 	}
-	return u.GetTeamIdByName(c, s)
+	return u.getTeamIdByName(c, s)
 }
 
-func (u SomaUtil) GetTeamIdByName(c *resty.Client, teamName string) string {
+func (u SomaUtil) getTeamIdByName(c *resty.Client, teamName string) string {
 	req := proto.Request{
 		Filter: &proto.Filter{
 			Team: &proto.TeamFilter{
@@ -24,7 +24,7 @@ func (u SomaUtil) GetTeamIdByName(c *resty.Client, teamName string) string {
 	}
 
 	resp := u.PostRequestWithBody(c, req, "/filter/teams/")
-	teamResult := u.DecodeProtoResultTeamFromResponse(resp)
+	teamResult := u.decodeProtoResultTeamFromResponse(resp)
 
 	if teamName != (*teamResult.Teams)[0].Name {
 		log.Fatal("Received result set for incorrect team")
@@ -32,7 +32,7 @@ func (u SomaUtil) GetTeamIdByName(c *resty.Client, teamName string) string {
 	return (*teamResult.Teams)[0].Id
 }
 
-func (u SomaUtil) DecodeProtoResultTeamFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultTeamFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

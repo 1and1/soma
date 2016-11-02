@@ -159,7 +159,10 @@ func cmdRepositoryCreate(c *cli.Context) error {
 		return err
 	}
 
-	teamId := utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	teamId, err := adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return err
+	}
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
@@ -284,12 +287,15 @@ func cmdRepositoryRepossess(c *cli.Context) error {
 		return err
 	}
 	id := utl.TryGetRepositoryByUUIDOrName(Client, c.Args().First())
-	_ = utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	teamId, err := adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/repository/%s", id)
 
 	var req proto.Request
 	req.Repository = &proto.Repository{}
-	req.Repository.TeamId = opts[`to`][0]
+	req.Repository.TeamId = teamId
 
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err

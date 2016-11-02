@@ -215,7 +215,11 @@ func cmdNodeAdd(c *cli.Context) error {
 	}
 	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
 	req.Node.Name = opts[`name`][0]
-	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	var err error
+	req.Node.TeamId, err = adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return nil
+	}
 
 	if resp, err := adm.PostReqBody(req, "/nodes/"); err != nil {
 		return err
@@ -241,11 +245,17 @@ func cmdNodeUpdate(c *cli.Context) error {
 	}
 	req.Node.Id = c.Args().First()
 	req.Node.Name = opts[`name`][0]
-	req.Node.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
 	req.Node.IsOnline = utl.GetValidatedBool(opts[`online`][0])
 	req.Node.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
 	req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, opts[`server`][0])
 	req.Node.AssetId, _ = strconv.ParseUint(opts[`assetid`][0], 10, 64)
+	{
+		var err error
+		req.Node.TeamId, err = adm.LookupTeamId(opts[`team`][0])
+		if err != nil {
+			return err
+		}
+	}
 	path := fmt.Sprintf("/nodes/%s", req.Node.Id)
 	if resp, err := adm.PutReqBody(req, path); err != nil {
 		return err
@@ -365,14 +375,15 @@ func cmdNodeRepo(c *cli.Context) error {
 		return err
 	}
 	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-	team := opts[`to`][0]
-	// try resolving team name to uuid as name validation
-	_ = utl.GetTeamIdByName(Client, team)
+	teamId, err := adm.LookupTeamId(opts[`to`][0])
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
-	req.Node.TeamId = team
+	req.Node.TeamId = teamId
 
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err

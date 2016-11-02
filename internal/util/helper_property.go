@@ -62,7 +62,7 @@ func (u SomaUtil) GetPropertyIdByName(c *resty.Client, pType string, prop string
 		path = "/filter/property/service/global/"
 	case "service":
 		// context ctx is team
-		ctxIdString = u.TryGetTeamByUUIDOrName(c, ctx)
+		ctxIdString = u.tryGetTeamByUUIDOrName(c, ctx)
 		path = fmt.Sprintf("/filter/property/service/team/%s/", ctxIdString)
 	default:
 		u.abort("Unsupported property type in util.GetPropertyIdByName()")

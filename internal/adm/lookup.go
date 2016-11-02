@@ -37,6 +37,17 @@ func LookupUserId(s string) (string, error) {
 	return userIdByUserName(s)
 }
 
+// LookupTeamId looks up the UUID for a team on the server
+// with teamname s. Error is set if no such team was found
+// or an error occured.
+// If s is already a UUID, then s is immediately returned.
+func LookupTeamId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return teamIdByName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -109,6 +120,43 @@ func userIdByUserName(user string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("UserId lookup failed: %s", err.Error())
+}
+
+// teamIdByName implements the actual serverside lookup of the
+// team's UUID
+func teamIdByName(team string) (string, error) {
+	req := proto.NewTeamFilter()
+	req.Filter.Team.Name = team
+
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	if resp, err = PostReqBody(req, `/filter/teams/`); err != nil {
+		// transport errors
+		goto abort
+	}
+
+	if res, err = decodeResponse(resp); err != nil {
+		// http code errors
+		goto abort
+	}
+
+	if err = checkApplicationError(res); err != nil {
+		goto abort
+	}
+
+	// check the received record against the input
+	if team != (*res.Teams)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			team, (*res.Teams)[0].Name)
+		goto abort
+	}
+	return (*res.Teams)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("TeamId lookup failed: %s", err.Error())
 }
 
 // checkApplicationError tests the server result for

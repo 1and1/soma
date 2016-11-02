@@ -69,7 +69,10 @@ func cmdMonitoringCreate(c *cli.Context) error {
 	if req.Monitoring.Contact, err = adm.LookupUserId(opts[`contact`][0]); err != nil {
 		return err
 	}
-	req.Monitoring.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
+	req.Monitoring.TeamId, err = adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return err
+	}
 	if strings.Contains(req.Monitoring.Name, `.`) {
 		adm.Abort(`Monitoring system names must not contain the character '.'`)
 	}

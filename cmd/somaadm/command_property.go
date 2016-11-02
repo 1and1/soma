@@ -285,7 +285,11 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	// team lookup only for service
 	var teamId string
 	if c.Command.Name == "service" {
-		teamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
+		var err error
+		teamId, err = adm.LookupTeamId(opts["team"][0])
+		if err != nil {
+			return err
+		}
 	}
 
 	// construct request body
@@ -436,7 +440,10 @@ func cmdPropertyServiceDelete(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	teamId := utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	teamId, err := adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return err
+	}
 	propId := utl.TryGetServicePropertyByUUIDOrName(Client,
 		c.Args().First(), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
@@ -525,7 +532,10 @@ func cmdPropertyServiceShow(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	teamId := utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	teamId, err := adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return err
+	}
 	propId := utl.TryGetServicePropertyByUUIDOrName(Client,
 		c.Args().First(), teamId)
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
@@ -611,7 +621,10 @@ func cmdPropertyServiceList(c *cli.Context) error {
 		adm.AllArguments(c)); err != nil {
 		return err
 	}
-	teamId := utl.TryGetTeamByUUIDOrName(Client, opts[`team`][0])
+	teamId, err := adm.LookupTeamId(opts[`team`][0])
+	if err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/property/service/team/%s/", teamId)
 

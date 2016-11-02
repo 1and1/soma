@@ -132,10 +132,13 @@ func cmdUserAdd(c *cli.Context) error {
 	req.User.UserName = c.Args().First()
 	req.User.FirstName = opts["firstname"][0]
 	req.User.LastName = opts["lastname"][0]
-	req.User.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = false
+	req.User.TeamId, err = adm.LookupTeamId(opts["team"][0])
+	if err != nil {
+		return err
+	}
 
 	// optional arguments
 	if _, ok := opts["active"]; ok {
@@ -190,10 +193,16 @@ func cmdUserUpdate(c *cli.Context) error {
 	req.User.UserName = opts[`username`][0]
 	req.User.FirstName = opts["firstname"][0]
 	req.User.LastName = opts["lastname"][0]
-	req.User.TeamId = utl.TryGetTeamByUUIDOrName(Client, opts["team"][0])
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = utl.GetValidatedBool(opts[`deleted`][0])
+	{
+		var err error
+		req.User.TeamId, err = adm.LookupTeamId(opts[`team`][0])
+		if err != nil {
+			return err
+		}
+	}
 
 	path := fmt.Sprintf("/users/%s", req.User.Id)
 	resp := utl.PutRequestWithBody(Client, req, path)

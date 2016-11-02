@@ -111,7 +111,10 @@ func cmdTeamUpdate(c *cli.Context) error {
 		return err
 	}
 
-	teamid := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
+	teamid, err := adm.LookupTeamId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	req := proto.NewTeamRequest()
 	req.Team.Name = opts[`name`][0]
 	req.Team.LdapId = opts[`ldap`][0]
@@ -128,7 +131,10 @@ func cmdTeamDel(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupTeamId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/teams/%s", id)
 
 	resp := utl.DeleteRequest(Client, path)
@@ -144,7 +150,10 @@ func cmdTeamRename(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupTeamId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/teams/%s", id)
 
 	req := proto.Request{}
@@ -193,7 +202,10 @@ func cmdTeamShow(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetTeamByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupTeamId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/teams/%s", id)
 
 	resp, err := adm.GetReq(path)
