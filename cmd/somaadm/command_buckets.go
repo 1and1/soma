@@ -180,7 +180,9 @@ func cmdBucketCreate(c *cli.Context) error {
 		},
 	}
 
-	utl.ValidateRuneCountRange(req.Bucket.Name, 4, 512)
+	if err := adm.ValidateRuneCountRange(req.Bucket.Name, 4, 512); err != nil {
+		return err
+	}
 
 	if resp, err := adm.PostReqBody(req, "/buckets/"); err != nil {
 		return err

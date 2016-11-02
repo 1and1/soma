@@ -57,11 +57,14 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	req := proto.Request{}
 	req.CheckConfig = &proto.CheckConfig{
-		Name:         utl.ValidateRuneCount(c.Args().First(), 256),
 		Interval:     utl.GetValidatedUint64(opts["interval"][0], 1),
 		CapabilityId: utl.TryGetCapabilityByUUIDOrName(Client, opts["with"][0]),
 		ObjectType:   opts["on/type"][0],
 	}
+	if err := adm.ValidateRuneCount(c.Args().First(), 256); err != nil {
+		return err
+	}
+	req.CheckConfig.Name = c.Args().First()
 	var err error
 	req.CheckConfig.BucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
@@ -98,7 +101,10 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	// optional argument: extern
 	if ex, ok := opts["extern"]; ok {
-		req.CheckConfig.ExternalId = utl.ValidateRuneCount(ex[0], 64)
+		if err := adm.ValidateRuneCount(ex[0], 64); err != nil {
+			return err
+		}
+		req.CheckConfig.ExternalId = ex[0]
 	}
 
 	teamId := utl.GetTeamIdByRepositoryId(Client, req.CheckConfig.RepositoryId)

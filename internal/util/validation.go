@@ -26,7 +26,7 @@ func (u *SomaUtil) GetValidatedBool(s string) bool {
 	return b
 }
 
-func (u *SomaUtil) ValidateRuneCount(s string, l int) string {
+func (u *SomaUtil) validateRuneCount(s string, l int) string {
 	if cnt := utf8.RuneCountInString(s); cnt > l {
 		u.abort(fmt.Sprintf("Error, string above character limit %d: %s",
 			l, s))
@@ -34,7 +34,7 @@ func (u *SomaUtil) ValidateRuneCount(s string, l int) string {
 	return s
 }
 
-func (u *SomaUtil) ValidateRuneCountRange(s string, lower, higher int) {
+func (u *SomaUtil) validateRuneCountRange(s string, lower, higher int) {
 	if utf8.RuneCountInString(s) < lower || utf8.RuneCountInString(s) > higher {
 		u.abort(fmt.Sprintf("Error, invalid string length (%d < length < %d)",
 			lower, higher))

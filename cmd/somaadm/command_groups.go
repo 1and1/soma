@@ -208,7 +208,9 @@ func cmdGroupCreate(c *cli.Context) error {
 	req.Group.Name = c.Args().First()
 	req.Group.BucketId = bucketId
 
-	utl.ValidateRuneCountRange(req.Group.Name, 4, 256)
+	if err := adm.ValidateRuneCountRange(req.Group.Name, 4, 256); err != nil {
+		return err
+	}
 
 	if resp, err := adm.PostReqBody(req, "/groups/"); err != nil {
 		return err
