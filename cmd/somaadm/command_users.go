@@ -184,7 +184,7 @@ func cmdUserUpdate(c *cli.Context) error {
 	if err := adm.ValidateMailAddress(opts[`mailaddr`][0]); err != nil {
 		return err
 	}
-	if !utl.IsUUID(c.Args().First()) {
+	if !adm.IsUUID(c.Args().First()) {
 		return fmt.Errorf(`users update requiress UUID as first argument`)
 	}
 
