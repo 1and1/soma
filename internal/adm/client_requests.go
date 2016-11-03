@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
@@ -21,17 +22,32 @@ func Perform(rqType, path, tmpl string, body interface{}, c *cli.Context) error 
 		resp *resty.Response
 	)
 
+	if strings.HasSuffix(rqType, `body`) && body == nil {
+		goto noattachment
+	}
+
 	switch rqType {
+	case `get`:
+		resp, err = GetReq(path)
 	case `delete`:
 		resp, err = DeleteReq(path)
+	case `deletebody`:
+		resp, err = DeleteReqBody(body, path)
+	case `putbody`:
+		resp, err = PutReqBody(body, path)
 	case `postbody`:
 		resp, err = PostReqBody(body, path)
+	case `patchbody`:
+		resp, err = PatchReqBody(body, path)
 	}
 
 	if err != nil {
 		return err
 	}
 	return FormatOut(c, resp, tmpl)
+
+noattachment:
+	return fmt.Errorf(`Missing body to client request that requires it.`)
 }
 
 // DELETE
