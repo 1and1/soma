@@ -50,6 +50,15 @@ noattachment:
 	return fmt.Errorf(`Missing body to client request that requires it.`)
 }
 
+func DecodedResponse(resp *resty.Response, res *proto.Result) error {
+	var err error
+	res, err = decodeResponse(resp)
+	if err != nil {
+		return err
+	}
+	return checkApplicationError(res)
+}
+
 // DELETE
 func DeleteReq(p string) (*resty.Response, error) {
 	return handleRequestOptions(client.R().Delete(p))
@@ -131,15 +140,6 @@ func asyncWait(result *proto.Result) {
 			fmt.Fprintf(os.Stderr, "Wait error: %s\n", err.Error())
 		}
 	}
-}
-
-func DecodedResponse(resp *resty.Response, res *proto.Result) error {
-	var err error
-	res, err = decodeResponse(resp)
-	if err != nil {
-		return err
-	}
-	return checkApplicationError(res)
 }
 
 func decodeResponse(resp *resty.Response) (*proto.Result, error) {
