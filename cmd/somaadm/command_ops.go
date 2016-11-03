@@ -293,11 +293,7 @@ func cmdOpsRepo(c *cli.Context, req proto.Request) error {
 	}
 	req.SystemOperation.RepositoryId = repoId
 
-	if resp, err := adm.PostReqBody(req, `/system/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `system`)
-	}
+	return adm.Perform(`postbody`, `/system/`, `command`, req, c)
 }
 
 func cmdOpsShutdown(c *cli.Context) error {
@@ -308,11 +304,7 @@ func cmdOpsShutdown(c *cli.Context) error {
 	req := proto.NewSystemOperationRequest()
 	req.SystemOperation.Request = `shutdown`
 
-	if resp, err := adm.PostReqBody(req, `/system/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `system`)
-	}
+	return adm.Perform(`postbody`, `/system/`, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
