@@ -70,28 +70,22 @@ func cmdJobList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	if resp, err := adm.GetReq(`/jobs/`); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+
+	return adm.Perform(`get`, `/jobs/`, `list`, nil, c)
 }
 
 func cmdJobShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
+
 	if !adm.IsUUID(c.Args().First()) {
-		return fmt.Errorf("Argument is not a UUID: %s", c.Args().First())
+		return fmt.Errorf("Argument is not a UUID: %s",
+			c.Args().First())
 	}
+
 	path := fmt.Sprintf("/jobs/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdJobLocalOutstanding(c *cli.Context) error {
@@ -114,6 +108,7 @@ func cmdJobLocalOutstanding(c *cli.Context) error {
 	} else {
 		fmt.Println(string(enc))
 	}
+	// XXX adm.FormatOut support missing
 	return nil
 }
 
@@ -152,15 +147,17 @@ func cmdJobLocalUpdate(c *cli.Context) error {
 		}
 		strID := jobMap[j.Id]
 		var storeID uint64
-		if err := adm.ValidateLBoundUint64(strID, &storeID, 0); err != nil {
-			return fmt.Errorf("somaadm: Job update cache error: %s", err.Error())
+		if err := adm.ValidateLBoundUint64(strID, &storeID,
+			0); err != nil {
+			return fmt.Errorf("somaadm: Job update cache error: %s",
+				err.Error())
 		}
 		if err := store.FinishJob(storeID, &j); err != nil {
-			return fmt.Errorf("somaadm: Job update cache error: %s", err.Error())
+			return fmt.Errorf("somaadm: Job update cache error: %s",
+				err.Error())
 		}
 	}
-	fmt.Println(resp)
-	return nil
+	return adm.FormatOut(c, resp, `list`)
 }
 
 func cmdJobLocalList(c *cli.Context) error {
@@ -189,6 +186,7 @@ func cmdJobLocalList(c *cli.Context) error {
 	} else {
 		fmt.Println(string(enc))
 	}
+	// XXX adm.FormatOut support missing
 	return nil
 }
 
