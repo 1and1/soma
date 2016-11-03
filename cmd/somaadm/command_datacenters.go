@@ -63,9 +63,7 @@ func cmdDatacentersAdd(c *cli.Context) error {
 	req := proto.NewDatacenterRequest()
 	req.Datacenter.Locode = c.Args().First()
 
-	resp := utl.PostRequestWithBody(Client, req, `/datacenters/`)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`postbody`, `/datacenters/`, `command`, req, c)
 }
 
 func cmdDatacentersRemove(c *cli.Context) error {
@@ -74,10 +72,7 @@ func cmdDatacentersRemove(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdDatacentersRename(c *cli.Context) error {
@@ -93,28 +88,23 @@ func cmdDatacentersRename(c *cli.Context) error {
 	req.Datacenter.Locode = opts[`to`][0]
 
 	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`put`, path, `command`, nil, c)
 }
 
 func cmdDatacentersList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, `/datacenters/`)
-	fmt.Println(resp)
-	return nil
+
+	return adm.Perform(`get`, `/datacenters/`, `list`, nil, c)
 }
 
 func cmdDatacentersSync(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, `/sync/datacenters/`)
-	fmt.Println(resp)
-	return nil
+
+	return adm.Perform(`get`, `/sync/datacenters/`, `list`, nil, c)
 }
 
 func cmdDatacentersShow(c *cli.Context) error {
@@ -123,27 +113,25 @@ func cmdDatacentersShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/datacenters/%s", c.Args().First())
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // DC:group
 
 func cmdDatacentersAddToGroup(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdDatacentersRemoveFromGroup(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdDatacentersListGroups(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdDatacentersShowGroup(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
