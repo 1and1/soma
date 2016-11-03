@@ -17,7 +17,7 @@ func (u *SomaUtil) tryGetLevelNameByNameOrShort(c *resty.Client, s string) strin
 	if err != nil {
 		u.abort(fmt.Sprintf("Level lookup request error: %s", err.Error()))
 	}
-	result, err := u.ResultFromResponse(resp)
+	result, err := u.resultFromResponse(resp)
 	if se, ok := err.(SomaError); ok {
 		if se.RequestError() {
 			u.abort(fmt.Sprintf("Level lookup request error: %s", se.Error()))

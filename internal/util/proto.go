@@ -52,7 +52,7 @@ func (u SomaUtil) unfilteredResultFromResponse(resp *resty.Response) *proto.Resu
 	return &res
 }
 
-func (u SomaUtil) ResultFromResponse(resp *resty.Response) (*proto.Result, error) {
+func (u SomaUtil) resultFromResponse(resp *resty.Response) (*proto.Result, error) {
 	if resp.StatusCode() > 299 {
 		return nil, SomaError{
 			code: resp.StatusCode(),

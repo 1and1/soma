@@ -133,6 +133,15 @@ func asyncWait(result *proto.Result) {
 	}
 }
 
+func DecodedResponse(resp *resty.Response, res *proto.Result) error {
+	var err error
+	res, err = decodeResponse(resp)
+	if err != nil {
+		return err
+	}
+	return checkApplicationError(res)
+}
+
 func decodeResponse(resp *resty.Response) (*proto.Result, error) {
 	result := proto.Result{}
 	decoder := json.NewDecoder(bytes.NewReader(resp.Body()))

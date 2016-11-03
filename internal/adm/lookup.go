@@ -365,9 +365,15 @@ func fetchFilter(req proto.Request, path string) (*proto.Result, error) {
 // application errors
 func checkApplicationError(result *proto.Result) error {
 	if result.StatusCode >= 300 {
+		var s string
 		// application errors
-		s := fmt.Sprintf("Request failed: %d - %s",
-			result.StatusCode, result.StatusText)
+		if result.StatusCode == 404 {
+			s = fmt.Sprintf("Object lookup error: %d - %s",
+				result.StatusCode, result.StatusText)
+		} else {
+			s = fmt.Sprintf("Application error: %d - %s",
+				result.StatusCode, result.StatusText)
+		}
 		m := []string{s}
 
 		if result.Errors != nil {

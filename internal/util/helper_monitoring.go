@@ -23,7 +23,7 @@ func (u *SomaUtil) getMonitoringIdByName(c *resty.Client, monitoring string) str
 	if err != nil {
 		u.abort(fmt.Sprintf("Monitoring lookup request error: %s", err.Error()))
 	}
-	result, err := u.ResultFromResponse(resp)
+	result, err := u.resultFromResponse(resp)
 	if se, ok := err.(SomaError); ok {
 		if se.RequestError() {
 			u.abort(fmt.Sprintf("Monitoring lookup request error: %s", se.Error()))

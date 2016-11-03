@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/1and1/soma/internal/adm"
-	"github.com/1and1/soma/internal/util"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/boltdb/bolt"
 	"github.com/codegangsta/cli"
@@ -139,15 +138,12 @@ func cmdJobLocalUpdate(c *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("Job update request error: %s", err)
 	}
-	res, err := utl.ResultFromResponse(resp)
-	if se, ok := err.(util.SomaError); ok {
-		if se.RequestError() {
-			return fmt.Errorf("Job update request error: %s", se.Error())
-		}
-		if se.Code() == 404 {
-			return fmt.Errorf(`Could not find requested Job IDs`)
-		}
-		return fmt.Errorf("Job update application error: %s", err.Error())
+	var res *proto.Result
+	if err = adm.DecodedResponse(resp, res); err != nil {
+		return err
+	}
+	if res.Jobs == nil {
+		return fmt.Errorf("Result contained no jobs array")
 	}
 	for _, j := range *res.Jobs {
 		if j.Status != `processed` {
