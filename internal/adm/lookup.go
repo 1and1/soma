@@ -118,6 +118,11 @@ func oncallIdByName(oncall string) (string, error) {
 		goto abort
 	}
 
+	if res.Oncalls == nil || len(*res.Oncalls) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
 	// check the received record against the input
 	if oncall != (*res.Oncalls)[0].Name {
 		err = fmt.Errorf("Name mismatch: %s vs %s",
@@ -138,6 +143,11 @@ func userIdByUserName(user string) (string, error) {
 
 	res, err := fetchFilter(req, `/filter/users/`)
 	if err != nil {
+		goto abort
+	}
+
+	if res.Users == nil || len(*res.Users) == 0 {
+		err = fmt.Errorf(`no object returned`)
 		goto abort
 	}
 
@@ -164,6 +174,11 @@ func teamIdByName(team string) (string, error) {
 		goto abort
 	}
 
+	if res.Teams == nil || len(*res.Teams) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
 	// check the received record against the input
 	if team != (*res.Teams)[0].Name {
 		err = fmt.Errorf("Name mismatch: %s vs %s",
@@ -184,6 +199,11 @@ func repoIdByName(repo string) (string, error) {
 
 	res, err := fetchFilter(req, `/filter/repository/`)
 	if err != nil {
+		goto abort
+	}
+
+	if res.Repositories == nil || len(*res.Repositories) == 0 {
+		err = fmt.Errorf(`no object returned`)
 		goto abort
 	}
 
@@ -211,6 +231,11 @@ func bucketIdByName(bucket string) (string, error) {
 		goto abort
 	}
 
+	if res.Buckets == nil || len(*res.Buckets) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
 	// check the received record against the input
 	if bucket != (*res.Buckets)[0].Name {
 		err = fmt.Errorf("Name mismatch: %s vs %s",
@@ -235,6 +260,11 @@ func serverIdByName(s string) (string, error) {
 
 	res, err := fetchFilter(req, `/filter/servers/`)
 	if err != nil {
+		goto abort
+	}
+
+	if res.Servers == nil || len(*res.Servers) == 0 {
+		err = fmt.Errorf(`no object returned`)
 		goto abort
 	}
 
@@ -270,6 +300,11 @@ func serverIdByAsset(s string, aid uint64) (string, error) {
 		goto abort
 	}
 
+	if res.Servers == nil || len(*res.Servers) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
 	if aid != (*res.Servers)[0].AssetId {
 		err = fmt.Errorf("AssetId mismatch: %d vs %d",
 			aid, (*res.Servers)[0].AssetId)
@@ -299,6 +334,11 @@ func permissionIdByName(perm string, id *string) error {
 		goto abort
 	}
 
+	if res.Permissions == nil || len(*res.Permissions) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
 	if perm != (*res.Permissions)[0].Name {
 		err = fmt.Errorf("Name mismatch: %s vs %s",
 			perm, (*res.Permissions)[0].Name)
@@ -323,6 +363,11 @@ func grantIdFromServer(rcptType, rcptId, permId, cat string,
 
 	res, err := fetchFilter(req, `/filter/grant/`)
 	if err != nil {
+		goto abort
+	}
+
+	if res.Grants == nil || len(*res.Grants) == 0 {
+		err = fmt.Errorf(`no object returned`)
 		goto abort
 	}
 
