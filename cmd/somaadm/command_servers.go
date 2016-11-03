@@ -66,12 +66,16 @@ func registerServers(app cli.App) *cli.App {
 }
 
 func cmdServerCreate(c *cli.Context) error {
-	multiple := []string{}
 	unique := []string{`assetid`, `datacenter`, `location`, `online`}
 	required := []string{`assetid`, `datacenter`, `location`}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -86,7 +90,8 @@ func cmdServerCreate(c *cli.Context) error {
 
 	// optional argument: online
 	if ov, ok := opts[`online`]; ok {
-		if err := adm.ValidateBool(ov[0], &req.Server.IsOnline); err != nil {
+		if err := adm.ValidateBool(ov[0],
+			&req.Server.IsOnline); err != nil {
 			return err
 		}
 	} else {
@@ -94,9 +99,11 @@ func cmdServerCreate(c *cli.Context) error {
 		req.Server.IsOnline = true
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, `/servers/`)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/servers/`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdServerMarkAsDeleted(c *cli.Context) error {
@@ -109,9 +116,11 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 	}
 	path := fmt.Sprintf("/servers/%s", sid)
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReq(path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdServerPurgeDeleted(c *cli.Context) error {
@@ -127,25 +136,33 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 	req := proto.NewServerRequest()
 	req.Flags.Purge = true
 
-	resp := utl.DeleteRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.DeleteReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdServerUpdate(c *cli.Context) error {
 
 	if !adm.IsUUID(c.Args().First()) {
-		adm.Abort(
-			fmt.Sprintf("Server to update not referenced by UUID: %s",
-				c.Args().First()))
+		return fmt.Errorf(
+			"Server to update not referenced by UUID: %s",
+			c.Args().First())
 	}
 
-	multiple := []string{}
-	unique := []string{`name`, `assetid`, `datacenter`, `location`, `online`, `deleted`}
-	required := []string{`name`, `assetid`, `datacenter`, `location`, `online`, `deleted`}
+	unique := []string{`name`, `assetid`, `datacenter`,
+		`location`, `online`, `deleted`}
+	required := []string{`name`, `assetid`, `datacenter`,
+		`location`, `online`, `deleted`}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -168,9 +185,11 @@ func cmdServerUpdate(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/servers/%s", c.Args().First())
-	resp := utl.PutRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PutReqBody(req, path); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 func cmdServerRename(c *cli.Context) error {
@@ -194,12 +213,11 @@ func cmdServerList(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := adm.GetReq(`/servers/`)
-	if err != nil {
+	if resp, err := adm.GetReq(`/servers/`); err != nil {
 		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
 	}
-	fmt.Println(resp)
-	return nil
 }
 
 func cmdServerSync(c *cli.Context) error {
@@ -207,12 +225,11 @@ func cmdServerSync(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := adm.GetReq(`/sync/servers/`)
-	if err != nil {
+	if resp, err := adm.GetReq(`/sync/servers/`); err != nil {
 		return err
+	} else {
+		return adm.FormatOut(c, resp, `list`)
 	}
-	fmt.Println(resp)
-	return nil
 }
 
 func cmdServerShow(c *cli.Context) error {
@@ -226,9 +243,11 @@ func cmdServerShow(c *cli.Context) error {
 	}
 	path := fmt.Sprintf("/servers/%s", serverId)
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.GetReq(path); err != nil {
+		return nil
+	} else {
+		return adm.FormatOut(c, resp, `show`)
+	}
 }
 
 func cmdServerSyncRequest(c *cli.Context) error {
@@ -249,9 +268,11 @@ func cmdServerNull(c *cli.Context) error {
 	req.Server.Id = "00000000-0000-0000-0000-000000000000"
 	req.Server.Datacenter = opts["datacenter"][0]
 
-	resp := utl.PostRequestWithBody(Client, req, "/servers/null")
-	fmt.Println(resp)
-	return nil
+	if resp, err := adm.PostReqBody(req, `/servers/null`); err != nil {
+		return err
+	} else {
+		return adm.FormatOut(c, resp, `command`)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
