@@ -76,8 +76,9 @@ func cmdMetricCreate(c *cli.Context) error {
 			split := strings.SplitN(p, "::", 2)
 			if len(split) != 2 {
 				// coult not split
-				adm.Abort(fmt.Sprintf("Syntax error, contains no :: %s",
-					p))
+				adm.Abort(
+					fmt.Sprintf("Syntax error, contains no :: %s",
+						p))
 			}
 			if err := adm.ValidateProvider(split[0]); err != nil {
 				return err
@@ -90,9 +91,7 @@ func cmdMetricCreate(c *cli.Context) error {
 		req.Metric.Packages = &pkgs
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/metrics/")
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`postbody`, `/metrics/`, `command`, req, c)
 }
 
 func cmdMetricDelete(c *cli.Context) error {
@@ -101,16 +100,15 @@ func cmdMetricDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdMetricList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/metrics/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	return adm.Perform(`get`, `/metrics/`, `list`, nil, c)
 }
 
 func cmdMetricShow(c *cli.Context) error {
@@ -119,10 +117,7 @@ func cmdMetricShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/metrics/%s", c.Args().First())
-
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
