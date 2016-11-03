@@ -92,9 +92,7 @@ func cmdRightGrant(c *cli.Context, cat string) error {
 
 	path := fmt.Sprintf("/grant/%s/%s/%s/", req.Grant.Category,
 		req.Grant.RecipientType, req.Grant.RecipientId)
-	resp := utl.PostRequestWithBody(Client, req, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdRightRevokeGlobal(c *cli.Context) error {
@@ -132,10 +130,9 @@ func cmdRightRevoke(c *cli.Context, cat string) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/grant/%s/%s/%s/%s", cat, `user`, userId, grantId)
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	path := fmt.Sprintf("/grant/%s/%s/%s/%s", cat, `user`, userId,
+		grantId)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

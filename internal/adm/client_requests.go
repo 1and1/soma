@@ -8,10 +8,31 @@ import (
 	"os"
 
 	"github.com/1and1/soma/lib/proto"
+	"github.com/codegangsta/cli"
 	"gopkg.in/resty.v0"
 )
 
 // Exported functions
+
+// WRAPPER
+func Perform(rqType, path, tmpl string, body interface{}, c *cli.Context) error {
+	var (
+		err  error
+		resp *resty.Response
+	)
+
+	switch rqType {
+	case `delete`:
+		resp, err = DeleteReq(path)
+	case `postbody`:
+		resp, err = PostReqBody(body, path)
+	}
+
+	if err != nil {
+		return err
+	}
+	return FormatOut(c, resp, tmpl)
+}
 
 // DELETE
 func DeleteReq(p string) (*resty.Response, error) {
