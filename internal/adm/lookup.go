@@ -87,6 +87,18 @@ func LookupServerId(s string) (string, error) {
 	return serverIdByName(s)
 }
 
+// LookupPermIdRef looks up the UUID for a permission from
+// the server. Error is set if no such permission was found or
+// an error occured.
+// If s is already a UUID, then is is immediately returned.
+func LookupPermIdRef(s string, id *string) error {
+	if IsUUID(s) {
+		*id = s
+		return nil
+	}
+	return permissionIdByName(s, id)
+}
+
 // LookupGrantIdRef lookup up the UUID of a permission grant from
 // the server and fills it into the provided id pointer.
 // Error is set if no such grant was found or an error occured.
@@ -273,6 +285,30 @@ func serverIdByAsset(s string, aid uint64) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("ServerId lookup failed: %s",
+		err.Error())
+}
+
+// permissionIdByName implements the actual lookup of the permission
+// UUID by name
+func permissionIdByName(perm string, id *string) error {
+	req := proto.NewPermissionFilter()
+	req.Filter.Permission.Name = perm
+
+	res, err := fetchFilter(req, `/filter/permission/`)
+	if err != nil {
+		goto abort
+	}
+
+	if perm != (*res.Permissions)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			perm, (*res.Permissions)[0].Name)
+		goto abort
+	}
+	*id = (*res.Permissions)[0].Id
+	return nil
+
+abort:
+	return fmt.Errorf("PermissionId lookup failed: %s",
 		err.Error())
 }
 

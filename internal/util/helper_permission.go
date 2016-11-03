@@ -5,7 +5,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetPermissionByUUIDOrName(c *resty.Client, s string) string {
+func (u *SomaUtil) tryGetPermissionByUUIDOrName(c *resty.Client, s string) string {
 	if u.isUUID(s) {
 		return s
 	}
