@@ -688,7 +688,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 
 	switch pType {
 	case `system`:
-		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+		if err := adm.ValidateSystemProperty(
+			c.Args().First()); err != nil {
+			return err
+		}
 		fallthrough
 	case `custom`:
 		required = append(required, `value`)

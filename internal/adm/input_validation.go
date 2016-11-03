@@ -152,6 +152,24 @@ func ValidateProvider(s string) error {
 	return fmt.Errorf("Value %s is not a valid provider", s)
 }
 
+// ValidateSystemProperty tests against the server if string s is a
+// valid system property.
+func ValidateSystemProperty(s string) error {
+	res, err := fetchObjList(`/property/system/`)
+	if err != nil {
+		return err
+	}
+
+	if res.Properties != nil {
+		for _, prop := range *res.Properties {
+			if prop.System.Name == s {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("Invalid system property requested: %s", s)
+}
+
 // fetchObjList is a helper for ValidateUnit and ValidateProvider
 func fetchObjList(path string) (*proto.Result, error) {
 	var (

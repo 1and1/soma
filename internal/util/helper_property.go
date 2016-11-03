@@ -111,7 +111,7 @@ fail:
 	panic("unreachable")
 }
 
-func (u SomaUtil) CheckStringIsSystemProperty(c *resty.Client, s string) {
+func (u SomaUtil) checkStringIsSystemProperty(c *resty.Client, s string) {
 	resp := u.GetRequest(c, "/property/system/")
 	res := u.DecodeProtoResultPropertyFromResponse(resp)
 

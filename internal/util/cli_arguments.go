@@ -341,7 +341,7 @@ func (u *SomaUtil) ParseVariadicCapabilityArguments(
 				// constraint must be type `system` or `attribute`
 				switch args[pos+1] {
 				case "system":
-					u.CheckStringIsSystemProperty(c, args[pos+2])
+					u.checkStringIsSystemProperty(c, args[pos+2])
 				case "attribute":
 					u.CheckStringIsServiceAttribute(c, args[pos+2])
 				default:

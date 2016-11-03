@@ -629,7 +629,10 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 	config := utl.GetNodeConfigById(Client, nodeId)
 
 	if pType == `system` {
-		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+		if err := adm.ValidateSystemProperty(
+			c.Args().First()); err != nil {
+			return err
+		}
 	}
 	sourceId := utl.FindSourceForNodeProperty(Client, pType, c.Args().First(),
 		opts[`view`][0], nodeId)

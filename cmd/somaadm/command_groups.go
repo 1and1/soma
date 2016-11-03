@@ -654,7 +654,10 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
 
 	if pType == `system` {
-		utl.CheckStringIsSystemProperty(Client, c.Args().First())
+		if err := adm.ValidateSystemProperty(
+			c.Args().First()); err != nil {
+			return err
+		}
 	}
 	sourceId := utl.FindSourceForGroupProperty(Client, pType, c.Args().First(),
 		opts[`view`][0], groupId)
