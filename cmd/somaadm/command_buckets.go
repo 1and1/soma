@@ -468,10 +468,10 @@ func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	sourceId := utl.FindSourceForBucketProperty(Client, pType, c.Args().First(),
-		opts[`view`][0], bucketId)
-	if sourceId == `` {
-		adm.Abort(`Could not find locally set requested property.`)
+	var sourceId string
+	if err := adm.FindBucketPropSrcId(pType, c.Args().First(),
+		opts[`view`][0], bucketId, &sourceId); err != nil {
+		return err
 	}
 
 	path := fmt.Sprintf("/buckets/%s/property/%s/%s",

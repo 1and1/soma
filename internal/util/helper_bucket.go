@@ -110,7 +110,7 @@ func (u SomaUtil) getBucketDetails(c *resty.Client, bucketId string) *proto.Buck
 	return &(*res.Buckets)[0]
 }
 
-func (u SomaUtil) FindSourceForBucketProperty(c *resty.Client, pTyp, pName, view, bucketId string) string {
+func (u SomaUtil) findSourceForBucketProperty(c *resty.Client, pTyp, pName, view, bucketId string) string {
 	bucket := u.getBucketDetails(c, bucketId)
 	if bucket == nil {
 		return ``

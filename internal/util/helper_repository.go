@@ -46,7 +46,7 @@ func (u SomaUtil) getRepositoryDetails(c *resty.Client, repoId string) *proto.Re
 	return &(*res.Repositories)[0]
 }
 
-func (u SomaUtil) FindSourceForRepoProperty(c *resty.Client, pTyp, pName, view, repoId string) string {
+func (u SomaUtil) findSourceForRepoProperty(c *resty.Client, pTyp, pName, view, repoId string) string {
 	repo := u.getRepositoryDetails(c, repoId)
 	if repo == nil {
 		return ``

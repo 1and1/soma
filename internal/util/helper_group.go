@@ -37,7 +37,7 @@ func (u SomaUtil) getGroupDetails(c *resty.Client, groupId string) *proto.Group 
 	return &(*res.Groups)[0]
 }
 
-func (u SomaUtil) FindSourceForGroupProperty(c *resty.Client, pTyp, pName, view, groupId string) string {
+func (u SomaUtil) findSourceForGroupProperty(c *resty.Client, pTyp, pName, view, groupId string) string {
 	group := u.getGroupDetails(c, groupId)
 	if group == nil {
 		return ``

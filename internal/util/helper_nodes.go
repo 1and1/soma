@@ -68,7 +68,7 @@ func (u SomaUtil) getNodeDetails(c *resty.Client, nodeId string) *proto.Node {
 	return &(*res.Nodes)[0]
 }
 
-func (u SomaUtil) FindSourceForNodeProperty(c *resty.Client, pTyp, pName, view, nodeId string) string {
+func (u SomaUtil) findSourceForNodeProperty(c *resty.Client, pTyp, pName, view, nodeId string) string {
 	node := u.getNodeDetails(c, nodeId)
 	if node == nil {
 		return ``

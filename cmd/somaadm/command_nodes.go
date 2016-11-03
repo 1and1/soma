@@ -634,10 +634,10 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	sourceId := utl.FindSourceForNodeProperty(Client, pType, c.Args().First(),
-		opts[`view`][0], nodeId)
-	if sourceId == `` {
-		return fmt.Errorf(`Could not find locally set requested property.`)
+	var sourceId string
+	if err := adm.FindNodePropSrcId(pType, c.Args().First(),
+		opts[`view`][0], nodeId, &sourceId); err != nil {
+		return err
 	}
 
 	req := proto.NewNodeRequest()

@@ -659,10 +659,10 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	sourceId := utl.FindSourceForGroupProperty(Client, pType, c.Args().First(),
-		opts[`view`][0], groupId)
-	if sourceId == `` {
-		adm.Abort(`Could not find locally set requested property.`)
+	var sourceId string
+	if err := adm.FindGroupPropSrcId(pType, c.Args().First(),
+		opts[`view`][0], groupId, &sourceId); err != nil {
+		return err
 	}
 
 	req := proto.NewGroupRequest()

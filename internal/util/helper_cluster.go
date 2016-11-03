@@ -37,7 +37,7 @@ func (u SomaUtil) getClusterDetails(c *resty.Client, clusterId string) *proto.Cl
 	return &(*res.Clusters)[0]
 }
 
-func (u SomaUtil) FindSourceForClusterProperty(c *resty.Client, pTyp, pName, view, clusterId string) string {
+func (u SomaUtil) findSourceForClusterProperty(c *resty.Client, pTyp, pName, view, clusterId string) string {
 	cluster := u.getClusterDetails(c, clusterId)
 	if cluster == nil {
 		return ``

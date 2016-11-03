@@ -480,10 +480,10 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	sourceId := utl.FindSourceForClusterProperty(Client, pType, c.Args().First(),
-		opts[`view`][0], clusterId)
-	if sourceId == `` {
-		adm.Abort(`Could not find locally set requested property.`)
+	var sourceId string
+	if err := adm.FindClusterPropSrcId(pType, c.Args().First(),
+		opts[`view`][0], clusterId, &sourceId); err != nil {
+		return err
 	}
 
 	req := proto.NewClusterRequest()

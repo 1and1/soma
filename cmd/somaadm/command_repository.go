@@ -458,10 +458,10 @@ func cmdRepositoryPropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	sourceId := utl.FindSourceForRepoProperty(Client, pType, c.Args().First(),
-		opts[`view`][0], repositoryId)
-	if sourceId == `` {
-		return fmt.Errorf(`Could not find locally set requested property.`)
+	var sourceId string
+	if err := adm.FindRepoPropSrcId(pType, c.Args().First(),
+		opts[`view`][0], repositoryId, &sourceId); err != nil {
+		return err
 	}
 
 	path := fmt.Sprintf("/repository/%s/property/%s/%s",
