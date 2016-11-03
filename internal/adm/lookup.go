@@ -87,6 +87,14 @@ func LookupServerId(s string) (string, error) {
 	return serverIdByName(s)
 }
 
+// LookupGrantIdRef lookup up the UUID of a permission grant from
+// the server and fills it into the provided id pointer.
+// Error is set if no such grant was found or an error occured.
+func LookupGrantIdRef(rcptType, rcptId, permId, cat string,
+	id *string) error {
+	return grantIdFromServer(rcptType, rcptId, permId, cat, id)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -265,6 +273,32 @@ func serverIdByAsset(s string, aid uint64) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("ServerId lookup failed: %s",
+		err.Error())
+}
+
+// grantIdFromServer implements the actual lookup of the grant UUID
+func grantIdFromServer(rcptType, rcptId, permId, cat string,
+	id *string) error {
+	req := proto.NewGrantFilter()
+	req.Filter.Grant.RecipientType = rcptType
+	req.Filter.Grant.RecipientId = rcptId
+	req.Filter.Grant.PermissionId = permId
+	req.Filter.Grant.Category = cat
+
+	res, err := fetchFilter(req, `/filter/grant/`)
+	if err != nil {
+		goto abort
+	}
+
+	if permId != (*res.Grants)[0].PermissionId {
+		err = fmt.Errorf("PermissionId mismatch: %s vs %s",
+			permId, (*res.Grants)[0].PermissionId)
+		goto abort
+	}
+	*id = (*res.Grants)[0].Id
+
+abort:
+	return fmt.Errorf("GrantId lookup failed: %s",
 		err.Error())
 }
 

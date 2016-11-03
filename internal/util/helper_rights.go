@@ -5,7 +5,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryResolveGrantId(c *resty.Client, rtyp, rid, pid, cat string) string {
+func (u *SomaUtil) tryResolveGrantId(c *resty.Client, rtyp, rid, pid, cat string) string {
 	req := proto.NewGrantFilter()
 	req.Filter.Grant.RecipientType = rtyp
 	req.Filter.Grant.RecipientId = rid

@@ -116,13 +116,16 @@ func cmdRightRevoke(c *cli.Context, cat string) error {
 
 	permId := utl.TryGetPermissionByUUIDOrName(Client, c.Args().First())
 	var (
-		err    error
-		userId string
+		err             error
+		userId, grantId string
 	)
 	if userId, err = adm.LookupUserId(opts[`user`][0]); err != nil {
 		return err
 	}
-	grantId := utl.TryResolveGrantId(Client, `user`, userId, permId, cat)
+	if err = adm.LookupGrantIdRef(`user`, userId, permId, cat,
+		&grantId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/grant/%s/%s/%s/%s", cat, `user`, userId, grantId)
 	resp := utl.DeleteRequest(Client, path)
