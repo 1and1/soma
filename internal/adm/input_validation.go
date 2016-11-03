@@ -39,7 +39,7 @@ func ValidateRuneCountRange(s string, lower, higher int) error {
 	return nil
 }
 
-// isUUID validates if a string is one very narrow formatting of a UUID,
+// IsUUID validates if a string is one very narrow formatting of a UUID,
 // namely the one used by the server. Other valid formats with braces etc
 // are not accepted
 func IsUUID(s string) bool {
@@ -48,6 +48,15 @@ func IsUUID(s string) bool {
 	re := regexp.MustCompile(fmt.Sprintf("%s|%s", reUUID, reUNIL))
 
 	return re.MatchString(s)
+}
+
+// isUint64 validates if a string is a uint64 number
+func isUint64(s string) (bool, uint64) {
+	if u, err := strconv.ParseUint(s, 10, 64); err != nil {
+		return false, 0
+	} else {
+		return true, u
+	}
 }
 
 // ValidateOncallNumber tests if a string is a 4 digit number

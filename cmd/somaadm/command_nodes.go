@@ -210,8 +210,12 @@ func cmdNodeAdd(c *cli.Context) error {
 		req.Node.IsOnline = true
 	}
 	if _, ok := opts[`server`]; ok {
-		req.Node.ServerId = utl.TryGetServerByUUIDOrName(
-			&store, Client, opts[`server`][0])
+		{
+			var err error
+			if req.Node.ServerId, err = adm.LookupServerId(opts[`server`][0]); err != nil {
+				return err
+			}
+		}
 	}
 	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
 		&req.Node.AssetId, 1); err != nil {
@@ -256,7 +260,12 @@ func cmdNodeUpdate(c *cli.Context) error {
 		&req.Node.IsDeleted); err != nil {
 		return err
 	}
-	req.Node.ServerId = utl.TryGetServerByUUIDOrName(&store, Client, opts[`server`][0])
+	{
+		var err error
+		if req.Node.ServerId, err = adm.LookupServerId(opts[`server`][0]); err != nil {
+			return err
+		}
+	}
 	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
 		&req.Node.AssetId, 1); err != nil {
 		return err

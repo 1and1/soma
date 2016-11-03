@@ -103,7 +103,10 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	sid := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
+	sid, err := adm.LookupServerId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/servers/%s", sid)
 
 	resp := utl.DeleteRequest(Client, path)
@@ -116,7 +119,10 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 		return err
 	}
 	// TODO this will currently never return a deleted server
-	sid := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
+	sid, err := adm.LookupServerId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/servers/%s", sid)
 	req := proto.NewServerRequest()
 	req.Flags.Purge = true
@@ -214,7 +220,10 @@ func cmdServerShow(c *cli.Context) error {
 		return err
 	}
 
-	serverId := utl.TryGetServerByUUIDOrName(&store, Client, c.Args().First())
+	serverId, err := adm.LookupServerId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/servers/%s", serverId)
 
 	resp := utl.GetRequest(Client, path)

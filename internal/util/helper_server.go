@@ -21,7 +21,7 @@ func (u *SomaUtil) CheckServerKeyword(s string) {
 	}
 }
 
-func (u SomaUtil) TryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s string) string {
+func (u SomaUtil) tryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s string) string {
 	if u.isUUID(s) {
 		return s
 	}
@@ -39,12 +39,12 @@ func (u SomaUtil) TryGetServerByUUIDOrName(cache *db.DB, c *resty.Client, s stri
 		}
 	}
 	if m, err = cache.ServerByAsset(s); err != nil {
-		return u.GetServerIdByAssetId(cache, c, aid)
+		return u.getServerIdByAssetId(cache, c, aid)
 	}
 	return m[`id`]
 }
 
-func (u SomaUtil) GetServerIdByAssetId(cache *db.DB, c *resty.Client, aid uint64) string {
+func (u SomaUtil) getServerIdByAssetId(cache *db.DB, c *resty.Client, aid uint64) string {
 	req := proto.NewServerFilter()
 	req.Filter.Server.AssetId = aid
 
