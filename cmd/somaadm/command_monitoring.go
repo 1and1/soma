@@ -47,26 +47,26 @@ func registerMonitoring(app cli.App) *cli.App {
 }
 
 func cmdMonitoringCreate(c *cli.Context) error {
-	multiple := []string{}
 	unique := []string{"mode", "contact", "team", "callback"}
 	required := []string{"mode", "contact", "team"}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
-	req := proto.Request{}
-	req.Monitoring = &proto.Monitoring{}
+	req := proto.NewMonitoringRequest()
 	req.Monitoring.Name = c.Args().First()
 	req.Monitoring.Mode = opts["mode"][0]
 	var err error
-	if req.Monitoring.Contact, err = adm.LookupUserId(opts[`contact`][0]); err != nil {
+	if req.Monitoring.Contact, err = adm.LookupUserId(
+		opts[`contact`][0]); err != nil {
 		return err
 	}
 	req.Monitoring.TeamId, err = adm.LookupTeamId(opts[`team`][0])
@@ -74,7 +74,9 @@ func cmdMonitoringCreate(c *cli.Context) error {
 		return err
 	}
 	if strings.Contains(req.Monitoring.Name, `.`) {
-		adm.Abort(`Monitoring system names must not contain the character '.'`)
+		return fmt.Errorf(
+			`Monitoring system names must not contain` +
+				` the character '.'`)
 	}
 
 	// optional arguments
@@ -82,9 +84,7 @@ func cmdMonitoringCreate(c *cli.Context) error {
 		req.Monitoring.Callback = opts["callback"][0]
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/monitoring/")
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`postbody`, `/monitoring/`, `command`, req, c)
 }
 
 func cmdMonitoringDelete(c *cli.Context) error {
@@ -97,28 +97,28 @@ func cmdMonitoringDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/monitoring/%s", monitoringId)
-
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdMonitoringList(c *cli.Context) error {
-	resp := utl.GetRequest(Client, "/monitoring/")
-	fmt.Println(resp)
-	return nil
+	if err := adm.VerifyNoArgument(c); err != nil {
+		return err
+	}
+
+	return adm.Perform(`get`, `/monitoring/`, `list`, nil, c)
 }
 
 func cmdMonitoringShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/monitoring/%s", id)
 	monitoringId, err := adm.LookupMonitoringId(c.Args().First())
 	if err != nil {
 		return err
 	}
 
+	path := fmt.Sprintf("/monitoring/%s", monitoringId)
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
