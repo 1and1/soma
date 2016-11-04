@@ -183,16 +183,12 @@ func cmdBucketCreate(c *cli.Context) error {
 		},
 	}
 
-	if err := adm.ValidateRuneCountRange(req.Bucket.Name, 4, 512); err != nil {
+	if err := adm.ValidateRuneCountRange(req.Bucket.Name,
+		4, 512); err != nil {
 		return err
 	}
 
-	if resp, err := adm.PostReqBody(req, "/buckets/"); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`postbody`, `/buckets/`, `command`, req, c)
 }
 
 func cmdBucketDelete(c *cli.Context) error {
@@ -209,14 +205,9 @@ func cmdBucketDelete(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/buckets/%s", buckId)
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/buckets/%s", buckId)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdBucketRestore(c *cli.Context) error {
@@ -233,7 +224,6 @@ func cmdBucketRestore(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
 		Flags: &proto.Flags{
@@ -241,12 +231,8 @@ func cmdBucketRestore(c *cli.Context) error {
 		},
 	}
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/buckets/%s", buckId)
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdBucketPurge(c *cli.Context) error {
@@ -263,20 +249,14 @@ func cmdBucketPurge(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/buckets/%s", buckId)
-
 	req := proto.Request{
 		Flags: &proto.Flags{
 			Purge: true,
 		},
 	}
 
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/buckets/%s", buckId)
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 func cmdBucketFreeze(c *cli.Context) error {
@@ -293,7 +273,6 @@ func cmdBucketFreeze(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
 		Flags: &proto.Flags{
@@ -301,12 +280,8 @@ func cmdBucketFreeze(c *cli.Context) error {
 		},
 	}
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/buckets/%s", buckId)
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdBucketThaw(c *cli.Context) error {
@@ -323,7 +298,6 @@ func cmdBucketThaw(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
 		Flags: &proto.Flags{
@@ -331,12 +305,8 @@ func cmdBucketThaw(c *cli.Context) error {
 		},
 	}
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/buckets/%s", buckId)
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdBucketRename(c *cli.Context) error {
@@ -346,14 +316,14 @@ func cmdBucketRename(c *cli.Context) error {
 		[]string{},
 		[]string{`repository`, `to`},
 		[]string{`repository`, `to`},
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 	buckId, err := adm.LookupBucketId(c.Args().First())
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/buckets/%s", buckId)
 
 	req := proto.Request{
 		Bucket: &proto.Bucket{
@@ -361,12 +331,8 @@ func cmdBucketRename(c *cli.Context) error {
 		},
 	}
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/buckets/%s", buckId)
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdBucketList(c *cli.Context) error {
@@ -374,11 +340,7 @@ func cmdBucketList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/buckets/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/buckets/`, `list`, nil, c)
 }
 
 func cmdBucketShow(c *cli.Context) error {
@@ -391,11 +353,7 @@ func cmdBucketShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdBucketTree(c *cli.Context) error {
@@ -408,11 +366,7 @@ func cmdBucketTree(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/buckets/%s/tree/tree", bucketId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `tree`)
-	}
+	return adm.Perform(`get`, path, `tree`, nil, c)
 }
 
 func cmdBucketSystemPropertyAdd(c *cli.Context) error {
@@ -452,12 +406,16 @@ func cmdBucketCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
-	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 	bucketId, err := adm.LookupBucketId(opts[`from`][0])
@@ -479,12 +437,7 @@ func cmdBucketPropertyDelete(c *cli.Context, pType string) error {
 
 	path := fmt.Sprintf("/buckets/%s/property/%s/%s",
 		bucketId, pType, sourceId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
