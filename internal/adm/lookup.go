@@ -99,7 +99,7 @@ func LookupPermIdRef(s string, id *string) error {
 	return permissionIdByName(s, id)
 }
 
-// LookupGrantIdRef lookup up the UUID of a permission grant from
+// LookupGrantIdRef looks up the UUID of a permission grant from
 // the server and fills it into the provided id pointer.
 // Error is set if no such grant was found or an error occured.
 func LookupGrantIdRef(rcptType, rcptId, permId, cat string,
@@ -107,8 +107,8 @@ func LookupGrantIdRef(rcptType, rcptId, permId, cat string,
 	return grantIdFromServer(rcptType, rcptId, permId, cat, id)
 }
 
-//
-//
+// LookupMonitoringId looks up the UUID of the monitoring system
+// with the name s. Returns immediately if s is a UUID.
 func LookupMonitoringId(s string) (string, error) {
 	if IsUUID(s) {
 		return s, nil
@@ -116,8 +116,9 @@ func LookupMonitoringId(s string) (string, error) {
 	return monitoringIdByName(s)
 }
 
-//
-//
+// LookupNodeId looks up the UUID of the repository the bucket
+// given via string s is part of. If s is a UUID, it is used as
+// bucketId for the lookup.
 func LookupNodeId(s string) (string, error) {
 	if IsUUID(s) {
 		return s, nil
@@ -401,8 +402,8 @@ abort:
 		err.Error())
 }
 
-//
-//
+// monitoringIdByName implements the actual lookup of the monitoring
+// system UUID
 func monitoringIdByName(monitoring string) (string, error) {
 	req := proto.NewMonitoringFilter()
 	req.Filter.Monitoring.Name = monitoring
@@ -429,8 +430,7 @@ abort:
 		err.Error())
 }
 
-//
-//
+// nodeIdByName implements the actual lookup of the node UUID
 func nodeIdByName(node string) (string, error) {
 	req := proto.NewNodeFilter()
 	req.Filter.Node.Name = node
