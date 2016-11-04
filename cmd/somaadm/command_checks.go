@@ -73,8 +73,10 @@ func cmdCheckAdd(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	req.CheckConfig.RepositoryId = utl.GetRepositoryIdForBucket(
-		Client, req.CheckConfig.BucketId)
+	if req.CheckConfig.RepositoryId, err = adm.LookupRepoByBucket(
+		req.CheckConfig.BucketId); err != nil {
+		return err
+	}
 	req.CheckConfig.ObjectId = utl.GetObjectIdForCheck(
 		Client,
 		opts["on/type"][0],
@@ -148,12 +150,18 @@ func cmdCheckDelete(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	var (
+		err                       error
+		bucketId, repoId, checkId string
+	)
+	bucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
 		return err
 	}
-	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
-	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
+	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
+		return err
+	}
+	checkId = utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -178,11 +186,17 @@ func cmdCheckList(c *cli.Context) error {
 		c.Args()); err != nil {
 		return err
 	}
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	var (
+		err              error
+		bucketId, repoId string
+	)
+	bucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
 		return err
 	}
-	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
+	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/checks/%s/", repoId)
 	if resp, err := adm.GetReq(path); err != nil {
@@ -211,7 +225,10 @@ func cmdCheckShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
+	var repoId string
+	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
+		return err
+	}
 	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)

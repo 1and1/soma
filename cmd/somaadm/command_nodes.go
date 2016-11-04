@@ -519,12 +519,18 @@ func cmdNodeAssign(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId, err := adm.LookupBucketId(opts["to"][0])
+	var (
+		err                      error
+		bucketId, repoId, nodeId string
+	)
+	bucketId, err = adm.LookupBucketId(opts["to"][0])
 	if err != nil {
 		return err
 	}
-	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
-	nodeId, err := adm.LookupNodeId(c.Args().First())
+	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
+		return err
+	}
+	nodeId, err = adm.LookupNodeId(c.Args().First())
 	if err != nil {
 		return err
 	}

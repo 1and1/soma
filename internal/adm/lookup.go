@@ -60,6 +60,25 @@ func LookupRepoId(s string) (string, error) {
 	return repoIdByName(s)
 }
 
+// LookupRepoByBucket looks up the UUI for a repository by either
+// the UUID or name of a bucket in that repository.
+func LookupRepoByBucket(s string) (string, error) {
+	var (
+		bId string
+		err error
+	)
+
+	if !IsUUID(s) {
+		if bId, err = LookupBucketId(s); err != nil {
+			return ``, err
+		}
+	} else {
+		bId = s
+	}
+
+	return repoIdByBucketId(bId)
+}
+
 // LookupBucketId looks up the UUID for a bucket on the server
 // with bucketname s. Error is set if no such bucket was found
 // or an error occured.
@@ -233,6 +252,32 @@ func repoIdByName(repo string) (string, error) {
 		goto abort
 	}
 	return (*res.Repositories)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("RepositoryId lookup failed: %s",
+		err.Error())
+}
+
+// repoIdByBucketId implements the actual serverside lookup of the
+// repo's UUID
+func repoIdByBucketId(bucket string) (string, error) {
+	res, err := fetchObjList(fmt.Sprintf("/buckets/%s", bucket))
+	if err != nil {
+		goto abort
+	}
+
+	if res.Buckets == nil || len(*res.Buckets) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	// check the received record against the input
+	if bucket != (*res.Buckets)[0].Id {
+		err = fmt.Errorf("BucketId mismatch: %s vs %s",
+			bucket, (*res.Buckets)[0].Id)
+		goto abort
+	}
+	return (*res.Buckets)[0].RepositoryId, nil
 
 abort:
 	return ``, fmt.Errorf("RepositoryId lookup failed: %s",

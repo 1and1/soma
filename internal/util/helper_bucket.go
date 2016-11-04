@@ -58,7 +58,7 @@ func (u SomaUtil) bucketIdByName(c *resty.Client, bucket string) string {
 	return (*repoResult.Buckets)[0].Id
 }
 
-func (u SomaUtil) GetRepositoryIdForBucket(c *resty.Client, bucket string) string {
+func (u SomaUtil) getRepositoryIdForBucket(c *resty.Client, bucket string) string {
 	req := proto.NewBucketFilter()
 	var b string
 
