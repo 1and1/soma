@@ -170,6 +170,24 @@ func ValidateSystemProperty(s string) error {
 	return fmt.Errorf("Invalid system property requested: %s", s)
 }
 
+// ValidateEnvironment tests against the server if string s is a
+// valid system property
+func ValidateEnvironment(s string) error {
+	res, err := fetchObjList(`/environments/`)
+	if err != nil {
+		return err
+	}
+
+	if res.Environments != nil {
+		for _, env := range *res.Environments {
+			if env.Name == s {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("Invalid environment requested: %s", s)
+}
+
 // fetchObjList is a helper for ValidateUnit and ValidateProvider
 func fetchObjList(path string) (*proto.Result, error) {
 	var (

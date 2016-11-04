@@ -170,7 +170,10 @@ func cmdBucketCreate(c *cli.Context) error {
 
 	// fetch list of environments from SOMA to check if a valid
 	// environment was requested
-	utl.VerifyEnvironment(Client, opts["environment"][0])
+	if err := adm.ValidateEnvironment(
+		opts["environment"][0]); err != nil {
+		return err
+	}
 
 	req := proto.Request{
 		Bucket: &proto.Bucket{

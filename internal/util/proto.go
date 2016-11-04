@@ -88,7 +88,7 @@ func (u SomaUtil) resultFromResponse(resp *resty.Response) (*proto.Result, error
 	return &res, nil
 }
 
-func (u SomaUtil) VerifyEnvironment(c *resty.Client, env string) {
+func (u SomaUtil) verifyEnvironment(c *resty.Client, env string) {
 	resp := u.GetRequest(c, "/environments/")
 	res := u.DecodeResultFromResponse(resp)
 	for _, e := range *res.Environments {
