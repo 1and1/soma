@@ -7,7 +7,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetNodeByUUIDOrName(c *resty.Client, s string) string {
+func (u SomaUtil) tryGetNodeByUUIDOrName(c *resty.Client, s string) string {
 	if u.isUUID(s) {
 		return s
 	}
@@ -53,7 +53,7 @@ func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeCon
 }
 
 func (u SomaUtil) TeamIdForNode(c *resty.Client, node string) string {
-	nodeId := u.TryGetNodeByUUIDOrName(c, node)
+	nodeId := u.tryGetNodeByUUIDOrName(c, node)
 	resp := u.GetRequest(c, fmt.Sprintf("/nodes/%s", nodeId))
 	res := u.DecodeResultFromResponse(resp)
 	if (*res.Nodes)[0].Id != nodeId {

@@ -289,8 +289,12 @@ func cmdNodeDel(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id)
+	var path string
+	if id, err := adm.LookupNodeId(c.Args().First()); err != nil {
+		return err
+	} else {
+		path = fmt.Sprintf("/nodes/%s", id)
+	}
 
 	if resp, err := adm.DeleteReq(path); err != nil {
 		return err
@@ -313,8 +317,11 @@ func cmdNodePurge(c *cli.Context) error {
 		if err := adm.VerifySingleArgument(c); err != nil {
 			return err
 		}
-		id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-		path = fmt.Sprintf("/nodes/%s", id)
+		if id, err := adm.LookupNodeId(c.Args().First()); err != nil {
+			return err
+		} else {
+			path = fmt.Sprintf("/nodes/%s", id)
+		}
 	}
 
 	req = proto.Request{
@@ -344,8 +351,11 @@ func cmdNodeRestore(c *cli.Context) error {
 		if err := adm.VerifySingleArgument(c); err != nil {
 			return err
 		}
-		id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-		path = fmt.Sprintf("/nodes/%s", id)
+		if id, err := adm.LookupNodeId(c.Args().First()); err != nil {
+			return err
+		} else {
+			path = fmt.Sprintf("/nodes/%s", id)
+		}
 	}
 
 	req = proto.Request{
@@ -371,8 +381,12 @@ func cmdNodeRename(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-	path := fmt.Sprintf("/nodes/%s", id)
+	var path string
+	if id, err := adm.LookupNodeId(c.Args().First()); err != nil {
+		return err
+	} else {
+		path = fmt.Sprintf("/nodes/%s", id)
+	}
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
@@ -395,10 +409,15 @@ func cmdNodeRepo(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-	teamId, err := adm.LookupTeamId(opts[`to`][0])
-	if err != nil {
-		return err
+	var id, teamId string
+	{
+		var err error
+		if id, err = adm.LookupNodeId(c.Args().First()); err != nil {
+			return err
+		}
+		if teamId, err = adm.LookupTeamId(opts[`to`][0]); err != nil {
+			return err
+		}
 	}
 	path := fmt.Sprintf("/nodes/%s", id)
 
@@ -423,7 +442,13 @@ func cmdNodeMove(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	var id string
+	{
+		var err error
+		if id, err = adm.LookupNodeId(c.Args().First()); err != nil {
+			return err
+		}
+	}
 	server := opts[`to`][0]
 	// try resolving server name to uuid as name validation
 	_ = utl.GetServerAssetIdByName(Client, server)
@@ -444,7 +469,10 @@ func cmdNodeOnline(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
@@ -462,7 +490,10 @@ func cmdNodeOffline(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
@@ -491,7 +522,10 @@ func cmdNodeAssign(c *cli.Context) error {
 		return err
 	}
 	repoId := utl.GetRepositoryIdForBucket(Client, bucketId)
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	nodeId, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
 	bucketTeamId := utl.TeamIdForBucket(Client, bucketId)
 	nodeTeamId := utl.TeamIdForNode(Client, nodeId)
@@ -530,7 +564,10 @@ func cmdNodeShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -544,7 +581,10 @@ func cmdNodeTree(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s/tree/tree", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -570,7 +610,10 @@ func cmdNodeConfig(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	id, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s/config", id)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -625,7 +668,10 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, opts[`from`][0])
+	nodeId, err := adm.LookupNodeId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	config := utl.GetNodeConfigById(Client, nodeId)
 
 	if pType == `system` {

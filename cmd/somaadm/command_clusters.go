@@ -325,10 +325,15 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	var (
+		nodeId, bucketId string
+		err              error
+	)
+	if nodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
+		return err
+	}
 	//TODO: get bucketId via node
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	bucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
 		return err
 	}
@@ -371,9 +376,15 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 		return err
 	}
 
-	nodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
+	var (
+		nodeId, bucketId string
+		err              error
+	)
+	if nodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
+		return err
+	}
 	//TODO: get bucketId via node
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
+	bucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
 		return err
 	}

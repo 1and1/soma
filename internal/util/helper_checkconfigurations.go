@@ -18,7 +18,7 @@ func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b str
 	case "cluster":
 		return u.TryGetClusterByUUIDOrName(c, n, b)
 	case "node":
-		return u.TryGetNodeByUUIDOrName(c, n)
+		return u.tryGetNodeByUUIDOrName(c, n)
 	default:
 		u.abort(fmt.Sprintf("Error, unknown object type: %s", t))
 	}

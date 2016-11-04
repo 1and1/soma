@@ -723,11 +723,14 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		objectId, object, repoId, bucketId string
 		config                             *proto.NodeConfig
 		req                                proto.Request
+		err                                error
 	)
 	// id lookup
 	switch oType {
 	case `node`:
-		objectId = utl.TryGetNodeByUUIDOrName(Client, opts[`to`][0])
+		if objectId, err = adm.LookupNodeId(opts[`to`][0]); err != nil {
+			return err
+		}
 		config = utl.GetNodeConfigById(Client, objectId)
 		repoId = config.RepositoryId
 		bucketId = config.BucketId

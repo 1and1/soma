@@ -116,6 +116,15 @@ func LookupMonitoringId(s string) (string, error) {
 	return monitoringIdByName(s)
 }
 
+//
+//
+func LookupNodeId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return nodeIdByName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -417,6 +426,34 @@ func monitoringIdByName(monitoring string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("MonitoringId lookup failed: %s",
+		err.Error())
+}
+
+//
+//
+func nodeIdByName(node string) (string, error) {
+	req := proto.NewNodeFilter()
+	req.Filter.Node.Name = node
+
+	res, err := fetchFilter(req, `/filter/nodes/`)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Nodes == nil || len(*res.Nodes) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if node != (*res.Nodes)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			node, (*res.Nodes)[0].Name)
+		goto abort
+	}
+	return (*res.Nodes)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("NodeId lookup failed: %s",
 		err.Error())
 }
 

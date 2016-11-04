@@ -446,12 +446,17 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                        error
+		bucketId, groupId, mNodeId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
+	if mNodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
+		return err
+	}
+	groupId = utl.TryGetGroupByUUIDOrName(Client,
 		opts["to"][0],
 		bucketId)
 
@@ -553,12 +558,17 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                        error
+		bucketId, groupId, mNodeId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	mNodeId := utl.TryGetNodeByUUIDOrName(Client, c.Args().First())
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
+	if mNodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
+		return err
+	}
+	groupId = utl.TryGetGroupByUUIDOrName(Client,
 		opts["from"][0],
 		bucketId)
 
