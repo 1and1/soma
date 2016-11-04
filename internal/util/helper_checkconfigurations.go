@@ -14,9 +14,9 @@ func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b str
 	case "bucket":
 		return u.bucketByUUIDOrName(c, n)
 	case "group":
-		return u.TryGetGroupByUUIDOrName(c, n, b)
+		return u.tryGetGroupByUUIDOrName(c, n, b)
 	case "cluster":
-		return u.TryGetClusterByUUIDOrName(c, n, b)
+		return u.tryGetClusterByUUIDOrName(c, n, b)
 	case "node":
 		return u.tryGetNodeByUUIDOrName(c, n)
 	default:

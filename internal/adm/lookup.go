@@ -130,6 +130,44 @@ func LookupBucketId(s string) (string, error) {
 	return bucketIdByName(s)
 }
 
+func LookupGroupId(group, bucket string) (string, error) {
+	if IsUUID(group) {
+		return group, nil
+	}
+	var (
+		bId string
+		err error
+	)
+	if !IsUUID(bucket) {
+		if bId, err = LookupBucketId(bucket); err != nil {
+			return ``, err
+		}
+	} else {
+		bId = bucket
+	}
+
+	return groupIdByName(group, bId)
+}
+
+func LookupClusterId(cluster, bucket string) (string, error) {
+	if IsUUID(cluster) {
+		return cluster, nil
+	}
+	var (
+		bId string
+		err error
+	)
+	if !IsUUID(bucket) {
+		if bId, err = LookupBucketId(bucket); err != nil {
+			return ``, err
+		}
+	} else {
+		bId = bucket
+	}
+
+	return clusterIdByName(cluster, bId)
+}
+
 // LookupServerId looks up the UUID for a server either in the
 // local cache or on the server. Error is set if no such server
 // was found or an error occured.
@@ -421,6 +459,60 @@ func bucketIdByName(bucket string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("BucketId lookup failed: %s",
+		err.Error())
+}
+
+//
+func groupIdByName(group, bucketId string) (string, error) {
+	req := proto.NewGroupFilter()
+	req.Filter.Group.Name = group
+	req.Filter.Group.BucketId = bucketId
+
+	res, err := fetchFilter(req, `/filter/groups/`)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Groups == nil || len(*res.Groups) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if group != (*res.Groups)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			group, (*res.Groups)[0].Name)
+	}
+	return (*res.Groups)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("GroupId lookup failed: %s",
+		err.Error())
+}
+
+//
+func clusterIdByName(cluster, bucketId string) (string, error) {
+	req := proto.NewClusterFilter()
+	req.Filter.Cluster.Name = cluster
+	req.Filter.Cluster.BucketId = bucketId
+
+	res, err := fetchFilter(req, `/filter/clusters/`)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Clusters == nil || len(*res.Clusters) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if cluster != (*res.Clusters)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			cluster, (*res.Clusters)[0].Name)
+	}
+	return (*res.Clusters)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("ClusterId lookup failed: %s",
 		err.Error())
 }
 

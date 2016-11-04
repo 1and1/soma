@@ -7,7 +7,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetClusterByUUIDOrName(c *resty.Client, cl string, b string) string {
+func (u SomaUtil) tryGetClusterByUUIDOrName(c *resty.Client, cl string, b string) string {
 	if u.isUUID(cl) {
 		return cl
 	}
@@ -26,7 +26,7 @@ func (u SomaUtil) getClusterIdByName(c *resty.Client, cl string, bId string) str
 	}
 
 	resp := u.PostRequestWithBody(c, req, "/filter/clusters/")
-	clusterResult := u.DecodeProtoResultClusterFromResponse(resp)
+	clusterResult := u.decodeProtoResultClusterFromResponse(resp)
 
 	return (*clusterResult.Clusters)[0].Id
 }
@@ -77,7 +77,7 @@ func (u SomaUtil) findSourceForClusterProperty(c *resty.Client, pTyp, pName, vie
 	return ``
 }
 
-func (u SomaUtil) DecodeProtoResultClusterFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultClusterFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

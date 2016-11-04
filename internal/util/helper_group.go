@@ -7,7 +7,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetGroupByUUIDOrName(c *resty.Client, g string, b string) string {
+func (u SomaUtil) tryGetGroupByUUIDOrName(c *resty.Client, g string, b string) string {
 	if u.isUUID(g) {
 		return g
 	}
@@ -26,7 +26,7 @@ func (u SomaUtil) getGroupIdByName(c *resty.Client, g string, bId string) string
 	}
 
 	resp := u.PostRequestWithBody(c, req, "/filter/groups/")
-	groupResult := u.DecodeProtoResultGroupFromResponse(resp)
+	groupResult := u.decodeProtoResultGroupFromResponse(resp)
 
 	return (*groupResult.Groups)[0].Id
 }
@@ -77,7 +77,7 @@ func (u SomaUtil) findSourceForGroupProperty(c *resty.Client, pTyp, pName, view,
 	return ``
 }
 
-func (u SomaUtil) DecodeProtoResultGroupFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultGroupFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

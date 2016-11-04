@@ -195,13 +195,17 @@ func cmdClusterDelete(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                 error
+		bucketId, clusterId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if clusterId, err = adm.LookupClusterId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -224,16 +228,20 @@ func cmdClusterRename(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                 error
+		bucketId, clusterId string
+		req                 proto.Request
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if clusterId, err = adm.LookupClusterId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	var req proto.Request
 	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = opts["to"][0]
 
@@ -268,13 +276,17 @@ func cmdClusterShow(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                 error
+		bucketId, clusterId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if clusterId, err = adm.LookupClusterId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/clusters/%s", clusterId)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -297,13 +309,17 @@ func cmdClusterTree(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                 error
+		bucketId, clusterId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if clusterId, err = adm.LookupClusterId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/clusters/%s/tree/tree", clusterId)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -326,19 +342,20 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 		return err
 	}
 	var (
-		nodeId, bucketId string
-		err              error
+		err                         error
+		nodeId, bucketId, clusterId string
 	)
 	if nodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
 		return err
 	}
 	//TODO: get bucketId via node
-	bucketId, err = adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		opts["to"][0], bucketId)
+	if clusterId, err = adm.LookupClusterId(opts["to"][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	req := proto.Request{}
 	conf := proto.NodeConfig{
@@ -377,19 +394,20 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 	}
 
 	var (
-		nodeId, bucketId string
-		err              error
+		err                         error
+		nodeId, bucketId, clusterId string
 	)
 	if nodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
 		return err
 	}
 	//TODO: get bucketId via node
-	bucketId, err = adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		opts["from"][0], bucketId)
+	if clusterId, err = adm.LookupClusterId(opts["from"][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/clusters/%s/members/%s", clusterId,
 		nodeId)
@@ -414,12 +432,17 @@ func cmdClusterMemberList(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                 error
+		bucketId, clusterId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(), bucketId)
+	if clusterId, err = adm.LookupClusterId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
 
@@ -479,11 +502,17 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                           error
+		bucketId, clusterId, sourceId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	clusterId := utl.TryGetClusterByUUIDOrName(Client, opts[`from`][0], bucketId)
+	if clusterId, err = adm.LookupClusterId(opts[`from`][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	if pType == `system` {
 		if err := adm.ValidateSystemProperty(
@@ -491,7 +520,6 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	var sourceId string
 	if err := adm.FindClusterPropSrcId(pType, c.Args().First(),
 		opts[`view`][0], clusterId, &sourceId); err != nil {
 		return err

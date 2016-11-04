@@ -741,8 +741,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		if err != nil {
 			return err
 		}
-		objectId = utl.TryGetClusterByUUIDOrName(Client, opts[`to`][0],
-			bucketId)
+		if objectId, err = adm.LookupClusterId(opts[`to`][0],
+			bucketId); err != nil {
+			return err
+		}
 		if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 			return err
 		}
@@ -751,8 +753,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		if err != nil {
 			return err
 		}
-		objectId = utl.TryGetGroupByUUIDOrName(Client, opts[`to`][0],
-			bucketId)
+		if objectId, err = adm.LookupGroupId(opts[`to`][0],
+			bucketId); err != nil {
+			return err
+		}
 		if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 			return err
 		}

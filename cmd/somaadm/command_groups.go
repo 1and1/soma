@@ -232,13 +232,17 @@ func cmdGroupDelete(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err               error
+		bucketId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if groupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/groups/%s", groupId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -261,13 +265,17 @@ func cmdGroupRename(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err               error
+		bucketId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if groupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/groups/%s", groupId)
 
 	var req proto.Request
@@ -306,15 +314,19 @@ func cmdGroupShow(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err               error
+		bucketId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
-	path := fmt.Sprintf("/groups/%s", groupId)
+	if groupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 
+	path := fmt.Sprintf("/groups/%s", groupId)
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
@@ -335,13 +347,17 @@ func cmdGroupTree(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err               error
+		bucketId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if groupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/groups/%s/tree/tree", groupId)
 
 	if resp, err := adm.GetReq(path); err != nil {
@@ -364,19 +380,25 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                         error
+		bucketId, mGroupId, groupId string
+		req                         proto.Request
+		group                       proto.Group
+	)
+	if bucketId, err = adm.LookupBucketId(
+		opts["in"][0]); err != nil {
 		return err
 	}
-	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		opts["to"][0],
-		bucketId)
+	if mGroupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
+	if groupId, err = adm.LookupGroupId(opts["to"][0],
+		bucketId); err != nil {
+		return err
+	}
 
-	var req proto.Request
-	var group proto.Group
 	group.Id = mGroupId
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
@@ -405,19 +427,24 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                           error
+		bucketId, mClusterId, groupId string
+		req                           proto.Request
+		cluster                       proto.Cluster
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		opts["to"][0],
-		bucketId)
+	if mClusterId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
+	if groupId, err = adm.LookupClusterId(opts["to"][0],
+		bucketId); err != nil {
+		return err
+	}
 
-	var req proto.Request
-	var cluster proto.Cluster
 	cluster.Id = mClusterId
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
@@ -449,19 +476,20 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 	var (
 		err                        error
 		bucketId, groupId, mNodeId string
+		req                        proto.Request
+		node                       proto.Node
 	)
-	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
 	if mNodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
 		return err
 	}
-	groupId = utl.TryGetGroupByUUIDOrName(Client,
-		opts["to"][0],
-		bucketId)
+	if groupId, err = adm.LookupGroupId(opts[`to`][0],
+		bucketId); err != nil {
+		return err
+	}
 
-	var req proto.Request
-	var node proto.Node
 	node.Id = mNodeId
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
@@ -490,16 +518,21 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                         error
+		bucketId, mGroupId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
-	mGroupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		opts["from"][0],
-		bucketId)
+	if mGroupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
+	if groupId, err = adm.LookupGroupId(opts[`from`][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mGroupId)
@@ -524,16 +557,21 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                           error
+		bucketId, mClusterId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
-	mClusterId := utl.TryGetClusterByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		opts["from"][0],
-		bucketId)
+	if mClusterId, err = adm.LookupClusterId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
+	if groupId, err = adm.LookupGroupId(opts[`from`][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mClusterId)
@@ -562,15 +600,16 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 		err                        error
 		bucketId, groupId, mNodeId string
 	)
-	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
 	if mNodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
 		return err
 	}
-	groupId = utl.TryGetGroupByUUIDOrName(Client,
-		opts["from"][0],
-		bucketId)
+	if groupId, err = adm.LookupGroupId(opts[`from`][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mNodeId)
@@ -595,16 +634,19 @@ func cmdGroupMemberList(c *cli.Context) error {
 		return err
 	}
 
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err               error
+		bucketId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	groupId := utl.TryGetGroupByUUIDOrName(Client,
-		c.Args().First(),
-		bucketId)
+	if groupId, err = adm.LookupGroupId(c.Args().First(),
+		bucketId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
-
 	if resp, err := adm.GetReq(path); err != nil {
 		return err
 	} else {
@@ -657,11 +699,17 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 		required, c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err               error
+		bucketId, groupId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	groupId := utl.TryGetGroupByUUIDOrName(Client, opts[`from`][0], bucketId)
+	if groupId, err = adm.LookupGroupId(opts[`from`][0],
+		bucketId); err != nil {
+		return err
+	}
 
 	if pType == `system` {
 		if err := adm.ValidateSystemProperty(
