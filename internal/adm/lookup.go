@@ -49,6 +49,46 @@ func LookupTeamId(s string) (string, error) {
 	return teamIdByName(s)
 }
 
+// LookupTeamByBucket looks up the UUID for the team that is
+// the owner of a given bucket s, which can be the name or
+// UUID of the bucket.
+func LookupTeamByBucket(s string) (string, error) {
+	var (
+		bId string
+		err error
+	)
+
+	if !IsUUID(s) {
+		if bId, err = LookupBucketId(s); err != nil {
+			return ``, err
+		}
+	} else {
+		bId = s
+	}
+
+	return teamIdByBucketId(bId)
+}
+
+// LookupTeamByNode looks up the UUID for the team that is
+// the owner of a given node s, which can be the name or
+// UUID of the node.
+func LookupTeamByNode(s string) (string, error) {
+	var (
+		nId string
+		err error
+	)
+
+	if !IsUUID(s) {
+		if nId, err = LookupBucketId(s); err != nil {
+			return ``, err
+		}
+	} else {
+		nId = s
+	}
+
+	return teamIdByNodeId(nId)
+}
+
 // LookupRepoId looks up the UUID for a repository on the server
 // with reponame s. Error is set if no such repository was found
 // or an error occured.
@@ -227,6 +267,58 @@ func teamIdByName(team string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("TeamId lookup failed: %s", err.Error())
+}
+
+// teamIdByBucketId implements the actual serverside lookup of
+// a bucket's TeamId
+func teamIdByBucketId(bucket string) (string, error) {
+	res, err := fetchObjList(fmt.Sprintf("/buckets/%s", bucket))
+	if err != nil {
+		goto abort
+	}
+
+	if res.Buckets == nil || len(*res.Buckets) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	// check the received record against the input
+	if bucket != (*res.Buckets)[0].Id {
+		err = fmt.Errorf("BucketId mismatch: %s vs %s",
+			bucket, (*res.Buckets)[0].Id)
+		goto abort
+	}
+	return (*res.Buckets)[0].TeamId, nil
+
+abort:
+	return ``, fmt.Errorf("TeamId lookup failed: %s",
+		err.Error())
+}
+
+// teamIdByNodeId implements the actual serverside lookup of a
+// node's TeamId
+func teamIdByNodeId(node string) (string, error) {
+	res, err := fetchObjList(fmt.Sprintf("/nodes/%s", node))
+	if err != nil {
+		goto abort
+	}
+
+	if res.Nodes == nil || len(*res.Nodes) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	// check the received record against the input
+	if node != (*res.Nodes)[0].Id {
+		err = fmt.Errorf("NodeId mismatch: %s vs %s",
+			node, (*res.Nodes)[0].Id)
+		goto abort
+	}
+	return (*res.Nodes)[0].TeamId, nil
+
+abort:
+	return ``, fmt.Errorf("TeamId lookup failed: %s",
+		err.Error())
 }
 
 // repoIdByName implements the actual serverside lookup of the

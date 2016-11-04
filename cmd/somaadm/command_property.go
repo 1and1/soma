@@ -805,7 +805,10 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		case `repository`:
 			teamId = utl.GetTeamIdByRepositoryId(Client, repoId)
 		default:
-			teamId = utl.TeamIdForBucket(Client, bucketId)
+			if teamId, err = adm.LookupTeamByBucket(
+				bucketId); err != nil {
+				return err
+			}
 		}
 		// no reason to fill out the attributes, client-provided
 		// attributes are discarded by the server

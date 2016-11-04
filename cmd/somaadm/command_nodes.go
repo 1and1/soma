@@ -522,23 +522,27 @@ func cmdNodeAssign(c *cli.Context) error {
 	var (
 		err                      error
 		bucketId, repoId, nodeId string
+		bucketTId, nodeTId       string
 	)
-	bucketId, err = adm.LookupBucketId(opts["to"][0])
-	if err != nil {
+	if bucketId, err = adm.LookupBucketId(opts["to"][0]); err != nil {
 		return err
 	}
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 		return err
 	}
-	nodeId, err = adm.LookupNodeId(c.Args().First())
-	if err != nil {
+	if nodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
 		return err
 	}
-
-	bucketTeamId := utl.TeamIdForBucket(Client, bucketId)
-	nodeTeamId := utl.TeamIdForNode(Client, nodeId)
-	if bucketTeamId != nodeTeamId {
-		adm.Abort(`Cannot assign node since node and bucket belong to different teams.`)
+	if bucketTId, err = adm.LookupTeamByBucket(bucketId); err != nil {
+		return err
+	}
+	if nodeTId, err = adm.LookupTeamByNode(nodeId); err != nil {
+		return err
+	}
+	if bucketTId != nodeTId {
+		return fmt.Errorf(
+			`Cannot assign node since node and bucket belong to` +
+				` different teams.`)
 	}
 
 	req := proto.Request{}

@@ -52,7 +52,7 @@ func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeCon
 	return (*nodeResult.Nodes)[0].Config
 }
 
-func (u SomaUtil) TeamIdForNode(c *resty.Client, node string) string {
+func (u SomaUtil) teamIdForNode(c *resty.Client, node string) string {
 	nodeId := u.tryGetNodeByUUIDOrName(c, node)
 	resp := u.GetRequest(c, fmt.Sprintf("/nodes/%s", nodeId))
 	res := u.DecodeResultFromResponse(resp)
