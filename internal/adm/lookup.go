@@ -107,6 +107,15 @@ func LookupGrantIdRef(rcptType, rcptId, permId, cat string,
 	return grantIdFromServer(rcptType, rcptId, permId, cat, id)
 }
 
+//
+//
+func LookupMonitoringId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return monitoringIdByName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -380,6 +389,34 @@ func grantIdFromServer(rcptType, rcptId, permId, cat string,
 
 abort:
 	return fmt.Errorf("GrantId lookup failed: %s",
+		err.Error())
+}
+
+//
+//
+func monitoringIdByName(monitoring string) (string, error) {
+	req := proto.NewMonitoringFilter()
+	req.Filter.Monitoring.Name = monitoring
+
+	res, err := fetchFilter(req, `/filter/monitoring/`)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Monitorings == nil || len(*res.Monitorings) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if monitoring != (*res.Monitorings)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			monitoring, (*res.Monitorings)[0].Name)
+		goto abort
+	}
+	return (*res.Monitorings)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("MonitoringId lookup failed: %s",
 		err.Error())
 }
 

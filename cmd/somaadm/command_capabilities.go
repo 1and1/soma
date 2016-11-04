@@ -70,13 +70,15 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 
 	req := proto.Request{
 		Capability: &proto.Capability{
-			MonitoringId: utl.TryGetMonitoringByUUIDOrName(Client,
-				c.Args().First(),
-			),
 			Metric:     opts["metric"][0],
 			View:       opts["view"][0],
 			Thresholds: thresholds,
 		},
+	}
+	var err error
+	req.Capability.MonitoringId, err = adm.LookupMonitoringId(c.Args().First())
+	if err != nil {
+		return err
 	}
 
 	resp := utl.PostRequestWithBody(Client, req, "/capability/")

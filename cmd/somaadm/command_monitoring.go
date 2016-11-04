@@ -91,9 +91,12 @@ func cmdMonitoringDelete(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
+	monitoringId, err := adm.LookupMonitoringId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
-	userId := utl.TryGetMonitoringByUUIDOrName(Client, c.Args().First())
-	path := fmt.Sprintf("/monitoring/%s", userId)
+	path := fmt.Sprintf("/monitoring/%s", monitoringId)
 
 	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
@@ -110,12 +113,12 @@ func cmdMonitoringShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	id := utl.TryGetMonitoringByUUIDOrName(Client, c.Args().First())
 	path := fmt.Sprintf("/monitoring/%s", id)
+	monitoringId, err := adm.LookupMonitoringId(c.Args().First())
+	if err != nil {
+		return err
+	}
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

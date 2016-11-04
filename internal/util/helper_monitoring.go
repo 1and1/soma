@@ -8,7 +8,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetMonitoringByUUIDOrName(c *resty.Client, s string) string {
+func (u *SomaUtil) tryGetMonitoringByUUIDOrName(c *resty.Client, s string) string {
 	if u.isUUID(s) {
 		return s
 	}

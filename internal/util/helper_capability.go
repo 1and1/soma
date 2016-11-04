@@ -23,7 +23,7 @@ func (u *SomaUtil) getCapabilityIdByName(c *resty.Client, capability string) str
 	if len(split) != 3 {
 		u.abort("Capability split failed, name invalid")
 	}
-	req.Filter.Capability.MonitoringId = u.TryGetMonitoringByUUIDOrName(c, split[0])
+	req.Filter.Capability.MonitoringId = u.tryGetMonitoringByUUIDOrName(c, split[0])
 	req.Filter.Capability.View = split[1]
 	req.Filter.Capability.Metric = split[2]
 
