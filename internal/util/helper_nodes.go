@@ -24,7 +24,7 @@ func (u SomaUtil) getNodeIdByName(c *resty.Client, node string) string {
 	}
 
 	resp := u.PostRequestWithBody(c, req, "/filter/nodes/")
-	nodeResult := u.DecodeProtoResultNodeFromResponse(resp)
+	nodeResult := u.decodeProtoResultNodeFromResponse(resp)
 
 	if node != (*nodeResult.Nodes)[0].Name {
 		u.abort("Received result set for incorrect oncall duty")
@@ -32,7 +32,7 @@ func (u SomaUtil) getNodeIdByName(c *resty.Client, node string) string {
 	return (*nodeResult.Nodes)[0].Id
 }
 
-func (u SomaUtil) GetNodeConfigById(c *resty.Client, node string) *proto.NodeConfig {
+func (u SomaUtil) getNodeConfigById(c *resty.Client, node string) *proto.NodeConfig {
 	if !u.isUUID(node) {
 		node = u.getNodeIdByName(c, node)
 	}
@@ -108,7 +108,7 @@ func (u SomaUtil) findSourceForNodeProperty(c *resty.Client, pTyp, pName, view, 
 	return ``
 }
 
-func (u SomaUtil) DecodeProtoResultNodeFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultNodeFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

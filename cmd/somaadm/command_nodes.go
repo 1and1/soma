@@ -684,7 +684,10 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 	if err != nil {
 		return err
 	}
-	config := utl.GetNodeConfigById(Client, nodeId)
+	var config *proto.NodeConfig
+	if config, err = adm.LookupNodeConfig(nodeId); err != nil {
+		return err
+	}
 
 	if pType == `system` {
 		if err := adm.ValidateSystemProperty(

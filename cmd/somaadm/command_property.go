@@ -731,7 +731,9 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		if objectId, err = adm.LookupNodeId(opts[`to`][0]); err != nil {
 			return err
 		}
-		config = utl.GetNodeConfigById(Client, objectId)
+		if config, err = adm.LookupNodeConfig(objectId); err != nil {
+			return err
+		}
 		repoId = config.RepositoryId
 		bucketId = config.BucketId
 	case `cluster`:

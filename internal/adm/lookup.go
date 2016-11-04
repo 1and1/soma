@@ -185,6 +185,25 @@ func LookupNodeId(s string) (string, error) {
 	return nodeIdByName(s)
 }
 
+// LookupNodeConfig looks up the node repo/bucket configuration
+// given the name or UUID s of the node.
+func LookupNodeConfig(s string) (*proto.NodeConfig, error) {
+	var (
+		nId string
+		err error
+	)
+
+	if !IsUUID(s) {
+		if nId, err = LookupNodeId(s); err != nil {
+			return nil, err
+		}
+	} else {
+		nId = s
+	}
+
+	return nodeConfigById(nId)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -591,6 +610,48 @@ func nodeIdByName(node string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("NodeId lookup failed: %s",
+		err.Error())
+}
+
+// nodeConfigById implements the actual lookup of the node's repo
+// and bucket assignment information from the server
+func nodeConfigById(node string) (*proto.NodeConfig, error) {
+	path := fmt.Sprintf("/nodes/%s/config", node)
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	if resp, err = GetReq(path); err != nil {
+		goto abort
+	}
+	if res, err = decodeResponse(resp); err != nil {
+		goto abort
+	}
+	if res.StatusCode == 404 {
+		err = fmt.Errorf(`Node is not assigned to a configuration` +
+			` repository yet.`)
+		goto abort
+	}
+	if err = checkApplicationError(res); err != nil {
+		goto abort
+	}
+
+	if res.Nodes == nil || len(*res.Nodes) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	// check the received record against the input
+	if node != (*res.Nodes)[0].Id {
+		err = fmt.Errorf("NodeId mismatch: %s vs %s",
+			node, (*res.Nodes)[0].Id)
+		goto abort
+	}
+	return (*res.Nodes)[0].Config, nil
+
+abort:
+	return nil, fmt.Errorf("NodeConfig lookup failed: %s",
 		err.Error())
 }
 
