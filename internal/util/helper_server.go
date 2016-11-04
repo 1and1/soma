@@ -80,7 +80,7 @@ func (u SomaUtil) getServerIdByName(cache *db.DB, c *resty.Client, server string
 	return (*serverResult.Servers)[0].Id
 }
 
-func (u SomaUtil) GetServerAssetIdByName(c *resty.Client, serverName string) uint64 {
+func (u SomaUtil) getServerAssetIdByName(c *resty.Client, serverName string) uint64 {
 	req := proto.NewServerFilter()
 	req.Filter.Server.Name = serverName
 	req.Filter.Server.IsOnline = true

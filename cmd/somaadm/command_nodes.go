@@ -450,13 +450,15 @@ func cmdNodeMove(c *cli.Context) error {
 		}
 	}
 	server := opts[`to`][0]
-	// try resolving server name to uuid as name validation
-	_ = utl.GetServerAssetIdByName(Client, server)
+	serverId, err := adm.LookupServerId(server)
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/nodes/%s", id)
 
 	req := proto.Request{}
 	req.Node = &proto.Node{}
-	req.Node.ServerId = server
+	req.Node.ServerId = serverId
 
 	if resp, err := adm.PatchReqBody(req, path); err != nil {
 		return err
