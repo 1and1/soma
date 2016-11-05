@@ -9,7 +9,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u *SomaUtil) TryGetCapabilityByUUIDOrName(c *resty.Client, s string) string {
+func (u *SomaUtil) tryGetCapabilityByUUIDOrName(c *resty.Client, s string) string {
 	if u.isUUID(s) {
 		return s
 	}
@@ -55,7 +55,7 @@ func (u *SomaUtil) getCapabilityIdByName(c *resty.Client, capability string) str
 	return (*result.Capabilities)[0].Id
 }
 
-func (u *SomaUtil) DecodeProtoResultCapabilityFromResponse(resp *resty.Response) *proto.Result {
+func (u *SomaUtil) decodeProtoResultCapabilityFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

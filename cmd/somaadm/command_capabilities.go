@@ -91,8 +91,13 @@ func cmdCapabilityRevoke(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
-	path := fmt.Sprintf("/capability/%s", id)
+	var path string
+	if id, err := adm.LookupCapabilityId(
+		c.Args().First()); err != nil {
+		return err
+	} else {
+		path = fmt.Sprintf("/capability/%s", id)
+	}
 
 	resp := utl.DeleteRequest(Client, path)
 	fmt.Println(resp)
@@ -113,8 +118,13 @@ func cmdCapabilityShow(c *cli.Context) error {
 		return err
 	}
 
-	id := utl.TryGetCapabilityByUUIDOrName(Client, c.Args().First())
-	path := fmt.Sprintf("/capability/%s", id)
+	var path string
+	if id, err := adm.LookupCapabilityId(
+		c.Args().First()); err != nil {
+		return err
+	} else {
+		path = fmt.Sprintf("/capability/%s", id)
+	}
 
 	resp := utl.GetRequest(Client, path)
 	fmt.Println(resp)

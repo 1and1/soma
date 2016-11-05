@@ -55,21 +55,24 @@ func registerChecks(app cli.App) *cli.App {
 func cmdCheckAdd(c *cli.Context) error {
 	opts, constraints, thresholds := utl.ParseVariadicCheckArguments(c.Args().Tail())
 
-	req := proto.Request{}
-	req.CheckConfig = &proto.CheckConfig{
-		CapabilityId: utl.TryGetCapabilityByUUIDOrName(Client, opts["with"][0]),
-		ObjectType:   opts["on/type"][0],
-	}
-	if err := adm.ValidateLBoundUint64(opts["interval"][0],
+	var (
+		err    error
+		teamId string
+	)
+	req := proto.NewCheckConfigRequest()
+	if err = adm.ValidateLBoundUint64(opts["interval"][0],
 		&req.CheckConfig.Interval, 1); err != nil {
 		return err
 	}
-	if err := adm.ValidateRuneCount(c.Args().First(), 256); err != nil {
+	if err = adm.ValidateRuneCount(c.Args().First(), 256); err != nil {
 		return err
 	}
+	if req.CheckConfig.CapabilityId, err = adm.LookupCapabilityId(
+		opts[`with`][0]); err != nil {
+		return err
+	}
+	req.CheckConfig.ObjectType = opts[`on/type`][0]
 	req.CheckConfig.Name = c.Args().First()
-	var err error
-	var teamId string
 	req.CheckConfig.BucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
 		return err

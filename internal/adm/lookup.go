@@ -11,6 +11,7 @@ package adm
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/1and1/soma/lib/proto"
 	resty "gopkg.in/resty.v0"
@@ -241,6 +242,15 @@ func LookupNodeId(s string) (string, error) {
 		return s, nil
 	}
 	return nodeIdByName(s)
+}
+
+// LookupCapabilityId looks up the UUID of the capability with the
+// name s. Returns immediately if s is a UUID.
+func LookupCapabilityId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return capabilityIdByName(s)
 }
 
 // LookupNodeConfig looks up the node repo/bucket configuration
@@ -790,6 +800,46 @@ func nodeConfigById(node string) (*proto.NodeConfig, error) {
 
 abort:
 	return nil, fmt.Errorf("NodeConfig lookup failed: %s",
+		err.Error())
+}
+
+// capabilityIdByName implements the actual lookup of the capability
+// UUID from the server
+func capabilityIdByName(cap string) (string, error) {
+	var err error
+	var res *proto.Result
+	req := proto.NewCapabilityFilter()
+
+	split := strings.SplitN(cap, ".", 3)
+	if len(split) != 3 {
+		err = fmt.Errorf(`Capability split failed, name invalid`)
+		goto abort
+	}
+	if req.Filter.Capability.MonitoringId, err = LookupMonitoringId(
+		split[0]); err != nil {
+		goto abort
+	}
+	req.Filter.Capability.View = split[1]
+	req.Filter.Capability.Metric = split[2]
+
+	if res, err = fetchFilter(req, `/filter/capability/`); err != nil {
+		goto abort
+	}
+
+	if res.Capabilities == nil || len(*res.Capabilities) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if cap != (*res.Capabilities)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			cap, (*res.Capabilities)[0].Name)
+		goto abort
+	}
+	return (*res.Capabilities)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("CapabilityId lookup failed: %s",
 		err.Error())
 }
 
