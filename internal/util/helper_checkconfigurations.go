@@ -95,7 +95,7 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 	return clean
 }
 
-func (u *SomaUtil) TryGetCheckByUUIDOrName(c *resty.Client, ck string, r string) string {
+func (u *SomaUtil) tryGetCheckByUUIDOrName(c *resty.Client, ck string, r string) string {
 	if u.isUUID(ck) {
 		return ck
 	}
@@ -114,7 +114,7 @@ func (u *SomaUtil) getCheckByName(c *resty.Client, ck string, r string) string {
 
 	path := fmt.Sprintf("/filter/checks/%s/", repo)
 	resp := u.PostRequestWithBody(c, req, path)
-	checkResult := u.DecodeCheckConfigurationResultFromResponse(resp)
+	checkResult := u.decodeCheckConfigurationResultFromResponse(resp)
 
 	if ck != (*checkResult.CheckConfigs)[0].Name {
 		u.abort("Received result set for incorrect check configuration")
@@ -122,7 +122,7 @@ func (u *SomaUtil) getCheckByName(c *resty.Client, ck string, r string) string {
 	return (*checkResult.CheckConfigs)[0].Id
 }
 
-func (u *SomaUtil) DecodeCheckConfigurationResultFromResponse(resp *resty.Response) *proto.Result {
+func (u *SomaUtil) decodeCheckConfigurationResultFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

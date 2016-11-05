@@ -168,7 +168,10 @@ func cmdCheckDelete(c *cli.Context) error {
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 		return err
 	}
-	checkId = utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
+	if checkId, err = adm.LookupCheckConfigId(c.Args().First(),
+		repoId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -228,15 +231,20 @@ func cmdCheckShow(c *cli.Context) error {
 		c.Args().Tail()); err != nil {
 		return err
 	}
-	bucketId, err := adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	var (
+		err                       error
+		bucketId, repoId, checkId string
+	)
+	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
 		return err
 	}
-	var repoId string
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 		return err
 	}
-	checkId := utl.TryGetCheckByUUIDOrName(Client, c.Args().First(), repoId)
+	if checkId, err = adm.LookupCheckConfigId(c.Args().First(),
+		repoId); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
 	if resp, err := adm.GetReq(path); err != nil {

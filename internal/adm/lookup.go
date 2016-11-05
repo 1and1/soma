@@ -272,6 +272,21 @@ func LookupNodeConfig(s string) (*proto.NodeConfig, error) {
 	return nodeConfigById(nId)
 }
 
+// LookupCheckConfigId looks up the UUID of check configuration s
+// in Repository repo. Returns immediately if s is a UUID.
+func LookupCheckConfigId(s, repo string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	var rId string
+	if r, err := LookupRepoId(repo); err != nil {
+		return ``, err
+	} else {
+		rId = r
+	}
+	return checkConfigIdByName(s, rId)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -840,6 +855,35 @@ func capabilityIdByName(cap string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("CapabilityId lookup failed: %s",
+		err.Error())
+}
+
+// checkConfigIdByName implements the actual lookup of the check
+// configuration's UUID from the server
+func checkConfigIdByName(check, repo string) (string, error) {
+	req := proto.NewCheckConfigFilter()
+	req.Filter.CheckConfig.Name = check
+
+	res, err := fetchFilter(req, fmt.Sprintf(
+		"/filter/checks/%s/", repo))
+	if err != nil {
+		goto abort
+	}
+
+	if res.CheckConfigs == nil || len(*res.CheckConfigs) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if check != (*res.CheckConfigs)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			check, (*res.CheckConfigs)[0].Name)
+		goto abort
+	}
+	return (*res.CheckConfigs)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("CheckConfigId lookup failed: %s",
 		err.Error())
 }
 
