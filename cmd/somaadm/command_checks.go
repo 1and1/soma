@@ -69,6 +69,7 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 	req.CheckConfig.Name = c.Args().First()
 	var err error
+	var teamId string
 	req.CheckConfig.BucketId, err = adm.LookupBucketId(opts["in"][0])
 	if err != nil {
 		return err
@@ -118,7 +119,10 @@ func cmdCheckAdd(c *cli.Context) error {
 		req.CheckConfig.ExternalId = ex[0]
 	}
 
-	teamId := utl.GetTeamIdByRepositoryId(Client, req.CheckConfig.RepositoryId)
+	if teamId, err = adm.LookupTeamByRepo(
+		req.CheckConfig.RepositoryId); err != nil {
+		return err
+	}
 
 	req.CheckConfig.Thresholds = utl.CleanThresholds(Client, thresholds)
 	req.CheckConfig.Constraints = utl.CleanConstraints(

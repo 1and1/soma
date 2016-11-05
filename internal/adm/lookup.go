@@ -49,6 +49,26 @@ func LookupTeamId(s string) (string, error) {
 	return teamIdByName(s)
 }
 
+// LookupTeamByRepo looks up the UUID for the team that is the
+// owner of a given repository s, which can be the name or UUID
+// of the repository.
+func LookupTeamByRepo(s string) (string, error) {
+	var (
+		bId string
+		err error
+	)
+
+	if !IsUUID(s) {
+		if bId, err = LookupRepoId(s); err != nil {
+			return ``, err
+		}
+	} else {
+		bId = s
+	}
+
+	return teamIdByRepoId(bId)
+}
+
 // LookupTeamByBucket looks up the UUID for the team that is
 // the owner of a given bucket s, which can be the name or
 // UUID of the bucket.
@@ -324,6 +344,32 @@ func teamIdByName(team string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("TeamId lookup failed: %s", err.Error())
+}
+
+// teamIdByRepoId implements the actual serverside lookup of
+// a repository's TeamId
+func teamIdByRepoId(repo string) (string, error) {
+	res, err := fetchObjList(fmt.Sprintf("/repository/%s", repo))
+	if err != nil {
+		goto abort
+	}
+
+	if res.Repositories == nil || len(*res.Repositories) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	// check the received record against the input
+	if repo != (*res.Repositories)[0].Id {
+		err = fmt.Errorf("RepositoryId mismatch: %s vs %s",
+			repo, (*res.Repositories)[0].Id)
+		goto abort
+	}
+	return (*res.Repositories)[0].TeamId, nil
+
+abort:
+	return ``, fmt.Errorf("TeamId lookup failed: %s",
+		err.Error())
 }
 
 // teamIdByBucketId implements the actual serverside lookup of

@@ -809,7 +809,9 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		var teamId string
 		switch oType {
 		case `repository`:
-			teamId = utl.GetTeamIdByRepositoryId(Client, repoId)
+			if teamId, err = adm.LookupTeamByRepo(repoId); err != nil {
+				return err
+			}
 		default:
 			if teamId, err = adm.LookupTeamByBucket(
 				bucketId); err != nil {

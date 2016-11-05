@@ -32,7 +32,7 @@ func (u SomaUtil) getRepositoryIdByName(c *resty.Client, repo string) string {
 	return (*repoResult.Repositories)[0].Id
 }
 
-func (u SomaUtil) GetTeamIdByRepositoryId(c *resty.Client, repo string) string {
+func (u SomaUtil) getTeamIdByRepositoryId(c *resty.Client, repo string) string {
 	repoId := u.tryGetRepositoryByUUIDOrName(c, repo)
 
 	resp := u.GetRequest(c, fmt.Sprintf("/repository/%s", repoId))
