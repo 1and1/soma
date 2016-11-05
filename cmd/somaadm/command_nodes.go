@@ -190,16 +190,20 @@ func registerNodes(app cli.App) *cli.App {
 
 func cmdNodeAdd(c *cli.Context) error {
 	opts := map[string][]string{}
-	multKeys := []string{}
 	uniqKeys := []string{`assetid`, `name`, `team`, `server`, `online`}
 	reqKeys := []string{`assetid`, `name`, `team`}
 
-	if err := adm.ParseVariadicArguments(opts, multKeys, uniqKeys, reqKeys,
-		adm.AllArguments(c)); err != nil {
+	var err error
+	if err = adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		uniqKeys,
+		reqKeys,
+		adm.AllArguments(c),
+	); err != nil {
 		return err
 	}
-	req := proto.Request{}
-	req.Node = &proto.Node{}
+	req := proto.NewNodeRequest()
 
 	if _, ok := opts[`online`]; ok {
 		if err := adm.ValidateBool(opts[`online`][0],
@@ -210,79 +214,71 @@ func cmdNodeAdd(c *cli.Context) error {
 		req.Node.IsOnline = true
 	}
 	if _, ok := opts[`server`]; ok {
-		{
-			var err error
-			if req.Node.ServerId, err = adm.LookupServerId(opts[`server`][0]); err != nil {
-				return err
-			}
+		if req.Node.ServerId, err = adm.LookupServerId(
+			opts[`server`][0]); err != nil {
+			return err
 		}
 	}
-	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
+	if err = adm.ValidateLBoundUint64(opts[`assetid`][0],
 		&req.Node.AssetId, 1); err != nil {
 		return err
 	}
 	req.Node.Name = opts[`name`][0]
-	var err error
-	req.Node.TeamId, err = adm.LookupTeamId(opts[`team`][0])
-	if err != nil {
+	if req.Node.TeamId, err = adm.LookupTeamId(
+		opts[`team`][0]); err != nil {
 		return nil
 	}
 
-	if resp, err := adm.PostReqBody(req, "/nodes/"); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`postbody`, `/nodes/`, `command`, req, c)
 }
 
 func cmdNodeUpdate(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
-	required := []string{`name`, `assetid`, `server`, `team`, `online`, `deleted`}
+	unique := []string{`name`, `assetid`, `server`, `team`,
+		`online`, `deleted`}
+	required := []string{`name`, `assetid`, `server`, `team`,
+		`online`, `deleted`}
 	opts := map[string][]string{}
 
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	var err error
+	if err = adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
 	req := proto.NewNodeRequest()
 	if !adm.IsUUID(c.Args().First()) {
-		return fmt.Errorf(`Node/update command requires UUID as first argument`)
+		return fmt.Errorf(
+			`Node/update command requires UUID as first argument`)
 	}
 	req.Node.Id = c.Args().First()
 	req.Node.Name = opts[`name`][0]
-	if err := adm.ValidateBool(opts[`online`][0],
+	if err = adm.ValidateBool(opts[`online`][0],
 		&req.Node.IsOnline); err != nil {
 		return err
 	}
-	if err := adm.ValidateBool(opts[`deleted`][0],
+	if err = adm.ValidateBool(opts[`deleted`][0],
 		&req.Node.IsDeleted); err != nil {
 		return err
 	}
-	{
-		var err error
-		if req.Node.ServerId, err = adm.LookupServerId(opts[`server`][0]); err != nil {
-			return err
-		}
+	if req.Node.ServerId, err = adm.LookupServerId(
+		opts[`server`][0]); err != nil {
+		return err
 	}
-	if err := adm.ValidateLBoundUint64(opts[`assetid`][0],
+	if err = adm.ValidateLBoundUint64(opts[`assetid`][0],
 		&req.Node.AssetId, 1); err != nil {
 		return err
 	}
-	{
-		var err error
-		req.Node.TeamId, err = adm.LookupTeamId(opts[`team`][0])
-		if err != nil {
-			return err
-		}
+	if req.Node.TeamId, err = adm.LookupTeamId(
+		opts[`team`][0]); err != nil {
+		return err
 	}
 	path := fmt.Sprintf("/nodes/%s", req.Node.Id)
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdNodeDel(c *cli.Context) error {
@@ -296,11 +292,7 @@ func cmdNodeDel(c *cli.Context) error {
 		path = fmt.Sprintf("/nodes/%s", id)
 	}
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdNodePurge(c *cli.Context) error {
@@ -330,11 +322,7 @@ func cmdNodePurge(c *cli.Context) error {
 		},
 	}
 
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 func cmdNodeRestore(c *cli.Context) error {
@@ -364,11 +352,7 @@ func cmdNodeRestore(c *cli.Context) error {
 		},
 	}
 
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 func cmdNodeRename(c *cli.Context) error {
@@ -388,15 +372,10 @@ func cmdNodeRename(c *cli.Context) error {
 		path = fmt.Sprintf("/nodes/%s", id)
 	}
 
-	req := proto.Request{}
-	req.Node = &proto.Node{}
+	req := proto.NewNodeRequest()
 	req.Node.Name = opts[`to`][0]
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdNodeRepo(c *cli.Context) error {
@@ -425,11 +404,7 @@ func cmdNodeRepo(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.TeamId = teamId
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdNodeMove(c *cli.Context) error {
@@ -460,11 +435,7 @@ func cmdNodeMove(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.ServerId = serverId
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdNodeOnline(c *cli.Context) error {
@@ -481,11 +452,7 @@ func cmdNodeOnline(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.IsOnline = true
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdNodeOffline(c *cli.Context) error {
@@ -502,11 +469,7 @@ func cmdNodeOffline(c *cli.Context) error {
 	req.Node = &proto.Node{}
 	req.Node.IsOnline = false
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdNodeAssign(c *cli.Context) error {
@@ -515,8 +478,13 @@ func cmdNodeAssign(c *cli.Context) error {
 	required := []string{"to"}
 
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		multiple,
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 	var (
@@ -545,19 +513,14 @@ func cmdNodeAssign(c *cli.Context) error {
 				` different teams.`)
 	}
 
-	req := proto.Request{}
-	req.Node = &proto.Node{}
+	req := proto.NewNodeRequest()
 	req.Node.Id = nodeId
 	req.Node.Config = &proto.NodeConfig{}
 	req.Node.Config.RepositoryId = repoId
 	req.Node.Config.BucketId = bucketId
 
 	path := fmt.Sprintf("/nodes/%s/config", nodeId)
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdNodeList(c *cli.Context) error {
@@ -565,11 +528,7 @@ func cmdNodeList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq("/nodes/"); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/nodes/`, `list`, nil, c)
 }
 
 func cmdNodeShow(c *cli.Context) error {
@@ -580,13 +539,9 @@ func cmdNodeShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/nodes/%s", id)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	path := fmt.Sprintf("/nodes/%s", id)
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdNodeTree(c *cli.Context) error {
@@ -597,13 +552,9 @@ func cmdNodeTree(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/nodes/%s/tree/tree", id)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `tree`)
-	}
+	path := fmt.Sprintf("/nodes/%s/tree/tree", id)
+	return adm.Perform(`get`, path, `tree`, nil, c)
 }
 
 func cmdNodeSync(c *cli.Context) error {
@@ -611,11 +562,7 @@ func cmdNodeSync(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/sync/nodes/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`get`, `/sync/nodes/`, `list`, nil, c)
 }
 
 func cmdNodeConfig(c *cli.Context) error {
@@ -626,13 +573,9 @@ func cmdNodeConfig(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/nodes/%s/config", id)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	path := fmt.Sprintf("/nodes/%s/config", id)
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdNodeSystemPropertyAdd(c *cli.Context) error {
@@ -672,31 +615,36 @@ func cmdNodeCustomPropertyDelete(c *cli.Context) error {
 }
 
 func cmdNodePropertyDelete(c *cli.Context, pType string) error {
-	multiple := []string{}
 	unique := []string{`from`, `view`}
 	required := []string{`from`, `view`}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
-	nodeId, err := adm.LookupNodeId(c.Args().First())
-	if err != nil {
+	var (
+		err              error
+		nodeId, sourceId string
+		config           *proto.NodeConfig
+	)
+	if nodeId, err = adm.LookupNodeId(c.Args().First()); err != nil {
 		return err
 	}
-	var config *proto.NodeConfig
 	if config, err = adm.LookupNodeConfig(nodeId); err != nil {
 		return err
 	}
-
 	if pType == `system` {
 		if err := adm.ValidateSystemProperty(
 			c.Args().First()); err != nil {
 			return err
 		}
 	}
-	var sourceId string
-	if err := adm.FindNodePropSrcId(pType, c.Args().First(),
+	if err = adm.FindNodePropSrcId(pType, c.Args().First(),
 		opts[`view`][0], nodeId, &sourceId); err != nil {
 		return err
 	}
@@ -704,14 +652,10 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 	req := proto.NewNodeRequest()
 	req.Node.Id = nodeId
 	req.Node.Config = config
+
 	path := fmt.Sprintf("/nodes/%s/property/%s/%s",
 		nodeId, pType, sourceId)
-
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
