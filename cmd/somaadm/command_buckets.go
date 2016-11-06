@@ -76,6 +76,11 @@ func registerBuckets(app cli.App) *cli.App {
 						Action: runtime(cmdBucketTree),
 					},
 					{
+						Name:   `instances`,
+						Usage:  `List check instances for a bucket`,
+						Action: runtime(cmdBucketInstance),
+					},
+					{
 						Name:  "property",
 						Usage: "SUBCOMMANDS for properties",
 						Subcommands: []cli.Command{
@@ -354,6 +359,19 @@ func cmdBucketShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/buckets/%s", bucketId)
 	return adm.Perform(`get`, path, `show`, nil, c)
+}
+
+func cmdBucketInstance(c *cli.Context) error {
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
+	bucketId, err := adm.LookupBucketId(c.Args().First())
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/buckets/%s/instances/", bucketId)
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdBucketTree(c *cli.Context) error {

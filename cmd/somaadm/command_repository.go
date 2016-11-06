@@ -76,6 +76,11 @@ func registerRepository(app cli.App) *cli.App {
 						Action: runtime(cmdRepositoryTree),
 					},
 					{
+						Name:   `instances`,
+						Usage:  `List check instances for a repository`,
+						Action: runtime(cmdRepositoryInstance),
+					},
+					{
 						Name:  "property",
 						Usage: "SUBCOMMANDS for properties",
 						Subcommands: []cli.Command{
@@ -343,6 +348,19 @@ func cmdRepositoryShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/repository/%s", id)
 	return adm.Perform(`get`, path, `show`, nil, c)
+}
+
+func cmdRepositoryInstance(c *cli.Context) error {
+	if err := adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
+	id, err := adm.LookupRepoId(c.Args().First())
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/repository/%s/instances/", id)
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdRepositoryTree(c *cli.Context) error {
