@@ -76,14 +76,12 @@ func cmdCapabilityDeclare(c *cli.Context) error {
 		},
 	}
 	var err error
-	req.Capability.MonitoringId, err = adm.LookupMonitoringId(c.Args().First())
-	if err != nil {
+	if req.Capability.MonitoringId, err = adm.LookupMonitoringId(
+		c.Args().First()); err != nil {
 		return err
 	}
 
-	resp := utl.PostRequestWithBody(Client, req, "/capability/")
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`postbody`, `/capability/`, `command`, req, c)
 }
 
 func cmdCapabilityRevoke(c *cli.Context) error {
@@ -99,18 +97,15 @@ func cmdCapabilityRevoke(c *cli.Context) error {
 		path = fmt.Sprintf("/capability/%s", id)
 	}
 
-	resp := utl.DeleteRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdCapabilityList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	resp := utl.GetRequest(Client, "/capability/")
-	fmt.Println(resp)
-	return nil
+
+	return adm.Perform(`get`, `/capability/`, `list`, nil, c)
 }
 
 func cmdCapabilityShow(c *cli.Context) error {
@@ -126,9 +121,7 @@ func cmdCapabilityShow(c *cli.Context) error {
 		path = fmt.Sprintf("/capability/%s", id)
 	}
 
-	resp := utl.GetRequest(Client, path)
-	fmt.Println(resp)
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
