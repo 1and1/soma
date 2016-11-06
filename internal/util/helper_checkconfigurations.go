@@ -73,7 +73,7 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 			})
 		case "service":
 			so := proto.PropertyService{
-				Name:   u.TryGetServicePropertyByUUIDOrName(c, prop.Service.Name, teamId),
+				Name:   u.tryGetServicePropertyByUUIDOrName(c, prop.Service.Name, teamId),
 				TeamId: teamId,
 			}
 			clean = append(clean, proto.CheckConfigConstraint{

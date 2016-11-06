@@ -302,6 +302,21 @@ func LookupCustomPropertyId(s, repo string) (string, error) {
 	return propertyIdByName(`custom`, s, rId)
 }
 
+// LookupServicePropertyId looks up the id of a service property s
+// of team team.
+func LookupServicePropertyId(s, team string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	var tId string
+	if t, err := LookupTeamId(team); err != nil {
+		return ``, err
+	} else {
+		tId = t
+	}
+	return propertyIdByName(`service`, s, tId)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -916,6 +931,9 @@ func propertyIdByName(pType, pName, refId string) (string, error) {
 		// custom properties are per-repository
 		req.Filter.Property.RepositoryId = refId
 		path = fmt.Sprintf("/filter/property/custom/%s/", refId)
+	case `service`:
+		path = fmt.Sprintf("/filter/property/service/team/%s/",
+			refId)
 	}
 
 	res, err := fetchFilter(req, path)
@@ -941,6 +959,18 @@ func propertyIdByName(pType, pName, refId string) (string, error) {
 			goto abort
 		}
 		return (*res.Properties)[0].Custom.Id, nil
+	case `service`:
+		if pName != (*res.Properties)[0].Service.Name {
+			err = fmt.Errorf("Name mismatch: %s vs %s",
+				pName, (*res.Properties)[0].Service.Name)
+			goto abort
+		}
+		if refId != (*res.Properties)[0].Service.TeamId {
+			err = fmt.Errorf("TeamId mismatch: %s vs %s",
+				refId, (*res.Properties)[0].Service.TeamId)
+			goto abort
+		}
+		return (*res.Properties)[0].Service.Name, nil
 	default:
 		err = fmt.Errorf("Unknown property type: %s", pType)
 	}

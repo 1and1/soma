@@ -14,7 +14,7 @@ func (u SomaUtil) tryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r 
 	return u.getPropertyIdByName(c, "custom", s, r)
 }
 
-func (u SomaUtil) TryGetServicePropertyByUUIDOrName(c *resty.Client, s string, t string) string {
+func (u SomaUtil) tryGetServicePropertyByUUIDOrName(c *resty.Client, s string, t string) string {
 	if u.isUUID(s) {
 		return s
 	}

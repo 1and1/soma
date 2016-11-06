@@ -459,8 +459,11 @@ func cmdPropertyServiceDelete(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	propId := utl.TryGetServicePropertyByUUIDOrName(Client,
+	propId, err := adm.LookupServicePropertyId(
 		c.Args().First(), teamId)
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -556,8 +559,11 @@ func cmdPropertyServiceShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	propId := utl.TryGetServicePropertyByUUIDOrName(Client,
+	propId, err := adm.LookupServicePropertyId(
 		c.Args().First(), teamId)
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
 	if resp, err := adm.GetReq(path); err != nil {
