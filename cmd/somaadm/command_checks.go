@@ -128,11 +128,13 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 
 	req.CheckConfig.Thresholds = utl.CleanThresholds(Client, thresholds)
-	req.CheckConfig.Constraints = utl.CleanConstraints(
-		Client,
-		constraints,
+	if req.CheckConfig.Constraints, err = adm.ValidateCheckConstraints(
 		req.CheckConfig.RepositoryId,
-		teamId)
+		teamId,
+		constraints,
+	); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
 	if resp, err := adm.PostReqBody(req, path); err != nil {

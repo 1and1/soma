@@ -188,6 +188,92 @@ func ValidateEnvironment(s string) error {
 	return fmt.Errorf("Invalid environment requested: %s", s)
 }
 
+// ValidateCheckConstraints tests that all specified check constraints
+// resolve to a valid property or attribute.
+func ValidateCheckConstraints(repoId, teamId string,
+	constraints []proto.CheckConfigConstraint) (
+	[]proto.CheckConfigConstraint, error) {
+	valid := []proto.CheckConfigConstraint{}
+
+	for _, prop := range constraints {
+		switch prop.ConstraintType {
+		case `native`:
+			if _, err := fetchObjList(
+				fmt.Sprintf("/property/native/%s", prop.Native.Name),
+			); err != nil {
+				return nil, err
+			}
+			valid = append(valid, prop)
+
+		case `system`:
+			if _, err := fetchObjList(
+				fmt.Sprintf("/property/system/%s", prop.System.Name),
+			); err != nil {
+				return nil, err
+			}
+			valid = append(valid, prop)
+
+		case `attribute`:
+			if _, err := fetchObjList(
+				fmt.Sprintf("/attributes/%s", prop.Attribute.Name),
+			); err != nil {
+				return nil, err
+			}
+			valid = append(valid, prop)
+
+		case `oncall`:
+			oncall := proto.PropertyOncall{}
+			var err error
+			if prop.Oncall.Name != `` {
+				if oncall.Id, err = LookupOncallId(
+					prop.Oncall.Name); err != nil {
+					return nil, err
+				}
+			} else if prop.Oncall.Id != `` {
+				if oncall.Id, err = LookupOncallId(
+					prop.Oncall.Id); err != nil {
+					return nil, err
+				}
+			} else {
+				return nil, fmt.Errorf(
+					`Invalid oncall constraint spec`)
+			}
+			valid = append(valid, proto.CheckConfigConstraint{
+				ConstraintType: prop.ConstraintType,
+				Oncall:         &oncall,
+			})
+
+		case `service`:
+			service := proto.PropertyService{}
+			var err error
+			if service.Name, err = LookupServicePropertyId(
+				prop.Service.Name, teamId); err != nil {
+				return nil, err
+			}
+			service.TeamId = teamId
+			valid = append(valid, proto.CheckConfigConstraint{
+				ConstraintType: prop.ConstraintType,
+				Service:        &service,
+			})
+
+		case `custom`:
+			custom := proto.PropertyCustom{}
+			var err error
+			if custom.Id, err = LookupCustomPropertyId(
+				prop.Custom.Name, repoId); err != nil {
+				return nil, err
+			}
+			custom.RepositoryId = repoId
+			custom.Value = prop.Custom.Value
+			valid = append(valid, proto.CheckConfigConstraint{
+				ConstraintType: prop.ConstraintType,
+				Custom:         &custom,
+			})
+		}
+	}
+	return valid, nil
+}
+
 // fetchObjList is a helper for ValidateUnit and ValidateProvider
 func fetchObjList(path string) (*proto.Result, error) {
 	var (

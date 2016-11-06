@@ -43,7 +43,7 @@ func (u SomaUtil) CleanThresholds(c *resty.Client, thresholds []proto.CheckConfi
 	return clean
 }
 
-func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckConfigConstraint, repoId string, teamId string) []proto.CheckConfigConstraint {
+func (u SomaUtil) cleanConstraints(c *resty.Client, constraints []proto.CheckConfigConstraint, repoId string, teamId string) []proto.CheckConfigConstraint {
 	clean := []proto.CheckConfigConstraint{}
 
 	for _, prop := range constraints {
