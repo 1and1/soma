@@ -276,7 +276,7 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/users/%s", userId)
-	return adm.Perform(`deletebody`, path, `command`, nil, c)
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 func cmdUserActivate(c *cli.Context) error {
