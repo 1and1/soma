@@ -402,8 +402,11 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 		return err
 	}
 
-	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(),
-		repoId)
+	propId, err := adm.LookupCustomPropertyId(
+		c.Args().First(), repoId)
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId, propId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -499,8 +502,10 @@ func cmdPropertyCustomShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	propId := utl.TryGetCustomPropertyByUUIDOrName(Client, c.Args().First(),
-		repoId)
+	propId, err := adm.LookupCustomPropertyId(c.Args().First(), repoId)
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId,
 		propId)
 	if resp, err := adm.GetReq(path); err != nil {
@@ -838,8 +843,12 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			oncallId,
 		)
 	case `custom`:
-		customId := utl.TryGetCustomPropertyByUUIDOrName(
-			Client, c.Args().First(), repoId)
+		customId, err := adm.LookupCustomPropertyId(
+			c.Args().First(), repoId)
+		if err != nil {
+			return err
+		}
+
 		prop.Custom = &proto.PropertyCustom{
 			Id:           customId,
 			Name:         c.Args().First(),

@@ -7,7 +7,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) TryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r string) string {
+func (u SomaUtil) tryGetCustomPropertyByUUIDOrName(c *resty.Client, s string, r string) string {
 	if u.isUUID(s) {
 		return s
 	}
@@ -69,7 +69,7 @@ func (u SomaUtil) getPropertyIdByName(c *resty.Client, pType string, prop string
 	}
 
 	resp := u.PostRequestWithBody(c, req, path)
-	res := u.DecodeProtoResultPropertyFromResponse(resp)
+	res := u.decodeProtoResultPropertyFromResponse(resp)
 
 	if res.Properties == nil || *res.Properties == nil {
 		u.abort("Property lookup result contained no properties")
@@ -113,7 +113,7 @@ fail:
 
 func (u SomaUtil) checkStringIsSystemProperty(c *resty.Client, s string) {
 	resp := u.GetRequest(c, "/property/system/")
-	res := u.DecodeProtoResultPropertyFromResponse(resp)
+	res := u.decodeProtoResultPropertyFromResponse(resp)
 
 	for _, prop := range *res.Properties {
 		if prop.System.Name == s {
@@ -123,7 +123,7 @@ func (u SomaUtil) checkStringIsSystemProperty(c *resty.Client, s string) {
 	u.abort(fmt.Sprintf("Invalid system property requested: %s", s))
 }
 
-func (u SomaUtil) DecodeProtoResultPropertyFromResponse(resp *resty.Response) *proto.Result {
+func (u SomaUtil) decodeProtoResultPropertyFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

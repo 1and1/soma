@@ -50,11 +50,11 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 		switch prop.ConstraintType {
 		case "native":
 			resp := u.GetRequest(c, fmt.Sprintf("/property/native/%s", prop.Native.Name))
-			_ = u.DecodeProtoResultPropertyFromResponse(resp) // aborts on 404
+			_ = u.decodeProtoResultPropertyFromResponse(resp) // aborts on 404
 			clean = append(clean, prop)
 		case "system":
 			resp := u.GetRequest(c, fmt.Sprintf("/property/system/%s", prop.System.Name))
-			_ = u.DecodeProtoResultPropertyFromResponse(resp) // aborts on 404
+			_ = u.decodeProtoResultPropertyFromResponse(resp) // aborts on 404
 			clean = append(clean, prop)
 		case "attribute":
 			resp := u.GetRequest(c, fmt.Sprintf("/attributes/%s", prop.Attribute.Name))
@@ -83,7 +83,7 @@ func (u SomaUtil) CleanConstraints(c *resty.Client, constraints []proto.CheckCon
 		case "custom":
 			co := proto.PropertyCustom{
 				RepositoryId: repoId,
-				Id:           u.TryGetCustomPropertyByUUIDOrName(c, prop.Custom.Name, repoId),
+				Id:           u.tryGetCustomPropertyByUUIDOrName(c, prop.Custom.Name, repoId),
 				Value:        prop.Custom.Value,
 			}
 			clean = append(clean, proto.CheckConfigConstraint{

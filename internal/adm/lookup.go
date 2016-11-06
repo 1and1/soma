@@ -287,6 +287,21 @@ func LookupCheckConfigId(s, repo string) (string, error) {
 	return checkConfigIdByName(s, rId)
 }
 
+// LookupCustomPropertyId looks up the UUID of a custom property s
+// in Repository repo. Returns immediately if s is a UUID.
+func LookupCustomPropertyId(s, repo string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	var rId string
+	if r, err := LookupRepoId(repo); err != nil {
+		return ``, err
+	} else {
+		rId = r
+	}
+	return propertyIdByName(`custom`, s, rId)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -885,6 +900,53 @@ func checkConfigIdByName(check, repo string) (string, error) {
 abort:
 	return ``, fmt.Errorf("CheckConfigId lookup failed: %s",
 		err.Error())
+}
+
+// propertyIdByName implements the actual lookup of property ids
+// from the server
+func propertyIdByName(pType, pName, refId string) (string, error) {
+	req := proto.NewPropertyFilter()
+	req.Filter.Property.Type = pType
+	req.Filter.Property.Name = pName
+
+	var path string
+
+	switch pType {
+	case `custom`:
+		// custom properties are per-repository
+		req.Filter.Property.RepositoryId = refId
+		path = fmt.Sprintf("/filter/property/custom/%s/", refId)
+	}
+
+	res, err := fetchFilter(req, path)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Properties == nil || len(*res.Properties) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	switch pType {
+	case `custom`:
+		if pName != (*res.Properties)[0].Custom.Name {
+			err = fmt.Errorf("Name mismatch: %s vs %s",
+				pName, (*res.Properties)[0].Custom.Name)
+			goto abort
+		}
+		if refId != (*res.Properties)[0].Custom.RepositoryId {
+			err = fmt.Errorf("RepositoryId mismatch: %s vs %s",
+				refId, (*res.Properties)[0].Custom.RepositoryId)
+			goto abort
+		}
+		return (*res.Properties)[0].Custom.Id, nil
+	default:
+		err = fmt.Errorf("Unknown property type: %s", pType)
+	}
+
+abort:
+	return ``, fmt.Errorf("PropertyId lookup failed: %s", err.Error())
 }
 
 // fetchFilter is a helper used in the ...IdByFoo functions
