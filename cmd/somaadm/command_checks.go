@@ -127,7 +127,12 @@ func cmdCheckAdd(c *cli.Context) error {
 		return err
 	}
 
-	req.CheckConfig.Thresholds = utl.CleanThresholds(Client, thresholds)
+	if req.CheckConfig.Thresholds, err = adm.ValidateThresholds(
+		thresholds,
+	); err != nil {
+		return err
+	}
+
 	if req.CheckConfig.Constraints, err = adm.ValidateCheckConstraints(
 		req.CheckConfig.RepositoryId,
 		teamId,

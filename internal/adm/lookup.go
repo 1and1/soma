@@ -317,6 +317,12 @@ func LookupServicePropertyId(s, team string) (string, error) {
 	return propertyIdByName(`service`, s, tId)
 }
 
+// LookupLevelName looks up the long name of a level s, where s
+// can be the level's long or short name.
+func LookupLevelName(s string) (string, error) {
+	return levelByName(s)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {
@@ -977,6 +983,36 @@ func propertyIdByName(pType, pName, refId string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("PropertyId lookup failed: %s", err.Error())
+}
+
+// levelByName implements the actual lookup of the level details
+// from the server
+func levelByName(lvl string) (string, error) {
+	req := proto.NewLevelFilter()
+	req.Filter.Level.Name = lvl
+	req.Filter.Level.ShortName = lvl
+
+	res, err := fetchFilter(req, `/filter/levels/`)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Levels == nil || len(*res.Levels) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if lvl != (*res.Levels)[0].Name &&
+		lvl != (*res.Levels)[0].ShortName {
+		err = fmt.Errorf("Name mismatch: %s vs %s/%s",
+			lvl, (*res.Levels)[0].Name, (*res.Levels)[0].ShortName)
+		goto abort
+	}
+	return (*res.Levels)[0].Name, nil
+
+abort:
+	return ``, fmt.Errorf("LevelName lookup failed: %s",
+		err.Error())
 }
 
 // fetchFilter is a helper used in the ...IdByFoo functions

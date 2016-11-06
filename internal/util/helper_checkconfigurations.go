@@ -25,7 +25,7 @@ func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b str
 	return ""
 }
 
-func (u SomaUtil) CleanThresholds(c *resty.Client, thresholds []proto.CheckConfigThreshold) []proto.CheckConfigThreshold {
+func (u SomaUtil) cleanThresholds(c *resty.Client, thresholds []proto.CheckConfigThreshold) []proto.CheckConfigThreshold {
 	clean := []proto.CheckConfigThreshold{}
 
 	for _, thr := range thresholds {

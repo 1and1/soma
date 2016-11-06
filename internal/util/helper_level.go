@@ -42,7 +42,7 @@ func (u *SomaUtil) tryGetLevelNameByNameOrShort(c *resty.Client, s string) strin
 	return (*result.Levels)[0].Name
 }
 
-func (u *SomaUtil) DecodeProtoResultLevelFromResponse(resp *resty.Response) *proto.Result {
+func (u *SomaUtil) decodeProtoResultLevelFromResponse(resp *resty.Response) *proto.Result {
 	return u.DecodeResultFromResponse(resp)
 }
 

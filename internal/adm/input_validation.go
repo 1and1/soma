@@ -188,6 +188,24 @@ func ValidateEnvironment(s string) error {
 	return fmt.Errorf("Invalid environment requested: %s", s)
 }
 
+// ValidatePredicate tests against the server if s is a valid
+// predicate
+func ValidatePredicate(s string) error {
+	res, err := fetchObjList(fmt.Sprintf("/predicates/%s", s))
+	if err != nil {
+		return err
+	}
+
+	if res.Predicates != nil || len(*res.Predicates) == 0 {
+		return fmt.Errorf(`no object returned`)
+	}
+
+	if s == (*res.Predicates)[0].Symbol {
+		return nil
+	}
+	return fmt.Errorf("Invalid predicate requested: %s", s)
+}
+
 // ValidateCheckConstraints tests that all specified check constraints
 // resolve to a valid property or attribute.
 func ValidateCheckConstraints(repoId, teamId string,
@@ -270,6 +288,46 @@ func ValidateCheckConstraints(repoId, teamId string,
 				Custom:         &custom,
 			})
 		}
+	}
+	return valid, nil
+}
+
+// ValidateThresholds tests that all thresholds use the same predicate
+// and all referenced levels exist. It normalizes the possible mixed
+// use of long and short level names.
+func ValidateThresholds(thresholds []proto.CheckConfigThreshold) (
+	[]proto.CheckConfigThreshold, error) {
+	valid := []proto.CheckConfigThreshold{}
+	pred := ``
+
+	for _, thr := range thresholds {
+		var err error
+		if pred == `` {
+			pred = thr.Predicate.Symbol
+		} else {
+			if pred != thr.Predicate.Symbol {
+				return nil, fmt.Errorf(
+					"Error, threshold specification is using"+
+						" multiple predicates: %s, %s",
+					pred,
+					thr.Predicate.Symbol,
+				)
+			}
+		}
+		t := proto.CheckConfigThreshold{
+			Value:     thr.Value,
+			Predicate: proto.Predicate{},
+			Level:     proto.Level{},
+		}
+		if t.Level.Name, err = LookupLevelName(
+			thr.Level.Name); err != nil {
+			return nil, err
+		}
+		if err = ValidatePredicate(thr.Predicate.Symbol); err != nil {
+			return nil, err
+		}
+		t.Predicate.Symbol = thr.Predicate.Symbol
+		valid = append(valid, t)
 	}
 	return valid, nil
 }
