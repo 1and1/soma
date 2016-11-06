@@ -206,6 +206,21 @@ func ValidateStatus(s string) error {
 	return fmt.Errorf("Invalid instance status requested: %s", s)
 }
 
+// ValidateInstance tests against the server if string s is a
+// valid check instance id
+func ValidateInstance(s string) error {
+	if !IsUUID(s) {
+		return fmt.Errorf("Argument is not a UUID: %s", s)
+	}
+	path := fmt.Sprintf("/instances/%s", s)
+
+	if _, err := fetchObjList(path); err != nil {
+		return err
+	}
+	// instanceId is valid if there was no 404/NotFound
+	return nil
+}
+
 // ValidatePredicate tests against the server if s is a valid
 // predicate
 func ValidatePredicate(s string) error {
