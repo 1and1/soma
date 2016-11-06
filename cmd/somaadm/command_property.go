@@ -1,9 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
+
+	resty "gopkg.in/resty.v0"
 
 	"github.com/1and1/soma/internal/adm"
 	"github.com/1and1/soma/internal/cmpl"
@@ -188,13 +189,7 @@ func cmdPropertyCustomCreate(c *cli.Context) error {
 	req.Property.Custom.RepositoryId = repoId
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
-
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdPropertySystemCreate(c *cli.Context) error {
@@ -209,12 +204,7 @@ func cmdPropertySystemCreate(c *cli.Context) error {
 	req.Property.System = &proto.PropertySystem{}
 	req.Property.System.Name = c.Args().First()
 
-	if resp, err := adm.PostReqBody(req, "/property/system/"); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`postbody`, `/property/system/`, `command`, req, c)
 }
 
 func cmdPropertyNativeCreate(c *cli.Context) error {
@@ -229,35 +219,39 @@ func cmdPropertyNativeCreate(c *cli.Context) error {
 	req.Property.Native = &proto.PropertyNative{}
 	req.Property.Native.Name = c.Args().First()
 
-	if resp, err := adm.PostReqBody(req, "/property/native/"); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`postbody`, `/property/native/`, `command`, req, c)
 }
 
 func cmdPropertyServiceCreate(c *cli.Context) error {
-	// fetch list of possible service attributes from SOMA
-	attrResponse := utl.GetRequest(Client, "/attributes/")
-	attrs := proto.Result{}
-	err := json.Unmarshal(attrResponse.Body(), &attrs)
-	if err != nil {
-		adm.Abort("Failed to unmarshal Service Attribute data")
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
+	// fetch list of possible service attributes
+	if resp, err = adm.GetReq(`/attributes/`); err != nil {
+		return err
+	}
+	if err = adm.DecodedResponse(resp, res); err != nil {
+		return err
+	}
+	if res.Attributes == nil || len(*res.Attributes) == 0 {
+		return fmt.Errorf(`server returned no attributes for parsing`)
 	}
 
 	// sort attributes based on their cardinality so we can use them
 	// for command line parsing
 	multiple := []string{}
 	unique := []string{}
-	for _, attr := range *attrs.Attributes {
+	for _, attr := range *res.Attributes {
 		switch attr.Cardinality {
 		case "once":
 			unique = append(unique, attr.Name)
 		case "multi":
 			multiple = append(multiple, attr.Name)
 		default:
-			adm.Abort()
+			return fmt.Errorf("Unknown attribute cardinality: %s",
+				attr.Cardinality)
 		}
 	}
 	required := []string{}
@@ -269,10 +263,9 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 		unique = append(unique, "team")
 	case "template":
 	default:
-		adm.Abort(
-			fmt.Sprintf("cmdPropertyServiceCreate called from unknown action %s",
-				c.Command.Name),
-		)
+		return fmt.Errorf(
+			"cmdPropertyServiceCreate called from unknown action %s",
+			c.Command.Name)
 	}
 
 	// parse command line
@@ -300,10 +293,12 @@ func cmdPropertyServiceCreate(c *cli.Context) error {
 	req.Property = &proto.Property{}
 	req.Property.Service = &proto.PropertyService{}
 	req.Property.Service.Name = c.Args().First()
-	if err := adm.ValidateRuneCount(req.Property.Service.Name, 128); err != nil {
+	if err := adm.ValidateRuneCount(
+		req.Property.Service.Name, 128); err != nil {
 		return err
 	}
-	req.Property.Service.Attributes = make([]proto.ServiceAttribute, 0, 16)
+	req.Property.Service.Attributes = make(
+		[]proto.ServiceAttribute, 0, 16)
 	if c.Command.Name == "service" {
 		req.Property.Type = `service`
 		req.Property.Service.TeamId = teamId
@@ -326,7 +321,8 @@ attrConversionLoop:
 			if err := adm.ValidateRuneCount(oVal, 128); err != nil {
 				return err
 			}
-			req.Property.Service.Attributes = append(req.Property.Service.Attributes,
+			req.Property.Service.Attributes = append(
+				req.Property.Service.Attributes,
 				proto.ServiceAttribute{
 					Name:  oName,
 					Value: oVal,
@@ -343,38 +339,42 @@ attrConversionLoop:
 	case `template`:
 		path = `/property/service/global/`
 	}
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 // in main and not the cmpl lib because the full runtime is required
 // to provide the completion options. This means we need access to
 // globals that do not fit the function signature
 func bashCompSvcCreate(c *cli.Context) {
+	var (
+		err  error
+		resp *resty.Response
+		res  *proto.Result
+	)
 	// fetch list of possible service attributes from SOMA
-	attrResponse := utl.GetRequest(Client, "/attributes/")
-	attrs := proto.Result{}
-	err := json.Unmarshal(attrResponse.Body(), &attrs)
-	if err != nil {
-		adm.Abort("Failed to unmarshal Service Attribute data")
+	if resp, err = adm.GetReq(`/attributes/`); err != nil {
+		adm.Abort(err.Error())
+	}
+	if err = adm.DecodedResponse(resp, res); err != nil {
+		adm.Abort(err.Error())
+	}
+	if res.Attributes == nil || len(*res.Attributes) == 0 {
+		adm.Abort(`server returned no attributes for parsing`)
 	}
 
 	// sort attributes based on their cardinality so we can use them
 	// for command line parsing
 	multiple := []string{}
 	unique := []string{}
-	for _, attr := range *attrs.Attributes {
+	for _, attr := range *res.Attributes {
 		switch attr.Cardinality {
 		case "once":
 			unique = append(unique, attr.Name)
 		case "multi":
 			multiple = append(multiple, attr.Name)
 		default:
-			adm.Abort()
+			adm.Abort(fmt.Sprintf("Unknown attribute cardinality: %s",
+				attr.Cardinality))
 		}
 	}
 	cmpl.GenericMulti(c, unique, multiple)
@@ -409,40 +409,25 @@ func cmdPropertyCustomDelete(c *cli.Context) error {
 	}
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId, propId)
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdPropertySystemDelete(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/property/system/%s", c.Args().First())
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/property/system/%s", c.Args().First())
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdPropertyNativeDelete(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/property/native/%s", c.Args().First())
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/property/native/%s", c.Args().First())
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdPropertyServiceDelete(c *cli.Context) error {
@@ -464,14 +449,9 @@ func cmdPropertyServiceDelete(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdPropertyTemplateDelete(c *cli.Context) error {
@@ -482,14 +462,9 @@ func cmdPropertyTemplateDelete(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/property/service/global/%s", propId)
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/property/service/global/%s", propId)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 /* SHOW
@@ -514,25 +489,16 @@ func cmdPropertyCustomShow(c *cli.Context) error {
 	}
 	path := fmt.Sprintf("/property/custom/%s/%s", repoId,
 		propId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdPropertySystemShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
+
 	path := fmt.Sprintf("/property/system/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdPropertyNativeShow(c *cli.Context) error {
@@ -540,12 +506,7 @@ func cmdPropertyNativeShow(c *cli.Context) error {
 		return err
 	}
 	path := fmt.Sprintf("/property/native/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdPropertyServiceShow(c *cli.Context) error {
@@ -567,14 +528,9 @@ func cmdPropertyServiceShow(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	path := fmt.Sprintf("/property/service/team/%s/%s", teamId, propId)
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdPropertyTemplateShow(c *cli.Context) error {
@@ -587,12 +543,7 @@ func cmdPropertyTemplateShow(c *cli.Context) error {
 		return err
 	}
 	path := fmt.Sprintf("/property/service/global/%s", propId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 /* LIST
@@ -613,37 +564,23 @@ func cmdPropertyCustomList(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/property/custom/%s/", repoId)
-
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdPropertySystemList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	if resp, err := adm.GetReq("/property/system/"); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+
+	return adm.Perform(`get`, `/property/system/`, `list`, nil, c)
 }
 
 func cmdPropertyNativeList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	if resp, err := adm.GetReq("/property/native/"); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+
+	return adm.Perform(`get`, `/property/native/`, `list`, nil, c)
 }
 
 func cmdPropertyServiceList(c *cli.Context) error {
@@ -662,13 +599,7 @@ func cmdPropertyServiceList(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/property/service/team/%s/", teamId)
-
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdPropertyTemplateList(c *cli.Context) error {
@@ -676,12 +607,7 @@ func cmdPropertyTemplateList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq("/property/service/global/"); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, `/property/service/global/`, `list`, nil, c)
 }
 
 /* ADD
@@ -719,8 +645,13 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		required = append(required, `in`)
 	}
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, multiple, unique, required,
-		c.Args().Tail()); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		multiple,
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 
@@ -730,7 +661,8 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		if _, ok := opts[`in`]; ok {
 			fmt.Fprintf(
 				os.Stderr,
-				"Hint: Keyword `in` is DEPRECATED for %s objects, since they are global objects. Ignoring.",
+				"Hint: Keyword `in` is DEPRECATED for %s objects,"+
+					" since they are global objects. Ignoring.",
 				oType,
 			)
 		}
@@ -906,11 +838,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		object = oType + `s`
 	}
 	path := fmt.Sprintf("/%s/%s/property/%s/", object, objectId, pType)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
