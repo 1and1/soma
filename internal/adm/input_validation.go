@@ -188,6 +188,24 @@ func ValidateEnvironment(s string) error {
 	return fmt.Errorf("Invalid environment requested: %s", s)
 }
 
+// ValidateStatus tests against the server if string s is a
+// valid check instance status
+func ValidateStatus(s string) error {
+	res, err := fetchObjList(`/status/`)
+	if err != nil {
+		return err
+	}
+
+	if res.Status != nil {
+		for _, st := range *res.Status {
+			if st.Name == s {
+				return nil
+			}
+		}
+	}
+	return fmt.Errorf("Invalid instance status requested: %s", s)
+}
+
 // ValidatePredicate tests against the server if s is a valid
 // predicate
 func ValidatePredicate(s string) error {
