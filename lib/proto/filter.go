@@ -30,6 +30,7 @@ type Filter struct {
 	Team        *TeamFilter        `json:"team,omitempty"`
 	Unit        *UnitFilter        `json:"unit,omitempty"`
 	User        *UserFilter        `json:"user,omitempty"`
+	Workflow    *WorkflowFilter    `json:"workflow,omitempty"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

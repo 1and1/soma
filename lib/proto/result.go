@@ -90,6 +90,7 @@ type Result struct {
 	Users            *[]User            `json:"users,omitempty"`
 	Validities       *[]Validity        `json:"validities,omitempty"`
 	Views            *[]View            `json:"views,omitempty"`
+	Workflows        *[]Workflow        `json:"workflows,omitempty"`
 }
 
 func (r *Result) Error(err error) bool {

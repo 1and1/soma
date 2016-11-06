@@ -46,6 +46,7 @@ type Request struct {
 	User            *User            `json:"user,omitempty"`
 	Validity        *Validity        `json:"validity,omitempty"`
 	View            *View            `json:"view,omitempty"`
+	Workflow        *Workflow        `json:"workflow,omitempty"`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
