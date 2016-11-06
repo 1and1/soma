@@ -478,7 +478,10 @@ func cmdPropertyTemplateDelete(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client, c.Args().Get(0))
+	propId, err := adm.LookupTemplatePropertyId(c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/property/service/global/%s", propId)
 
 	if resp, err := adm.DeleteReq(path); err != nil {
@@ -578,8 +581,11 @@ func cmdPropertyTemplateShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	propId := utl.TryGetTemplatePropertyByUUIDOrName(Client,
+	propId, err := adm.LookupTemplatePropertyId(
 		c.Args().First())
+	if err != nil {
+		return err
+	}
 	path := fmt.Sprintf("/property/service/global/%s", propId)
 	if resp, err := adm.GetReq(path); err != nil {
 		return err

@@ -28,7 +28,7 @@ func (u SomaUtil) tryGetSystemPropertyByUUIDOrName(c *resty.Client, s string) st
 	return u.getPropertyIdByName(c, "system", s, "none")
 }
 
-func (u SomaUtil) TryGetTemplatePropertyByUUIDOrName(c *resty.Client, s string) string {
+func (u SomaUtil) tryGetTemplatePropertyByUUIDOrName(c *resty.Client, s string) string {
 	if u.isUUID(s) {
 		return s
 	}

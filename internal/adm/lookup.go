@@ -317,6 +317,15 @@ func LookupServicePropertyId(s, team string) (string, error) {
 	return propertyIdByName(`service`, s, tId)
 }
 
+// LookupTemplatePropertyId looks up the id of a service template
+// property
+func LookupTemplatePropertyId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return propertyIdByName(`template`, s, `none`)
+}
+
 // LookupLevelName looks up the long name of a level s, where s
 // can be the level's long or short name.
 func LookupLevelName(s string) (string, error) {
@@ -930,7 +939,11 @@ func propertyIdByName(pType, pName, refId string) (string, error) {
 	req.Filter.Property.Type = pType
 	req.Filter.Property.Name = pName
 
-	var path string
+	var (
+		path string
+		err  error
+		res  *proto.Result
+	)
 
 	switch pType {
 	case `custom`:
@@ -940,10 +953,14 @@ func propertyIdByName(pType, pName, refId string) (string, error) {
 	case `service`:
 		path = fmt.Sprintf("/filter/property/service/team/%s/",
 			refId)
+	case `template`:
+		path = `/filter/property/service/global/`
+	default:
+		err = fmt.Errorf("Unknown property type: %s", pType)
+		goto abort
 	}
 
-	res, err := fetchFilter(req, path)
-	if err != nil {
+	if res, err = fetchFilter(req, path); err != nil {
 		goto abort
 	}
 
@@ -966,14 +983,16 @@ func propertyIdByName(pType, pName, refId string) (string, error) {
 		}
 		return (*res.Properties)[0].Custom.Id, nil
 	case `service`:
-		if pName != (*res.Properties)[0].Service.Name {
-			err = fmt.Errorf("Name mismatch: %s vs %s",
-				pName, (*res.Properties)[0].Service.Name)
-			goto abort
-		}
 		if refId != (*res.Properties)[0].Service.TeamId {
 			err = fmt.Errorf("TeamId mismatch: %s vs %s",
 				refId, (*res.Properties)[0].Service.TeamId)
+			goto abort
+		}
+		fallthrough
+	case `template`:
+		if pName != (*res.Properties)[0].Service.Name {
+			err = fmt.Errorf("Name mismatch: %s vs %s",
+				pName, (*res.Properties)[0].Service.Name)
 			goto abort
 		}
 		return (*res.Properties)[0].Service.Name, nil
