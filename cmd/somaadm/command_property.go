@@ -850,10 +850,12 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		prop.Oncall = &proto.PropertyOncall{
 			Id: oncallId,
 		}
-		prop.Oncall.Name, prop.Oncall.Number = utl.GetOncallDetailsById(
-			Client,
+		prop.Oncall.Name, prop.Oncall.Number, err = adm.LookupOncallDetails(
 			oncallId,
 		)
+		if err != nil {
+			return err
+		}
 	case `custom`:
 		customId, err := adm.LookupCustomPropertyId(
 			c.Args().First(), repoId)

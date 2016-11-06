@@ -28,6 +28,20 @@ func LookupOncallId(s string) (string, error) {
 	return oncallIdByName(s)
 }
 
+// LookupOncallDetails looks up the details for oncall duty s.
+func LookupOncallDetails(s string) (string, string, error) {
+	var oId string
+	if !IsUUID(s) {
+		if o, err := LookupOncallId(s); err != nil {
+			return ``, ``, err
+		} else {
+			oId = o
+		}
+	}
+
+	return oncallDetailsById(oId)
+}
+
 // LookupOncallId looks up the UUID for a user on the server
 // with username s. Error is set if no such user was found
 // or an error occured.
@@ -381,6 +395,31 @@ func oncallIdByName(oncall string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("OncallId lookup failed: %s", err.Error())
+}
+
+// oncallDetailsById implements the actual serverside lookup of
+// the oncall duty details
+func oncallDetailsById(oncall string) (string, string, error) {
+	res, err := fetchObjList(fmt.Sprintf("/oncall/%s", oncall))
+	if err != nil {
+		goto abort
+	}
+
+	if res.Oncalls == nil || len(*res.Oncalls) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if oncall != (*res.Oncalls)[0].Id {
+		err = fmt.Errorf("OncallId mismatch: %s vs %s",
+			oncall, (*res.Oncalls)[0].Id)
+		goto abort
+	}
+	return (*res.Oncalls)[0].Name, (*res.Oncalls)[0].Number, nil
+
+abort:
+	return ``, ``, fmt.Errorf("OncallDetails lookup failed: %s",
+		err.Error())
 }
 
 // userIdByUserName implements the actual serverside lookup of the

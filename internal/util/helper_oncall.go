@@ -33,7 +33,7 @@ func (u SomaUtil) getOncallIdByName(c *resty.Client, oncall string) string {
 	return (*oncallResult.Oncalls)[0].Id
 }
 
-func (u SomaUtil) GetOncallDetailsById(c *resty.Client, oncallid string) (string, string) {
+func (u SomaUtil) getOncallDetailsById(c *resty.Client, oncallid string) (string, string) {
 	path := fmt.Sprintf("/oncall/%s", oncallid)
 	resp := u.GetRequest(c, path)
 	res := u.DecodeResultFromResponse(resp)
