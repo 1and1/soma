@@ -98,11 +98,7 @@ func cmdOnCallAdd(c *cli.Context) error {
 	req.Oncall.Name = c.Args().First()
 	req.Oncall.Number = opts["phone"][0]
 
-	if resp, err := adm.PostReqBody(req, `/oncall/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/oncall/`, `command`, req, c)
 }
 
 func cmdOnCallDel(c *cli.Context) error {
@@ -116,11 +112,7 @@ func cmdOnCallDel(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/oncall/%s", id)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdOnCallRename(c *cli.Context) error {
@@ -144,11 +136,7 @@ func cmdOnCallRename(c *cli.Context) error {
 	req.Oncall.Name = opts["to"][0]
 
 	path := fmt.Sprintf("/oncall/%s", id)
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdOnCallUpdate(c *cli.Context) error {
@@ -167,7 +155,8 @@ func cmdOnCallUpdate(c *cli.Context) error {
 	req := proto.NewOncallRequest()
 	validUpdate := false
 	if len(opts["phone"]) > 0 {
-		if err := adm.ValidateOncallNumber(opts["phone"][0]); err != nil {
+		if err := adm.ValidateOncallNumber(
+			opts["phone"][0]); err != nil {
 			return err
 		}
 		req.Oncall.Number = opts["phone"][0]
@@ -178,7 +167,8 @@ func cmdOnCallUpdate(c *cli.Context) error {
 		validUpdate = true
 	}
 	if !validUpdate {
-		return fmt.Errorf("Syntax error, specify name or phone to update")
+		return fmt.Errorf("Syntax error, specify name or phone" +
+			" to update")
 	}
 
 	id, err := adm.LookupOncallId(c.Args().First())
@@ -187,11 +177,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/oncall/%s", id)
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdOnCallList(c *cli.Context) error {
@@ -199,11 +185,7 @@ func cmdOnCallList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/oncall/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/oncall/`, `list`, nil, c)
 }
 
 func cmdOnCallShow(c *cli.Context) error {
@@ -217,11 +199,7 @@ func cmdOnCallShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/oncall/%s", id)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdOnCallMemberAdd(c *cli.Context) error {
@@ -252,11 +230,7 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/oncall/%s/members", oncallId)
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdOnCallMemberDel(c *cli.Context) error {
@@ -278,16 +252,13 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
 		return err
 	}
-	if oncallId, err = adm.LookupOncallId(opts[`from`][0]); err != nil {
+	if oncallId, err = adm.LookupOncallId(
+		opts[`from`][0]); err != nil {
 		return err
 	}
 
 	path := fmt.Sprintf("/oncall/%s/members/%s", oncallId, userId)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdOnCallMemberList(c *cli.Context) error {
@@ -301,11 +272,7 @@ func cmdOnCallMemberList(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/oncall/%s/members/", oncallId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -70,11 +70,7 @@ func cmdLevelCreate(c *cli.Context) error {
 	}
 	req.Level.Numeric = uint16(l)
 
-	if resp, err := adm.PostReqBody(req, `/levels/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/levels/`, `command`, req, c)
 }
 
 func cmdLevelDelete(c *cli.Context) error {
@@ -83,11 +79,7 @@ func cmdLevelDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdLevelList(c *cli.Context) error {
@@ -95,11 +87,7 @@ func cmdLevelList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/levels/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/levels/`, `list`, nil, c)
 }
 
 func cmdLevelShow(c *cli.Context) error {
@@ -108,11 +96,7 @@ func cmdLevelShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/levels/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

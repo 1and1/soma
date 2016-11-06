@@ -92,11 +92,7 @@ func cmdTeamAdd(c *cli.Context) error {
 		}
 	}
 
-	if resp, err := adm.PostReqBody(req, `/teams/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/teams/`, `command`, req, c)
 }
 
 func cmdTeamUpdate(c *cli.Context) error {
@@ -120,15 +116,12 @@ func cmdTeamUpdate(c *cli.Context) error {
 	if len(opts[`system`]) > 0 {
 		if err := adm.ValidateBool(opts["system"][0],
 			&req.Team.IsSystem); err != nil {
-			return fmt.Errorf("Argument to system parameter must be boolean")
+			return fmt.Errorf("Argument to system parameter must" +
+				" be boolean")
 		}
 	}
 	path := fmt.Sprintf("/teams/%s", teamid)
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdTeamDel(c *cli.Context) error {
@@ -141,11 +134,7 @@ func cmdTeamDel(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/teams/%s", id)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdTeamRename(c *cli.Context) error {
@@ -165,11 +154,7 @@ func cmdTeamRename(c *cli.Context) error {
 	req.Team.Name = opts["to"][0]
 
 	path := fmt.Sprintf("/teams/%s", id)
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`patchbody`, path, `command`, nil, c)
 }
 
 func cmdTeamMigrate(c *cli.Context) error {
@@ -181,11 +166,7 @@ func cmdTeamList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/teams/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/teams/`, `list`, nil, c)
 }
 
 func cmdTeamSync(c *cli.Context) error {
@@ -193,11 +174,7 @@ func cmdTeamSync(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/sync/teams/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`get`, `/sync/teams/`, `list`, nil, c)
 }
 
 func cmdTeamShow(c *cli.Context) error {
@@ -211,11 +188,7 @@ func cmdTeamShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/teams/%s", id)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

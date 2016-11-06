@@ -58,11 +58,7 @@ func cmdObjectTypesAdd(c *cli.Context) error {
 	req := proto.NewEntityRequest()
 	req.Entity.Name = c.Args().First()
 
-	if resp, err := adm.PostReqBody(req, `/objtypes/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/objtypes/`, `command`, req, c)
 }
 
 func cmdObjectTypesRemove(c *cli.Context) error {
@@ -71,11 +67,7 @@ func cmdObjectTypesRemove(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdObjectTypesRename(c *cli.Context) error {
@@ -94,11 +86,7 @@ func cmdObjectTypesRename(c *cli.Context) error {
 	req.Entity.Name = opts[`to`][0]
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdObjectTypesList(c *cli.Context) error {
@@ -106,11 +94,7 @@ func cmdObjectTypesList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/objtypes/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/objtypes/`, `list`, nil, c)
 }
 
 func cmdObjectTypesShow(c *cli.Context) error {
@@ -119,11 +103,7 @@ func cmdObjectTypesShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

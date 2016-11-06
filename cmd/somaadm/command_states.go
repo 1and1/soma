@@ -59,11 +59,7 @@ func cmdObjectStatesAdd(c *cli.Context) error {
 	req := proto.NewStateRequest()
 	req.State.Name = c.Args().First()
 
-	if resp, err := adm.PostReqBody(req, `/objstates/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/objstates/`, `command`, req, c)
 }
 
 func cmdObjectStatesRemove(c *cli.Context) error {
@@ -73,11 +69,7 @@ func cmdObjectStatesRemove(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/objstates/%s", esc)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdObjectStatesRename(c *cli.Context) error {
@@ -97,11 +89,7 @@ func cmdObjectStatesRename(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/objstates/%s", esc)
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdObjectStatesList(c *cli.Context) error {
@@ -109,11 +97,7 @@ func cmdObjectStatesList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/objstates/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/objstates/`, `list`, nil, c)
 }
 
 func cmdObjectStatesShow(c *cli.Context) error {
@@ -123,11 +107,7 @@ func cmdObjectStatesShow(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/objstates/%s", esc)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -62,11 +62,7 @@ func cmdUnitCreate(c *cli.Context) error {
 	req.Unit.Unit = c.Args().First()
 	req.Unit.Name = opts["name"][0]
 
-	if resp, err := adm.PostReqBody(req, `/units/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/units/`, `command`, req, c)
 }
 
 func cmdUnitDelete(c *cli.Context) error {
@@ -76,11 +72,7 @@ func cmdUnitDelete(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/units/%s", esc)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdUnitList(c *cli.Context) error {
@@ -88,11 +80,7 @@ func cmdUnitList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/units/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/units/`, `list`, nil, c)
 }
 
 func cmdUnitShow(c *cli.Context) error {
@@ -102,11 +90,7 @@ func cmdUnitShow(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/units/%s", esc)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

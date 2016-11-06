@@ -66,8 +66,15 @@ func registerServers(app cli.App) *cli.App {
 }
 
 func cmdServerCreate(c *cli.Context) error {
-	unique := []string{`assetid`, `datacenter`, `location`, `online`}
-	required := []string{`assetid`, `datacenter`, `location`}
+	unique := []string{
+		`assetid`,
+		`datacenter`,
+		`location`,
+		`online`}
+	required := []string{
+		`assetid`,
+		`datacenter`,
+		`location`}
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
@@ -99,11 +106,7 @@ func cmdServerCreate(c *cli.Context) error {
 		req.Server.IsOnline = true
 	}
 
-	if resp, err := adm.PostReqBody(req, `/servers/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/servers/`, `command`, req, c)
 }
 
 func cmdServerMarkAsDeleted(c *cli.Context) error {
@@ -114,13 +117,9 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/servers/%s", sid)
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	path := fmt.Sprintf("/servers/%s", sid)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdServerPurgeDeleted(c *cli.Context) error {
@@ -132,29 +131,33 @@ func cmdServerPurgeDeleted(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/servers/%s", sid)
 	req := proto.NewServerRequest()
 	req.Flags.Purge = true
 
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	path := fmt.Sprintf("/servers/%s", sid)
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 func cmdServerUpdate(c *cli.Context) error {
-
 	if !adm.IsUUID(c.Args().First()) {
-		return fmt.Errorf(
-			"Server to update not referenced by UUID: %s",
-			c.Args().First())
+		return fmt.Errorf("Server to update not referenced by"+
+			" UUID: %s", c.Args().First())
 	}
 
-	unique := []string{`name`, `assetid`, `datacenter`,
-		`location`, `online`, `deleted`}
-	required := []string{`name`, `assetid`, `datacenter`,
-		`location`, `online`, `deleted`}
+	unique := []string{
+		`name`,
+		`assetid`,
+		`datacenter`,
+		`location`,
+		`online`,
+		`deleted`}
+	required := []string{
+		`name`,
+		`assetid`,
+		`datacenter`,
+		`location`,
+		`online`,
+		`deleted`}
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
@@ -185,27 +188,23 @@ func cmdServerUpdate(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/servers/%s", c.Args().First())
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdServerRename(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdServerOnline(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdServerOffline(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdServerMove(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdServerList(c *cli.Context) error {
@@ -213,11 +212,7 @@ func cmdServerList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/servers/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/servers/`, `list`, nil, c)
 }
 
 func cmdServerSync(c *cli.Context) error {
@@ -225,11 +220,7 @@ func cmdServerSync(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/sync/servers/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/sync/servers/`, `list`, nil, c)
 }
 
 func cmdServerShow(c *cli.Context) error {
@@ -242,37 +233,30 @@ func cmdServerShow(c *cli.Context) error {
 		return err
 	}
 	path := fmt.Sprintf("/servers/%s", serverId)
-
-	if resp, err := adm.GetReq(path); err != nil {
-		return nil
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdServerSyncRequest(c *cli.Context) error {
-	return nil
+	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdServerNull(c *cli.Context) error {
-	key := []string{"datacenter"}
-
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(opts, []string{}, key, key,
-		adm.AllArguments(c)); err != nil {
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		[]string{`datacenter`},
+		[]string{`datacenter`},
+		adm.AllArguments(c),
+	); err != nil {
 		return err
 	}
 
-	req := proto.Request{}
-	req.Server = &proto.Server{}
+	req := proto.NewServerRequest()
 	req.Server.Id = "00000000-0000-0000-0000-000000000000"
 	req.Server.Datacenter = opts["datacenter"][0]
 
-	if resp, err := adm.PostReqBody(req, `/servers/null`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/servers/null`, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

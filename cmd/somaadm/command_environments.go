@@ -58,11 +58,7 @@ func cmdEnvironmentsAdd(c *cli.Context) error {
 	req := proto.NewEnvironmentRequest()
 	req.Environment.Name = c.Args().First()
 
-	if resp, err := adm.PostReqBody(req, `/environments/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/environments/`, `command`, req, c)
 }
 
 func cmdEnvironmentsRemove(c *cli.Context) error {
@@ -71,11 +67,7 @@ func cmdEnvironmentsRemove(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdEnvironmentsRename(c *cli.Context) error {
@@ -91,11 +83,7 @@ func cmdEnvironmentsRename(c *cli.Context) error {
 	req.Environment.Name = opts[`to`][0]
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdEnvironmentsList(c *cli.Context) error {
@@ -103,11 +91,7 @@ func cmdEnvironmentsList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/environments/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/environments/`, `list`, nil, c)
 }
 
 func cmdEnvironmentsShow(c *cli.Context) error {
@@ -116,11 +100,7 @@ func cmdEnvironmentsShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/environments/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

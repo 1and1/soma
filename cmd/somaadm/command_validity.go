@@ -74,11 +74,7 @@ func cmdValidityCreate(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.PostReqBody(req, `/validity/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/validity/`, `command`, req, c)
 }
 
 func cmdValidityDelete(c *cli.Context) error {
@@ -88,11 +84,7 @@ func cmdValidityDelete(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/validity/%s", esc)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdValidityList(c *cli.Context) error {
@@ -100,11 +92,7 @@ func cmdValidityList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/validity/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/validity/`, `list`, nil, c)
 }
 
 func cmdValidityShow(c *cli.Context) error {
@@ -114,11 +102,7 @@ func cmdValidityShow(c *cli.Context) error {
 
 	esc := url.QueryEscape(c.Args().First())
 	path := fmt.Sprintf("/validity/%s", esc)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -276,28 +276,21 @@ func cmdGroupRename(c *cli.Context) error {
 		bucketId); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/groups/%s", groupId)
 
 	var req proto.Request
 	req.Group = &proto.Group{}
 	req.Group.Name = opts["to"][0]
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	path := fmt.Sprintf("/groups/%s", groupId)
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdGroupList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	if resp, err := adm.GetReq("/groups/"); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+
+	return adm.Perform(`get`, `/groups/`, `list`, nil, c)
 }
 
 func cmdGroupShow(c *cli.Context) error {
@@ -327,16 +320,12 @@ func cmdGroupShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s", groupId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdGroupTree(c *cli.Context) error {
 	uniqKeys := []string{"in"}
-	opts := map[string][]string{}
+	opts := make(map[string][]string)
 
 	if err := adm.ParseVariadicArguments(
 		opts,
@@ -358,13 +347,9 @@ func cmdGroupTree(c *cli.Context) error {
 		bucketId); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/groups/%s/tree/tree", groupId)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `tree`)
-	}
+	path := fmt.Sprintf("/groups/%s/tree/tree", groupId)
+	return adm.Perform(`get`, path, `tree`, nil, c)
 }
 
 func cmdGroupMemberAddGroup(c *cli.Context) error {
@@ -406,12 +391,7 @@ func cmdGroupMemberAddGroup(c *cli.Context) error {
 	*req.Group.MemberGroups = append(*req.Group.MemberGroups, group)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
-
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdGroupMemberAddCluster(c *cli.Context) error {
@@ -433,7 +413,8 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 		req                           proto.Request
 		cluster                       proto.Cluster
 	)
-	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
+	if bucketId, err = adm.LookupBucketId(
+		opts["in"][0]); err != nil {
 		return err
 	}
 	if mClusterId, err = adm.LookupGroupId(c.Args().First(),
@@ -449,15 +430,11 @@ func cmdGroupMemberAddCluster(c *cli.Context) error {
 	req.Group = &proto.Group{}
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
-	*req.Group.MemberClusters = append(*req.Group.MemberClusters, cluster)
+	*req.Group.MemberClusters = append(
+		*req.Group.MemberClusters, cluster)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
-
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdGroupMemberAddNode(c *cli.Context) error {
@@ -497,12 +474,7 @@ func cmdGroupMemberAddNode(c *cli.Context) error {
 	*req.Group.MemberNodes = append(*req.Group.MemberNodes, node)
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
-
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdGroupMemberDeleteGroup(c *cli.Context) error {
@@ -536,12 +508,7 @@ func cmdGroupMemberDeleteGroup(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mGroupId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdGroupMemberDeleteCluster(c *cli.Context) error {
@@ -575,12 +542,7 @@ func cmdGroupMemberDeleteCluster(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mClusterId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdGroupMemberDeleteNode(c *cli.Context) error {
@@ -613,12 +575,7 @@ func cmdGroupMemberDeleteNode(c *cli.Context) error {
 
 	path := fmt.Sprintf("/groups/%s/members/%s", groupId,
 		mNodeId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdGroupMemberList(c *cli.Context) error {
@@ -647,11 +604,7 @@ func cmdGroupMemberList(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/groups/%s/members/", groupId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdGroupSystemPropertyAdd(c *cli.Context) error {
@@ -726,14 +679,10 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 	req := proto.NewGroupRequest()
 	req.Group.Id = groupId
 	req.Group.BucketId = bucketId
+
 	path := fmt.Sprintf("/groups/%s/property/%s/%s",
 		groupId, pType, sourceId)
-
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

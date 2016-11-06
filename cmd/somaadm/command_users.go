@@ -101,17 +101,26 @@ func registerUsers(app cli.App) *cli.App {
 }
 
 func cmdUserAdd(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{"firstname", "lastname", "employeenr",
-		"mailaddr", "team", "active", "system"}
-	required := []string{"firstname", "lastname", "employeenr",
-		"mailaddr", "team"}
+	unique := []string{
+		"firstname",
+		"lastname",
+		"employeenr",
+		"mailaddr",
+		"team",
+		"active",
+		"system"}
+	required := []string{
+		"firstname",
+		"lastname",
+		"employeenr",
+		"mailaddr",
+		"team"}
 	var err error
 
 	opts := map[string][]string{}
 	if err = adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
 		c.Args().Tail(),
@@ -120,23 +129,24 @@ func cmdUserAdd(c *cli.Context) error {
 	}
 
 	// validate
-	if err = adm.ValidateEmployeeNumber(opts[`employeenr`][0]); err != nil {
+	if err = adm.ValidateEmployeeNumber(
+		opts[`employeenr`][0]); err != nil {
 		return err
 	}
-	if err = adm.ValidateMailAddress(opts[`mailaddr`][0]); err != nil {
+	if err = adm.ValidateMailAddress(
+		opts[`mailaddr`][0]); err != nil {
 		return err
 	}
 
-	req := proto.Request{}
-	req.User = &proto.User{}
+	req := proto.NewUserRequest()
 	req.User.UserName = c.Args().First()
 	req.User.FirstName = opts["firstname"][0]
 	req.User.LastName = opts["lastname"][0]
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
 	req.User.IsDeleted = false
-	req.User.TeamId, err = adm.LookupTeamId(opts["team"][0])
-	if err != nil {
+	if req.User.TeamId, err = adm.LookupTeamId(
+		opts["team"][0]); err != nil {
 		return err
 	}
 
@@ -144,8 +154,8 @@ func cmdUserAdd(c *cli.Context) error {
 	if _, ok := opts["active"]; ok {
 		if err := adm.ValidateBool(opts["active"][0],
 			&req.User.IsActive); err != nil {
-			return fmt.Errorf("Syntax error, active argument not boolean: %s, %s",
-				opts["active"][0], err.Error())
+			return fmt.Errorf("Syntax error, active argument not"+
+				" boolean: %s, %s", opts["active"][0], err.Error())
 		}
 	} else {
 		req.User.IsActive = true
@@ -154,31 +164,39 @@ func cmdUserAdd(c *cli.Context) error {
 	if _, ok := opts["system"]; ok {
 		if err := adm.ValidateBool(opts["system"][0],
 			&req.User.IsSystem); err != nil {
-			return fmt.Errorf("Syntax error, system argument not boolean: %s, %s",
-				opts["active"][0], err.Error())
+			return fmt.Errorf("Syntax error, system argument not"+
+				" boolean: %s, %s", opts["active"][0], err.Error())
 		}
 	} else {
 		req.User.IsSystem = false
 	}
 
-	if resp, err := adm.PostReqBody(req, `/users/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/users/`, `command`, req, c)
 }
 
 func cmdUserUpdate(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{`username`, "firstname", "lastname", "employeenr",
-		"mailaddr", "team", `deleted`}
-	required := []string{`username`, "firstname", "lastname", "employeenr",
-		"mailaddr", "team", `deleted`}
+	unique := []string{
+		`username`,
+		"firstname",
+		"lastname",
+		"employeenr",
+		"mailaddr",
+		"team",
+		`deleted`}
+	required := []string{
+		`username`,
+		"firstname",
+		"lastname",
+		"employeenr",
+		"mailaddr",
+		"team",
+		`deleted`}
 
 	opts := map[string][]string{}
-	if err := adm.ParseVariadicArguments(
+	var err error
+	if err = adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
 		c.Args().Tail(),
@@ -187,14 +205,17 @@ func cmdUserUpdate(c *cli.Context) error {
 	}
 
 	// validate
-	if err := adm.ValidateEmployeeNumber(opts[`employeenr`][0]); err != nil {
+	if err = adm.ValidateEmployeeNumber(
+		opts[`employeenr`][0]); err != nil {
 		return err
 	}
-	if err := adm.ValidateMailAddress(opts[`mailaddr`][0]); err != nil {
+	if err = adm.ValidateMailAddress(
+		opts[`mailaddr`][0]); err != nil {
 		return err
 	}
 	if !adm.IsUUID(c.Args().First()) {
-		return fmt.Errorf(`users update requiress UUID as first argument`)
+		return fmt.Errorf(`users update requiress UUID as` +
+			` first argument`)
 	}
 
 	req := proto.NewUserRequest()
@@ -204,25 +225,18 @@ func cmdUserUpdate(c *cli.Context) error {
 	req.User.LastName = opts["lastname"][0]
 	req.User.MailAddress = opts["mailaddr"][0]
 	req.User.EmployeeNumber = opts["employeenr"][0]
-	{
-		var err error
-		req.User.TeamId, err = adm.LookupTeamId(opts[`team`][0])
-		if err != nil {
-			return err
-		}
-		if err = adm.ValidateBool(opts[`deleted`][0],
-			&req.User.IsDeleted); err != nil {
-			return fmt.Errorf("Syntax error, deleted argument not boolean: %s, %s",
-				opts[`deleted`][0], err.Error())
-		}
+	if req.User.TeamId, err = adm.LookupTeamId(
+		opts[`team`][0]); err != nil {
+		return err
+	}
+	if err = adm.ValidateBool(opts[`deleted`][0],
+		&req.User.IsDeleted); err != nil {
+		return fmt.Errorf("Syntax error, deleted argument not"+
+			" boolean: %s, %s", opts[`deleted`][0], err.Error())
 	}
 
 	path := fmt.Sprintf("/users/%s", req.User.Id)
-	if resp, err := adm.PutReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
 func cmdUserMarkDeleted(c *cli.Context) error {
@@ -239,11 +253,7 @@ func cmdUserMarkDeleted(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/users/%s", userId)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdUserPurgeDeleted(c *cli.Context) error {
@@ -266,11 +276,7 @@ func cmdUserPurgeDeleted(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/users/%s", userId)
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`deletebody`, path, `command`, nil, c)
 }
 
 func cmdUserActivate(c *cli.Context) error {
@@ -302,7 +308,8 @@ func cmdUserActivateUser(c *cli.Context) error {
 			return err
 		}
 	} else {
-		fmt.Printf("Starting with activation of account '%s' in 2 seconds.\n", Cfg.Auth.User)
+		fmt.Printf("Starting with activation of account '%s' in"+
+			" 2 seconds.\n", Cfg.Auth.User)
 		fmt.Printf(`Use --user flag to activate a different account.`)
 		time.Sleep(2 * time.Second)
 	}
@@ -314,19 +321,22 @@ func cmdUserActivateUser(c *cli.Context) error {
 password_read:
 	password = adm.ReadVerified(`password`)
 
-	if happy, err = adm.EvaluatePassword(3, password, Cfg.Auth.User, `soma`); err != nil {
+	if happy, err = adm.EvaluatePassword(3, password,
+		Cfg.Auth.User, `soma`); err != nil {
 		return err
 	} else if !happy {
 		password = ""
 		goto password_read
 	}
 
-	fmt.Printf("\nTo confirm that this is your account, an additional credential is required" +
+	fmt.Printf("\nTo confirm that this is your account, an" +
+		" additional credential is required" +
 		" this once.\n")
 
 	switch Cfg.Activation {
 	case `ldap`:
-		fmt.Println(`Please provide your LDAP password to establish ownership.`)
+		fmt.Println(`Please provide your LDAP password to"+
+		" establish ownership.`)
 		passKey = adm.ReadVerified(`password`)
 	case `mailtoken`:
 		fmt.Println(`Please provide the token you received via email.`)
@@ -344,7 +354,8 @@ password_read:
 	}
 
 	// validate received token
-	if err = adm.ValidateToken(Client, Cfg.Auth.User, cred.Token); err != nil {
+	if err = adm.ValidateToken(Client, Cfg.Auth.User,
+		cred.Token); err != nil {
 		return err
 	}
 	// save received token
@@ -368,11 +379,7 @@ func cmdUserList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/users/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/users/`, `list`, nil, c)
 }
 
 func cmdUserSync(c *cli.Context) error {
@@ -380,11 +387,7 @@ func cmdUserSync(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/sync/users/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/sync/users/`, `list`, nil, c)
 }
 
 func cmdUserShow(c *cli.Context) error {
@@ -398,13 +401,9 @@ func cmdUserShow(c *cli.Context) error {
 	if id, err = adm.LookupUserId(c.Args().First()); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/users/%s", id)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	path := fmt.Sprintf("/users/%s", id)
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdUserPasswordUpdate(c *cli.Context) error {
@@ -416,12 +415,14 @@ func cmdUserPasswordUpdate(c *cli.Context) error {
 	)
 
 	if Cfg.Auth.User == `` {
-		fmt.Println(`Please specify for which  account the password should be changed.`)
+		fmt.Println(`Please specify for which  account the"+
+		" password should be changed.`)
 		if Cfg.Auth.User, err = adm.Read(`user`); err != nil {
 			return err
 		}
 	} else {
-		fmt.Printf("Starting with password update of account '%s' in 2 seconds.\n", Cfg.Auth.User)
+		fmt.Printf("Starting with password update of account '%s'"+
+			" in 2 seconds.\n", Cfg.Auth.User)
 		fmt.Printf(`Use --user flag to switch account account.`)
 		time.Sleep(2 * time.Second)
 	}
@@ -433,7 +434,8 @@ func cmdUserPasswordUpdate(c *cli.Context) error {
 password_read:
 	password = adm.ReadVerified(`password`)
 
-	if happy, err = adm.EvaluatePassword(3, password, Cfg.Auth.User, `soma`); err != nil {
+	if happy, err = adm.EvaluatePassword(3, password,
+		Cfg.Auth.User, `soma`); err != nil {
 		return err
 	} else if !happy {
 		password = ``
@@ -441,34 +443,46 @@ password_read:
 	}
 
 	if c.Bool(`reset`) {
-		fmt.Printf("\nTo confirm that you are allowed to reset this account, an additional" +
+		fmt.Printf("\nTo confirm that you are allowed to reset" +
+			" this account, an additional" +
 			"credential is required.\n")
 
 		switch Cfg.Activation {
 		case `ldap`:
-			fmt.Println(`Please provide your LDAP password to establish ownership.`)
+			fmt.Println(`Please provide your LDAP password to` +
+				`establish ownership.`)
 			passKey = adm.ReadVerified(`password`)
 		case `mailtoken`:
-			fmt.Println(`Please provide the token you received via email.`)
+			fmt.Println(`Please provide the token you received` +
+				`via email.`)
 			passKey = adm.ReadVerified(`token`)
 		default:
 			return fmt.Errorf(`Unknown activation mode`)
 		}
 	} else {
-		fmt.Printf("\nPlease provide your currently active/old password.\n")
+		fmt.Printf("\nPlease provide your currently active/old" +
+			" password.\n")
 		passKey = adm.ReadVerified(`password`)
 	}
 
-	if cred, err = adm.ChangeAccountPassword(Client, c.Bool(`reset`), &auth.Token{
-		UserName: Cfg.Auth.User,
-		Password: password,
-		Token:    passKey,
-	}); err != nil {
+	if cred, err = adm.ChangeAccountPassword(
+		Client,
+		c.Bool(`reset`),
+		&auth.Token{
+			UserName: Cfg.Auth.User,
+			Password: password,
+			Token:    passKey,
+		},
+	); err != nil {
 		return err
 	}
 
 	// validate received token
-	if err = adm.ValidateToken(Client, Cfg.Auth.User, cred.Token); err != nil {
+	if err = adm.ValidateToken(
+		Client,
+		Cfg.Auth.User,
+		cred.Token,
+	); err != nil {
 		return err
 	}
 	// save received token

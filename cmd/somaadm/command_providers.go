@@ -52,11 +52,7 @@ func cmdProviderCreate(c *cli.Context) error {
 	req.Provider = &proto.Provider{}
 	req.Provider.Name = c.Args().First()
 
-	if resp, err := adm.PostReqBody(req, `/providers/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`postbody`, `/providers/`, `command`, req, c)
 }
 
 func cmdProviderDelete(c *cli.Context) error {
@@ -65,11 +61,7 @@ func cmdProviderDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `command`)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdProviderList(c *cli.Context) error {
@@ -77,11 +69,7 @@ func cmdProviderList(c *cli.Context) error {
 		return err
 	}
 
-	if resp, err := adm.GetReq(`/providers/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+	return adm.Perform(`get`, `/providers/`, `list`, nil, c)
 }
 
 func cmdProviderShow(c *cli.Context) error {
@@ -90,11 +78,7 @@ func cmdProviderShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/providers/%s", c.Args().First())
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

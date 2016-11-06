@@ -171,15 +171,12 @@ func cmdClusterCreate(c *cli.Context) error {
 	req.Cluster.Name = c.Args().First()
 	req.Cluster.BucketId = bucketId
 
-	if err := adm.ValidateRuneCountRange(req.Cluster.Name, 4, 256); err != nil {
+	if err := adm.ValidateRuneCountRange(
+		req.Cluster.Name, 4, 256); err != nil {
 		return err
 	}
 
-	if resp, err := adm.PostReqBody(req, "/clusters/"); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `create`)
-	}
+	return adm.Perform(`postbody`, `/clusters/`, `command`, req, c)
 }
 
 func cmdClusterDelete(c *cli.Context) error {
@@ -206,13 +203,9 @@ func cmdClusterDelete(c *cli.Context) error {
 		bucketId); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `create`)
-	}
+	path := fmt.Sprintf("/clusters/%s", clusterId)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdClusterRename(c *cli.Context) error {
@@ -240,27 +233,20 @@ func cmdClusterRename(c *cli.Context) error {
 		bucketId); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/clusters/%s", clusterId)
 
 	req.Cluster = &proto.Cluster{}
 	req.Cluster.Name = opts["to"][0]
 
-	if resp, err := adm.PatchReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `create`)
-	}
+	path := fmt.Sprintf("/clusters/%s", clusterId)
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 func cmdClusterList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
-	if resp, err := adm.GetReq(`/clusters/`); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `list`)
-	}
+
+	return adm.Perform(`get`, `/clusters/`, `list`, nil, c)
 }
 
 func cmdClusterShow(c *cli.Context) error {
@@ -287,13 +273,9 @@ func cmdClusterShow(c *cli.Context) error {
 		bucketId); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/clusters/%s", clusterId)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `show`)
-	}
+	path := fmt.Sprintf("/clusters/%s", clusterId)
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 func cmdClusterTree(c *cli.Context) error {
@@ -320,13 +302,9 @@ func cmdClusterTree(c *cli.Context) error {
 		bucketId); err != nil {
 		return err
 	}
-	path := fmt.Sprintf("/clusters/%s/tree/tree", clusterId)
 
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `tree`)
-	}
+	path := fmt.Sprintf("/clusters/%s/tree/tree", clusterId)
+	return adm.Perform(`get`, path, `tree`, nil, c)
 }
 
 func cmdClusterMemberAdd(c *cli.Context) error {
@@ -372,12 +350,7 @@ func cmdClusterMemberAdd(c *cli.Context) error {
 	*req.Cluster.Members = append(*req.Cluster.Members, node)
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
-
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdClusterMemberDelete(c *cli.Context) error {
@@ -411,12 +384,7 @@ func cmdClusterMemberDelete(c *cli.Context) error {
 
 	path := fmt.Sprintf("/clusters/%s/members/%s", clusterId,
 		nodeId)
-
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdClusterMemberList(c *cli.Context) error {
@@ -445,12 +413,7 @@ func cmdClusterMemberList(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/clusters/%s/members/", clusterId)
-
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, ``)
-	}
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdClusterSystemPropertyAdd(c *cli.Context) error {
@@ -528,14 +491,10 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 	req := proto.NewClusterRequest()
 	req.Cluster.Id = clusterId
 	req.Cluster.BucketId = bucketId
+
 	path := fmt.Sprintf("/clusters/%s/property/%s/%s",
 		clusterId, pType, sourceId)
-
-	if resp, err := adm.DeleteReqBody(req, path); err != nil {
-		return err
-	} else {
-		return adm.FormatOut(c, resp, `delete`)
-	}
+	return adm.Perform(`deletebody`, path, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
