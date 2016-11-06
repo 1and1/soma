@@ -53,12 +53,23 @@ func registerChecks(app cli.App) *cli.App {
 }
 
 func cmdCheckAdd(c *cli.Context) error {
-	opts, constraints, thresholds := utl.ParseVariadicCheckArguments(c.Args().Tail())
-
 	var (
 		err    error
 		teamId string
 	)
+	opts := make(map[string][]string)
+	constraints := []proto.CheckConfigConstraint{}
+	thresholds := []proto.CheckConfigThreshold{}
+
+	if err = adm.ParseVariadicCheckArguments(
+		opts,
+		constraints,
+		thresholds,
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
+
 	req := proto.NewCheckConfigRequest()
 	if err = adm.ValidateLBoundUint64(opts["interval"][0],
 		&req.CheckConfig.Interval, 1); err != nil {

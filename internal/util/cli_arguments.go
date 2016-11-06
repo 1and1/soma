@@ -135,7 +135,7 @@ func (u *SomaUtil) parseVariadicArguments(
 	return result
 }
 
-func (u *SomaUtil) ParseVariadicCheckArguments(args []string) (
+func (u *SomaUtil) parseVariadicCheckArguments(args []string) (
 	map[string][]string,
 	[]proto.CheckConfigConstraint,
 	[]proto.CheckConfigThreshold,
