@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/1and1/soma/internal/db"
-	"github.com/1and1/soma/internal/util"
 	"github.com/codegangsta/cli"
 )
 
@@ -13,7 +12,6 @@ import (
 //go:generate go-bindata -pkg help -ignore .gitignore -o ../../internal/help/bindata.go -prefix "../../internal/help/rendered/" ../../internal/help/rendered/...
 
 var Cfg Config
-var utl util.SomaUtil
 var store db.DB
 
 const rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
