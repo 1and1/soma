@@ -38,8 +38,6 @@ func ParseVariadicArguments(
 	reqKeys []string, // keys that are required at least one
 	args []string, // arguments to parse
 ) error {
-	// ensure the result is empty
-	result = make(map[string][]string)
 	// used to hold found errors, so if three keywords are missing they can
 	// all be mentioned in one call
 	errors := []string{}
