@@ -332,6 +332,29 @@ func LookupLevelName(s string) (string, error) {
 	return levelByName(s)
 }
 
+// LookupCheckObjectId looks up the UUID for whichever object a
+// check was defined on
+func LookupCheckObjectId(oType, oName, buck string) (string, error) {
+	switch oType {
+	case `repository`:
+		return LookupRepoId(oName)
+
+	case `bucket`:
+		return LookupBucketId(oName)
+
+	case `group`:
+		return LookupGroupId(oName, buck)
+
+	case `cluster`:
+		return LookupClusterId(oName, buck)
+
+	case `node`:
+		return LookupNodeId(oName)
+	}
+
+	return ``, fmt.Errorf("Unknown object type: %s", oType)
+}
+
 // oncallIdByName implements the actual serverside lookup of the
 // oncall duty UUID
 func oncallIdByName(oncall string) (string, error) {

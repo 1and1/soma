@@ -7,7 +7,7 @@ import (
 	"gopkg.in/resty.v0"
 )
 
-func (u SomaUtil) GetObjectIdForCheck(c *resty.Client, t string, n string, b string) string {
+func (u SomaUtil) getObjectIdForCheck(c *resty.Client, t string, n string, b string) string {
 	switch t {
 	case "repository":
 		return u.tryGetRepositoryByUUIDOrName(c, n)

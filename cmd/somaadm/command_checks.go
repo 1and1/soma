@@ -81,11 +81,13 @@ func cmdCheckAdd(c *cli.Context) error {
 		req.CheckConfig.BucketId); err != nil {
 		return err
 	}
-	req.CheckConfig.ObjectId = utl.GetObjectIdForCheck(
-		Client,
-		opts["on/type"][0],
-		opts["on/object"][0],
-		req.CheckConfig.BucketId)
+	if req.CheckConfig.ObjectId, err = adm.LookupCheckObjectId(
+		opts[`on/type`][0],
+		opts[`on/object`][0],
+		req.CheckConfig.BucketId,
+	); err != nil {
+		return err
+	}
 
 	// clear bucketid if check is on a repository
 	if req.CheckConfig.ObjectType == "repository" {
