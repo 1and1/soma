@@ -165,6 +165,9 @@ func LookupBucketId(s string) (string, error) {
 	return bucketIdByName(s)
 }
 
+// LookupGroupId looks up the UUID for group group in bucket
+// bucket on the server.
+// If group is already a UUID, then group is immediately returned.
 func LookupGroupId(group, bucket string) (string, error) {
 	if IsUUID(group) {
 		return group, nil
@@ -184,6 +187,9 @@ func LookupGroupId(group, bucket string) (string, error) {
 	return groupIdByName(group, bId)
 }
 
+// LookupClusterId looks up the UUID for cluster cluster in
+// bucket bucket on the server.
+// If cluster is already a UUID, then cluster is immediately returned.
 func LookupClusterId(cluster, bucket string) (string, error) {
 	if IsUUID(cluster) {
 		return cluster, nil

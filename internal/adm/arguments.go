@@ -289,12 +289,14 @@ func VerifyNoArgument(c *cli.Context) error {
 	return nil
 }
 
+// AllArguments returns all arguments from the given cli.Context
 func AllArguments(c *cli.Context) []string {
 	sl := []string{c.Args().First()}
 	sl = append(sl, c.Args().Tail()...)
 	return sl
 }
 
+// sliceContainsString checks whether string s is in slice sl
 func sliceContainsString(s string, sl []string) bool {
 	for _, v := range sl {
 		if v == s {
@@ -304,6 +306,7 @@ func sliceContainsString(s string, sl []string) bool {
 	return false
 }
 
+// checkStringNotAKeyword checks whether string s in not in slice keys
 func checkStringNotAKeyword(s string, keys []string) error {
 	if sliceContainsString(s, keys) {
 		return fmt.Errorf("Syntax error, back-to-back keyword: %s", s)
