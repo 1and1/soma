@@ -37,15 +37,9 @@ func DecodeJsonBody(r *http.Request, s interface{}) error {
 		err = decoder.Decode(c)
 	default:
 		rt := reflect.TypeOf(s)
-		//return fmt.Errorf("DecodeJsonBody: Unhandled request type: %s", rt)
-		// XXX Dev Setting
-		errMsg := fmt.Sprintf("DecodeJsonBody: Unhandled request type: %s", rt)
-		log.Fatal(errMsg)
+		err = fmt.Errorf("DecodeJsonBody: Unhandled request type: %s", rt)
 	}
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func ResultLength(r *somaResult, t ErrorMarker) int {
