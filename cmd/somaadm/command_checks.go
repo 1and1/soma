@@ -71,7 +71,7 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 
 	req := proto.NewCheckConfigRequest()
-	if err = adm.ValidateLBoundUint64(opts["interval"][0],
+	if err = adm.ValidateLBoundUint64(opts[`interval`][0],
 		&req.CheckConfig.Interval, 1); err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 	req.CheckConfig.ObjectType = opts[`on/type`][0]
 	req.CheckConfig.Name = c.Args().First()
-	req.CheckConfig.BucketId, err = adm.LookupBucketId(opts["in"][0])
+	req.CheckConfig.BucketId, err = adm.LookupBucketId(opts[`in`][0])
 	if err != nil {
 		return err
 	}
@@ -101,12 +101,12 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 
 	// clear bucketid if check is on a repository
-	if req.CheckConfig.ObjectType == "repository" {
-		req.CheckConfig.BucketId = ""
+	if req.CheckConfig.ObjectType == `repository` {
+		req.CheckConfig.BucketId = ``
 	}
 
 	// optional argument: inheritance
-	if iv, ok := opts["inheritance"]; ok {
+	if iv, ok := opts[`inheritance`]; ok {
 		if err := adm.ValidateBool(iv[0],
 			&req.CheckConfig.Inheritance); err != nil {
 			return err
@@ -117,7 +117,7 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 
 	// optional argument: childrenonly
-	if co, ok := opts["childrenonly"]; ok {
+	if co, ok := opts[`childrenonly`]; ok {
 		if err := adm.ValidateBool(co[0],
 			&req.CheckConfig.ChildrenOnly); err != nil {
 			return err
@@ -128,7 +128,7 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 
 	// optional argument: extern
-	if ex, ok := opts["extern"]; ok {
+	if ex, ok := opts[`extern`]; ok {
 		if err := adm.ValidateRuneCount(ex[0], 64); err != nil {
 			return err
 		}
@@ -155,34 +155,28 @@ func cmdCheckAdd(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/checks/%s/", req.CheckConfig.RepositoryId)
-	if resp, err := adm.PostReqBody(req, path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`postbody`, path, `command`, req, nil)
 }
 
 func cmdCheckDelete(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{"in"}
-	required := []string{"in"}
+	unique := []string{`in`}
+	required := []string{`in`}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
-		c.Args().Tail()); err != nil {
+		c.Args().Tail(),
+	); err != nil {
 		return err
 	}
 	var (
 		err                       error
 		bucketId, repoId, checkId string
 	)
-	bucketId, err = adm.LookupBucketId(opts["in"][0])
-	if err != nil {
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
@@ -194,33 +188,28 @@ func cmdCheckDelete(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
-	if resp, err := adm.DeleteReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdCheckList(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{"in"}
-	required := []string{"in"}
+	unique := []string{`in`}
+	required := []string{`in`}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
-		c.Args()); err != nil {
+		adm.AllArguments(c),
+	); err != nil {
 		return err
 	}
 	var (
 		err              error
 		bucketId, repoId string
 	)
-	bucketId, err = adm.LookupBucketId(opts["in"][0])
+	bucketId, err = adm.LookupBucketId(opts[`in`][0])
 	if err != nil {
 		return err
 	}
@@ -229,23 +218,17 @@ func cmdCheckList(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/checks/%s/", repoId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `list`, nil, c)
 }
 
 func cmdCheckShow(c *cli.Context) error {
-	multiple := []string{}
-	unique := []string{"in"}
-	required := []string{"in"}
+	unique := []string{`in`}
+	required := []string{`in`}
 	opts := map[string][]string{}
 
 	if err := adm.ParseVariadicArguments(
 		opts,
-		multiple,
+		[]string{},
 		unique,
 		required,
 		c.Args().Tail()); err != nil {
@@ -255,7 +238,7 @@ func cmdCheckShow(c *cli.Context) error {
 		err                       error
 		bucketId, repoId, checkId string
 	)
-	if bucketId, err = adm.LookupBucketId(opts["in"][0]); err != nil {
+	if bucketId, err = adm.LookupBucketId(opts[`in`][0]); err != nil {
 		return err
 	}
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
@@ -267,12 +250,7 @@ func cmdCheckShow(c *cli.Context) error {
 	}
 
 	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
-	if resp, err := adm.GetReq(path); err != nil {
-		return err
-	} else {
-		fmt.Println(resp)
-	}
-	return nil
+	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
