@@ -42,6 +42,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	spawnJobReadHandler(appLog, reqLog, errLog)
 	spawnOutputTreeHandler(appLog, reqLog, errLog)
 	spawnInstanceReadHandler(appLog, reqLog, errLog)
+	spawnWorkflowReadHandler(appLog, reqLog, errLog)
 
 	if !SomaCfg.ReadOnly {
 		if !SomaCfg.Observer {
@@ -811,6 +812,18 @@ func spawnInstanceReadHandler(appLog, reqLog, errLog *log.Logger) {
 	handler.reqLog = reqLog
 	handler.errLog = errLog
 	handlerMap[`instance_r`] = &handler
+	go handler.run()
+}
+
+func spawnWorkflowReadHandler(appLog, reqLog, errLog *log.Logger) {
+	var handler workflowRead
+	handler.input = make(chan msg.Request, 128)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`workflow_r`] = &handler
 	go handler.run()
 }
 

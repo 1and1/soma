@@ -306,6 +306,7 @@ func main() {
 	router.GET(`/validity/`, Check(BasicAuth(ListValidity)))
 	router.GET(`/views/:view`, Check(BasicAuth(ShowView)))
 	router.GET(`/views/`, Check(BasicAuth(ListView)))
+	router.GET(`/workflow/summary`, Check(BasicAuth(WorkflowSummary)))
 	router.POST(`/filter/buckets/`, Check(BasicAuth(ListBucket)))
 	router.POST(`/filter/capability/`, Check(BasicAuth(ListCapability)))
 	router.POST(`/filter/checks/:repository/`, Check(BasicAuth(ListCheckConfiguration)))

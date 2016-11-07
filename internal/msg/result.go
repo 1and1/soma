@@ -30,6 +30,7 @@ type Result struct {
 	Permission []proto.Permission
 	System     []proto.SystemOperation
 	Tree       proto.Tree
+	Workflow   []proto.Workflow
 }
 
 func (r *Result) RowCnt(i int64, err error) bool {
@@ -64,6 +65,8 @@ func (r *Result) Clear(s string) {
 		r.Permission = []proto.Permission{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
+	case `workflow`:
+		r.Workflow = []proto.Workflow{}
 	}
 }
 

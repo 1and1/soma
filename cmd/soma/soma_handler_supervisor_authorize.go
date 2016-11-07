@@ -228,6 +228,7 @@ var svGlobalRequiredPermission = map[string][]string{
 	`view_list`:                []string{`system_all`, `global_schema`},
 	`view_rename`:              []string{`system_all`},
 	`view_show`:                []string{`system_all`, `global_schema`},
+	`workflow_summary`:         []string{`system_all`},
 }
 
 var svPermissionActionScopeMap = map[string]string{
@@ -366,6 +367,7 @@ var svPermissionActionScopeMap = map[string]string{
 	`view_list`:                      `global`,
 	`view_rename`:                    `global`,
 	`view_show`:                      `global`,
+	`workflow_summary`:               `global`,
 	`buckets_create`:                 `repository`,
 	`buckets_property_add`:           `repository`,
 	`buckets_list`:                   `repository`,
