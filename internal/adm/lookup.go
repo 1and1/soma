@@ -292,19 +292,28 @@ func LookupNodeConfig(s string) (*proto.NodeConfig, error) {
 	return nodeConfigById(nId)
 }
 
-// LookupCheckConfigId looks up the UUID of check configuration s
-// in Repository repo. Returns immediately if s is a UUID.
-func LookupCheckConfigId(s, repo string) (string, error) {
-	if IsUUID(s) {
-		return s, nil
+// LookupCheckConfigId looks up the UUID of check configuration.
+// Lookup requires either the name and repository of the check,
+// or the id of a check instance that was created by this check
+// configuration.
+// When the lookup is performed via name and repository, if the
+// name is already a UUID it is returned immediately.
+func LookupCheckConfigId(name, repo, instance string) (string, string, error) {
+	if name != `` && repo != `` {
+		if IsUUID(name) {
+			return name, ``, nil
+		}
+		var repoId string
+		if r, err := LookupRepoId(repo); err != nil {
+			return ``, ``, err
+		} else {
+			repoId = r
+		}
+		return checkConfigIdByName(name, repoId)
+	} else if instance != `` {
+		return checkConfigIdByInstance(instance)
 	}
-	var rId string
-	if r, err := LookupRepoId(repo); err != nil {
-		return ``, err
-	} else {
-		rId = r
-	}
-	return checkConfigIdByName(s, rId)
+	return ``, ``, fmt.Errorf(`Invalid argument combination for CheckConfigId`)
 }
 
 // LookupCustomPropertyId looks up the UUID of a custom property s
@@ -972,8 +981,8 @@ abort:
 }
 
 // checkConfigIdByName implements the actual lookup of the check
-// configuration's UUID from the server
-func checkConfigIdByName(check, repo string) (string, error) {
+// configuration's UUID from the server by check config name
+func checkConfigIdByName(check, repo string) (string, string, error) {
 	req := proto.NewCheckConfigFilter()
 	req.Filter.CheckConfig.Name = check
 
@@ -993,10 +1002,36 @@ func checkConfigIdByName(check, repo string) (string, error) {
 			check, (*res.CheckConfigs)[0].Name)
 		goto abort
 	}
-	return (*res.CheckConfigs)[0].Id, nil
+	return (*res.CheckConfigs)[0].Id, repo, nil
 
 abort:
-	return ``, fmt.Errorf("CheckConfigId lookup failed: %s",
+	return ``, ``, fmt.Errorf("CheckConfigId lookup failed: %s",
+		err.Error())
+}
+
+// checkConfigIdByInstance implements the actual lookup of the check
+// configuration's UUID from the server via an instance ID it created
+func checkConfigIdByInstance(instance string) (string, string, error) {
+	res, err := fetchObjList(fmt.Sprintf("/instances/%s", instance))
+	if err != nil {
+		goto abort
+	}
+
+	if res.Instances == nil || len(*res.Instances) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if instance != (*res.Instances)[0].Id {
+		err = fmt.Errorf("Id mismatch: %s vs %s",
+			instance, (*res.Instances)[0].Id)
+		goto abort
+	}
+	return (*res.Instances)[0].ConfigId,
+		(*res.Instances)[0].RepositoryId, nil
+
+abort:
+	return ``, ``, fmt.Errorf("CheckConfigId lookup failed: %s",
 		err.Error())
 }
 

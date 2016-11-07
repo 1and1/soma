@@ -188,8 +188,8 @@ func cmdCheckDelete(c *cli.Context) error {
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 		return err
 	}
-	if checkId, err = adm.LookupCheckConfigId(c.Args().First(),
-		repoId); err != nil {
+	if checkId, _, err = adm.LookupCheckConfigId(c.Args().First(),
+		repoId, ``); err != nil {
 		return err
 	}
 
@@ -261,8 +261,8 @@ func cmdCheckShow(c *cli.Context) error {
 	if repoId, err = adm.LookupRepoByBucket(bucketId); err != nil {
 		return err
 	}
-	if checkId, err = adm.LookupCheckConfigId(c.Args().First(),
-		repoId); err != nil {
+	if checkId, _, err = adm.LookupCheckConfigId(c.Args().First(),
+		repoId, ``); err != nil {
 		return err
 	}
 
