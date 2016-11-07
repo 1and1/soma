@@ -94,7 +94,37 @@ func cmdWorkflowRetry(c *cli.Context) error {
 }
 
 func cmdWorkflowSet(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
+	unique := []string{`status`, `next`}
+	required := []string{`status`, `next`}
+	opts := map[string][]string{}
+	if err := adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
+	if !adm.IsUUID(c.Args().First()) {
+		return fmt.Errorf("Argument is not a UUID: %s",
+			c.Args().First())
+	}
+	if err := adm.ValidateStatus(opts[`status`][0]); err != nil {
+		return err
+	}
+	if err := adm.ValidateStatus(opts[`next`][0]); err != nil {
+		return err
+	}
+	req := proto.NewWorkflowRequest()
+	req.Flags.Forced = c.Bool(`force`)
+	req.Workflow.InstanceConfigId = c.Args().First()
+	req.Workflow.Status = opts[`status`][0]
+	req.Workflow.NextStatus = opts[`next`][0]
+
+	path := fmt.Sprintf("/workflow/instanceconfig/%s",
+		c.Args().First())
+	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
