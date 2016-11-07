@@ -30,6 +30,7 @@ type Request struct {
 	Repository proto.Repository
 	System     proto.SystemOperation
 	Tree       proto.Tree
+	Workflow   proto.Workflow
 }
 
 type Filter struct {

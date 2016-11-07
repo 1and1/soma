@@ -11,11 +11,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
+	"github.com/lib/pq"
 )
 
 type workflowRead struct {
@@ -23,6 +25,7 @@ type workflowRead struct {
 	shutdown     chan bool
 	conn         *sql.DB
 	stmt_summary *sql.Stmt
+	stmt_list    *sql.Stmt
 	appLog       *log.Logger
 	reqLog       *log.Logger
 	errLog       *log.Logger
@@ -33,6 +36,7 @@ func (r *workflowRead) run() {
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
 		stmt.WorkflowSummary: r.stmt_summary,
+		stmt.WorkflowList:    r.stmt_list,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
 			r.errLog.Fatal(`workflow_r`, err, stmt.Name(statement))
@@ -57,10 +61,15 @@ func (r *workflowRead) process(q *msg.Request) {
 	result := msg.Result{Type: q.Type, Action: q.Action,
 		Workflow: []proto.Workflow{}}
 	var (
-		err    error
-		status string
-		count  int64
-		rows   *sql.Rows
+		err                                           error
+		status, instanceId, checkId, repoId, configId string
+		instanceConfigId                              string
+		count, version                                int64
+		rows                                          *sql.Rows
+		activatedNull, deprovisionedNull              pq.NullTime
+		updatedNull, notifiedNull                     pq.NullTime
+		created                                       time.Time
+		isInherited                                   bool
 	)
 
 	switch q.Action {
@@ -118,6 +127,80 @@ func (r *workflowRead) process(q *msg.Request) {
 		result.Workflow = append(result.Workflow, proto.Workflow{
 			Summary: &summary,
 		})
+		result.OK()
+
+	case `list`:
+		r.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
+			q.RemoteAddr, q.Job.Id)
+		workflow := proto.Workflow{
+			Instances: &[]proto.Instance{},
+		}
+
+		if rows, err = r.stmt_list.Query(
+			q.Workflow.Status,
+		); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+		for rows.Next() {
+			if err = rows.Scan(
+				&instanceId,
+				&checkId,
+				&repoId,
+				&configId,
+				&instanceConfigId,
+				&version,
+				&status,
+				&created,
+				&activatedNull,
+				&deprovisionedNull,
+				&updatedNull,
+				&notifiedNull,
+				&isInherited,
+			); err != nil {
+				rows.Close()
+				result.ServerError(err)
+				result.Clear(q.Type)
+				goto dispatch
+			}
+			instance := proto.Instance{
+				Id:               instanceId,
+				CheckId:          checkId,
+				RepositoryId:     repoId,
+				ConfigId:         configId,
+				InstanceConfigId: instanceConfigId,
+				Version:          uint64(version),
+				CurrentStatus:    status,
+				IsInherited:      isInherited,
+				Info: &proto.InstanceVersionInfo{
+					CreatedAt: created.UTC().Format(rfc3339Milli),
+				},
+			}
+			if activatedNull.Valid {
+				instance.Info.ActivatedAt = activatedNull.
+					Time.UTC().Format(rfc3339Milli)
+			}
+			if deprovisionedNull.Valid {
+				instance.Info.DeprovisionedAt = deprovisionedNull.
+					Time.UTC().Format(rfc3339Milli)
+			}
+			if updatedNull.Valid {
+				instance.Info.StatusLastUpdatedAt = updatedNull.
+					Time.UTC().Format(rfc3339Milli)
+			}
+			if notifiedNull.Valid {
+				instance.Info.NotifiedAt = notifiedNull.
+					Time.UTC().Format(rfc3339Milli)
+			}
+			*workflow.Instances = append(*workflow.Instances,
+				instance)
+		}
+		if err = rows.Err(); err != nil {
+			result.ServerError(err)
+			result.Clear(q.Type)
+			goto dispatch
+		}
+		result.Workflow = append(result.Workflow, workflow)
 		result.OK()
 
 	default:

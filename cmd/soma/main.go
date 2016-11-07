@@ -327,6 +327,7 @@ func main() {
 	router.POST(`/filter/servers/`, Check(BasicAuth(SearchServer)))
 	router.POST(`/filter/teams/`, Check(BasicAuth(ListTeam)))
 	router.POST(`/filter/users/`, Check(BasicAuth(ListUser)))
+	router.POST(`/filter/workflow/`, Check(BasicAuth(WorkflowList)))
 	router.POST(`/hostdeployment/:system/:assetid`, Check(AssembleHostUpdate))
 
 	if !SomaCfg.ReadOnly {
