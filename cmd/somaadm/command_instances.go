@@ -50,7 +50,24 @@ func registerInstances(app cli.App) *cli.App {
 }
 
 func cmdInstanceCascade(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
+	var (
+		err             error
+		checkId, repoId string
+	)
+	if err = adm.VerifySingleArgument(c); err != nil {
+		return err
+	}
+	if !adm.IsUUID(c.Args().First()) {
+		return fmt.Errorf("Argument is not a UUID: %s",
+			c.Args().First())
+	}
+	if checkId, repoId, err = adm.LookupCheckConfigId(
+		``, ``, c.Args().First()); err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/checks/%s/%s", repoId, checkId)
+	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
 func cmdInstanceList(c *cli.Context) error {
