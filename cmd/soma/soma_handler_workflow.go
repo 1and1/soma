@@ -222,6 +222,7 @@ type workflowWrite struct {
 	conn        *sql.DB
 	stmt_retry  *sql.Stmt
 	stmt_update *sql.Stmt
+	stmt_set    *sql.Stmt
 	appLog      *log.Logger
 	reqLog      *log.Logger
 	errLog      *log.Logger
@@ -233,6 +234,7 @@ func (w *workflowWrite) run() {
 	for statement, prepStmt := range map[string]*sql.Stmt{
 		stmt.WorkflowRetry:           w.stmt_retry,
 		stmt.WorkflowUpdateAvailable: w.stmt_update,
+		stmt.WorkflowSet:             w.stmt_set,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`workflow_r`, err, stmt.Name(statement))
@@ -261,6 +263,7 @@ func (w *workflowWrite) process(q *msg.Request) {
 	var (
 		err error
 		tx  *sql.Tx
+		res sql.Result
 	)
 	switch q.Action {
 	case `retry`:
@@ -281,26 +284,52 @@ func (w *workflowWrite) process(q *msg.Request) {
 				goto dispatch
 			}
 		}
-		if _, err = txMap[`retry`].Exec(
+
+		if res, err = txMap[`retry`].Exec(
 			q.Workflow.InstanceId,
 		); err != nil {
 			tx.Rollback()
 			result.ServerError(err)
 			goto dispatch
 		}
-		if _, err = txMap[`update`].Exec(
+		if !result.RowCnt(res.RowsAffected()) {
+			tx.Rollback()
+			goto dispatch
+		}
+
+		if res, err = txMap[`update`].Exec(
 			q.Workflow.InstanceId,
 		); err != nil {
 			tx.Rollback()
 			result.ServerError(err)
 			goto dispatch
 		}
+		if !result.RowCnt(res.RowsAffected()) {
+			tx.Rollback()
+			goto dispatch
+		}
+
 		if err = tx.Commit(); err != nil {
 			tx.Rollback()
 			result.ServerError(err)
 			goto dispatch
 		}
+		result.Workflow = append(result.Workflow, q.Workflow)
 		result.OK()
+
+	case `set`:
+		if res, err = w.stmt_set.Exec(
+			q.Workflow.InstanceConfigId,
+			q.Workflow.Status,
+			q.Workflow.NextStatus,
+		); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+		if result.RowCnt(res.RowsAffected()) {
+			result.Workflow = append(result.Workflow, q.Workflow)
+			result.OK()
+		}
 
 	default:
 		result.NotImplemented(fmt.Errorf(

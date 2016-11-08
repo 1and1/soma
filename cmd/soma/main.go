@@ -379,6 +379,7 @@ func main() {
 			router.PATCH(`/oncall/:oncall`, Check(BasicAuth(UpdateOncall)))
 			router.PATCH(`/views/:view`, Check(BasicAuth(RenameView)))
 			router.PATCH(`/workflow/retry`, Check(BasicAuth(WorkflowRetry)))
+			router.PATCH(`/workflow/instanceconfig/:instanceconfig`, Check(BasicAuth(WorkflowSet)))
 			router.POST(`/attributes/`, Check(BasicAuth(AddAttribute)))
 			router.POST(`/buckets/:bucket/property/:type/`, Check(BasicAuth(AddPropertyToBucket)))
 			router.POST(`/buckets/`, Check(BasicAuth(AddBucket)))

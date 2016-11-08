@@ -69,11 +69,19 @@ WHERE  sci.current_instance_config_id = scic.check_instance_config_id
 UPDATE soma.check_instances
 SET    update_available = 'true'::boolean
 WHERE  check_instance_id = $1::uuid;`
+
+	// Hard-set rollout status for check instance configuration
+	WorkflowSet = `
+UPDATE soma.check_instance_configurations
+SET    status = $2::varchar,
+       next_status = $3::varchar
+WHERE  check_instance_config_id = $1::uuid;`
 )
 
 func init() {
 	m[WorkflowList] = `WorkflowList`
 	m[WorkflowRetry] = `WorkflowRetry`
+	m[WorkflowSet] = `WorkflowSet`
 	m[WorkflowSummary] = `WorkflowSummary`
 	m[WorkflowUpdateAvailable] = `WorkflowUpdateAvailable`
 }
