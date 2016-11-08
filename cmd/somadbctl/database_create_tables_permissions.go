@@ -260,7 +260,7 @@ create table if not exists soma.authorizations_team (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category = 'team', 'team:grant' )
+    CHECK ( category IN ( 'team', 'team:grant' ) )
 );`
 	queries[idx] = "createTableTeamAuthorizations"
 	idx++
