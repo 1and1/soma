@@ -97,7 +97,8 @@ func (grim *grimReaper) process(q *msg.Request) bool {
 	}
 	// shutdown all write handler: /WriteHandler$/
 	for handler, _ := range handlerMap {
-		if !strings.HasSuffix(handler, `WriteHandler`) {
+		if !(strings.HasSuffix(handler, `WriteHandler`) ||
+			strings.HasSuffix(handler, `_w`)) {
 			continue
 		}
 		handlerMap[handler].(Downer).shutdownNow()

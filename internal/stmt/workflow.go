@@ -46,11 +46,36 @@ JOIN   soma.check_instance_configurations scic
   ON   sci.check_instance_id = scic.check_instance_id
 WHERE  NOT sci.deleted
   AND  scic.status = $1::varchar;`
+
+	// Reset rollout status for retry of check instance
+	// configuration rollout
+	WorkflowRetry = `
+UPDATE soma.check_instance_configurations scic
+SET    status = (CASE status
+                 WHEN 'rollout_failed'     THEN 'awaiting_rollout'
+                 WHEN 'deprovision_failed' THEN 'awaiting_deprovision'
+                 END),
+       next_status = (CASE status
+                      WHEN 'rollout_failed'     THEN 'rollout_in_progress'
+                      WHEN 'deprovision_failed' THEN 'deprovision_in_progress'
+                      END)
+FROM   soma.check_instances sci
+WHERE  sci.current_instance_config_id = scic.check_instance_config_id
+  AND  scic.status IN ( 'rollout_failed', 'deprovision_failed' )
+  AND  sci.check_instance_id = $1::uuid;`
+
+	// Set update available flag for check instance
+	WorkflowUpdateAvailable = `
+UPDATE soma.check_instances
+SET    update_available = 'true'::boolean
+WHERE  check_instance_id = $1::uuid;`
 )
 
 func init() {
 	m[WorkflowList] = `WorkflowList`
+	m[WorkflowRetry] = `WorkflowRetry`
 	m[WorkflowSummary] = `WorkflowSummary`
+	m[WorkflowUpdateAvailable] = `WorkflowUpdateAvailable`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -216,4 +216,99 @@ func (r *workflowRead) shutdownNow() {
 	r.shutdown <- true
 }
 
+type workflowWrite struct {
+	input       chan msg.Request
+	shutdown    chan bool
+	conn        *sql.DB
+	stmt_retry  *sql.Stmt
+	stmt_update *sql.Stmt
+	appLog      *log.Logger
+	reqLog      *log.Logger
+	errLog      *log.Logger
+}
+
+func (w *workflowWrite) run() {
+	var err error
+
+	for statement, prepStmt := range map[string]*sql.Stmt{
+		stmt.WorkflowRetry:           w.stmt_retry,
+		stmt.WorkflowUpdateAvailable: w.stmt_update,
+	} {
+		if prepStmt, err = w.conn.Prepare(statement); err != nil {
+			w.errLog.Fatal(`workflow_r`, err, stmt.Name(statement))
+		}
+		defer prepStmt.Close()
+	}
+
+runloop:
+	for {
+		select {
+		case <-w.shutdown:
+			break runloop
+		case req := <-w.input:
+			w.process(&req)
+		}
+	}
+}
+
+func (w *workflowWrite) shutdownNow() {
+	w.shutdown <- true
+}
+
+func (w *workflowWrite) process(q *msg.Request) {
+	result := msg.Result{Type: q.Type, Action: q.Action,
+		Workflow: []proto.Workflow{}}
+	var (
+		err error
+		tx  *sql.Tx
+	)
+	switch q.Action {
+	case `retry`:
+		txMap := map[string]*sql.Stmt{}
+		if tx, err = w.conn.Begin(); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+
+		for name, statement := range map[string]string{
+			`retry`:  stmt.WorkflowRetry,
+			`update`: stmt.WorkflowUpdateAvailable,
+		} {
+			if txMap[name], err = tx.Prepare(statement); err != nil {
+				// tx.Rollback() closes open prepared statements
+				tx.Rollback()
+				result.ServerError(err)
+				goto dispatch
+			}
+		}
+		if _, err = txMap[`retry`].Exec(
+			q.Workflow.InstanceId,
+		); err != nil {
+			tx.Rollback()
+			result.ServerError(err)
+			goto dispatch
+		}
+		if _, err = txMap[`update`].Exec(
+			q.Workflow.InstanceId,
+		); err != nil {
+			tx.Rollback()
+			result.ServerError(err)
+			goto dispatch
+		}
+		if err = tx.Commit(); err != nil {
+			tx.Rollback()
+			result.ServerError(err)
+			goto dispatch
+		}
+		result.OK()
+
+	default:
+		result.NotImplemented(fmt.Errorf(
+			"Unknown requested action: %s/%s", q.Type, q.Action))
+	}
+
+dispatch:
+	q.Reply <- result
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

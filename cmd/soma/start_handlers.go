@@ -70,6 +70,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 			spawnUserWriteHandler(appLog, reqLog, errLog)
 			spawnValidityWriteHandler(appLog, reqLog, errLog)
 			spawnViewWriteHandler(appLog, reqLog, errLog)
+			spawnWorkflowWriteHandler(appLog, reqLog, errLog)
 		}
 		spawnForestCustodian(appLog, reqLog, errLog)
 		spawnGuidePost(appLog, reqLog, errLog)
@@ -824,6 +825,18 @@ func spawnWorkflowReadHandler(appLog, reqLog, errLog *log.Logger) {
 	handler.reqLog = reqLog
 	handler.errLog = errLog
 	handlerMap[`workflow_r`] = &handler
+	go handler.run()
+}
+
+func spawnWorkflowWriteHandler(appLog, reqLog, errLog *log.Logger) {
+	var handler workflowWrite
+	handler.input = make(chan msg.Request, 128)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`workflow_w`] = &handler
 	go handler.run()
 }
 
