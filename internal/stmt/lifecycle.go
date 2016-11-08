@@ -86,9 +86,11 @@ AND    NOW() > (scic.scic.notified_at + '5 minute'::interval)
 AND    NOT sci.update_available;`
 
 	LifecycleSetNotified = `
-UPDATE soma.check_instances
-SET    update_available = 'true'::boolean
-WHERE  check_instance_id = $1::uuid;`
+UPDATE soma.check_instance_configurations scic
+SET    notified_at = NOW()::timestamptz
+FROM   soma.check_instances sci
+WHERE  sci.current_instance_config_id = scic.check_instance_config_id
+  AND  sci.check_instance_id = $1::uuid;`
 
 	LifecycleClearUpdateFlag = `
 UPDATE soma.check_instances
