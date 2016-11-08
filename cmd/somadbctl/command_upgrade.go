@@ -398,9 +398,7 @@ func upgrade_soma_to_201611060001(curr int, tool string, printOnly bool) int {
 	if curr != 201610290001 {
 		return 0
 	}
-	stmts := []string{
-		`ALTER TABLE soma.check_configurations ADD CONSTRAINT checkname_uniq UNIQUE ( repository_id, configuration_name ) DEFERRABLE;`,
-	}
+	stmts := []string{}
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201611060001, 'Upgrade - somadbctl %s');", tool),
 	)
