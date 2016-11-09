@@ -31,6 +31,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201609080001: upgrade_soma_to_201609120001,
 		201609120001: upgrade_soma_to_201610290001,
 		201610290001: upgrade_soma_to_201611060001,
+		201611060001: upgrade_soma_to_201611100001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -405,6 +406,54 @@ func upgrade_soma_to_201611060001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201611060001
+}
+
+func upgrade_soma_to_201611100001(curr int, tool string, printOnly bool) int {
+	if curr != 201611060001 {
+		return 0
+	}
+	stmts := []string{
+		`ALTER TABLE soma.permission_types RENAME TO categories;`,
+		`ALTER TABLE soma.categories RENAME permission_type TO category;`,
+		`create table if not exists soma.sections ( section_id uuid PRIMARY KEY, section_name varchar(64) UNIQUE NOT NULL, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), UNIQUE ( section_id, category ));`,
+		`create table if not exists soma.actions ( action_id uuid PRIMARY KEY, action_name varchar(64) NOT NULL, section_id uuid NOT NULL REFERENCES soma.sections ( section_id ) DEFERRABLE, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), UNIQUE ( section_id, action_name ), UNIQUE ( section_id, action_id ), FOREIGN KEY ( section_id, category ) REFERENCES soma.sections ( section_id, category ) DEFERRABLE );`,
+		`ALTER TABLE soma.permissions RENAME permission_type TO category;`,
+		`ALTER TABLE permissions DROP CONSTRAINT permissions_permission_name_key;`,
+		`ALTER TABLE soma.permissions ADD CONSTRAINT permissions_permission_name_category_key UNIQUE (permission_name, category );`,
+		`create table if not exists soma.permission_map ( mapping_id uuid PRIMARY KEY, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, permission_id uuid NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE, section_id uuid NOT NULL REFERENCES soma.sections ( section_id ) DEFERRABLE, action_id uuid REFERENCES soma.actions ( action_id ) DEFERRABLE, FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ), FOREIGN KEY ( section_id, category ) REFERENCES soma.sections ( section_id, category ), FOREIGN KEY ( section_id, action_id ) REFERENCES soma.actions ( section_id, action_id ));`,
+		`create table if not exists soma.permission_grant_map ( category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, permission_id uuid NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE, granted_category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, granted_permission_id uuid NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE, FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ), FOREIGN KEY ( granted_permission_id, granted_category ) REFERENCES soma.permissions ( permission_id, category ), CHECK ( permission_id != granted_permission_id ), CHECK ( category ~ ':grant$' ), CHECK ( granted_category = substring(category from '^([^:]+):')));`,
+		`ALTER TABLE soma.authorizations_global RENAME permission_type TO category;`,
+		`ALTER TABLE soma.authorizations_global ADD COLUMN organizational_team_id uuid REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_global DROP CONSTRAINT authorizations_global_check;`,
+		`ALTER TABLE soma.authorizations_global DROP CONSTRAINT authorizations_global_check1;`,
+		`ALTER TABLE soma.authorizations_global DROP CONSTRAINT authorizations_global_permission_type_check;`,
+		`ALTER TABLE soma.authorizations_global ADD CONSTRAINT authorizations_global_admin_id_check CHECK ( admin_id IS NULL OR category != 'system' );`,
+		`ALTER TABLE soma.authorizations_global ADD CONSTRAINT authorizations_global_category_check CHECK ( category IN ( 'omnipotence','system','global','global:grant','permission','permission:grant','operations','operations:grant' ));`,
+		`ALTER TABLE soma.authorizations_global ADD CONSTRAINT authorizations_global_check CHECK ( ( admin_id IS NOT NULL AND user_id IS NULL AND tool_id IS NULL AND organizational_team_id IS NULL ) OR ( admin_id IS NULL AND user_id IS NOT NULL AND tool_id IS NULL AND organizational_team_id IS NULL ) OR ( admin_id IS NULL AND user_id IS NULL AND tool_id IS NOT NULL AND organizational_team_id IS NULL ) OR ( admin_id IS NULL AND user_id IS NULL AND tool_id IS NULL AND organizational_team_id IS NOT NULL ));`,
+		`ALTER TABLE soma.authorizations_global ADD CONSTRAINT authorizations_global_check1 CHECK ( permission_id != '00000000-0000-0000-0000-000000000000'::uuid OR user_id = '00000000-0000-0000-0000-000000000000'::uuid );`,
+		`ALTER TABLE soma.authorizations_repository RENAME permission_type TO category;`,
+		`ALTER TABLE soma.authorizations_repository DROP CONSTRAINT authorizations_repository_permission_type_check;`,
+		`ALTER TABLE soma.authorizations_repository ADD CONSTRAINT authorizations_repository_category_check CHECK ( category IN ( 'repository', 'repository:grant' ));`,
+		`ALTER TABLE soma.authorizations_bucket RENAME permission_type TO category;`,
+		`ALTER TABLE soma.authorizations_bucket DROP CONSTRAINT authorizations_bucket_permission_type_check;`,
+		`ALTER TABLE soma.authorizations_bucket ADD CONSTRAINT authorizations_bucket_category_check CHECK ( category = 'repository' );`,
+		`ALTER TABLE soma.authorizations_group RENAME permission_type TO category;`,
+		`ALTER TABLE soma.authorizations_group DROP CONSTRAINT authorizations_group_permission_type_check;`,
+		`ALTER TABLE soma.authorizations_group ADD CONSTRAINT authorizations_group_category_check CHECK ( category = 'repository' );`,
+		`ALTER TABLE soma.authorizations_cluster RENAME permission_type TO category;`,
+		`ALTER TABLE soma.authorizations_cluster DROP CONSTRAINT authorizations_cluster_permission_type_check;`,
+		`ALTER TABLE soma.authorizations_cluster ADD CONSTRAINT authorizations_cluster_category_check CHECK ( category = 'repository' );`,
+		`ALTER TABLE soma.authorizations_monitoring RENAME permission_type TO category;`,
+		`ALTER TABLE soma.authorizations_monitoring DROP CONSTRAINT authorizations_monitoring_permission_type_check;`,
+		`ALTER TABLE soma.authorizations_monitoring ADD CONSTRAINT authorizations_monitoring_category_check CHECK ( category IN ( 'monitoring','monitoring:grant' ));`,
+		`create table if not exists soma.authorizations_team ( grant_id uuid PRIMARY KEY, user_id uuid REFERENCES inventory.users ( user_id ) DEFERRABLE, tool_id uuid REFERENCES auth.tools ( tool_id ) DEFERRABLE, organizational_team_id uuid REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE, authorized_team_id uuid NOT NULL REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE, permission_id uuid NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ) DEFERRABLE, CHECK (( user_id IS NOT NULL AND tool_id IS NULL AND organizational_team_id IS NULL ) OR ( user_id IS NULL AND tool_id IS NOT NULL AND organizational_team_id IS NULL ) OR ( user_id IS NULL AND tool_id IS NULL AND organizational_team_id IS NOT NULL )), CHECK ( category IN ( 'team', 'team:grant' )));`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201611100001, 'Upgrade - somadbctl %s');", tool),
+	)
+	executeUpgrades(stmts, printOnly)
+
+	return 201611100001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {

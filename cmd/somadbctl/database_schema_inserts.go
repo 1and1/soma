@@ -43,7 +43,7 @@ INSERT INTO inventory.users (
             'Charlie',
             'Root',
             0,
-            'monitoring@1und1.de',
+            'devnull@example.com',
             'yes',
             'yes',
             'no',
@@ -240,7 +240,7 @@ INSERT INTO public.schema_versions (
             description
 ) VALUES (
             'soma',
-            201611060001,
+            201611100001,
             'Initial create - somadbctl %s'
 );`, version)
 	queryMap["insertSomaSchemaVersion"] = somaString
