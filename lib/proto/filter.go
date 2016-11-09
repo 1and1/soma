@@ -10,6 +10,7 @@
 package proto
 
 type Filter struct {
+	Action      *ActionFilter      `json:"action,omitempty"`
 	Bucket      *BucketFilter      `json:"bucket,omitempty"`
 	Capability  *CapabilityFilter  `json:"capability,omitempty"`
 	CheckConfig *CheckConfigFilter `json:"checkConfig,omitempty"`
@@ -26,6 +27,7 @@ type Filter struct {
 	Property    *PropertyFilter    `json:"property,omitempty"`
 	Provider    *ProviderFilter    `json:"provider,omitempty"`
 	Repository  *RepositoryFilter  `json:"repository,omitempty"`
+	Section     *SectionFilter     `json:"section,omitempty"`
 	Server      *ServerFilter      `json:"server,omitempty"`
 	Team        *TeamFilter        `json:"team,omitempty"`
 	Unit        *UnitFilter        `json:"unit,omitempty"`

@@ -53,6 +53,7 @@ type Result struct {
 	DeploymentsList *[]string `json:"deploymentsList,omitempty"`
 
 	// Request dependent data
+	Actions          *[]Action          `json:"actions,omitempty"`
 	Attributes       *[]Attribute       `json:"attributes,omitempty"`
 	Buckets          *[]Bucket          `json:"buckets,omitempty"`
 	Capabilities     *[]Capability      `json:"capability,omitempty"`
@@ -80,6 +81,7 @@ type Result struct {
 	Properties       *[]Property        `json:"properties,omitempty"`
 	Providers        *[]Provider        `json:"providers,omitempty"`
 	Repositories     *[]Repository      `json:"repositories,omitempty"`
+	Sections         *[]Section         `json:"sections,omitempty"`
 	Servers          *[]Server          `json:"servers,omitempty"`
 	States           *[]State           `json:"states,omitempty"`
 	Status           *[]Status          `json:"status,omitempty"`

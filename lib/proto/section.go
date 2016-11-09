@@ -1,6 +1,6 @@
 /*-
- * Copyright (c) 2015-2016, 1&1 Internet SE
- * Copyright (c) 2015-2016, Jörg Pernfuß <joerg.pernfuss@1und1.de>
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß <joerg.pernfuss@1und1.de>
  * All rights reserved
  *
  * Use of this source code is governed by a 2-clause BSD license
@@ -9,38 +9,37 @@
 
 package proto
 
-type Permission struct {
+type Section struct {
 	Id       string           `json:"id,omitempty"`
 	Name     string           `json:"name,omitempty"`
 	Category string           `json:"category,omitempty"`
-	Actions  *[]Action        `json:"actions,omitempty"`
 	Details  *DetailsCreation `json:"details,omitempty"`
 }
 
-type PermissionFilter struct {
+type SectionFilter struct {
 	Name     string `json:"name,omitempty"`
 	Category string `json:"category,omitempty"`
 }
 
-func NewPermissionRequest() Request {
+func NewSectionRequest() Request {
 	return Request{
-		Flags:      &Flags{},
-		Permission: &Permission{},
+		Flags:   &Flags{},
+		Section: &Section{},
 	}
 }
 
-func NewPermissionFilter() Request {
+func NewSectionFilter() Request {
 	return Request{
 		Filter: &Filter{
-			Permission: &PermissionFilter{},
+			Section: &SectionFilter{},
 		},
 	}
 }
 
-func NewPermissionResult() Result {
+func NewSectionResult() Result {
 	return Result{
-		Errors:      &[]string{},
-		Permissions: &[]Permission{},
+		Errors:   &[]string{},
+		Sections: &[]Section{},
 	}
 }
 

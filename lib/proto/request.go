@@ -13,6 +13,7 @@ type Request struct {
 	Filter *Filter `json:"filter,omitempty"`
 	Flags  *Flags  `json:"flags,omitempty"`
 
+	Action          *Action          `json:"action,omitempty"`
 	Attribute       *Attribute       `json:"attribute,omitempty"`
 	Bucket          *Bucket          `json:"bucket,omitempty"`
 	Capability      *Capability      `json:"capability,omitempty"`
@@ -37,6 +38,7 @@ type Request struct {
 	Property        *Property        `json:"property,omitempty"`
 	Provider        *Provider        `json:"provider,omitempty"`
 	Repository      *Repository      `json:"repository,omitempty"`
+	Section         *Section         `json:"section,omitempty"`
 	Server          *Server          `json:"server,omitempty"`
 	State           *State           `json:"state,omitempty"`
 	Status          *Status          `json:"status,omitempty"`
