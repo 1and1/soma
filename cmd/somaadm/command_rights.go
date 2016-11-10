@@ -85,6 +85,7 @@ func cmdRightGrant(c *cli.Context, cat string) error {
 		return err
 	}
 	if err = adm.LookupPermIdRef(c.Args().First(),
+		`foobar`, // dummy value for new structs
 		&req.Grant.PermissionId); err != nil {
 		return err
 	}
@@ -119,6 +120,7 @@ func cmdRightRevoke(c *cli.Context, cat string) error {
 		userId, permId, grantId string
 	)
 	if err = adm.LookupPermIdRef(c.Args().First(),
+		`foobar`, // dummy value for new structs
 		&permId); err != nil {
 		return err
 	}

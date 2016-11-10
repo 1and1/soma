@@ -227,14 +227,14 @@ func LookupServerId(s string) (string, error) {
 
 // LookupPermIdRef looks up the UUID for a permission from
 // the server. Error is set if no such permission was found or
-// an error occured.
+// an error occured. The permission must be in category c.
 // If s is already a UUID, then is is immediately returned.
-func LookupPermIdRef(s string, id *string) error {
+func LookupPermIdRef(s, c string, id *string) error {
 	if IsUUID(s) {
 		*id = s
 		return nil
 	}
-	return permissionIdByName(s, id)
+	return permissionIdByName(s, c, id)
 }
 
 // LookupGrantIdRef looks up the UUID of a permission grant from
@@ -807,9 +807,10 @@ abort:
 
 // permissionIdByName implements the actual lookup of the permission
 // UUID by name
-func permissionIdByName(perm string, id *string) error {
+func permissionIdByName(perm, cat string, id *string) error {
 	req := proto.NewPermissionFilter()
 	req.Filter.Permission.Name = perm
+	req.Filter.Permission.Category = cat
 
 	res, err := fetchFilter(req, `/filter/permission/`)
 	if err != nil {
