@@ -13,6 +13,7 @@ import (
 	"net/url"
 
 	"github.com/1and1/soma/internal/adm"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -25,24 +26,28 @@ func registerCategories(app cli.App) *cli.App {
 				Usage: "SUBCOMMANDS for permission categories",
 				Subcommands: []cli.Command{
 					{
-						Name:   "add",
-						Usage:  "Register a new permission category",
-						Action: runtime(cmdPermissionCategoryAdd),
+						Name:        "add",
+						Usage:       "Register a new permission category",
+						Description: help.Text(`CategoryAdd`),
+						Action:      runtime(cmdPermissionCategoryAdd),
 					},
 					{
-						Name:   "remove",
-						Usage:  "Remove an existing permission category",
-						Action: runtime(cmdPermissionCategoryDel),
+						Name:        "remove",
+						Usage:       "Remove an existing permission category",
+						Description: help.Text(`CategoryRemove`),
+						Action:      runtime(cmdPermissionCategoryDel),
 					},
 					{
-						Name:   "list",
-						Usage:  "List all permission categories",
-						Action: runtime(cmdPermissionCategoryList),
+						Name:        "list",
+						Usage:       "List all permission categories",
+						Description: help.Text(`CategoryList`),
+						Action:      runtime(cmdPermissionCategoryList),
 					},
 					{
-						Name:   "show",
-						Usage:  "Show details for a permission category",
-						Action: runtime(cmdPermissionCategoryShow),
+						Name:        "show",
+						Usage:       "Show details for a permission category",
+						Description: help.Text(`CategoryShow`),
+						Action:      runtime(cmdPermissionCategoryShow),
 					},
 				},
 			},
