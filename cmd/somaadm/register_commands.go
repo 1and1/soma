@@ -20,6 +20,7 @@ func registerCommands(app cli.App) *cli.App {
 	app = *registerAttributes(app)
 	app = *registerBuckets(app)
 	app = *registerCapability(app)
+	app = *registerCategories(app)
 	app = *registerChecks(app)
 	app = *registerClusters(app)
 	app = *registerDatacenters(app)
