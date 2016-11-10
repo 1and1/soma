@@ -11,6 +11,7 @@ package adm
 import (
 	"fmt"
 	"net/mail"
+	"net/url"
 	"regexp"
 	"strconv"
 	"unicode/utf8"
@@ -242,7 +243,8 @@ func ValidatePredicate(s string) error {
 // ValidateCategory tests against the server if s is a valid
 // category
 func ValidateCategory(s string) error {
-	res, err := fetchObjList(fmt.Sprintf("/category/%s", s))
+	esc := url.QueryEscape(s)
+	res, err := fetchObjList(fmt.Sprintf("/category/%s", esc))
 	if err != nil {
 		return err
 	}
