@@ -127,9 +127,10 @@ func cmdPermissionAdd(c *cli.Context) error {
 	req := proto.NewPermissionRequest()
 	req.Permission.Name = c.Args().First()
 	req.Permission.Category = opts[`category`][0]
-	if sl, ok := opts[`grants`]; ok && len(sl) > 0 {
-		req.Permission.Grants = opts[`grants`][0]
-	}
+	//XXX requires update, nwo works differently
+	//if sl, ok := opts[`grants`]; ok && len(sl) > 0 {
+	//	req.Permission.Grants = opts[`grants`][0]
+	//}
 
 	return adm.Perform(`postbody`, `/permission/`, `command`, req, c)
 }
