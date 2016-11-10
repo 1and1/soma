@@ -17,3 +17,36 @@ install_linux: generate
 
 generate:
 	@go generate ./cmd/...
+
+sanitize: build vet
+
+build:
+	@go build ./...
+
+vet:
+	@go vet ./cmd/eye/
+	@go vet ./cmd/soma/
+	@go vet ./cmd/somaadm/
+	@go vet ./cmd/somadbctl/
+	@go vet ./lib/auth/
+	@go vet ./lib/proto/
+	@go vet ./internal/adm/
+	@go vet ./internal/cmpl/
+	@go vet ./internal/db/
+	@go vet ./internal/help/
+	@go vet ./internal/msg/
+	@go vet ./internal/stmt/
+	@go vet ./internal/tree/
+	@go tool vet -shadow ./cmd/eye/
+	@go tool vet -shadow ./cmd/soma/
+	@go tool vet -shadow ./cmd/somaadm/
+	@go tool vet -shadow ./cmd/somadbctl/
+	@go tool vet -shadow ./lib/auth/
+	@go tool vet -shadow ./lib/proto/
+	@go tool vet -shadow ./internal/adm/
+	@go tool vet -shadow ./internal/cmpl/
+	@go tool vet -shadow ./internal/db/
+	@go tool vet -shadow ./internal/help/
+	@go tool vet -shadow ./internal/msg/
+	@go tool vet -shadow ./internal/stmt/
+	@go tool vet -shadow ./internal/tree/
