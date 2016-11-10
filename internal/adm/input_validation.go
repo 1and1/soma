@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/1and1/soma/lib/proto"
@@ -264,6 +265,15 @@ func ValidateCategory(s string) error {
 func ValidateNoColon(s string) error {
 	if strings.Contains(s, `:`) {
 		return fmt.Errorf("String %s is not allowed to contain a : character.", s)
+	}
+	return nil
+}
+
+// ValidateNoSlash asserts that the string s does not contain a
+// colon (/) character
+func ValidateNoSlash(s string) error {
+	if strings.Contains(s, `/`) {
+		return fmt.Errorf("String %s is not allowed to contain a / character.", s)
 	}
 	return nil
 }
