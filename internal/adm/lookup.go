@@ -273,6 +273,15 @@ func LookupCapabilityId(s string) (string, error) {
 	return capabilityIdByName(s)
 }
 
+// LookupSectionId looks up the UUID of the section with the name
+// s. Returns immediately if s is a UUID.
+func LookupSectionId(s string) (string, error) {
+	if IsUUID(s) {
+		return s, nil
+	}
+	return sectionIdByName(s)
+}
+
 // LookupNodeConfig looks up the node repo/bucket configuration
 // given the name or UUID s of the node.
 func LookupNodeConfig(s string) (*proto.NodeConfig, error) {
@@ -895,6 +904,34 @@ func nodeIdByName(node string) (string, error) {
 
 abort:
 	return ``, fmt.Errorf("NodeId lookup failed: %s",
+		err.Error())
+}
+
+// sectionIdByName implements the actual lookup of the section
+// UUID from the server
+func sectionIdByName(section string) (string, error) {
+	req := proto.NewSectionFilter()
+	req.Filter.Section.Name = section
+
+	res, err := fetchFilter(req, `/filter/sections/`)
+	if err != nil {
+		goto abort
+	}
+
+	if res.Sections == nil || len(*res.Sections) == 0 {
+		err = fmt.Errorf(`no object returned`)
+		goto abort
+	}
+
+	if section != (*res.Sections)[0].Name {
+		err = fmt.Errorf("Name mismatch: %s vs %s",
+			section, (*res.Sections)[0].Name)
+		goto abort
+	}
+	return (*res.Sections)[0].Id, nil
+
+abort:
+	return ``, fmt.Errorf("SectionId lookup failed: %s",
 		err.Error())
 }
 
