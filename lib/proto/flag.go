@@ -18,6 +18,8 @@ type Flags struct {
 	Activate bool `json:"activate"` // repository
 	Detailed bool `json:"detailed"` // jobs
 	Forced   bool `json:"forced"`   // workflow
+	Add      bool `json:"add"`      // permission map
+	Remove   bool `json:"remove"`   // permission unmap
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
