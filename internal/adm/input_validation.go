@@ -239,6 +239,24 @@ func ValidatePredicate(s string) error {
 	return fmt.Errorf("Invalid predicate requested: %s", s)
 }
 
+// ValidateCategory tests against the server if s is a valid
+// category
+func ValidateCategory(s string) error {
+	res, err := fetchObjList(fmt.Sprintf("/category/%s", s))
+	if err != nil {
+		return err
+	}
+
+	if res.Categories != nil || len(*res.Categories) == 0 {
+		return fmt.Errorf(`no object returned`)
+	}
+
+	if s == (*res.Categories)[0].Name {
+		return nil
+	}
+	return fmt.Errorf("Invalid category requested: %s", s)
+}
+
 // ValidateCheckConstraints tests that all specified check constraints
 // resolve to a valid property or attribute.
 func ValidateCheckConstraints(repoId, teamId string,
