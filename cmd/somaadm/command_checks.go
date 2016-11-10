@@ -107,7 +107,7 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	// optional argument: inheritance
 	if iv, ok := opts[`inheritance`]; ok {
-		if err := adm.ValidateBool(iv[0],
+		if err = adm.ValidateBool(iv[0],
 			&req.CheckConfig.Inheritance); err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	// optional argument: childrenonly
 	if co, ok := opts[`childrenonly`]; ok {
-		if err := adm.ValidateBool(co[0],
+		if err = adm.ValidateBool(co[0],
 			&req.CheckConfig.ChildrenOnly); err != nil {
 			return err
 		}
@@ -129,7 +129,7 @@ func cmdCheckAdd(c *cli.Context) error {
 
 	// optional argument: extern
 	if ex, ok := opts[`extern`]; ok {
-		if err := adm.ValidateRuneCount(ex[0], 64); err != nil {
+		if err = adm.ValidateRuneCount(ex[0], 64); err != nil {
 			return err
 		}
 		req.CheckConfig.ExternalId = ex[0]

@@ -686,7 +686,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		repoId = config.RepositoryId
 		bucketId = config.BucketId
 	case `cluster`:
-		bucketId, err := adm.LookupBucketId(opts["in"][0])
+		bucketId, err = adm.LookupBucketId(opts["in"][0])
 		if err != nil {
 			return err
 		}
@@ -698,7 +698,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			return err
 		}
 	case `group`:
-		bucketId, err := adm.LookupBucketId(opts["in"][0])
+		bucketId, err = adm.LookupBucketId(opts["in"][0])
 		if err != nil {
 			return err
 		}
@@ -710,7 +710,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			return err
 		}
 	case `bucket`:
-		bucketId, err := adm.LookupBucketId(opts["to"][0])
+		bucketId, err = adm.LookupBucketId(opts["to"][0])
 		if err != nil {
 			return err
 		}
@@ -719,7 +719,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			return err
 		}
 	case `repository`:
-		repoId, err := adm.LookupRepoId(opts[`to`][0])
+		repoId, err = adm.LookupRepoId(opts[`to`][0])
 		if err != nil {
 			return err
 		}
@@ -733,7 +733,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 	}
 	// property assembly, optional arguments
 	if _, ok := opts[`childrenonly`]; ok {
-		if err := adm.ValidateBool(opts[`childrenonly`][0],
+		if err = adm.ValidateBool(opts[`childrenonly`][0],
 			&prop.ChildrenOnly); err != nil {
 			return err
 		}
@@ -741,7 +741,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 		prop.ChildrenOnly = false
 	}
 	if _, ok := opts[`inheritance`]; ok {
-		if err := adm.ValidateBool(opts[`inheritance`][0],
+		if err = adm.ValidateBool(opts[`inheritance`][0],
 			&prop.Inheritance); err != nil {
 			return err
 		}

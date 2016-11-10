@@ -206,7 +206,7 @@ func cmdNodeAdd(c *cli.Context) error {
 	req := proto.NewNodeRequest()
 
 	if _, ok := opts[`online`]; ok {
-		if err := adm.ValidateBool(opts[`online`][0],
+		if err = adm.ValidateBool(opts[`online`][0],
 			&req.Node.IsOnline); err != nil {
 			return err
 		}
@@ -639,7 +639,7 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 		return err
 	}
 	if pType == `system` {
-		if err := adm.ValidateSystemProperty(
+		if err = adm.ValidateSystemProperty(
 			c.Args().First()); err != nil {
 			return err
 		}
