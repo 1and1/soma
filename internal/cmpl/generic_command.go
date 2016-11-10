@@ -10,6 +10,10 @@ func In(c *cli.Context) {
 	Generic(c, []string{`in`})
 }
 
+func Direct_In(c *cli.Context) {
+	GenericDirect(c, []string{`in`})
+}
+
 func InTo(c *cli.Context) {
 	Generic(c, []string{`in`, `to`})
 }
