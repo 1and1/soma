@@ -352,7 +352,8 @@ checksloop:
 				// if we hit here, then we just computed an instance
 				// that we could not match to any loaded instances
 				// -> something is wrong
-				ten.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+				ten.log.Printf("TK[%s]: Failed to match computed instance to loaded instances."+
+					" ObjType=%s, ObjId=%s, CheckId=%s", `node`, ten.Id.String(), i, repoName)
 				ten.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 				return
 			nosvcstartinstancematch:
@@ -503,7 +504,8 @@ checksloop:
 					// if we hit here, then just computed an
 					// instance that we could not match to any
 					// loaded instances -> something is wrong
-					ten.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+					ten.log.Printf("TK[%s]: Failed to match computed instance to loaded instances."+
+						" ObjType=%s, ObjId=%s, CheckId=%s", `node`, ten.Id.String(), i, repoName)
 					ten.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 					return
 				startinstancematch:

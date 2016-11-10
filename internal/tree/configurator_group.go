@@ -355,7 +355,8 @@ checksloop:
 				// if we hit here, then we just computed an instance
 				// that we could not match to any loaded instances
 				// -> something is wrong
-				teg.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+				teg.log.Printf("TK[%s]: Failed to match computed instance to loaded instances."+
+					" ObjType=%s, ObjId=%s, CheckId=%s", `group`, teg.Id.String(), i, repoName)
 				teg.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 				return
 			nosvcstartinstancematch:
@@ -506,7 +507,8 @@ checksloop:
 					// if we hit here, then just computed an
 					// instance that we could not match to any
 					// loaded instances -> something is wrong
-					teg.log.Printf("TK[%s]: Failed to match computed instance to loaded instances", repoName)
+					teg.log.Printf("TK[%s]: Failed to match computed instance to loaded instances."+
+						" ObjType=%s, ObjId=%s, CheckId=%s", `group`, teg.Id.String(), i, repoName)
 					teg.Fault.Error <- &Error{Action: `Failed to match a computed instance to loaded data`}
 					return
 				startinstancematch:
