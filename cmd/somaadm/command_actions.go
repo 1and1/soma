@@ -140,7 +140,7 @@ func cmdActionList(c *cli.Context) error {
 		[]string{},
 		unique,
 		required,
-		c.Args().Tail(),
+		adm.AllArguments(c),
 	); err != nil {
 		return err
 	}
