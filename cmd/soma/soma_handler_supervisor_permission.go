@@ -103,7 +103,7 @@ func (s *supervisor) permission_read(q *msg.Request) {
 			Id:       id,
 			Name:     name,
 			Category: category,
-			Details: &proto.PermissionDetails{
+			Details: &proto.DetailsCreation{
 				CreatedAt: ts.Format(rfc3339Milli),
 				CreatedBy: user,
 			},

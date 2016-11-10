@@ -128,7 +128,6 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 		Permission: proto.Permission{
 			Name:     cReq.Permission.Name,
 			Category: cReq.Permission.Category,
-			Grants:   cReq.Permission.Grants,
 		},
 	}
 	result := <-returnChannel
