@@ -60,6 +60,9 @@ func cmdPermissionCategoryAdd(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
+	if err := adm.ValidateNoColon(c.Args().First()); err != nil {
+		return err
+	}
 
 	req := proto.NewCategoryRequest()
 	req.Category.Name = c.Args().First()

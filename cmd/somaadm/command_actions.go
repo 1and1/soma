@@ -77,6 +77,9 @@ func cmdActionAdd(c *cli.Context) error {
 	); err != nil {
 		return err
 	}
+	if err := adm.ValidateNoColon(c.Args().First()); err != nil {
+		return err
+	}
 
 	if sectionId, err = adm.LookupSectionId(
 		opts[`to`][0],

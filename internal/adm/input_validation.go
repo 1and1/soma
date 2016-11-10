@@ -257,6 +257,15 @@ func ValidateCategory(s string) error {
 	return fmt.Errorf("Invalid category requested: %s", s)
 }
 
+// ValidateNoColon asserts that the string s does not contain a
+// colon (:) character
+func ValidateNoColon(s string) error {
+	if strings.Contains(s, `:`) {
+		return fmt.Errorf("String %s is not allowed to contain a : character.", s)
+	}
+	return nil
+}
+
 // ValidateCheckConstraints tests that all specified check constraints
 // resolve to a valid property or attribute.
 func ValidateCheckConstraints(repoId, teamId string,

@@ -70,6 +70,9 @@ func cmdSectionAdd(c *cli.Context) error {
 	); err != nil {
 		return err
 	}
+	if err := adm.ValidateNoColon(c.Args().First()); err != nil {
+		return err
+	}
 
 	if err := adm.ValidateCategory(opts[`to`][0]); err != nil {
 		return err
