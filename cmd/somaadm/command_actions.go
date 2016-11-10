@@ -12,6 +12,8 @@ import (
 	"fmt"
 
 	"github.com/1and1/soma/internal/adm"
+	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -20,28 +22,36 @@ func registerAction(app cli.App) *cli.App {
 	app.Commands = append(app.Commands,
 		[]cli.Command{
 			{
-				Name:  `sections`,
-				Usage: `SUBCOMMANDS for action sections`,
+				Name:  `actions`,
+				Usage: `SUBCOMMANDS for permission actions`,
 				Subcommands: []cli.Command{
 					{
-						Name:   `add`,
-						Usage:  `Add a permission section`,
-						Action: runtime(cmdActionAdd),
+						Name:         `add`,
+						Usage:        `Add a permission action to a section`,
+						Description:  help.Text(`ActionsAdd`),
+						Action:       runtime(cmdActionAdd),
+						BashComplete: cmpl.To,
 					},
 					{
-						Name:   `remove`,
-						Usage:  `Remove a permission section`,
-						Action: runtime(cmdActionRemove),
+						Name:         `remove`,
+						Usage:        `Remove a permission action from a section`,
+						Description:  help.Text(`ActionsRemove`),
+						Action:       runtime(cmdActionRemove),
+						BashComplete: cmpl.From,
 					},
 					{
-						Name:   `list`,
-						Usage:  `List permission sections`,
-						Action: runtime(cmdActionList),
+						Name:         `list`,
+						Usage:        `List permission actions in a section`,
+						Description:  help.Text(`ActionsList`),
+						Action:       runtime(cmdActionList),
+						BashComplete: cmpl.Direct_In,
 					},
 					{
-						Name:   `show`,
-						Usage:  `Show details about permission section`,
-						Action: runtime(cmdActionShow),
+						Name:         `show`,
+						Usage:        `Show details about a permission action`,
+						Description:  help.Text(`ActionsShow`),
+						Action:       runtime(cmdActionShow),
+						BashComplete: cmpl.In,
 					},
 				},
 			},
@@ -51,10 +61,14 @@ func registerAction(app cli.App) *cli.App {
 }
 
 func cmdActionAdd(c *cli.Context) error {
+	var (
+		err       error
+		sectionId string
+	)
 	unique := []string{`to`}
 	required := []string{`to`}
 	opts := make(map[string][]string)
-	if err := adm.ParseVariadicArguments(
+	if err = adm.ParseVariadicArguments(
 		opts,
 		[]string{},
 		unique,
@@ -63,27 +77,48 @@ func cmdActionAdd(c *cli.Context) error {
 	); err != nil {
 		return err
 	}
-	//TODO validate opts[`to`][0] as section
-	//TODO lookup section_id
-	// somaadm actions add $action to $section
 
-	var sectionId string
-	req := proto.Request{}
-	// req := proto.NewActionRequest()
-	// req.Action.Name = c.Args().First()
-	// req.Action.SectionId = section_id
+	if sectionId, err = adm.LookupSectionId(
+		opts[`to`][0],
+	); err != nil {
+		return err
+	}
+
+	req := proto.NewActionRequest()
+	req.Action.Name = c.Args().First()
+	req.Action.SectionId = sectionId
 	path := fmt.Sprintf("/sections/%s/actions/", sectionId)
 	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
 func cmdActionRemove(c *cli.Context) error {
 	var (
-		//err                 error
+		err                 error
 		sectionId, actionId string
 	)
-	//TODO lookup section_id
-	//TODO lookup action_id
-	// somaadm actions delete $action from $section
+	unique := []string{`from`}
+	required := []string{`from`}
+	opts := make(map[string][]string)
+	if err = adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
+	if sectionId, err = adm.LookupSectionId(
+		opts[`from`][0],
+	); err != nil {
+		return err
+	}
+	if actionId, err = adm.LookupActionId(
+		c.Args().First(),
+		sectionId,
+	); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/sections/%s/actions/%s", sectionId, actionId)
 	return adm.Perform(`delete`, path, `command`, nil, c)
@@ -91,11 +126,26 @@ func cmdActionRemove(c *cli.Context) error {
 
 func cmdActionList(c *cli.Context) error {
 	var (
-		//err       error
+		err       error
 		sectionId string
 	)
-	//TODO lookup section_id
-	// ParseVariadic: ./somaadm actions list in $section
+	unique := []string{`in`}
+	required := []string{`in`}
+	opts := make(map[string][]string)
+	if err = adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
+	if sectionId, err = adm.LookupSectionId(
+		opts[`in`][0],
+	); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/sections/%s/actions/", sectionId)
 	return adm.Perform(`get`, path, `list`, nil, c)
@@ -103,12 +153,32 @@ func cmdActionList(c *cli.Context) error {
 
 func cmdActionShow(c *cli.Context) error {
 	var (
-		//err                 error
+		err                 error
 		sectionId, actionId string
 	)
-	//TODO lookup section_id
-	//TODO lookup action_id
-	// ParseVariadic: ./somaadm actions show $action in $section
+	unique := []string{`in`}
+	required := []string{`in`}
+	opts := make(map[string][]string)
+	if err = adm.ParseVariadicArguments(
+		opts,
+		[]string{},
+		unique,
+		required,
+		c.Args().Tail(),
+	); err != nil {
+		return err
+	}
+	if sectionId, err = adm.LookupSectionId(
+		opts[`in`][0],
+	); err != nil {
+		return err
+	}
+	if actionId, err = adm.LookupActionId(
+		c.Args().First(),
+		sectionId,
+	); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/sections/%s/actions/%s", sectionId, actionId)
 	return adm.Perform(`get`, path, `show`, nil, c)
