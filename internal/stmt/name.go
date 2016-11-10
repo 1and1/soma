@@ -10,7 +10,7 @@
 // Package stmt provides SQL statement string constants for SOMA
 package stmt
 
-var m map[string]string
+var m = make(map[string]string)
 
 func Name(statement string) string {
 	return m[statement]
