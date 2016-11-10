@@ -13,6 +13,7 @@ import (
 
 var Cfg Config
 var store db.DB
+var somaVersion string
 
 const rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 
@@ -22,7 +23,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "somaadm"
 	app.Usage = "SOMA Administrative Interface"
-	app.Version = "0.8.2"
+	app.Version = somaVersion
 	app.EnableBashCompletion = true
 
 	app = registerCommands(*app)

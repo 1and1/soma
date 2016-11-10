@@ -45,13 +45,13 @@ var (
 	logFileMap = make(map[string]*reopen.FileWriter)
 	// Global metrics registry
 	Metrics = make(map[string]metrics.Registry)
+	// version string set at compile time
+	somaVersion string
 )
 
 const (
 	// Format string for millisecond precision RFC3339
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
-	// SOMA version
-	SomaVersion string = `0.8.2`
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrArg = `Subsystem=%s, Request=%s, User=%s, Addr=%s, Arg=%s`
@@ -65,11 +65,11 @@ func init() {
 
 func main() {
 	var (
-		configFlag, configFile, obsRepoFlag string
-		noPokeFlag, forcedCorruption        bool
-		err                                 error
-		appLog, reqLog, errLog              *log.Logger
-		lfhGlobal, lfhApp, lfhReq, lfhErr   *reopen.FileWriter
+		configFlag, configFile, obsRepoFlag       string
+		noPokeFlag, forcedCorruption, versionFlag bool
+		err                                       error
+		appLog, reqLog, errLog                    *log.Logger
+		lfhGlobal, lfhApp, lfhReq, lfhErr         *reopen.FileWriter
 	)
 
 	// Daemon command line flags
@@ -77,9 +77,14 @@ func main() {
 	flag.StringVar(&obsRepoFlag, "repo", "", "Single-repository mode target repository")
 	flag.BoolVar(&noPokeFlag, "nopoke", false, "Disable lifecycle pokes")
 	flag.BoolVar(&forcedCorruption, `allowdatacorruption`, false, `Allow single-repo mode on production`)
+	flag.BoolVar(&versionFlag, `version`, false, `Print version information`)
 	flag.Parse()
 
-	log.Printf("Starting runtime config initialization, SOMA v%s", SomaVersion)
+	if versionFlag {
+		version() // exit(0)
+	}
+
+	log.Printf("Starting runtime config initialization, SOMA v%s", somaVersion)
 	/*
 	 * Read configuration file
 	 */

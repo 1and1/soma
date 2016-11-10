@@ -33,6 +33,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 
 	"github.com/asaskevich/govalidator"
@@ -42,17 +43,23 @@ import (
 // global variables
 var conn *sql.DB
 var Eye EyeConfig
+var somaVersion string
 
 func main() {
 	var (
 		configFlag, configFile string
 		err                    error
+		versionFlag            bool
 	)
 	flag.StringVar(&configFlag, "config", "/srv/eye/conf/eye.conf", "Configuration file location")
+	flag.BoolVar(&versionFlag, `version`, false, `Print version information`)
 	flag.Parse()
 
-	version := "0.8.2"
-	log.Printf("Starting runtime config initialization, Eye v%s", version)
+	if versionFlag {
+		version()
+	}
+
+	log.Printf("Starting runtime config initialization, Eye v%s", somaVersion)
 	/*
 	 * Read configuration file
 	 */
@@ -134,6 +141,12 @@ func main() {
 	} else {
 		log.Fatal(http.ListenAndServe(Eye.Daemon.url.Host, router))
 	}
+}
+
+func version() {
+	fmt.Fprintln(os.Stderr, `Eye Configuration Lookup Service`)
+	fmt.Fprintf(os.Stderr, "Version: %s\n", somaVersion)
+	os.Exit(0)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

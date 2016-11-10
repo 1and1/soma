@@ -10,7 +10,7 @@ func Ping(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	w.Header().Set(`X-Powered-By`, `SOMA Configuration System`)
-	w.Header().Set(`X-Version`, SomaVersion)
+	w.Header().Set(`X-Version`, somaVersion)
 	switch {
 	case SomaCfg.Observer == true:
 		w.Header().Set(`X-SOMA-Mode`, `Observer`)
