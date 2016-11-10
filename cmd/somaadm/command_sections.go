@@ -12,6 +12,8 @@ import (
 	"fmt"
 
 	"github.com/1and1/soma/internal/adm"
+	"github.com/1and1/soma/internal/cmpl"
+	"github.com/1and1/soma/internal/help"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/codegangsta/cli"
 )
@@ -21,27 +23,32 @@ func registerSection(app cli.App) *cli.App {
 		[]cli.Command{
 			{
 				Name:  `sections`,
-				Usage: `SUBCOMMANDS for action sections`,
+				Usage: `SUBCOMMANDS for permission sections`,
 				Subcommands: []cli.Command{
 					{
-						Name:   `add`,
-						Usage:  `Add a permission section`,
-						Action: runtime(cmdSectionAdd),
+						Name:         `add`,
+						Usage:        `Add a permission section`,
+						Description:  help.Text(`SectionsAdd`),
+						Action:       runtime(cmdSectionAdd),
+						BashComplete: cmpl.To,
 					},
 					{
-						Name:   `remove`,
-						Usage:  `Remove a permission section`,
-						Action: runtime(cmdSectionRemove),
+						Name:        `remove`,
+						Usage:       `Remove a permission section`,
+						Description: help.Text(`SectionsRemove`),
+						Action:      runtime(cmdSectionRemove),
 					},
 					{
-						Name:   `list`,
-						Usage:  `List permission sections`,
-						Action: runtime(cmdSectionList),
+						Name:        `list`,
+						Usage:       `List permission sections`,
+						Description: help.Text(`SectionsList`),
+						Action:      runtime(cmdSectionList),
 					},
 					{
-						Name:   `show`,
-						Usage:  `Show details about permission section`,
-						Action: runtime(cmdSectionShow),
+						Name:        `show`,
+						Usage:       `Show details about permission section`,
+						Description: help.Text(`SectionsShow`),
+						Action:      runtime(cmdSectionShow),
 					},
 				},
 			},
