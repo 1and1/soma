@@ -64,12 +64,13 @@ func cmdSectionAdd(c *cli.Context) error {
 		return err
 	}
 
-	//TODO validate opts[`to`][0] as category
+	if err := adm.ValidateCategory(opts[`to`][0]); err != nil {
+		return err
+	}
 
-	req := proto.Request{} // NewSectionRequest()
-	// req := proto.NewSectionRequest()
-	// req.Section.Name = c.Args().First()
-	// req.Section.Category = opts[`to`][0]
+	req := proto.NewSectionRequest()
+	req.Section.Name = c.Args().First()
+	req.Section.Category = opts[`to`][0]
 	return adm.Perform(`postbody`, `/sections/`, `command`, req, c)
 }
 
@@ -81,7 +82,10 @@ func cmdSectionRemove(c *cli.Context) error {
 	if err = adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	//TODO lookup section_id
+	if sectionId, err = adm.LookupSectionId(
+		c.Args().First()); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/sections/%s", sectionId)
 	return adm.Perform(`delete`, path, `command`, nil, c)
@@ -103,7 +107,10 @@ func cmdSectionShow(c *cli.Context) error {
 	if err = adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
-	//TODO lookup section_id
+	if sectionId, err = adm.LookupSectionId(
+		c.Args().First()); err != nil {
+		return err
+	}
 
 	path := fmt.Sprintf("/sections/%s", sectionId)
 	return adm.Perform(`get`, path, `show`, nil, c)
