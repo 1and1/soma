@@ -59,6 +59,10 @@ INSERT INTO soma.permission_types (
 ) VALUES (
             'omnipotence',
             '00000000-0000-0000-0000-000000000000'
+),
+(
+            'system',
+            '00000000-0000-0000-0000-000000000000'
 );`
 	queries[idx] = "insertCategoryOmnipotence"
 	idx++
