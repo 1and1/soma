@@ -415,7 +415,7 @@ func upgrade_soma_to_201611100001(curr int, tool string, printOnly bool) int {
 	stmts := []string{
 		`ALTER TABLE soma.permission_types RENAME TO categories;`,
 		`ALTER TABLE soma.categories RENAME permission_type TO category;`,
-		`create table if not exists soma.sections ( section_id uuid PRIMARY KEY, section_name varchar(64) UNIQUE NOT NULL, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), UNIQUE ( section_id, category ));`,
+		`create table if not exists soma.sections ( section_id uuid PRIMARY KEY, section_name varchar(64) UNIQUE NOT NULL, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), UNIQUE ( section_id, category ), UNIQUE( section_name ));`,
 		`create table if not exists soma.actions ( action_id uuid PRIMARY KEY, action_name varchar(64) NOT NULL, section_id uuid NOT NULL REFERENCES soma.sections ( section_id ) DEFERRABLE, category varchar(32) NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE, created_by uuid NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE, created_at timestamptz(3) NOT NULL DEFAULT NOW(), UNIQUE ( section_id, action_name ), UNIQUE ( section_id, action_id ), FOREIGN KEY ( section_id, category ) REFERENCES soma.sections ( section_id, category ) DEFERRABLE );`,
 		`ALTER TABLE soma.permissions RENAME permission_type TO category;`,
 		`ALTER TABLE permissions DROP CONSTRAINT permissions_permission_name_key;`,

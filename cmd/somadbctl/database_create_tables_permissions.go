@@ -24,7 +24,8 @@ create table if not exists soma.sections (
     category                    varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
     created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
     created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
-    UNIQUE ( section_id, category )
+    UNIQUE ( section_id, category ),
+    UNIQUE ( section_name )
 );`
 	queries[idx] = "createTableSections"
 	idx++
