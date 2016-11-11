@@ -404,6 +404,23 @@ func ValidateThresholds(thresholds []proto.CheckConfigThreshold) (
 	return valid, nil
 }
 
+// VerifyPermissionTarget verifies that the string target is something
+// that permissions can be granted to. Valid values are user, admin,
+// tool and team.
+func VerifyPermissionTarget(target string) error {
+	if sliceContainsString(target, []string{
+		`user`,
+		`admin`,
+		`tool`,
+		`team`,
+	}) {
+		return nil
+	} else {
+		return fmt.Errorf("Permissions can not be granted to: %s",
+			target)
+	}
+}
+
 // fetchObjList is a helper for ValidateUnit and ValidateProvider
 func fetchObjList(path string) (*proto.Result, error) {
 	var (
