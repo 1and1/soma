@@ -336,6 +336,9 @@ func main() {
 	router.POST(`/hostdeployment/:system/:assetid`, Check(AssembleHostUpdate))
 
 	if !SomaCfg.ReadOnly {
+		router.POST(`/authenticate/`, Check(AuthenticationKex))
+		router.PUT(`/authenticate/token/:uuid`, Check(AuthenticationIssueToken))
+
 		if !SomaCfg.Observer {
 			router.DELETE(`/attributes/:attribute`, Check(BasicAuth(DeleteAttribute)))
 			router.DELETE(`/buckets/:bucket/property/:type/:source`, Check(BasicAuth(DeletePropertyFromBucket)))
@@ -444,8 +447,6 @@ func main() {
 			router.PUT(`/teams/:team`, Check(BasicAuth(UpdateTeam)))
 			router.PUT(`/users/:user`, Check(BasicAuth(UpdateUser)))
 		}
-		router.POST(`/authenticate/`, Check(AuthenticationKex))
-		router.PUT(`/authenticate/token/:uuid`, Check(AuthenticationIssueToken))
 	}
 
 	if SomaCfg.Daemon.Tls {
