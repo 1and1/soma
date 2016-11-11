@@ -92,6 +92,41 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 	return false, false
 }
 
+func IsAuthorizedd(request *msg.Authorization) bool {
+	// instance is configured as wild-west instance
+	if SomaCfg.OpenInstance {
+		return true
+	}
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(*supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Action:     `authorize`,
+		User:       request.User,
+		RemoteAddr: request.RemoteAddr,
+		Reply:      returnChannel,
+		Super: &msg.Supervisor{
+			Action:  `authorize`,
+			Request: request,
+		},
+	}
+	result := <-returnChannel
+	if result.Super.Verdict == 200 {
+		// authorized
+		return true
+	}
+	// not authorized
+	log.Printf(LogStrErr, `supervisor`, `authorize`,
+		result.Super.Verdict,
+		fmt.Sprintf("Forbidden: %s, %s, %s/%s",
+			request.User,
+			request.RemoteAddr,
+			request.Section,
+			request.Action),
+	)
+	return false
+}
+
 var svGlobalRequiredPermission = map[string][]string{
 	`attributes_create`:        []string{`system_all`},
 	`attributes_delete`:        []string{`system_all`},
