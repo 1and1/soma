@@ -18,40 +18,40 @@ SELECT permission_id,
 FROM   soma.permissions;`
 
 	AddPermissionCategory = `
-INSERT INTO soma.permission_types (
-            permission_type,
+INSERT INTO soma.categories (
+            category,
             created_by
 )
 SELECT $1::varchar,
        $2::uuid
 WHERE NOT EXISTS (
-      SELECT permission_type
-      FROM   soma.permission_types
-      WHERE  permission_type = $1::varchar
+      SELECT category
+      FROM   soma.categories
+      WHERE  category = $1::varchar
 );`
 
 	DeletePermissionCategory = `
-DELETE FROM soma.permission_types
-WHERE permission_type = $1::varchar;`
+DELETE FROM soma.categories
+WHERE category = $1::varchar;`
 
 	ListPermissionCategory = `
-SELECT spt.permission_type
-FROM   soma.permission_types spt;`
+SELECT category
+FROM   soma.categories;`
 
 	ShowPermissionCategory = `
-SELECT spt.permission_type,
+SELECT sc.category,
        iu.user_uid,
-       spt.created_at
-FROM   soma.permission_types spt
+       sc.created_at
+FROM   soma.categories sc
 JOIN   inventory.users iu
-ON     spt.created_by = iu.user_id
-WHERE  spt.permission_type = $1::varchar;`
+ON     sc.created_by = iu.user_id
+WHERE  sc.category = $1::varchar;`
 
 	AddPermission = `
 INSERT INTO soma.permissions (
             permission_id,
             permission_name,
-            permission_type,
+            category,
             created_by
 )
 SELECT $1::uuid,
@@ -76,7 +76,7 @@ FROM   soma.permissions;`
 	ShowPermission = `
 SELECT sp.permission_id,
        sp.permission_name,
-       sp.permission_type,
+       sp.category,
        iu.user_uid,
 	   sp.created_at
 FROM   soma.permissions sp
