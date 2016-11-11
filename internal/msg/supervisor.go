@@ -26,10 +26,11 @@ type Supervisor struct {
 	BasicAuthToken string
 	Restricted     bool
 	// Fields for permission authorization requests
-	PermAction     string
-	PermRepository string
-	PermMonitoring string
-	PermNode       string
+	Request        *Authorization
+	PermAction     string //XXX
+	PermRepository string //XXX
+	PermMonitoring string //XXX
+	PermNode       string //XXX
 	// Fields for map update notifications
 	Action string
 	Object string
