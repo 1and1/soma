@@ -169,9 +169,10 @@ func (s *supervisor) process(q *msg.Request) {
 	case `update_map`:
 		go func() { s.update_map(q) }()
 	case `category`:
-		if q.Super.Action == `add` || q.Super.Action == `delete` {
+		switch q.Super.Action {
+		case `add`, `remove`:
 			s.permission_category(q)
-		} else {
+		default:
 			go func() { s.permission_category(q) }()
 		}
 	case `permission`:
