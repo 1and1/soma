@@ -42,8 +42,12 @@ func To(c *cli.Context) {
 	Generic(c, []string{`to`})
 }
 
-func User(c *cli.Context) {
-	Generic(c, []string{`user`})
+func Triple_ToOn(c *cli.Context) {
+	GenericTriple(c, []string{`to`, `on`})
+}
+
+func Triple_FromOn(c *cli.Context) {
+	GenericTriple(c, []string{`from`, `on`})
 }
 
 func ValidityCreate(c *cli.Context) {
