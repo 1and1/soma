@@ -261,6 +261,92 @@ abort:
 	return nil
 }
 
+// ParseVariadicTriples is a variant of ParseVariadicArguments where
+// every keyword is followed by two values
+func ParseVariadicTriples(
+	result map[string][][2]string, // provided result map
+	multKeys []string, // keys that may appear multiple times
+	uniqKeys []string, // keys that are allowed at most once
+	reqKeys []string, // keys that are required at least one
+	args []string, // arguments to parse
+) error {
+	// used to hold found errors, so if three keywords are missing they can
+	// all be mentioned in one call
+	errors := []string{}
+
+	// merge key slices
+	keys := append(multKeys, uniqKeys...)
+
+	// helper to skip over next value in args slice
+	skip := false
+	skipcount := 0
+
+	for pos, val := range args {
+		// skip current arg if last argument was a keyword
+		if skip {
+			skipcount--
+			if skipcount == 0 {
+				skip = false
+			}
+			continue
+		}
+
+		if sliceContainsString(val, keys) {
+			// there must be at least two arguments left
+			if len(args[pos+1:]) < 2 {
+				errors = append(errors, `Syntax error, incomplete`+
+					` key/value specification (too few items left`+
+					` to parse)`,
+				)
+				goto abort
+			}
+			// check for back-to-back keyswords
+			if err := checkStringNotAKeyword(args[pos+1],
+				keys); err != nil {
+				errors = append(errors, err.Error())
+				goto abort
+			}
+
+			// append values of current keyword into result map
+			result[val] = append(result[val],
+				[2]string{args[pos+1], args[pos+2]})
+			skip = true
+			skipcount = 2
+			continue
+		}
+		// keywords trigger continue before this
+		// values after keywords are skip'ed
+		// reaching this is an error
+		errors = append(errors, fmt.Sprintf("Syntax error, erroneus"+
+			" argument: %s", val))
+	}
+
+	// check if we managed to collect all required keywords
+	for _, key := range reqKeys {
+		// ok is false if slice is nil
+		if _, ok := result[key]; !ok {
+			errors = append(errors, fmt.Sprintf("Syntax error,"+
+				" missing keyword: %s", key))
+		}
+	}
+
+	// check if unique keywords were only specified once
+	for _, key := range uniqKeys {
+		if sl, ok := result[key]; ok && (len(sl) > 1) {
+			errors = append(errors, fmt.Sprintf("Syntax error,"+
+				" keyword must only be provided once: %s", key))
+		}
+	}
+
+abort:
+	if len(errors) > 0 {
+		result = nil
+		return fmt.Errorf(combineStrings(errors...))
+	}
+
+	return nil
+}
+
 // VerifySingleArgument takes a context and verifies there is only one
 // commandline argument
 func VerifySingleArgument(c *cli.Context) error {
