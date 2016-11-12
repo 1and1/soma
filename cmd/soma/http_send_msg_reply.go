@@ -1,3 +1,12 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß <joerg.pernfuss@1und1.de>
+ * All rights reserved
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
@@ -73,7 +82,11 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			result = proto.NewGrantResult()
 			*result.Grants = append(*result.Grants, r.Grant...)
 			goto UnmaskedReply
-		case `actions`:
+		case `section`:
+			result = proto.NewSectionResult()
+			*result.Sections = append(*result.Sections, r.SectionObj...)
+			goto UnmaskedReply
+		case `action`:
 			result = proto.NewActionResult()
 			*result.Actions = append(*result.Actions, r.ActionObj...)
 			goto UnmaskedReply

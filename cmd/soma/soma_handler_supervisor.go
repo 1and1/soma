@@ -55,6 +55,10 @@ type supervisor struct {
 	stmt_GrantSysGlUser *sql.Stmt
 	stmt_RevkSysGlUser  *sql.Stmt
 	stmt_SrchGlSysGrant *sql.Stmt
+	stmt_SectionList    *sql.Stmt
+	stmt_SectionShow    *sql.Stmt
+	stmt_SectionSearch  *sql.Stmt
+	stmt_SectionAdd     *sql.Stmt
 	stmt_ActionList     *sql.Stmt
 	stmt_ActionShow     *sql.Stmt
 	stmt_ActionSearch   *sql.Stmt
@@ -96,6 +100,9 @@ func (s *supervisor) run() {
 		stmt.ShowPermission:          s.stmt_ShowPermission,
 		stmt.SearchPermissionByName:  s.stmt_SearchPerm,
 		stmt.SearchGlobalSystemGrant: s.stmt_SrchGlSysGrant,
+		stmt.SectionList:             s.stmt_SectionList,
+		stmt.SectionShow:             s.stmt_SectionShow,
+		stmt.SectionSearch:           s.stmt_SectionSearch,
 		stmt.ActionList:              s.stmt_ActionList,
 		stmt.ActionShow:              s.stmt_ActionShow,
 		stmt.ActionSearch:            s.stmt_ActionSearch,
@@ -115,6 +122,7 @@ func (s *supervisor) run() {
 			stmt.GrantGlobalOrSystemToUser:    s.stmt_GrantSysGlUser,
 			stmt.RevokeGlobalOrSystemFromUser: s.stmt_RevkSysGlUser,
 			stmt.CheckUserActive:              s.stmt_CheckUser,
+			stmt.SectionAdd:                   s.stmt_SectionAdd,
 			stmt.ActionAdd:                    s.stmt_ActionAdd,
 		} {
 			if prepStmt, err = s.conn.Prepare(statement); err != nil {
@@ -185,6 +193,8 @@ func (s *supervisor) process(q *msg.Request) {
 			go func() { s.right(q) }()
 		}
 
+	case `section`:
+		s.section(q)
 
 	case `action`:
 		s.action(q)

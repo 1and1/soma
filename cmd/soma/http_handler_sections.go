@@ -9,6 +9,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/1and1/soma/internal/msg"
@@ -65,6 +66,120 @@ func SectionShow(w http.ResponseWriter, r *http.Request,
 	handler.input <- msg.Request{
 		Section:    `section`,
 		Action:     `show`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		SectionObj: proto.Section{
+			Id: params.ByName(`section`),
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+// SectionSearch accepts requests to look up sections by name
+func SectionSearch(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `section`,
+		Action:     `search`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.Request{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if cReq.Section.Name == `` {
+		DispatchBadRequest(&w,
+			fmt.Errorf(`Invalid action search specification`))
+		return
+	}
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(*supervisor)
+	handler.input <- msg.Request{
+		Section:    `section`,
+		Action:     `search`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		SectionObj: proto.Section{
+			Name: cReq.Section.Name,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+// SectionAdd accepts requests to add a new section
+func SectionAdd(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `section`,
+		Action:     `add`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.Request{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(*supervisor)
+	handler.input <- msg.Request{
+		Section:    `section`,
+		Action:     `add`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		SectionObj: proto.Section{
+			Name:     cReq.Section.Name,
+			Category: cReq.Section.Category,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+// SectionRemove accepts requests to remove a section
+func SectionRemove(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `section`,
+		Action:     `remove`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(*supervisor)
+	handler.input <- msg.Request{
+		Section:    `section`,
+		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
