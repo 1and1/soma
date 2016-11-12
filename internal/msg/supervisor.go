@@ -32,7 +32,6 @@ type Supervisor struct {
 	PermMonitoring string //XXX
 	PermNode       string //XXX
 	// Fields for map update notifications
-	Action string
 	Object string
 	User   proto.User
 	Team   proto.Team

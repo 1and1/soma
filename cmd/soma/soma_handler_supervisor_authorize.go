@@ -9,7 +9,8 @@ import (
 )
 
 func (s *supervisor) authorize(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `verdict`, Super: &msg.Supervisor{}}
+	result := msg.FromRequest(q)
+	result.Super = &msg.Supervisor{}
 
 	switch svPermissionActionScopeMap[q.Super.PermAction] {
 	case `global`:

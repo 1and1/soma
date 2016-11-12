@@ -185,7 +185,7 @@ func (s *supervisor) process(q *msg.Request) {
 		}
 
 	case `permission`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `add`, `delete`:
 			s.permission(q)
 		default:
@@ -193,7 +193,7 @@ func (s *supervisor) process(q *msg.Request) {
 		}
 
 	case `right`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `grant`, `revoke`:
 			s.right(q)
 		default:

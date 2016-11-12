@@ -14,7 +14,9 @@ import (
 )
 
 func (s *supervisor) userPassword(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: q.Action, Super: &msg.Supervisor{Action: ``}}
+	result := msg.FromRequest(q)
+	result.Super = &msg.Supervisor{}
+
 	var (
 		cred                                                  *svCredential
 		err                                                   error
@@ -68,7 +70,7 @@ func (s *supervisor) userPassword(q *msg.Request) {
 	// -- the ldap password (reset/ldap)
 	// -- the token         (reset/mailtoken)
 
-	s.reqLog.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), token.UserName, q.Super.RemoteAddr)
 
 	if err = s.stmt_FindUser.QueryRow(token.UserName).
 		Scan(&userId); err == sql.ErrNoRows {
@@ -92,7 +94,7 @@ func (s *supervisor) userPassword(q *msg.Request) {
 
 	// change of password or reset of password?
 	switch q.Action {
-	case `reset_user_password`:
+	case `reset`:
 		switch s.activation {
 		case `ldap`:
 			if ok, err = validateLdapCredentials(token.UserName, token.Token); err != nil {
@@ -110,7 +112,7 @@ func (s *supervisor) userPassword(q *msg.Request) {
 				SomaCfg.Auth.Activation))
 			goto dispatch
 		}
-	case `change_user_password`:
+	case `change`:
 		if cred = s.credentials.read(token.UserName); cred == nil {
 			result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))
 			goto dispatch

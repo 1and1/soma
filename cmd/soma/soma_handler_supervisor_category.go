@@ -11,23 +11,23 @@ import (
 )
 
 func (s *supervisor) permission_category(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `category`}
+	result := msg.FromRequest(q)
 
-	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), q.User, q.RemoteAddr)
 
-	if s.readonly && (q.Super.Action == `add` || q.Super.Action == `remove`) {
+	if s.readonly && (q.Action == `add` || q.Action == `remove`) {
 		result.Conflict(fmt.Errorf(`Readonly instance`))
 		goto abort
 	}
 
-	switch q.Super.Action {
+	switch q.Action {
 	case `list`, `show`:
 		s.permission_category_read(q)
 	case `add`, `remove`:
 		s.permission_category_write(q)
 	default:
 		result.NotImplemented(fmt.Errorf("Unknown requested action:"+
-			" %s/%s/%s", q.Type, q.Action, q.Super.Action))
+			" %s/%s/%s", q.Type, q.Section, q.Action))
 		goto abort
 	}
 	return
@@ -37,7 +37,7 @@ abort:
 }
 
 func (s *supervisor) permission_category_read(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `category`, Super: &msg.Supervisor{Action: q.Super.Action}}
+	result := msg.FromRequest(q)
 	var (
 		rows           *sql.Rows
 		err            error
@@ -45,7 +45,7 @@ func (s *supervisor) permission_category_read(q *msg.Request) {
 		ts             time.Time
 	)
 
-	switch q.Super.Action {
+	switch q.Action {
 	case `list`:
 		result.Category = []proto.Category{}
 		if rows, err = s.stmt_ListCategory.Query(); err != nil {
@@ -95,7 +95,7 @@ dispatch:
 }
 
 func (s *supervisor) permission_category_write(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `category`, Super: &msg.Supervisor{Action: q.Super.Action}}
+	result := msg.FromRequest(q)
 	userUUID, ok := s.id_user_rev.get(q.User)
 	if !ok {
 		userUUID = `00000000-0000-0000-0000-000000000000`
@@ -107,7 +107,7 @@ func (s *supervisor) permission_category_write(q *msg.Request) {
 		permId string
 	)
 
-	switch q.Super.Action {
+	switch q.Action {
 	case `add`:
 		// create requested category
 		if res, err = s.stmt_AddCategory.Exec(

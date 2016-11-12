@@ -40,7 +40,8 @@ import (
 )
 
 func (s *supervisor) activate_user(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `activate_user`, Super: &msg.Supervisor{Action: ``}}
+	result := msg.FromRequest(q)
+	result.Super = &msg.Supervisor{}
 
 	var (
 		timer                               *time.Timer
@@ -91,7 +92,7 @@ func (s *supervisor) activate_user(q *msg.Request) {
 		goto dispatch
 	}
 	// request has been decrypted, log it
-	s.reqLog.Printf(LogStrReq, q.Type, q.Action, token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), token.UserName, q.Super.RemoteAddr)
 
 	// -> check token.UserName != `root`
 	if token.UserName == `root` {

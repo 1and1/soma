@@ -40,7 +40,7 @@ import (
 )
 
 func (s *supervisor) bootstrapRoot(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `bootstrap_root`}
+	result := msg.FromRequest(q)
 	kexId := q.Super.KexId
 	data := q.Super.Data
 	var kex *auth.Kex

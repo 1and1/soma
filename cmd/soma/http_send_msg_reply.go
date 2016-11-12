@@ -19,48 +19,45 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		result proto.Result
 		action string
 	)
+	rq := fmt.Sprintf("%s/%s", r.Section, r.Action)
 
 	// this is central error command, proceeding to log
 	if r.Error != nil {
-		log.Printf(LogStrErr, r.Type, r.Action, r.Code, r.Error.Error())
+		log.Printf(LogStrErr, r.Type, rq, r.Code, r.Error.Error())
 	}
 
 	switch r.Type {
 	case `supervisor`:
-		switch r.Action {
-		case `kex_reply`:
+		switch r.Section {
+		case `kex`:
 			k = r.Super.Kex
 			if bjson, err = json.Marshal(&k); err != nil {
-				log.Printf(LogStrErr, r.Type, r.Action, r.Code, err.Error())
+				log.Printf(LogStrErr, r.Type, rq, r.Code, err.Error())
 				DispatchInternalError(w, nil)
 				return
 			}
 			goto dispatchJSON
-		case `bootstrap_root`:
-			fallthrough
-		case `activate_user`:
-			fallthrough
-		case `issue_token`, `reset_user_password`, `change_user_password`:
+		case `bootstrap`, `activate`, `token`, `password`:
 			// for this request type, errors are masked in responses
 			switch r.Code {
 			case 200:
 				if r.Super.Verdict == 200 {
-					log.Printf(LogStrOK, r.Type, r.Action, r.Code, 200)
+					log.Printf(LogStrOK, r.Type, rq, r.Code, 200)
 					goto dispatchOCTET
 				}
-				log.Printf(LogStrOK, r.Type, r.Action, r.Code, 401)
+				log.Printf(LogStrOK, r.Type, rq, r.Code, 401)
 				DispatchUnauthorized(w, nil)
 			case 400:
-				log.Printf(LogStrOK, r.Type, r.Action, r.Code, 400)
+				log.Printf(LogStrOK, r.Type, rq, r.Code, 400)
 				DispatchBadRequest(w, nil)
 			case 404:
-				log.Printf(LogStrOK, r.Type, r.Action, r.Code, 404)
+				log.Printf(LogStrOK, r.Type, rq, r.Code, 404)
 				DispatchNotFound(w, r.Error)
 			case 406:
-				log.Printf(LogStrOK, r.Type, r.Action, r.Code, 406)
+				log.Printf(LogStrOK, r.Type, rq, r.Code, 406)
 				DispatchConflict(w, r.Error)
 			default:
-				log.Printf(LogStrOK, r.Type, r.Action, r.Code, 401)
+				log.Printf(LogStrOK, r.Type, rq, r.Code, 401)
 				DispatchUnauthorized(w, nil)
 			}
 			return
@@ -77,7 +74,7 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			*result.Grants = append(*result.Grants, r.Grant...)
 			goto UnmaskedReply
 		default:
-			log.Printf(LogStrErr, r.Type, r.Action, 0, `Unhandled supervisor action`)
+			log.Printf(LogStrErr, r.Type, rq, 0, `Unhandled supervisor action`)
 			// supervisor as auth-lord has special default to avoid
 			// accidental leakage
 			DispatchUnauthorized(w, nil)
@@ -104,19 +101,17 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		*result.Workflows = append(*result.Workflows, r.Workflow...)
 		goto UnmaskedReply
 	default:
-		log.Printf(LogStrErr, r.Type, ``, 0, `Result from unhandled subsystem`)
+		log.Printf(LogStrErr, r.Type, rq, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)
 		return
 	}
 
 UnmaskedReply:
 	switch r.Type {
-	case `supervisor`:
-		action = fmt.Sprintf("%s/%s", r.Action, r.Super.Action)
 	case `guidepost`, `forestcustodian`:
-		action = fmt.Sprintf("%s/%s", r.Action, r.System[0].Request)
+		action = fmt.Sprintf("%s/%s", rq, r.System[0].Request)
 	default:
-		action = r.Action
+		action = rq
 	}
 
 	switch r.Code {
@@ -167,7 +162,7 @@ dispatchOCTET:
 
 buildJSON:
 	if bjson, err = json.Marshal(&result); err != nil {
-		log.Printf(LogStrErr, r.Type, r.Action, r.Code, err)
+		log.Printf(LogStrErr, r.Type, rq, r.Code, err)
 		DispatchInternalError(w, nil)
 		return
 	}

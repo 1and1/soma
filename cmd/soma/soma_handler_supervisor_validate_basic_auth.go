@@ -36,7 +36,7 @@ import (
 
 func (s *supervisor) validate_basic_auth(q *msg.Request) {
 	var tok *svToken
-	result := msg.Result{Type: `supervisor`, Action: `authenticate`}
+	result := msg.FromRequest(q)
 
 	// basic auth always fails for root if root is disabled
 	if q.Super.BasicAuthUser == `root` && s.root_disabled {

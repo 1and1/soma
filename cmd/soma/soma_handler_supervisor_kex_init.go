@@ -34,7 +34,8 @@ import (
 )
 
 func (s *supervisor) kexInit(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `kex_reply`}
+	result := msg.FromRequest(q)
+	result.Action = `reply`
 	kex := q.Super.Kex
 	var err error
 

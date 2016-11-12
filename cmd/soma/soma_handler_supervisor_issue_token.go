@@ -38,7 +38,7 @@ import (
 )
 
 func (s *supervisor) issue_token(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `issue_token`}
+	result := msg.FromRequest(q)
 	var (
 		cred                 *svCredential
 		err                  error
@@ -88,7 +88,7 @@ func (s *supervisor) issue_token(q *msg.Request) {
 		goto dispatch
 	}
 
-	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", `authenticate`, q.Action), token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), token.UserName, q.Super.RemoteAddr)
 
 	if cred = s.credentials.read(token.UserName); cred == nil {
 		result.Unauthorized(fmt.Errorf("Unknown user: %s", token.UserName))

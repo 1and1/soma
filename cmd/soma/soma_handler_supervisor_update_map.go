@@ -6,7 +6,7 @@ func (s *supervisor) update_map(q *msg.Request) {
 
 	switch q.Super.Object {
 	case `team`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `add`:
 			s.id_team.insert(q.Super.Team.Id, q.Super.Team.Name)
 		case `update`:
@@ -15,7 +15,7 @@ func (s *supervisor) update_map(q *msg.Request) {
 			s.id_team.remove(q.Super.Team.Id)
 		}
 	case `user`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `add`:
 			s.id_user.insert(q.Super.User.Id, q.Super.User.UserName)
 			s.id_user_rev.insert(q.Super.User.UserName, q.Super.User.Id)

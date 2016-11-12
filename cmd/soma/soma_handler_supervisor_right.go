@@ -10,18 +10,18 @@ import (
 )
 
 func (s *supervisor) right(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `right`, Super: &msg.Supervisor{Action: q.Super.Action}}
+	result := msg.FromRequest(q)
 
-	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
+	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), q.User, q.RemoteAddr)
 
-	if s.readonly && (q.Super.Action == `grant` || q.Super.Action == `revoke`) {
+	if s.readonly && (q.Action == `grant` || q.Action == `revoke`) {
 		result.Conflict(fmt.Errorf(`Readonly instance`))
 		goto dispatch
 	}
 
 	switch q.Grant.Category {
 	case `global`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `grant`:
 			fallthrough
 		case `revoke`:
@@ -30,7 +30,7 @@ func (s *supervisor) right(q *msg.Request) {
 			s.right_globalsystem_read(q)
 		}
 	case `system`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `grant`:
 			fallthrough
 		case `revoke`:
@@ -39,7 +39,7 @@ func (s *supervisor) right(q *msg.Request) {
 			s.right_globalsystem_read(q)
 		}
 	case `limited`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `grant`:
 			fallthrough
 		case `revoke`:
@@ -55,7 +55,7 @@ dispatch:
 }
 
 func (s *supervisor) right_globalsystem_modify(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `right`, Super: &msg.Supervisor{Action: q.Super.Action}}
+	result := msg.FromRequest(q)
 	userUUID, ok := s.id_user_rev.get(q.User)
 	if !ok {
 		userUUID = `00000000-0000-0000-0000-000000000000`
@@ -69,7 +69,7 @@ func (s *supervisor) right_globalsystem_modify(q *msg.Request) {
 		data []string
 	)
 
-	switch q.Super.Action {
+	switch q.Action {
 	case `grant`:
 		q.Grant.Id = uuid.NewV4().String()
 		res, err = s.stmt_GrantSysGlUser.Exec(
@@ -99,7 +99,7 @@ func (s *supervisor) right_globalsystem_modify(q *msg.Request) {
 	if result.RowCnt(res.RowsAffected()) {
 		result.Grant = []proto.Grant{q.Grant}
 		// keep lookup maps in sync
-		switch q.Super.Action {
+		switch q.Action {
 		case `grant`:
 			s.global_permissions.grant(q.Grant.RecipientId,
 				q.Grant.PermissionId, q.Grant.Id)
@@ -117,14 +117,14 @@ dispatch:
 }
 
 func (s *supervisor) right_globalsystem_read(q *msg.Request) {
-	result := msg.Result{Type: `supervisor`, Action: `right`, Super: &msg.Supervisor{Action: q.Super.Action}}
+	result := msg.FromRequest(q)
 
 	var (
 		grantId string
 		err     error
 	)
 
-	switch q.Super.Action {
+	switch q.Action {
 	case `search`:
 		if err = s.stmt_SrchGlSysGrant.QueryRow(
 			q.Grant.PermissionId,
