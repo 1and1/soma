@@ -61,9 +61,10 @@ func AuthenticationKex(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:   `supervisor`,
-		Action: `kex_init`,
-		Reply:  returnChannel,
+		Type:    `supervisor`,
+		Section: `kex`,
+		Action:  `init`,
+		Reply:   returnChannel,
 		Super: &msg.Supervisor{
 			RemoteAddr: extractAddress(r.RemoteAddr),
 			Kex: auth.Kex{
@@ -113,18 +114,38 @@ func AuthenticationResetUserPassword(w http.ResponseWriter, r *http.Request,
 }
 
 func AuthenticationEncryptedData(w *http.ResponseWriter, r *http.Request,
-	params *httprouter.Params, action string) {
+	params *httprouter.Params, request string) {
 	defer PanicCatcher(*w)
 
 	data := make([]byte, r.ContentLength)
 	io.ReadFull(r.Body, data)
 
+	var section, action string
+	switch request {
+	case `reset_user_password`:
+		section = `password`
+		action = `reset`
+	case `change_user_password`:
+		section = `password`
+		action = `change`
+	case `bootstrap_root`:
+		section = `bootstrap`
+		action = `root`
+	case `request_token`:
+		section = `token`
+		action = `request`
+	case `activate_user`:
+		section = `activate`
+		action = `user`
+	}
+
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:   `supervisor`,
-		Action: action,
-		Reply:  returnChannel,
+		Type:    `supervisor`,
+		Section: section,
+		Action:  action,
+		Reply:   returnChannel,
 		Super: &msg.Supervisor{
 			RemoteAddr: extractAddress(r.RemoteAddr),
 			KexId:      params.ByName(`uuid`),

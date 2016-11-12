@@ -66,12 +66,12 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 	}
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:   `supervisor`,
-		Action: `authorize`,
-		User:   user,
-		Reply:  returnChannel,
+		Type:    `supervisor`,
+		Section: `authorize`,
+		Action:  `request`,
+		User:    user,
+		Reply:   returnChannel,
 		Super: &msg.Supervisor{
-			Action:         `authorize`,
 			PermAction:     action,
 			PermRepository: repository,
 			PermMonitoring: monitoring,
@@ -101,12 +101,12 @@ func IsAuthorizedd(request *msg.Authorization) bool {
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `authorize`,
+		Section:    `authorize`,
+		Action:     `request`,
 		User:       request.User,
 		RemoteAddr: request.RemoteAddr,
 		Reply:      returnChannel,
 		Super: &msg.Supervisor{
-			Action:  `authorize`,
 			Request: request,
 		},
 	}

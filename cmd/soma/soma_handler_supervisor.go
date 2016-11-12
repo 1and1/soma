@@ -151,40 +151,52 @@ runloop:
 }
 
 func (s *supervisor) process(q *msg.Request) {
-	switch q.Action {
-	case `kex_init`:
+	switch q.Section {
+	case `kex`:
 		go func() { s.kexInit(q) }()
-	case `bootstrap_root`:
+
+	case `bootstrap`:
 		s.bootstrapRoot(q)
-	case `basic_auth`:
+
+	case `authenticate`:
 		go func() { s.validate_basic_auth(q) }()
-	case `request_token`:
+
+	case `token`:
 		go func() { s.issue_token(q) }()
-	case `activate_user`:
+
+	case `activate`:
 		go func() { s.activate_user(q) }()
-	case `reset_user_password`, `change_user_password`:
+
+	case `password`:
 		go func() { s.userPassword(q) }()
+
 	case `authorize`:
 		go func() { s.authorize(q) }()
-	case `update_map`:
+
+	case `map`:
 		go func() { s.update_map(q) }()
+
 	case `category`:
-		switch q.Super.Action {
+		switch q.Action {
 		case `add`, `remove`:
 			s.permission_category(q)
 		default:
 			go func() { s.permission_category(q) }()
 		}
+
 	case `permission`:
-		if q.Super.Action == `add` || q.Super.Action == `delete` {
+		switch q.Super.Action {
+		case `add`, `delete`:
 			s.permission(q)
-		} else {
+		default:
 			go func() { s.permission(q) }()
 		}
+
 	case `right`:
-		if q.Super.Action == `grant` || q.Super.Action == `revoke` {
+		switch q.Super.Action {
+		case `grant`, `revoke`:
 			s.right(q)
-		} else {
+		default:
 			go func() { s.right(q) }()
 		}
 	}

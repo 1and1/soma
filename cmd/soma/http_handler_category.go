@@ -28,13 +28,11 @@ func ListCategory(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `category`,
+		Section:    `category`,
+		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `list`,
-		},
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
@@ -58,13 +56,11 @@ func ShowCategory(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `category`,
+		Section:    `category`,
+		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `show`,
-		},
 		Category: proto.Category{
 			Name: params.ByName(`category`),
 		},
@@ -101,13 +97,11 @@ func AddCategory(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `category`,
+		Section:    `category`,
+		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `add`,
-		},
 		Category: proto.Category{
 			Name: cReq.Category.Name,
 		},
@@ -134,13 +128,11 @@ func DeleteCategory(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `category`,
+		Section:    `category`,
+		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `remove`,
-		},
 		Category: proto.Category{
 			Name: params.ByName(`category`),
 		},

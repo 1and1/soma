@@ -79,9 +79,10 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 					returnChannel := make(chan msg.Result)
 					super := handlerMap[`supervisor`].(*supervisor)
 					super.input <- msg.Request{
-						Type:   `supervisor`,
-						Action: `basic_auth`,
-						Reply:  returnChannel,
+						Type:    `supervisor`,
+						Section: `authenticate`,
+						Action:  `basic`,
+						Reply:   returnChannel,
 						Super: &msg.Supervisor{
 							RemoteAddr:     extractAddress(r.RemoteAddr),
 							Restricted:     false,

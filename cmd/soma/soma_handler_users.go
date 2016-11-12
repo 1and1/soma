@@ -246,7 +246,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 	)
 	result := somaResult{}
 	super = handlerMap[`supervisor`].(*supervisor)
-	notify = msg.Request{Type: `supervisor`, Action: `update_map`,
+	notify = msg.Request{Type: `supervisor`, Section: `map`,
 		Super: &msg.Supervisor{
 			Object: `user`,
 			User:   q.User,
@@ -270,7 +270,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 			q.User.TeamId,
 		)
 		q.User.Id = id.String()
-		notify.Super.Action = `add`
+		notify.Action = `add`
 	case `update`:
 		w.appLog.Printf("R: users/update for %s", q.User.Id)
 		res, err = w.upd_stmt.Exec(
@@ -283,13 +283,13 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 			q.User.TeamId,
 			q.User.Id,
 		)
-		notify.Super.Action = `update`
+		notify.Action = `update`
 	case "delete":
 		w.appLog.Printf("R: users/delete for %s", q.User.Id)
 		res, err = w.del_stmt.Exec(
 			q.User.Id,
 		)
-		notify.Super.Action = `delete`
+		notify.Action = `delete`
 	case "purge":
 		w.appLog.Printf("R: user/purge for %s", q.User.Id)
 		res, err = w.prg_stmt.Exec(

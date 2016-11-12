@@ -40,13 +40,11 @@ func SearchGrant(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `search`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `search`,
-		},
 		Grant: proto.Grant{
 			RecipientType: crq.Filter.Grant.RecipientType,
 			RecipientId:   crq.Filter.Grant.RecipientId,
@@ -85,13 +83,11 @@ func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `grant`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `grant`,
-		},
 		Grant: proto.Grant{
 			RecipientType: crq.Grant.RecipientType,
 			RecipientId:   crq.Grant.RecipientId,
@@ -116,12 +112,12 @@ func RevokeGlobalRight(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `revoke`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
 		Super: &msg.Supervisor{
-			Action:  `revoke`,
 			GrantId: params.ByName(`grant`),
 		},
 	}
@@ -165,13 +161,11 @@ func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `grant`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `grant`,
-		},
 		Grant: proto.Grant{
 			RecipientType: crq.Grant.RecipientType,
 			RecipientId:   crq.Grant.RecipientId,
@@ -209,12 +203,12 @@ func RevokeLimitedRight(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `revoke`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
 		Super: &msg.Supervisor{
-			Action:  `revoke`,
 			GrantId: params.ByName(`grant`),
 		},
 	}
@@ -247,13 +241,11 @@ func GrantSystemRight(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `grant`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `grant`,
-		},
 		Grant: proto.Grant{
 			RecipientType: crq.Grant.RecipientType,
 			RecipientId:   crq.Grant.RecipientId,
@@ -278,12 +270,12 @@ func RevokeSystemRight(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `right`,
+		Section:    `right`,
+		Action:     `revoke`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
 		Super: &msg.Supervisor{
-			Action:  `revoke`,
 			GrantId: params.ByName(`grant`),
 		},
 	}

@@ -23,13 +23,11 @@ func ListPermission(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `permission`,
+		Section:    `permission`,
+		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `list`,
-		},
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
@@ -48,13 +46,11 @@ func ShowPermission(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `permission`,
+		Section:    `permission`,
+		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `show`,
-		},
 		Permission: proto.Permission{
 			Name: params.ByName(`permission`),
 		},
@@ -78,13 +74,11 @@ func SearchPermission(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
 		Type:       `supervisor`,
-		Action:     `permission`,
+		Section:    `permission`,
+		Action:     `search/name`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `search/name`,
-		},
 		Permission: proto.Permission{
 			Name: crq.Filter.Permission.Name,
 		},
@@ -118,13 +112,11 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `permission`,
+		Section:    `permission`,
+		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `add`,
-		},
 		Permission: proto.Permission{
 			Name:     cReq.Permission.Name,
 			Category: cReq.Permission.Category,
@@ -147,13 +139,11 @@ func DeletePermission(w http.ResponseWriter, r *http.Request,
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
-		Action:     `permission`,
+		Section:    `permission`,
+		Action:     `delete`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			Action: `delete`,
-		},
 		Permission: proto.Permission{
 			Name: params.ByName(`permission`),
 		},

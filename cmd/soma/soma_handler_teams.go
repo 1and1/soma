@@ -212,7 +212,7 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 	)
 	result := somaResult{}
 	super = handlerMap[`supervisor`].(*supervisor)
-	notify = msg.Request{Type: `supervisor`, Action: `update_map`,
+	notify = msg.Request{Type: `supervisor`, Section: `map`,
 		Super: &msg.Supervisor{
 			Object: `team`,
 			Team:   q.Team,
@@ -230,7 +230,7 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 			q.Team.IsSystem,
 		)
 		q.Team.Id = id.String()
-		notify.Super.Action = `add`
+		notify.Action = `add`
 	case `update`:
 		w.reqLog.Printf("R: team/update for %s", q.Team.Name)
 		res, err = w.upd_stmt.Exec(
@@ -239,13 +239,13 @@ func (w *somaTeamWriteHandler) process(q *somaTeamRequest) {
 			q.Team.IsSystem,
 			q.Team.Id,
 		)
-		notify.Super.Action = `update`
+		notify.Action = `update`
 	case "delete":
 		w.reqLog.Printf("R: team/del for %s", q.Team.Id)
 		res, err = w.del_stmt.Exec(
 			q.Team.Id,
 		)
-		notify.Super.Action = `delete`
+		notify.Action = `delete`
 	default:
 		w.reqLog.Printf("R: unimplemented team/%s", q.action)
 		result.SetNotImplemented()
