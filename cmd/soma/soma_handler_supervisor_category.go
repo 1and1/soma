@@ -59,7 +59,7 @@ func (s *supervisor) permission_category_read(q *msg.Request) {
 				&category,
 			); err != nil {
 				result.ServerError(err)
-				result.Clear(q.Action)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 			result.Category = append(result.Category,
@@ -67,8 +67,9 @@ func (s *supervisor) permission_category_read(q *msg.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			result.ServerError(err)
-			result.Clear(q.Action)
+			result.Clear(q.Section)
 		}
+		result.OK()
 	case `show`:
 		if err = s.stmt_ShowCategory.QueryRow(q.Category.Name).Scan(
 			&category,
@@ -88,6 +89,7 @@ func (s *supervisor) permission_category_read(q *msg.Request) {
 				CreatedBy: user,
 			},
 		}}
+		result.OK()
 	}
 
 dispatch:
