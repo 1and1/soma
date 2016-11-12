@@ -237,21 +237,13 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 		}
 	}
 
-	// remove action from all permissions
-	if _, err = s.action_tx(q.ActionObj.Id, `action_tx_removeMap`,
+	if res, err = s.action_remove_tx(q.ActionObj.Id,
 		txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
 		return
 	}
-
-	// remove action
-	if res, err = s.action_tx(q.ActionObj.Id, `action_tx_remove`,
-		txMap); err != nil {
-		r.ServerError(err)
-		tx.Rollback()
-		return
-	}
+	// sets r.OK()
 	if !r.RowCnt(res.RowsAffected()) {
 		tx.Rollback()
 		return
@@ -266,7 +258,24 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 	r.ActionObj = []proto.Action{q.ActionObj}
 }
 
-func (s *supervisor) action_tx(id, name string,
+func (s *supervisor) action_remove_tx(id string,
+	txMap map[string]*sql.Stmt) (sql.Result, error) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	// remove action from all permissions
+	if res, err = s.tx_exec(id, `action_tx_removeMap`,
+		txMap); err != nil {
+		return res, err
+	}
+
+	// remove action
+	return s.tx_exec(id, `action_tx_remove`, txMap)
+}
+
+func (s *supervisor) tx_exec(id, name string,
 	txMap map[string]*sql.Stmt) (sql.Result, error) {
 	return txMap[name].Exec(id)
 }
