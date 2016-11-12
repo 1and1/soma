@@ -73,6 +73,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			result = proto.NewGrantResult()
 			*result.Grants = append(*result.Grants, r.Grant...)
 			goto UnmaskedReply
+		case `actions`:
+			result = proto.NewActionResult()
+			*result.Actions = append(*result.Actions, r.ActionObj...)
+			goto UnmaskedReply
 		default:
 			log.Printf(LogStrErr, r.Type, rq, 0, `Unhandled supervisor action`)
 			// supervisor as auth-lord has special default to avoid

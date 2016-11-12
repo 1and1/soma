@@ -55,6 +55,10 @@ type supervisor struct {
 	stmt_GrantSysGlUser *sql.Stmt
 	stmt_RevkSysGlUser  *sql.Stmt
 	stmt_SrchGlSysGrant *sql.Stmt
+	stmt_ActionList     *sql.Stmt
+	stmt_ActionShow     *sql.Stmt
+	stmt_ActionSearch   *sql.Stmt
+	stmt_ActionAdd      *sql.Stmt
 	appLog              *log.Logger
 	reqLog              *log.Logger
 	errLog              *log.Logger
@@ -92,6 +96,9 @@ func (s *supervisor) run() {
 		stmt.ShowPermission:          s.stmt_ShowPermission,
 		stmt.SearchPermissionByName:  s.stmt_SearchPerm,
 		stmt.SearchGlobalSystemGrant: s.stmt_SrchGlSysGrant,
+		stmt.ActionList:              s.stmt_ActionList,
+		stmt.ActionShow:              s.stmt_ActionShow,
+		stmt.ActionSearch:            s.stmt_ActionSearch,
 	} {
 		if prepStmt, err = s.conn.Prepare(statement); err != nil {
 			s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))
@@ -108,6 +115,7 @@ func (s *supervisor) run() {
 			stmt.GrantGlobalOrSystemToUser:    s.stmt_GrantSysGlUser,
 			stmt.RevokeGlobalOrSystemFromUser: s.stmt_RevkSysGlUser,
 			stmt.CheckUserActive:              s.stmt_CheckUser,
+			stmt.ActionAdd:                    s.stmt_ActionAdd,
 		} {
 			if prepStmt, err = s.conn.Prepare(statement); err != nil {
 				s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))
@@ -178,6 +186,8 @@ func (s *supervisor) process(q *msg.Request) {
 		}
 
 
+	case `action`:
+		s.action(q)
 	}
 }
 
