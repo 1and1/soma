@@ -7,6 +7,7 @@ import (
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (s *supervisor) permission_category(q *msg.Request) {
@@ -101,17 +102,41 @@ func (s *supervisor) permission_category_write(q *msg.Request) {
 	}
 
 	var (
-		res sql.Result
-		err error
+		res    sql.Result
+		err    error
+		permId string
 	)
 
 	switch q.Super.Action {
 	case `add`:
-		res, err = s.stmt_AddCategory.Exec(
+		// create requested category
+		if res, err = s.stmt_AddCategory.Exec(
 			q.Category.Name,
 			userUUID,
-		)
-	case `delete`:
+		); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+		// create grant category for requested category
+		if res, err = s.stmt_AddCategory.Exec(
+			fmt.Sprintf("%s:grant", q.Category.Name),
+			userUUID,
+		); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+		// create system permission for category
+		permId = uuid.NewV4().String()
+		if res, err = s.stmt_AddPermission.Exec(
+			permId,
+			q.Category.Name,
+			`system`,
+			userUUID,
+		); err != nil {
+			result.ServerError(err)
+			goto dispatch
+		}
+	case `remove`:
 		res, err = s.stmt_DelCategory.Exec(
 			q.Category.Name,
 		)
