@@ -11,7 +11,8 @@ package msg
 import "github.com/1and1/soma/lib/proto"
 
 type Request struct {
-	Type       string
+	Type       string // XXX - Deprecated
+	Section    string
 	Action     string
 	RemoteAddr string
 	User       string
@@ -21,6 +22,7 @@ type Request struct {
 
 	Super *Supervisor
 
+	Action     proto.Action
 	Bucket     proto.Bucket
 	Category   proto.Category
 	Grant      proto.Grant
@@ -28,6 +30,7 @@ type Request struct {
 	Job        proto.Job
 	Permission proto.Permission
 	Repository proto.Repository
+	Section    proto.Section
 	System     proto.SystemOperation
 	Tree       proto.Tree
 	Workflow   proto.Workflow

@@ -15,19 +15,22 @@ import (
 )
 
 type Result struct {
-	Type   string
-	Action string
-	Code   uint16
-	Error  error
-	JobId  string
+	Type    string // XXX - Deprecated
+	Section string
+	Action  string
+	Code    uint16
+	Error   error
+	JobId   string
 
 	Super *Supervisor
 
+	Action     []proto.Action
 	Category   []proto.Category
 	Grant      []proto.Grant
 	Instance   []proto.Instance
 	Job        []proto.Job
 	Permission []proto.Permission
+	Section    []proto.Section
 	System     []proto.SystemOperation
 	Tree       proto.Tree
 	Workflow   []proto.Workflow
@@ -53,6 +56,8 @@ func (r *Result) RowCnt(i int64, err error) bool {
 
 func (r *Result) Clear(s string) {
 	switch s {
+	case `action`:
+		r.Action = []proto.Action{}
 	case `category`:
 		r.Category = []proto.Category{}
 	case `grant`:
@@ -63,6 +68,8 @@ func (r *Result) Clear(s string) {
 		r.Job = []proto.Job{}
 	case `permission`:
 		r.Permission = []proto.Permission{}
+	case `section`:
+		r.Section = []proto.Section{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
 	case `workflow`:
