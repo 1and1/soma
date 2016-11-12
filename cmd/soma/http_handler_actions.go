@@ -81,6 +81,8 @@ func ActionShow(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// ActionSearch accepts requests to look up actions by name and
+// sectionId
 func ActionSearch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
