@@ -14,25 +14,24 @@ func (s *supervisor) permission_category(q *msg.Request) {
 
 	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Action, q.Super.Action), q.User, q.RemoteAddr)
 
-	if s.readonly && (q.Super.Action == `add` || q.Super.Action == `delete`) {
+	if s.readonly && (q.Super.Action == `add` || q.Super.Action == `remove`) {
 		result.Conflict(fmt.Errorf(`Readonly instance`))
-		goto dispatch
+		goto abort
 	}
 
 	switch q.Super.Action {
-	case `list`:
-		fallthrough
-	case `show`:
+	case `list`, `show`:
 		s.permission_category_read(q)
-		return
-	case `add`:
-		fallthrough
-	case `delete`:
+	case `add`, `remove`:
 		s.permission_category_write(q)
-		return
+	default:
+		result.NotImplemented(fmt.Errorf("Unknown requested action:"+
+			" %s/%s/%s", q.Type, q.Action, q.Super.Action))
+		goto abort
 	}
+	return
 
-dispatch:
+abort:
 	q.Reply <- result
 }
 
