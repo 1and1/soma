@@ -225,8 +225,8 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 
 	// prepare statements for this transaction
 	for name, statement := range map[string]string{
-		`remove`:    stmt.ActionRemove,
-		`removeMap`: stmt.ActionRemoveFromMap,
+		`action_tx_remove`:    stmt.ActionRemove,
+		`action_tx_removeMap`: stmt.ActionRemoveFromMap,
 	} {
 		if txMap[name], err = tx.Prepare(statement); err != nil {
 			err = fmt.Errorf("s.ActionTx.Prepare(%s) error: %s",
@@ -238,7 +238,8 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 	}
 
 	// remove action from all permissions
-	if res, err = txMap[`removeMap`].Exec(q.ActionObj.Id); err != nil {
+	if res, err = s.action_tx(q.ActionObj.Id, `action_tx_removeMap`,
+		txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
 		return
@@ -249,7 +250,8 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 	}
 
 	// remove action
-	if res, err = txMap[`remove`].Exec(q.ActionObj.Id); err != nil {
+	if res, err = s.action_tx(q.ActionObj.Id, `action_tx_remove`,
+		txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
 		return
@@ -266,6 +268,11 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 	}
 
 	r.ActionObj = []proto.Action{q.ActionObj}
+}
+
+func (s *supervisor) action_tx(id, name string,
+	txMap map[string]*sql.Stmt) (sql.Result, error) {
+	return txMap[name].Exec(id)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
