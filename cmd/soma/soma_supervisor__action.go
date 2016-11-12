@@ -238,13 +238,9 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 	}
 
 	// remove action from all permissions
-	if res, err = s.action_tx(q.ActionObj.Id, `action_tx_removeMap`,
+	if _, err = s.action_tx(q.ActionObj.Id, `action_tx_removeMap`,
 		txMap); err != nil {
 		r.ServerError(err)
-		tx.Rollback()
-		return
-	}
-	if !r.RowCnt(res.RowsAffected()) {
 		tx.Rollback()
 		return
 	}
