@@ -24,13 +24,13 @@ type Result struct {
 
 	Super *Supervisor
 
-	Action     []proto.Action
+	ActionObj  []proto.Action
 	Category   []proto.Category
 	Grant      []proto.Grant
 	Instance   []proto.Instance
 	Job        []proto.Job
 	Permission []proto.Permission
-	Section    []proto.Section
+	SectionObj []proto.Section
 	System     []proto.SystemOperation
 	Tree       proto.Tree
 	Workflow   []proto.Workflow
@@ -57,7 +57,7 @@ func (r *Result) RowCnt(i int64, err error) bool {
 func (r *Result) Clear(s string) {
 	switch s {
 	case `action`:
-		r.Action = []proto.Action{}
+		r.ActionObj = []proto.Action{}
 	case `category`:
 		r.Category = []proto.Category{}
 	case `grant`:
@@ -69,7 +69,7 @@ func (r *Result) Clear(s string) {
 	case `permission`:
 		r.Permission = []proto.Permission{}
 	case `section`:
-		r.Section = []proto.Section{}
+		r.SectionObj = []proto.Section{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
 	case `workflow`:

@@ -22,7 +22,7 @@ type Request struct {
 
 	Super *Supervisor
 
-	Action     proto.Action
+	ActionObj  proto.Action
 	Bucket     proto.Bucket
 	Category   proto.Category
 	Grant      proto.Grant
@@ -30,7 +30,7 @@ type Request struct {
 	Job        proto.Job
 	Permission proto.Permission
 	Repository proto.Repository
-	Section    proto.Section
+	SectionObj proto.Section
 	System     proto.SystemOperation
 	Tree       proto.Tree
 	Workflow   proto.Workflow

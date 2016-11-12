@@ -68,7 +68,7 @@ func SectionShow(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Section: proto.Section{
+		SectionObj: proto.Section{
 			Id: params.ByName(`section`),
 		},
 	}

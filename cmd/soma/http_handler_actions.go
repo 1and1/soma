@@ -39,7 +39,7 @@ func ActionList(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Action: proto.Action{
+		ActionObj: proto.Action{
 			SectionId: params.ByName(`section`),
 		},
 	}
@@ -71,7 +71,7 @@ func ActionShow(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Action: proto.Action{
+		ActionObj: proto.Action{
 			Id:        params.ByName(`action`),
 			SectionId: params.ByName(`section`),
 		},
