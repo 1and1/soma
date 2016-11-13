@@ -17,62 +17,61 @@ import (
 )
 
 type supervisor struct {
-	input               chan msg.Request
-	shutdown            chan bool
-	conn                *sql.DB
-	seed                []byte
-	key                 []byte
-	readonly            bool
-	tokenExpiry         uint64
-	kexExpiry           uint64
-	credExpiry          uint64
-	activation          string
-	root_disabled       bool
-	root_restricted     bool
-	kex                 *svKexMap
-	tokens              *svTokenMap
-	credentials         *svCredMap
-	global_permissions  *svPermMapGlobal
-	global_grants       *svGrantMapGlobal
-	limited_permissions *svPermMapLimited
-	id_user             *svLockMap
-	id_user_rev         *svLockMap
-	id_team             *svLockMap
-	id_permission       *svLockMap
-	id_userteam         *svLockMap
-	stmt_FToken         *sql.Stmt
-	stmt_FindUser       *sql.Stmt
-	stmt_CheckUser      *sql.Stmt
-	stmt_AddCategory    *sql.Stmt
-	stmt_DelCategory    *sql.Stmt
-	stmt_ListCategory   *sql.Stmt
-	stmt_ShowCategory   *sql.Stmt
-	stmt_ListPermission *sql.Stmt
-	stmt_ShowPermission *sql.Stmt
-	stmt_SearchPerm     *sql.Stmt
-	stmt_SectionList    *sql.Stmt
-	stmt_SectionShow    *sql.Stmt
-	stmt_SectionSearch  *sql.Stmt
-	stmt_SectionAdd     *sql.Stmt
-	stmt_ActionList     *sql.Stmt
-	stmt_ActionShow     *sql.Stmt
-	stmt_ActionSearch   *sql.Stmt
-	stmt_ActionAdd      *sql.Stmt
-	stmt_RevokeGlobal   *sql.Stmt
-	stmt_RevokeRepo     *sql.Stmt
-	stmt_RevokeTeam     *sql.Stmt
-	stmt_RevokeMonitor  *sql.Stmt
-	stmt_GrantGlobal    *sql.Stmt
-	stmt_GrantRepo      *sql.Stmt
-	stmt_GrantTeam      *sql.Stmt
-	stmt_GrantMonitor   *sql.Stmt
-	stmt_SearchGlobal   *sql.Stmt
-	stmt_SearchRepo     *sql.Stmt
-	stmt_SearchTeam     *sql.Stmt
-	stmt_SearchMonitor  *sql.Stmt
-	appLog              *log.Logger
-	reqLog              *log.Logger
-	errLog              *log.Logger
+	input                 chan msg.Request
+	shutdown              chan bool
+	conn                  *sql.DB
+	seed                  []byte
+	key                   []byte
+	readonly              bool
+	tokenExpiry           uint64
+	kexExpiry             uint64
+	credExpiry            uint64
+	activation            string
+	root_disabled         bool
+	root_restricted       bool
+	kex                   *svKexMap
+	tokens                *svTokenMap
+	credentials           *svCredMap
+	global_permissions    *svPermMapGlobal
+	global_grants         *svGrantMapGlobal
+	limited_permissions   *svPermMapLimited
+	id_user               *svLockMap
+	id_user_rev           *svLockMap
+	id_team               *svLockMap
+	id_permission         *svLockMap
+	id_userteam           *svLockMap
+	stmt_FToken           *sql.Stmt
+	stmt_FindUser         *sql.Stmt
+	stmt_CheckUser        *sql.Stmt
+	stmt_AddCategory      *sql.Stmt
+	stmt_DelCategory      *sql.Stmt
+	stmt_ListCategory     *sql.Stmt
+	stmt_ShowCategory     *sql.Stmt
+	stmt_SectionList      *sql.Stmt
+	stmt_SectionShow      *sql.Stmt
+	stmt_SectionSearch    *sql.Stmt
+	stmt_SectionAdd       *sql.Stmt
+	stmt_ActionList       *sql.Stmt
+	stmt_ActionShow       *sql.Stmt
+	stmt_ActionSearch     *sql.Stmt
+	stmt_ActionAdd        *sql.Stmt
+	stmt_RevokeGlobal     *sql.Stmt
+	stmt_RevokeRepo       *sql.Stmt
+	stmt_RevokeTeam       *sql.Stmt
+	stmt_RevokeMonitor    *sql.Stmt
+	stmt_GrantGlobal      *sql.Stmt
+	stmt_GrantRepo        *sql.Stmt
+	stmt_GrantTeam        *sql.Stmt
+	stmt_GrantMonitor     *sql.Stmt
+	stmt_SearchGlobal     *sql.Stmt
+	stmt_SearchRepo       *sql.Stmt
+	stmt_SearchTeam       *sql.Stmt
+	stmt_SearchMonitor    *sql.Stmt
+	stmt_PermissionList   *sql.Stmt
+	stmt_PermissionSearch *sql.Stmt
+	appLog                *log.Logger
+	reqLog                *log.Logger
+	errLog                *log.Logger
 }
 
 func (s *supervisor) run() {
@@ -103,9 +102,8 @@ func (s *supervisor) run() {
 		stmt.FindUserID:                    s.stmt_FindUser,
 		stmt.ListPermissionCategory:        s.stmt_ListCategory,
 		stmt.ShowPermissionCategory:        s.stmt_ShowCategory,
-		stmt.ListPermission:                s.stmt_ListPermission,
-		stmt.ShowPermission:                s.stmt_ShowPermission,
-		stmt.SearchPermissionByName:        s.stmt_SearchPerm,
+		stmt.PermissionList:                s.stmt_PermissionList,
+		stmt.PermissionSearchByName:        s.stmt_PermissionSearch,
 		stmt.SectionList:                   s.stmt_SectionList,
 		stmt.SectionShow:                   s.stmt_SectionShow,
 		stmt.SectionSearch:                 s.stmt_SectionSearch,

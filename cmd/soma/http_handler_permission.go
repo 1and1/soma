@@ -1,3 +1,11 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
@@ -10,13 +18,16 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListPermission(w http.ResponseWriter, r *http.Request,
+func PermissionList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`permission_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `permission`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -30,16 +41,24 @@ func ListPermission(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
+		Permission: proto.Permission{
+			Category: params.ByName(`category`),
+		},
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
 }
 
-func ShowPermission(w http.ResponseWriter, r *http.Request,
+func PermissionShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`permission_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `permission`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -54,24 +73,34 @@ func ShowPermission(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
-			Name: params.ByName(`permission`),
+			Id:       params.ByName(`permission`),
+			Category: params.ByName(`category`),
 		},
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
 }
 
-func SearchPermission(w http.ResponseWriter, r *http.Request,
+func PermissionSearch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`permission_search`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `permission`,
+		Action:     `search`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
 
-	crq := proto.NewPermissionFilter()
-	_ = DecodeJsonBody(r, &crq)
+	cReq := proto.NewPermissionFilter()
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
@@ -82,7 +111,8 @@ func SearchPermission(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
-			Name: crq.Filter.Permission.Name,
+			Name:     cReq.Filter.Permission.Name,
+			Category: cReq.Filter.Permission.Category,
 		},
 	}
 
@@ -121,6 +151,11 @@ func PermissionAdd(w http.ResponseWriter, r *http.Request,
 			`Permissions in :grant categories are auto-managed.`))
 		return
 	}
+	if params.ByName(`category`) == `system` ||
+		params.ByName(`category`) == `omnipotence` {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
@@ -156,6 +191,11 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	if strings.Contains(params.ByName(`category`), `:grant`) {
 		DispatchBadRequest(&w, fmt.Errorf(
 			`Permissions in :grant categories are auto-managed.`))
+		return
+	}
+	if params.ByName(`category`) == `system` ||
+		params.ByName(`category`) == `omnipotence` {
+		DispatchForbidden(&w, nil)
 		return
 	}
 

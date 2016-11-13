@@ -115,12 +115,13 @@ WHERE       permission_id = $1::uuid;`
 DELETE FROM soma.permission_grant_map
 WHERE       granted_permission_id = $1::uuid;`
 
-	ListPermission = `
+	PermissionList = `
 SELECT permission_id,
        permission_name
-FROM   soma.permissions;`
+FROM   soma.permissions
+WHERE  category = $1::varchar;`
 
-	ShowPermission = `
+	PermissionShow = `
 SELECT sp.permission_id,
        sp.permission_name,
        sp.category,
@@ -129,34 +130,69 @@ SELECT sp.permission_id,
 FROM   soma.permissions sp
 JOIN   inventory.users iu
 ON     sp.created_by = iu.user_id
-WHERE  sp.permission_name = $1::varchar;`
+WHERE  sp.permission_id = $1::uuid
+  AND  sp.category = $2::varchar;`
 
-	SearchPermissionByName = `
+	PermissionSearchByName = `
 SELECT permission_id,
        permission_name
 FROM   soma.permissions
-WHERE  permission_name = $1::varchar;`
+WHERE  permission_name = $1::varchar
+  AND  category= $2::varchar;`
+
+	PermissionMappedActions = `
+SELECT sa.action_id,
+       sa.action_name,
+       sa.section_id,
+       ss.section_name,
+       sa.category
+FROM   soma.permissions sp
+JOIN   soma.permission_map spm
+  ON   sp.permission_id = spm.permission_id
+JOIN   soma.sections ss
+  ON   sp.section_id = ss.section_id
+JOIN   soma.actions sa
+  ON   sp.action_id = sa.action_id
+WHERE  sp.permission_id = $1::uuid
+  AND  sp.category = $2::uuid
+  AND  spm.action_id IS NOT NULL
+  AND  sa.section_id = sp.section_id;`
+
+	PermissionMappedSections = `
+SELECT ss.section_id,
+       ss.section_name,
+       ss.category
+FROM   soma.permissions sp
+JOIN   soma.permission_map spm
+  ON   sp.permission_id = spm.permission_id
+JOIN   soma.sections ss
+  ON   sp.section_id = ss.section_id
+WHERE  sp.permission_id = $1::uuid
+  AND  sp.category = $2::uuid
+  AND  spm.action_id IS NULL;`
 )
 
 func init() {
 	m[AddPermissionCategory] = `AddPermissionCategory`
 	m[DeletePermissionCategory] = `DeletePermissionCategory`
 	m[ListPermissionCategory] = `ListPermissionCategory`
-	m[ListPermission] = `ListPermission`
 	m[LoadPermissions] = `LoadPermissions`
 	m[PermissionAdd] = `PermissionAdd`
 	m[PermissionLinkGrant] = `PermissionLinkGrant`
+	m[PermissionList] = `PermissionList`
 	m[PermissionLookupGrantId] = `PermissionLookupGrantId`
+	m[PermissionMappedActions] = `PermissionMappedActions`
+	m[PermissionMappedSections] = `PermissionMappedSections`
 	m[PermissionRemoveLink] = `PermissionRemoveLink`
 	m[PermissionRemove] = `PermissionRemove`
 	m[PermissionRevokeGlobal] = `PermissionRevokeGlobal`
 	m[PermissionRevokeMonitoring] = `PermissionRevokeMonitoring`
 	m[PermissionRevokeRepository] = `PermissionRevokeRepository`
 	m[PermissionRevokeTeam] = `PermissionRevokeTeam`
+	m[PermissionSearchByName] = `PermissionSearchByName`
+	m[PermissionShow] = `PermissionShow`
 	m[PermissionUnmapAll] = `PermissionUnmapAll`
-	m[SearchPermissionByName] = `SearchPermissionByName`
 	m[ShowPermissionCategory] = `ShowPermissionCategory`
-	m[ShowPermission] = `ShowPermission`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

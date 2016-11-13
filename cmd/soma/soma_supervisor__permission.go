@@ -11,6 +11,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
@@ -297,6 +298,248 @@ func (s *supervisor) permission_remove_tx(q *msg.Request,
 
 	// remove permission
 	return txMap[`permission_rm_tx_remove`].Exec(q.Permission.Id)
+}
+
+func (s *supervisor) permission_read(q *msg.Request) {
+	result := msg.FromRequest(q)
+
+	switch q.Action {
+	case `list`:
+		s.permission_list(q, &result)
+	case `show`:
+		s.permission_show(q, &result)
+	case `search/name`:
+		s.permission_search(q, &result)
+	}
+
+	q.Reply <- result
+}
+
+func (s *supervisor) permission_list(q *msg.Request, r *msg.Result) {
+	var (
+		err      error
+		rows     *sql.Rows
+		id, name string
+	)
+	if rows, err = s.stmt_PermissionList.Query(
+		q.Permission.Category,
+	); err != nil {
+		r.ServerError(err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&id,
+			&name,
+		); err != nil {
+			r.ServerError(err)
+			r.Clear(q.Section)
+			return
+		}
+		r.Permission = append(r.Permission, proto.Permission{
+			Id:       id,
+			Name:     name,
+			Category: q.Permission.Category,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		r.ServerError(err)
+		r.Clear(q.Section)
+		return
+	}
+	r.OK()
+}
+
+func (s *supervisor) permission_show(q *msg.Request, r *msg.Result) {
+	var (
+		err                                          error
+		tx                                           *sql.Tx
+		ts                                           time.Time
+		id, name, category, user                     string
+		perm                                         proto.Permission
+		rows                                         *sql.Rows
+		actionId, actionName, sectionId, sectionName string
+	)
+	txMap := map[string]*sql.Stmt{}
+
+	// open multi-statement transaction, set it readonly
+	if tx, err = s.conn.Begin(); err != nil {
+		r.ServerError(err)
+		return
+	}
+	if _, err = tx.Exec(stmt.ReadOnlyTransaction); err != nil {
+		r.ServerError(err)
+		tx.Rollback()
+		return
+	}
+
+	// prepare statements for this transaction
+	for name, statement := range map[string]string{
+		`permission_show`:     stmt.PermissionShow,
+		`permission_actions`:  stmt.PermissionMappedActions,
+		`permission_sections`: stmt.PermissionMappedSections,
+	} {
+		if txMap[name], err = tx.Prepare(statement); err != nil {
+			err = fmt.Errorf("s.PermissionTx.Prepare(%s) error: %s",
+				name, err.Error())
+			r.ServerError(err)
+			tx.Rollback()
+			return
+		}
+	}
+
+	if err = txMap[`permission_show`].QueryRow(
+		q.Permission.Id,
+		q.Permission.Category,
+	).Scan(
+		&id,
+		&name,
+		&category,
+		&user,
+		&ts,
+	); err == sql.ErrNoRows {
+		r.NotFound(err)
+		tx.Rollback()
+		return
+	} else if err != nil {
+		r.ServerError(err)
+		tx.Rollback()
+		return
+	}
+	perm = proto.Permission{
+		Id:       id,
+		Name:     name,
+		Category: category,
+		Actions:  &[]proto.Action{},
+		Sections: &[]proto.Section{},
+		Details: &proto.DetailsCreation{
+			CreatedAt: ts.Format(rfc3339Milli),
+			CreatedBy: user,
+		},
+	}
+
+	if rows, err = txMap[`permission_actions`].Query(
+		q.Permission.Id,
+		q.Permission.Category,
+	); err != nil {
+		r.ServerError(err)
+		tx.Rollback()
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&actionId,
+			&actionName,
+			&sectionId,
+			&sectionName,
+			&category,
+		); err != nil {
+			rows.Close()
+			r.ServerError(err)
+			tx.Rollback()
+			return
+		}
+		*perm.Actions = append(*perm.Actions, proto.Action{
+			Id:          actionId,
+			Name:        actionName,
+			SectionId:   sectionId,
+			SectionName: sectionName,
+			Category:    category,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		r.ServerError(err)
+		tx.Rollback()
+		return
+	}
+
+	if rows, err = txMap[`permission_sections`].Query(
+		q.Permission.Id,
+		q.Permission.Category,
+	); err != nil {
+		r.ServerError(err)
+		tx.Rollback()
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&sectionId,
+			&sectionName,
+			&category,
+		); err != nil {
+			rows.Close()
+			r.ServerError(err)
+			tx.Rollback()
+			return
+		}
+		*perm.Sections = append(*perm.Sections, proto.Section{
+			Id:       sectionId,
+			Name:     sectionName,
+			Category: category,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		r.ServerError(err)
+		tx.Rollback()
+		return
+	}
+
+	// close transaction
+	if err = tx.Commit(); err != nil {
+		r.ServerError(err)
+		return
+	}
+
+	if len(*perm.Actions) == 0 {
+		perm.Actions = nil
+	}
+	if len(*perm.Sections) == 0 {
+		perm.Sections = nil
+	}
+	r.Permission = append(r.Permission, perm)
+	r.OK()
+}
+
+func (s *supervisor) permission_search(q *msg.Request, r *msg.Result) {
+	var (
+		err      error
+		rows     *sql.Rows
+		id, name string
+	)
+	if rows, err = s.stmt_PermissionList.Query(
+		q.Permission.Name,
+		q.Permission.Category,
+	); err != nil {
+		r.ServerError(err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&id,
+			&name,
+		); err != nil {
+			r.ServerError(err)
+			r.Clear(q.Section)
+			return
+		}
+		r.Permission = append(r.Permission, proto.Permission{
+			Id:       id,
+			Name:     name,
+			Category: q.Permission.Category,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		r.ServerError(err)
+		r.Clear(q.Section)
+		return
+	}
+	r.OK()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
