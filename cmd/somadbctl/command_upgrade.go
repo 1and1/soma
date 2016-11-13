@@ -32,6 +32,7 @@ var UpgradeVersions = map[string]map[int]func(int, string, bool) int{
 		201609120001: upgrade_soma_to_201610290001,
 		201610290001: upgrade_soma_to_201611060001,
 		201611060001: upgrade_soma_to_201611100001,
+		201611100001: upgrade_soma_to_201611130001,
 	},
 	"root": map[int]func(int, string, bool) int{
 		000000000001: install_root_201605150001,
@@ -454,6 +455,43 @@ func upgrade_soma_to_201611100001(curr int, tool string, printOnly bool) int {
 	executeUpgrades(stmts, printOnly)
 
 	return 201611100001
+}
+
+func upgrade_soma_to_201611130001(curr int, tool string, printOnly bool) int {
+	if curr != 201611100001 {
+		return 0
+	}
+	stmts := []string{
+		`DELETE FROM soma.authorizations_global WHERE category = 'system';`,
+		`ALTER TABLE soma.authorizations_global DROP CONSTRAINT authorizations_global_admin_id_check;`,
+		`ALTER TABLE soma.authorizations_global ADD CONSTRAINT authorizations_global_admin_id_check CHECK ( admin_id IS NULL OR category = 'system' );`,
+		`ALTER TABLE soma.authorizations_global ADD CONSTRAINT authorizations_global_admin_id_check1 CHECK ( category != 'system' OR admin_id IS NOT NULL );`,
+		`ALTER TABLE soma.authorizations_repository ALTER COLUMN repository_id DROP NOT NULL;`,
+		`DELETE FROM soma.authorizations_repository;`,
+		`ALTER TABLE soma.authorizations_repository ADD COLUMN object_type varchar(64) NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE;`,
+		//XXX
+		`ALTER TABLE soma.authorizations_repository ADD COLUMN bucket_id uuid REFERENCES soma.buckets ( bucket_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD COLUMN group_id uuid REFERENCES soma.groups ( group_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD COLUMN cluster_id uuid REFERENCES soma.clusters ( cluster_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD COLUMN node_id uuid REFERENCES soma.nodes ( node_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD FOREIGN KEY ( bucket_id, cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD FOREIGN KEY ( node_id, bucket_id ) REFERENCES soma.node_bucket_assignment ( node_id, bucket_id ) DEFERRABLE;`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type IN ( 'repository', 'bucket', 'group', 'cluster', 'node' ));`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'repository' OR repository_id IS NOT NULL );`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'bucket' OR bucket_id IS NOT NULL );`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'group' OR group_id IS NOT NULL );`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'cluster' OR cluster_id IS NOT NULL );`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'node' OR node_id IS NOT NULL );`,
+		`ALTER TABLE soma.authorizations_repository ADD CHECK ( ( repository_id IS NOT NULL AND bucket_id IS NULL AND group_id IS NULL AND cluster_id IS NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NULL AND cluster_id IS NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NOT NULL AND cluster_id IS NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NULL AND cluster_id IS NOT NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NULL AND cluster_id IS NULL AND node_id IS NOT NULL ));`,
+	}
+	stmts = append(stmts,
+		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201611130001, 'Upgrade - somadbctl %s');", tool),
+	)
+	executeUpgrades(stmts, printOnly)
+
+	return 201611130001
 }
 
 func install_root_201605150001(curr int, tool string, printOnly bool) int {

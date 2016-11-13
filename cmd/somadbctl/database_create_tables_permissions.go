@@ -107,8 +107,10 @@ create table if not exists soma.authorizations_global (
            OR ( admin_id IS     NULL AND user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( admin_id IS     NULL AND user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
     CHECK ( category IN ( 'omnipotence','system','global','global:grant','permission','permission:grant','operations','operations:grant' ) ),
-    -- only admin accounts can have system permissions
-    CHECK ( admin_id IS NULL OR category != 'system' ),
+    -- if system, then it has to be an admin account
+    CHECK ( category != 'system' OR admin_id IS NOT NULL ),
+    -- admins can only have system
+    CHECK ( admin_id IS NULL OR category = 'system' ),
     -- only root can have omnipotence
     CHECK ( permission_id != '00000000-0000-0000-0000-000000000000'::uuid OR user_id = '00000000-0000-0000-0000-000000000000'::uuid )
 );`
@@ -142,51 +144,12 @@ create table if not exists soma.authorizations_repository (
     user_id                     uuid            REFERENCES inventory.users ( user_id ) DEFERRABLE,
     tool_id                     uuid            REFERENCES auth.tools ( tool_id ) DEFERRABLE,
     organizational_team_id      uuid            REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
-    permission_id               uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
-    category                    varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
-    created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
-    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
-    FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ) DEFERRABLE,
-    CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category IN ( 'repository', 'repository:grant' ) )
-);`
-	queries[idx] = "createTableRepoAuthorizations"
-	idx++
-
-	queryMap["createTableBucketAuthorizations"] = `
-create table if not exists soma.authorizations_bucket (
-    grant_id                    uuid            PRIMARY KEY,
-    user_id                     uuid            REFERENCES inventory.users ( user_id ) DEFERRABLE,
-    tool_id                     uuid            REFERENCES auth.tools ( tool_id ) DEFERRABLE,
-    organizational_team_id      uuid            REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
-    permission_id               uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
-    category                    varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
-    created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
-    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
-    FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ) DEFERRABLE,
-    FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE,
-    CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category = 'repository' )
-);`
-	queries[idx] = "createTableBucketAuthorizations"
-	idx++
-
-	queryMap["createTableGroupAuthorizations"] = `
-create table if not exists soma.authorizations_group (
-    grant_id                    uuid            PRIMARY KEY,
-    user_id                     uuid            REFERENCES inventory.users ( user_id ) DEFERRABLE,
-    tool_id                     uuid            REFERENCES auth.tools ( tool_id ) DEFERRABLE,
-    organizational_team_id      uuid            REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
-    group_id                    uuid            NOT NULL REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    object_type                 varchar(64)     NOT NULL REFERENCES soma.object_types ( object_type ) DEFERRABLE,
+    repository_id               uuid            REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
+    bucket_id                   uuid            REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
+    group_id                    uuid            REFERENCES soma.groups ( group_id ) DEFERRABLE,
+    cluster_id                  uuid            REFERENCES soma.clusters ( cluster_id ) DEFERRABLE,
+    node_id                     uuid            REFERENCES soma.nodes ( node_id ) DEFERRABLE,
     permission_id               uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
     category                    varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
     created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
@@ -194,36 +157,25 @@ create table if not exists soma.authorizations_group (
     FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ) DEFERRABLE,
     FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE,
     FOREIGN KEY ( bucket_id, group_id ) REFERENCES soma.groups ( bucket_id, group_id ) DEFERRABLE,
-    CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category = 'repository' )
-);`
-	queries[idx] = "createTableGroupAuthorizations"
-	idx++
-
-	queryMap["createTableClusterAuthorizations"] = `
-create table if not exists soma.authorizations_cluster (
-    grant_id                    uuid            PRIMARY KEY,
-    user_id                     uuid            REFERENCES inventory.users ( user_id ) DEFERRABLE,
-    tool_id                     uuid            REFERENCES auth.tools ( tool_id ) DEFERRABLE,
-    organizational_team_id      uuid            REFERENCES inventory.organizational_teams ( organizational_team_id ) DEFERRABLE,
-    repository_id               uuid            NOT NULL REFERENCES soma.repositories ( repository_id ) DEFERRABLE,
-    bucket_id                   uuid            NOT NULL REFERENCES soma.buckets ( bucket_id ) DEFERRABLE,
-    cluster_id                  uuid            NOT NULL REFERENCES soma.clusters ( cluster_id ) DEFERRABLE,
-    permission_id               uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
-    category                    varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
-    created_by                  uuid            NOT NULL REFERENCES inventory.users ( user_id ) DEFERRABLE,
-    created_at                  timestamptz(3)  NOT NULL DEFAULT NOW(),
-    FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ) DEFERRABLE,
-    FOREIGN KEY ( bucket_id, repository_id ) REFERENCES soma.buckets ( bucket_id, repository_id ) DEFERRABLE,
     FOREIGN KEY ( bucket_id, cluster_id ) REFERENCES soma.clusters ( bucket_id, cluster_id ) DEFERRABLE,
-    CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
-           OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category = 'repository' )
+    FOREIGN KEY ( node_id, bucket_id ) REFERENCES soma.node_bucket_assignment ( node_id, bucket_id ) DEFERRABLE,
+    CHECK ( ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
+         OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
+         OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
+    CHECK ( category IN ( 'repository', 'repository:grant' ) ),
+    CHECK ( object_type IN ( 'repository', 'bucket', 'group', 'cluster', 'node' )),
+    CHECK ( object_type != 'repository' OR repository_id IS NOT NULL ),
+    CHECK ( object_type != 'bucket' OR bucket_id IS NOT NULL ),
+    CHECK ( object_type != 'group' OR group_id IS NOT NULL ),
+    CHECK ( object_type != 'cluster' OR cluster_id IS NOT NULL ),
+    CHECK ( object_type != 'node' OR node_id IS NOT NULL ),
+    CHECK ( ( repository_id IS NOT NULL AND bucket_id IS     NULL AND group_id IS     NULL AND cluster_id IS     NULL AND node_id IS     NULL )
+         OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS     NULL AND node_id IS     NULL )
+         OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NOT NULL AND cluster_id IS     NULL AND node_id IS     NULL )
+         OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS NOT NULL AND node_id IS     NULL )
+         OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS     NULL AND node_id IS NOT NULL ))
 );`
-	queries[idx] = "createTableClusterAuthorizations"
+	queries[idx] = "createTableRepoAuthorizations"
 	idx++
 
 	queryMap["createTableMonitoringAuthorizations"] = `
