@@ -82,9 +82,38 @@ WHERE  NOT EXISTS (
    FROM   soma.permission_grant_map
    WHERE  permission_id = $2::uuid);`
 
-	DeletePermission = `
+	PermissionLookupGrantId = `
+SELECT permission_id
+FROM   soma.permission_grant_map
+WHERE  granted_permission_id = $1::uuid;`
+
+	PermissionRevokeGlobal = `
+DELETE FROM soma.authorizations_global
+WHERE       permission_id = $1::uuid;`
+
+	PermissionRevokeRepository = `
+DELETE FROM soma.authorizations_repository
+WHERE       permission_id = $1::uuid;`
+
+	PermissionRevokeTeam = `
+DELETE FROM soma.authorizations_team
+WHERE       permission_id = $1::uuid;`
+
+	PermissionRevokeMonitoring = `
+DELETE FROM soma.authorizations_monitoring
+WHERE       permission_id = $1::uuid;`
+
+	PermissionUnmapAll = `
+DELETE FROM soma.permission_map
+WHERE       permission_id = $1::uuid;`
+
+	PermissionRemove = `
 DELETE FROM soma.permissions
-WHERE permission_id = $1::uuid;`
+WHERE       permission_id = $1::uuid;`
+
+	PermissionRemoveLink = `
+DELETE FROM soma.permission_grant_map
+WHERE       granted_permission_id = $1::uuid;`
 
 	ListPermission = `
 SELECT permission_id,
@@ -112,12 +141,19 @@ WHERE  permission_name = $1::varchar;`
 func init() {
 	m[AddPermissionCategory] = `AddPermissionCategory`
 	m[DeletePermissionCategory] = `DeletePermissionCategory`
-	m[DeletePermission] = `DeletePermission`
 	m[ListPermissionCategory] = `ListPermissionCategory`
 	m[ListPermission] = `ListPermission`
 	m[LoadPermissions] = `LoadPermissions`
 	m[PermissionAdd] = `PermissionAdd`
 	m[PermissionLinkGrant] = `PermissionLinkGrant`
+	m[PermissionLookupGrantId] = `PermissionLookupGrantId`
+	m[PermissionRemoveLink] = `PermissionRemoveLink`
+	m[PermissionRemove] = `PermissionRemove`
+	m[PermissionRevokeGlobal] = `PermissionRevokeGlobal`
+	m[PermissionRevokeMonitoring] = `PermissionRevokeMonitoring`
+	m[PermissionRevokeRepository] = `PermissionRevokeRepository`
+	m[PermissionRevokeTeam] = `PermissionRevokeTeam`
+	m[PermissionUnmapAll] = `PermissionUnmapAll`
 	m[SearchPermissionByName] = `SearchPermissionByName`
 	m[ShowPermissionCategory] = `ShowPermissionCategory`
 	m[ShowPermission] = `ShowPermission`

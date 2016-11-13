@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
@@ -115,6 +116,11 @@ func PermissionAdd(w http.ResponseWriter, r *http.Request,
 		DispatchBadRequest(&w, fmt.Errorf(`Category mismatch`))
 		return
 	}
+	if strings.Contains(params.ByName(`category`), `:grant`) {
+		DispatchBadRequest(&w, fmt.Errorf(
+			`Permissions in :grant categories are auto-managed.`))
+		return
+	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
@@ -145,6 +151,11 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 		Action:     `remove`,
 	}) {
 		DispatchForbidden(&w, nil)
+		return
+	}
+	if strings.Contains(params.ByName(`category`), `:grant`) {
+		DispatchBadRequest(&w, fmt.Errorf(
+			`Permissions in :grant categories are auto-managed.`))
 		return
 	}
 
