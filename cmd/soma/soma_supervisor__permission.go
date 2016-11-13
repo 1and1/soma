@@ -34,7 +34,7 @@ func (s *supervisor) permission(q *msg.Request) {
 	case `list`, `search/name`, `show`:
 		go func() { s.permission_read(q) }()
 
-	case `add`, `remove`:
+	case `add`, `remove`, `map`, `unmap`:
 		if s.readonly {
 			result.Conflict(fmt.Errorf(`Readonly instance`))
 			goto abort
@@ -74,6 +74,10 @@ func (s *supervisor) permission_write(q *msg.Request) {
 		default:
 			result.ServerError(fmt.Errorf(`Illegal category`))
 		}
+	case `map`:
+		s.permission_map(q, &result)
+	case `unmap`:
+		s.permission_unmap(q, &result)
 	}
 
 	q.Reply <- result
@@ -298,6 +302,75 @@ func (s *supervisor) permission_remove_tx(q *msg.Request,
 
 	// remove permission
 	return txMap[`permission_rm_tx_remove`].Exec(q.Permission.Id)
+}
+
+func (s *supervisor) permission_map(q *msg.Request, r *msg.Result) {
+	var (
+		err                 error
+		res                 sql.Result
+		sectionId, actionId sql.NullString
+		mapId               string
+	)
+	if q.Permission.Actions != nil {
+		sectionId.String = (*q.Permission.Actions)[0].SectionId
+		sectionId.Valid = true
+		actionId.String = (*q.Permission.Actions)[0].Id
+		actionId.Valid = true
+	} else if q.Permission.Sections != nil {
+		sectionId.String = (*q.Permission.Sections)[0].Id
+		sectionId.Valid = true
+	} else {
+		r.ServerError(fmt.Errorf(`Nothing to map`))
+		return
+	}
+	mapId = uuid.NewV4().String()
+
+	if res, err = s.stmt_PermissionUnmap.Exec(
+		mapId,
+		q.Permission.Category,
+		q.Permission.Id,
+		sectionId,
+		actionId,
+	); err != nil {
+		r.ServerError(err)
+		return
+	}
+	if r.RowCnt(res.RowsAffected()) {
+		r.Permission = []proto.Permission{q.Permission}
+	}
+}
+
+func (s *supervisor) permission_unmap(q *msg.Request, r *msg.Result) {
+	var (
+		err                 error
+		res                 sql.Result
+		sectionId, actionId sql.NullString
+	)
+	if q.Permission.Actions != nil {
+		sectionId.String = (*q.Permission.Actions)[0].SectionId
+		sectionId.Valid = true
+		actionId.String = (*q.Permission.Actions)[0].Id
+		actionId.Valid = true
+	} else if q.Permission.Sections != nil {
+		sectionId.String = (*q.Permission.Sections)[0].Id
+		sectionId.Valid = true
+	} else {
+		r.ServerError(fmt.Errorf(`Nothing to map`))
+		return
+	}
+
+	if res, err = s.stmt_PermissionUnmap.Exec(
+		q.Permission.Id,
+		q.Permission.Category,
+		sectionId,
+		actionId,
+	); err != nil {
+		r.ServerError(err)
+		return
+	}
+	if r.RowCnt(res.RowsAffected()) {
+		r.Permission = []proto.Permission{q.Permission}
+	}
 }
 
 func (s *supervisor) permission_read(q *msg.Request) {

@@ -217,4 +217,97 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+func PermissionEdit(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `permission`,
+		Action:     `edit`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	cReq := proto.NewPermissionRequest()
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if cReq.Permission.Category != params.ByName(`category`) {
+		DispatchBadRequest(&w, fmt.Errorf(`Category mismatch`))
+		return
+	}
+	if cReq.Permission.Id != params.ByName(`permission`) {
+		DispatchBadRequest(&w, fmt.Errorf(`PermissionId mismatch`))
+		return
+	}
+	if strings.Contains(params.ByName(`category`), `:grant`) {
+		DispatchBadRequest(&w, fmt.Errorf(
+			`Permissions in :grant categories can not be mapped`))
+		return
+	}
+	if params.ByName(`category`) == `system` ||
+		params.ByName(`category`) == `omnipotence` {
+		DispatchForbidden(&w, nil)
+		return
+	}
+	// invalid: map+unmap at the same time
+	if cReq.Flags.Add && cReq.Flags.Remove {
+		DispatchBadRequest(&w, fmt.Errorf(`Ambiguous instruction`))
+		return
+	}
+	// invalid: batched mapping
+	if cReq.Permission.Actions != nil && cReq.Permission.Sections != nil {
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid batch mapping`))
+		return
+	}
+	if cReq.Permission.Actions != nil {
+		if len(*cReq.Permission.Actions) != 1 ||
+			params.ByName(`category`) != (*cReq.Permission.Actions)[0].Category {
+			DispatchBadRequest(&w, fmt.Errorf(`Invalid action specification`))
+			return
+		}
+	}
+	if cReq.Permission.Sections != nil {
+		if len(*cReq.Permission.Sections) != 1 ||
+			params.ByName(`category`) != (*cReq.Permission.Sections)[0].Category {
+			DispatchBadRequest(&w, fmt.Errorf(`Invalid section specification`))
+			return
+		}
+	}
+
+	var task string
+	if cReq.Flags.Add {
+		task = `map`
+	}
+	if cReq.Flags.Remove {
+		task = `unmap`
+	}
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`supervisor`].(*supervisor)
+	handler.input <- msg.Request{
+		Type:       `supervisor`,
+		Section:    `permission`,
+		Action:     task,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Permission: proto.Permission{
+			Id:       cReq.Permission.Id,
+			Name:     cReq.Permission.Name,
+			Category: cReq.Permission.Category,
+			Sections: cReq.Permission.Sections,
+			Actions:  cReq.Permission.Actions,
+		},
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

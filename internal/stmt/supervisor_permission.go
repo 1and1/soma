@@ -170,6 +170,26 @@ JOIN   soma.sections ss
 WHERE  sp.permission_id = $1::uuid
   AND  sp.category = $2::uuid
   AND  spm.action_id IS NULL;`
+
+	PermissionMapEntry = `
+INSERT INTO soma.permission_map (
+            mapping_id,
+            category,
+            permission_id,
+            section_id,
+            action_id)
+VALUES $1::uuid,
+       $2::varchar,
+       $3::uuid,
+       $4::uuid,
+       $5::uuid;`
+
+	PermissionUnmapEntry = `
+DELETE FROM soma.permission_map
+WHERE       permission_id = $1::uuid
+  AND       category = $2::varchar
+  AND       section_id = $3::uuid
+  AND       (action_id = $4::uuid OR ($4::uuid IS NULL AND action_id IS NULL));`
 )
 
 func init() {
@@ -181,6 +201,7 @@ func init() {
 	m[PermissionLinkGrant] = `PermissionLinkGrant`
 	m[PermissionList] = `PermissionList`
 	m[PermissionLookupGrantId] = `PermissionLookupGrantId`
+	m[PermissionMapEntry] = `PermissionMapEntry`
 	m[PermissionMappedActions] = `PermissionMappedActions`
 	m[PermissionMappedSections] = `PermissionMappedSections`
 	m[PermissionRemoveLink] = `PermissionRemoveLink`
@@ -192,6 +213,7 @@ func init() {
 	m[PermissionSearchByName] = `PermissionSearchByName`
 	m[PermissionShow] = `PermissionShow`
 	m[PermissionUnmapAll] = `PermissionUnmapAll`
+	m[PermissionUnmapEntry] = `PermissionUnmapEntry`
 	m[ShowPermissionCategory] = `ShowPermissionCategory`
 }
 

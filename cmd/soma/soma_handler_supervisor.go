@@ -69,6 +69,8 @@ type supervisor struct {
 	stmt_SearchMonitor    *sql.Stmt
 	stmt_PermissionList   *sql.Stmt
 	stmt_PermissionSearch *sql.Stmt
+	stmt_PermissionMap    *sql.Stmt
+	stmt_PermissionUnmap  *sql.Stmt
 	appLog                *log.Logger
 	reqLog                *log.Logger
 	errLog                *log.Logger
@@ -136,6 +138,8 @@ func (s *supervisor) run() {
 			stmt.GrantRepositoryAuthorization:  s.stmt_GrantRepo,
 			stmt.GrantTeamAuthorization:        s.stmt_GrantTeam,
 			stmt.GrantMonitoringAuthorization:  s.stmt_GrantMonitor,
+			stmt.PermissionMapEntry:            s.stmt_PermissionMap,
+			stmt.PermissionUnmapEntry:          s.stmt_PermissionUnmap,
 		} {
 			if prepStmt, err = s.conn.Prepare(statement); err != nil {
 				s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))

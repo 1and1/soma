@@ -218,12 +218,14 @@ func cmdPermissionEdit(c *cli.Context, cmd string) error {
 		err                                   error
 		section, action, category, permission string
 		sectionId, actionId, permissionId     string
+		sectionMapping                        bool
 	)
 	actionSlice := strings.Split(c.Args().First(), `::`)
 	permissionSlice := strings.Split(opts[syn][0], `::`)
 	switch len(actionSlice) {
 	case 1:
 		section = actionSlice[0]
+		sectionMapping = true
 	case 2:
 		section = actionSlice[0]
 		action = actionSlice[1]
@@ -257,12 +259,14 @@ func cmdPermissionEdit(c *cli.Context, cmd string) error {
 	); err != nil {
 		return err
 	}
-	// lookup actionid
-	if actionId, err = adm.LookupActionId(
-		action,
-		sectionId,
-	); err != nil {
-		return err
+	if !sectionMapping {
+		// lookup actionid
+		if actionId, err = adm.LookupActionId(
+			action,
+			sectionId,
+		); err != nil {
+			return err
+		}
 	}
 
 	req := proto.NewPermissionRequest()
@@ -275,13 +279,23 @@ func cmdPermissionEdit(c *cli.Context, cmd string) error {
 	req.Permission.Id = permissionId
 	req.Permission.Name = permission
 	req.Permission.Category = category
-	req.Permission.Actions = &[]proto.Action{
-		proto.Action{
-			Id:        actionId,
-			Name:      action,
-			SectionId: sectionId,
-			Category:  category,
-		},
+	if !sectionMapping {
+		req.Permission.Actions = &[]proto.Action{
+			proto.Action{
+				Id:        actionId,
+				Name:      action,
+				SectionId: sectionId,
+				Category:  category,
+			},
+		}
+	} else {
+		req.Permission.Sections = &[]proto.Section{
+			proto.Section{
+				Id:       sectionId,
+				Name:     section,
+				Category: category,
+			},
+		}
 	}
 
 	esc := url.QueryEscape(category)
