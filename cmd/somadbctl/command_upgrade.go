@@ -485,6 +485,9 @@ func upgrade_soma_to_201611130001(curr int, tool string, printOnly bool) int {
 		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'cluster' OR cluster_id IS NOT NULL );`,
 		`ALTER TABLE soma.authorizations_repository ADD CHECK ( object_type != 'node' OR node_id IS NOT NULL );`,
 		`ALTER TABLE soma.authorizations_repository ADD CHECK ( ( repository_id IS NOT NULL AND bucket_id IS NULL AND group_id IS NULL AND cluster_id IS NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NULL AND cluster_id IS NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NOT NULL AND cluster_id IS NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NULL AND cluster_id IS NOT NULL AND node_id IS NULL ) OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NULL AND cluster_id IS NULL AND node_id IS NOT NULL ));`,
+		`DROP TABLE soma.authorizations_bucket;`,
+		`DROP TABLE soma.authorizations_cluster;`,
+		`DROP TABLE soma.authorizations_group;`,
 	}
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201611130001, 'Upgrade - somadbctl %s');", tool),
