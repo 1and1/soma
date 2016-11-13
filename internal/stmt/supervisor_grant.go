@@ -12,22 +12,6 @@ package stmt
 const (
 	SupervisorGrantStatements = ``
 
-	GrantGlobalOrSystemToUser = `
-INSERT INTO soma.authorizations_global (
-    grant_id,
-    user_id,
-    permission_id,
-    permission_type,
-    created_by
-)
-VALUES (
-    $1::uuid,
-    $2::uuid,
-    $3::uuid,
-    $4::varchar,
-    $5::uuid
-);`
-
 	RevokeGlobalAuthorization = `
 DELETE FROM soma.authorizations_global
 WHERE       grant_id = $1::uuid
@@ -52,37 +36,105 @@ WHERE       grant_id = $1::uuid
   AND       permission_id = $2::uuid
   AND       category = $3::varchar;`
 
-	RevokeGlobalOrSystemFromUser = `
-DELETE FROM soma.authorizations_global
-WHERE grant_id = $1::uuid;`
+	GrantGlobalAuthorization = `
+INSERT INTO soma.authorizations_global (
+            grant_id,
+            admin_id,
+            user_id,
+            tool_id,
+            organizational_team_id,
+            permission_id,
+            category,
+            created_by)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid,
+       $4::uuid,
+       $5::uuid,
+       $6::uuid,
+       $7::varchar,
+       iu.user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $8::varchar;`
+
+	GrantRepositoryAuthorization = `
+INSERT INTO soma.authorizations_repository (
+            grant_id,
+            user_id,
+            tool_id,
+            organizational_team_id,
+            category,
+            permission_id,
+            object_type,
+            repository_id,
+            bucket_id,
+            group_id,
+            cluster_id,
+            node_id,
+            created_by)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid,
+       $4::uuid,
+       $5::varchar,
+       $6::uuid,
+       $7::varchar,
+       $8::uuid,
+       $9::uuid,
+       $10::uuid,
+       $11::uuid,
+       $12::uuid,
+       iu.user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $13::varchar;`
+
+	GrantTeamAuthorization = `
+INSERT INTO soma.authorizations_team (
+            grant_id,
+            user_id,
+            tool_id,
+            organizational_team_id,
+            category,
+            permission_id,
+            authorized_team_id,
+            created_by)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid,
+       $4::uuid,
+       $5::varchar,
+       $6::uuid,
+       $7::uuid,
+       iu.user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $8::varchar;`
+
+	GrantMonitoringAuthorization = `
+INSERT INTO soma.authorizations_monitoring (
+            grant_id,
+            user_id,
+            tool_id,
+            organizational_team_id,
+            category,
+            permission_id,
+            monitoring_id,
+            created_by)
+SELECT $1::uuid,
+       $2::uuid,
+       $3::uuid,
+       $4::uuid,
+       $5::varchar,
+       $6::uuid,
+       $7::uuid,
+       iu.user_id
+FROM   inventory.users iu
+WHERE  iu.user_uid = $8::varchar;`
 
 	LoadGlobalOrSystemUserGrants = `
 SELECT grant_id,
        user_id,
        permission_id
 FROM   soma.authorizations_global;`
-
-	GrantLimitedRepoToUser = `
-INSERT INTO soma.authorizations_repository (
-	grant_id,
-	user_id,
-	repository_id,
-	permission_id,
-	permission_type,
-	created_by
-)
-VALUES (
-	$1::uuid,
-	$2::uuid,
-	$3::uuid,
-	$4::uuid,
-	$5::varchar,
-	$6::uuid
-);`
-
-	RevokeLimitedRepoFromUser = `
-DELETE FROM soma.authorizations_repository
-WHERE grant_id = $1::uuid;`
 
 	SearchGlobalSystemGrant = `
 SELECT grant_id
@@ -95,16 +147,16 @@ WHERE  permission_id = $1::uuid
 )
 
 func init() {
-	m[GrantGlobalOrSystemToUser] = `GrantGlobalOrSystemToUser`
-	m[GrantLimitedRepoToUser] = `GrantLimitedRepoToUser`
 	m[LoadGlobalOrSystemUserGrants] = `LoadGlobalOrSystemUserGrants`
-	m[RevokeGlobalOrSystemFromUser] = `RevokeGlobalOrSystemFromUser`
-	m[RevokeLimitedRepoFromUser] = `RevokeLimitedRepoFromUser`
 	m[SearchGlobalSystemGrant] = `SearchGlobalSystemGrant`
+	m[GrantGlobalAuthorization] = `GrantGlobalAuthorization`
+	m[GrantMonitoringAuthorization] = `GrantMonitoringAuthorization`
+	m[GrantRepositoryAuthorization] = `GrantRepositoryAuthorization`
+	m[GrantTeamAuthorization] = `GrantTeamAuthorization`
 	m[RevokeGlobalAuthorization] = `RevokeGlobalAuthorization`
+	m[RevokeMonitoringAuthorization] = `RevokeMonitoringAuthorization`
 	m[RevokeRepositoryAuthorization] = `RevokeRepositoryAuthorization`
 	m[RevokeTeamAuthorization] = `RevokeTeamAuthorization`
-	m[RevokeMonitoringAuthorization] = `RevokeMonitoringAuthorization`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

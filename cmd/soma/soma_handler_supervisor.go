@@ -52,8 +52,6 @@ type supervisor struct {
 	stmt_ListPermission *sql.Stmt
 	stmt_ShowPermission *sql.Stmt
 	stmt_SearchPerm     *sql.Stmt
-	stmt_GrantSysGlUser *sql.Stmt
-	stmt_RevkSysGlUser  *sql.Stmt
 	stmt_SrchGlSysGrant *sql.Stmt
 	stmt_SectionList    *sql.Stmt
 	stmt_SectionShow    *sql.Stmt
@@ -67,6 +65,10 @@ type supervisor struct {
 	stmt_RevokeRepo     *sql.Stmt
 	stmt_RevokeTeam     *sql.Stmt
 	stmt_RevokeMonitor  *sql.Stmt
+	stmt_GrantGlobal    *sql.Stmt
+	stmt_GrantRepo      *sql.Stmt
+	stmt_GrantTeam      *sql.Stmt
+	stmt_GrantMonitor   *sql.Stmt
 	appLog              *log.Logger
 	reqLog              *log.Logger
 	errLog              *log.Logger
@@ -123,8 +125,6 @@ func (s *supervisor) run() {
 			stmt.DeletePermissionCategory:      s.stmt_DelCategory,
 			stmt.AddPermission:                 s.stmt_AddPermission,
 			stmt.DeletePermission:              s.stmt_DelPermission,
-			stmt.GrantGlobalOrSystemToUser:     s.stmt_GrantSysGlUser,
-			stmt.RevokeGlobalOrSystemFromUser:  s.stmt_RevkSysGlUser,
 			stmt.CheckUserActive:               s.stmt_CheckUser,
 			stmt.SectionAdd:                    s.stmt_SectionAdd,
 			stmt.ActionAdd:                     s.stmt_ActionAdd,
@@ -132,6 +132,10 @@ func (s *supervisor) run() {
 			stmt.RevokeRepositoryAuthorization: s.stmt_RevokeRepo,
 			stmt.RevokeTeamAuthorization:       s.stmt_RevokeTeam,
 			stmt.RevokeMonitoringAuthorization: s.stmt_RevokeMonitor,
+			stmt.GrantGlobalAuthorization:      s.stmt_GrantGlobal,
+			stmt.GrantRepositoryAuthorization:  s.stmt_GrantRepo,
+			stmt.GrantTeamAuthorization:        s.stmt_GrantTeam,
+			stmt.GrantMonitoringAuthorization:  s.stmt_GrantMonitor,
 		} {
 			if prepStmt, err = s.conn.Prepare(statement); err != nil {
 				s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))
