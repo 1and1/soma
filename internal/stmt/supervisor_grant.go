@@ -144,6 +144,61 @@ WHERE  permission_id = $1::uuid
   AND  (   admin_id = $3::uuid
         OR user_id  = $3::uuid
 		OR tool_id  = $3::uuid);`
+
+	SearchGlobalAuthorization = `
+SELECT grant_id
+FROM   soma.authorizations_global
+WHERE  permission_id = $1::uuid
+  AND  category = $2::varchar
+  AND ((admin_id = $3::uuid AND 'admin' = $4::varchar)
+    OR (user_id = $3::uuid AND 'user' = $4::varchar)
+    OR (tool_id = $3::uuid AND 'tool' = $4::varchar)
+    OR (organizational_team_id = $3::uuid AND 'team' = $4::varchar));`
+
+	SearchRepositoryAuthorization = `
+SELECT grant_id
+FROM   soma.authorizations_repository
+WHERE  permission_id = $1::uuid
+  AND  category = $2::varchar
+  AND ((user_id = $3::uuid AND 'user' = $4::varchar )
+    OR (tool_id = $3::uuid AND 'tool' = $4::varchar )
+    OR (organizational_team_id = $3::uuid AND 'team' = $4::varchar))
+  AND  object_type = $5::varchar
+  AND ((repository_id = $6::uuid AND 'repository' = $5::varchar)
+    OR (bucket_id = $6::uuid AND 'bucket' = $5::varchar)
+    OR (group_id = $6::uuid AND 'group' = $5::varchar)
+    OR (cluster_id = $6::uuid AND 'cluster' = $5::varchar)
+    OR (node_id = $6::uuid AND 'node' = $5::varchar));`
+
+	SearchTeamAuthorization = `
+SELECT grant_id
+FROM   soma.authorizations_team
+WHERE  permission_id = $1::uuid
+  AND  category = $2::varchar
+  AND ((user_id = $3::uuid AND 'user' = $4::varchar )
+    OR (tool_id = $3::uuid AND 'tool' = $4::varchar )
+    OR (organizational_team_id = $3::uuid AND 'team' = $4::varchar))
+  AND  object_type = $5::varchar
+  AND  authorized_team_id = $6::uuid;`
+
+	SearchMonitoringAuthorization = `
+SELECT grant_id
+FROM   soma.authorizations_monitoring
+WHERE  permission_id = $1::uuid
+  AND  category = $2::varchar
+  AND ((user_id = $3::uuid AND 'user' = $4::varchar )
+    OR (tool_id = $3::uuid AND 'tool' = $4::varchar )
+    OR (organizational_team_id = $3::uuid AND 'team' = $4::varchar))
+  AND  object_type = $5::varchar
+  AND  monitoring_id = $6::uuid;`
+
+	/////////////////////////////////
+
+	LoadGlobalOrSystemUserGrants = `
+SELECT grant_id,
+       user_id,
+       permission_id
+FROM   soma.authorizations_global;`
 )
 
 func init() {
@@ -157,6 +212,10 @@ func init() {
 	m[RevokeMonitoringAuthorization] = `RevokeMonitoringAuthorization`
 	m[RevokeRepositoryAuthorization] = `RevokeRepositoryAuthorization`
 	m[RevokeTeamAuthorization] = `RevokeTeamAuthorization`
+	m[SearchGlobalAuthorization] = `SearchGlobalAuthorization`
+	m[SearchMonitoringAuthorization] = `SearchMonitoringAuthorization`
+	m[SearchRepositoryAuthorization] = `SearchRepositoryAuthorization`
+	m[SearchTeamAuthorization] = `SearchTeamAuthorization`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
