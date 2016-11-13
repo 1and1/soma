@@ -80,7 +80,6 @@ func RightGrant(w http.ResponseWriter, r *http.Request,
 	if !IsAuthorizedd(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `grant`,
 		Grant:      cReq.Grant,
@@ -92,6 +91,7 @@ func RightGrant(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
+		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `grant`,
 		Reply:      returnChannel,
@@ -116,7 +116,6 @@ func RightRevoke(w http.ResponseWriter, r *http.Request,
 	if !IsAuthorizedd(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `revoke`,
 		Grant:      &grant,
@@ -128,6 +127,7 @@ func RightRevoke(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
+		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `revoke`,
 		Reply:      returnChannel,
