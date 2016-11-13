@@ -9,50 +9,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (s *supervisor) right(q *msg.Request) {
-	result := msg.FromRequest(q)
-
-	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), q.User, q.RemoteAddr)
-
-	if s.readonly && (q.Action == `grant` || q.Action == `revoke`) {
-		result.Conflict(fmt.Errorf(`Readonly instance`))
-		goto dispatch
-	}
-
-	switch q.Grant.Category {
-	case `global`:
-		switch q.Action {
-		case `grant`:
-			fallthrough
-		case `revoke`:
-			s.right_globalsystem_modify(q)
-		default:
-			s.right_globalsystem_read(q)
-		}
-	case `system`:
-		switch q.Action {
-		case `grant`:
-			fallthrough
-		case `revoke`:
-			s.right_globalsystem_modify(q)
-		default:
-			s.right_globalsystem_read(q)
-		}
-	case `limited`:
-		switch q.Action {
-		case `grant`:
-			fallthrough
-		case `revoke`:
-			s.right_limited_modify(q)
-		default:
-			s.right_limited_read(q)
-		}
-	}
-	return
-
-dispatch:
-	q.Reply <- result
-}
 
 func (s *supervisor) right_globalsystem_modify(q *msg.Request) {
 	result := msg.FromRequest(q)

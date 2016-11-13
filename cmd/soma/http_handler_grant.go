@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/1and1/soma/internal/msg"
@@ -58,52 +59,68 @@ func SearchGrant(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-/* GLOBAL RIGHTS
- */
-func GrantGlobalRight(w http.ResponseWriter, r *http.Request,
+func RightGrant(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`grant_global_right`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
+
+	cReq := proto.Request{}
+	err := DecodeJsonBody(r, &cReq)
+	if err != nil {
+		DispatchBadRequest(&w, err)
 		return
 	}
 
-	crq := proto.NewGrantRequest()
-	err := DecodeJsonBody(r, &crq)
-	// check body is consistent with URI
-	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
-		crq.Grant.RecipientId != params.ByName(`rid`) ||
-		crq.Grant.Category != `global` {
-		DispatchBadRequest(&w, err)
+	if cReq.Grant.Category != params.ByName(`category`) ||
+		cReq.Grant.PermissionId != params.ByName(`permission`) {
+		DispatchBadRequest(&w,
+			fmt.Errorf(`Category/PermissionId mismatch`))
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Type:       `supervisor`,
+		Section:    `right`,
+		Action:     `grant`,
+		Grant:      cReq.Grant,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `grant`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Grant: proto.Grant{
-			RecipientType: crq.Grant.RecipientType,
-			RecipientId:   crq.Grant.RecipientId,
-			PermissionId:  crq.Grant.PermissionId,
-			Category:      crq.Grant.Category,
-		},
+		Grant:      *cReq.Grant,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
 }
 
-func RevokeGlobalRight(w http.ResponseWriter, r *http.Request,
+func RightRevoke(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`revoke_global_right`, ``, ``, ``); !ok {
+
+	grant := proto.Grant{
+		Id:           params.ByName(`grant`),
+		Category:     params.ByName(`category`),
+		PermissionId: params.ByName(`permission`),
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Type:       `supervisor`,
+		Section:    `right`,
+		Action:     `revoke`,
+		Grant:      &grant,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -111,173 +128,12 @@ func RevokeGlobalRight(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `revoke`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			GrantId: params.ByName(`grant`),
-		},
-	}
-	result := <-returnChannel
-	SendMsgResult(&w, &result)
-}
-
-/* LIMITED RIGHTS
- */
-func GrantLimitedRight(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-
-	scope := params.ByName(`scope`)
-	obj := params.ByName(`uuid`)
-	switch scope {
-	case `repository`:
-	default:
-		// only implement repository for now
-		DispatchNotImplemented(&w, nil)
-		return
-	}
-
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`grant_limited_right`, obj, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
-
-	crq := proto.NewGrantRequest()
-	err := DecodeJsonBody(r, &crq)
-	// check body is consistent with URI
-	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
-		crq.Grant.RecipientId != params.ByName(`rid`) ||
-		crq.Grant.Category != `limited` {
-		DispatchBadRequest(&w, err)
-		return
-	}
-
-	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(*supervisor)
-	handler.input <- msg.Request{
-		Type:       `supervisor`,
-		Section:    `right`,
-		Action:     `grant`,
-		Reply:      returnChannel,
-		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
-		Grant: proto.Grant{
-			RecipientType: crq.Grant.RecipientType,
-			RecipientId:   crq.Grant.RecipientId,
-			PermissionId:  crq.Grant.PermissionId,
-			Category:      crq.Grant.Category,
-			ObjectType:    crq.Grant.ObjectType,
-			ObjectId:      crq.Grant.ObjectId,
-		},
-	}
-	result := <-returnChannel
-	SendMsgResult(&w, &result)
-}
-
-func RevokeLimitedRight(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-
-	scope := params.ByName(`scope`)
-	obj := params.ByName(`uuid`)
-	switch scope {
-	case `repository`:
-	default:
-		// only implement repository for now
-		DispatchNotImplemented(&w, nil)
-		return
-	}
-
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`revoke_limited_right`, obj, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
-
-	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(*supervisor)
-	handler.input <- msg.Request{
-		Type:       `supervisor`,
-		Section:    `right`,
-		Action:     `revoke`,
-		Reply:      returnChannel,
-		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			GrantId: params.ByName(`grant`),
-		},
-	}
-	result := <-returnChannel
-	SendMsgResult(&w, &result)
-}
-
-/* SYSTEM RIGHTS
- */
-func GrantSystemRight(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`grant_system_right`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
-
-	crq := proto.NewGrantRequest()
-	err := DecodeJsonBody(r, &crq)
-	// check body is consistent with URI
-	if err != nil || crq.Grant.RecipientType != params.ByName(`rtyp`) ||
-		crq.Grant.RecipientId != params.ByName(`rid`) ||
-		crq.Grant.Category != `system` {
-		DispatchBadRequest(&w, err)
-		return
-	}
-
-	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(*supervisor)
-	handler.input <- msg.Request{
-		Type:       `supervisor`,
-		Section:    `right`,
-		Action:     `grant`,
-		Reply:      returnChannel,
-		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
-		Grant: proto.Grant{
-			RecipientType: crq.Grant.RecipientType,
-			RecipientId:   crq.Grant.RecipientId,
-			PermissionId:  crq.Grant.PermissionId,
-			Category:      crq.Grant.Category,
-		},
-	}
-	result := <-returnChannel
-	SendMsgResult(&w, &result)
-}
-
-func RevokeSystemRight(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`revoke_system_right`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
-
-	returnChannel := make(chan msg.Result)
-	handler := handlerMap[`supervisor`].(*supervisor)
-	handler.input <- msg.Request{
-		Type:       `supervisor`,
-		Section:    `right`,
-		Action:     `revoke`,
-		Reply:      returnChannel,
-		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
-		Super: &msg.Supervisor{
-			GrantId: params.ByName(`grant`),
-		},
+		Grant:      grant,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)

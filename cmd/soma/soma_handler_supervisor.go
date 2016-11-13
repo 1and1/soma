@@ -63,6 +63,10 @@ type supervisor struct {
 	stmt_ActionShow     *sql.Stmt
 	stmt_ActionSearch   *sql.Stmt
 	stmt_ActionAdd      *sql.Stmt
+	stmt_RevokeGlobal   *sql.Stmt
+	stmt_RevokeRepo     *sql.Stmt
+	stmt_RevokeTeam     *sql.Stmt
+	stmt_RevokeMonitor  *sql.Stmt
 	appLog              *log.Logger
 	reqLog              *log.Logger
 	errLog              *log.Logger
@@ -115,15 +119,19 @@ func (s *supervisor) run() {
 
 	if !s.readonly {
 		for statement, prepStmt := range map[string]*sql.Stmt{
-			stmt.AddPermissionCategory:        s.stmt_AddCategory,
-			stmt.DeletePermissionCategory:     s.stmt_DelCategory,
-			stmt.AddPermission:                s.stmt_AddPermission,
-			stmt.DeletePermission:             s.stmt_DelPermission,
-			stmt.GrantGlobalOrSystemToUser:    s.stmt_GrantSysGlUser,
-			stmt.RevokeGlobalOrSystemFromUser: s.stmt_RevkSysGlUser,
-			stmt.CheckUserActive:              s.stmt_CheckUser,
-			stmt.SectionAdd:                   s.stmt_SectionAdd,
-			stmt.ActionAdd:                    s.stmt_ActionAdd,
+			stmt.AddPermissionCategory:         s.stmt_AddCategory,
+			stmt.DeletePermissionCategory:      s.stmt_DelCategory,
+			stmt.AddPermission:                 s.stmt_AddPermission,
+			stmt.DeletePermission:              s.stmt_DelPermission,
+			stmt.GrantGlobalOrSystemToUser:     s.stmt_GrantSysGlUser,
+			stmt.RevokeGlobalOrSystemFromUser:  s.stmt_RevkSysGlUser,
+			stmt.CheckUserActive:               s.stmt_CheckUser,
+			stmt.SectionAdd:                    s.stmt_SectionAdd,
+			stmt.ActionAdd:                     s.stmt_ActionAdd,
+			stmt.RevokeGlobalAuthorization:     s.stmt_RevokeGlobal,
+			stmt.RevokeRepositoryAuthorization: s.stmt_RevokeRepo,
+			stmt.RevokeTeamAuthorization:       s.stmt_RevokeTeam,
+			stmt.RevokeMonitoringAuthorization: s.stmt_RevokeMonitor,
 		} {
 			if prepStmt, err = s.conn.Prepare(statement); err != nil {
 				s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))
@@ -186,12 +194,7 @@ func (s *supervisor) process(q *msg.Request) {
 		}
 
 	case `right`:
-		switch q.Action {
-		case `grant`, `revoke`:
-			s.right(q)
-		default:
-			go func() { s.right(q) }()
-		}
+		s.right(q)
 
 	case `section`:
 		s.section(q)
