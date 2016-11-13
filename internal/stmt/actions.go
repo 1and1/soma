@@ -30,12 +30,15 @@ WHERE  action_name = $1::varchar
 SELECT sa.action_id,
        sa.action_name,
        sa.section_id,
+       ss.section_name,
        sa.category,
        iu.user_uid,
        sa.created_at
 FROM   soma.actions sa
 JOIN   inventory.users iu
   ON   sa.created_by = iu.user_id
+JOIN   soma.sections ss
+  ON   sa.section_id = ss.section_id
 WHERE  sa.action_id = $1::uuid;`
 
 	ActionRemoveFromMap = `

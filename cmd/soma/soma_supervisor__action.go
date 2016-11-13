@@ -106,12 +106,13 @@ func (s *supervisor) action_show(q *msg.Request, r *msg.Result) {
 		err                             error
 		ts                              time.Time
 		actionId, actionName, sectionId string
-		category, user                  string
+		category, user, sectionName     string
 	)
 	if err = s.stmt_ActionShow.QueryRow(q.ActionObj.Id).Scan(
 		&actionId,
 		&actionName,
 		&sectionId,
+		&sectionName,
 		&category,
 		&user,
 		&ts,
@@ -123,10 +124,11 @@ func (s *supervisor) action_show(q *msg.Request, r *msg.Result) {
 		return
 	}
 	r.ActionObj = []proto.Action{proto.Action{
-		Id:        actionId,
-		Name:      actionName,
-		SectionId: sectionId,
-		Category:  category,
+		Id:          actionId,
+		Name:        actionName,
+		SectionId:   sectionId,
+		SectionName: sectionName,
+		Category:    category,
 		Details: &proto.DetailsCreation{
 			CreatedBy: user,
 			CreatedAt: ts.Format(rfc3339Milli),
