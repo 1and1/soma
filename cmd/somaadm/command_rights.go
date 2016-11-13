@@ -175,8 +175,8 @@ func cmdRightGrant(c *cli.Context) error {
 		}
 	}
 
-	path := fmt.Sprintf("/grant/%s/%s/%s/", req.Grant.Category,
-		req.Grant.RecipientType, req.Grant.RecipientId)
+	path := fmt.Sprintf("/category/%s/permissions/%s/grant/",
+		req.Grant.Category, req.Grant.PermissionId)
 	return adm.Perform(`postbody`, path, `command`, req, c)
 }
 
