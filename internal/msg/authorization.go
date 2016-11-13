@@ -8,6 +8,8 @@
 
 package msg
 
+import "github.com/1and1/soma/lib/proto"
+
 type Authorization struct {
 	User       string
 	RemoteAddr string
@@ -17,6 +19,7 @@ type Authorization struct {
 	Bucket     string
 	Monitoring string
 	Team       string
+	Grant      *proto.Grant
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
