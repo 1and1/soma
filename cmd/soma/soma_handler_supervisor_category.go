@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/1and1/soma/internal/msg"
+	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	uuid "github.com/satori/go.uuid"
 )
@@ -129,7 +130,8 @@ func (s *supervisor) permission_category_write(q *msg.Request) {
 		}
 		// create system permission for category
 		permId = uuid.NewV4().String()
-		if res, err = s.stmt_AddPermission.Exec(
+		if res, err = s.conn.Exec(
+			stmt.PermissionAdd,
 			permId,
 			q.Category.Name,
 			`system`,

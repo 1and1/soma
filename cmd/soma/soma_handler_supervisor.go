@@ -47,7 +47,6 @@ type supervisor struct {
 	stmt_DelCategory    *sql.Stmt
 	stmt_ListCategory   *sql.Stmt
 	stmt_ShowCategory   *sql.Stmt
-	stmt_AddPermission  *sql.Stmt
 	stmt_DelPermission  *sql.Stmt
 	stmt_ListPermission *sql.Stmt
 	stmt_ShowPermission *sql.Stmt
@@ -129,7 +128,6 @@ func (s *supervisor) run() {
 		for statement, prepStmt := range map[string]*sql.Stmt{
 			stmt.AddPermissionCategory:         s.stmt_AddCategory,
 			stmt.DeletePermissionCategory:      s.stmt_DelCategory,
-			stmt.AddPermission:                 s.stmt_AddPermission,
 			stmt.DeletePermission:              s.stmt_DelPermission,
 			stmt.CheckUserActive:               s.stmt_CheckUser,
 			stmt.SectionAdd:                    s.stmt_SectionAdd,
@@ -196,12 +194,7 @@ func (s *supervisor) process(q *msg.Request) {
 		}
 
 	case `permission`:
-		switch q.Action {
-		case `add`, `delete`:
-			s.permission(q)
-		default:
-			go func() { s.permission(q) }()
-		}
+		s.permission(q)
 
 	case `right`:
 		s.right(q)

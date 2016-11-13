@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/1and1/soma/internal/msg"
@@ -89,14 +90,16 @@ func SearchPermission(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-/* Write functions
- */
-
-func AddPermission(w http.ResponseWriter, r *http.Request,
+func PermissionAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`permission_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `permission`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -105,6 +108,11 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if cReq.Permission.Category != params.ByName(`category`) {
+		DispatchBadRequest(&w, fmt.Errorf(`Category mismatch`))
 		return
 	}
 
@@ -126,11 +134,16 @@ func AddPermission(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-func DeletePermission(w http.ResponseWriter, r *http.Request,
+func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`permission_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `permission`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -140,12 +153,13 @@ func DeletePermission(w http.ResponseWriter, r *http.Request,
 	handler.input <- msg.Request{
 		Type:       `supervisor`,
 		Section:    `permission`,
-		Action:     `delete`,
+		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
-			Name: params.ByName(`permission`),
+			Id:       params.ByName(`permission`),
+			Category: params.ByName(`category`),
 		},
 	}
 	result := <-returnChannel

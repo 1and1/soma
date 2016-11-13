@@ -2,42 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
-	uuid "github.com/satori/go.uuid"
 )
-
-func (s *supervisor) permission(q *msg.Request) {
-	result := msg.FromRequest(q)
-
-	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), q.User, q.RemoteAddr)
-
-	if s.readonly && (q.Action == `add` || q.Action == `delete`) {
-		result.Conflict(fmt.Errorf(`Readonly instance`))
-		goto dispatch
-	}
-
-	switch q.Action {
-	case `list`:
-		fallthrough
-	case `search/name`:
-		fallthrough
-	case `show`:
-		s.permission_read(q)
-		return
-	case `add`:
-		fallthrough
-	case `delete`:
-		s.permission_write(q)
-		return
-	}
-
-dispatch:
-	q.Reply <- result
-}
 
 func (s *supervisor) permission_read(q *msg.Request) {
 	result := msg.FromRequest(q)
@@ -104,57 +73,6 @@ func (s *supervisor) permission_read(q *msg.Request) {
 			},
 		}}
 		result.OK()
-	}
-
-dispatch:
-	q.Reply <- result
-}
-
-func (s *supervisor) permission_write(q *msg.Request) {
-	result := msg.FromRequest(q)
-	userUUID, ok := s.id_user_rev.get(q.User)
-	if !ok {
-		userUUID = `00000000-0000-0000-0000-000000000000`
-	}
-
-	var (
-		res sql.Result
-		err error
-		id  string
-	)
-
-	switch q.Action {
-	case `add`:
-		q.Permission.Id = uuid.NewV4().String()
-		res, err = s.stmt_AddPermission.Exec(
-			q.Permission.Id,
-			q.Permission.Name,
-			q.Permission.Category,
-			userUUID,
-		)
-	case `delete`:
-		if id, ok = s.id_permission.get(q.Permission.Name); !ok {
-			result.NotFound(fmt.Errorf(`Supervisor: unknown`))
-			goto dispatch
-		}
-		res, err = s.stmt_DelPermission.Exec(
-			id,
-		)
-	}
-	if err != nil {
-		result.ServerError(err)
-		goto dispatch
-	}
-
-	if result.RowCnt(res.RowsAffected()) {
-		result.Permission = []proto.Permission{q.Permission}
-		// keep lookup maps in sync
-		switch q.Action {
-		case `add`:
-			s.id_permission.insert(q.Permission.Name, q.Permission.Id)
-		case `delete`:
-			s.id_permission.remove(q.Permission.Name)
-		}
 	}
 
 dispatch:

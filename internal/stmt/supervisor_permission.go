@@ -47,7 +47,7 @@ JOIN   inventory.users iu
 ON     sc.created_by = iu.user_id
 WHERE  sc.category = $1::varchar;`
 
-	AddPermission = `
+	PermissionAdd = `
 INSERT INTO soma.permissions (
             permission_id,
             permission_name,
@@ -57,12 +57,30 @@ INSERT INTO soma.permissions (
 SELECT $1::uuid,
        $2::varchar,
        $3::varchar,
-       $4::uuid
+       ( SELECT user_id
+         FROM   inventory.users
+         WHERE  user_uid = $4::varchar)
 WHERE NOT EXISTS (
       SELECT permission_name
       FROM   soma.permissions
       WHERE  permission_name = $2::varchar
 );`
+
+	PermissionLinkGrant = `
+INSERT INTO soma.permission_grant_map (
+            category,
+            permission_id,
+            granted_category,
+            granted_permission_id)
+SELECT $1::varchar,
+       $2::uuid,
+       $3::varchar,
+       $4::uuid
+WHERE  NOT EXISTS (
+   -- a permission can not have two grant records
+   SELECT permission_id
+   FROM   soma.permission_grant_map
+   WHERE  permission_id = $2::uuid);`
 
 	DeletePermission = `
 DELETE FROM soma.permissions
@@ -78,7 +96,7 @@ SELECT sp.permission_id,
        sp.permission_name,
        sp.category,
        iu.user_uid,
-	   sp.created_at
+       sp.created_at
 FROM   soma.permissions sp
 JOIN   inventory.users iu
 ON     sp.created_by = iu.user_id
@@ -93,12 +111,13 @@ WHERE  permission_name = $1::varchar;`
 
 func init() {
 	m[AddPermissionCategory] = `AddPermissionCategory`
-	m[AddPermission] = `AddPermission`
 	m[DeletePermissionCategory] = `DeletePermissionCategory`
 	m[DeletePermission] = `DeletePermission`
 	m[ListPermissionCategory] = `ListPermissionCategory`
 	m[ListPermission] = `ListPermission`
 	m[LoadPermissions] = `LoadPermissions`
+	m[PermissionAdd] = `PermissionAdd`
+	m[PermissionLinkGrant] = `PermissionLinkGrant`
 	m[SearchPermissionByName] = `SearchPermissionByName`
 	m[ShowPermissionCategory] = `ShowPermissionCategory`
 	m[ShowPermission] = `ShowPermission`
