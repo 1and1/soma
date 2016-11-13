@@ -52,7 +52,6 @@ type supervisor struct {
 	stmt_ListPermission *sql.Stmt
 	stmt_ShowPermission *sql.Stmt
 	stmt_SearchPerm     *sql.Stmt
-	stmt_SrchGlSysGrant *sql.Stmt
 	stmt_SectionList    *sql.Stmt
 	stmt_SectionShow    *sql.Stmt
 	stmt_SectionSearch  *sql.Stmt
@@ -69,6 +68,10 @@ type supervisor struct {
 	stmt_GrantRepo      *sql.Stmt
 	stmt_GrantTeam      *sql.Stmt
 	stmt_GrantMonitor   *sql.Stmt
+	stmt_SearchGlobal   *sql.Stmt
+	stmt_SearchRepo     *sql.Stmt
+	stmt_SearchTeam     *sql.Stmt
+	stmt_SearchMonitor  *sql.Stmt
 	appLog              *log.Logger
 	reqLog              *log.Logger
 	errLog              *log.Logger
@@ -98,20 +101,23 @@ func (s *supervisor) run() {
 	s.startupLoad()
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.SelectToken:             s.stmt_FToken,
-		stmt.FindUserID:              s.stmt_FindUser,
-		stmt.ListPermissionCategory:  s.stmt_ListCategory,
-		stmt.ShowPermissionCategory:  s.stmt_ShowCategory,
-		stmt.ListPermission:          s.stmt_ListPermission,
-		stmt.ShowPermission:          s.stmt_ShowPermission,
-		stmt.SearchPermissionByName:  s.stmt_SearchPerm,
-		stmt.SearchGlobalSystemGrant: s.stmt_SrchGlSysGrant,
-		stmt.SectionList:             s.stmt_SectionList,
-		stmt.SectionShow:             s.stmt_SectionShow,
-		stmt.SectionSearch:           s.stmt_SectionSearch,
-		stmt.ActionList:              s.stmt_ActionList,
-		stmt.ActionShow:              s.stmt_ActionShow,
-		stmt.ActionSearch:            s.stmt_ActionSearch,
+		stmt.SelectToken:                   s.stmt_FToken,
+		stmt.FindUserID:                    s.stmt_FindUser,
+		stmt.ListPermissionCategory:        s.stmt_ListCategory,
+		stmt.ShowPermissionCategory:        s.stmt_ShowCategory,
+		stmt.ListPermission:                s.stmt_ListPermission,
+		stmt.ShowPermission:                s.stmt_ShowPermission,
+		stmt.SearchPermissionByName:        s.stmt_SearchPerm,
+		stmt.SectionList:                   s.stmt_SectionList,
+		stmt.SectionShow:                   s.stmt_SectionShow,
+		stmt.SectionSearch:                 s.stmt_SectionSearch,
+		stmt.ActionList:                    s.stmt_ActionList,
+		stmt.ActionShow:                    s.stmt_ActionShow,
+		stmt.ActionSearch:                  s.stmt_ActionSearch,
+		stmt.SearchGlobalAuthorization:     s.stmt_SearchGlobal,
+		stmt.SearchRepositoryAuthorization: s.stmt_SearchRepo,
+		stmt.SearchTeamAuthorization:       s.stmt_SearchTeam,
+		stmt.SearchMonitoringAuthorization: s.stmt_SearchMonitor,
 	} {
 		if prepStmt, err = s.conn.Prepare(statement); err != nil {
 			s.errLog.Fatal(`supervisor`, err, stmt.Name(statement))

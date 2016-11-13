@@ -130,12 +130,6 @@ SELECT $1::uuid,
 FROM   inventory.users iu
 WHERE  iu.user_uid = $8::varchar;`
 
-	LoadGlobalOrSystemUserGrants = `
-SELECT grant_id,
-       user_id,
-       permission_id
-FROM   soma.authorizations_global;`
-
 	SearchGlobalSystemGrant = `
 SELECT grant_id
 FROM   soma.authorizations_global
@@ -203,7 +197,6 @@ FROM   soma.authorizations_global;`
 
 func init() {
 	m[LoadGlobalOrSystemUserGrants] = `LoadGlobalOrSystemUserGrants`
-	m[SearchGlobalSystemGrant] = `SearchGlobalSystemGrant`
 	m[GrantGlobalAuthorization] = `GrantGlobalAuthorization`
 	m[GrantMonitoringAuthorization] = `GrantMonitoringAuthorization`
 	m[GrantRepositoryAuthorization] = `GrantRepositoryAuthorization`

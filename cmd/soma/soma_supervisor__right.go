@@ -41,6 +41,8 @@ func (s *supervisor) right(q *msg.Request) {
 			goto abort
 		}
 		s.right_write(q)
+	case `search`:
+		go func() { s.right_read(q) }()
 	default:
 		result.NotImplemented(fmt.Errorf("Unknown requested action:"+
 			" %s/%s/%s", q.Type, q.Section, q.Action))
@@ -389,6 +391,100 @@ func (s *supervisor) right_revoke_monitoring(q *msg.Request) {
 	if result.RowCnt(res.RowsAffected()) {
 		result.Grant = []proto.Grant{q.Grant}
 	}
+
+dispatch:
+	q.Reply <- result
+}
+
+func (s *supervisor) right_read(q *msg.Request) {
+	switch q.Action {
+	case `search`:
+		switch q.Grant.Category {
+		case `system`,
+			`global`,
+			`global:grant`,
+			`permission`,
+			`permission:grant`,
+			`operations`,
+			`operations:grant`:
+			s.right_search_global(q)
+		case
+			`repository`, `repository:grant`,
+			`team`, `team:grant`,
+			`monitoring`, `monitoring:grant`:
+			s.right_search_scoped(q)
+		}
+	}
+}
+
+func (s *supervisor) right_search_global(q *msg.Request) {
+	result := msg.FromRequest(q)
+	var (
+		err     error
+		grantId string
+	)
+	if err = s.stmt_SearchGlobal.QueryRow(
+		q.Grant.PermissionId,
+		q.Grant.Category,
+		q.Grant.RecipientId,
+		q.Grant.RecipientType,
+	).Scan(&grantId); err == sql.ErrNoRows {
+		result.NotFound(err)
+		goto dispatch
+	} else if err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	result.Grant = []proto.Grant{proto.Grant{
+		Id:            grantId,
+		PermissionId:  q.Grant.PermissionId,
+		Category:      q.Grant.Category,
+		RecipientId:   q.Grant.RecipientId,
+		RecipientType: q.Grant.RecipientType,
+	}}
+
+dispatch:
+	q.Reply <- result
+}
+
+func (s *supervisor) right_search_scoped(q *msg.Request) {
+	result := msg.FromRequest(q)
+	var (
+		err     error
+		grantId string
+		scope   *sql.Stmt
+	)
+	switch q.Grant.Category {
+	case `repository`, `repository:grant`:
+		scope = s.stmt_SearchRepo
+	case `team`, `team:grant`:
+		scope = s.stmt_SearchTeam
+	case `monitoring`, `monitoring:grant`:
+		scope = s.stmt_SearchMonitor
+	}
+	if err = scope.QueryRow(
+		q.Grant.PermissionId,
+		q.Grant.Category,
+		q.Grant.RecipientId,
+		q.Grant.RecipientType,
+		q.Grant.ObjectType,
+		q.Grant.ObjectId,
+	).Scan(&grantId); err == sql.ErrNoRows {
+		result.NotFound(err)
+		goto dispatch
+	} else if err != nil {
+		result.ServerError(err)
+		goto dispatch
+	}
+	result.Grant = []proto.Grant{proto.Grant{
+		Id:            grantId,
+		PermissionId:  q.Grant.PermissionId,
+		Category:      q.Grant.Category,
+		RecipientId:   q.Grant.RecipientId,
+		RecipientType: q.Grant.RecipientType,
+		ObjectType:    q.Grant.ObjectType,
+		ObjectId:      q.Grant.ObjectId,
+	}}
 
 dispatch:
 	q.Reply <- result

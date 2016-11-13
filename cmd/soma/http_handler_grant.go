@@ -9,34 +9,26 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListRights(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-}
-
-func ListUserRights(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-}
-
-func ListUserRepoRights(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
-	defer PanicCatcher(w)
-}
-
 func SearchGrant(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`grant_search`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `right`,
+		Action:     `search`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
 
 	crq := proto.NewGrantFilter()
-	_ = DecodeJsonBody(r, &crq)
+	if err := DecodeJsonBody(r, &crq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
@@ -51,6 +43,8 @@ func SearchGrant(w http.ResponseWriter, r *http.Request,
 			RecipientId:   crq.Filter.Grant.RecipientId,
 			PermissionId:  crq.Filter.Grant.PermissionId,
 			Category:      crq.Filter.Grant.Category,
+			ObjectType:    crq.Filter.Grant.ObjectType,
+			ObjectId:      crq.Filter.Grant.ObjectId,
 		},
 	}
 
