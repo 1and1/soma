@@ -28,6 +28,30 @@ VALUES (
     $5::uuid
 );`
 
+	RevokeGlobalAuthorization = `
+DELETE FROM soma.authorizations_global
+WHERE       grant_id = $1::uuid
+  AND       permission_id = $2::uuid
+  AND       category = $3::varchar;`
+
+	RevokeRepositoryAuthorization = `
+DELETE FROM soma.authorizations_repository
+WHERE       grant_id = $1::uuid
+  AND       permission_id = $2::uuid
+  AND       category = $3::varchar;`
+
+	RevokeTeamAuthorization = `
+DELETE FROM soma.authorizations_team
+WHERE       grant_id = $1::uuid
+  AND       permission_id = $2::uuid
+  AND       category = $3::varchar;`
+
+	RevokeMonitoringAuthorization = `
+DELETE FROM soma.authorizations_monitoring
+WHERE       grant_id = $1::uuid
+  AND       permission_id = $2::uuid
+  AND       category = $3::varchar;`
+
 	RevokeGlobalOrSystemFromUser = `
 DELETE FROM soma.authorizations_global
 WHERE grant_id = $1::uuid;`
@@ -77,6 +101,10 @@ func init() {
 	m[RevokeGlobalOrSystemFromUser] = `RevokeGlobalOrSystemFromUser`
 	m[RevokeLimitedRepoFromUser] = `RevokeLimitedRepoFromUser`
 	m[SearchGlobalSystemGrant] = `SearchGlobalSystemGrant`
+	m[RevokeGlobalAuthorization] = `RevokeGlobalAuthorization`
+	m[RevokeRepositoryAuthorization] = `RevokeRepositoryAuthorization`
+	m[RevokeTeamAuthorization] = `RevokeTeamAuthorization`
+	m[RevokeMonitoringAuthorization] = `RevokeMonitoringAuthorization`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
