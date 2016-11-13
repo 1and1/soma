@@ -25,6 +25,8 @@ type GrantFilter struct {
 	RecipientId   string `json:"recipientId"`
 	PermissionId  string `json:"permissionId"`
 	Category      string `json:"category"`
+	ObjectType    string `json:"objectType"`
+	ObjectId      string `json:"objectId"`
 }
 
 func NewGrantRequest() Request {
