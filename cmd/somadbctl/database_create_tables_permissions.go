@@ -112,7 +112,8 @@ create table if not exists soma.authorizations_global (
     -- admins can only have system
     CHECK ( admin_id IS NULL OR category = 'system' ),
     -- only root can have omnipotence
-    CHECK ( permission_id != '00000000-0000-0000-0000-000000000000'::uuid OR user_id = '00000000-0000-0000-0000-000000000000'::uuid )
+    CHECK ( permission_id != '00000000-0000-0000-0000-000000000000'::uuid OR user_id = '00000000-0000-0000-0000-000000000000'::uuid ),
+    UNIQUE( admin_id, user_id, tool_id, organizational_team_id, category, permission_id )
 );`
 	queries[idx] = "createTableGlobalAuthorizations"
 	idx++
@@ -173,7 +174,8 @@ create table if not exists soma.authorizations_repository (
          OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS     NULL AND node_id IS     NULL )
          OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS NOT NULL AND cluster_id IS     NULL AND node_id IS     NULL )
          OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS NOT NULL AND node_id IS     NULL )
-         OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS     NULL AND node_id IS NOT NULL ))
+         OR ( repository_id IS NOT NULL AND bucket_id IS NOT NULL AND group_id IS     NULL AND cluster_id IS     NULL AND node_id IS NOT NULL )),
+    UNIQUE ( user_id,tool_id,organizational_team_id, category,permission_id, object_type,repository_id,bucket_id,group_id,cluster_id,node_id )
 );`
 	queries[idx] = "createTableRepoAuthorizations"
 	idx++
@@ -193,7 +195,8 @@ create table if not exists soma.authorizations_monitoring (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category IN ( 'monitoring', 'monitoring:grant' ) )
+    CHECK ( category IN ( 'monitoring', 'monitoring:grant' ) ),
+    UNIQUE ( user_id, tool_id, organizational_team_id, category, permission_id, monitoring_id )
 );`
 	queries[idx] = "createTableMonitoringAuthorizations"
 	idx++
@@ -213,7 +216,8 @@ create table if not exists soma.authorizations_team (
     CHECK (   ( user_id IS NOT NULL AND tool_id IS     NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS NOT NULL AND organizational_team_id IS     NULL )
            OR ( user_id IS     NULL AND tool_id IS     NULL AND organizational_team_id IS NOT NULL ) ),
-    CHECK ( category IN ( 'team', 'team:grant' ) )
+    CHECK ( category IN ( 'team', 'team:grant' ) ),
+    UNIQUE ( user_id, tool_id, organizational_team_id, category, permission_id, authorized_team_id )
 );`
 	queries[idx] = "createTableTeamAuthorizations"
 	idx++
