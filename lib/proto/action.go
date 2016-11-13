@@ -10,11 +10,12 @@
 package proto
 
 type Action struct {
-	Id        string           `json:"id,omitempty"`
-	Name      string           `json:"name,omitempty"`
-	SectionId string           `json:"sectionId,omitempty"`
-	Category  string           `json:"category,omitempty"`
-	Details   *DetailsCreation `json:"details,omitempty"`
+	Id          string           `json:"id,omitempty"`
+	Name        string           `json:"name,omitempty"`
+	SectionId   string           `json:"sectionId,omitempty"`
+	SectionName string           `json:"sectionName,omitempty"`
+	Category    string           `json:"category,omitempty"`
+	Details     *DetailsCreation `json:"details,omitempty"`
 }
 
 type ActionFilter struct {
