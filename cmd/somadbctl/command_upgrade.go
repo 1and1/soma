@@ -492,6 +492,8 @@ func upgrade_soma_to_201611130001(curr int, tool string, printOnly bool) int {
 		`ALTER TABLE soma.authorizations_team ADD UNIQUE ( user_id, tool_id, organizational_team_id, category, permission_id, authorized_team_id );`,
 		`ALTER TABLE soma.authorizations_repository ADD UNIQUE ( user_id, tool_id, organizational_team_id, category, permission_id, object_type, repository_id, bucket_id, group_id, cluster_id, node_id );`,
 		`ALTER TABLE soma.authorizations_global ADD UNIQUE( admin_id, user_id, tool_id, organizational_team_id, category, permission_id );`,
+		`ALTER TABLE soma.permission_grant_map ADD UNIQUE ( permission_id );`,
+		`ALTER TABLE soma.permission_grant_map ADD UNIQUE ( granted_permission_id );`,
 	}
 	stmts = append(stmts,
 		fmt.Sprintf("INSERT INTO public.schema_versions (schema, version, description) VALUES ('soma', 201611130001, 'Upgrade - somadbctl %s');", tool),

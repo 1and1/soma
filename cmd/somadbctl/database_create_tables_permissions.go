@@ -78,9 +78,9 @@ create table if not exists soma.permission_map (
 	queryMap[`createTablePermissionGrantMap`] = `
 create table if not exists soma.permission_grant_map (
     category                    varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
-    permission_id               uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
+    permission_id               uuid            UNIQUE NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
     granted_category            varchar(32)     NOT NULL REFERENCES soma.categories ( category ) DEFERRABLE,
-    granted_permission_id       uuid            NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
+    granted_permission_id       uuid            UNIQUE NOT NULL REFERENCES soma.permissions ( permission_id ) DEFERRABLE,
     FOREIGN KEY ( permission_id, category ) REFERENCES soma.permissions ( permission_id, category ),
     FOREIGN KEY ( granted_permission_id, granted_category ) REFERENCES soma.permissions ( permission_id, category ),
     CHECK ( permission_id != granted_permission_id ),
