@@ -35,7 +35,7 @@ WHERE NOT EXISTS (
       SELECT permission_name
       FROM   soma.permissions
       WHERE  permission_name = $2::varchar
-);`
+        AND  category = $3::varchar);`
 
 	PermissionLinkGrant = `
 INSERT INTO soma.permission_grant_map (
