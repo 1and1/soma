@@ -20,12 +20,7 @@ import (
 func (s *supervisor) right(q *msg.Request) {
 	result := msg.FromRequest(q)
 
-	s.reqLog.Printf(LogStrReq,
-		q.Type,
-		fmt.Sprintf("%s/%s", q.Section, q.Action),
-		q.User,
-		q.RemoteAddr,
-	)
+	s.requestLog(q)
 
 	if q.Grant.RecipientType != `user` {
 		result.NotImplemented(fmt.Errorf("Rights for recipient type"+

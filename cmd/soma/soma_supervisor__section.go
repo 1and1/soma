@@ -21,12 +21,7 @@ import (
 func (s *supervisor) section(q *msg.Request) {
 	result := msg.FromRequest(q)
 
-	s.reqLog.Printf(LogStrReq,
-		q.Type,
-		fmt.Sprintf("%s/%s", q.Section, q.Action),
-		q.User,
-		q.RemoteAddr,
-	)
+	s.requestLog(q)
 
 	switch q.Action {
 	case `list`, `show`, `search`:
