@@ -17,35 +17,6 @@ SELECT permission_id,
        permission_name
 FROM   soma.permissions;`
 
-	AddPermissionCategory = `
-INSERT INTO soma.categories (
-            category,
-            created_by
-)
-SELECT $1::varchar,
-       $2::uuid
-WHERE NOT EXISTS (
-      SELECT category
-      FROM   soma.categories
-      WHERE  category = $1::varchar
-);`
-
-	DeletePermissionCategory = `
-DELETE FROM soma.categories
-WHERE category = $1::varchar;`
-
-	ListPermissionCategory = `
-SELECT category
-FROM   soma.categories;`
-
-	ShowPermissionCategory = `
-SELECT sc.category,
-       iu.user_uid,
-       sc.created_at
-FROM   soma.categories sc
-JOIN   inventory.users iu
-ON     sc.created_by = iu.user_id
-WHERE  sc.category = $1::varchar;`
 
 	PermissionAdd = `
 INSERT INTO soma.permissions (
@@ -193,9 +164,6 @@ WHERE       permission_id = $1::uuid
 )
 
 func init() {
-	m[AddPermissionCategory] = `AddPermissionCategory`
-	m[DeletePermissionCategory] = `DeletePermissionCategory`
-	m[ListPermissionCategory] = `ListPermissionCategory`
 	m[LoadPermissions] = `LoadPermissions`
 	m[PermissionAdd] = `PermissionAdd`
 	m[PermissionLinkGrant] = `PermissionLinkGrant`
@@ -214,7 +182,6 @@ func init() {
 	m[PermissionShow] = `PermissionShow`
 	m[PermissionUnmapAll] = `PermissionUnmapAll`
 	m[PermissionUnmapEntry] = `PermissionUnmapEntry`
-	m[ShowPermissionCategory] = `ShowPermissionCategory`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

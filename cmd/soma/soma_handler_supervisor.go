@@ -43,7 +43,6 @@ type supervisor struct {
 	stmt_FToken           *sql.Stmt
 	stmt_FindUser         *sql.Stmt
 	stmt_CheckUser        *sql.Stmt
-	stmt_AddCategory      *sql.Stmt
 	stmt_DelCategory      *sql.Stmt
 	stmt_ListCategory     *sql.Stmt
 	stmt_ShowCategory     *sql.Stmt
@@ -102,8 +101,8 @@ func (s *supervisor) run() {
 	for statement, prepStmt := range map[string]*sql.Stmt{
 		stmt.SelectToken:                   s.stmt_FToken,
 		stmt.FindUserID:                    s.stmt_FindUser,
-		stmt.ListPermissionCategory:        s.stmt_ListCategory,
-		stmt.ShowPermissionCategory:        s.stmt_ShowCategory,
+		stmt.CategoryList:                  s.stmt_ListCategory,
+		stmt.CategoryShow:                  s.stmt_ShowCategory,
 		stmt.PermissionList:                s.stmt_PermissionList,
 		stmt.PermissionSearchByName:        s.stmt_PermissionSearch,
 		stmt.SectionList:                   s.stmt_SectionList,
@@ -125,8 +124,7 @@ func (s *supervisor) run() {
 
 	if !s.readonly {
 		for statement, prepStmt := range map[string]*sql.Stmt{
-			stmt.AddPermissionCategory:         s.stmt_AddCategory,
-			stmt.DeletePermissionCategory:      s.stmt_DelCategory,
+			stmt.CategoryRemove:                s.stmt_DelCategory,
 			stmt.CheckUserActive:               s.stmt_CheckUser,
 			stmt.SectionAdd:                    s.stmt_SectionAdd,
 			stmt.ActionAdd:                     s.stmt_ActionAdd,
@@ -186,12 +184,7 @@ func (s *supervisor) process(q *msg.Request) {
 		go func() { s.update_map(q) }()
 
 	case `category`:
-		switch q.Action {
-		case `add`, `remove`:
-			s.permission_category(q)
-		default:
-			go func() { s.permission_category(q) }()
-		}
+		s.category(q)
 
 	case `permission`:
 		s.permission(q)

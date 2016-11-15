@@ -1,3 +1,11 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
@@ -8,9 +16,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListCategory(w http.ResponseWriter, r *http.Request,
+func CategoryList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -38,7 +44,7 @@ func ListCategory(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-func ShowCategory(w http.ResponseWriter, r *http.Request,
+func CategoryShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -69,10 +75,7 @@ func ShowCategory(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-/* Write functions
- */
-
-func AddCategory(w http.ResponseWriter, r *http.Request,
+func CategoryAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -110,7 +113,7 @@ func AddCategory(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-func DeleteCategory(w http.ResponseWriter, r *http.Request,
+func CategoryRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
