@@ -38,8 +38,7 @@ func (s *supervisor) section(q *msg.Request) {
 		}
 		s.section_write(q)
 	default:
-		result.NotImplemented(fmt.Errorf("Unknown requested action:"+
-			" %s/%s/%s", q.Type, q.Section, q.Action))
+		result.UnknownRequest(q)
 		goto abort
 	}
 	return

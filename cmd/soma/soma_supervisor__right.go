@@ -44,8 +44,7 @@ func (s *supervisor) right(q *msg.Request) {
 	case `search`:
 		go func() { s.right_read(q) }()
 	default:
-		result.NotImplemented(fmt.Errorf("Unknown requested action:"+
-			" %s/%s/%s", q.Type, q.Section, q.Action))
+		result.UnknownRequest(q)
 		goto abort
 	}
 	return
