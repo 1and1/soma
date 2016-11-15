@@ -54,6 +54,7 @@ const (
 	rfc3339Milli string = "2006-01-02T15:04:05.000Z07:00"
 	// Logging format strings
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
+	LogStrSRq = `Section=%s, Action=%s, User=%s, Addr=%s`
 	LogStrArg = `Subsystem=%s, Request=%s, User=%s, Addr=%s, Arg=%s`
 	LogStrOK  = `Subsystem=%s, Result=%s, InternalCode=%d, ExternalCode=%d`
 	LogStrErr = `Subsystem=%s, Action=%s, InternalCode=%d, Error=%s`

@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
 )
@@ -135,6 +136,17 @@ func (s *supervisor) checkIV(iv string) error {
 		return fmt.Errorf(`Invalid Initialization vector`)
 	}
 	return nil
+}
+
+func (s *supervisor) requestLog(q *msg.Request) {
+	s.reqLog.Printf(LogStrSRq,
+		fmt.Sprintf("supervisor/%s",
+			q.Section,
+		),
+		q.Action,
+		q.User,
+		q.RemoteAddr,
+	)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
