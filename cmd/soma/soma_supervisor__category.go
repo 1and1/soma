@@ -11,6 +11,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
@@ -25,8 +26,7 @@ func (s *supervisor) category(q *msg.Request) {
 
 	switch q.Action {
 	case `list`, `show`:
-		//TODO go func() { s.category_read(q) }()
-		go func() { s.permission_category_read(q) }()
+		go func() { s.category_read(q) }()
 
 	case `add`, `remove`:
 		if s.readonly {
@@ -73,9 +73,60 @@ func (s *supervisor) category_write(q *msg.Request) {
 }
 
 func (s *supervisor) category_list(q *msg.Request, r *msg.Result) {
+	var (
+		err      error
+		rows     *sql.Rows
+		category string
+	)
+	if rows, err = s.stmt_ListCategory.Query(); err != nil {
+		r.ServerError(err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&category,
+		); err != nil {
+			r.ServerError(err)
+			r.Clear(q.Section)
+			return
+		}
+		r.Category = append(r.Category,
+			proto.Category{Name: category})
+	}
+	if err = rows.Err(); err != nil {
+		r.ServerError(err)
+		r.Clear(q.Section)
+	}
+	r.OK()
 }
 
 func (s *supervisor) category_show(q *msg.Request, r *msg.Result) {
+	var (
+		err            error
+		category, user string
+		ts             time.Time
+	)
+	if err = s.stmt_ShowCategory.QueryRow(q.Category.Name).Scan(
+		&category,
+		&user,
+		&ts,
+	); err == sql.ErrNoRows {
+		r.NotFound(err)
+		return
+	} else if err != nil {
+		r.ServerError(err)
+		return
+	}
+	r.Category = []proto.Category{proto.Category{
+		Name: category,
+		Details: &proto.CategoryDetails{
+			CreatedAt: ts.Format(rfc3339Milli),
+			CreatedBy: user,
+		},
+	}}
+	r.OK()
 }
 
 func (s *supervisor) category_add(q *msg.Request, r *msg.Result) {
