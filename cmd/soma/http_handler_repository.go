@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"unicode/utf8"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,8 +15,18 @@ import (
  * Read functions
  */
 func ListRepository(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `repository`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["repositoryReadHandler"].(*somaRepositoryReadHandler)
@@ -50,6 +61,16 @@ func ShowRepository(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `repository`,
+		Action:     `show`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["repositoryReadHandler"].(*somaRepositoryReadHandler)
 	handler.input <- somaRepositoryRequest{
@@ -70,6 +91,16 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
 		`repository_create`, ``, ``, ``); !ok {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `repository`,
+		Action:     `create`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -108,6 +139,17 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `repository`,
+		Action:       `add_property`,
+		RepositoryId: params.ByName(`repository`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.NewRepositoryRequest()
 	if err := DecodeJsonBody(r, &cReq); err != nil {
@@ -157,6 +199,17 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 func DeletePropertyFromRepository(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `repository`,
+		Action:       `remove_property`,
+		RepositoryId: params.ByName(`repository`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	repo := &proto.Repository{
 		Id: params.ByName(`repository`),
