@@ -19,7 +19,8 @@ type Authorization struct {
 	BucketId     string
 	MonitoringId string
 	CapabilityId string
-	Team         string
+	TeamId       string
+	GroupId      string
 	Grant        *proto.Grant
 }
 

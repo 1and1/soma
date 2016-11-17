@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"unicode/utf8"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,8 +15,18 @@ import (
  * Read functions
  */
 func ListGroup(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["groupReadHandler"].(*somaGroupReadHandler)
@@ -51,6 +62,17 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `show`,
+		GroupId:    params.ByName(`group`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["groupReadHandler"].(*somaGroupReadHandler)
 	handler.input <- somaGroupRequest{
@@ -67,6 +89,17 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 func ListGroupMembers(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `list_member`,
+		GroupId:    params.ByName(`group`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["groupReadHandler"].(*somaGroupReadHandler)
@@ -91,6 +124,17 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `create`,
+		GroupId:    cReq.Group.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -124,6 +168,18 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `add_member`,
+		GroupId:    cReq.Group.Id,
+		BucketId:   cReq.Group.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -185,6 +241,18 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `add_property`,
+		GroupId:    params.ByName(`group`),
+		BucketId:   cReq.Group.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
@@ -232,6 +300,18 @@ func DeletePropertyFromGroup(w http.ResponseWriter, r *http.Request,
 				SourceInstanceId: params.ByName(`source`),
 			},
 		},
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `group`,
+		Action:     `remove_property`,
+		GroupId:    params.ByName(`group`),
+		BucketId:   cReq.Group.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
