@@ -192,11 +192,9 @@ func (s *supervisor) section_add(q *msg.Request, r *msg.Result) {
 
 func (s *supervisor) section_remove(q *msg.Request, r *msg.Result) {
 	var (
-		err      error
-		tx       *sql.Tx
-		actionId string
-		rows     *sql.Rows
-		res      sql.Result
+		err error
+		tx  *sql.Tx
+		res sql.Result
 	)
 	txMap := map[string]*sql.Stmt{}
 
@@ -212,49 +210,15 @@ func (s *supervisor) section_remove(q *msg.Request, r *msg.Result) {
 		`action_tx_removeMap`:  stmt.ActionRemoveFromMap,
 		`section_tx_remove`:    stmt.SectionRemove,
 		`section_tx_removeMap`: stmt.SectionRemoveFromMap,
+		`section_tx_actlist`:   stmt.SectionListActions,
 	} {
 		if txMap[name], err = tx.Prepare(statement); err != nil {
-			err = fmt.Errorf("s.ActionTx.Prepare(%s) error: %s",
+			err = fmt.Errorf("s.SectionTx.Prepare(%s) error: %s",
 				name, err.Error())
 			r.ServerError(err)
 			tx.Rollback()
 			return
 		}
-	}
-
-	// remove all actions in this section
-	if rows, err = tx.Query(stmt.SectionListActions,
-		q.SectionObj.Id); err != nil {
-		r.ServerError(err)
-		tx.Rollback()
-		return
-	}
-
-	for rows.Next() {
-		if err = rows.Scan(
-			&actionId,
-		); err != nil {
-			r.ServerError(err)
-			rows.Close()
-			tx.Rollback()
-			return
-		}
-		if res, err = s.action_remove_tx(actionId, txMap); err != nil {
-			r.ServerError(err)
-			rows.Close()
-			tx.Rollback()
-			return
-		}
-		if !r.RowCnt(res.RowsAffected()) {
-			rows.Close()
-			tx.Rollback()
-			return
-		}
-	}
-	if err = rows.Err(); err != nil {
-		r.ServerError(err)
-		tx.Rollback()
-		return
 	}
 
 	if res, err = s.section_remove_tx(q.SectionObj.Id,
@@ -281,9 +245,43 @@ func (s *supervisor) section_remove(q *msg.Request, r *msg.Result) {
 func (s *supervisor) section_remove_tx(id string,
 	txMap map[string]*sql.Stmt) (sql.Result, error) {
 	var (
-		err error
-		res sql.Result
+		err      error
+		res      sql.Result
+		rows     *sql.Rows
+		actionId string
+		affected int64
 	)
+
+	// remove all actions in this section
+	if rows, err = txMap[`section_tx_actlist`].Query(
+		id); err != nil {
+		return res, err
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&actionId,
+		); err != nil {
+			rows.Close()
+			return res, err
+		}
+		if res, err = s.action_remove_tx(actionId, txMap); err != nil {
+			rows.Close()
+			return res, err
+		}
+		if affected, err = res.RowsAffected(); err != nil {
+			rows.Close()
+			return res, err
+		} else if affected != 1 {
+			rows.Close()
+			return res, fmt.Errorf("Delete statement caught %d rows"+
+				" of actions instead of 1 (actionId=%s)", affected,
+				actionId)
+		}
+	}
+	if err = rows.Err(); err != nil {
+		return res, err
+	}
 
 	// remove section from all permissions
 	if res, err = s.tx_exec(id, `section_tx_removeMap`,
