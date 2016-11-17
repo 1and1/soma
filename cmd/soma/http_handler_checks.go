@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 
 	"github.com/julienschmidt/httprouter"
@@ -16,6 +17,16 @@ import (
 func ListCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `check`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["checkConfigurationReadHandler"].(*somaCheckConfigurationReadHandler)
@@ -55,6 +66,16 @@ func ShowCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `check`,
+		Action:     `show`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["checkConfigurationReadHandler"].(*somaCheckConfigurationReadHandler)
 	handler.input <- somaCheckConfigRequest{
@@ -83,6 +104,19 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	}
 	cReq.CheckConfig.Id = uuid.Nil.String()
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `check`,
+		Action:       `create`,
+		RepositoryId: cReq.CheckConfig.RepositoryId,
+		BucketId:     cReq.CheckConfig.BucketId,
+		CapabilityId: cReq.CheckConfig.CapabilityId,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
@@ -102,6 +136,17 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `check`,
+		Action:       `destroy`,
+		RepositoryId: params.ByName(`repository`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(*guidePost)
