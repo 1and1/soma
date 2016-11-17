@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"unicode/utf8"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,8 +15,18 @@ import (
  * Read functions
  */
 func ListBucket(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `bucket`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["bucketReadHandler"].(*somaBucketReadHandler)
@@ -54,6 +65,17 @@ func ShowBucket(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `bucket`,
+		Action:     `show`,
+		BucketId:   params.ByName(`bucket`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["bucketReadHandler"].(*somaBucketReadHandler)
 	handler.input <- somaBucketRequest{
@@ -86,6 +108,17 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `bucket`,
+		Action:       `create`,
+		RepositoryId: cReq.Bucket.RepositoryId,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
@@ -105,6 +138,17 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `bucket`,
+		Action:     `add_property`,
+		BucketId:   params.ByName(`bucket`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	cReq := proto.Request{}
 	if err := DecodeJsonBody(r, &cReq); err != nil {
@@ -154,6 +198,17 @@ func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 func DeletePropertyFromBucket(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `bucket`,
+		Action:     `remove_property`,
+		BucketId:   params.ByName(`bucket`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	bucket := &proto.Bucket{
 		Id: params.ByName(`bucket`),
