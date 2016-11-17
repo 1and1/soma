@@ -186,6 +186,14 @@ WHERE  permission_id = $1::uuid
   AND  object_type = $5::varchar
   AND  monitoring_id = $6::uuid;`
 
+	GrantRemoveSystem = `
+DELETE FROM soma.authorizations_global sag
+USING       soma.permissions sp
+WHERE       sag.permission_id = sp.permission_id
+  AND       sag.category = sp.category
+  AND       sag.category = 'system'
+  AND       sp.permission_name = $1::varchar;`
+
 	/////////////////////////////////
 
 	LoadGlobalOrSystemUserGrants = `
@@ -199,6 +207,7 @@ func init() {
 	m[LoadGlobalOrSystemUserGrants] = `LoadGlobalOrSystemUserGrants`
 	m[GrantGlobalAuthorization] = `GrantGlobalAuthorization`
 	m[GrantMonitoringAuthorization] = `GrantMonitoringAuthorization`
+	m[GrantRemoveSystem] = `GrantRemoveSystem`
 	m[GrantRepositoryAuthorization] = `GrantRepositoryAuthorization`
 	m[GrantTeamAuthorization] = `GrantTeamAuthorization`
 	m[RevokeGlobalAuthorization] = `RevokeGlobalAuthorization`

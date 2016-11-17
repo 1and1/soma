@@ -43,7 +43,6 @@ type supervisor struct {
 	stmt_FToken           *sql.Stmt
 	stmt_FindUser         *sql.Stmt
 	stmt_CheckUser        *sql.Stmt
-	stmt_DelCategory      *sql.Stmt
 	stmt_ListCategory     *sql.Stmt
 	stmt_ShowCategory     *sql.Stmt
 	stmt_SectionList      *sql.Stmt
@@ -124,7 +123,6 @@ func (s *supervisor) run() {
 
 	if !s.readonly {
 		for statement, prepStmt := range map[string]*sql.Stmt{
-			stmt.CategoryRemove:                s.stmt_DelCategory,
 			stmt.CheckUserActive:               s.stmt_CheckUser,
 			stmt.SectionAdd:                    s.stmt_SectionAdd,
 			stmt.ActionAdd:                     s.stmt_ActionAdd,

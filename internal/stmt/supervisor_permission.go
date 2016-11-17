@@ -86,6 +86,11 @@ WHERE       permission_id = $1::uuid;`
 DELETE FROM soma.permission_grant_map
 WHERE       granted_permission_id = $1::uuid;`
 
+	PermissionRemoveByName = `
+DELETE FROM soma.permissions
+WHERE       permission_name = $1::varchar
+AND         category = $2::varchar;`
+
 	PermissionList = `
 SELECT permission_id,
        permission_name
@@ -172,6 +177,7 @@ func init() {
 	m[PermissionMapEntry] = `PermissionMapEntry`
 	m[PermissionMappedActions] = `PermissionMappedActions`
 	m[PermissionMappedSections] = `PermissionMappedSections`
+	m[PermissionRemoveByName] = `PermissionRemoveByName`
 	m[PermissionRemoveLink] = `PermissionRemoveLink`
 	m[PermissionRemove] = `PermissionRemove`
 	m[PermissionRevokeGlobal] = `PermissionRevokeGlobal`

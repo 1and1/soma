@@ -286,7 +286,7 @@ func (s *supervisor) permission_remove_tx(q *msg.Request,
 		return res, err
 	}
 
-	// unmap all actions from the permission
+	// unmap all sections & actions from the permission
 	if res, err = txMap[`permission_rm_tx_unmapa`].Exec(
 		q.Permission.Id,
 	); err != nil {

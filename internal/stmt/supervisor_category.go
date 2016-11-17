@@ -42,10 +42,22 @@ FROM   soma.categories sc
 JOIN   inventory.users iu
 ON     sc.created_by = iu.user_id
 WHERE  sc.category = $1::varchar;`
+
+	CategoryListSections = `
+SELECT section_id
+FROM   soma.sections
+WHERE  category = $1::varchar;`
+
+	CategoryListPermissions = `
+SELECT permission_id
+FROM   soma.permissions
+WHERE  category = $1::varchar;`
 )
 
 func init() {
 	m[CategoryAdd] = `CategoryAdd`
+	m[CategoryListPermissions] = `CategoryListPermissions`
+	m[CategoryListSections] = `CategoryListSections`
 	m[CategoryList] = `CategoryList`
 	m[CategoryRemove] = `CategoryRemove`
 	m[CategoryShow] = `CategoryShow`
