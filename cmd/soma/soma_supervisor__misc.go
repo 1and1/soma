@@ -23,9 +23,9 @@ import (
 func (s *supervisor) pruneKex() {
 	s.kex.lock()
 	defer s.kex.unlock()
-	for kexId, kex := range s.kex.KMap {
+	for kexID, kex := range s.kex.KMap {
 		if kex.IsExpired() {
-			delete(s.kex.KMap, kexId)
+			delete(s.kex.KMap, kexID)
 		}
 	}
 }

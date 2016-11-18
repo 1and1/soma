@@ -25,13 +25,13 @@ func (s *supervisor) action(q *msg.Request) {
 
 	switch q.Action {
 	case `list`, `show`, `search`:
-		go func() { s.action_read(q) }()
+		go func() { s.actionRead(q) }()
 	case `add`, `remove`:
 		if s.readonly {
 			result.Conflict(fmt.Errorf(`Readonly instance`))
 			goto abort
 		}
-		s.action_write(q)
+		s.actionWrite(q)
 	default:
 		result.UnknownRequest(q)
 		goto abort
@@ -42,27 +42,27 @@ abort:
 	q.Reply <- result
 }
 
-func (s *supervisor) action_read(q *msg.Request) {
+func (s *supervisor) actionRead(q *msg.Request) {
 	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `list`:
-		s.action_list(q, &result)
+		s.actionList(q, &result)
 	case `show`:
-		s.action_show(q, &result)
+		s.actionShow(q, &result)
 	case `search`:
-		s.action_search(q, &result)
+		s.actionSearch(q, &result)
 	}
 
 	q.Reply <- result
 }
 
-func (s *supervisor) action_list(q *msg.Request, r *msg.Result) {
+func (s *supervisor) actionList(q *msg.Request, r *msg.Result) {
 	r.ActionObj = []proto.Action{}
 	var (
 		err                             error
 		rows                            *sql.Rows
-		actionId, actionName, sectionId string
+		actionID, actionName, sectionID string
 	)
 	if rows, err = s.stmt_ActionList.Query(); err != nil {
 		r.ServerError(err)
@@ -72,9 +72,9 @@ func (s *supervisor) action_list(q *msg.Request, r *msg.Result) {
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&actionId,
+			&actionID,
 			&actionName,
-			&sectionId,
+			&sectionID,
 		); err != nil {
 			r.ServerError(err)
 			r.Clear(q.Section)
@@ -82,9 +82,9 @@ func (s *supervisor) action_list(q *msg.Request, r *msg.Result) {
 		}
 		r.ActionObj = append(r.ActionObj,
 			proto.Action{
-				Id:        actionId,
+				Id:        actionID,
 				Name:      actionName,
-				SectionId: sectionId,
+				SectionId: sectionID,
 			})
 	}
 	if err = rows.Err(); err != nil {
@@ -95,17 +95,17 @@ func (s *supervisor) action_list(q *msg.Request, r *msg.Result) {
 	r.OK()
 }
 
-func (s *supervisor) action_show(q *msg.Request, r *msg.Result) {
+func (s *supervisor) actionShow(q *msg.Request, r *msg.Result) {
 	var (
 		err                             error
 		ts                              time.Time
-		actionId, actionName, sectionId string
+		actionID, actionName, sectionID string
 		category, user, sectionName     string
 	)
 	if err = s.stmt_ActionShow.QueryRow(q.ActionObj.Id).Scan(
-		&actionId,
+		&actionID,
 		&actionName,
-		&sectionId,
+		&sectionID,
 		&sectionName,
 		&category,
 		&user,
@@ -118,9 +118,9 @@ func (s *supervisor) action_show(q *msg.Request, r *msg.Result) {
 		return
 	}
 	r.ActionObj = []proto.Action{proto.Action{
-		Id:          actionId,
+		Id:          actionID,
 		Name:        actionName,
-		SectionId:   sectionId,
+		SectionId:   sectionID,
 		SectionName: sectionName,
 		Category:    category,
 		Details: &proto.DetailsCreation{
@@ -131,12 +131,12 @@ func (s *supervisor) action_show(q *msg.Request, r *msg.Result) {
 	r.OK()
 }
 
-func (s *supervisor) action_search(q *msg.Request, r *msg.Result) {
+func (s *supervisor) actionSearch(q *msg.Request, r *msg.Result) {
 	r.ActionObj = []proto.Action{}
 	var (
 		err                             error
 		rows                            *sql.Rows
-		actionId, actionName, sectionId string
+		actionID, actionName, sectionID string
 	)
 	if rows, err = s.stmt_ActionList.Query(
 		q.ActionObj.Name,
@@ -149,9 +149,9 @@ func (s *supervisor) action_search(q *msg.Request, r *msg.Result) {
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&actionId,
+			&actionID,
 			&actionName,
-			&sectionId,
+			&sectionID,
 		); err != nil {
 			r.ServerError(err)
 			r.Clear(q.Section)
@@ -159,9 +159,9 @@ func (s *supervisor) action_search(q *msg.Request, r *msg.Result) {
 		}
 		r.ActionObj = append(r.ActionObj,
 			proto.Action{
-				Id:        actionId,
+				Id:        actionID,
 				Name:      actionName,
-				SectionId: sectionId,
+				SectionId: sectionID,
 			})
 	}
 	if err = rows.Err(); err != nil {
@@ -172,20 +172,20 @@ func (s *supervisor) action_search(q *msg.Request, r *msg.Result) {
 	r.OK()
 }
 
-func (s *supervisor) action_write(q *msg.Request) {
+func (s *supervisor) actionWrite(q *msg.Request) {
 	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `add`:
-		s.action_add(q, &result)
+		s.actionAdd(q, &result)
 	case `remove`:
-		s.action_remove(q, &result)
+		s.actionRemove(q, &result)
 	}
 
 	q.Reply <- result
 }
 
-func (s *supervisor) action_add(q *msg.Request, r *msg.Result) {
+func (s *supervisor) actionAdd(q *msg.Request, r *msg.Result) {
 	var (
 		err error
 		res sql.Result
@@ -205,7 +205,7 @@ func (s *supervisor) action_add(q *msg.Request, r *msg.Result) {
 	}
 }
 
-func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
+func (s *supervisor) actionRemove(q *msg.Request, r *msg.Result) {
 	var (
 		err error
 		tx  *sql.Tx
@@ -233,7 +233,7 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 		}
 	}
 
-	if res, err = s.action_remove_tx(q.ActionObj.Id,
+	if res, err = s.actionRemoveTx(q.ActionObj.Id,
 		txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
@@ -254,7 +254,7 @@ func (s *supervisor) action_remove(q *msg.Request, r *msg.Result) {
 	r.ActionObj = []proto.Action{q.ActionObj}
 }
 
-func (s *supervisor) action_remove_tx(id string,
+func (s *supervisor) actionRemoveTx(id string,
 	txMap map[string]*sql.Stmt) (sql.Result, error) {
 	var (
 		err error

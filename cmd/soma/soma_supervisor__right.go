@@ -35,9 +35,9 @@ func (s *supervisor) right(q *msg.Request) {
 			result.Conflict(fmt.Errorf(`Readonly instance`))
 			goto abort
 		}
-		s.right_write(q)
+		s.rightWrite(q)
 	case `search`:
-		go func() { s.right_read(q) }()
+		go func() { s.rightRead(q) }()
 	default:
 		result.UnknownRequest(q)
 		goto abort
@@ -48,7 +48,7 @@ abort:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_write(q *msg.Request) {
+func (s *supervisor) rightWrite(q *msg.Request) {
 	switch q.Action {
 	case `grant`:
 		switch q.Grant.Category {
@@ -59,16 +59,16 @@ func (s *supervisor) right_write(q *msg.Request) {
 			`permission:grant`,
 			`operations`,
 			`operations:grant`:
-			s.right_grant_global(q)
+			s.rightGrantGlobal(q)
 		case `repository`,
 			`repository:grant`:
-			s.right_grant_repository(q)
+			s.rightGrantRepository(q)
 		case `team`,
 			`team:grant`:
-			s.right_grant_team(q)
+			s.rightGrantTeam(q)
 		case `monitoring`,
 			`monitoring:grant`:
-			s.right_grant_monitoring(q)
+			s.rightGrantMonitoring(q)
 		}
 	case `revoke`:
 		switch q.Grant.Category {
@@ -79,26 +79,26 @@ func (s *supervisor) right_write(q *msg.Request) {
 			`permission:grant`,
 			`operations`,
 			`operations:grant`:
-			s.right_revoke_global(q)
+			s.rightRevokeGlobal(q)
 		case `repository`,
 			`repository:grant`:
-			s.right_revoke_repository(q)
+			s.rightRevokeRepository(q)
 		case `team`,
 			`team:grant`:
-			s.right_revoke_team(q)
+			s.rightRevokeTeam(q)
 		case `monitoring`,
 			`monitoring:grant`:
-			s.right_revoke_monitoring(q)
+			s.rightRevokeMonitoring(q)
 		}
 	}
 }
 
-func (s *supervisor) right_grant_global(q *msg.Request) {
+func (s *supervisor) rightGrantGlobal(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var (
 		err                             error
 		res                             sql.Result
-		adminId, userId, toolId, teamId sql.NullString
+		adminID, userID, toolID, teamID sql.NullString
 	)
 
 	if q.Grant.ObjectType != `` || q.Grant.ObjectId != `` {
@@ -109,26 +109,26 @@ func (s *supervisor) right_grant_global(q *msg.Request) {
 
 	switch q.Grant.RecipientType {
 	case `admin`:
-		adminId.String = q.Grant.RecipientId
-		adminId.Valid = true
+		adminID.String = q.Grant.RecipientId
+		adminID.Valid = true
 	case `user`:
-		userId.String = q.Grant.RecipientId
-		userId.Valid = true
+		userID.String = q.Grant.RecipientId
+		userID.Valid = true
 	case `tool`:
-		toolId.String = q.Grant.RecipientId
-		toolId.Valid = true
+		toolID.String = q.Grant.RecipientId
+		toolID.Valid = true
 	case `team`:
-		teamId.String = q.Grant.RecipientId
-		teamId.Valid = true
+		teamID.String = q.Grant.RecipientId
+		teamID.Valid = true
 	}
 
 	q.Grant.Id = uuid.NewV4().String()
 	if res, err = s.stmt_GrantGlobal.Exec(
 		q.Grant.Id,
-		adminId,
-		userId,
-		toolId,
-		teamId,
+		adminID,
+		userID,
+		toolID,
+		teamID,
 		q.Grant.PermissionId,
 		q.Grant.Category,
 		q.User,
@@ -144,35 +144,35 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_grant_repository(q *msg.Request) {
+func (s *supervisor) rightGrantRepository(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var (
 		err                       error
 		res                       sql.Result
-		userId, toolId, teamId    sql.NullString
-		repoId, bucketId, groupId sql.NullString
-		clusterId, nodeId         sql.NullString
+		userID, toolID, teamID    sql.NullString
+		repoID, bucketID, groupID sql.NullString
+		clusterID, nodeID         sql.NullString
 		repoName                  string
 	)
 
 	switch q.Grant.ObjectType {
 	case `repository`:
-		repoId.String = q.Grant.ObjectId
-		repoId.Valid = true
+		repoID.String = q.Grant.ObjectId
+		repoID.Valid = true
 	case `bucket`:
 		if err = s.conn.QueryRow(
 			stmt.RepoByBucketId,
 			q.Grant.ObjectId,
 		).Scan(
-			repoId,
+			repoID,
 			repoName,
 		); err != nil {
 			result.ServerError(err)
 			goto dispatch
 		}
 
-		bucketId.String = q.Grant.ObjectId
-		bucketId.Valid = true
+		bucketID.String = q.Grant.ObjectId
+		bucketID.Valid = true
 	case `group`, `cluster`, `node`:
 		result.NotImplemented(fmt.Errorf(
 			`Deep repository grants currently not implemented.`))
@@ -185,30 +185,30 @@ func (s *supervisor) right_grant_repository(q *msg.Request) {
 
 	switch q.Grant.RecipientType {
 	case `user`:
-		userId.String = q.Grant.RecipientId
-		userId.Valid = true
+		userID.String = q.Grant.RecipientId
+		userID.Valid = true
 	case `tool`:
-		toolId.String = q.Grant.RecipientId
-		toolId.Valid = true
+		toolID.String = q.Grant.RecipientId
+		toolID.Valid = true
 	case `team`:
-		teamId.String = q.Grant.RecipientId
-		teamId.Valid = true
+		teamID.String = q.Grant.RecipientId
+		teamID.Valid = true
 	}
 
 	q.Grant.Id = uuid.NewV4().String()
 	if res, err = s.stmt_GrantRepo.Exec(
 		q.Grant.Id,
-		userId,
-		toolId,
-		teamId,
+		userID,
+		toolID,
+		teamID,
 		q.Grant.Category,
 		q.Grant.PermissionId,
 		q.Grant.ObjectType,
-		repoId,
-		bucketId,
-		groupId,
-		clusterId,
-		nodeId,
+		repoID,
+		bucketID,
+		groupID,
+		clusterID,
+		nodeID,
 		q.User,
 	); err != nil {
 		result.ServerError(err)
@@ -222,32 +222,32 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_grant_team(q *msg.Request) {
+func (s *supervisor) rightGrantTeam(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var (
 		err                    error
 		res                    sql.Result
-		userId, toolId, teamId sql.NullString
+		userID, toolID, teamID sql.NullString
 	)
 
 	switch q.Grant.RecipientType {
 	case `user`:
-		userId.String = q.Grant.RecipientId
-		userId.Valid = true
+		userID.String = q.Grant.RecipientId
+		userID.Valid = true
 	case `tool`:
-		toolId.String = q.Grant.RecipientId
-		toolId.Valid = true
+		toolID.String = q.Grant.RecipientId
+		toolID.Valid = true
 	case `team`:
-		teamId.String = q.Grant.RecipientId
-		teamId.Valid = true
+		teamID.String = q.Grant.RecipientId
+		teamID.Valid = true
 	}
 
 	q.Grant.Id = uuid.NewV4().String()
 	if res, err = s.stmt_GrantTeam.Exec(
 		q.Grant.Id,
-		userId,
-		toolId,
-		teamId,
+		userID,
+		toolID,
+		teamID,
 		q.Grant.Category,
 		q.Grant.PermissionId,
 		q.Grant.ObjectId,
@@ -264,32 +264,32 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_grant_monitoring(q *msg.Request) {
+func (s *supervisor) rightGrantMonitoring(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var (
 		err                    error
 		res                    sql.Result
-		userId, toolId, teamId sql.NullString
+		userID, toolID, teamID sql.NullString
 	)
 
 	switch q.Grant.RecipientType {
 	case `user`:
-		userId.String = q.Grant.RecipientId
-		userId.Valid = true
+		userID.String = q.Grant.RecipientId
+		userID.Valid = true
 	case `tool`:
-		toolId.String = q.Grant.RecipientId
-		toolId.Valid = true
+		toolID.String = q.Grant.RecipientId
+		toolID.Valid = true
 	case `team`:
-		teamId.String = q.Grant.RecipientId
-		teamId.Valid = true
+		teamID.String = q.Grant.RecipientId
+		teamID.Valid = true
 	}
 
 	q.Grant.Id = uuid.NewV4().String()
 	if res, err = s.stmt_GrantMonitor.Exec(
 		q.Grant.Id,
-		userId,
-		toolId,
-		teamId,
+		userID,
+		toolID,
+		teamID,
 		q.Grant.Category,
 		q.Grant.PermissionId,
 		q.Grant.ObjectId,
@@ -306,7 +306,7 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_revoke_global(q *msg.Request) {
+func (s *supervisor) rightRevokeGlobal(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var err error
 	var res sql.Result
@@ -327,7 +327,7 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_revoke_repository(q *msg.Request) {
+func (s *supervisor) rightRevokeRepository(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var err error
 	var res sql.Result
@@ -348,7 +348,7 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_revoke_team(q *msg.Request) {
+func (s *supervisor) rightRevokeTeam(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var err error
 	var res sql.Result
@@ -369,7 +369,7 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_revoke_monitoring(q *msg.Request) {
+func (s *supervisor) rightRevokeMonitoring(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var err error
 	var res sql.Result
@@ -390,7 +390,7 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_read(q *msg.Request) {
+func (s *supervisor) rightRead(q *msg.Request) {
 	switch q.Action {
 	case `search`:
 		switch q.Grant.Category {
@@ -401,28 +401,28 @@ func (s *supervisor) right_read(q *msg.Request) {
 			`permission:grant`,
 			`operations`,
 			`operations:grant`:
-			s.right_search_global(q)
+			s.rightSearchGlobal(q)
 		case
 			`repository`, `repository:grant`,
 			`team`, `team:grant`,
 			`monitoring`, `monitoring:grant`:
-			s.right_search_scoped(q)
+			s.rightSearchScoped(q)
 		}
 	}
 }
 
-func (s *supervisor) right_search_global(q *msg.Request) {
+func (s *supervisor) rightSearchGlobal(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var (
 		err     error
-		grantId string
+		grantID string
 	)
 	if err = s.stmt_SearchGlobal.QueryRow(
 		q.Grant.PermissionId,
 		q.Grant.Category,
 		q.Grant.RecipientId,
 		q.Grant.RecipientType,
-	).Scan(&grantId); err == sql.ErrNoRows {
+	).Scan(&grantID); err == sql.ErrNoRows {
 		result.NotFound(err)
 		goto dispatch
 	} else if err != nil {
@@ -430,7 +430,7 @@ func (s *supervisor) right_search_global(q *msg.Request) {
 		goto dispatch
 	}
 	result.Grant = []proto.Grant{proto.Grant{
-		Id:            grantId,
+		Id:            grantID,
 		PermissionId:  q.Grant.PermissionId,
 		Category:      q.Grant.Category,
 		RecipientId:   q.Grant.RecipientId,
@@ -441,11 +441,11 @@ dispatch:
 	q.Reply <- result
 }
 
-func (s *supervisor) right_search_scoped(q *msg.Request) {
+func (s *supervisor) rightSearchScoped(q *msg.Request) {
 	result := msg.FromRequest(q)
 	var (
 		err     error
-		grantId string
+		grantID string
 		scope   *sql.Stmt
 	)
 	switch q.Grant.Category {
@@ -463,7 +463,7 @@ func (s *supervisor) right_search_scoped(q *msg.Request) {
 		q.Grant.RecipientType,
 		q.Grant.ObjectType,
 		q.Grant.ObjectId,
-	).Scan(&grantId); err == sql.ErrNoRows {
+	).Scan(&grantID); err == sql.ErrNoRows {
 		result.NotFound(err)
 		goto dispatch
 	} else if err != nil {
@@ -471,7 +471,7 @@ func (s *supervisor) right_search_scoped(q *msg.Request) {
 		goto dispatch
 	}
 	result.Grant = []proto.Grant{proto.Grant{
-		Id:            grantId,
+		Id:            grantID,
 		PermissionId:  q.Grant.PermissionId,
 		Category:      q.Grant.Category,
 		RecipientId:   q.Grant.RecipientId,

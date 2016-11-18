@@ -26,14 +26,14 @@ func (s *supervisor) category(q *msg.Request) {
 
 	switch q.Action {
 	case `list`, `show`:
-		go func() { s.category_read(q) }()
+		go func() { s.categoryRead(q) }()
 
 	case `add`, `remove`:
 		if s.readonly {
 			result.Conflict(fmt.Errorf(`Readonly instance`))
 			goto abort
 		}
-		s.category_write(q)
+		s.categoryWrite(q)
 
 	default:
 		result.UnknownRequest(q)
@@ -45,33 +45,33 @@ abort:
 	q.Reply <- result
 }
 
-func (s *supervisor) category_read(q *msg.Request) {
+func (s *supervisor) categoryRead(q *msg.Request) {
 	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `list`:
-		s.category_list(q, &result)
+		s.categoryList(q, &result)
 	case `show`:
-		s.category_show(q, &result)
+		s.categoryShow(q, &result)
 	}
 	q.Reply <- result
 }
 
-func (s *supervisor) category_write(q *msg.Request) {
+func (s *supervisor) categoryWrite(q *msg.Request) {
 	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `add`:
-		s.category_add(q, &result)
+		s.categoryAdd(q, &result)
 	case `remove`:
-		s.category_remove(q, &result)
+		s.categoryRemove(q, &result)
 		return
 	}
 
 	q.Reply <- result
 }
 
-func (s *supervisor) category_list(q *msg.Request, r *msg.Result) {
+func (s *supervisor) categoryList(q *msg.Request, r *msg.Result) {
 	var (
 		err      error
 		rows     *sql.Rows
@@ -101,7 +101,7 @@ func (s *supervisor) category_list(q *msg.Request, r *msg.Result) {
 	r.OK()
 }
 
-func (s *supervisor) category_show(q *msg.Request, r *msg.Result) {
+func (s *supervisor) categoryShow(q *msg.Request, r *msg.Result) {
 	var (
 		err            error
 		category, user string
@@ -128,7 +128,7 @@ func (s *supervisor) category_show(q *msg.Request, r *msg.Result) {
 	r.OK()
 }
 
-func (s *supervisor) category_add(q *msg.Request, r *msg.Result) {
+func (s *supervisor) categoryAdd(q *msg.Request, r *msg.Result) {
 	var (
 		err error
 		tx  *sql.Tx
@@ -156,7 +156,7 @@ func (s *supervisor) category_add(q *msg.Request, r *msg.Result) {
 		}
 	}
 
-	if res, err = s.category_add_tx(q, txMap); err != nil {
+	if res, err = s.categoryAddTx(q, txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
 		return
@@ -176,12 +176,12 @@ func (s *supervisor) category_add(q *msg.Request, r *msg.Result) {
 	r.Category = []proto.Category{q.Category}
 }
 
-func (s *supervisor) category_add_tx(q *msg.Request,
+func (s *supervisor) categoryAddTx(q *msg.Request,
 	txMap map[string]*sql.Stmt) (sql.Result, error) {
 	var (
 		err    error
 		res    sql.Result
-		permId string
+		permID string
 	)
 
 	// create requested category
@@ -202,16 +202,16 @@ func (s *supervisor) category_add_tx(q *msg.Request,
 
 	// create system permission for category, the category
 	// name becomes the permission name in system
-	permId = uuid.NewV4().String()
+	permID = uuid.NewV4().String()
 	return txMap[`category_add_tx_perm`].Exec(
-		permId,
+		permID,
 		q.Category.Name,
 		`system`,
 		q.User,
 	)
 }
 
-func (s *supervisor) category_remove(q *msg.Request, r *msg.Result) {
+func (s *supervisor) categoryRemove(q *msg.Request, r *msg.Result) {
 	var (
 		err error
 		tx  *sql.Tx
@@ -255,7 +255,7 @@ func (s *supervisor) category_remove(q *msg.Request, r *msg.Result) {
 		}
 	}
 
-	if res, err = s.category_remove_tx(q, txMap); err != nil {
+	if res, err = s.categoryRemoveTx(q, txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
 		return
@@ -275,13 +275,13 @@ func (s *supervisor) category_remove(q *msg.Request, r *msg.Result) {
 
 }
 
-func (s *supervisor) category_remove_tx(q *msg.Request,
+func (s *supervisor) categoryRemoveTx(q *msg.Request,
 	txMap map[string]*sql.Stmt) (sql.Result, error) {
 	var (
 		err                     error
 		res                     sql.Result
 		rows                    *sql.Rows
-		sectionId, permissionId string
+		sectionID, permissionID string
 		affected                int64
 	)
 
@@ -293,12 +293,12 @@ func (s *supervisor) category_remove_tx(q *msg.Request,
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&sectionId,
+			&sectionID,
 		); err != nil {
 			rows.Close()
 			return res, err
 		}
-		if res, err = s.section_remove_tx(sectionId,
+		if res, err = s.sectionRemoveTx(sectionID,
 			txMap); err != nil {
 			rows.Close()
 			return res, err
@@ -309,8 +309,8 @@ func (s *supervisor) category_remove_tx(q *msg.Request,
 		} else if affected != 1 {
 			rows.Close()
 			return res, fmt.Errorf("Delete statement caught %d"+
-				" rows of sections instead of 1 (sectionId=%s)",
-				affected, sectionId)
+				" rows of sections instead of 1 (sectionID=%s)",
+				affected, sectionID)
 		}
 	}
 	if err = rows.Err(); err != nil {
@@ -325,14 +325,14 @@ func (s *supervisor) category_remove_tx(q *msg.Request,
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&permissionId,
+			&permissionID,
 		); err != nil {
 			rows.Close()
 			return res, err
 		}
-		if res, err = s.permission_remove_tx(&msg.Request{
+		if res, err = s.permissionRemoveTx(&msg.Request{
 			Permission: proto.Permission{
-				Id:       permissionId,
+				Id:       permissionID,
 				Category: q.Category.Name,
 			}}, txMap); err != nil {
 			rows.Close()
@@ -344,8 +344,8 @@ func (s *supervisor) category_remove_tx(q *msg.Request,
 		} else if affected != 1 {
 			rows.Close()
 			return res, fmt.Errorf("Delete statement caught %d"+
-				" rows of permissions instead of 1 (permissionId=%s)",
-				affected, permissionId)
+				" rows of permissions instead of 1 (permissionID=%s)",
+				affected, permissionID)
 		}
 	}
 	if err = rows.Err(); err != nil {

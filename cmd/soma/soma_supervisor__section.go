@@ -25,13 +25,13 @@ func (s *supervisor) section(q *msg.Request) {
 
 	switch q.Action {
 	case `list`, `show`, `search`:
-		go func() { s.section_read(q) }()
+		go func() { s.sectionRead(q) }()
 	case `add`, `remove`:
 		if s.readonly {
 			result.Conflict(fmt.Errorf(`Readonly instance`))
 			goto abort
 		}
-		s.section_write(q)
+		s.sectionWrite(q)
 	default:
 		result.UnknownRequest(q)
 		goto abort
@@ -42,27 +42,27 @@ abort:
 	q.Reply <- result
 }
 
-func (s *supervisor) section_read(q *msg.Request) {
+func (s *supervisor) sectionRead(q *msg.Request) {
 	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `list`:
-		s.section_list(q, &result)
+		s.sectionList(q, &result)
 	case `show`:
-		s.section_show(q, &result)
+		s.sectionShow(q, &result)
 	case `search`:
-		s.section_search(q, &result)
+		s.sectionSearch(q, &result)
 	}
 
 	q.Reply <- result
 }
 
-func (s *supervisor) section_list(q *msg.Request, r *msg.Result) {
+func (s *supervisor) sectionList(q *msg.Request, r *msg.Result) {
 	r.SectionObj = []proto.Section{}
 	var (
 		err                    error
 		rows                   *sql.Rows
-		sectionId, sectionName string
+		sectionID, sectionName string
 	)
 
 	if _, err = s.stmt_SectionList.Query(); err != nil {
@@ -73,7 +73,7 @@ func (s *supervisor) section_list(q *msg.Request, r *msg.Result) {
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&sectionId,
+			&sectionID,
 			&sectionName,
 		); err != nil {
 			r.ServerError(err)
@@ -81,7 +81,7 @@ func (s *supervisor) section_list(q *msg.Request, r *msg.Result) {
 			return
 		}
 		r.SectionObj = append(r.SectionObj, proto.Section{
-			Id:   sectionId,
+			Id:   sectionID,
 			Name: sectionName,
 		})
 	}
@@ -91,15 +91,15 @@ func (s *supervisor) section_list(q *msg.Request, r *msg.Result) {
 	}
 }
 
-func (s *supervisor) section_show(q *msg.Request, r *msg.Result) {
+func (s *supervisor) sectionShow(q *msg.Request, r *msg.Result) {
 	var (
 		err                                    error
-		sectionId, sectionName, category, user string
+		sectionID, sectionName, category, user string
 		ts                                     time.Time
 	)
 
 	if err = s.stmt_SectionShow.QueryRow(q.SectionObj.Id).Scan(
-		&sectionId,
+		&sectionID,
 		&sectionName,
 		&category,
 		&user,
@@ -112,7 +112,7 @@ func (s *supervisor) section_show(q *msg.Request, r *msg.Result) {
 		return
 	}
 	r.SectionObj = []proto.Section{proto.Section{
-		Id:       sectionId,
+		Id:       sectionID,
 		Name:     sectionName,
 		Category: category,
 		Details: &proto.DetailsCreation{
@@ -122,12 +122,12 @@ func (s *supervisor) section_show(q *msg.Request, r *msg.Result) {
 	}}
 }
 
-func (s *supervisor) section_search(q *msg.Request, r *msg.Result) {
+func (s *supervisor) sectionSearch(q *msg.Request, r *msg.Result) {
 	r.SectionObj = []proto.Section{}
 	var (
 		err                    error
 		rows                   *sql.Rows
-		sectionId, sectionName string
+		sectionID, sectionName string
 	)
 
 	if _, err = s.stmt_SectionSearch.Query(
@@ -139,7 +139,7 @@ func (s *supervisor) section_search(q *msg.Request, r *msg.Result) {
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&sectionId,
+			&sectionID,
 			&sectionName,
 		); err != nil {
 			r.ServerError(err)
@@ -147,7 +147,7 @@ func (s *supervisor) section_search(q *msg.Request, r *msg.Result) {
 			return
 		}
 		r.SectionObj = append(r.SectionObj, proto.Section{
-			Id:   sectionId,
+			Id:   sectionID,
 			Name: sectionName,
 		})
 	}
@@ -157,20 +157,20 @@ func (s *supervisor) section_search(q *msg.Request, r *msg.Result) {
 	}
 }
 
-func (s *supervisor) section_write(q *msg.Request) {
+func (s *supervisor) sectionWrite(q *msg.Request) {
 	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `add`:
-		s.section_add(q, &result)
+		s.sectionAdd(q, &result)
 	case `remove`:
-		s.section_remove(q, &result)
+		s.sectionRemove(q, &result)
 	}
 
 	q.Reply <- result
 }
 
-func (s *supervisor) section_add(q *msg.Request, r *msg.Result) {
+func (s *supervisor) sectionAdd(q *msg.Request, r *msg.Result) {
 	var (
 		err error
 		res sql.Result
@@ -190,7 +190,7 @@ func (s *supervisor) section_add(q *msg.Request, r *msg.Result) {
 	}
 }
 
-func (s *supervisor) section_remove(q *msg.Request, r *msg.Result) {
+func (s *supervisor) sectionRemove(q *msg.Request, r *msg.Result) {
 	var (
 		err error
 		tx  *sql.Tx
@@ -221,7 +221,7 @@ func (s *supervisor) section_remove(q *msg.Request, r *msg.Result) {
 		}
 	}
 
-	if res, err = s.section_remove_tx(q.SectionObj.Id,
+	if res, err = s.sectionRemoveTx(q.SectionObj.Id,
 		txMap); err != nil {
 		r.ServerError(err)
 		tx.Rollback()
@@ -242,13 +242,13 @@ func (s *supervisor) section_remove(q *msg.Request, r *msg.Result) {
 	r.ActionObj = []proto.Action{q.ActionObj}
 }
 
-func (s *supervisor) section_remove_tx(id string,
+func (s *supervisor) sectionRemoveTx(id string,
 	txMap map[string]*sql.Stmt) (sql.Result, error) {
 	var (
 		err      error
 		res      sql.Result
 		rows     *sql.Rows
-		actionId string
+		actionID string
 		affected int64
 	)
 
@@ -260,12 +260,12 @@ func (s *supervisor) section_remove_tx(id string,
 
 	for rows.Next() {
 		if err = rows.Scan(
-			&actionId,
+			&actionID,
 		); err != nil {
 			rows.Close()
 			return res, err
 		}
-		if res, err = s.action_remove_tx(actionId, txMap); err != nil {
+		if res, err = s.actionRemoveTx(actionID, txMap); err != nil {
 			rows.Close()
 			return res, err
 		}
@@ -275,8 +275,8 @@ func (s *supervisor) section_remove_tx(id string,
 		} else if affected != 1 {
 			rows.Close()
 			return res, fmt.Errorf("Delete statement caught %d rows"+
-				" of actions instead of 1 (actionId=%s)", affected,
-				actionId)
+				" of actions instead of 1 (actionID=%s)", affected,
+				actionID)
 		}
 	}
 	if err = rows.Err(); err != nil {
