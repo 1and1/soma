@@ -136,7 +136,7 @@ func ValidateUnit(s string) error {
 	return fmt.Errorf("Value %s is not a valid unit", s)
 }
 
-// ValidateProvider tests aginst the server if string s is a valid
+// ValidateProvider tests against the server if string s is a valid
 // provider.
 func ValidateProvider(s string) error {
 	res, err := fetchObjList(`/providers/`)

@@ -404,7 +404,7 @@ func checkStringNotAKeyword(s string, keys []string) error {
 	return nil
 }
 
-// combineStrings takes an arbitray number of strings and combines them
+// combineStrings takes an arbitrary number of strings and combines them
 // into one, separated by `.\n`
 func combineStrings(s ...string) string {
 	var out string

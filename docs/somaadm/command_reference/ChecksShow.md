@@ -1,7 +1,7 @@
 # somaadm checks show
 
 This command shows a specific check configuration. Check names are unique per
-repository. They are adressed via a bucket to keep the cli syntax consistent
+repository. They are addressed via a bucket to keep the cli syntax consistent
 with regards to the `in` keyword.
 
 # SYNOPSIS

@@ -27,7 +27,7 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 	}
 	result := <-returnChannel
 
-	// declase here since goto does not jump over declarations
+	// declared here since goto does not jump over declarations
 	cReq := proto.NewLevelFilter()
 	if result.Failure() {
 		goto skip

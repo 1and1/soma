@@ -94,7 +94,7 @@ func (s *supervisor) run() {
 	s.global_grants = s.newGlobalGrantMap()
 	s.limited_permissions = s.newLimitedPermMap()
 
-	// load from datbase
+	// load from database
 	s.startupLoad()
 
 	for statement, prepStmt := range map[string]*sql.Stmt{

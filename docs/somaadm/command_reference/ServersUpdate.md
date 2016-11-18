@@ -1,6 +1,6 @@
 # somaadm servers update
 
-This command updates all attributes of a physical server. Exept for
+This command updates all attributes of a physical server. Except for
 the id, all values are replaced.
 
 # SYNOPSIS

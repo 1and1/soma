@@ -1,7 +1,7 @@
 # somaadm checks list
 
 This command lists all check definitions in a repository. Check names are
-unique per repository. They are adressed via a bucket to keep the cli syntax
+unique per repository. They are addressed via a bucket to keep the cli syntax
 consistent with regards to the `in` keyword.
 
 # SYNOPSIS

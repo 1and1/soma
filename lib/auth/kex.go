@@ -141,13 +141,13 @@ func (k *Kex) IsExpired() bool {
 		time.Duration(KexExpirySeconds) * time.Second))
 }
 
-// IsSameSource returns true if the paramter IP address is the
+// IsSameSource returns true if the parameter IP address is the
 // same as the one recorded in the Kex
 func (k *Kex) IsSameSource(ip net.IP) bool {
 	return k.sourceIP.Equal(ip)
 }
 
-// IsSameSourceString returns true if the paramter IP address is
+// IsSameSourceString returns true if the parameter IP address is
 // same as the one recorded in the Kex
 func (k *Kex) IsSameSourceString(addr string) bool {
 	return k.IsSameSource(net.ParseIP(extractAddress(addr)))

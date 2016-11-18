@@ -19,7 +19,7 @@ import (
 
 // LookupOncallId looks up the UUID for an oncall duty on the
 // server with name s. Error is set if no such oncall duty was
-// found or an error occured.
+// found or an error occurred.
 // If s is already a UUID, then s is immediately returned.
 func LookupOncallId(s string) (string, error) {
 	if IsUUID(s) {
@@ -44,7 +44,7 @@ func LookupOncallDetails(s string) (string, string, error) {
 
 // LookupOncallId looks up the UUID for a user on the server
 // with username s. Error is set if no such user was found
-// or an error occured.
+// or an error occurred.
 // If s is already a UUID, then s is immediately returned.
 func LookupUserId(s string) (string, error) {
 	if IsUUID(s) {
@@ -55,7 +55,7 @@ func LookupUserId(s string) (string, error) {
 
 // LookupTeamId looks up the UUID for a team on the server
 // with teamname s. Error is set if no such team was found
-// or an error occured.
+// or an error occurred.
 // If s is already a UUID, then s is immediately returned.
 func LookupTeamId(s string) (string, error) {
 	if IsUUID(s) {
@@ -126,7 +126,7 @@ func LookupTeamByNode(s string) (string, error) {
 
 // LookupRepoId looks up the UUID for a repository on the server
 // with reponame s. Error is set if no such repository was found
-// or an error occured.
+// or an error occurred.
 // If s is already a UUID, then s is immediately returned.
 func LookupRepoId(s string) (string, error) {
 	if IsUUID(s) {
@@ -156,7 +156,7 @@ func LookupRepoByBucket(s string) (string, error) {
 
 // LookupBucketId looks up the UUID for a bucket on the server
 // with bucketname s. Error is set if no such bucket was found
-// or an error occured.
+// or an error occurred.
 // If s is already a UUID, then s is immediately returned.
 func LookupBucketId(s string) (string, error) {
 	if IsUUID(s) {
@@ -211,7 +211,7 @@ func LookupClusterId(cluster, bucket string) (string, error) {
 
 // LookupServerId looks up the UUID for a server either in the
 // local cache or on the server. Error is set if no such server
-// was found or an error occured.
+// was found or an error occurred.
 // If s is already a UUID, then s is immediately returned.
 // If s is a Uint64 number, then the serverlookup is by AssetID.
 // Otherwise s is the server name.
@@ -227,7 +227,7 @@ func LookupServerId(s string) (string, error) {
 
 // LookupPermIdRef looks up the UUID for a permission from
 // the server. Error is set if no such permission was found or
-// an error occured. The permission must be in category c.
+// an error occurred. The permission must be in category c.
 // If s is already a UUID, then is is immediately returned.
 func LookupPermIdRef(s, c string, id *string) error {
 	if IsUUID(s) {
@@ -239,7 +239,7 @@ func LookupPermIdRef(s, c string, id *string) error {
 
 // LookupGrantIdRef looks up the UUID of a permission grant from
 // the server and fills it into the provided id pointer.
-// Error is set if no such grant was found or an error occured.
+// Error is set if no such grant was found or an error occurred.
 func LookupGrantIdRef(rcptType, rcptId, permId, cat string,
 	id *string) error {
 	return grantIdFromServer(rcptType, rcptId, permId, cat, id)

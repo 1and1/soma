@@ -95,7 +95,7 @@ func updateItem(item *ConfigurationItem, lookupID string) error {
 		return err
 	}
 
-	// since this was an explicit update request, non-existance is a
+	// since this was an explicit update request, non-existence is a
 	// hard error
 	if err = Eye.run.check_item.QueryRow(item.ConfigurationItemId.String()).Scan(&itemID); err != nil {
 		return err

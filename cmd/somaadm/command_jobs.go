@@ -38,7 +38,7 @@ func registerJobs(app cli.App) *cli.App {
 							},
 							{
 								Name:   `update`,
-								Usage:  `Check and update status of oustanding locally cached jobs`,
+								Usage:  `Check and update status of outstanding locally cached jobs`,
 								Action: runtime(cmdJobLocalUpdate),
 								Flags: []cli.Flag{
 									cli.BoolFlag{
