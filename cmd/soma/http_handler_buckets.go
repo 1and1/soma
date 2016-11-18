@@ -70,7 +70,7 @@ func ShowBucket(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `show`,
-		BucketId:   params.ByName(`bucket`),
+		BucketID:   params.ByName(`bucket`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -113,7 +113,7 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `bucket`,
 		Action:       `create`,
-		RepositoryId: cReq.Bucket.RepositoryId,
+		RepositoryID: cReq.Bucket.RepositoryId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -144,7 +144,7 @@ func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `add_property`,
-		BucketId:   params.ByName(`bucket`),
+		BucketID:   params.ByName(`bucket`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -204,7 +204,7 @@ func DeletePropertyFromBucket(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `remove_property`,
-		BucketId:   params.ByName(`bucket`),
+		BucketID:   params.ByName(`bucket`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return

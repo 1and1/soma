@@ -69,7 +69,7 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `show`,
-		ClusterId:  params.ByName(`cluster`),
+		ClusterID:  params.ByName(`cluster`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -97,7 +97,7 @@ func ListClusterMembers(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `list_member`,
-		ClusterId:  params.ByName(`cluster`),
+		ClusterID:  params.ByName(`cluster`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -134,7 +134,7 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `create`,
-		BucketId:   cReq.Cluster.BucketId,
+		BucketID:   cReq.Cluster.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -178,8 +178,8 @@ func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `add_member`,
-		ClusterId:  cReq.Cluster.Id,
-		BucketId:   cReq.Cluster.BucketId,
+		ClusterID:  cReq.Cluster.Id,
+		BucketID:   cReq.Cluster.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -239,8 +239,8 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `add_property`,
-		ClusterId:  params.ByName(`cluster`),
-		BucketId:   cReq.Cluster.BucketId,
+		ClusterID:  params.ByName(`cluster`),
+		BucketID:   cReq.Cluster.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -300,8 +300,8 @@ func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `remove_property`,
-		ClusterId:  params.ByName(`cluster`),
-		BucketId:   cReq.Cluster.BucketId,
+		ClusterID:  params.ByName(`cluster`),
+		BucketID:   cReq.Cluster.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return

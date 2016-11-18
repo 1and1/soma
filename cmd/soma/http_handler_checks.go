@@ -67,10 +67,11 @@ func ShowCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorizedd(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
-		RemoteAddr: extractAddress(r.RemoteAddr),
-		Section:    `check`,
-		Action:     `show`,
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `check`,
+		Action:       `show`,
+		RepositoryID: params.ByName(`repository`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -109,9 +110,9 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `check`,
 		Action:       `create`,
-		RepositoryId: cReq.CheckConfig.RepositoryId,
-		BucketId:     cReq.CheckConfig.BucketId,
-		CapabilityId: cReq.CheckConfig.CapabilityId,
+		RepositoryID: cReq.CheckConfig.RepositoryId,
+		BucketID:     cReq.CheckConfig.BucketId,
+		CapabilityID: cReq.CheckConfig.CapabilityId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -142,7 +143,7 @@ func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `check`,
 		Action:       `destroy`,
-		RepositoryId: params.ByName(`repository`),
+		RepositoryID: params.ByName(`repository`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return

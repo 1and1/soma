@@ -145,7 +145,7 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `repository`,
 		Action:       `add_property`,
-		RepositoryId: params.ByName(`repository`),
+		RepositoryID: params.ByName(`repository`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -205,7 +205,7 @@ func DeletePropertyFromRepository(w http.ResponseWriter, r *http.Request,
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `repository`,
 		Action:       `remove_property`,
-		RepositoryId: params.ByName(`repository`),
+		RepositoryID: params.ByName(`repository`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return

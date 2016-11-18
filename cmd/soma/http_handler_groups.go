@@ -67,7 +67,7 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `show`,
-		GroupId:    params.ByName(`group`),
+		GroupID:    params.ByName(`group`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -95,7 +95,7 @@ func ListGroupMembers(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `list_member`,
-		GroupId:    params.ByName(`group`),
+		GroupID:    params.ByName(`group`),
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -132,7 +132,7 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `create`,
-		GroupId:    cReq.Group.BucketId,
+		GroupID:    cReq.Group.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -176,8 +176,8 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `add_member`,
-		GroupId:    cReq.Group.Id,
-		BucketId:   cReq.Group.BucketId,
+		GroupID:    cReq.Group.Id,
+		BucketID:   cReq.Group.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -246,8 +246,8 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `add_property`,
-		GroupId:    params.ByName(`group`),
-		BucketId:   cReq.Group.BucketId,
+		GroupID:    params.ByName(`group`),
+		BucketID:   cReq.Group.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return
@@ -307,8 +307,8 @@ func DeletePropertyFromGroup(w http.ResponseWriter, r *http.Request,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `remove_property`,
-		GroupId:    params.ByName(`group`),
-		BucketId:   cReq.Group.BucketId,
+		GroupID:    params.ByName(`group`),
+		BucketID:   cReq.Group.BucketId,
 	}) {
 		DispatchForbidden(&w, nil)
 		return

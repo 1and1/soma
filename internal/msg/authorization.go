@@ -10,18 +10,20 @@ package msg
 
 import "github.com/1and1/soma/lib/proto"
 
+// Authorization struct
 type Authorization struct {
 	User         string
 	RemoteAddr   string
 	Section      string
 	Action       string
-	RepositoryId string
-	BucketId     string
-	MonitoringId string
-	CapabilityId string
-	TeamId       string
-	GroupId      string
-	ClusterId    string
+	TeamID       string
+	MonitoringID string
+	CapabilityID string
+	RepositoryID string
+	BucketID     string
+	GroupID      string
+	ClusterID    string
+	NodeID       string
 	Grant        *proto.Grant
 }
 
