@@ -18,7 +18,7 @@ install_linux: generate
 generate:
 	@go generate ./cmd/...
 
-sanitize: build vet
+sanitize: build vet ineffassign misspell
 
 build:
 	@go build ./...
@@ -50,3 +50,14 @@ vet:
 	@go tool vet -shadow ./internal/msg/
 	@go tool vet -shadow ./internal/stmt/
 	@go tool vet -shadow ./internal/tree/
+
+ineffassign:
+	@ineffassign ./cmd
+	@ineffassign ./lib
+	@ineffassign ./internal
+
+misspell:
+	@misspell ./cmd
+	@misspell ./lib
+	@misspell ./internal
+	@misspell ./docs
