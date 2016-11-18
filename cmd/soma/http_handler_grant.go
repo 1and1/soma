@@ -9,7 +9,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func SearchGrant(w http.ResponseWriter, r *http.Request,
+// RightSearch function
+func RightSearch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -53,6 +54,7 @@ func SearchGrant(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// RightGrant function
 func RightGrant(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -97,6 +99,7 @@ func RightGrant(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// RightRevoke function
 func RightRevoke(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

@@ -11,10 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
- */
-func ListBucket(w http.ResponseWriter, r *http.Request,
+// BucketList function
+func BucketList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -48,7 +46,7 @@ func ListBucket(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if (cReq.Filter.Bucket.Name != "") || (cReq.Filter.Bucket.Id != "") {
-		filtered := make([]somaBucketResult, 0)
+		filtered := []somaBucketResult{}
 		for _, i := range result.Buckets {
 			if (i.Bucket.Name == cReq.Filter.Bucket.Name) || (i.Bucket.Id == cReq.Filter.Bucket.Id) {
 				filtered = append(filtered, i)
@@ -61,7 +59,8 @@ skip:
 	SendBucketReply(&w, &result)
 }
 
-func ShowBucket(w http.ResponseWriter, r *http.Request,
+// BucketShow function
+func BucketShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -89,9 +88,8 @@ func ShowBucket(w http.ResponseWriter, r *http.Request,
 	SendBucketReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddBucket(w http.ResponseWriter, r *http.Request,
+// BucketCreate function
+func BucketCreate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -135,7 +133,8 @@ func AddBucket(w http.ResponseWriter, r *http.Request,
 	SendBucketReply(&w, &result)
 }
 
-func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
+// BucketAddProperty function
+func BucketAddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -195,7 +194,8 @@ func AddPropertyToBucket(w http.ResponseWriter, r *http.Request,
 	SendBucketReply(&w, &result)
 }
 
-func DeletePropertyFromBucket(w http.ResponseWriter, r *http.Request,
+// BucketRemoveProperty function
+func BucketRemoveProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -239,9 +239,7 @@ func DeletePropertyFromBucket(w http.ResponseWriter, r *http.Request,
 	SendRepositoryReply(&w, &result)
 }
 
-/*
- * Utility
- */
+// SendBucketReply function
 func SendBucketReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.Result{}
 	if r.MarkErrors(&result) {

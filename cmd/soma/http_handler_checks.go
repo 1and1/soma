@@ -12,9 +12,8 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-/* Read functions
- */
-func ListCheckConfiguration(w http.ResponseWriter, r *http.Request,
+// CheckConfigurationList function
+func CheckConfigurationList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -49,7 +48,7 @@ func ListCheckConfiguration(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.CheckConfig.Name != "" {
-		filtered := make([]somaCheckConfigResult, 0)
+		filtered := []somaCheckConfigResult{}
 		for _, i := range result.CheckConfigs {
 			if i.CheckConfig.Name == cReq.Filter.CheckConfig.Name {
 				filtered = append(filtered, i)
@@ -62,7 +61,8 @@ skip:
 	SendCheckConfigurationReply(&w, &result)
 }
 
-func ShowCheckConfiguration(w http.ResponseWriter, r *http.Request,
+// CheckConfigurationShow function
+func CheckConfigurationShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -92,9 +92,8 @@ func ShowCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	SendCheckConfigurationReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
+// CheckConfigurationCreate function
+func CheckConfigurationCreate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -134,7 +133,8 @@ func AddCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	SendCheckConfigurationReply(&w, &result)
 }
 
-func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
+// CheckConfigurationDestroy function
+func CheckConfigurationDestroy(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -168,8 +168,7 @@ func DeleteCheckConfiguration(w http.ResponseWriter, r *http.Request,
 	SendCheckConfigurationReply(&w, &result)
 }
 
-/* Utility
- */
+// SendCheckConfigurationReply function
 func SendCheckConfigurationReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.Result{}
 	if r.MarkErrors(&result) {

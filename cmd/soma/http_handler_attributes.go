@@ -9,9 +9,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*Read functions
- */
-func ListAttribute(w http.ResponseWriter, r *http.Request,
+// AttributeList function
+func AttributeList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -35,7 +34,8 @@ func ListAttribute(w http.ResponseWriter, r *http.Request,
 	SendAttributeReply(&w, &result)
 }
 
-func ShowAttribute(w http.ResponseWriter, r *http.Request,
+// AttributeShow function
+func AttributeShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -62,9 +62,8 @@ func ShowAttribute(w http.ResponseWriter, r *http.Request,
 	SendAttributeReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddAttribute(w http.ResponseWriter, r *http.Request,
+// AttributeAdd function
+func AttributeAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -99,7 +98,8 @@ func AddAttribute(w http.ResponseWriter, r *http.Request,
 	SendAttributeReply(&w, &result)
 }
 
-func DeleteAttribute(w http.ResponseWriter, r *http.Request,
+// AttributeRemove function
+func AttributeRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -126,8 +126,7 @@ func DeleteAttribute(w http.ResponseWriter, r *http.Request,
 	SendAttributeReply(&w, &result)
 }
 
-/* Utility
- */
+// SendAttributeReply function
 func SendAttributeReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.Result{}
 	if r.MarkErrors(&result) {

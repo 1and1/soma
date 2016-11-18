@@ -16,6 +16,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// CategoryList function
 func CategoryList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -44,6 +45,7 @@ func CategoryList(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// CategoryShow function
 func CategoryShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -75,6 +77,7 @@ func CategoryShow(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// CategoryAdd function
 func CategoryAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -113,6 +116,7 @@ func CategoryAdd(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// CategoryRemove function
 func CategoryRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)

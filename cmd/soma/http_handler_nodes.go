@@ -10,8 +10,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-// ListNode function
-func ListNode(w http.ResponseWriter, r *http.Request,
+// NodeList function
+func NodeList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -54,8 +54,8 @@ skip:
 	SendNodeReply(&w, &result)
 }
 
-// ShowNode function
-func ShowNode(w http.ResponseWriter, r *http.Request,
+// NodeShow function
+func NodeShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -83,8 +83,8 @@ func ShowNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// ShowNodeConfig function
-func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
+// NodeShowConfig function
+func NodeShowConfig(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -112,8 +112,8 @@ func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// SyncNode function
-func SyncNode(w http.ResponseWriter, r *http.Request,
+// NodeSync function
+func NodeSync(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -137,8 +137,8 @@ func SyncNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// AddNode function
-func AddNode(w http.ResponseWriter, r *http.Request,
+// NodeAdd function
+func NodeAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -186,8 +186,8 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// UpdateNode function
-func UpdateNode(w http.ResponseWriter, r *http.Request,
+// NodeUpdate function
+func NodeUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -228,8 +228,8 @@ func UpdateNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// AssignNode function
-func AssignNode(w http.ResponseWriter, r *http.Request,
+// NodeAssign function
+func NodeAssign(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -268,8 +268,8 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// DeleteNode function
-func DeleteNode(w http.ResponseWriter, r *http.Request,
+// NodeRemove function
+func NodeRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -308,8 +308,8 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// AddPropertyToNode function
-func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
+// NodeAddProperty function
+func NodeAddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -369,8 +369,8 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-// DeletePropertyFromNode function
-func DeletePropertyFromNode(w http.ResponseWriter, r *http.Request,
+// NodeRemoveProperty function
+func NodeRemoveProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 

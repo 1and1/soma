@@ -11,10 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
- */
-func ListGroup(w http.ResponseWriter, r *http.Request,
+// GroupList function
+func GroupList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -44,7 +42,7 @@ func ListGroup(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Group.Name != "" {
-		filtered := make([]somaGroupResult, 0)
+		filtered := []somaGroupResult{}
 		for _, i := range result.Groups {
 			if i.Group.Name == cReq.Filter.Group.Name &&
 				i.Group.BucketId == cReq.Filter.Group.BucketId {
@@ -58,7 +56,8 @@ skip:
 	SendGroupReply(&w, &result)
 }
 
-func ShowGroup(w http.ResponseWriter, r *http.Request,
+// GroupShow function
+func GroupShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -86,7 +85,8 @@ func ShowGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
-func ListGroupMembers(w http.ResponseWriter, r *http.Request,
+// GroupListMember function
+func GroupListMember(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -114,9 +114,8 @@ func ListGroupMembers(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddGroup(w http.ResponseWriter, r *http.Request,
+// GroupCreate function
+func GroupCreate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -160,7 +159,8 @@ func AddGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
-func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
+// GroupAddMember function
+func GroupAddMember(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -208,7 +208,8 @@ func AddMemberToGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
-func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
+// GroupAddProperty function
+func GroupAddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -269,7 +270,8 @@ func AddPropertyToGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
-func DeletePropertyFromGroup(w http.ResponseWriter, r *http.Request,
+// GroupRemoveProperty function
+func GroupRemoveProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -332,9 +334,7 @@ func DeletePropertyFromGroup(w http.ResponseWriter, r *http.Request,
 	SendGroupReply(&w, &result)
 }
 
-/*
- * Utility
- */
+// SendGroupReply function
 func SendGroupReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewGroupResult()
 	if r.MarkErrors(&result) {

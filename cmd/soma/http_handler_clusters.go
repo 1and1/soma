@@ -11,10 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
- */
-func ListCluster(w http.ResponseWriter, r *http.Request,
+// ClusterList function
+func ClusterList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -46,7 +44,7 @@ func ListCluster(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Cluster.Name != "" {
-		filtered := make([]somaClusterResult, 0)
+		filtered := []somaClusterResult{}
 		for _, i := range result.Clusters {
 			if i.Cluster.Name == cReq.Filter.Cluster.Name &&
 				i.Cluster.BucketId == cReq.Filter.Cluster.BucketId {
@@ -60,7 +58,8 @@ skip:
 	SendClusterReply(&w, &result)
 }
 
-func ShowCluster(w http.ResponseWriter, r *http.Request,
+// ClusterShow function
+func ClusterShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -88,7 +87,8 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
-func ListClusterMembers(w http.ResponseWriter, r *http.Request,
+// ClusterListMember function
+func ClusterListMember(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -116,9 +116,8 @@ func ListClusterMembers(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddCluster(w http.ResponseWriter, r *http.Request,
+// ClusterCreate function
+func ClusterCreate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -162,7 +161,8 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
-func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
+// ClusterAddMember function
+func ClusterAddMember(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -201,7 +201,8 @@ func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
-func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
+// ClusterAddProperty function
+func ClusterAddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -262,7 +263,8 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
-func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
+// ClusterRemoveProperty function
+func ClusterRemoveProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -325,9 +327,7 @@ func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
 	SendClusterReply(&w, &result)
 }
 
-/*
- * Utility
- */
+// SendClusterReply function
 func SendClusterReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.Result{}
 	if r.MarkErrors(&result) {

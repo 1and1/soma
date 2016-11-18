@@ -11,10 +11,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
- */
-func ListRepository(w http.ResponseWriter, r *http.Request,
+// RepositoryList function
+func RepositoryList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -44,7 +42,7 @@ func ListRepository(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Repository.Name != "" {
-		filtered := make([]somaRepositoryResult, 0)
+		filtered := []somaRepositoryResult{}
 		for _, i := range result.Repositories {
 			if i.Repository.Name == cReq.Filter.Repository.Name {
 				filtered = append(filtered, i)
@@ -57,7 +55,8 @@ skip:
 	SendRepositoryReply(&w, &result)
 }
 
-func ShowRepository(w http.ResponseWriter, r *http.Request,
+// RepositoryShow function
+func RepositoryShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -84,9 +83,8 @@ func ShowRepository(w http.ResponseWriter, r *http.Request,
 	SendRepositoryReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddRepository(w http.ResponseWriter, r *http.Request,
+// RepositoryCreate function
+func RepositoryCreate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
@@ -136,7 +134,8 @@ func AddRepository(w http.ResponseWriter, r *http.Request,
 	SendRepositoryReply(&w, &result)
 }
 
-func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
+// RepositoryAddProperty function
+func RepositoryAddProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -196,7 +195,8 @@ func AddPropertyToRepository(w http.ResponseWriter, r *http.Request,
 	SendRepositoryReply(&w, &result)
 }
 
-func DeletePropertyFromRepository(w http.ResponseWriter, r *http.Request,
+// RepositoryRemoveProperty function
+func RepositoryRemoveProperty(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -240,9 +240,7 @@ func DeletePropertyFromRepository(w http.ResponseWriter, r *http.Request,
 	SendRepositoryReply(&w, &result)
 }
 
-/*
- * Utility
- */
+// SendRepositoryReply function
 func SendRepositoryReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewRepositoryResult()
 	if r.MarkErrors(&result) {

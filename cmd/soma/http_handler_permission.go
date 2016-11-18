@@ -18,6 +18,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// PermissionList function
 func PermissionList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -49,6 +50,7 @@ func PermissionList(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// PermissionShow function
 func PermissionShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -81,6 +83,7 @@ func PermissionShow(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// PermissionSearch function
 func PermissionSearch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -121,6 +124,7 @@ func PermissionSearch(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// PermissionAdd function
 func PermissionAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -175,6 +179,7 @@ func PermissionAdd(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// PermissionRemove function
 func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -217,6 +222,7 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// PermissionEdit function
 func PermissionEdit(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
