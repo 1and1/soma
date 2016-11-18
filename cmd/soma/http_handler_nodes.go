@@ -159,18 +159,24 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	var serverID string
+	if cReq.Node.ServerId != `` {
+		serverID = cReq.Node.ServerId
+	} else {
+		serverID = `00000000-0000-0000-0000-000000000000`
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeWriteHandler"].(*somaNodeWriteHandler)
 	handler.input <- somaNodeRequest{
 		action: "add",
 		reply:  returnChannel,
 		user:   params.ByName(`AuthenticatedUser`),
-		// TODO: assign default server if no server information provided
 		Node: proto.Node{
 			AssetId:   cReq.Node.AssetId,
 			Name:      cReq.Node.Name,
 			TeamId:    cReq.Node.TeamId,
-			ServerId:  cReq.Node.ServerId,
+			ServerId:  serverID,
 			State:     "unassigned",
 			IsOnline:  cReq.Node.IsOnline,
 			IsDeleted: false,
