@@ -21,6 +21,7 @@ type Authorization struct {
 	CapabilityId string
 	TeamId       string
 	GroupId      string
+	ClusterId    string
 	Grant        *proto.Grant
 }
 

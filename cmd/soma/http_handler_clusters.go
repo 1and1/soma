@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"unicode/utf8"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
@@ -14,8 +15,18 @@ import (
  * Read functions
  */
 func ListCluster(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["clusterReadHandler"].(*somaClusterReadHandler)
@@ -53,6 +64,17 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `show`,
+		ClusterId:  params.ByName(`cluster`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["clusterReadHandler"].(*somaClusterReadHandler)
 	handler.input <- somaClusterRequest{
@@ -69,6 +91,17 @@ func ShowCluster(w http.ResponseWriter, r *http.Request,
 func ListClusterMembers(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `list_member`,
+		ClusterId:  params.ByName(`cluster`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["clusterReadHandler"].(*somaClusterReadHandler)
@@ -93,6 +126,17 @@ func AddCluster(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `create`,
+		BucketId:   cReq.Cluster.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -126,6 +170,18 @@ func AddMemberToCluster(w http.ResponseWriter, r *http.Request,
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `add_member`,
+		ClusterId:  cReq.Cluster.Id,
+		BucketId:   cReq.Cluster.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -178,6 +234,18 @@ func AddPropertyToCluster(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `add_property`,
+		ClusterId:  params.ByName(`cluster`),
+		BucketId:   cReq.Cluster.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
@@ -225,6 +293,18 @@ func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
 				SourceInstanceId: params.ByName(`source`),
 			},
 		},
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `cluster`,
+		Action:     `remove_property`,
+		ClusterId:  params.ByName(`cluster`),
+		BucketId:   cReq.Cluster.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
