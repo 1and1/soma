@@ -262,18 +262,13 @@ func (s *supervisor) action_remove_tx(id string,
 	)
 
 	// remove action from all permissions
-	if res, err = s.tx_exec(id, `action_tx_removeMap`,
-		txMap); err != nil {
+	if res, err = txMap[`action_tx_removeMap`].Exec(
+		id); err != nil {
 		return res, err
 	}
 
 	// remove action
-	return s.tx_exec(id, `action_tx_remove`, txMap)
-}
-
-func (s *supervisor) tx_exec(id, name string,
-	txMap map[string]*sql.Stmt) (sql.Result, error) {
-	return txMap[name].Exec(id)
+	return txMap[`action_tx_remove`].Exec(id)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

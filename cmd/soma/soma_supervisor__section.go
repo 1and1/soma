@@ -284,13 +284,12 @@ func (s *supervisor) section_remove_tx(id string,
 	}
 
 	// remove section from all permissions
-	if res, err = s.tx_exec(id, `section_tx_removeMap`,
-		txMap); err != nil {
+	if res, err = txMap[`section_tx_removeMap`].Exec(id); err != nil {
 		return res, err
 	}
 
 	// remove section
-	return s.tx_exec(id, `section_tx_remove`, txMap)
+	return txMap[`section_tx_remove`].Exec(id)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
