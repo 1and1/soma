@@ -5,15 +5,25 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
+// ListNode function
 func ListNode(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
@@ -31,7 +41,7 @@ func ListNode(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Node.Name != "" {
-		filtered := make([]somaNodeResult, 0)
+		filtered := []somaNodeResult{}
 		for _, i := range result.Nodes {
 			if i.Node.Name == cReq.Filter.Node.Name {
 				filtered = append(filtered, i)
@@ -44,9 +54,21 @@ skip:
 	SendNodeReply(&w, &result)
 }
 
+// ShowNode function
 func ShowNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `show`,
+		NodeID:     params.ByName(`node`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
@@ -61,9 +83,21 @@ func ShowNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// ShowNodeConfig function
 func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `config`,
+		NodeID:     params.ByName(`node`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["nodeReadHandler"].(*somaNodeReadHandler)
@@ -78,11 +112,17 @@ func ShowNodeConfig(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// SyncNode function
 func SyncNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`node_sync`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `sync`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -97,13 +137,17 @@ func SyncNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-/* Write functions
- */
+// AddNode function
 func AddNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`node_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -136,11 +180,18 @@ func AddNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// UpdateNode function
 func UpdateNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`node_update`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `update`,
+		NodeID:     params.ByName(`node`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -171,6 +222,7 @@ func UpdateNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// AssignNode function
 func AssignNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -178,6 +230,19 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 	cReq := proto.NewNodeRequest()
 	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `node`,
+		Action:       `assign`,
+		NodeID:       params.ByName(`node`),
+		RepositoryID: cReq.Node.Config.RepositoryId,
+		BucketID:     cReq.Node.Config.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -197,16 +262,12 @@ func AssignNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// DeleteNode function
 func DeleteNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`node_delete`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
-	action := "delete"
 
+	action := `remove`
 	cReq := proto.NewNodeRequest()
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
@@ -214,7 +275,18 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 		return
 	}
 	if cReq.Flags.Purge {
-		action = "purge"
+		action = `purge`
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     action,
+		NodeID:     params.ByName(`node`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -230,6 +302,7 @@ func DeleteNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// AddPropertyToNode function
 func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -263,6 +336,17 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `node`,
+		Action:     `add_property`,
+		NodeID:     params.ByName(`node`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["guidePost"].(*guidePost)
 	handler.input <- treeRequest{
@@ -279,6 +363,7 @@ func AddPropertyToNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
+// DeletePropertyFromNode function
 func DeletePropertyFromNode(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -305,6 +390,19 @@ func DeletePropertyFromNode(w http.ResponseWriter, r *http.Request,
 		cReq.Node.Config.BucketId == `` {
 		DispatchBadRequest(&w,
 			fmt.Errorf(`Node configuration data incomplete`))
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `node`,
+		Action:       `remove_property`,
+		NodeID:       params.ByName(`node`),
+		RepositoryID: cReq.Node.Config.RepositoryId,
+		BucketID:     cReq.Node.Config.BucketId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -342,8 +440,7 @@ func DeletePropertyFromNode(w http.ResponseWriter, r *http.Request,
 	SendNodeReply(&w, &result)
 }
 
-/* Utility
- */
+// SendNodeReply function
 func SendNodeReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewNodeResult()
 	if r.MarkErrors(&result) {

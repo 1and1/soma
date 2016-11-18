@@ -482,7 +482,7 @@ func (w *somaNodeWriteHandler) process(q *somaNodeRequest) {
 			q.Node.Id,
 		)
 		// TODO what has to be done for this undeployment?
-	case "delete":
+	case `remove`:
 		w.reqLog.Printf("R: node/delete for %s", q.Node.Id)
 		res, err = w.del_stmt.Exec(
 			q.Node.Id,
