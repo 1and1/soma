@@ -28,7 +28,6 @@ func exportCheckConfigObjectTX(tx *sql.Tx, objectId string) (
 
 	txMap = make(map[string]*sql.Stmt)
 	checkconfigs = make([]proto.CheckConfig, 0)
-	instances = make([]proto.CheckInstanceInfo, 0)
 
 	for name, statement := range map[string]string{
 		`configs`:       stmt.CheckConfigForChecksOnObject,

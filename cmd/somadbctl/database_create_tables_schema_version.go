@@ -18,7 +18,6 @@ create table if not exists public.schema_versions (
     description                 text            NOT NULL
 );`
 	queries[idx] = "createTableSchemaVersionSOMA"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

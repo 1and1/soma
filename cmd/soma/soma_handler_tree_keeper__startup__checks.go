@@ -913,7 +913,6 @@ func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string
 	grRelMap = map[string]string{}
 	grWeirdMap = map[string]string{}
 	grOrder = map[string][]string{}
-	children = []string{}
 
 	// load groups in this repository
 	if stRows, err = stMap[`LoadGroupState`].Query(tk.repoId); err != nil {

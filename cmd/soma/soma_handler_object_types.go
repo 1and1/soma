@@ -86,7 +86,6 @@ func (r *somaObjectTypeReadHandler) process(q *somaObjectTypeRequest) {
 					err:        err,
 					objectType: q.objectType,
 				})
-				err = nil
 				continue
 			}
 			result = append(result, somaObjectTypeResult{

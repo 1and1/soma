@@ -22,10 +22,13 @@ func (d *DB) Server(name, id, assetid string) error {
 	defer d.Close()
 
 	return d.db.Update(func(tx *bolt.Tx) error {
+		var a, n *bolt.Bucket
+		var err error
 		b := tx.Bucket([]byte(`idcache`))
-		n, err := b.CreateBucketIfNotExists([]byte(`servername`))
-		a, err := b.CreateBucketIfNotExists([]byte(`serverasset`))
-		if err != nil {
+		if n, err = b.CreateBucketIfNotExists([]byte(`servername`)); err != nil {
+			return err
+		}
+		if a, err = b.CreateBucketIfNotExists([]byte(`serverasset`)); err != nil {
 			return err
 		}
 		mapdata := map[string]string{

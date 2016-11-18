@@ -238,7 +238,10 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		}
 
 		// service properties
-		rows, err = r.psvc_stmt.Query(q.Node.Id)
+		if rows, err = r.psvc_stmt.Query(q.Node.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,
@@ -270,7 +273,10 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		}
 
 		// system properties
-		rows, err = r.psys_stmt.Query(q.Node.Id)
+		if rows, err = r.psys_stmt.Query(q.Node.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,
@@ -304,7 +310,10 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		}
 
 		// custom properties
-		rows, err = r.pcst_stmt.Query(q.Node.Id)
+		if rows, err = r.pcst_stmt.Query(q.Node.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,

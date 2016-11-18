@@ -182,7 +182,6 @@ create table if not exists soma.group_custom_properties (
     FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableGroupsCustomProperties"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

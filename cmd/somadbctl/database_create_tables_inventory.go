@@ -35,7 +35,6 @@ create unique index _unique_server_online
     where server_online
 ;`
 	queries[idx] = "createIndexUniqueServersOnline"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
@@ -110,7 +109,6 @@ create table if not exists inventory.oncall_duty_membership (
     oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableOncallDutyMembership"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

@@ -86,7 +86,6 @@ func (r *somaObjectStateReadHandler) process(q *somaObjectStateRequest) {
 					err:   err,
 					state: q.state,
 				})
-				err = nil
 				continue
 			}
 			result = append(result, somaObjectStateResult{

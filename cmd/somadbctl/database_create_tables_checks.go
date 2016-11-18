@@ -191,7 +191,6 @@ create table if not exists soma.constraints_oncall_property (
     oncall_duty_id              uuid            NOT NULL REFERENCES inventory.oncall_duty_teams ( oncall_duty_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableCheckConstraintsOncallProperty"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

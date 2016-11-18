@@ -325,7 +325,6 @@ password_read:
 		Cfg.Auth.User, `soma`); err != nil {
 		return err
 	} else if !happy {
-		password = ""
 		goto password_read
 	}
 
@@ -438,7 +437,6 @@ password_read:
 		Cfg.Auth.User, `soma`); err != nil {
 		return err
 	} else if !happy {
-		password = ``
 		goto password_read
 	}
 

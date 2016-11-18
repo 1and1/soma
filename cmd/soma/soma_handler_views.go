@@ -99,7 +99,6 @@ func (r *somaViewReadHandler) process(q *somaViewRequest) {
 		}
 		if err = rows.Err(); err != nil {
 			result.Append(err, &somaViewResult{})
-			err = nil
 		}
 	case "show":
 		r.appLog.Printf("R: view/show for %s", q.View.Name)

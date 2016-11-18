@@ -45,7 +45,6 @@ create table if not exists soma.property_instances (
     FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTablePropertyInstances"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

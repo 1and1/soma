@@ -98,7 +98,6 @@ func (r *somaUnitReadHandler) process(q *somaUnitRequest) {
 		}
 		if err = rows.Err(); err != nil {
 			result.Append(err, &somaUnitResult{})
-			err = nil
 		}
 	case "show":
 		r.appLog.Printf("R: units/show for %s", q.Unit.Unit)

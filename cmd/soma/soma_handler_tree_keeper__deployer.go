@@ -355,6 +355,10 @@ deploymentbuilder:
 					&prop.Name,
 					&prop.Value,
 				)
+				if err != nil {
+					tk.log.Println(`tk.stmt_ClusterSysProp.Query().Scan():`, err)
+					break deploymentbuilder
+				}
 				*detail.Properties = append(*detail.Properties, prop)
 				if prop.Name == "cluster_datacenter" {
 					detail.Datacenter = prop.Value
@@ -455,6 +459,10 @@ deploymentbuilder:
 					&prop.Name,
 					&prop.Value,
 				)
+				if err != nil {
+					tk.log.Println(`tk.stmt_NodeSysProp.Query().Scan():`, err)
+					break deploymentbuilder
+				}
 				*detail.Properties = append(*detail.Properties, prop)
 			}
 			if len(*detail.Properties) == 0 {

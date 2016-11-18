@@ -115,7 +115,6 @@ create index _config_dependencies
     blocking_instance_config_id
 );`
 	queries[idx] = `createIndexConfigurationDependencies`
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

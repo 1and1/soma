@@ -109,7 +109,6 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 		}
 		if err = rows.Err(); err != nil {
 			result.Append(err, &somaUserResult{})
-			err = nil
 		}
 	case `sync`:
 		r.appLog.Printf(`R: users/sync`)
@@ -147,7 +146,6 @@ func (r *somaUserReadHandler) process(q *somaUserRequest) {
 		}
 		if err = rows.Err(); err != nil {
 			result.Append(err, &somaUserResult{})
-			err = nil
 		}
 	case "show":
 		r.appLog.Printf("R: users/show for %s", q.User.Id)

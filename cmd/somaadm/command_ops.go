@@ -109,7 +109,6 @@ password_read:
 		os.Exit(1)
 	}
 	if !happy {
-		password = ""
 		goto password_read
 	}
 

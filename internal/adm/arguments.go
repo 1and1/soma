@@ -97,7 +97,9 @@ func ParseVariadicArguments(
 
 abort:
 	if len(errors) > 0 {
-		result = nil
+		for key, _ := range result {
+			delete(result, key)
+		}
 		return fmt.Errorf(combineStrings(errors...))
 	}
 
@@ -340,7 +342,9 @@ func ParseVariadicTriples(
 
 abort:
 	if len(errors) > 0 {
-		result = nil
+		for key, _ := range result {
+			delete(result, key)
+		}
 		return fmt.Errorf(combineStrings(errors...))
 	}
 

@@ -56,7 +56,6 @@ create table if not exists soma.template_assignments (
     CHECK ( configuration_object_type != 'template' )
 );`
 	queries[idx] = "createTableTemplateAssignments"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

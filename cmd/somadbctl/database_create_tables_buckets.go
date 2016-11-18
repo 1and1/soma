@@ -30,7 +30,6 @@ create unique index _singleton_default_bucket
     on soma.buckets ( organizational_team_id, environment )
     where environment = 'default';`
 	queries[idx] = `singletonDefaultBucket`
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
@@ -112,7 +111,6 @@ create table if not exists soma.bucket_custom_properties (
     FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableBucketCustom"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

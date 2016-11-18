@@ -179,7 +179,10 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		// service properties
-		rows, err = r.psvc_stmt.Query(q.Group.Id)
+		if rows, err = r.psvc_stmt.Query(q.Group.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,
@@ -210,7 +213,10 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		// system properties
-		rows, err = r.psys_stmt.Query(q.Group.Id)
+		if rows, err = r.psys_stmt.Query(q.Group.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,
@@ -243,7 +249,10 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		// custom properties
-		rows, err = r.pcst_stmt.Query(q.Group.Id)
+		if rows, err = r.pcst_stmt.Query(q.Group.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,

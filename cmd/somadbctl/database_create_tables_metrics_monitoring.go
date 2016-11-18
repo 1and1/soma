@@ -85,7 +85,6 @@ create table if not exists soma.monitoring_capabilities (
     UNIQUE ( capability_monitoring, capability_metric, capability_view )
 );`
 	queries[idx] = "createTableMonitoringCapabilities"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

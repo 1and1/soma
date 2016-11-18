@@ -61,7 +61,6 @@ create index _jobs_by_repo
     on soma.jobs ( repository_id, job_serial, job_id, job_status )
 ;`
 	queries[idx] = "createIndexRepoJobs"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

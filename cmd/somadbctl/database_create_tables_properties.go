@@ -74,7 +74,6 @@ create table if not exists soma.native_properties (
     native_property             varchar(128)    PRIMARY KEY
 );`
 	queries[idx] = "createTableNativeProperties"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
@@ -96,7 +95,6 @@ create table if not exists soma.custom_properties (
     UNIQUE( repository_id, custom_property_id )
 );`
 	queries[idx] = "createTableCustomProperties"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

@@ -207,7 +207,6 @@ create table if not exists auth.password_reset (
            OR ( user_id IS     NULL AND admin_id IS     NULL AND tool_id IS NOT NULL ) )
 );`
 	queries[idx] = "createTablePasswordReset"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

@@ -86,7 +86,6 @@ func (r *somaEnvironmentReadHandler) process(q *somaEnvironmentRequest) {
 					err:         err,
 					environment: q.environment,
 				})
-				err = nil
 				continue
 			}
 			result = append(result, somaEnvironmentResult{

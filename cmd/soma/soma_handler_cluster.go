@@ -175,7 +175,10 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		}
 
 		// service properties
-		rows, err = r.psvc_stmt.Query(q.Cluster.Id)
+		if rows, err = r.psvc_stmt.Query(q.Cluster.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,
@@ -206,7 +209,10 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		}
 
 		// system properties
-		rows, err = r.psys_stmt.Query(q.Cluster.Id)
+		if rows, err = r.psys_stmt.Query(q.Cluster.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,
@@ -239,7 +245,10 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 		}
 
 		// custom properties
-		rows, err = r.pcst_stmt.Query(q.Cluster.Id)
+		if rows, err = r.pcst_stmt.Query(q.Cluster.Id); err != nil {
+			result.SetRequestError(err)
+			goto dispatch
+		}
 		for rows.Next() {
 			if err = rows.Scan(
 				&instanceId,

@@ -20,7 +20,6 @@ create table if not exists soma.repositories (
     UNIQUE( repository_id, organizational_team_id )
 );`
 	queries[idx] = "createTableRepositories"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
@@ -97,7 +96,6 @@ create table if not exists soma.repository_custom_properties (
     FOREIGN KEY ( source_instance_id, repository_id ) REFERENCES soma.property_instances ( instance_id, repository_id ) DEFERRABLE
 );`
 	queries[idx] = "createTableRepositoryCustomProperty"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }

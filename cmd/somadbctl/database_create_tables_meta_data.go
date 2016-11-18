@@ -34,7 +34,6 @@ create table if not exists soma.object_types (
     object_type                 varchar(64)     PRIMARY KEY
 );`
 	queries[idx] = "createTableObjectTypes"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
@@ -60,7 +59,6 @@ create index _datacenter_groups
     on soma.datacenter_groups ( datacenter_group )
 ;`
 	queries[idx] = "createIndexDatacenterGroups"
-	idx++
 
 	performDatabaseTask(printOnly, verbose, queries, queryMap)
 }
