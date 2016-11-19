@@ -6,26 +6,34 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListProperty(w http.ResponseWriter, r *http.Request,
+// PropertyList function
+func PropertyList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
 	prType, _ := GetPropertyTypeFromUrl(r.URL)
-	pa := fmt.Sprintf("property_%s_list", prType)
+	var section string
 	switch prType {
-	case `custom`:
-	case `service`:
+	case `native`, `system`, `custom`, `service`, `template`:
+		section = fmt.Sprintf("property_%s", prType)
 	default:
-		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-			pa, ``, ``, ``); !ok {
-			DispatchForbidden(&w, nil)
-			return
-		}
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid property type`))
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    section,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -105,20 +113,29 @@ skip:
 	SendPropertyReply(&w, &result)
 }
 
-func ShowProperty(w http.ResponseWriter, r *http.Request,
+// PropertyShow function
+func PropertyShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
 	prType, _ := GetPropertyTypeFromUrl(r.URL)
-	pa := fmt.Sprintf("property_%s_show", prType)
+	var section string
 	switch prType {
-	case `custom`:
-	case `service`:
+	case `native`, `system`, `custom`, `service`, `template`:
+		section = fmt.Sprintf("property_%s", prType)
 	default:
-		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-			pa, ``, ``, ``); !ok {
-			DispatchForbidden(&w, nil)
-			return
-		}
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid property type`))
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    section,
+		Action:     `show`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -154,22 +171,29 @@ func ShowProperty(w http.ResponseWriter, r *http.Request,
 	SendPropertyReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddProperty(w http.ResponseWriter, r *http.Request,
+// PropertyAdd function
+func PropertyAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
 	prType, _ := GetPropertyTypeFromUrl(r.URL)
-	pa := fmt.Sprintf("property_%s_create", prType)
+	var section string
 	switch prType {
-	case `custom`:
-	case `service`:
+	case `native`, `system`, `custom`, `service`, `template`:
+		section = fmt.Sprintf("property_%s", prType)
 	default:
-		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-			pa, ``, ``, ``); !ok {
-			DispatchForbidden(&w, nil)
-			return
-		}
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid property type`))
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    section,
+		Action:     `add`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	cReq := proto.NewPropertyRequest()
@@ -219,20 +243,29 @@ func AddProperty(w http.ResponseWriter, r *http.Request,
 	SendPropertyReply(&w, &result)
 }
 
-func DeleteProperty(w http.ResponseWriter, r *http.Request,
+// PropertyRemove function
+func PropertyRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
 	prType, _ := GetPropertyTypeFromUrl(r.URL)
-	pa := fmt.Sprintf("property_%s_delete", prType)
+	var section string
 	switch prType {
-	case `custom`:
-	case `service`:
+	case `native`, `system`, `custom`, `service`, `template`:
+		section = fmt.Sprintf("property_%s", prType)
 	default:
-		if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-			pa, ``, ``, ``); !ok {
-			DispatchForbidden(&w, nil)
-			return
-		}
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid property type`))
+		return
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    section,
+		Action:     `remove`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -268,8 +301,7 @@ func DeleteProperty(w http.ResponseWriter, r *http.Request,
 	SendPropertyReply(&w, &result)
 }
 
-/* Utility
- */
+// SendPropertyReply function
 func SendPropertyReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewPropertyResult()
 	if r.MarkErrors(&result) {
