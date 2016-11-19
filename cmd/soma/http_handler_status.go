@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListStatus(w http.ResponseWriter, r *http.Request,
+// StatusList function
+func StatusList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`status_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `status`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListStatus(w http.ResponseWriter, r *http.Request,
 	SendStatusReply(&w, &result)
 }
 
-func ShowStatus(w http.ResponseWriter, r *http.Request,
+// StatusShow function
+func StatusShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`status_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `status`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,13 +62,17 @@ func ShowStatus(w http.ResponseWriter, r *http.Request,
 	SendStatusReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddStatus(w http.ResponseWriter, r *http.Request,
+// StatusAdd function
+func StatusAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`status_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `status`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -82,11 +97,17 @@ func AddStatus(w http.ResponseWriter, r *http.Request,
 	SendStatusReply(&w, &result)
 }
 
-func DeleteStatus(w http.ResponseWriter, r *http.Request,
+// StatusRemove function
+func StatusRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`status_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `status`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -104,8 +125,7 @@ func DeleteStatus(w http.ResponseWriter, r *http.Request,
 	SendStatusReply(&w, &result)
 }
 
-/* Utility
- */
+// SendStatusReply function
 func SendStatusReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewStatusResult()
 	if r.MarkErrors(&result) {
