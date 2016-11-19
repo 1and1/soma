@@ -5,17 +5,22 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListServer(w http.ResponseWriter, r *http.Request,
+// ServerList function
+func ServerList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -31,11 +36,17 @@ func ListServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-func SyncServer(w http.ResponseWriter, r *http.Request,
+// ServerSync function
+func ServerSync(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_sync`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `sync`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,11 +62,17 @@ func SyncServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-func ShowServer(w http.ResponseWriter, r *http.Request,
+// ServerShow function
+func ServerShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -73,11 +90,17 @@ func ShowServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-func SearchServer(w http.ResponseWriter, r *http.Request,
+// ServerSearch function
+func ServerSearch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_search`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `search`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -108,13 +131,17 @@ func SearchServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddServer(w http.ResponseWriter, r *http.Request,
+// ServerAdd function
+func ServerAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -144,20 +171,29 @@ func AddServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-func DeleteServer(w http.ResponseWriter, r *http.Request,
+// ServerRemove function
+func ServerRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	action := "delete"
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_delete`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
+	action := `remove`
 
 	cReq := proto.NewServerRequest()
-	_ = DecodeJsonBody(r, &cReq)
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
 	if cReq.Flags.Purge {
-		action = "purge"
+		action = `purge`
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     action,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -173,11 +209,17 @@ func DeleteServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-func UpdateServer(w http.ResponseWriter, r *http.Request,
+// ServerUpdate function
+func ServerUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_update`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `update`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -213,11 +255,17 @@ func UpdateServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-func InsertNullServer(w http.ResponseWriter, r *http.Request,
+// ServerAddNull function
+func ServerAddNull(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`servers_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `server`,
+		Action:     `add_null`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -248,8 +296,7 @@ func InsertNullServer(w http.ResponseWriter, r *http.Request,
 	SendServerReply(&w, &result)
 }
 
-/* Utility
- */
+// SendServerReply function
 func SendServerReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewServerResult()
 	if r.MarkErrors(&result) {

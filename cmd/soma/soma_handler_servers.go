@@ -280,8 +280,8 @@ func (w *somaServerWriteHandler) process(q *somaServerRequest) {
 			false,
 		)
 		q.Server.Id = id.String()
-	case "delete":
-		w.reqLog.Printf("R: server/delete for %s", q.Server.Id)
+	case "remove":
+		w.reqLog.Printf("R: server/remove for %s", q.Server.Id)
 		res, err = w.del_stmt.Exec(
 			q.Server.Id,
 		)
