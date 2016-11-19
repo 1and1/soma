@@ -34,6 +34,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// OutputTree function
 func OutputTree(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -42,6 +43,7 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 		DispatchBadRequest(&w, nil)
 		return
 	}
+
 	treeT := ``
 	switch {
 	case params.ByName(`repository`) != ``:
@@ -52,10 +54,22 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 		treeT = `group`
 	case params.ByName(`cluster`) != ``:
 		treeT = `cluster`
-	case params.ByName(`node`) != ``:
-		treeT = `node`
 	default:
 		DispatchBadRequest(&w, nil)
+		return
+	}
+
+	if !IsAuthorized(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      treeT,
+		Action:       `tree`,
+		RepositoryID: params.ByName(`repository`),
+		BucketID:     params.ByName(`bucket`),
+		GroupID:      params.ByName(`group`),
+		ClusterID:    params.ByName(`cluster`),
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 

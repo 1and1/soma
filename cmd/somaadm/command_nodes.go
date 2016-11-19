@@ -106,11 +106,6 @@ func registerNodes(app cli.App) *cli.App {
 						Action: runtime(cmdNodeShow),
 					},
 					{
-						Name:   "tree",
-						Usage:  "Display the most uninteresting tree ever",
-						Action: runtime(cmdNodeTree),
-					},
-					{
 						Name:   "config",
 						Usage:  "Show which bucket a node is assigned to",
 						Action: runtime(cmdNodeConfig),
@@ -542,19 +537,6 @@ func cmdNodeShow(c *cli.Context) error {
 
 	path := fmt.Sprintf("/nodes/%s", id)
 	return adm.Perform(`get`, path, `show`, nil, c)
-}
-
-func cmdNodeTree(c *cli.Context) error {
-	if err := adm.VerifySingleArgument(c); err != nil {
-		return err
-	}
-	id, err := adm.LookupNodeId(c.Args().First())
-	if err != nil {
-		return err
-	}
-
-	path := fmt.Sprintf("/nodes/%s/tree/tree", id)
-	return adm.Perform(`get`, path, `tree`, nil, c)
 }
 
 func cmdNodeSync(c *cli.Context) error {

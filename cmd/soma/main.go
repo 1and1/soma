@@ -269,7 +269,6 @@ func main() {
 	router.GET(`/monitoring/`, Check(BasicAuth(MonitoringList)))
 	router.GET(`/nodes/:node/config`, Check(BasicAuth(NodeShowConfig)))
 	router.GET(`/nodes/:node/instances/`, Check(BasicAuth(InstanceList)))
-	router.GET(`/nodes/:node/tree/:tree`, Check(BasicAuth(OutputTree)))
 	router.GET(`/nodes/:node`, Check(BasicAuth(NodeShow)))
 	router.GET(`/nodes/`, Check(BasicAuth(NodeList)))
 	router.GET(`/oncall/:oncall`, Check(BasicAuth(OncallShow)))
