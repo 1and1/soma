@@ -29,22 +29,22 @@ SELECT $1::varchar
 WHERE NOT EXISTS (
     SELECT environment
     FROM   soma.environments
-    WHERE  environment = $2::varchar
+    WHERE  environment = $1::varchar
 );`
 
-	EnvironmentDel = `
+	EnvironmentRemove = `
 DELETE FROM soma.environments
-WHERE environment = $1;`
+WHERE environment = $1::varchar;`
 
 	EnvironmentRename = `
-UPDATE soma.environments SET environment = $1
-WHERE environment = $2;`
+UPDATE soma.environments SET environment = $1::varchar
+WHERE environment = $2::varchar;`
 )
 
 func init() {
 	m[EnvironmentAdd] = `EnvironmentAdd`
-	m[EnvironmentDel] = `EnvironmentDel`
 	m[EnvironmentList] = `EnvironmentList`
+	m[EnvironmentRemove] = `EnvironmentRemove`
 	m[EnvironmentRename] = `EnvironmentRename`
 	m[EnvironmentShow] = `EnvironmentShow`
 }

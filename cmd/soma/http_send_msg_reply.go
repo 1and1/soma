@@ -97,6 +97,10 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 			DispatchUnauthorized(w, nil)
 			return
 		} // end supervisor
+	case `environment`:
+		result = proto.NewEnvironmentResult()
+		*result.Environments = append(*result.Environments, r.Environment...)
+		goto UnmaskedReply
 	case `job`:
 		result = proto.NewJobResult()
 		*result.Jobs = append(*result.Jobs, r.Job...)

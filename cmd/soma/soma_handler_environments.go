@@ -1,46 +1,51 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2015-2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
 	"database/sql"
-	"errors"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
+	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
 
-// Message structs
-type somaEnvironmentRequest struct {
-	action      string
-	environment string
-	rename      string
-	reply       chan []somaEnvironmentResult
+type environmentRead struct {
+	input    chan msg.Request
+	shutdown chan bool
+	conn     *sql.DB
+	stmtList *sql.Stmt
+	stmtShow *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
-type somaEnvironmentResult struct {
-	err         error
-	environment string
+type environmentWrite struct {
+	input      chan msg.Request
+	shutdown   chan bool
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	stmtRename *sql.Stmt
+	appLog     *log.Logger
+	reqLog     *log.Logger
+	errLog     *log.Logger
 }
 
-/*  Read Access
- *
- */
-type somaEnvironmentReadHandler struct {
-	input     chan somaEnvironmentRequest
-	shutdown  chan bool
-	conn      *sql.DB
-	list_stmt *sql.Stmt
-	show_stmt *sql.Stmt
-	appLog    *log.Logger
-	reqLog    *log.Logger
-	errLog    *log.Logger
-}
-
-func (r *somaEnvironmentReadHandler) run() {
+func (r *environmentRead) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.EnvironmentList: r.list_stmt,
-		stmt.EnvironmentShow: r.show_stmt,
+		stmt.EnvironmentList: r.stmtList,
+		stmt.EnvironmentShow: r.stmtShow,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
 			r.errLog.Fatal(`environment`, err, stmt.Name(statement))
@@ -48,10 +53,11 @@ func (r *somaEnvironmentReadHandler) run() {
 		defer prepStmt.Close()
 	}
 
+runloop:
 	for {
 		select {
 		case <-r.shutdown:
-			break
+			break runloop
 		case req := <-r.input:
 			go func() {
 				r.process(&req)
@@ -60,86 +66,79 @@ func (r *somaEnvironmentReadHandler) run() {
 	}
 }
 
-func (r *somaEnvironmentReadHandler) process(q *somaEnvironmentRequest) {
-	var environment string
-	var rows *sql.Rows
-	var err error
-	result := make([]somaEnvironmentResult, 0)
+func (r *environmentRead) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(r.reqLog, q)
 
-	switch q.action {
-	case "list":
-		rows, err = r.list_stmt.Query()
-		defer rows.Close()
-		if err != nil {
-			result = append(result, somaEnvironmentResult{
-				err:         err,
-				environment: q.environment,
-			})
-			q.reply <- result
-			return
-		}
-
-		for rows.Next() {
-			err = rows.Scan(&environment)
-			if err != nil {
-				result = append(result, somaEnvironmentResult{
-					err:         err,
-					environment: q.environment,
-				})
-				continue
-			}
-			result = append(result, somaEnvironmentResult{
-				err:         nil,
-				environment: environment,
-			})
-		}
+	switch q.Action {
+	case `list`:
+		r.environmentList(q, &result)
 	case "show":
-		err = r.show_stmt.QueryRow(q.environment).Scan(&environment)
-		if err != nil {
-			result = append(result, somaEnvironmentResult{
-				err:         err,
-				environment: ``,
-			})
-			q.reply <- result
+		r.environmentShow(q, &result)
+	default:
+		result.UnknownRequest(q)
+	}
+
+	q.Reply <- result
+}
+
+func (r *environmentRead) environmentList(q *msg.Request, mr *msg.Result) {
+	var (
+		err         error
+		rows        *sql.Rows
+		environment string
+	)
+	if rows, err = r.stmtList.Query(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(&environment); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(`environment`)
 			return
 		}
-
-		result = append(result, somaEnvironmentResult{
-			err:         nil,
-			environment: environment,
-		})
-	default:
-		result = append(result, somaEnvironmentResult{
-			err:         errors.New("not implemented"),
-			environment: "",
+		mr.Environment = append(mr.Environment, proto.Environment{
+			Name: environment,
 		})
 	}
-	q.reply <- result
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
 }
 
-/*
- * Write Access
- */
-
-type somaEnvironmentWriteHandler struct {
-	input    chan somaEnvironmentRequest
-	shutdown chan bool
-	conn     *sql.DB
-	add_stmt *sql.Stmt
-	del_stmt *sql.Stmt
-	ren_stmt *sql.Stmt
-	appLog   *log.Logger
-	reqLog   *log.Logger
-	errLog   *log.Logger
+func (r *environmentRead) environmentShow(q *msg.Request, mr *msg.Result) {
+	var (
+		err         error
+		environment string
+	)
+	if err = r.stmtShow.QueryRow(
+		q.Environment.Name,
+	).Scan(&environment); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.Environment = append(mr.Environment, proto.Environment{
+		Name: environment,
+	})
+	mr.OK()
 }
 
-func (w *somaEnvironmentWriteHandler) run() {
+func (r *environmentRead) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *environmentWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.EnvironmentAdd:    w.add_stmt,
-		stmt.EnvironmentDel:    w.del_stmt,
-		stmt.EnvironmentRename: w.ren_stmt,
+		stmt.EnvironmentAdd:    w.stmtAdd,
+		stmt.EnvironmentRemove: w.stmtRemove,
+		stmt.EnvironmentRename: w.stmtRename,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`environment`, err, stmt.Name(statement))
@@ -147,72 +146,84 @@ func (w *somaEnvironmentWriteHandler) run() {
 		defer prepStmt.Close()
 	}
 
+runloop:
 	for {
 		select {
 		case <-w.shutdown:
-			break
+			break runloop
 		case req := <-w.input:
 			w.process(&req)
 		}
 	}
 }
 
-func (w *somaEnvironmentWriteHandler) process(q *somaEnvironmentRequest) {
-	var res sql.Result
-	var err error
+func (w *environmentWrite) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(w.reqLog, q)
 
-	result := make([]somaEnvironmentResult, 0)
-	switch q.action {
-	case "add":
-		res, err = w.add_stmt.Exec(q.environment, q.environment)
-	case "delete":
-		res, err = w.del_stmt.Exec(q.environment)
-	case "rename":
-		res, err = w.ren_stmt.Exec(q.rename, q.environment)
+	switch q.Action {
+	case `add`:
+		w.environmentAdd(q, &result)
+	case `remove`:
+		w.environmentRemove(q, &result)
+	case `rename`:
+		w.environmentRename(q, &result)
 	default:
-		result = append(result, somaEnvironmentResult{
-			err:         errors.New("not implemented"),
-			environment: "",
-		})
-		q.reply <- result
-		return
-	}
-	if err != nil {
-		result = append(result, somaEnvironmentResult{
-			err:         err,
-			environment: q.environment,
-		})
-		q.reply <- result
-		return
+		result.UnknownRequest(q)
 	}
 
-	rowCnt, _ := res.RowsAffected()
-	if rowCnt == 0 {
-		result = append(result, somaEnvironmentResult{
-			err:         errors.New("No rows affected"),
-			environment: q.environment,
-		})
-	} else if rowCnt > 1 {
-		result = append(result, somaEnvironmentResult{
-			err:         errors.New("Too many rows affected"),
-			environment: q.environment,
-		})
-	} else {
-		result = append(result, somaEnvironmentResult{
-			err:         nil,
-			environment: q.environment,
-		})
-	}
-	q.reply <- result
+	q.Reply <- result
 }
 
-/* Ops Access
- */
-func (r *somaEnvironmentReadHandler) shutdownNow() {
-	r.shutdown <- true
+func (w *environmentWrite) environmentAdd(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtAdd.Exec(q.Environment.Name); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Environment = append(mr.Environment, q.Environment)
+	}
 }
 
-func (w *somaEnvironmentWriteHandler) shutdownNow() {
+func (w *environmentWrite) environmentRemove(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(q.Environment.Name); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Environment = append(mr.Environment, q.Environment)
+	}
+}
+
+func (w *environmentWrite) environmentRename(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRename.Exec(
+		q.Update.Environment.Name,
+		q.Environment.Name,
+	); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Environment = append(mr.Environment, q.Update.Environment)
+	}
+}
+
+func (w *environmentWrite) shutdownNow() {
 	w.shutdown <- true
 }
 

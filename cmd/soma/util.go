@@ -10,6 +10,7 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/auth"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
@@ -215,6 +216,15 @@ func extractAddress(str string) string {
 		addr = strings.Split(str, `:`)[0]
 	}
 	return addr
+}
+
+func msgRequest(l *log.Logger, q *msg.Request) {
+	l.Printf(LogStrSRq,
+		q.Section,
+		q.Action,
+		q.User,
+		q.RemoteAddr,
+	)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -103,26 +103,26 @@ func spawnViewWriteHandler(appLog, reqLog, errLog *log.Logger) {
 }
 
 func spawnEnvironmentReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var environmentReadHandler somaEnvironmentReadHandler
-	environmentReadHandler.input = make(chan somaEnvironmentRequest)
+	var environmentReadHandler environmentRead
+	environmentReadHandler.input = make(chan msg.Request)
 	environmentReadHandler.shutdown = make(chan bool)
 	environmentReadHandler.conn = conn
 	environmentReadHandler.appLog = appLog
 	environmentReadHandler.reqLog = reqLog
 	environmentReadHandler.errLog = errLog
-	handlerMap["environmentReadHandler"] = &environmentReadHandler
+	handlerMap[`environment_r`] = &environmentReadHandler
 	go environmentReadHandler.run()
 }
 
 func spawnEnvironmentWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var environmentWriteHandler somaEnvironmentWriteHandler
-	environmentWriteHandler.input = make(chan somaEnvironmentRequest, 64)
+	var environmentWriteHandler environmentWrite
+	environmentWriteHandler.input = make(chan msg.Request, 64)
 	environmentWriteHandler.shutdown = make(chan bool)
 	environmentWriteHandler.conn = conn
 	environmentWriteHandler.appLog = appLog
 	environmentWriteHandler.reqLog = reqLog
 	environmentWriteHandler.errLog = errLog
-	handlerMap["environmentWriteHandler"] = &environmentWriteHandler
+	handlerMap[`environment_w`] = &environmentWriteHandler
 	go environmentWriteHandler.run()
 }
 

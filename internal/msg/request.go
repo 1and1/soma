@@ -16,29 +16,35 @@ type Request struct {
 	Action     string
 	RemoteAddr string
 	User       string
-	IsAdmin    bool
+	IsAdmin    bool // XXX - Deprecated
 	Reply      chan Result
 	Search     Filter
+	Update     UpdateData
 
 	Super *Supervisor
 
-	ActionObj  proto.Action
-	Bucket     proto.Bucket
-	Category   proto.Category
-	Grant      proto.Grant
-	Instance   proto.Instance
-	Job        proto.Job
-	Permission proto.Permission
-	Repository proto.Repository
-	SectionObj proto.Section
-	System     proto.SystemOperation
-	Tree       proto.Tree
-	Workflow   proto.Workflow
+	ActionObj   proto.Action
+	Bucket      proto.Bucket
+	Category    proto.Category
+	Environment proto.Environment
+	Grant       proto.Grant
+	Instance    proto.Instance
+	Job         proto.Job
+	Permission  proto.Permission
+	Repository  proto.Repository
+	SectionObj  proto.Section
+	System      proto.SystemOperation
+	Tree        proto.Tree
+	Workflow    proto.Workflow
 }
 
 type Filter struct {
 	IsDetailed bool
 	Job        proto.JobFilter
+}
+
+type UpdateData struct {
+	Environment proto.Environment
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

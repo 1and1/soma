@@ -24,16 +24,17 @@ type Result struct {
 
 	Super *Supervisor
 
-	ActionObj  []proto.Action
-	Category   []proto.Category
-	Grant      []proto.Grant
-	Instance   []proto.Instance
-	Job        []proto.Job
-	Permission []proto.Permission
-	SectionObj []proto.Section
-	System     []proto.SystemOperation
-	Tree       proto.Tree
-	Workflow   []proto.Workflow
+	ActionObj   []proto.Action
+	Category    []proto.Category
+	Environment []proto.Environment
+	Grant       []proto.Grant
+	Instance    []proto.Instance
+	Job         []proto.Job
+	Permission  []proto.Permission
+	SectionObj  []proto.Section
+	System      []proto.SystemOperation
+	Tree        proto.Tree
+	Workflow    []proto.Workflow
 }
 
 func FromRequest(rq *Request) Result {
@@ -68,6 +69,8 @@ func (r *Result) Clear(s string) {
 		r.ActionObj = []proto.Action{}
 	case `category`:
 		r.Category = []proto.Category{}
+	case `environment`:
+		r.Environment = []proto.Environment{}
 	case `grant`:
 		r.Grant = []proto.Grant{}
 	case `instance`:
