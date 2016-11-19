@@ -72,9 +72,9 @@ func (r *environmentRead) process(q *msg.Request) {
 
 	switch q.Action {
 	case `list`:
-		r.environmentList(q, &result)
+		r.list(q, &result)
 	case "show":
-		r.environmentShow(q, &result)
+		r.show(q, &result)
 	default:
 		result.UnknownRequest(q)
 	}
@@ -82,7 +82,7 @@ func (r *environmentRead) process(q *msg.Request) {
 	q.Reply <- result
 }
 
-func (r *environmentRead) environmentList(q *msg.Request, mr *msg.Result) {
+func (r *environmentRead) list(q *msg.Request, mr *msg.Result) {
 	var (
 		err         error
 		rows        *sql.Rows
@@ -111,14 +111,17 @@ func (r *environmentRead) environmentList(q *msg.Request, mr *msg.Result) {
 	mr.OK()
 }
 
-func (r *environmentRead) environmentShow(q *msg.Request, mr *msg.Result) {
+func (r *environmentRead) show(q *msg.Request, mr *msg.Result) {
 	var (
 		err         error
 		environment string
 	)
 	if err = r.stmtShow.QueryRow(
 		q.Environment.Name,
-	).Scan(&environment); err != nil {
+	).Scan(&environment); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
 		mr.ServerError(err)
 		return
 	}
@@ -163,11 +166,11 @@ func (w *environmentWrite) process(q *msg.Request) {
 
 	switch q.Action {
 	case `add`:
-		w.environmentAdd(q, &result)
+		w.add(q, &result)
 	case `remove`:
-		w.environmentRemove(q, &result)
+		w.remove(q, &result)
 	case `rename`:
-		w.environmentRename(q, &result)
+		w.rename(q, &result)
 	default:
 		result.UnknownRequest(q)
 	}
@@ -175,7 +178,7 @@ func (w *environmentWrite) process(q *msg.Request) {
 	q.Reply <- result
 }
 
-func (w *environmentWrite) environmentAdd(q *msg.Request, mr *msg.Result) {
+func (w *environmentWrite) add(q *msg.Request, mr *msg.Result) {
 	var (
 		err error
 		res sql.Result
@@ -190,7 +193,7 @@ func (w *environmentWrite) environmentAdd(q *msg.Request, mr *msg.Result) {
 	}
 }
 
-func (w *environmentWrite) environmentRemove(q *msg.Request, mr *msg.Result) {
+func (w *environmentWrite) remove(q *msg.Request, mr *msg.Result) {
 	var (
 		err error
 		res sql.Result
@@ -205,7 +208,7 @@ func (w *environmentWrite) environmentRemove(q *msg.Request, mr *msg.Result) {
 	}
 }
 
-func (w *environmentWrite) environmentRename(q *msg.Request, mr *msg.Result) {
+func (w *environmentWrite) rename(q *msg.Request, mr *msg.Result) {
 	var (
 		err error
 		res sql.Result
