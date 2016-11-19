@@ -42,8 +42,6 @@ type somaDatacenterReadHandler struct {
 	conn      *sql.DB
 	list_stmt *sql.Stmt
 	show_stmt *sql.Stmt
-	grp_list  *sql.Stmt
-	grp_show  *sql.Stmt
 	appLog    *log.Logger
 	reqLog    *log.Logger
 	errLog    *log.Logger
@@ -53,10 +51,8 @@ func (r *somaDatacenterReadHandler) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.DatacenterList:      r.list_stmt,
-		stmt.DatacenterShow:      r.show_stmt,
-		stmt.DatacenterGroupList: r.grp_list,
-		stmt.DatacenterGroupShow: r.grp_show,
+		stmt.DatacenterList: r.list_stmt,
+		stmt.DatacenterShow: r.show_stmt,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
 			r.errLog.Fatal(`datacenter`, err, stmt.Name(statement))
@@ -123,61 +119,6 @@ func (r *somaDatacenterReadHandler) process(q *somaDatacenterRequest) {
 				Locode: datacenter,
 			},
 		})
-		/*
-			case "grouplist":
-				rows, err = r.grp_list.Query()
-				defer rows.Close()
-				if err != nil {
-					result = append(result, somaDatacenterResult{
-						err:        err,
-						datacenter: q.datacenter,
-					})
-					q.reply <- result
-					return
-				}
-
-				for rows.Next() {
-					err = rows.Scan(&datacenter)
-					if err != nil {
-						result = append(result, somaDatacenterResult{
-							err:        err,
-							datacenter: q.datacenter,
-						})
-						err = nil
-						continue
-					}
-					result = append(result, somaDatacenterResult{
-						err:        nil,
-						datacenter: datacenter,
-					})
-				}
-			case "groupshow":
-				rows, err = r.grp_show.Query(q.datacenter)
-				if err != nil {
-					result = append(result, somaDatacenterResult{
-						err:        err,
-						datacenter: q.datacenter,
-					})
-					q.reply <- result
-					return
-				}
-
-				for rows.Next() {
-					err = rows.Scan(&datacenter)
-					if err != nil {
-						result = append(result, somaDatacenterResult{
-							err:        err,
-							datacenter: q.datacenter,
-						})
-						err = nil
-						continue
-					}
-					result = append(result, somaDatacenterResult{
-						err:        nil,
-						datacenter: datacenter,
-					})
-				}
-		*/
 	default:
 		r.errLog.Printf("R: unimplemented datacenter/%s", q.action)
 		result.SetNotImplemented()
@@ -196,8 +137,6 @@ type somaDatacenterWriteHandler struct {
 	add_stmt *sql.Stmt
 	del_stmt *sql.Stmt
 	ren_stmt *sql.Stmt
-	grp_add  *sql.Stmt
-	grp_del  *sql.Stmt
 	appLog   *log.Logger
 	reqLog   *log.Logger
 	errLog   *log.Logger
@@ -207,11 +146,9 @@ func (w *somaDatacenterWriteHandler) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.DatacenterAdd:      w.add_stmt,
-		stmt.DatacenterDel:      w.del_stmt,
-		stmt.DatacenterRename:   w.ren_stmt,
-		stmt.DatacenterGroupAdd: w.grp_add,
-		stmt.DatacenterGroupDel: w.grp_del,
+		stmt.DatacenterAdd:    w.add_stmt,
+		stmt.DatacenterDel:    w.del_stmt,
+		stmt.DatacenterRename: w.ren_stmt,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`datacenter`, err, stmt.Name(statement))
@@ -237,12 +174,8 @@ func (w *somaDatacenterWriteHandler) process(q *somaDatacenterRequest) {
 	switch q.action {
 	case "add":
 		res, err = w.add_stmt.Exec(q.Datacenter.Locode)
-	//case "groupadd":
-	//	res, err = w.grp_add.Exec(q.group, q.datacenter, q.group, q.datacenter)
 	case "delete":
 		res, err = w.del_stmt.Exec(q.Datacenter.Locode)
-	//case "groupdel":
-	//	res, err = w.grp_del.Exec(q.group, q.datacenter)
 	case "rename":
 		res, err = w.ren_stmt.Exec(q.rename, q.Datacenter.Locode)
 	default:

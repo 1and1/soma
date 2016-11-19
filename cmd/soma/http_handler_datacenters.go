@@ -2,19 +2,24 @@ package main
 
 import (
 	"encoding/json"
+	"net/http"
+
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
-	"net/http"
 )
 
-/*
- * Read functions
- */
-func ListDatacenters(w http.ResponseWriter, r *http.Request,
+// DatacenterList function
+func DatacenterList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`datacenters_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `datacenter`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListDatacenters(w http.ResponseWriter, r *http.Request,
 	SendDatacenterReply(&w, &result)
 }
 
-func SyncDatacenters(w http.ResponseWriter, r *http.Request,
+// DatacenterSync function
+func DatacenterSync(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`datacenters_sync`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `datacenter`,
+		Action:     `sync`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -48,42 +59,17 @@ func SyncDatacenters(w http.ResponseWriter, r *http.Request,
 	SendDatacenterReply(&w, &result)
 }
 
-func ListDatacenterGroups(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	/*
-		returnChannel := make(chan []somaDatacenterResult)
-
-		handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
-		handler.input <- somaDatacenterRequest{
-			action: "grouplist",
-			reply:  returnChannel,
-		}
-
-		results := <-returnChannel
-		datacenters := make([]string, len(results))
-		for pos, res := range results {
-			datacenters[pos] = res.datacenter
-		}
-		json, err := json.Marshal(proto.ProtoResultDatacenterList{
-			Code:        200,
-			Status:      "OK",
-			Datacenters: datacenters,
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-	*/
-	result := somaResult{}
-	result.SetNotImplemented()
-	SendDatacenterReply(&w, &result)
-}
-
-func ShowDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+// DatacenterShow function
+func DatacenterShow(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`datacenters_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `datacenter`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -101,50 +87,17 @@ func ShowDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Pa
 	SendDatacenterReply(&w, &result)
 }
 
-func ShowDatacenterGroup(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	/*
-		returnChannel := make(chan []somaDatacenterResult)
-
-		handler := handlerMap["datacenterReadHandler"].(somaDatacenterReadHandler)
-		handler.input <- somaDatacenterRequest{
-			action:     "groupshow",
-			datacenter: params.ByName("datacentergroup"),
-			reply:      returnChannel,
-		}
-
-		results := <-returnChannel
-		datacenters := make([]string, len(results))
-		for pos, res := range results {
-			datacenters[pos] = res.datacenter
-		}
-		json, err := json.Marshal(proto.ProtoResultDatacenterDetail{
-			Code:   200,
-			Status: "OK",
-			Details: proto.ProtoDatacenterDetails{
-				Datacenter: params.ByName("datacentergroup"),
-				UsedBy:     datacenters,
-			},
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-	*/
-	result := somaResult{}
-	result.SetNotImplemented()
-	SendDatacenterReply(&w, &result)
-}
-
-/*
- * Write Functions
- */
-func AddDatacenter(w http.ResponseWriter, r *http.Request,
+// DatacenterAdd function
+func DatacenterAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`datacenters_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `datacenter`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -168,71 +121,17 @@ func AddDatacenter(w http.ResponseWriter, r *http.Request,
 	SendDatacenterReply(&w, &result)
 }
 
-func AddDatacenterToGroup(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	result := somaResult{}
-	result.SetNotImplemented()
-	SendDatacenterReply(&w, &result)
-	/*
-		returnChannel := make(chan []somaDatacenterResult)
-
-		// read PATCH body
-		decoder := json.NewDecoder(r.Body)
-		var clientRequest proto.ProtoRequestDatacenter
-		err := decoder.Decode(&clientRequest)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotAcceptable)
-			return
-		}
-
-		handler := handlerMap["datacenterWriteHandler"].(somaDatacenterWriteHandler)
-		handler.input <- somaDatacenterRequest{
-			action:     "groupadd",
-			datacenter: clientRequest.Datacenter,
-			group:      params.ByName("datacentergroup"),
-			reply:      returnChannel,
-		}
-
-		results := <-returnChannel
-		if len(results) != 1 {
-			json, _ := json.Marshal(proto.ProtoResultDatacenter{
-				Code:   500,
-				Status: "Internal Server Error",
-				Text:   []string{"Database statement returned no/wrong number of results"},
-			})
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(json)
-			return
-		}
-
-		result := results[0]
-		if result.err != nil {
-			json, _ := json.Marshal(proto.ProtoResultDatacenter{
-				Code:   500,
-				Status: "Internal Server Error",
-				Text:   []string{result.err.Error()},
-			})
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(json)
-			return
-		}
-
-		txt := fmt.Sprintf("Added datacenter %s to group %s",
-			result.datacenter,
-			params.ByName("datacentergroup"))
-		json, _ := json.Marshal(proto.ProtoResultDatacenter{
-			Code:   200,
-			Status: "OK",
-			Text:   []string{txt},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-	*/
-}
-
-func DeleteDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+// DatacenterRemove function
+func DatacenterRemove(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`datacenters_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `datacenter`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -250,71 +149,17 @@ func DeleteDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.
 	SendDatacenterReply(&w, &result)
 }
 
-func DeleteDatacenterFromGroup(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	result := somaResult{}
-	result.SetNotImplemented()
-	SendDatacenterReply(&w, &result)
-	/*
-		returnChannel := make(chan []somaDatacenterResult)
-
-		// read DELETE body
-		decoder := json.NewDecoder(r.Body)
-		var clientRequest proto.ProtoRequestDatacenter
-		err := decoder.Decode(&clientRequest)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusNotAcceptable)
-			return
-		}
-
-		handler := handlerMap["datacenterWriteHandler"].(somaDatacenterWriteHandler)
-		handler.input <- somaDatacenterRequest{
-			action:     "groupdel",
-			datacenter: clientRequest.Datacenter,
-			group:      params.ByName("datacentergroup"),
-			reply:      returnChannel,
-		}
-
-		results := <-returnChannel
-		if len(results) != 1 {
-			json, _ := json.Marshal(proto.ProtoResultDatacenter{
-				Code:   500,
-				Status: "Internal Server Error",
-				Text:   []string{"Database statement returned no/wrong number of results"},
-			})
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(json)
-			return
-		}
-
-		result := results[0]
-		if result.err != nil {
-			json, _ := json.Marshal(proto.ProtoResultDatacenter{
-				Code:   500,
-				Status: "Internal Server Error",
-				Text:   []string{result.err.Error()},
-			})
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(json)
-			return
-		}
-
-		txt := fmt.Sprintf("Deleted datacenter %s from group %s",
-			result.datacenter,
-			params.ByName("datacentergroup"))
-		json, _ := json.Marshal(proto.ProtoResultDatacenter{
-			Code:   200,
-			Status: "OK",
-			Text:   []string{txt},
-		})
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(json)
-	*/
-}
-
-func RenameDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+// DatacenterRename function
+func DatacenterRename(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`datacenters_rename`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `datacenter`,
+		Action:     `rename`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -339,8 +184,7 @@ func RenameDatacenter(w http.ResponseWriter, r *http.Request, params httprouter.
 	SendDatacenterReply(&w, &result)
 }
 
-/* Utility
- */
+// SendDatacenterReply function
 func SendDatacenterReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewDatacenterResult()
 	if r.MarkErrors(&result) {
