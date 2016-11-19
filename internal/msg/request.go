@@ -15,7 +15,6 @@ type Request struct {
 	Action     string
 	RemoteAddr string
 	User       string
-	IsAdmin    bool // XXX - Deprecated
 	Reply      chan Result
 	Search     Filter
 	Update     UpdateData

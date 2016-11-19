@@ -37,7 +37,6 @@ func WorkflowSummary(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
@@ -72,7 +71,6 @@ func WorkflowList(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 		Workflow: proto.Workflow{
 			Status: cReq.Filter.Workflow.Status,
 		},
@@ -110,7 +108,6 @@ func WorkflowRetry(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 		Workflow: proto.Workflow{
 			InstanceId: cReq.Workflow.InstanceId,
 		},
@@ -155,7 +152,6 @@ func WorkflowSet(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 		Workflow: proto.Workflow{
 			InstanceConfigId: params.ByName(`instanceconfig`),
 			Status:           cReq.Workflow.Status,

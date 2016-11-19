@@ -39,7 +39,6 @@ func InstanceShow(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 		Instance: proto.Instance{
 			Id: params.ByName(`instance`),
 		},
@@ -72,7 +71,6 @@ func InstanceVersions(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 		Instance: proto.Instance{
 			Id: params.ByName(`instance`),
 		},
@@ -126,7 +124,6 @@ func InstanceList(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 		Instance: proto.Instance{
 			ObjectId:   params.ByName(listT),
 			ObjectType: listT,
@@ -160,7 +157,6 @@ func InstanceListAll(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    false,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)

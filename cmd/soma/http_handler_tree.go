@@ -71,7 +71,6 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 			Id:   params.ByName(treeT),
 			Type: treeT,
 		},
-		IsAdmin: false,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
