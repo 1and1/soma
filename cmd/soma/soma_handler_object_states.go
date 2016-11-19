@@ -1,57 +1,63 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2015-2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
 	"database/sql"
-	"errors"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
+	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
 
-// Message structs
-type somaObjectStateRequest struct {
-	action string
-	state  string
-	rename string
-	reply  chan []somaObjectStateResult
+type stateRead struct {
+	input    chan msg.Request
+	shutdown chan bool
+	conn     *sql.DB
+	stmtList *sql.Stmt
+	stmtShow *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
-type somaObjectStateResult struct {
-	err   error
-	state string
+type stateWrite struct {
+	input      chan msg.Request
+	shutdown   chan bool
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	stmtRename *sql.Stmt
+	appLog     *log.Logger
+	reqLog     *log.Logger
+	errLog     *log.Logger
 }
 
-/*  Read Access
- *
- */
-type somaObjectStateReadHandler struct {
-	input     chan somaObjectStateRequest
-	shutdown  chan bool
-	conn      *sql.DB
-	list_stmt *sql.Stmt
-	show_stmt *sql.Stmt
-	appLog    *log.Logger
-	reqLog    *log.Logger
-	errLog    *log.Logger
-}
-
-func (r *somaObjectStateReadHandler) run() {
+func (r *stateRead) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.ObjectStateList: r.list_stmt,
-		stmt.ObjectStateShow: r.show_stmt,
+		stmt.ObjectStateList: r.stmtList,
+		stmt.ObjectStateShow: r.stmtShow,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`object_state`, err, stmt.Name(statement))
+			r.errLog.Fatal(`state`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
 
+runloop:
 	for {
 		select {
 		case <-r.shutdown:
-			break
+			break runloop
 		case req := <-r.input:
 			go func() {
 				r.process(&req)
@@ -60,159 +66,167 @@ func (r *somaObjectStateReadHandler) run() {
 	}
 }
 
-func (r *somaObjectStateReadHandler) process(q *somaObjectStateRequest) {
-	var state string
-	var rows *sql.Rows
-	var err error
-	result := make([]somaObjectStateResult, 0)
+func (r *stateRead) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(r.reqLog, q)
 
-	switch q.action {
-	case "list":
-		rows, err = r.list_stmt.Query()
-		defer rows.Close()
-		if err != nil {
-			result = append(result, somaObjectStateResult{
-				err:   err,
-				state: q.state,
-			})
-			q.reply <- result
-			return
-		}
-
-		for rows.Next() {
-			err = rows.Scan(&state)
-			if err != nil {
-				result = append(result, somaObjectStateResult{
-					err:   err,
-					state: q.state,
-				})
-				continue
-			}
-			result = append(result, somaObjectStateResult{
-				err:   nil,
-				state: state,
-			})
-		}
-	case "show":
-		err = r.show_stmt.QueryRow(q.state).Scan(&state)
-		if err != nil {
-			result = append(result, somaObjectStateResult{
-				err:   err,
-				state: q.state,
-			})
-			q.reply <- result
-			return
-		}
-
-		result = append(result, somaObjectStateResult{
-			err:   nil,
-			state: state,
-		})
+	switch q.Action {
+	case `list`:
+		r.list(q, &result)
+	case `show`:
+		r.show(q, &result)
 	default:
-		result = append(result, somaObjectStateResult{
-			err:   errors.New("not implemented"),
-			state: "",
+		result.UnknownRequest(q)
+	}
+
+	q.Reply <- result
+}
+
+func (r *stateRead) list(q *msg.Request, mr *msg.Result) {
+	var (
+		err   error
+		rows  *sql.Rows
+		state string
+	)
+
+	if rows, err = r.stmtList.Query(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(&state); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(q.Section)
+			return
+		}
+		mr.State = append(mr.State, proto.State{
+			Name: state,
 		})
 	}
-	q.reply <- result
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
 }
 
-/*
- * Write Access
- */
+func (r *stateRead) show(q *msg.Request, mr *msg.Result) {
+	var state string
+	var err error
 
-type somaObjectStateWriteHandler struct {
-	input    chan somaObjectStateRequest
-	shutdown chan bool
-	conn     *sql.DB
-	add_stmt *sql.Stmt
-	del_stmt *sql.Stmt
-	ren_stmt *sql.Stmt
-	appLog   *log.Logger
-	reqLog   *log.Logger
-	errLog   *log.Logger
+	if err = r.stmtShow.QueryRow(
+		q.State.Name,
+	).Scan(&state); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.State = append(mr.State, proto.State{
+		Name: state,
+	})
+	mr.OK()
 }
 
-func (w *somaObjectStateWriteHandler) run() {
+func (r *stateRead) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *stateWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.ObjectStateAdd:    w.add_stmt,
-		stmt.ObjectStateDel:    w.del_stmt,
-		stmt.ObjectStateRename: w.ren_stmt,
+		stmt.ObjectStateAdd:    w.stmtAdd,
+		stmt.ObjectStateRemove: w.stmtRemove,
+		stmt.ObjectStateRename: w.stmtRename,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`object_state`, err, stmt.Name(statement))
+			w.errLog.Fatal(`state`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
 
+runloop:
 	for {
 		select {
 		case <-w.shutdown:
-			break
+			break runloop
 		case req := <-w.input:
 			w.process(&req)
 		}
 	}
 }
 
-func (w *somaObjectStateWriteHandler) process(q *somaObjectStateRequest) {
-	var res sql.Result
-	var err error
+func (w *stateWrite) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(w.reqLog, q)
 
-	result := make([]somaObjectStateResult, 0)
-	switch q.action {
-	case "add":
-		res, err = w.add_stmt.Exec(q.state)
-	case "delete":
-		res, err = w.del_stmt.Exec(q.state)
-	case "rename":
-		res, err = w.ren_stmt.Exec(q.rename, q.state)
+	switch q.Action {
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
+	case `rename`:
+		w.rename(q, &result)
 	default:
-		result = append(result, somaObjectStateResult{
-			err:   errors.New("not implemented"),
-			state: "",
-		})
-		q.reply <- result
-		return
-	}
-	if err != nil {
-		result = append(result, somaObjectStateResult{
-			err:   err,
-			state: q.state,
-		})
-		q.reply <- result
-		return
+		result.UnknownRequest(q)
 	}
 
-	rowCnt, _ := res.RowsAffected()
-	if rowCnt == 0 {
-		result = append(result, somaObjectStateResult{
-			err:   errors.New("No rows affected"),
-			state: q.state,
-		})
-	} else if rowCnt > 1 {
-		result = append(result, somaObjectStateResult{
-			err:   errors.New("Too many rows affected"),
-			state: q.state,
-		})
-	} else {
-		result = append(result, somaObjectStateResult{
-			err:   nil,
-			state: q.state,
-		})
-	}
-	q.reply <- result
+	q.Reply <- result
 }
 
-/* Ops Access
- */
-func (r *somaObjectStateReadHandler) shutdownNow() {
-	r.shutdown <- true
+func (w *stateWrite) add(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtAdd.Exec(q.State.Name); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.State = append(mr.State, q.State)
+	}
 }
 
-func (w *somaObjectStateWriteHandler) shutdownNow() {
+func (w *stateWrite) remove(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(q.State.Name); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.State = append(mr.State, q.State)
+	}
+}
+
+func (w *stateWrite) rename(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(
+		q.Update.State.Name,
+		q.State.Name,
+	); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.State = append(mr.State, q.Update.State)
+	}
+}
+
+func (w *stateWrite) shutdownNow() {
 	w.shutdown <- true
 }
 

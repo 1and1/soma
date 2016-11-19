@@ -30,7 +30,7 @@ WHERE  NOT EXISTS (
    FROM   soma.object_states
    WHERE  object_state = $1::varchar);`
 
-	ObjectStateDel = `
+	ObjectStateRemove = `
 DELETE FROM soma.object_states
 WHERE       object_state = $1::varchar;`
 
@@ -69,8 +69,8 @@ WHERE  object_type = $2::varchar;`
 
 func init() {
 	m[ObjectStateAdd] = `ObjectStateAdd`
-	m[ObjectStateDel] = `ObjectStateDel`
 	m[ObjectStateList] = `ObjectStateList`
+	m[ObjectStateRemove] = `ObjectStateRemove`
 	m[ObjectStateRename] = `ObjectStateRename`
 	m[ObjectStateShow] = `ObjectStateShow`
 	m[ObjectTypeAdd] = `ObjectTypeAdd`

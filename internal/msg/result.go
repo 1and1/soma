@@ -31,6 +31,7 @@ type Result struct {
 	Job         []proto.Job
 	Permission  []proto.Permission
 	SectionObj  []proto.Section
+	State       []proto.State
 	System      []proto.SystemOperation
 	Tree        proto.Tree
 	Workflow    []proto.Workflow
@@ -79,6 +80,8 @@ func (r *Result) Clear(s string) {
 		r.Permission = []proto.Permission{}
 	case `section`:
 		r.SectionObj = []proto.Section{}
+	case `state`:
+		r.State = []proto.State{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
 	case `workflow`:

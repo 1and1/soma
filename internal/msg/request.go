@@ -32,6 +32,7 @@ type Request struct {
 	Permission  proto.Permission
 	Repository  proto.Repository
 	SectionObj  proto.Section
+	State       proto.State
 	System      proto.SystemOperation
 	Tree        proto.Tree
 	Workflow    proto.Workflow
@@ -44,6 +45,7 @@ type Filter struct {
 
 type UpdateData struct {
 	Environment proto.Environment
+	State       proto.State
 }
 
 type Flags struct {

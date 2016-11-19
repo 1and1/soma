@@ -127,27 +127,27 @@ func spawnEnvironmentWriteHandler(appLog, reqLog, errLog *log.Logger) {
 }
 
 func spawnObjectStateReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var objectStateReadHandler somaObjectStateReadHandler
-	objectStateReadHandler.input = make(chan somaObjectStateRequest)
-	objectStateReadHandler.shutdown = make(chan bool)
-	objectStateReadHandler.conn = conn
-	objectStateReadHandler.appLog = appLog
-	objectStateReadHandler.reqLog = reqLog
-	objectStateReadHandler.errLog = errLog
-	handlerMap["objectStateReadHandler"] = &objectStateReadHandler
-	go objectStateReadHandler.run()
+	var handler stateRead
+	handler.input = make(chan msg.Request)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`state_r`] = &handler
+	go handler.run()
 }
 
 func spawnObjectStateWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var objectStateWriteHandler somaObjectStateWriteHandler
-	objectStateWriteHandler.input = make(chan somaObjectStateRequest, 64)
-	objectStateWriteHandler.shutdown = make(chan bool)
-	objectStateWriteHandler.conn = conn
-	objectStateWriteHandler.appLog = appLog
-	objectStateWriteHandler.reqLog = reqLog
-	objectStateWriteHandler.errLog = errLog
-	handlerMap["objectStateWriteHandler"] = &objectStateWriteHandler
-	go objectStateWriteHandler.run()
+	var handler stateWrite
+	handler.input = make(chan msg.Request, 64)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`state_w`] = &handler
+	go handler.run()
 }
 
 func spawnObjectTypeReadHandler(appLog, reqLog, errLog *log.Logger) {
