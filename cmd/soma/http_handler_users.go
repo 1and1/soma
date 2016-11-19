@@ -37,7 +37,7 @@ func ListUser(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.User.UserName != "" {
-		filtered := make([]somaUserResult, 0)
+		filtered := []somaUserResult{}
 		for _, i := range result.Users {
 			if i.User.UserName == cReq.Filter.User.UserName {
 				filtered = append(filtered, i)

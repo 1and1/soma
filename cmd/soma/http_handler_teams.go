@@ -36,7 +36,7 @@ func ListTeam(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Team.Name != "" {
-		filtered := make([]somaTeamResult, 0)
+		filtered := []somaTeamResult{}
 		for _, i := range result.Teams {
 			if i.Team.Name == cReq.Filter.Team.Name {
 				filtered = append(filtered, i)

@@ -35,7 +35,7 @@ func ListOncall(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Oncall.Name != "" {
-		filtered := make([]somaOncallResult, 0)
+		filtered := []somaOncallResult{}
 		for _, i := range result.Oncall {
 			if i.Oncall.Name == cReq.Filter.Oncall.Name {
 				filtered = append(filtered, i)

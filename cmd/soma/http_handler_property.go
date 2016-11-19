@@ -63,7 +63,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 	_ = DecodeJsonBody(r, &cReq)
 	if (cReq.Filter.Property.Type == "custom") && (cReq.Filter.Property.Name != "") &&
 		(cReq.Filter.Property.RepositoryId != "") {
-		filtered := make([]somaPropertyResult, 0)
+		filtered := []somaPropertyResult{}
 		for _, i := range result.Properties {
 			if (i.Custom.Name == cReq.Filter.Property.Name) &&
 				(i.Custom.RepositoryId == cReq.Filter.Property.RepositoryId) {
@@ -73,7 +73,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		result.Properties = filtered
 	}
 	if (cReq.Filter.Property.Type == "system") && (cReq.Filter.Property.Name != "") {
-		filtered := make([]somaPropertyResult, 0)
+		filtered := []somaPropertyResult{}
 		for _, i := range result.Properties {
 			if i.System.Name == cReq.Filter.Property.Name {
 				filtered = append(filtered, i)
@@ -82,7 +82,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		result.Properties = filtered
 	}
 	if (cReq.Filter.Property.Type == "service") && (cReq.Filter.Property.Name != "") {
-		filtered := make([]somaPropertyResult, 0)
+		filtered := []somaPropertyResult{}
 		for _, i := range result.Properties {
 			if (i.Service.Name == cReq.Filter.Property.Name) &&
 				(i.Service.TeamId == params.ByName("team")) {
@@ -92,7 +92,7 @@ func ListProperty(w http.ResponseWriter, r *http.Request,
 		result.Properties = filtered
 	}
 	if (cReq.Filter.Property.Type == "template") && (cReq.Filter.Property.Name != "") {
-		filtered := make([]somaPropertyResult, 0)
+		filtered := []somaPropertyResult{}
 		for _, i := range result.Properties {
 			if i.Service.Name == cReq.Filter.Property.Name {
 				filtered = append(filtered, i)

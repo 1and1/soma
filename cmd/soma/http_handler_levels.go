@@ -35,7 +35,7 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if (cReq.Filter.Level.Name != "") || (cReq.Filter.Level.ShortName != "") {
-		filtered := make([]somaLevelResult, 0)
+		filtered := []somaLevelResult{}
 		for _, i := range result.Levels {
 			if ((cReq.Filter.Level.Name != "") && (cReq.Filter.Level.Name == i.Level.Name)) ||
 				((cReq.Filter.Level.ShortName != "") && (cReq.Filter.Level.ShortName == i.Level.ShortName)) {

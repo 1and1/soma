@@ -40,7 +40,7 @@ func ListMonitoring(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Monitoring.Name != "" {
-		filtered := make([]somaMonitoringResult, 0)
+		filtered := []somaMonitoringResult{}
 		for _, i := range result.Systems {
 			if i.Monitoring.Name == cReq.Filter.Monitoring.Name {
 				filtered = append(filtered, i)

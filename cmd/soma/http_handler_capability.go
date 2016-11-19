@@ -32,7 +32,7 @@ func ListCapability(w http.ResponseWriter, r *http.Request,
 
 	_ = DecodeJsonBody(r, &cReq)
 	if cReq.Filter.Capability.MonitoringId != "" {
-		filtered := make([]somaCapabilityResult, 0)
+		filtered := []somaCapabilityResult{}
 		for _, i := range result.Capabilities {
 			if i.Capability.MonitoringId == cReq.Filter.Capability.MonitoringId &&
 				i.Capability.Metric == cReq.Filter.Capability.Metric &&
@@ -44,7 +44,7 @@ func ListCapability(w http.ResponseWriter, r *http.Request,
 	}
 
 	// cleanup reply
-	for i, _ := range result.Capabilities {
+	for i := range result.Capabilities {
 		result.Capabilities[i].Capability.MonitoringId = ""
 		result.Capabilities[i].Capability.Metric = ""
 		result.Capabilities[i].Capability.View = ""
