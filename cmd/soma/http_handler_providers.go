@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListProvider(w http.ResponseWriter, r *http.Request,
+// ProviderList function
+func ProviderList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`providers_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `provider`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListProvider(w http.ResponseWriter, r *http.Request,
 	SendProviderReply(&w, &result)
 }
 
-func ShowProvider(w http.ResponseWriter, r *http.Request,
+// ProviderShow function
+func ProviderShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`providers_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `provider`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,13 +62,17 @@ func ShowProvider(w http.ResponseWriter, r *http.Request,
 	SendProviderReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddProvider(w http.ResponseWriter, r *http.Request,
+// ProviderAdd function
+func ProviderAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`providers_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `provider`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -82,11 +97,17 @@ func AddProvider(w http.ResponseWriter, r *http.Request,
 	SendProviderReply(&w, &result)
 }
 
-func DeleteProvider(w http.ResponseWriter, r *http.Request,
+// ProviderRemove function
+func ProviderRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`providers_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `provider`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -104,8 +125,7 @@ func DeleteProvider(w http.ResponseWriter, r *http.Request,
 	SendProviderReply(&w, &result)
 }
 
-/* Utility
- */
+// SendProviderReply function
 func SendProviderReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewProviderResult()
 	if r.MarkErrors(&result) {
