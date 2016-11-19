@@ -14,7 +14,7 @@ func OncallList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `oncall`,
@@ -58,7 +58,7 @@ func OncallShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `oncall`,
@@ -87,7 +87,7 @@ func OncallAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `oncall`,
@@ -123,7 +123,7 @@ func OncallUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `oncall`,
@@ -161,7 +161,7 @@ func OncallRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `oncall`,

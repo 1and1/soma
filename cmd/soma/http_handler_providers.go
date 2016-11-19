@@ -14,7 +14,7 @@ func ProviderList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `provider`,
@@ -39,7 +39,7 @@ func ProviderShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `provider`,
@@ -67,7 +67,7 @@ func ProviderAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `provider`,
@@ -102,7 +102,7 @@ func ProviderRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `provider`,

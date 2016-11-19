@@ -17,7 +17,7 @@ func MonitoringList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	// check for operations runtime privileges
-	admin := IsAuthorizedd(&msg.Authorization{
+	admin := IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `runtime`,
@@ -30,7 +30,7 @@ func MonitoringList(w http.ResponseWriter, r *http.Request,
 		goto authorized
 	}
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,
@@ -77,7 +77,7 @@ func MonitoringShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:         params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `monitoringsystem`,
@@ -106,7 +106,7 @@ func MonitoringAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,
@@ -150,7 +150,7 @@ func MonitoringRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,

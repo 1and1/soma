@@ -26,7 +26,7 @@ func PropertyList(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    section,
@@ -128,7 +128,7 @@ func PropertyShow(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    section,
@@ -186,7 +186,7 @@ func PropertyAdd(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    section,
@@ -258,7 +258,7 @@ func PropertyRemove(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    section,

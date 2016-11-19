@@ -48,7 +48,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 	}
 
 	// late authorization after Request check
-	if !IsAuthorizedd(&msg.Authorization{
+	if !IsAuthorized(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `runtime`,

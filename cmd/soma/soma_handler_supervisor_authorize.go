@@ -59,7 +59,7 @@ func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
 	return 403, false
 }
 
-func IsAuthorizedd(request *msg.Authorization) bool {
+func IsAuthorized(request *msg.Authorization) bool {
 	// instance is configured as wild-west instance
 	if SomaCfg.OpenInstance {
 		return true
