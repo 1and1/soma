@@ -19,6 +19,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// SendMsgResult is the output function for all requests that did not
+// fail input validation and got processes by the application.
 func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 	var (
 		bjson  []byte
