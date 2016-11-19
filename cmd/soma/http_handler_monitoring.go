@@ -6,22 +6,41 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListMonitoring(w http.ResponseWriter, r *http.Request,
+// MonitoringList function
+func MonitoringList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	var ok, admin bool
-	if ok, admin = IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`monitoring_list`, ``, ``, ``); !ok {
+
+	// check for operations runtime privileges
+	admin := IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `runtime`,
+		Action:     `monitoringsystem_list_all`,
+	})
+
+	// skip the regular permission check, if the user has
+	// the operations permission
+	if admin {
+		goto authorized
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `monitoringsystem`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
 
+authorized:
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["monitoringReadHandler"].(*somaMonitoringReadHandler)
 	handler.input <- somaMonitoringRequest{
@@ -53,11 +72,18 @@ skip:
 	SendMonitoringReply(&w, &result)
 }
 
-func ShowMonitoring(w http.ResponseWriter, r *http.Request,
+// MonitoringShow function
+func MonitoringShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`monitoring_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `monitoringsystem`,
+		Action:       `show`,
+		MonitoringID: params.ByName(`monitoring`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -75,13 +101,17 @@ func ShowMonitoring(w http.ResponseWriter, r *http.Request,
 	SendMonitoringReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddMonitoring(w http.ResponseWriter, r *http.Request,
+// MonitoringAdd function
+func MonitoringAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`monitoring_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `monitoringsystem`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -93,7 +123,8 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 		return
 	}
 	if strings.Contains(cReq.Monitoring.Name, `.`) {
-		DispatchBadRequest(&w, fmt.Errorf(`Invalid monitoring system name containing . character`))
+		DispatchBadRequest(&w, fmt.Errorf(`Invalid monitoring system`+
+			` name containing . character`))
 		return
 	}
 
@@ -114,11 +145,17 @@ func AddMonitoring(w http.ResponseWriter, r *http.Request,
 	SendMonitoringReply(&w, &result)
 }
 
-func DeleteMonitoring(w http.ResponseWriter, r *http.Request,
+// MonitoringRemove function
+func MonitoringRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`monitoring_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `monitoringsystem`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -136,8 +173,7 @@ func DeleteMonitoring(w http.ResponseWriter, r *http.Request,
 	SendMonitoringReply(&w, &result)
 }
 
-/* Utility
- */
+// SendMonitoringReply function
 func SendMonitoringReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewMonitoringResult()
 	if r.MarkErrors(&result) {
