@@ -282,7 +282,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 			q.User.Id,
 		)
 		notify.Action = `update`
-	case "delete":
+	case `remove`:
 		w.appLog.Printf("R: users/delete for %s", q.User.Id)
 		res, err = w.del_stmt.Exec(
 			q.User.Id,

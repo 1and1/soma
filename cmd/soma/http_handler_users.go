@@ -6,17 +6,22 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListUser(w http.ResponseWriter, r *http.Request,
+// UserList function
+func UserList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`users_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `user`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -50,11 +55,17 @@ skip:
 	SendUserReply(&w, &result)
 }
 
-func ShowUser(w http.ResponseWriter, r *http.Request,
+// UserShow function
+func UserShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`users_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `user`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -72,11 +83,17 @@ func ShowUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
-func SyncUser(w http.ResponseWriter, r *http.Request,
+// UserSync function
+func UserSync(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`users_sync`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `user`,
+		Action:     `sync`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -91,13 +108,17 @@ func SyncUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddUser(w http.ResponseWriter, r *http.Request,
+// UserAdd function
+func UserAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`users_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `user`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -134,11 +155,17 @@ func AddUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request,
+// UserUpdate function
+func UserUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`users_update`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `user`,
+		Action:     `update`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -178,20 +205,29 @@ func UpdateUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request,
+// UserRemove function
+func UserRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`users_delete`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
-	action := "delete"
 
 	cReq := proto.NewUserRequest()
-	_ = DecodeJsonBody(r, &cReq)
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	action := `remove`
 	if cReq.Flags.Purge {
-		action = "purge"
+		action = `purge`
+	}
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `user`,
+		Action:     action,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
 	}
 
 	returnChannel := make(chan somaResult)
@@ -207,8 +243,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request,
 	SendUserReply(&w, &result)
 }
 
-/* Utility
- */
+// SendUserReply function
 func SendUserReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewUserResult()
 	if r.MarkErrors(&result) {
