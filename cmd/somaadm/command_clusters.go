@@ -123,7 +123,7 @@ func registerClusters(app cli.App) *cli.App {
 									{
 										Name:         `service`,
 										Usage:        `Delete a service property from a cluster`,
-										Action:       runtime(cmdClusterOncallPropertyDelete),
+										Action:       runtime(cmdClusterServicePropertyDelete),
 										BashComplete: cmpl.InFromView,
 									},
 									{
