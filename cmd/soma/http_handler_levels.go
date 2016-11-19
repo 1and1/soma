@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListLevel(w http.ResponseWriter, r *http.Request,
+// LevelList function
+func LevelList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`levels_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `level`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -34,11 +39,14 @@ func ListLevel(w http.ResponseWriter, r *http.Request,
 	}
 
 	_ = DecodeJsonBody(r, &cReq)
-	if (cReq.Filter.Level.Name != "") || (cReq.Filter.Level.ShortName != "") {
+	if (cReq.Filter.Level.Name != "") ||
+		(cReq.Filter.Level.ShortName != "") {
 		filtered := []somaLevelResult{}
 		for _, i := range result.Levels {
-			if ((cReq.Filter.Level.Name != "") && (cReq.Filter.Level.Name == i.Level.Name)) ||
-				((cReq.Filter.Level.ShortName != "") && (cReq.Filter.Level.ShortName == i.Level.ShortName)) {
+			if ((cReq.Filter.Level.Name != "") &&
+				(cReq.Filter.Level.Name == i.Level.Name)) ||
+				((cReq.Filter.Level.ShortName != "") &&
+					(cReq.Filter.Level.ShortName == i.Level.ShortName)) {
 				filtered = append(filtered, i)
 			}
 		}
@@ -49,11 +57,17 @@ skip:
 	SendLevelReply(&w, &result)
 }
 
-func ShowLevel(w http.ResponseWriter, r *http.Request,
+// LevelShow function
+func LevelShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`levels_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `level`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -71,13 +85,17 @@ func ShowLevel(w http.ResponseWriter, r *http.Request,
 	SendLevelReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddLevel(w http.ResponseWriter, r *http.Request,
+// LevelAdd function
+func LevelAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`levels_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `level`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -104,11 +122,17 @@ func AddLevel(w http.ResponseWriter, r *http.Request,
 	SendLevelReply(&w, &result)
 }
 
-func DeleteLevel(w http.ResponseWriter, r *http.Request,
+// LevelRemove functions
+func LevelRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`levels_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `level`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -126,8 +150,7 @@ func DeleteLevel(w http.ResponseWriter, r *http.Request,
 	SendLevelReply(&w, &result)
 }
 
-/* Utility
- */
+// SendLevelReply function
 func SendLevelReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewLevelResult()
 	if r.MarkErrors(&result) {
