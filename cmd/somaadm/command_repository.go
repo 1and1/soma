@@ -302,10 +302,6 @@ func cmdRepositoryRepossess(c *cli.Context) error {
 	return adm.Perform(`patchbody`, path, `command`, req, c)
 }
 
-func cmdRepositoryClone(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented`)
-}
-
 func cmdRepositoryActivate(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
@@ -323,10 +319,6 @@ func cmdRepositoryActivate(c *cli.Context) error {
 	}
 
 	return adm.Perform(`patchbody`, path, `command`, req, c)
-}
-
-func cmdRepositoryWipe(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented`)
 }
 
 func cmdRepositoryList(c *cli.Context) error {

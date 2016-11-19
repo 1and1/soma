@@ -116,22 +116,4 @@ func cmdDatacentersShow(c *cli.Context) error {
 	return adm.Perform(`get`, path, `show`, nil, c)
 }
 
-// DC:group
-
-func cmdDatacentersAddToGroup(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
-func cmdDatacentersRemoveFromGroup(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
-func cmdDatacentersListGroups(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
-func cmdDatacentersShowGroup(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

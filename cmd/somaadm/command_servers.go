@@ -122,22 +122,6 @@ func cmdServerMarkAsDeleted(c *cli.Context) error {
 	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
-func cmdServerPurgeDeleted(c *cli.Context) error {
-	if err := adm.VerifySingleArgument(c); err != nil {
-		return err
-	}
-	// TODO this will currently never return a deleted server
-	sid, err := adm.LookupServerId(c.Args().First())
-	if err != nil {
-		return err
-	}
-	req := proto.NewServerRequest()
-	req.Flags.Purge = true
-
-	path := fmt.Sprintf("/servers/%s", sid)
-	return adm.Perform(`deletebody`, path, `command`, req, c)
-}
-
 func cmdServerUpdate(c *cli.Context) error {
 	if !adm.IsUUID(c.Args().First()) {
 		return fmt.Errorf("Server to update not referenced by"+
@@ -191,22 +175,6 @@ func cmdServerUpdate(c *cli.Context) error {
 	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
-func cmdServerRename(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
-func cmdServerOnline(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
-func cmdServerOffline(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
-func cmdServerMove(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
-}
-
 func cmdServerList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
@@ -234,10 +202,6 @@ func cmdServerShow(c *cli.Context) error {
 	}
 	path := fmt.Sprintf("/servers/%s", serverId)
 	return adm.Perform(`get`, path, `show`, nil, c)
-}
-
-func cmdServerSyncRequest(c *cli.Context) error {
-	return fmt.Errorf(`Not implemented.`)
 }
 
 func cmdServerNull(c *cli.Context) error {
