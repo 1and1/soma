@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/*Read functions
- */
-func ListPredicate(w http.ResponseWriter, r *http.Request,
+// PredicateList function
+func PredicateList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`predicates_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `predicate`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListPredicate(w http.ResponseWriter, r *http.Request,
 	SendPredicateReply(&w, &result)
 }
 
-func ShowPredicate(w http.ResponseWriter, r *http.Request,
+// PredicateShow function
+func PredicateShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`predicates_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `predicate`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,13 +62,17 @@ func ShowPredicate(w http.ResponseWriter, r *http.Request,
 	SendPredicateReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddPredicate(w http.ResponseWriter, r *http.Request,
+// PredicateAdd function
+func PredicateAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`predicates_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `predicate`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -82,11 +97,17 @@ func AddPredicate(w http.ResponseWriter, r *http.Request,
 	SendPredicateReply(&w, &result)
 }
 
-func DeletePredicate(w http.ResponseWriter, r *http.Request,
+// PredicateRemove function
+func PredicateRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`predicates_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `predicate`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -104,8 +125,7 @@ func DeletePredicate(w http.ResponseWriter, r *http.Request,
 	SendPredicateReply(&w, &result)
 }
 
-/* Utility
- */
+// SendPredicateReply function
 func SendPredicateReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewPredicateResult()
 	if r.MarkErrors(&result) {
