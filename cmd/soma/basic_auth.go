@@ -79,7 +79,6 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 					returnChannel := make(chan msg.Result)
 					super := handlerMap[`supervisor`].(*supervisor)
 					super.input <- msg.Request{
-						Type:    `supervisor`,
 						Section: `authenticate`,
 						Action:  `basic`,
 						Reply:   returnChannel,
@@ -93,7 +92,15 @@ func BasicAuth(h httprouter.Handle) httprouter.Handle {
 					result := <-returnChannel
 					if result.Error != nil {
 						// log authentication errors
-						log.Printf(LogStrErr, fmt.Sprintf("BasicAuth:%s", string(pair[0])), result.Action, result.Code, result.Error.Error())
+						log.Printf(LogStrErr,
+							result.Section,
+							fmt.Sprintf("%s (%s)",
+								result.Action,
+								string(pair[0]),
+							),
+							result.Code,
+							result.Error.Error(),
+						)
 					}
 					if result.Super.Verdict == 200 {
 						// record the authenticated user

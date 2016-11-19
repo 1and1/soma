@@ -242,7 +242,7 @@ func cmdOpsRepoStop(c *cli.Context) error {
 	}
 
 	req := proto.NewSystemOperationRequest()
-	req.SystemOperation.Request = `stop_repository`
+	req.SystemOperation.Request = `repository_stop`
 
 	return cmdOpsRepo(c, req)
 }
@@ -253,7 +253,7 @@ func cmdOpsRepoRestart(c *cli.Context) error {
 	}
 
 	req := proto.NewSystemOperationRequest()
-	req.SystemOperation.Request = `restart_repository`
+	req.SystemOperation.Request = `repository_restart`
 
 	return cmdOpsRepo(c, req)
 }
@@ -277,7 +277,7 @@ func cmdOpsRepoRebuild(c *cli.Context) error {
 	}
 
 	req := proto.NewSystemOperationRequest()
-	req.SystemOperation.Request = `rebuild_repository`
+	req.SystemOperation.Request = `repository_rebuild`
 	req.SystemOperation.RebuildLevel = opts[`level`][0]
 
 	return cmdOpsRepo(c, req)

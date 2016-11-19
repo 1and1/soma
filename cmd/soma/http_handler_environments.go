@@ -34,7 +34,6 @@ func EnvironmentList(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`environment_r`].(*environmentRead)
 	handler.input <- msg.Request{
-		Type:       `environment`,
 		Section:    `environment`,
 		Action:     `list`,
 		Reply:      returnChannel,
@@ -63,7 +62,6 @@ func EnvironmentShow(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`environment_r`].(*environmentRead)
 	handler.input <- msg.Request{
-		Type:       `environment`,
 		Section:    `environment`,
 		Action:     `show`,
 		Reply:      returnChannel,
@@ -101,7 +99,6 @@ func EnvironmentAdd(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`environment_w`].(*environmentWrite)
 	handler.input <- msg.Request{
-		Type:       `environment`,
 		Section:    `environment`,
 		Action:     `add`,
 		Reply:      returnChannel,
@@ -133,7 +130,6 @@ func EnvironmentRemove(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`environment_w`].(*environmentWrite)
 	handler.input <- msg.Request{
-		Type:       `environment`,
 		Section:    `environment`,
 		Action:     `remove`,
 		Reply:      returnChannel,
@@ -171,7 +167,6 @@ func EnvironmentRename(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`environment_w`].(*environmentWrite)
 	handler.input <- msg.Request{
-		Type:       `environment`,
 		Section:    `environment`,
 		Action:     `rename`,
 		Reply:      returnChannel,

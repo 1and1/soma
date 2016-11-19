@@ -180,16 +180,11 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 		repoId, repoName, teamId, keeper string
 		err                              error
 	)
-	result := msg.Result{
-		Type:   `forestcustodian`,
-		Action: `systemoperation`,
-		System: []proto.SystemOperation{q.System},
-	}
+	result := msg.FromRequest(q)
+	result.System = []proto.SystemOperation{q.System}
 
 	switch q.System.Request {
-	case `rebuild_repository`:
-		repoId = q.System.RepositoryId
-	case `restart_repository`:
+	case `repository_rebuild`, `repository_restart`:
 		repoId = q.System.RepositoryId
 	default:
 		result.NotImplemented(
@@ -224,7 +219,7 @@ func (f *forestCustodian) sysprocess(q *msg.Request) {
 		handler.shutdown <- true
 	}
 
-	if q.System.Request == `rebuild_repository` {
+	if q.System.Request == `repository_rebuild` {
 		// mark all existing check instances as deleted - instances
 		// are deleted for both rebuild levels checks and instances
 		if _, err = f.rbci_stmt.Exec(repoId); err != nil {

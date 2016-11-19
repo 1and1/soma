@@ -32,7 +32,7 @@ func WorkflowSummary(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`workflow_r`].(*workflowRead)
 	handler.input <- msg.Request{
-		Type:       `workflow`,
+		Section:    `workflow`,
 		Action:     `summary`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -67,7 +67,7 @@ func WorkflowList(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`workflow_r`].(*workflowRead)
 	handler.input <- msg.Request{
-		Type:       `workflow`,
+		Section:    `workflow`,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -105,7 +105,7 @@ func WorkflowRetry(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`workflow_w`].(*workflowWrite)
 	handler.input <- msg.Request{
-		Type:       `workflow`,
+		Section:    `workflow`,
 		Action:     `retry`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -150,7 +150,7 @@ func WorkflowSet(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`workflow_w`].(*workflowWrite)
 	handler.input <- msg.Request{
-		Type:       `workflow`,
+		Section:    `workflow`,
 		Action:     `set`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/1and1/soma/internal/msg"
-	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
 
@@ -55,8 +54,7 @@ runloop:
 }
 
 func (grim *grimReaper) process(q *msg.Request) bool {
-	result := msg.Result{Type: `grimReaper`, Action: q.Action,
-		System: []proto.SystemOperation{}}
+	result := msg.FromRequest(q)
 
 	switch q.Action {
 	case `shutdown`:

@@ -15,7 +15,6 @@ import (
 )
 
 type Result struct {
-	Type    string // XXX - Deprecated
 	Section string
 	Action  string
 	Code    uint16
@@ -39,7 +38,6 @@ type Result struct {
 
 func FromRequest(rq *Request) Result {
 	return Result{
-		Type:    rq.Type,
 		Section: rq.Section,
 		Action:  rq.Action,
 	}

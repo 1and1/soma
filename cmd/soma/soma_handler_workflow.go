@@ -58,8 +58,7 @@ runloop:
 }
 
 func (r *workflowRead) process(q *msg.Request) {
-	result := msg.Result{Type: q.Type, Action: q.Action,
-		Workflow: []proto.Workflow{}}
+	result := msg.FromRequest(q)
 	var (
 		err                                           error
 		status, instanceId, checkId, repoId, configId string
@@ -74,7 +73,7 @@ func (r *workflowRead) process(q *msg.Request) {
 
 	switch q.Action {
 	case `summary`:
-		r.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
+		r.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User,
 			q.RemoteAddr, q.Job.Id)
 		summary := proto.WorkflowSummary{}
 
@@ -89,7 +88,7 @@ func (r *workflowRead) process(q *msg.Request) {
 			); err != nil {
 				rows.Close()
 				result.ServerError(err)
-				result.Clear(q.Type)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 			switch status {
@@ -121,7 +120,7 @@ func (r *workflowRead) process(q *msg.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			result.ServerError(err)
-			result.Clear(q.Type)
+			result.Clear(q.Section)
 			goto dispatch
 		}
 		result.Workflow = append(result.Workflow, proto.Workflow{
@@ -130,7 +129,7 @@ func (r *workflowRead) process(q *msg.Request) {
 		result.OK()
 
 	case `list`:
-		r.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
+		r.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User,
 			q.RemoteAddr, q.Job.Id)
 		workflow := proto.Workflow{
 			Instances: &[]proto.Instance{},
@@ -160,7 +159,7 @@ func (r *workflowRead) process(q *msg.Request) {
 			); err != nil {
 				rows.Close()
 				result.ServerError(err)
-				result.Clear(q.Type)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 			instance := proto.Instance{
@@ -197,7 +196,7 @@ func (r *workflowRead) process(q *msg.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			result.ServerError(err)
-			result.Clear(q.Type)
+			result.Clear(q.Section)
 			goto dispatch
 		}
 		result.Workflow = append(result.Workflow, workflow)
@@ -205,7 +204,7 @@ func (r *workflowRead) process(q *msg.Request) {
 
 	default:
 		result.NotImplemented(fmt.Errorf(
-			"Unknown requested action: %s/%s", q.Type, q.Action))
+			"Unknown requested action: %s/%s", q.Section, q.Action))
 	}
 
 dispatch:
@@ -258,8 +257,7 @@ func (w *workflowWrite) shutdownNow() {
 }
 
 func (w *workflowWrite) process(q *msg.Request) {
-	result := msg.Result{Type: q.Type, Action: q.Action,
-		Workflow: []proto.Workflow{}}
+	result := msg.FromRequest(q)
 	var (
 		err error
 		tx  *sql.Tx
@@ -333,7 +331,7 @@ func (w *workflowWrite) process(q *msg.Request) {
 
 	default:
 		result.NotImplemented(fmt.Errorf(
-			"Unknown requested action: %s/%s", q.Type, q.Action))
+			"Unknown requested action: %s/%s", q.Section, q.Action))
 	}
 
 dispatch:

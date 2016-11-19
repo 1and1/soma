@@ -56,7 +56,7 @@ runloop:
 }
 
 func (j *jobsRead) process(q *msg.Request) {
-	result := msg.Result{Type: q.Type, Action: q.Action, Job: []proto.Job{}}
+	result := msg.FromRequest(q)
 	var (
 		rows                                                               *sql.Rows
 		err                                                                error
@@ -69,7 +69,7 @@ func (j *jobsRead) process(q *msg.Request) {
 
 	switch q.Action {
 	case `list`:
-		j.reqLog.Printf(LogStrReq, q.Type, q.Action, q.User, q.RemoteAddr)
+		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User, q.RemoteAddr)
 		if q.IsAdmin {
 			rows, err = j.listall_stmt.Query()
 		} else {
@@ -87,7 +87,7 @@ func (j *jobsRead) process(q *msg.Request) {
 				&jobType,
 			); err != nil {
 				result.ServerError(err)
-				result.Clear(q.Type)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 			result.Job = append(result.Job,
@@ -95,12 +95,12 @@ func (j *jobsRead) process(q *msg.Request) {
 		}
 		if rows.Err() != nil {
 			result.ServerError(err)
-			result.Clear(q.Type)
+			result.Clear(q.Section)
 			goto dispatch
 		}
 		result.OK()
 	case `show`:
-		j.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User, q.RemoteAddr, q.Job.Id)
+		j.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User, q.RemoteAddr, q.Job.Id)
 		if err = j.showid_stmt.QueryRow(q.Job.Id).Scan(
 			&jobId,
 			&jobStatus,
@@ -149,7 +149,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		result.OK()
 	case `search/idlist`:
 		idList = fmt.Sprintf("{%s}", strings.Join(q.Search.Job.IdList, `,`))
-		j.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User, q.RemoteAddr, idList)
+		j.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User, q.RemoteAddr, idList)
 		if rows, err = j.showlist_stmt.Query(idList); err != nil {
 			result.ServerError(err)
 			goto dispatch
@@ -173,7 +173,7 @@ func (j *jobsRead) process(q *msg.Request) {
 				&jobSpec,
 			); err != nil {
 				result.ServerError(err)
-				result.Clear(q.Type)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 			job := proto.Job{
@@ -203,12 +203,12 @@ func (j *jobsRead) process(q *msg.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			result.ServerError(err)
-			result.Clear(q.Type)
+			result.Clear(q.Section)
 			goto dispatch
 		}
 		result.OK()
 	default:
-		result.NotImplemented(fmt.Errorf("Unknown requested action: %s/%s", q.Type, q.Action))
+		result.NotImplemented(fmt.Errorf("Unknown requested action: %s/%s", q.Section, q.Action))
 	}
 
 dispatch:

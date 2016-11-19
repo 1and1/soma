@@ -61,7 +61,6 @@ func AuthenticationKex(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:    `supervisor`,
 		Section: `kex`,
 		Action:  `init`,
 		Reply:   returnChannel,
@@ -142,7 +141,6 @@ func AuthenticationEncryptedData(w *http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:    `supervisor`,
 		Section: section,
 		Action:  action,
 		Reply:   returnChannel,

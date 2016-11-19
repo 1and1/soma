@@ -56,8 +56,8 @@ const (
 	LogStrReq = `Subsystem=%s, Request=%s, User=%s, Addr=%s`
 	LogStrSRq = `Section=%s, Action=%s, User=%s, Addr=%s`
 	LogStrArg = `Subsystem=%s, Request=%s, User=%s, Addr=%s, Arg=%s`
-	LogStrOK  = `Subsystem=%s, Result=%s, InternalCode=%d, ExternalCode=%d`
-	LogStrErr = `Subsystem=%s, Action=%s, InternalCode=%d, Error=%s`
+	LogStrOK  = `Section=%s, Action=%s, InternalCode=%d, ExternalCode=%d`
+	LogStrErr = `Section=%s, Action=%s, InternalCode=%d, Error=%s`
 )
 
 func init() {

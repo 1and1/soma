@@ -34,7 +34,7 @@ func logrotate(sigChan chan os.Signal) {
 					returnChannel := make(chan msg.Result)
 					handler := handlerMap[`grimReaper`].(*grimReaper)
 					handler.system <- msg.Request{
-						Type:       `grimReaper`,
+						Section:    `runtime`,
 						Action:     `shutdown`,
 						Reply:      returnChannel,
 						RemoteAddr: `::1`,

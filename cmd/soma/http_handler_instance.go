@@ -32,7 +32,7 @@ func InstanceShow(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
 	handler.input <- msg.Request{
-		Type:       `instance`,
+		Section:    `instance`,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -63,7 +63,7 @@ func InstanceVersions(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
 	handler.input <- msg.Request{
-		Type:       `instance`,
+		Section:    `instance`,
 		Action:     `versions`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -113,7 +113,7 @@ func InstanceList(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
 	handler.input <- msg.Request{
-		Type:       `instance`,
+		Section:    `instance`,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -144,7 +144,7 @@ func InstanceListAll(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
 	handler.input <- msg.Request{
-		Type:       `instance`,
+		Section:    `instance`,
 		Action:     `list_all`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),

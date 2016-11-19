@@ -33,7 +33,6 @@ func RightSearch(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `search`,
 		Reply:      returnChannel,
@@ -87,7 +86,6 @@ func RightGrant(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `grant`,
 		Reply:      returnChannel,
@@ -124,7 +122,6 @@ func RightRevoke(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `right`,
 		Action:     `revoke`,
 		Reply:      returnChannel,

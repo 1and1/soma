@@ -244,7 +244,7 @@ func (w *somaUserWriteHandler) process(q *somaUserRequest) {
 	)
 	result := somaResult{}
 	super = handlerMap[`supervisor`].(*supervisor)
-	notify = msg.Request{Type: `supervisor`, Section: `map`,
+	notify = msg.Request{Section: `map`, Action: `update`,
 		Super: &msg.Supervisor{
 			Object: `user`,
 			User:   q.User,

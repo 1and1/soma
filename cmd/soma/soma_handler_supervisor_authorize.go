@@ -67,7 +67,6 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 	}
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:    `supervisor`,
 		Section: `authorize`,
 		Action:  `request`,
 		User:    user,
@@ -89,7 +88,7 @@ func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool
 		return true, false
 	}
 	// not authorized
-	log.Printf(LogStrErr, `supervisor`, `authorize`, result.Super.Verdict, fmt.Sprintf("Forbidden: %s, %s", user, action))
+	log.Printf(LogStrErr, `authorize`, `request`, result.Super.Verdict, fmt.Sprintf("Forbidden: %s, %s", user, action))
 	return false, false
 }
 
@@ -101,7 +100,6 @@ func IsAuthorizedd(request *msg.Authorization) bool {
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `authorize`,
 		Action:     `request`,
 		User:       request.User,
@@ -117,7 +115,7 @@ func IsAuthorizedd(request *msg.Authorization) bool {
 		return true
 	}
 	// not authorized
-	log.Printf(LogStrErr, `supervisor`, `authorize`,
+	log.Printf(LogStrErr, `authorize`, `request`,
 		result.Super.Verdict,
 		fmt.Sprintf("Forbidden: %s, %s, %s/%s",
 			request.User,

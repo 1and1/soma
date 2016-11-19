@@ -36,7 +36,6 @@ func PermissionList(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `permission`,
 		Action:     `list`,
 		Reply:      returnChannel,
@@ -68,7 +67,6 @@ func PermissionShow(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `permission`,
 		Action:     `show`,
 		Reply:      returnChannel,
@@ -107,7 +105,6 @@ func PermissionSearch(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	mr := msg.Request{
-		Type:       `supervisor`,
 		Section:    `permission`,
 		Action:     `search/name`,
 		Reply:      returnChannel,
@@ -164,7 +161,6 @@ func PermissionAdd(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `permission`,
 		Action:     `add`,
 		Reply:      returnChannel,
@@ -207,7 +203,6 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `permission`,
 		Action:     `remove`,
 		Reply:      returnChannel,
@@ -298,7 +293,6 @@ func PermissionEdit(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `permission`,
 		Action:     task,
 		Reply:      returnChannel,

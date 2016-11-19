@@ -186,10 +186,11 @@ func (g *guidePost) sysprocess(q *msg.Request) {
 		err                      error
 		handler                  *treeKeeper
 	)
-	result := msg.Result{Type: `guidepost`, Action: `systemoperation`, System: []proto.SystemOperation{q.System}}
+	result := msg.FromRequest(q)
+	result.System = []proto.SystemOperation{q.System}
 
 	switch q.System.Request {
-	case `stop_repository`:
+	case `repository_stop`:
 		repoId = q.System.RepositoryId
 	default:
 		result.NotImplemented(

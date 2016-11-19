@@ -28,18 +28,18 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 	// check the system operation is valid
 	var sys *proto.SystemOperation
 	switch cReq.SystemOperation.Request {
-	case `stop_repository`:
+	case `repository_stop`:
 		sys = &proto.SystemOperation{
 			Request:      cReq.SystemOperation.Request,
 			RepositoryId: cReq.SystemOperation.RepositoryId,
 		}
-	case `rebuild_repository`:
+	case `repository_rebuild`:
 		sys = &proto.SystemOperation{
 			Request:      cReq.SystemOperation.Request,
 			RepositoryId: cReq.SystemOperation.RepositoryId,
 			RebuildLevel: cReq.SystemOperation.RebuildLevel,
 		}
-	case `restart_repository`:
+	case `repository_restart`:
 		sys = &proto.SystemOperation{
 			Request:      cReq.SystemOperation.Request,
 			RepositoryId: cReq.SystemOperation.RepositoryId,
@@ -53,21 +53,21 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 
 	returnChannel := make(chan msg.Result)
 	switch cReq.SystemOperation.Request {
-	case `stop_repository`:
+	case `repository_stop`:
 		handler := handlerMap[`guidePost`].(*guidePost)
 		handler.system <- msg.Request{
-			Type:       `guidepost`,
-			Action:     `systemoperation`,
+			Section:    `runtime`,
+			Action:     cReq.SystemOperation.Request,
 			Reply:      returnChannel,
 			RemoteAddr: extractAddress(r.RemoteAddr),
 			User:       params.ByName(`AuthenticatedUser`),
 			System:     *sys,
 		}
-	case `rebuild_repository`, `restart_repository`:
+	case `repository_rebuild`, `repository_restart`:
 		handler := handlerMap[`forestCustodian`].(*forestCustodian)
 		handler.system <- msg.Request{
-			Type:       `forestcustodian`,
-			Action:     `systemoperation`,
+			Section:    `runtime`,
+			Action:     cReq.SystemOperation.Request,
 			Reply:      returnChannel,
 			RemoteAddr: extractAddress(r.RemoteAddr),
 			User:       params.ByName(`AuthenticatedUser`),
@@ -76,8 +76,8 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 	case `shutdown`:
 		handler := handlerMap[`grimReaper`].(*grimReaper)
 		handler.system <- msg.Request{
-			Type:       `grimReaper`,
-			Action:     `shutdown`,
+			Section:    `runtime`,
+			Action:     cReq.SystemOperation.Request,
 			Reply:      returnChannel,
 			RemoteAddr: extractAddress(r.RemoteAddr),
 			User:       params.ByName(`AuthenticatedUser`),

@@ -62,7 +62,7 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`tree_r`].(*outputTree)
 	handler.input <- msg.Request{
-		Type:       `tree`,
+		Section:    `tree`,
 		Action:     `output_tree`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),

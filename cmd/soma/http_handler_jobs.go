@@ -39,7 +39,7 @@ func ListJobs(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`jobs_r`].(*jobsRead)
 	handler.input <- msg.Request{
-		Type:       `job`,
+		Section:    `job`,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -63,7 +63,7 @@ func ShowJob(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`jobs_r`].(*jobsRead)
 	handler.input <- msg.Request{
-		Type:       `job`,
+		Section:    `job`,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
@@ -95,7 +95,7 @@ func SearchJob(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`jobs_r`].(*jobsRead)
 	handler.input <- msg.Request{
-		Type:       `job`,
+		Section:    `job`,
 		Action:     `search/idlist`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),

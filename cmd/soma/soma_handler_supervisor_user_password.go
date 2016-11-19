@@ -70,7 +70,7 @@ func (s *supervisor) userPassword(q *msg.Request) {
 	// -- the ldap password (reset/ldap)
 	// -- the token         (reset/mailtoken)
 
-	s.reqLog.Printf(LogStrReq, q.Type, fmt.Sprintf("%s/%s", q.Section, q.Action), token.UserName, q.Super.RemoteAddr)
+	s.reqLog.Printf(LogStrSRq, q.Section, q.Action, token.UserName, q.Super.RemoteAddr)
 
 	if err = s.stmt_FindUser.QueryRow(token.UserName).
 		Scan(&userId); err == sql.ErrNoRows {

@@ -11,7 +11,6 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
@@ -61,8 +60,7 @@ runloop:
 
 //
 func (i *instance) process(q *msg.Request) {
-	result := msg.Result{Type: q.Type, Action: q.Action,
-		Instance: []proto.Instance{}}
+	result := msg.FromRequest(q)
 	var (
 		err                                           error
 		version                                       int64
@@ -83,8 +81,8 @@ func (i *instance) process(q *msg.Request) {
 
 	switch q.Action {
 	case `show`:
-		i.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
-			q.RemoteAddr, q.Job.Id)
+		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
+			q.RemoteAddr)
 
 		if err = i.stmt_show.QueryRow(q.Instance.Id).Scan(
 			&instanceId,
@@ -142,8 +140,8 @@ func (i *instance) process(q *msg.Request) {
 		}}
 		result.OK()
 	case `versions`:
-		i.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
-			q.RemoteAddr, q.Job.Id)
+		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
+			q.RemoteAddr)
 
 		if rows, err = i.stmt_vers.Query(q.Instance.Id); err != nil {
 			result.ServerError(err)
@@ -165,7 +163,7 @@ func (i *instance) process(q *msg.Request) {
 			); err != nil {
 				rows.Close()
 				result.ServerError(err)
-				result.Clear(q.Type)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 			inst := proto.Instance{
@@ -200,7 +198,7 @@ func (i *instance) process(q *msg.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			result.ServerError(err)
-			result.Clear(q.Type)
+			result.Clear(q.Section)
 			goto dispatch
 		}
 		result.OK()
@@ -215,8 +213,8 @@ func (i *instance) process(q *msg.Request) {
 		}
 		fallthrough
 	case `list_all`:
-		i.reqLog.Printf(LogStrArg, q.Type, q.Action, q.User,
-			q.RemoteAddr, q.Job.Id)
+		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
+			q.RemoteAddr)
 
 		if rows, err = i.stmt_list.Query(
 			nullRepositoryId,
@@ -243,7 +241,7 @@ func (i *instance) process(q *msg.Request) {
 			); err != nil {
 				rows.Close()
 				result.ServerError(err)
-				result.Clear(q.Type)
+				result.Clear(q.Section)
 				goto dispatch
 			}
 
@@ -271,13 +269,12 @@ func (i *instance) process(q *msg.Request) {
 		}
 		if err = rows.Err(); err != nil {
 			result.ServerError(err)
-			result.Clear(q.Type)
+			result.Clear(q.Section)
 			goto dispatch
 		}
 		result.OK()
 	default:
-		result.NotImplemented(fmt.Errorf(
-			"Unknown requested action: %s/%s", q.Type, q.Action))
+		result.UnknownRequest(q)
 	}
 
 dispatch:

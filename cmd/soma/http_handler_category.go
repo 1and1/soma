@@ -34,7 +34,6 @@ func CategoryList(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `category`,
 		Action:     `list`,
 		Reply:      returnChannel,
@@ -63,7 +62,6 @@ func CategoryShow(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `category`,
 		Action:     `show`,
 		Reply:      returnChannel,
@@ -102,7 +100,6 @@ func CategoryAdd(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `category`,
 		Action:     `add`,
 		Reply:      returnChannel,
@@ -134,7 +131,6 @@ func CategoryRemove(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`supervisor`].(*supervisor)
 	handler.input <- msg.Request{
-		Type:       `supervisor`,
 		Section:    `category`,
 		Action:     `remove`,
 		Reply:      returnChannel,
