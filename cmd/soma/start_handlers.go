@@ -14,7 +14,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	spawnViewReadHandler(appLog, reqLog, errLog)
 	spawnEnvironmentReadHandler(appLog, reqLog, errLog)
 	spawnObjectStateReadHandler(appLog, reqLog, errLog)
-	spawnObjectTypeReadHandler(appLog, reqLog, errLog)
+	spawnEntityRead(appLog, reqLog, errLog)
 	spawnDatacenterReadHandler(appLog, reqLog, errLog)
 	spawnLevelReadHandler(appLog, reqLog, errLog)
 	spawnPredicateReadHandler(appLog, reqLog, errLog)
@@ -58,7 +58,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 			spawnMonitoringWriteHandler(appLog, reqLog, errLog)
 			spawnNodeWriteHandler(appLog, reqLog, errLog)
 			spawnObjectStateWriteHandler(appLog, reqLog, errLog)
-			spawnObjectTypeWriteHandler(appLog, reqLog, errLog)
+			spawnEntityWrite(appLog, reqLog, errLog)
 			spawnOncallWriteHandler(appLog, reqLog, errLog)
 			spawnPredicateWriteHandler(appLog, reqLog, errLog)
 			spawnPropertyWriteHandler(appLog, reqLog, errLog)
@@ -150,28 +150,28 @@ func spawnObjectStateWriteHandler(appLog, reqLog, errLog *log.Logger) {
 	go handler.run()
 }
 
-func spawnObjectTypeReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var objectTypeReadHandler somaObjectTypeReadHandler
-	objectTypeReadHandler.input = make(chan somaObjectTypeRequest)
-	objectTypeReadHandler.shutdown = make(chan bool)
-	objectTypeReadHandler.conn = conn
-	objectTypeReadHandler.appLog = appLog
-	objectTypeReadHandler.reqLog = reqLog
-	objectTypeReadHandler.errLog = errLog
-	handlerMap["objectTypeReadHandler"] = &objectTypeReadHandler
-	go objectTypeReadHandler.run()
+func spawnEntityRead(appLog, reqLog, errLog *log.Logger) {
+	var handler entityRead
+	handler.input = make(chan msg.Request)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`entity_r`] = &handler
+	go handler.run()
 }
 
-func spawnObjectTypeWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var objectTypeWriteHandler somaObjectTypeWriteHandler
-	objectTypeWriteHandler.input = make(chan somaObjectTypeRequest, 64)
-	objectTypeWriteHandler.shutdown = make(chan bool)
-	objectTypeWriteHandler.conn = conn
-	objectTypeWriteHandler.appLog = appLog
-	objectTypeWriteHandler.reqLog = reqLog
-	objectTypeWriteHandler.errLog = errLog
-	handlerMap["objectTypeWriteHandler"] = &objectTypeWriteHandler
-	go objectTypeWriteHandler.run()
+func spawnEntityWrite(appLog, reqLog, errLog *log.Logger) {
+	var handler entityWrite
+	handler.input = make(chan msg.Request, 64)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`entity_w`] = &handler
+	go handler.run()
 }
 
 func spawnDatacenterReadHandler(appLog, reqLog, errLog *log.Logger) {

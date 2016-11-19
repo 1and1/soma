@@ -9,48 +9,47 @@ import (
 	"github.com/codegangsta/cli"
 )
 
-func registerTypes(app cli.App) *cli.App {
+func registerEntities(app cli.App) *cli.App {
 	app.Commands = append(app.Commands,
 		[]cli.Command{
-			// types
 			{
-				Name:  "types",
-				Usage: "SUBCOMMANDS for object types",
+				Name:  "entity",
+				Usage: "SUBCOMMANDS for entities (object types)",
 				Subcommands: []cli.Command{
 					{
 						Name:   "add",
-						Usage:  "Add a new object type",
-						Action: runtime(cmdObjectTypesAdd),
+						Usage:  "Add a new entity",
+						Action: runtime(cmdEntityAdd),
 					},
 					{
 						Name:   "remove",
-						Usage:  "Remove an existing object type",
-						Action: runtime(cmdObjectTypesRemove),
+						Usage:  "Remove an existing entity",
+						Action: runtime(cmdEntityRemove),
 					},
 					{
 						Name:         "rename",
-						Usage:        "Rename an existing object type",
-						Action:       runtime(cmdObjectTypesRename),
+						Usage:        "Rename an existing entity",
+						Action:       runtime(cmdEntityRename),
 						BashComplete: cmpl.To,
 					},
 					{
 						Name:   "list",
-						Usage:  "List all object types",
-						Action: runtime(cmdObjectTypesList),
+						Usage:  "List all entities",
+						Action: runtime(cmdEntityList),
 					},
 					{
 						Name:   "show",
-						Usage:  "Show information about a specific object type",
-						Action: runtime(cmdObjectTypesShow),
+						Usage:  "Show information about a specific entity",
+						Action: runtime(cmdEntityShow),
 					},
 				},
-			}, // end types
+			},
 		}...,
 	)
 	return &app
 }
 
-func cmdObjectTypesAdd(c *cli.Context) error {
+func cmdEntityAdd(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
@@ -58,19 +57,19 @@ func cmdObjectTypesAdd(c *cli.Context) error {
 	req := proto.NewEntityRequest()
 	req.Entity.Name = c.Args().First()
 
-	return adm.Perform(`postbody`, `/objtypes/`, `command`, req, c)
+	return adm.Perform(`postbody`, `/entity/`, `command`, req, c)
 }
 
-func cmdObjectTypesRemove(c *cli.Context) error {
+func cmdEntityRemove(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
 
-	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
+	path := fmt.Sprintf("/entity/%s", c.Args().First())
 	return adm.Perform(`delete`, path, `command`, nil, c)
 }
 
-func cmdObjectTypesRename(c *cli.Context) error {
+func cmdEntityRename(c *cli.Context) error {
 	opts := map[string][]string{}
 	if err := adm.ParseVariadicArguments(
 		opts,
@@ -85,24 +84,24 @@ func cmdObjectTypesRename(c *cli.Context) error {
 	req := proto.NewEntityRequest()
 	req.Entity.Name = opts[`to`][0]
 
-	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
+	path := fmt.Sprintf("/entity/%s", c.Args().First())
 	return adm.Perform(`putbody`, path, `command`, req, c)
 }
 
-func cmdObjectTypesList(c *cli.Context) error {
+func cmdEntityList(c *cli.Context) error {
 	if err := adm.VerifyNoArgument(c); err != nil {
 		return err
 	}
 
-	return adm.Perform(`get`, `/objtypes/`, `list`, nil, c)
+	return adm.Perform(`get`, `/entity/`, `list`, nil, c)
 }
 
-func cmdObjectTypesShow(c *cli.Context) error {
+func cmdEntityShow(c *cli.Context) error {
 	if err := adm.VerifySingleArgument(c); err != nil {
 		return err
 	}
 
-	path := fmt.Sprintf("/objtypes/%s", c.Args().First())
+	path := fmt.Sprintf("/entity/%s", c.Args().First())
 	return adm.Perform(`get`, path, `show`, nil, c)
 }
 

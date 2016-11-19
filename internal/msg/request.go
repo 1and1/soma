@@ -25,6 +25,7 @@ type Request struct {
 	ActionObj   proto.Action
 	Bucket      proto.Bucket
 	Category    proto.Category
+	Entity      proto.Entity
 	Environment proto.Environment
 	Grant       proto.Grant
 	Instance    proto.Instance
@@ -44,6 +45,7 @@ type Filter struct {
 }
 
 type UpdateData struct {
+	Entity      proto.Entity
 	Environment proto.Environment
 	State       proto.State
 }

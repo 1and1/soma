@@ -1,57 +1,63 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2015-2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
 	"database/sql"
-	"errors"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
+	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
 
-// Message structs
-type somaObjectTypeRequest struct {
-	action     string
-	objectType string
-	rename     string
-	reply      chan []somaObjectTypeResult
+type entityRead struct {
+	input    chan msg.Request
+	shutdown chan bool
+	conn     *sql.DB
+	stmtList *sql.Stmt
+	stmtShow *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
-type somaObjectTypeResult struct {
-	err        error
-	objectType string
+type entityWrite struct {
+	input      chan msg.Request
+	shutdown   chan bool
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	stmtRename *sql.Stmt
+	appLog     *log.Logger
+	reqLog     *log.Logger
+	errLog     *log.Logger
 }
 
-/*  Read Access
- *
- */
-type somaObjectTypeReadHandler struct {
-	input     chan somaObjectTypeRequest
-	shutdown  chan bool
-	conn      *sql.DB
-	list_stmt *sql.Stmt
-	show_stmt *sql.Stmt
-	appLog    *log.Logger
-	reqLog    *log.Logger
-	errLog    *log.Logger
-}
-
-func (r *somaObjectTypeReadHandler) run() {
+func (r *entityRead) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.ObjectTypeList: r.list_stmt,
-		stmt.ObjectTypeShow: r.show_stmt,
+		stmt.ObjectTypeList: r.stmtList,
+		stmt.ObjectTypeShow: r.stmtShow,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
-			r.errLog.Fatal(`object_type`, err, stmt.Name(statement))
+			r.errLog.Fatal(`entity`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
 
+runloop:
 	for {
 		select {
 		case <-r.shutdown:
-			break
+			break runloop
 		case req := <-r.input:
 			go func() {
 				r.process(&req)
@@ -60,159 +66,166 @@ func (r *somaObjectTypeReadHandler) run() {
 	}
 }
 
-func (r *somaObjectTypeReadHandler) process(q *somaObjectTypeRequest) {
-	var objectType string
-	var rows *sql.Rows
-	var err error
-	result := make([]somaObjectTypeResult, 0)
+func (r *entityRead) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(r.reqLog, q)
 
-	switch q.action {
-	case "list":
-		rows, err = r.list_stmt.Query()
-		defer rows.Close()
-		if err != nil {
-			result = append(result, somaObjectTypeResult{
-				err:        err,
-				objectType: q.objectType,
-			})
-			q.reply <- result
-			return
-		}
-
-		for rows.Next() {
-			err = rows.Scan(&objectType)
-			if err != nil {
-				result = append(result, somaObjectTypeResult{
-					err:        err,
-					objectType: q.objectType,
-				})
-				continue
-			}
-			result = append(result, somaObjectTypeResult{
-				err:        nil,
-				objectType: objectType,
-			})
-		}
-	case "show":
-		err = r.show_stmt.QueryRow(q.objectType).Scan(&objectType)
-		if err != nil {
-			result = append(result, somaObjectTypeResult{
-				err:        err,
-				objectType: q.objectType,
-			})
-			q.reply <- result
-			return
-		}
-
-		result = append(result, somaObjectTypeResult{
-			err:        nil,
-			objectType: objectType,
-		})
+	switch q.Action {
+	case `list`:
+		r.list(q, &result)
+	case `show`:
+		r.show(q, &result)
 	default:
-		result = append(result, somaObjectTypeResult{
-			err:        errors.New("not implemented"),
-			objectType: "",
+	}
+
+	q.Reply <- result
+}
+
+func (r *entityRead) list(q *msg.Request, mr *msg.Result) {
+	var (
+		err    error
+		rows   *sql.Rows
+		entity string
+	)
+
+	if rows, err = r.stmtList.Query(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(&entity); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(q.Section)
+			return
+		}
+		mr.Entity = append(mr.Entity, proto.Entity{
+			Name: entity,
 		})
 	}
-	q.reply <- result
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
 }
 
-/*
- * Write Access
- */
+func (r *entityRead) show(q *msg.Request, mr *msg.Result) {
+	var entity string
+	var err error
 
-type somaObjectTypeWriteHandler struct {
-	input    chan somaObjectTypeRequest
-	shutdown chan bool
-	conn     *sql.DB
-	add_stmt *sql.Stmt
-	del_stmt *sql.Stmt
-	ren_stmt *sql.Stmt
-	appLog   *log.Logger
-	reqLog   *log.Logger
-	errLog   *log.Logger
+	if err = r.stmtShow.QueryRow(
+		q.Entity.Name,
+	).Scan(&entity); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.Entity = append(mr.Entity, proto.Entity{
+		Name: entity,
+	})
+	mr.OK()
 }
 
-func (w *somaObjectTypeWriteHandler) run() {
+func (r *entityRead) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *entityWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.ObjectTypeAdd:    w.add_stmt,
-		stmt.ObjectTypeDel:    w.del_stmt,
-		stmt.ObjectTypeRename: w.ren_stmt,
+		stmt.ObjectTypeAdd:    w.stmtAdd,
+		stmt.ObjectTypeDel:    w.stmtRemove,
+		stmt.ObjectTypeRename: w.stmtRename,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
-			w.errLog.Fatal(`object_type`, err, stmt.Name(statement))
+			w.errLog.Fatal(`entity`, err, stmt.Name(statement))
 		}
 		defer prepStmt.Close()
 	}
 
+runloop:
 	for {
 		select {
 		case <-w.shutdown:
-			break
+			break runloop
 		case req := <-w.input:
 			w.process(&req)
 		}
 	}
 }
 
-func (w *somaObjectTypeWriteHandler) process(q *somaObjectTypeRequest) {
-	var res sql.Result
-	var err error
+func (w *entityWrite) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(w.reqLog, q)
 
-	result := make([]somaObjectTypeResult, 0)
-	switch q.action {
-	case "add":
-		res, err = w.add_stmt.Exec(q.objectType)
-	case "delete":
-		res, err = w.del_stmt.Exec(q.objectType)
-	case "rename":
-		res, err = w.ren_stmt.Exec(q.rename, q.objectType)
+	switch q.Action {
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
+	case `rename`:
+		w.rename(q, &result)
 	default:
-		result = append(result, somaObjectTypeResult{
-			err:        errors.New("not implemented"),
-			objectType: "",
-		})
-		q.reply <- result
-		return
-	}
-	if err != nil {
-		result = append(result, somaObjectTypeResult{
-			err:        err,
-			objectType: q.objectType,
-		})
-		q.reply <- result
-		return
+		result.UnknownRequest(q)
 	}
 
-	rowCnt, _ := res.RowsAffected()
-	if rowCnt == 0 {
-		result = append(result, somaObjectTypeResult{
-			err:        errors.New("No rows affected"),
-			objectType: q.objectType,
-		})
-	} else if rowCnt > 1 {
-		result = append(result, somaObjectTypeResult{
-			err:        errors.New("Too many rows affected"),
-			objectType: q.objectType,
-		})
-	} else {
-		result = append(result, somaObjectTypeResult{
-			err:        nil,
-			objectType: q.objectType,
-		})
-	}
-	q.reply <- result
+	q.Reply <- result
 }
 
-/* Ops Access
- */
-func (r *somaObjectTypeReadHandler) shutdownNow() {
-	r.shutdown <- true
+func (w *entityWrite) add(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtAdd.Exec(q.Entity.Name); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Entity = append(mr.Entity, q.Entity)
+	}
 }
 
-func (w *somaObjectTypeWriteHandler) shutdownNow() {
+func (w *entityWrite) remove(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(q.Entity.Name); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Entity = append(mr.Entity, q.Entity)
+	}
+}
+
+func (w *entityWrite) rename(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(
+		q.Update.Entity.Name,
+		q.Entity.Name,
+	); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Entity = append(mr.Entity, q.Update.Entity)
+	}
+}
+
+func (w *entityWrite) shutdownNow() {
 	w.shutdown <- true
 }
 
