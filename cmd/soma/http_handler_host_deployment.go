@@ -12,9 +12,8 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-/* Read functions
- */
-func GetHostDeployment(w http.ResponseWriter, r *http.Request,
+// HostDeploymentFetch function
+func HostDeploymentFetch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 	var (
@@ -43,7 +42,8 @@ func GetHostDeployment(w http.ResponseWriter, r *http.Request,
 	SendHostDeploymentReply(&w, &result)
 }
 
-func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
+// HostDeploymentAssemble function
+func HostDeploymentAssemble(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 	var (
@@ -84,8 +84,7 @@ func AssembleHostUpdate(w http.ResponseWriter, r *http.Request,
 	SendHostDeploymentReply(&w, &result)
 }
 
-/* Utility
- */
+// SendHostDeploymentReply function
 func SendHostDeploymentReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewHostDeploymentResult()
 	if r.MarkErrors(&result) {

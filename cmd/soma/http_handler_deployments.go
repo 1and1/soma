@@ -10,9 +10,9 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-/* Write functions
- */
-func DeliverDeploymentDetails(w http.ResponseWriter, r *http.Request,
+// DeploymentDetailsInstance accepts requests for the deployment
+// details of a single check instance
+func DeploymentDetailsInstance(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -32,8 +32,10 @@ func DeliverDeploymentDetails(w http.ResponseWriter, r *http.Request,
 	SendDeploymentReply(&w, &result)
 }
 
-func DeliverMonitoringDeployments(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
+// DeploymentDetailsMonitoring accepts requests for all deployment
+// details of a monitoring system
+func DeploymentDetailsMonitoring(w http.ResponseWriter,
+	r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
 	var action string
 
@@ -59,7 +61,9 @@ func DeliverMonitoringDeployments(w http.ResponseWriter, r *http.Request,
 	SendDeploymentReply(&w, &result)
 }
 
-func UpdateDeploymentDetails(w http.ResponseWriter, r *http.Request,
+// DeploymentDetailsUpdate is used by monitoring systems to provide
+// rollout feedback
+func DeploymentDetailsUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
@@ -87,8 +91,7 @@ func UpdateDeploymentDetails(w http.ResponseWriter, r *http.Request,
 	SendDeploymentReply(&w, &result)
 }
 
-/* Utility
- */
+// SendDeploymentReply function
 func SendDeploymentReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewDeploymentResult()
 	if r.MarkErrors(&result) {
