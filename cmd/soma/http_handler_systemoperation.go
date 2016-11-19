@@ -9,14 +9,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// SystemOperation function
 func SystemOperation(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`system_operation`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
 
 	cReq := proto.NewSystemOperationRequest()
 	err := DecodeJsonBody(r, &cReq)
@@ -48,6 +44,17 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 	default:
 		DispatchBadRequest(&w, fmt.Errorf("%s %s",
 			`Unknown system operation:`, cReq.SystemOperation.Request))
+		return
+	}
+
+	// late authorization after Request check
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `runtime`,
+		Action:     cReq.SystemOperation.Request,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
