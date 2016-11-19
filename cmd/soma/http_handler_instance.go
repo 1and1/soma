@@ -21,13 +21,15 @@ func InstanceShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	/* repository scope is currently not checked
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`instance_show`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `instance`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
-	*/
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
@@ -52,13 +54,15 @@ func InstanceVersions(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	/* repository scope is currently not checked
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`instance_show`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `instance`,
+		Action:     `versions`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
-	*/
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
@@ -84,13 +88,17 @@ func InstanceList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	/* repository scope is currently not checked
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`instance_list`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `instance`,
+		Action:       `list`,
+		RepositoryID: params.ByName(`repository`),
+		BucketID:     params.ByName(`bucket`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
-	*/
 
 	listT := ``
 	switch {
@@ -120,7 +128,6 @@ func InstanceList(w http.ResponseWriter, r *http.Request,
 		User:       params.ByName(`AuthenticatedUser`),
 		IsAdmin:    false,
 		Instance: proto.Instance{
-			Id:         params.ByName(`instance`),
 			ObjectId:   params.ByName(listT),
 			ObjectType: listT,
 		},
@@ -135,8 +142,12 @@ func InstanceListAll(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if ok, isAdmin := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`instance_list_all`, ``, ``, ``); !(ok && isAdmin) {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `runtime`,
+		Action:     `instance_list_all`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -144,8 +155,8 @@ func InstanceListAll(w http.ResponseWriter, r *http.Request,
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`instance_r`].(*instance)
 	handler.input <- msg.Request{
-		Section:    `instance`,
-		Action:     `list_all`,
+		Section:    `runtime`,
+		Action:     `instance_list_all`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),

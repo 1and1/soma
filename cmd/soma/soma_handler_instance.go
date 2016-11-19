@@ -212,7 +212,8 @@ func (i *instance) process(q *msg.Request) {
 			nullBucketId.Valid = true
 		}
 		fallthrough
-	case `list_all`:
+	case `instance_list_all`:
+		// section: runtime
 		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
 			q.RemoteAddr)
 
