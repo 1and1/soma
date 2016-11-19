@@ -218,6 +218,7 @@ func main() {
 	router := httprouter.New()
 
 	router.HEAD(`/`, Check(Ping))
+	router.HEAD(`/authenticate/validate/`, Check(BasicAuth(AuthenticationValidate)))
 
 	router.GET(`/attributes/:attribute`, Check(BasicAuth(AttributeShow)))
 	router.GET(`/attributes/`, Check(BasicAuth(AttributeList)))

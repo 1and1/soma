@@ -36,17 +36,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-
+// AuthenticationValidate is a noop function wrapped in HTTP basic
+// authentication that can be used to verify one's credentials
 func AuthenticationValidate(w http.ResponseWriter, _ *http.Request,
 	_ httprouter.Params) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-/* Write functions
- */
-
+// AuthenticationKex is used by the client to initiate a key exchange
+// that can the be used for one of the encrypted endpoints
 func AuthenticationKex(w http.ResponseWriter, r *http.Request,
 	_ httprouter.Params) {
 	defer PanicCatcher(w)
@@ -77,13 +75,17 @@ func AuthenticationKex(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
-func AuthenticationBootstrapRoot(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
+// AuthenticationBootstrapRoot is the encrypted endpoint used during
+// service setup to access the builtin root account
+func AuthenticationBootstrapRoot(w http.ResponseWriter,
+	r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	AuthenticationEncryptedData(&w, r, &params, `bootstrap_root`)
 }
 
+// AuthenticationIssueToken is the encrypted endpoint used to
+// request a password token
 func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -91,6 +93,8 @@ func AuthenticationIssueToken(w http.ResponseWriter, r *http.Request,
 	AuthenticationEncryptedData(&w, r, &params, `request_token`)
 }
 
+// AuthenticationActivateUser is the encrypted endpoint used to
+// activate a user account using external ownership verification
 func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
@@ -98,22 +102,29 @@ func AuthenticationActivateUser(w http.ResponseWriter, r *http.Request,
 	AuthenticationEncryptedData(&w, r, &params, `activate_user`)
 }
 
-func AuthenticationChangeUserPassword(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
+// AuthenticationChangeUserPassword is the encrypted endpoint used
+// to change the account password using the current one.
+func AuthenticationChangeUserPassword(w http.ResponseWriter,
+	r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	AuthenticationEncryptedData(&w, r, &params, `change_user_password`)
 }
 
-func AuthenticationResetUserPassword(w http.ResponseWriter, r *http.Request,
-	params httprouter.Params) {
+// AuthenticationResetUserPassword is the encrypted endpoint used
+// to change the account password using external ownership
+// verification
+func AuthenticationResetUserPassword(w http.ResponseWriter,
+	r *http.Request, params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	AuthenticationEncryptedData(&w, r, &params, `reset_user_password`)
 }
 
-func AuthenticationEncryptedData(w *http.ResponseWriter, r *http.Request,
-	params *httprouter.Params, request string) {
+// AuthenticationEncryptedData is the generic function for
+// encrypted endpoints
+func AuthenticationEncryptedData(w *http.ResponseWriter,
+	r *http.Request, params *httprouter.Params, request string) {
 	defer PanicCatcher(*w)
 
 	data := make([]byte, r.ContentLength)
