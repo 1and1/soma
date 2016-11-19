@@ -23,8 +23,12 @@ func WorkflowSummary(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`workflow_summary`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `workflow`,
+		Action:     `summary`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -42,12 +46,17 @@ func WorkflowSummary(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// WorkflowList function
 func WorkflowList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`workflow_list`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `workflow`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -79,12 +88,17 @@ func WorkflowList(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// WorkflowRetry function
 func WorkflowRetry(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`workflow_retry`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `workflow`,
+		Action:     `retry`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -116,12 +130,17 @@ func WorkflowRetry(w http.ResponseWriter, r *http.Request,
 	SendMsgResult(&w, &result)
 }
 
+// WorkflowSet function
 func WorkflowSet(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
 
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`workflow_set`, ``, ``, ``); !ok {
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `workflow`,
+		Action:     `set`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
