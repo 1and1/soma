@@ -6,7 +6,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-func Ping(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
+// Ping is the function for HEAD requests on the base API that
+// reports facts about the running application
+func Ping(w http.ResponseWriter, _ *http.Request,
+	_ httprouter.Params) {
 	defer PanicCatcher(w)
 
 	w.Header().Set(`X-Powered-By`, `SOMA Configuration System`)
