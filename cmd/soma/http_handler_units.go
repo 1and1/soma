@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListUnit(w http.ResponseWriter, r *http.Request,
+// UnitList function
+func UnitList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`units_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `unit`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListUnit(w http.ResponseWriter, r *http.Request,
 	SendUnitReply(&w, &result)
 }
 
-func ShowUnit(w http.ResponseWriter, r *http.Request,
+// UnitShow function
+func UnitShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`units_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `unit`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,13 +62,17 @@ func ShowUnit(w http.ResponseWriter, r *http.Request,
 	SendUnitReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddUnit(w http.ResponseWriter, r *http.Request,
+// UnitAdd function
+func UnitAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`units_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `unit`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -83,11 +98,17 @@ func AddUnit(w http.ResponseWriter, r *http.Request,
 	SendUnitReply(&w, &result)
 }
 
-func DeleteUnit(w http.ResponseWriter, r *http.Request,
+// UnitRemove function
+func UnitRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`units_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `unit`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -105,8 +126,7 @@ func DeleteUnit(w http.ResponseWriter, r *http.Request,
 	SendUnitReply(&w, &result)
 }
 
-/* Utility
- */
+// SendUnitReply function
 func SendUnitReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewUnitResult()
 	if r.MarkErrors(&result) {
