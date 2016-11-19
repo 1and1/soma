@@ -6,17 +6,22 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListView(w http.ResponseWriter, r *http.Request,
+// ViewList function
+func ViewList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`view_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `view`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -31,11 +36,17 @@ func ListView(w http.ResponseWriter, r *http.Request,
 	SendViewReply(&w, &result)
 }
 
-func ShowView(w http.ResponseWriter, r *http.Request,
+// ViewShow function
+func ViewShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`view_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `view`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -53,13 +64,17 @@ func ShowView(w http.ResponseWriter, r *http.Request,
 	SendViewReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddView(w http.ResponseWriter, r *http.Request,
+// ViewAdd function
+func ViewAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`view_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `view`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -88,11 +103,17 @@ func AddView(w http.ResponseWriter, r *http.Request,
 	SendViewReply(&w, &result)
 }
 
-func DeleteView(w http.ResponseWriter, r *http.Request,
+// ViewRemove function
+func ViewRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`view_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `view`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -110,11 +131,17 @@ func DeleteView(w http.ResponseWriter, r *http.Request,
 	SendViewReply(&w, &result)
 }
 
-func RenameView(w http.ResponseWriter, r *http.Request,
+// ViewRename function
+func ViewRename(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`view_rename`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `view`,
+		Action:     `rename`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -140,8 +167,7 @@ func RenameView(w http.ResponseWriter, r *http.Request,
 	SendViewReply(&w, &result)
 }
 
-/* Utility
- */
+// SendViewReply function
 func SendViewReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewViewResult()
 	if r.MarkErrors(&result) {
