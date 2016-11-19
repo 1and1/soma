@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/*Read functions
- */
-func ListMode(w http.ResponseWriter, r *http.Request,
+// ModeList function
+func ModeList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`modes_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `mode`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListMode(w http.ResponseWriter, r *http.Request,
 	SendModeReply(&w, &result)
 }
 
-func ShowMode(w http.ResponseWriter, r *http.Request,
+// ModeShow function
+func ModeShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`modes_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `mode`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,13 +62,17 @@ func ShowMode(w http.ResponseWriter, r *http.Request,
 	SendModeReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddMode(w http.ResponseWriter, r *http.Request,
+// ModeAdd function
+func ModeAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`modes_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `mode`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -82,11 +97,17 @@ func AddMode(w http.ResponseWriter, r *http.Request,
 	SendModeReply(&w, &result)
 }
 
-func DeleteMode(w http.ResponseWriter, r *http.Request,
+// ModeRemove function
+func ModeRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`modes_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `mode`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -104,8 +125,7 @@ func DeleteMode(w http.ResponseWriter, r *http.Request,
 	SendModeReply(&w, &result)
 }
 
-/* Utility
- */
+// SendModeReply function
 func SendModeReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewModeResult()
 	if r.MarkErrors(&result) {
