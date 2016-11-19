@@ -87,11 +87,6 @@ func RepositoryShow(w http.ResponseWriter, r *http.Request,
 func RepositoryCreate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`repository_create`, ``, ``, ``); !ok {
-		DispatchForbidden(&w, nil)
-		return
-	}
 
 	if !IsAuthorizedd(&msg.Authorization{
 		User:       params.ByName(`AuthenticatedUser`),
