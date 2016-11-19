@@ -4,18 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
-
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListValidity(w http.ResponseWriter, r *http.Request,
+// ValidityList function
+func ValidityList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`validity_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `validity`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -30,11 +34,17 @@ func ListValidity(w http.ResponseWriter, r *http.Request,
 	SendValidityReply(&w, &result)
 }
 
-func ShowValidity(w http.ResponseWriter, r *http.Request,
+// ValidityShow function
+func ValidityShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`validity_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `validity`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -52,13 +62,17 @@ func ShowValidity(w http.ResponseWriter, r *http.Request,
 	SendValidityReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddValidity(w http.ResponseWriter, r *http.Request,
+// ValidityAdd function
+func ValidityAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`validity_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `validity`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -81,11 +95,17 @@ func AddValidity(w http.ResponseWriter, r *http.Request,
 	SendValidityReply(&w, &result)
 }
 
-func DeleteValidity(w http.ResponseWriter, r *http.Request,
+// ValidityRemove function
+func ValidityRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`validity_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `validity`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -103,8 +123,7 @@ func DeleteValidity(w http.ResponseWriter, r *http.Request,
 	SendValidityReply(&w, &result)
 }
 
-/* Utility
- */
+// SendValidityReply function
 func SendValidityReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewValidityResult()
 	if r.MarkErrors(&result) {
