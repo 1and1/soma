@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListMetric(w http.ResponseWriter, r *http.Request,
+// MetricList function
+func MetricList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`metrics_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `metric`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -29,11 +34,17 @@ func ListMetric(w http.ResponseWriter, r *http.Request,
 	SendMetricReply(&w, &result)
 }
 
-func ShowMetric(w http.ResponseWriter, r *http.Request,
+// MetricShow function
+func MetricShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`metrics_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `metric`,
+		Action:     `show`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -51,13 +62,17 @@ func ShowMetric(w http.ResponseWriter, r *http.Request,
 	SendMetricReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddMetric(w http.ResponseWriter, r *http.Request,
+// MetricAdd function
+func MetricAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`metrics_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `metric`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -80,11 +95,17 @@ func AddMetric(w http.ResponseWriter, r *http.Request,
 	SendMetricReply(&w, &result)
 }
 
-func DeleteMetric(w http.ResponseWriter, r *http.Request,
+// MetricRemove function
+func MetricRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`metrics_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `metric`,
+		Action:     `remove`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -102,8 +123,7 @@ func DeleteMetric(w http.ResponseWriter, r *http.Request,
 	SendMetricReply(&w, &result)
 }
 
-/* Utility
- */
+//SendMetricReply function
 func SendMetricReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewMetricResult()
 	if r.MarkErrors(&result) {
