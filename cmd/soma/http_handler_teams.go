@@ -4,18 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/*
- * Read functions
- */
-func ListTeam(w http.ResponseWriter, r *http.Request,
+// TeamList function
+func TeamList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`team_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `team`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -49,11 +53,18 @@ skip:
 	SendTeamReply(&w, &result)
 }
 
-func ShowTeam(w http.ResponseWriter, r *http.Request,
+// TeamShow function
+func TeamShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`team_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `team`,
+		Action:     `show`,
+		TeamID:     params.ByName(`team`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -71,11 +82,17 @@ func ShowTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
-func SyncTeam(w http.ResponseWriter, r *http.Request,
+// TeamSync function
+func TeamSync(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`team_sync`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `team`,
+		Action:     `sync`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -91,13 +108,17 @@ func SyncTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddTeam(w http.ResponseWriter, r *http.Request,
+// TeamAdd function
+func TeamAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`team_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `team`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -124,11 +145,18 @@ func AddTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
-func UpdateTeam(w http.ResponseWriter, r *http.Request,
+// TeamUpdate function
+func TeamUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`team_update`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `team`,
+		Action:     `update`,
+		TeamID:     params.ByName(`team`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -156,11 +184,18 @@ func UpdateTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
-func DeleteTeam(w http.ResponseWriter, r *http.Request,
+// TeamRemove function
+func TeamRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`team_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `team`,
+		Action:     `remove`,
+		TeamID:     params.ByName(`team`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -178,9 +213,7 @@ func DeleteTeam(w http.ResponseWriter, r *http.Request,
 	SendTeamReply(&w, &result)
 }
 
-/*
- * Utility
- */
+// SendTeamReply function
 func SendTeamReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewTeamResult()
 	if r.MarkErrors(&result) {
