@@ -5,13 +5,23 @@ import (
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
-
 	"github.com/julienschmidt/httprouter"
 )
 
+// JobDelay function
 func JobDelay(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `job`,
+		Action:     `wait`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan bool)
 	handler := handlerMap[`jobDelay`].(*jobDelay)
@@ -24,14 +34,17 @@ func JobDelay(w http.ResponseWriter, r *http.Request,
 	w.Write(nil)
 }
 
-/* Read functions
- */
-func ListJobs(w http.ResponseWriter, r *http.Request,
+// JobList function
+func JobList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	var ok, admin bool
-	if ok, admin = IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`jobs_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `job`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -44,21 +57,60 @@ func ListJobs(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    admin,
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
 }
 
-func ShowJob(w http.ResponseWriter, r *http.Request,
+// JobListAll function
+func JobListAll(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	var ok, admin bool
-	if ok, admin = IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`jobs_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `runtime`,
+		Action:     `job_list_all`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
+
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`jobs_r`].(*jobsRead)
+	handler.input <- msg.Request{
+		Section:    `runtime`,
+		Action:     `job_list_all`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+	}
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
+
+// JobShow function
+func JobShow(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `job`,
+		Action:     `show`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+	withDetails := IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `job`,
+		Action:     `details`,
+	})
 
 	returnChannel := make(chan msg.Result)
 	handler := handlerMap[`jobs_r`].(*jobsRead)
@@ -68,22 +120,34 @@ func ShowJob(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    admin,
+		Flag:       msg.Flags{JobDetail: withDetails},
 		Job:        proto.Job{Id: params.ByName(`jobid`)},
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
 }
 
-func SearchJob(w http.ResponseWriter, r *http.Request,
+// JobSearch function
+func JobSearch(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	var ok, admin bool
-	if ok, admin = IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`jobs_search`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `job`,
+		Action:     `search`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
+
+	withDetails := IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `job`,
+		Action:     `details`,
+	})
 
 	cReq := proto.NewJobFilter()
 	err := DecodeJsonBody(r, &cReq)
@@ -100,7 +164,7 @@ func SearchJob(w http.ResponseWriter, r *http.Request,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		User:       params.ByName(`AuthenticatedUser`),
-		IsAdmin:    admin,
+		Flag:       msg.Flags{JobDetail: withDetails},
 		Search: msg.Filter{
 			IsDetailed: cReq.Flags.Detailed,
 			Job: proto.JobFilter{

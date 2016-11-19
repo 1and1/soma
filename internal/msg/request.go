@@ -19,6 +19,7 @@ type Request struct {
 	Reply      chan Result
 	Search     Filter
 	Update     UpdateData
+	Flag       Flags
 
 	Super *Supervisor
 
@@ -44,6 +45,10 @@ type Filter struct {
 
 type UpdateData struct {
 	Environment proto.Environment
+}
+
+type Flags struct {
+	JobDetail bool
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

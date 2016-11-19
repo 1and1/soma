@@ -90,8 +90,17 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 		result = proto.NewTreeResult()
 		*result.Tree = r.Tree
 	case `runtime`:
-		result = proto.NewSystemOperationResult()
-		*result.SystemOperations = append(*result.SystemOperations, r.System...)
+		switch r.Action {
+		case `instance_list_all`:
+			result = proto.NewInstanceResult()
+			*result.Instances = append(*result.Instances, r.Instance...)
+		case `job_list_all`:
+			result = proto.NewJobResult()
+			*result.Jobs = append(*result.Jobs, r.Job...)
+		default:
+			result = proto.NewSystemOperationResult()
+			*result.SystemOperations = append(*result.SystemOperations, r.System...)
+		}
 	case `instance`:
 		result = proto.NewInstanceResult()
 		*result.Instances = append(*result.Instances, r.Instance...)

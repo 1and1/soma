@@ -21,6 +21,12 @@ func registerJobs(app cli.App) *cli.App {
 						Name:   `list`,
 						Usage:  `List outstanding jobs (remote)`,
 						Action: runtime(cmdJobList),
+						Flags: []cli.Flag{
+							cli.BoolFlag{
+								Name:  "all, a",
+								Usage: "List all outstanding jobs (admin only)",
+							},
+						},
 					},
 					{
 						Name:   `show`,
@@ -71,6 +77,9 @@ func cmdJobList(c *cli.Context) error {
 		return err
 	}
 
+	if c.Bool(`all`) {
+		return adm.Perform(`get`, `/jobs/all`, `list`, nil, c)
+	}
 	return adm.Perform(`get`, `/jobs/`, `list`, nil, c)
 }
 
@@ -84,7 +93,7 @@ func cmdJobShow(c *cli.Context) error {
 			c.Args().First())
 	}
 
-	path := fmt.Sprintf("/jobs/%s", c.Args().First())
+	path := fmt.Sprintf("/jobs/id/%s", c.Args().First())
 	return adm.Perform(`get`, path, `show`, nil, c)
 }
 

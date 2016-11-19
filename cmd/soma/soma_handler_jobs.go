@@ -70,12 +70,34 @@ func (j *jobsRead) process(q *msg.Request) {
 	switch q.Action {
 	case `list`:
 		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User, q.RemoteAddr)
-		if q.IsAdmin {
-			rows, err = j.listall_stmt.Query()
-		} else {
-			rows, err = j.listscp_stmt.Query(q.User)
+		if rows, err = j.listscp_stmt.Query(q.User); err != nil {
+			result.ServerError(err)
+			goto dispatch
 		}
-		if err != nil {
+		defer rows.Close()
+
+		for rows.Next() {
+			if err = rows.Scan(
+				&jobId,
+				&jobType,
+			); err != nil {
+				result.ServerError(err)
+				result.Clear(q.Section)
+				goto dispatch
+			}
+			result.Job = append(result.Job,
+				proto.Job{Id: jobId, Type: jobType})
+		}
+		if rows.Err() != nil {
+			result.ServerError(err)
+			result.Clear(q.Section)
+			goto dispatch
+		}
+		result.OK()
+	case `job_list_all`:
+		// section: runtime
+		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User, q.RemoteAddr)
+		if rows, err = j.listall_stmt.Query(); err != nil {
 			result.ServerError(err)
 			goto dispatch
 		}
@@ -140,7 +162,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		if jobFinished.Valid {
 			job.TsFinished = jobFinished.Time.Format(rfc3339Milli)
 		}
-		if q.IsAdmin {
+		if q.Flag.JobDetail {
 			job.Details = &proto.JobDetails{
 				Specification: jobSpec,
 			}
@@ -194,7 +216,7 @@ func (j *jobsRead) process(q *msg.Request) {
 			if jobFinished.Valid {
 				job.TsFinished = jobFinished.Time.Format(rfc3339Milli)
 			}
-			if q.IsAdmin && q.Search.IsDetailed {
+			if q.Flag.JobDetail && q.Search.IsDetailed {
 				job.Details = &proto.JobDetails{
 					Specification: jobSpec,
 				}
@@ -215,8 +237,6 @@ dispatch:
 	q.Reply <- result
 }
 
-/* Ops Access
- */
 func (j *jobsRead) shutdownNow() {
 	j.shutdown <- true
 }
