@@ -4,15 +4,25 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListCapability(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+// CapabilityList function
+func CapabilityList(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorized(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `capability`,
+		Action:     `list`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["capabilityReadHandler"].(*somaCapabilityReadHandler)
@@ -54,9 +64,21 @@ skip:
 	SendCapabilityReply(&w, &result)
 }
 
-func ShowCapability(w http.ResponseWriter, r *http.Request,
+// CapabilityShow function
+func CapabilityShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorized(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `capability`,
+		Action:       `show`,
+		CapabilityID: params.ByName(`capability`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["capabilityReadHandler"].(*somaCapabilityReadHandler)
@@ -71,16 +93,26 @@ func ShowCapability(w http.ResponseWriter, r *http.Request,
 	SendCapabilityReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddCapability(w http.ResponseWriter, r *http.Request,
-	_ httprouter.Params) {
+// CapabilityAdd function
+func CapabilityAdd(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
 	defer PanicCatcher(w)
 
 	cReq := proto.Request{}
 	err := DecodeJsonBody(r, &cReq)
 	if err != nil {
 		DispatchBadRequest(&w, err)
+		return
+	}
+
+	if !IsAuthorized(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `capability`,
+		Action:       `add`,
+		MonitoringID: cReq.Capability.MonitoringId,
+	}) {
+		DispatchForbidden(&w, nil)
 		return
 	}
 
@@ -100,9 +132,21 @@ func AddCapability(w http.ResponseWriter, r *http.Request,
 	SendCapabilityReply(&w, &result)
 }
 
-func DeleteCapability(w http.ResponseWriter, r *http.Request,
+// CapabilityRemove function
+func CapabilityRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
+
+	if !IsAuthorized(&msg.Authorization{
+		User:         params.ByName(`AuthenticatedUser`),
+		RemoteAddr:   extractAddress(r.RemoteAddr),
+		Section:      `capability`,
+		Action:       `remove`,
+		CapabilityID: params.ByName(`capability`),
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
 
 	returnChannel := make(chan somaResult)
 	handler := handlerMap["capabilityWriteHandler"].(*somaCapabilityWriteHandler)
@@ -117,8 +161,7 @@ func DeleteCapability(w http.ResponseWriter, r *http.Request,
 	SendCapabilityReply(&w, &result)
 }
 
-/* Utility
- */
+// SendCapabilityReply function
 func SendCapabilityReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewCapabilityResult()
 	if r.MarkErrors(&result) {
