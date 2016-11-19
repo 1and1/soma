@@ -17,6 +17,7 @@ type Authorization struct {
 	Section      string
 	Action       string
 	TeamID       string
+	OncallID     string
 	MonitoringID string
 	CapabilityID string
 	RepositoryID string

@@ -4,17 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/julienschmidt/httprouter"
 )
 
-/* Read functions
- */
-func ListOncall(w http.ResponseWriter, r *http.Request,
+// OncallList function
+func OncallList(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`oncall_list`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `oncall`,
+		Action:     `list`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -48,11 +53,18 @@ skip:
 	SendOncallReply(&w, &result)
 }
 
-func ShowOncall(w http.ResponseWriter, r *http.Request,
+// OncallShow function
+func OncallShow(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`oncall_show`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `oncall`,
+		Action:     `show`,
+		OncallID:   params.ByName(`oncall`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -70,13 +82,17 @@ func ShowOncall(w http.ResponseWriter, r *http.Request,
 	SendOncallReply(&w, &result)
 }
 
-/* Write functions
- */
-func AddOncall(w http.ResponseWriter, r *http.Request,
+// OncallAdd function
+func OncallAdd(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`oncall_create`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `oncall`,
+		Action:     `add`,
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -102,11 +118,18 @@ func AddOncall(w http.ResponseWriter, r *http.Request,
 	SendOncallReply(&w, &result)
 }
 
-func UpdateOncall(w http.ResponseWriter, r *http.Request,
+// OncallUpdate function
+func OncallUpdate(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`oncall_update`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `oncall`,
+		Action:     `update`,
+		OncallID:   params.ByName(`oncall`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -133,11 +156,18 @@ func UpdateOncall(w http.ResponseWriter, r *http.Request,
 	SendOncallReply(&w, &result)
 }
 
-func DeleteOncall(w http.ResponseWriter, r *http.Request,
+// OncallRemove function
+func OncallRemove(w http.ResponseWriter, r *http.Request,
 	params httprouter.Params) {
 	defer PanicCatcher(w)
-	if ok, _ := IsAuthorized(params.ByName(`AuthenticatedUser`),
-		`oncall_delete`, ``, ``, ``); !ok {
+
+	if !IsAuthorizedd(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `oncall`,
+		Action:     `remove`,
+		OncallID:   params.ByName(`oncall`),
+	}) {
 		DispatchForbidden(&w, nil)
 		return
 	}
@@ -155,8 +185,7 @@ func DeleteOncall(w http.ResponseWriter, r *http.Request,
 	SendOncallReply(&w, &result)
 }
 
-/* Utility
- */
+// SendOncallReply function
 func SendOncallReply(w *http.ResponseWriter, r *somaResult) {
 	result := proto.NewOncallResult()
 	if r.MarkErrors(&result) {
