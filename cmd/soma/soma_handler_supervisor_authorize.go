@@ -59,39 +59,6 @@ func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
 	return 403, false
 }
 
-func IsAuthorized(user, action, repository, monitoring, node string) (bool, bool) {
-	returnChannel := make(chan msg.Result)
-	// honour request for sandbox environment
-	if SomaCfg.OpenInstance {
-		return true, true
-	}
-	handler := handlerMap[`supervisor`].(*supervisor)
-	handler.input <- msg.Request{
-		Section: `authorize`,
-		Action:  `request`,
-		User:    user,
-		Reply:   returnChannel,
-		Super: &msg.Supervisor{
-			PermAction:     action,
-			PermRepository: repository,
-			PermMonitoring: monitoring,
-			PermNode:       node,
-		},
-	}
-	result := <-returnChannel
-	if result.Super.Verdict == 200 {
-		if result.Super.VerdictAdmin {
-			// authorized, admin access
-			return true, true
-		}
-		// authorized, non-admin access
-		return true, false
-	}
-	// not authorized
-	log.Printf(LogStrErr, `authorize`, `request`, result.Super.Verdict, fmt.Sprintf("Forbidden: %s, %s", user, action))
-	return false, false
-}
-
 func IsAuthorizedd(request *msg.Authorization) bool {
 	// instance is configured as wild-west instance
 	if SomaCfg.OpenInstance {
