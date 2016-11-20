@@ -22,6 +22,7 @@ type Request struct {
 
 	Super *Supervisor
 
+	Attribute   proto.Attribute
 	ActionObj   proto.Action
 	Bucket      proto.Bucket
 	Category    proto.Category

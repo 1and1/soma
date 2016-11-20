@@ -82,6 +82,9 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 	case `action`:
 		result = proto.NewActionResult()
 		*result.Actions = append(*result.Actions, r.ActionObj...)
+	case `attribute`:
+		result = proto.NewAttributeResult()
+		*result.Attributes = append(*result.Attributes, r.Attribute...)
 	case `environment`:
 		result = proto.NewEnvironmentResult()
 		*result.Environments = append(*result.Environments, r.Environment...)

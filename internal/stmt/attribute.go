@@ -27,20 +27,22 @@ WHERE  service_property_attribute = $1::varchar;`
 INSERT INTO soma.service_property_attributes (
             service_property_attribute,
             cardinality)
-SELECT $1::varchar, $2::varchar WHERE NOT EXISTS (
-       SELECT service_property_attribute
-       FROM   soma.service_property_attributes
-       WHERE  service_property_attribute = $1::varchar);`
+SELECT $1::varchar,
+       $2::varchar
+WHERE  NOT EXISTS (
+    SELECT service_property_attribute
+    FROM   soma.service_property_attributes
+    WHERE  service_property_attribute = $1::varchar);`
 
-	AttributeDelete = `
+	AttributeRemove = `
 DELETE FROM soma.service_property_attributes
 WHERE       service_property_attribute = $1::varchar;`
 )
 
 func init() {
 	m[AttributeAdd] = `AttributeAdd`
-	m[AttributeDelete] = `AttributeDelete`
 	m[AttributeList] = `AttributeList`
+	m[AttributeRemove] = `AttributeRemove`
 	m[AttributeShow] = `AttributeShow`
 }
 

@@ -16,7 +16,6 @@ type somaResult struct {
 	Accepted        bool
 	JobId           string
 	JobType         string
-	Attributes      []somaAttributeResult
 	Buckets         []somaBucketResult
 	Capabilities    []somaCapabilityResult
 	CheckConfigs    []somaCheckConfigResult

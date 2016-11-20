@@ -11,45 +11,50 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	spawnGrimReaperHandler(appLog, reqLog, errLog)
 	spawnSupervisorHandler(appLog, reqLog, errLog)
 
-	spawnViewReadHandler(appLog, reqLog, errLog)
-	spawnEnvironmentReadHandler(appLog, reqLog, errLog)
-	spawnObjectStateReadHandler(appLog, reqLog, errLog)
-	spawnEntityRead(appLog, reqLog, errLog)
+	spawnAttributeRead(appLog, reqLog, errLog)
+	spawnBucketReadHandler(appLog, reqLog, errLog)
+	spawnCapabilityReadHandler(appLog, reqLog, errLog)
+	spawnCheckConfigurationReadHandler(appLog, reqLog, errLog)
+	spawnClusterReadHandler(appLog, reqLog, errLog)
 	spawnDatacenterReadHandler(appLog, reqLog, errLog)
+	spawnEntityRead(appLog, reqLog, errLog)
+	spawnEnvironmentReadHandler(appLog, reqLog, errLog)
+	spawnGroupReadHandler(appLog, reqLog, errLog)
+	spawnHostDeploymentHandler(appLog, reqLog, errLog)
+	spawnInstanceReadHandler(appLog, reqLog, errLog)
+	spawnJobReadHandler(appLog, reqLog, errLog)
 	spawnLevelReadHandler(appLog, reqLog, errLog)
-	spawnPredicateReadHandler(appLog, reqLog, errLog)
-	spawnStatusReadHandler(appLog, reqLog, errLog)
-	spawnOncallReadHandler(appLog, reqLog, errLog)
-	spawnTeamReadHandler(appLog, reqLog, errLog)
-	spawnNodeReadHandler(appLog, reqLog, errLog)
-	spawnServerReadHandler(appLog, reqLog, errLog)
-	spawnUnitReadHandler(appLog, reqLog, errLog)
-	spawnProviderReadHandler(appLog, reqLog, errLog)
 	spawnMetricReadHandler(appLog, reqLog, errLog)
 	spawnModeReadHandler(appLog, reqLog, errLog)
-	spawnUserReadHandler(appLog, reqLog, errLog)
 	spawnMonitoringReadHandler(appLog, reqLog, errLog)
-	spawnCapabilityReadHandler(appLog, reqLog, errLog)
-	spawnPropertyReadHandler(appLog, reqLog, errLog)
-	spawnValidityReadHandler(appLog, reqLog, errLog)
-	spawnAttributeReadHandler(appLog, reqLog, errLog)
-	spawnRepositoryReadHandler(appLog, reqLog, errLog)
-	spawnBucketReadHandler(appLog, reqLog, errLog)
-	spawnGroupReadHandler(appLog, reqLog, errLog)
-	spawnClusterReadHandler(appLog, reqLog, errLog)
-	spawnCheckConfigurationReadHandler(appLog, reqLog, errLog)
-	spawnHostDeploymentHandler(appLog, reqLog, errLog)
-	spawnJobReadHandler(appLog, reqLog, errLog)
+	spawnNodeReadHandler(appLog, reqLog, errLog)
+	spawnObjectStateReadHandler(appLog, reqLog, errLog)
+	spawnOncallReadHandler(appLog, reqLog, errLog)
 	spawnOutputTreeHandler(appLog, reqLog, errLog)
-	spawnInstanceReadHandler(appLog, reqLog, errLog)
+	spawnPredicateReadHandler(appLog, reqLog, errLog)
+	spawnPropertyReadHandler(appLog, reqLog, errLog)
+	spawnProviderReadHandler(appLog, reqLog, errLog)
+	spawnRepositoryReadHandler(appLog, reqLog, errLog)
+	spawnServerReadHandler(appLog, reqLog, errLog)
+	spawnStatusReadHandler(appLog, reqLog, errLog)
+	spawnTeamReadHandler(appLog, reqLog, errLog)
+	spawnUnitReadHandler(appLog, reqLog, errLog)
+	spawnUserReadHandler(appLog, reqLog, errLog)
+	spawnValidityReadHandler(appLog, reqLog, errLog)
+	spawnViewReadHandler(appLog, reqLog, errLog)
 	spawnWorkflowReadHandler(appLog, reqLog, errLog)
 
 	if !SomaCfg.ReadOnly {
+		spawnForestCustodian(appLog, reqLog, errLog)
+		spawnGuidePost(appLog, reqLog, errLog)
+		spawnLifeCycle(appLog, reqLog, errLog)
+
 		if !SomaCfg.Observer {
-			spawnAttributeWriteHandler(appLog, reqLog, errLog)
+			spawnAttributeWrite(appLog, reqLog, errLog)
 			spawnCapabilityWriteHandler(appLog, reqLog, errLog)
 			spawnDatacenterWriteHandler(appLog, reqLog, errLog)
 			spawnDeploymentHandler(appLog, reqLog, errLog)
+			spawnEntityWrite(appLog, reqLog, errLog)
 			spawnEnvironmentWriteHandler(appLog, reqLog, errLog)
 			spawnJobDelay(appLog, reqLog, errLog)
 			spawnLevelWriteHandler(appLog, reqLog, errLog)
@@ -58,7 +63,6 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 			spawnMonitoringWriteHandler(appLog, reqLog, errLog)
 			spawnNodeWriteHandler(appLog, reqLog, errLog)
 			spawnObjectStateWriteHandler(appLog, reqLog, errLog)
-			spawnEntityWrite(appLog, reqLog, errLog)
 			spawnOncallWriteHandler(appLog, reqLog, errLog)
 			spawnPredicateWriteHandler(appLog, reqLog, errLog)
 			spawnPropertyWriteHandler(appLog, reqLog, errLog)
@@ -72,9 +76,6 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 			spawnViewWriteHandler(appLog, reqLog, errLog)
 			spawnWorkflowWriteHandler(appLog, reqLog, errLog)
 		}
-		spawnForestCustodian(appLog, reqLog, errLog)
-		spawnGuidePost(appLog, reqLog, errLog)
-		spawnLifeCycle(appLog, reqLog, errLog)
 	}
 }
 
@@ -558,28 +559,28 @@ func spawnPropertyWriteHandler(appLog, reqLog, errLog *log.Logger) {
 	go propertyWriteHandler.run()
 }
 
-func spawnAttributeReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var attributeReadHandler somaAttributeReadHandler
-	attributeReadHandler.input = make(chan somaAttributeRequest, 64)
-	attributeReadHandler.shutdown = make(chan bool)
-	attributeReadHandler.conn = conn
-	attributeReadHandler.appLog = appLog
-	attributeReadHandler.reqLog = reqLog
-	attributeReadHandler.errLog = errLog
-	handlerMap["attributeReadHandler"] = &attributeReadHandler
-	go attributeReadHandler.run()
+func spawnAttributeRead(appLog, reqLog, errLog *log.Logger) {
+	var handler attributeRead
+	handler.input = make(chan msg.Request, 64)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`attribute_r`] = &handler
+	go handler.run()
 }
 
-func spawnAttributeWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var attributeWriteHandler somaAttributeWriteHandler
-	attributeWriteHandler.input = make(chan somaAttributeRequest, 64)
-	attributeWriteHandler.shutdown = make(chan bool)
-	attributeWriteHandler.conn = conn
-	attributeWriteHandler.appLog = appLog
-	attributeWriteHandler.reqLog = reqLog
-	attributeWriteHandler.errLog = errLog
-	handlerMap["attributeWriteHandler"] = &attributeWriteHandler
-	go attributeWriteHandler.run()
+func spawnAttributeWrite(appLog, reqLog, errLog *log.Logger) {
+	var handler attributeWrite
+	handler.input = make(chan msg.Request, 64)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`attribute_w`] = &handler
+	go handler.run()
 }
 
 func spawnRepositoryReadHandler(appLog, reqLog, errLog *log.Logger) {

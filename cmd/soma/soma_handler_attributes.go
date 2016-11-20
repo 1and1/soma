@@ -1,56 +1,50 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 )
 
-type somaAttributeRequest struct {
-	action    string
-	Attribute proto.Attribute
-	reply     chan somaResult
+type attributeRead struct {
+	input    chan msg.Request
+	shutdown chan bool
+	conn     *sql.DB
+	stmtList *sql.Stmt
+	stmtShow *sql.Stmt
+	appLog   *log.Logger
+	reqLog   *log.Logger
+	errLog   *log.Logger
 }
 
-type somaAttributeResult struct {
-	ResultError error
-	Attribute   proto.Attribute
+type attributeWrite struct {
+	input      chan msg.Request
+	shutdown   chan bool
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	appLog     *log.Logger
+	reqLog     *log.Logger
+	errLog     *log.Logger
 }
 
-func (a *somaAttributeResult) SomaAppendError(r *somaResult, err error) {
-	if err != nil {
-		r.Attributes = append(r.Attributes,
-			somaAttributeResult{ResultError: err})
-	}
-}
-
-func (a *somaAttributeResult) SomaAppendResult(r *somaResult) {
-	r.Attributes = append(r.Attributes, *a)
-}
-
-/* Read Access
- */
-type somaAttributeReadHandler struct {
-	input     chan somaAttributeRequest
-	shutdown  chan bool
-	conn      *sql.DB
-	list_stmt *sql.Stmt
-	show_stmt *sql.Stmt
-	appLog    *log.Logger
-	reqLog    *log.Logger
-	errLog    *log.Logger
-}
-
-func (r *somaAttributeReadHandler) run() {
+func (r *attributeRead) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.AttributeList: r.list_stmt,
-		stmt.AttributeShow: r.show_stmt,
+		stmt.AttributeList: r.stmtList,
+		stmt.AttributeShow: r.stmtShow,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
 			r.errLog.Fatal(`attribute`, err, stmt.Name(statement))
@@ -71,81 +65,88 @@ runloop:
 	}
 }
 
-func (r *somaAttributeReadHandler) process(q *somaAttributeRequest) {
+func (r *attributeRead) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(r.reqLog, q)
+
+	switch q.Action {
+	case `list`:
+		r.list(q, &result)
+	case `show`:
+		r.show(q, &result)
+	default:
+		result.UnknownRequest(q)
+	}
+	q.Reply <- result
+}
+
+func (r *attributeRead) list(q *msg.Request, mr *msg.Result) {
 	var (
+		err                    error
 		attribute, cardinality string
 		rows                   *sql.Rows
-		err                    error
 	)
-	result := somaResult{}
 
-	switch q.action {
-	case "list":
-		r.appLog.Printf("R: attributes/list")
-		rows, err = r.list_stmt.Query()
-		defer rows.Close()
-		if result.SetRequestError(err) {
-			q.reply <- result
-			return
-		}
+	if rows, err = r.stmtList.Query(); err != nil {
+		mr.ServerError(err)
+		return
+	}
 
-		for rows.Next() {
-			err = rows.Scan(&attribute, &cardinality)
-			result.Append(err, &somaAttributeResult{
-				Attribute: proto.Attribute{
-					Name:        attribute,
-					Cardinality: cardinality,
-				},
-			})
-		}
-	case "show":
-		r.appLog.Printf("R: attribute/show for %s", q.Attribute.Name)
-		err = r.show_stmt.QueryRow(q.Attribute.Name).Scan(
+	for rows.Next() {
+		if err = rows.Scan(
 			&attribute,
 			&cardinality,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				result.SetNotFound()
-			} else {
-				_ = result.SetRequestError(err)
-			}
-			q.reply <- result
+		); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(q.Section)
 			return
 		}
-
-		result.Append(err, &somaAttributeResult{
-			Attribute: proto.Attribute{
-				Name:        attribute,
-				Cardinality: cardinality,
-			},
+		mr.Attribute = append(mr.Attribute, proto.Attribute{
+			Name:        attribute,
+			Cardinality: cardinality,
 		})
-	default:
-		r.errLog.Printf("R: unimplemented attributes/%s", q.action)
-		result.SetNotImplemented()
 	}
-	q.reply <- result
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
 }
 
-/* Write Access
- */
-type somaAttributeWriteHandler struct {
-	input    chan somaAttributeRequest
-	shutdown chan bool
-	conn     *sql.DB
-	add_stmt *sql.Stmt
-	del_stmt *sql.Stmt
-	appLog   *log.Logger
-	reqLog   *log.Logger
-	errLog   *log.Logger
+func (r *attributeRead) show(q *msg.Request, mr *msg.Result) {
+	var (
+		err                    error
+		attribute, cardinality string
+	)
+
+	if err = r.stmtShow.QueryRow(q.Attribute.Name).Scan(
+		&attribute,
+		&cardinality,
+	); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.Attribute = append(mr.Attribute, proto.Attribute{
+		Name:        attribute,
+		Cardinality: cardinality,
+	})
+	mr.OK()
 }
 
-func (w *somaAttributeWriteHandler) run() {
+func (r *attributeRead) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *attributeWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.AttributeAdd:    w.add_stmt,
-		stmt.AttributeDelete: w.del_stmt,
+		stmt.AttributeAdd:    w.stmtAdd,
+		stmt.AttributeRemove: w.stmtRemove,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`attribute`, err, stmt.Name(statement))
@@ -164,58 +165,58 @@ runloop:
 	}
 }
 
-func (w *somaAttributeWriteHandler) process(q *somaAttributeRequest) {
+func (w *attributeWrite) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(w.reqLog, q)
+
+	switch q.Action {
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
+	default:
+		result.UnknownRequest(q)
+	}
+
+	q.Reply <- result
+}
+
+func (w *attributeWrite) add(q *msg.Request, mr *msg.Result) {
 	var (
-		res sql.Result
 		err error
+		res sql.Result
 	)
-	result := somaResult{}
 
-	switch q.action {
-	case "add":
-		w.appLog.Printf("R: attributes/add for %s", q.Attribute.Name)
-		res, err = w.add_stmt.Exec(
-			q.Attribute.Name,
-			q.Attribute.Cardinality,
-		)
-	case "delete":
-		w.appLog.Printf("R: attributes/del for %s", q.Attribute.Name)
-		res, err = w.del_stmt.Exec(
-			q.Attribute.Name,
-		)
-	default:
-		w.errLog.Printf("R: unimplemented attributes/%s", q.action)
-		result.SetNotImplemented()
-		q.reply <- result
+	if res, err = w.stmtAdd.Exec(
+		q.Attribute.Name,
+		q.Attribute.Cardinality,
+	); err != nil {
+		mr.ServerError(err)
 		return
 	}
-	if result.SetRequestError(err) {
-		q.reply <- result
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Attribute = append(mr.Attribute, q.Attribute)
+	}
+}
+
+func (w *attributeWrite) remove(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(
+		q.Attribute.Name,
+	); err != nil {
+		mr.ServerError(err)
 		return
 	}
-
-	rowCnt, _ := res.RowsAffected()
-	switch {
-	case rowCnt == 0:
-		result.Append(errors.New("No rows affected"), &somaAttributeResult{})
-	case rowCnt > 1:
-		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
-			&somaAttributeResult{})
-	default:
-		result.Append(nil, &somaAttributeResult{
-			Attribute: q.Attribute,
-		})
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Attribute = append(mr.Attribute, q.Attribute)
 	}
-	q.reply <- result
 }
 
-/* Ops Access
- */
-func (r *somaAttributeReadHandler) shutdownNow() {
-	r.shutdown <- true
-}
-
-func (w *somaAttributeWriteHandler) shutdownNow() {
+func (w *attributeWrite) shutdownNow() {
 	w.shutdown <- true
 }
 
