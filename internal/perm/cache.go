@@ -17,9 +17,16 @@ import "sync"
 
 // Cache is a permission cache for the SOMA supervisor
 type Cache struct {
-	lock    sync.RWMutex
+	// the entire cache has one global mutex, since many actions
+	// requires updates to multiple data structures. Locking each
+	// of them individually could therefor lead to deadlocks.
+	// A global lock is more robust than a lock order scheme, which
+	// could still be adopted later as a performance improvement.
+	lock sync.RWMutex
+
 	section *sectionLookup
 	action  *actionLookup
+	user    *userLookup
 	pmap    *permissionMapping
 }
 
@@ -29,6 +36,7 @@ func New() *Cache {
 	c.lock = sync.RWMutex{}
 	c.section = newSectionLookup()
 	c.action = newActionLookup()
+	c.user = newUserLookup()
 	c.pmap = newPermissionMapping()
 	return &c
 }
