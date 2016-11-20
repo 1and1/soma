@@ -28,10 +28,10 @@ func newUserLookup() *userLookup {
 
 // add inserts a user into the cache
 func (m *userLookup) add(userID, userName, teamID string) {
-	u := proto.User{
+	u := &proto.User{
 		Id:       userID,
 		UserName: userName,
-		TeamID:   teamID,
+		TeamId:   teamID,
 	}
 	m.byName[userName] = u
 	m.byID[userID] = u

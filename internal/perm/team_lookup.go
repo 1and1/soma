@@ -48,12 +48,12 @@ func (m *teamLookup) addMember(teamID, userID string) {
 }
 
 // getName returns the teamName for a teamID
-func (m *teamLookup) getName(teamID string) {
+func (m *teamLookup) getName(teamID string) string {
 	return m.byID[teamID]
 }
 
 // getID returns the teamID for a teamName
-func (m *teamLookup) getID(teamName string) {
+func (m *teamLookup) getID(teamName string) string {
 	return m.byName[teamName]
 }
 
