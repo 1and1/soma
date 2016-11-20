@@ -20,6 +20,7 @@ type Cache struct {
 	lock    sync.RWMutex
 	section *sectionLookup
 	action  *actionLookup
+	pmap    *permissionMapping
 }
 
 // New returns a new permission cache
@@ -28,6 +29,7 @@ func New() *Cache {
 	c.lock = sync.RWMutex{}
 	c.section = newSectionLookup()
 	c.action = newActionLookup()
+	c.pmap = newPermissionMapping()
 	return &c
 }
 
