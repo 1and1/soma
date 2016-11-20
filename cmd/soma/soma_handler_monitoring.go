@@ -1,60 +1,57 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
 	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 )
 
-type somaMonitoringRequest struct {
-	action     string
-	admin      bool
-	user       string
-	Monitoring proto.Monitoring
-	reply      chan somaResult
+type monitoringRead struct {
+	input            chan msg.Request
+	shutdown         chan bool
+	conn             *sql.DB
+	stmtListAll      *sql.Stmt
+	stmtListScoped   *sql.Stmt
+	stmtShow         *sql.Stmt
+	stmtSearchAll    *sql.Stmt
+	stmtSearchScoped *sql.Stmt
+	appLog           *log.Logger
+	reqLog           *log.Logger
+	errLog           *log.Logger
 }
 
-type somaMonitoringResult struct {
-	ResultError error
-	Monitoring  proto.Monitoring
+type monitoringWrite struct {
+	input      chan msg.Request
+	shutdown   chan bool
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	appLog     *log.Logger
+	reqLog     *log.Logger
+	errLog     *log.Logger
 }
 
-func (a *somaMonitoringResult) SomaAppendError(r *somaResult, err error) {
-	if err != nil {
-		r.Systems = append(r.Systems, somaMonitoringResult{ResultError: err})
-	}
-}
-
-func (a *somaMonitoringResult) SomaAppendResult(r *somaResult) {
-	r.Systems = append(r.Systems, *a)
-}
-
-/* Read Access
- */
-type somaMonitoringReadHandler struct {
-	input     chan somaMonitoringRequest
-	shutdown  chan bool
-	conn      *sql.DB
-	list_stmt *sql.Stmt
-	show_stmt *sql.Stmt
-	scli_stmt *sql.Stmt
-	appLog    *log.Logger
-	reqLog    *log.Logger
-	errLog    *log.Logger
-}
-
-func (r *somaMonitoringReadHandler) run() {
+func (r *monitoringRead) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.ListAllMonitoringSystems:    r.list_stmt,
-		stmt.ShowMonitoringSystem:        r.show_stmt,
-		stmt.ListScopedMonitoringSystems: r.scli_stmt,
+		stmt.ListAllMonitoringSystems:      r.stmtListAll,
+		stmt.ListScopedMonitoringSystems:   r.stmtListScoped,
+		stmt.ShowMonitoringSystem:          r.stmtShow,
+		stmt.SearchAllMonitoringSystems:    r.stmtSearchAll,
+		stmt.SearchScopedMonitoringSystems: r.stmtSearchScoped,
 	} {
 		if prepStmt, err = r.conn.Prepare(statement); err != nil {
 			r.errLog.Fatal(`monitoring`, err, stmt.Name(statement))
@@ -75,103 +72,202 @@ runloop:
 	}
 }
 
-func (r *somaMonitoringReadHandler) process(q *somaMonitoringRequest) {
-	var (
-		id, name, mode, contact, team string
-		rows                          *sql.Rows
-		callback                      sql.NullString
-		callbackString                string
-		err                           error
-	)
-	result := somaResult{}
+func (r *monitoringRead) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(r.reqLog, q)
 
-	switch q.action {
-	case "list":
-		if q.admin {
-			r.reqLog.Printf("R: monitorings/list")
-			rows, err = r.list_stmt.Query()
-		} else {
-			r.reqLog.Printf("R: monitorings/scoped-list for %s", q.user)
-			rows, err = r.scli_stmt.Query(q.user)
+	switch q.Action {
+	case `list`:
+		switch {
+		case q.Flag.Unscoped:
+			r.listAll(q, &result)
+		default:
+			r.listScoped(q, &result)
 		}
-		if result.SetRequestError(err) {
-			q.reply <- result
-			return
+	case `search`:
+		switch {
+		case q.Flag.Unscoped:
+			r.searchAll(q, &result)
+		default:
+			r.searchScoped(q, &result)
 		}
-		defer rows.Close()
-
-		for rows.Next() {
-			err = rows.Scan(
-				&id,
-				&name,
-			)
-			result.Append(err, &somaMonitoringResult{
-				Monitoring: proto.Monitoring{
-					Id:   id,
-					Name: name,
-				},
-			})
-		}
-	case "show":
-		r.reqLog.Printf("R: monitoring/show for %s", q.Monitoring.Id)
-		err = r.show_stmt.QueryRow(q.Monitoring.Id).Scan(
-			&id,
-			&name,
-			&mode,
-			&contact,
-			&team,
-			&callback,
-		)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				result.SetNotFound()
-			} else {
-				_ = result.SetRequestError(err)
-			}
-			q.reply <- result
-			return
-		}
-
-		if callback.Valid {
-			callbackString = callback.String
-		} else {
-			callbackString = ""
-		}
-		result.Append(err, &somaMonitoringResult{
-			Monitoring: proto.Monitoring{
-				Id:       id,
-				Name:     name,
-				Mode:     mode,
-				Contact:  contact,
-				TeamId:   team,
-				Callback: callbackString,
-			},
-		})
+	case `show`:
+		r.show(q, &result)
 	default:
-		result.SetNotImplemented()
+		result.UnknownRequest(q)
 	}
-	q.reply <- result
+
+	q.Reply <- result
 }
 
-/* Write Access
- */
-type somaMonitoringWriteHandler struct {
-	input    chan somaMonitoringRequest
-	shutdown chan bool
-	conn     *sql.DB
-	add_stmt *sql.Stmt
-	del_stmt *sql.Stmt
-	appLog   *log.Logger
-	reqLog   *log.Logger
-	errLog   *log.Logger
+func (r *monitoringRead) listAll(q *msg.Request, mr *msg.Result) {
+	var (
+		err            error
+		monitoringID   string
+		monitoringName string
+		rows           *sql.Rows
+	)
+	if rows, err = r.stmtListAll.Query(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&monitoringID,
+			&monitoringName,
+		); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(q.Section)
+			return
+		}
+		mr.Monitoring = append(mr.Monitoring, proto.Monitoring{
+			Id:   monitoringID,
+			Name: monitoringName,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
 }
 
-func (w *somaMonitoringWriteHandler) run() {
+func (r *monitoringRead) listScoped(q *msg.Request, mr *msg.Result) {
+	var (
+		err            error
+		monitoringID   string
+		monitoringName string
+		rows           *sql.Rows
+	)
+	if rows, err = r.stmtListScoped.Query(q.User); err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&monitoringID,
+			&monitoringName,
+		); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(q.Section)
+			return
+		}
+		mr.Monitoring = append(mr.Monitoring, proto.Monitoring{
+			Id:   monitoringID,
+			Name: monitoringName,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
+}
+
+func (r *monitoringRead) show(q *msg.Request, mr *msg.Result) {
+	var (
+		err                      error
+		monitoringID, name, mode string
+		contact, teamID          string
+		callbackNull             sql.NullString
+		callback                 string
+	)
+	if err = r.stmtShow.QueryRow(q.Monitoring.Id).Scan(
+		&monitoringID,
+		&name,
+		&mode,
+		&contact,
+		&teamID,
+		&callbackNull,
+	); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	if callbackNull.Valid {
+		callback = callbackNull.String
+	}
+	mr.Monitoring = append(mr.Monitoring, proto.Monitoring{
+		Id:       monitoringID,
+		Name:     name,
+		Mode:     mode,
+		Contact:  contact,
+		TeamId:   teamID,
+		Callback: callback,
+	})
+	mr.OK()
+}
+
+func (r *monitoringRead) searchAll(q *msg.Request, mr *msg.Result) {
+	var (
+		err            error
+		monitoringID   string
+		monitoringName string
+	)
+	// search condition has unique constraint
+	if err = r.stmtSearchAll.QueryRow(
+		q.Monitoring.Name,
+	).Scan(
+		&monitoringID,
+		&monitoringName,
+	); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.Monitoring = append(mr.Monitoring, proto.Monitoring{
+		Id:   monitoringID,
+		Name: monitoringName,
+	})
+	mr.OK()
+}
+
+func (r *monitoringRead) searchScoped(q *msg.Request, mr *msg.Result) {
+	var (
+		err            error
+		monitoringID   string
+		monitoringName string
+	)
+	// search condition has unique constraint
+	if err = r.stmtSearchScoped.QueryRow(
+		q.User,
+		q.Monitoring.Name,
+	).Scan(
+		&monitoringID,
+		&monitoringName,
+	); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.Monitoring = append(mr.Monitoring, proto.Monitoring{
+		Id:   monitoringID,
+		Name: monitoringName,
+	})
+	mr.OK()
+}
+
+func (r *monitoringRead) shutdownNow() {
+	r.shutdown <- true
+}
+
+func (w *monitoringWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.MonitoringSystemAdd: w.add_stmt,
-		stmt.MonitoringSystemDel: w.del_stmt,
+		stmt.MonitoringSystemAdd:    w.stmtAdd,
+		stmt.MonitoringSystemRemove: w.stmtRemove,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`monitoring`, err, stmt.Name(statement))
@@ -190,76 +286,70 @@ runloop:
 	}
 }
 
-func (w *somaMonitoringWriteHandler) process(q *somaMonitoringRequest) {
+func (w *monitoringWrite) process(q *msg.Request) {
+	result := msg.FromRequest(q)
+	msgRequest(w.reqLog, q)
+
+	switch q.Action {
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
+	default:
+		result.UnknownRequest(q)
+	}
+
+	q.Reply <- result
+}
+
+func (w *monitoringWrite) add(q *msg.Request, mr *msg.Result) {
 	var (
-		callback sql.NullString
-		res      sql.Result
 		err      error
+		res      sql.Result
+		callback sql.NullString
 	)
-	result := somaResult{}
 
-	switch q.action {
-	case "add":
-		w.reqLog.Printf("R: monitoring/add for %s", q.Monitoring.Name)
-		id := uuid.NewV4()
-		if q.Monitoring.Callback == "" {
-			callback = sql.NullString{
-				String: "",
-				Valid:  false,
-			}
-		} else {
-			callback = sql.NullString{
-				String: q.Monitoring.Callback,
-				Valid:  true,
-			}
+	q.Monitoring.Id = uuid.NewV4().String()
+	if q.Monitoring.Callback != `` {
+		callback = sql.NullString{
+			String: q.Monitoring.Callback,
+			Valid:  true,
 		}
-		res, err = w.add_stmt.Exec(
-			id.String(),
-			q.Monitoring.Name,
-			q.Monitoring.Mode,
-			q.Monitoring.Contact,
-			q.Monitoring.TeamId,
-			callback,
-		)
-		q.Monitoring.Id = id.String()
-	case "delete":
-		w.reqLog.Printf("R: monitoring/delete for %s", q.Monitoring.Id)
-		res, err = w.del_stmt.Exec(
-			q.Monitoring.Id,
-		)
-	default:
-		w.reqLog.Printf("R: unimplemented monitorings/%s", q.action)
-		result.SetNotImplemented()
-		q.reply <- result
+	}
+	if res, err = w.stmtAdd.Exec(
+		q.Monitoring.Id,
+		q.Monitoring.Name,
+		q.Monitoring.Mode,
+		q.Monitoring.Contact,
+		q.Monitoring.TeamId,
+		callback,
+	); err != nil {
+		mr.ServerError(err)
 		return
 	}
-	if result.SetRequestError(err) {
-		q.reply <- result
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Monitoring = append(mr.Monitoring, q.Monitoring)
+	}
+}
+
+func (w *monitoringWrite) remove(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(
+		q.Monitoring.Id,
+	); err != nil {
+		mr.ServerError(err)
 		return
 	}
-
-	rowCnt, _ := res.RowsAffected()
-	switch {
-	case rowCnt == 0:
-		result.Append(errors.New("No rows affected"), &somaMonitoringResult{})
-	case rowCnt > 1:
-		result.Append(fmt.Errorf("Too many rows affected: %d", rowCnt),
-			&somaMonitoringResult{})
-	default:
-		result.Append(nil, &somaMonitoringResult{
-			Monitoring: q.Monitoring,
-		})
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Monitoring = append(mr.Monitoring, q.Monitoring)
 	}
-	q.reply <- result
 }
 
-/* Ops Access
- */
-func (r *somaMonitoringReadHandler) shutdownNow() {
-	r.shutdown <- true
-}
-
-func (w *somaMonitoringWriteHandler) shutdownNow() {
+func (w *monitoringWrite) shutdownNow() {
 	w.shutdown <- true
 }
 

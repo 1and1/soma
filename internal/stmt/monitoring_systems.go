@@ -17,6 +17,12 @@ SELECT monitoring_id,
        monitoring_name
 FROM   soma.monitoring_systems;`
 
+	SearchAllMonitoringSystems = `
+SELECT monitoring_id,
+       monitoring_name
+FROM   soma.monitoring_systems
+WHERE  monitoring_name = $1::varchar;`
+
 	ListScopedMonitoringSystems = `
 SELECT sms.monitoring_id,
        sms.monitoring_name
@@ -40,6 +46,33 @@ SELECT sms.monitoring_id,
        sms.monitoring_name
 FROM   soma.monitoring_systems sms
 WHERE  sms.monitoring_system_mode = 'public';`
+
+	SearchScopedMonitoringSystems = `
+SELECT sms.monitoring_id,
+       sms.monitoring_name
+FROM   inventory.users iu
+JOIN   soma.monitoring_system_users smsu
+  ON   iu.organizational_team_id = smsu.organizational_team_id
+JOIN   soma.monitoring_systems sms
+  ON   smsu.monitoring_id = sms.monitoring_id
+WHERE  iu.user_uid = $1::varchar
+  AND  sms.monitoring_system_mode = 'private'
+  AND  sms.monitoring_name = $2::varchar
+UNION
+SELECT sms.monitoring_id,
+       sms.monitoring_name
+FROM   inventory.users iu
+JOIN   soma.monitoring_systems sms
+  ON   iu.organizational_team_id = sms.monitoring_owner_team
+WHERE  iu.user_uid = $1::varchar
+  AND  sms.monitoring_system_mode = 'private'
+  AND  sms.monitoring_name = $2::varchar
+UNION
+SELECT sms.monitoring_id,
+       sms.monitoring_name
+FROM   soma.monitoring_systems sms
+WHERE  sms.monitoring_system_mode = 'public'
+  AND  sms.monitoring_name = $2::varchar;`
 
 	ShowMonitoringSystem = `
 SELECT monitoring_id,
@@ -76,7 +109,7 @@ WHERE   NOT EXISTS (
    WHERE  monitoring_id = $1::uuid
       OR  monitoring_name = $2::varchar);`
 
-	MonitoringSystemDel = `
+	MonitoringSystemRemove = `
 DELETE FROM soma.monitoring_systems
 WHERE  monitoring_id = $1::uuid;`
 )
@@ -85,7 +118,9 @@ func init() {
 	m[ListAllMonitoringSystems] = `ListAllMonitoringSystems`
 	m[ListScopedMonitoringSystems] = `ListScopedMonitoringSystems`
 	m[MonitoringSystemAdd] = `MonitoringSystemAdd`
-	m[MonitoringSystemDel] = `MonitoringSystemDel`
+	m[MonitoringSystemRemove] = `MonitoringSystemRemove`
+	m[SearchAllMonitoringSystems] = `SearchAllMonitoringSystems`
+	m[SearchScopedMonitoringSystems] = `SearchScopedMonitoringSystems`
 	m[ShowMonitoringSystem] = `ShowMonitoringSystem`
 	m[VerifyMonitoringSystem] = `VerifyMonitoringSystem`
 }

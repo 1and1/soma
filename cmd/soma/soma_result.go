@@ -35,7 +35,6 @@ type somaResult struct {
 	Repositories    []somaRepositoryResult
 	Servers         []somaServerResult
 	Status          []somaStatusResult
-	Systems         []somaMonitoringResult
 	Teams           []somaTeamResult
 	Units           []somaUnitResult
 	Users           []somaUserResult

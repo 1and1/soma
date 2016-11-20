@@ -1,7 +1,14 @@
+/*-
+ * Copyright (c) 2016, 1&1 Internet SE
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -41,35 +48,80 @@ func MonitoringList(w http.ResponseWriter, r *http.Request,
 	}
 
 authorized:
-	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringReadHandler"].(*somaMonitoringReadHandler)
-	handler.input <- somaMonitoringRequest{
-		action: "list",
-		admin:  admin,
-		user:   params.ByName(`AuthenticatedUser`),
-		reply:  returnChannel,
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`monitoring_r`].(*monitoringRead)
+	handler.input <- msg.Request{
+		Section:    `monitoringsystem`,
+		Action:     `list`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Flag: msg.Flags{
+			Unscoped: admin,
+		},
 	}
 	result := <-returnChannel
+	SendMsgResult(&w, &result)
+}
 
-	// declare here since goto does not jump over declarations
+// MonitoringSearch function
+func MonitoringSearch(w http.ResponseWriter, r *http.Request,
+	params httprouter.Params) {
+	defer PanicCatcher(w)
+
+	// check for operations runtime privileges
+	admin := IsAuthorized(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `runtime`,
+		Action:     `monitoringsystem_list_all`,
+	})
+
+	// skip the regular permission check, if the user has
+	// the operations permission
+	if admin {
+		goto authorized
+	}
+
+	if !IsAuthorized(&msg.Authorization{
+		User:       params.ByName(`AuthenticatedUser`),
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		Section:    `monitoringsystem`,
+		Action:     `search`,
+	}) {
+		DispatchForbidden(&w, nil)
+		return
+	}
+
+authorized:
 	cReq := proto.NewMonitoringFilter()
-	if result.Failure() {
-		goto skip
+	if err := DecodeJsonBody(r, &cReq); err != nil {
+		DispatchBadRequest(&w, err)
+		return
+	}
+	if cReq.Filter.Monitoring.Name == `` {
+		DispatchBadRequest(&w, fmt.Errorf(
+			`Empty search request: name missing`))
+		return
 	}
 
-	_ = DecodeJsonBody(r, &cReq)
-	if cReq.Filter.Monitoring.Name != "" {
-		filtered := []somaMonitoringResult{}
-		for _, i := range result.Systems {
-			if i.Monitoring.Name == cReq.Filter.Monitoring.Name {
-				filtered = append(filtered, i)
-			}
-		}
-		result.Systems = filtered
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`monitoring_r`].(*monitoringRead)
+	handler.input <- msg.Request{
+		Section:    `monitoringsystem`,
+		Action:     `search`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
+		Flag: msg.Flags{
+			Unscoped: admin,
+		},
+		Monitoring: proto.Monitoring{
+			Name: cReq.Filter.Monitoring.Name,
+		},
 	}
-
-skip:
-	SendMonitoringReply(&w, &result)
+	result := <-returnChannel
+	SendMsgResult(&w, &result)
 }
 
 // MonitoringShow function
@@ -88,17 +140,20 @@ func MonitoringShow(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringReadHandler"].(*somaMonitoringReadHandler)
-	handler.input <- somaMonitoringRequest{
-		action: "show",
-		reply:  returnChannel,
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`monitoring_r`].(*monitoringRead)
+	handler.input <- msg.Request{
+		Section:    `monitoringsystem`,
+		Action:     `show`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
 		Monitoring: proto.Monitoring{
-			Id: params.ByName("monitoring"),
+			Id: params.ByName(`monitoring`),
 		},
 	}
 	result := <-returnChannel
-	SendMonitoringReply(&w, &result)
+	SendMsgResult(&w, &result)
 }
 
 // MonitoringAdd function
@@ -117,22 +172,25 @@ func MonitoringAdd(w http.ResponseWriter, r *http.Request,
 	}
 
 	cReq := proto.NewMonitoringRequest()
-	err := DecodeJsonBody(r, &cReq)
-	if err != nil {
+	if err := DecodeJsonBody(r, &cReq); err != nil {
 		DispatchBadRequest(&w, err)
 		return
 	}
 	if strings.Contains(cReq.Monitoring.Name, `.`) {
-		DispatchBadRequest(&w, fmt.Errorf(`Invalid monitoring system`+
-			` name containing . character`))
+		DispatchBadRequest(&w, fmt.Errorf(
+			`Invalid monitoring system`+
+				` name containing . character`))
 		return
 	}
 
-	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringWriteHandler"].(*somaMonitoringWriteHandler)
-	handler.input <- somaMonitoringRequest{
-		action: "add",
-		reply:  returnChannel,
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`monitoring_w`].(*monitoringWrite)
+	handler.input <- msg.Request{
+		Section:    `monitoringsystem`,
+		Action:     `add`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
 		Monitoring: proto.Monitoring{
 			Name:     cReq.Monitoring.Name,
 			Mode:     cReq.Monitoring.Mode,
@@ -142,7 +200,7 @@ func MonitoringAdd(w http.ResponseWriter, r *http.Request,
 		},
 	}
 	result := <-returnChannel
-	SendMonitoringReply(&w, &result)
+	SendMsgResult(&w, &result)
 }
 
 // MonitoringRemove function
@@ -160,40 +218,20 @@ func MonitoringRemove(w http.ResponseWriter, r *http.Request,
 		return
 	}
 
-	returnChannel := make(chan somaResult)
-	handler := handlerMap["monitoringWriteHandler"].(*somaMonitoringWriteHandler)
-	handler.input <- somaMonitoringRequest{
-		action: "delete",
-		reply:  returnChannel,
+	returnChannel := make(chan msg.Result)
+	handler := handlerMap[`monitoring_w`].(*monitoringWrite)
+	handler.input <- msg.Request{
+		Section:    `monitoringsystem`,
+		Action:     `remove`,
+		Reply:      returnChannel,
+		RemoteAddr: extractAddress(r.RemoteAddr),
+		User:       params.ByName(`AuthenticatedUser`),
 		Monitoring: proto.Monitoring{
-			Id: params.ByName("monitoring"),
+			Id: params.ByName(`monitoring`),
 		},
 	}
 	result := <-returnChannel
-	SendMonitoringReply(&w, &result)
-}
-
-// SendMonitoringReply function
-func SendMonitoringReply(w *http.ResponseWriter, r *somaResult) {
-	result := proto.NewMonitoringResult()
-	if r.MarkErrors(&result) {
-		goto dispatch
-	}
-	for _, i := range (*r).Systems {
-		*result.Monitorings = append(*result.Monitorings, i.Monitoring)
-		if i.ResultError != nil {
-			*result.Errors = append(*result.Errors, i.ResultError.Error())
-		}
-	}
-
-dispatch:
-	json, err := json.Marshal(result)
-	if err != nil {
-		DispatchInternalError(w, err)
-		return
-	}
-	DispatchJsonReply(w, &json)
-	return
+	SendMsgResult(&w, &result)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

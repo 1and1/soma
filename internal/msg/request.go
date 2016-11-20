@@ -31,6 +31,7 @@ type Request struct {
 	Grant       proto.Grant
 	Instance    proto.Instance
 	Job         proto.Job
+	Monitoring  proto.Monitoring
 	Permission  proto.Permission
 	Repository  proto.Repository
 	SectionObj  proto.Section
@@ -53,6 +54,7 @@ type UpdateData struct {
 
 type Flags struct {
 	JobDetail bool
+	Unscoped  bool
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

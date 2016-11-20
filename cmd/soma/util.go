@@ -75,8 +75,6 @@ func ResultLength(r *somaResult, t ErrorMarker) int {
 			return len(r.Modes)
 		case r.Users != nil:
 			return len(r.Users)
-		case r.Systems != nil:
-			return len(r.Systems)
 		case r.Capabilities != nil:
 			return len(r.Capabilities)
 		case r.Properties != nil:

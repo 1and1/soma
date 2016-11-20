@@ -327,7 +327,7 @@ func main() {
 	router.POST(`/filter/groups/`, Check(BasicAuth(GroupList)))
 	router.POST(`/filter/jobs/`, Check(BasicAuth(JobSearch)))
 	router.POST(`/filter/levels/`, Check(BasicAuth(LevelList)))
-	router.POST(`/filter/monitoring/`, Check(BasicAuth(MonitoringList)))
+	router.POST(`/filter/monitoring/`, Check(BasicAuth(MonitoringSearch)))
 	router.POST(`/filter/nodes/`, Check(BasicAuth(NodeList)))
 	router.POST(`/filter/oncall/`, Check(BasicAuth(OncallList)))
 	router.POST(`/filter/permission/`, Check(BasicAuth(PermissionSearch)))

@@ -118,6 +118,9 @@ func SendMsgResult(w *http.ResponseWriter, r *msg.Result) {
 	case `entity`:
 		result = proto.NewEntityResult()
 		*result.Entities = append(*result.Entities, r.Entity...)
+	case `monitoringsystem`:
+		result = proto.NewMonitoringResult()
+		*result.Monitorings = append(*result.Monitorings, r.Monitoring...)
 	default:
 		log.Printf(LogStrErr, r.Section, r.Action, 0, `Result from unhandled subsystem`)
 		DispatchInternalError(w, nil)

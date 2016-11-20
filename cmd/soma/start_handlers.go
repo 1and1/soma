@@ -26,7 +26,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	spawnLevelReadHandler(appLog, reqLog, errLog)
 	spawnMetricReadHandler(appLog, reqLog, errLog)
 	spawnModeReadHandler(appLog, reqLog, errLog)
-	spawnMonitoringReadHandler(appLog, reqLog, errLog)
+	spawnMonitoringRead(appLog, reqLog, errLog)
 	spawnNodeReadHandler(appLog, reqLog, errLog)
 	spawnObjectStateReadHandler(appLog, reqLog, errLog)
 	spawnOncallReadHandler(appLog, reqLog, errLog)
@@ -60,7 +60,7 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 			spawnLevelWriteHandler(appLog, reqLog, errLog)
 			spawnMetricWriteHandler(appLog, reqLog, errLog)
 			spawnModeWriteHandler(appLog, reqLog, errLog)
-			spawnMonitoringWriteHandler(appLog, reqLog, errLog)
+			spawnMonitoringWrite(appLog, reqLog, errLog)
 			spawnNodeWriteHandler(appLog, reqLog, errLog)
 			spawnObjectStateWriteHandler(appLog, reqLog, errLog)
 			spawnOncallWriteHandler(appLog, reqLog, errLog)
@@ -487,28 +487,28 @@ func spawnUserWriteHandler(appLog, reqLog, errLog *log.Logger) {
 	go userWriteHandler.run()
 }
 
-func spawnMonitoringReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var monitoringReadHandler somaMonitoringReadHandler
-	monitoringReadHandler.input = make(chan somaMonitoringRequest, 64)
-	monitoringReadHandler.shutdown = make(chan bool)
-	monitoringReadHandler.conn = conn
-	monitoringReadHandler.appLog = appLog
-	monitoringReadHandler.reqLog = reqLog
-	monitoringReadHandler.errLog = errLog
-	handlerMap["monitoringReadHandler"] = &monitoringReadHandler
-	go monitoringReadHandler.run()
+func spawnMonitoringRead(appLog, reqLog, errLog *log.Logger) {
+	var handler monitoringRead
+	handler.input = make(chan msg.Request, 64)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`monitoring_r`] = &handler
+	go handler.run()
 }
 
-func spawnMonitoringWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var monitoringWriteHandler somaMonitoringWriteHandler
-	monitoringWriteHandler.input = make(chan somaMonitoringRequest, 64)
-	monitoringWriteHandler.shutdown = make(chan bool)
-	monitoringWriteHandler.conn = conn
-	monitoringWriteHandler.appLog = appLog
-	monitoringWriteHandler.reqLog = reqLog
-	monitoringWriteHandler.errLog = errLog
-	handlerMap["monitoringWriteHandler"] = &monitoringWriteHandler
-	go monitoringWriteHandler.run()
+func spawnMonitoringWrite(appLog, reqLog, errLog *log.Logger) {
+	var handler monitoringWrite
+	handler.input = make(chan msg.Request, 64)
+	handler.shutdown = make(chan bool)
+	handler.conn = conn
+	handler.appLog = appLog
+	handler.reqLog = reqLog
+	handler.errLog = errLog
+	handlerMap[`monitoring_w`] = &handler
+	go handler.run()
 }
 
 func spawnCapabilityReadHandler(appLog, reqLog, errLog *log.Logger) {
