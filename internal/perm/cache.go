@@ -24,11 +24,20 @@ type Cache struct {
 	// could still be adopted later as a performance improvement.
 	lock sync.RWMutex
 
+	// general ID<>name lookup maps
 	section *sectionLookup
 	action  *actionLookup
 	user    *userLookup
 	team    *teamLookup
-	pmap    *permissionMapping
+
+	// keeps track which actions are mapped to which permissions
+	pmap *permissionMapping
+
+	// keeps track of permission grants
+	grantGlobal     *unscopedGrantMap
+	grantRepository *scopedGrantMap
+	grantTeam       *scopedGrantMap
+	grantMonitoring *scopedGrantMap
 }
 
 // New returns a new permission cache
@@ -40,6 +49,10 @@ func New() *Cache {
 	c.user = newUserLookup()
 	c.team = newTeamLookup()
 	c.pmap = newPermissionMapping()
+	c.grantGlobal = newUnscopedGrantMap()
+	c.grantRepository = newScopedGrantMap()
+	c.grantTeam = newScopedGrantMap()
+	c.grantMonitoring = newScopedGrantMap()
 	return &c
 }
 

@@ -7,6 +7,8 @@
 
 package perm
 
+import "github.com/1and1/soma/lib/proto"
+
 // userLookup is the cache data structure for users, allowing lookup
 // by ID or name
 type userLookup struct {
