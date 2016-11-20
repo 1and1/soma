@@ -27,6 +27,7 @@ type Cache struct {
 	section *sectionLookup
 	action  *actionLookup
 	user    *userLookup
+	team    *teamLookup
 	pmap    *permissionMapping
 }
 
@@ -37,6 +38,7 @@ func New() *Cache {
 	c.section = newSectionLookup()
 	c.action = newActionLookup()
 	c.user = newUserLookup()
+	c.team = newTeamLookup()
 	c.pmap = newPermissionMapping()
 	return &c
 }
