@@ -1,3 +1,10 @@
+/*-
+ * Copyright (c) 2016, Jörg Pernfuß
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
 package perm
 
 import "github.com/1and1/soma/lib/proto"
