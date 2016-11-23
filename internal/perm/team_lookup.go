@@ -10,6 +10,8 @@ package perm
 // teamLookup is the cache data structure for teams, allowing lookup
 // by ID or name
 type teamLookup struct {
+	// slice-leak indicator
+	compactionCounter int64
 	// teamName -> teamID
 	byName map[string]string
 	// teamID -> teamName
@@ -21,6 +23,7 @@ type teamLookup struct {
 // newTeamLookup returns an initialized teamLookup
 func newTeamLookup() *teamLookup {
 	t := teamLookup{}
+	t.compactionCounter = 0
 	t.byName = map[string]string{}
 	t.byID = map[string]string{}
 	t.members = map[string][]string{}
@@ -45,6 +48,19 @@ func (m *teamLookup) addMember(teamID, userID string) {
 	}
 
 	m.members[teamID] = append(m.members[teamID], userID)
+}
+
+// rmMember removes a member from a team
+func (m *teamLookup) rmMember(teamID, userID string) {
+	for i, u := range m.members[teamID] {
+		if u != userID {
+			continue
+		}
+		m.members[teamID] = append(m.members[teamID][:i],
+			m.members[teamID][i+1:]...)
+		m.compactionCounter++
+		break
+	}
 }
 
 // getName returns the teamName for a teamID
