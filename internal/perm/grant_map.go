@@ -20,12 +20,15 @@ type unscopedGrantMap struct {
 	//	tool:${toolUUID}
 	//	team:${teamUUID}
 	grants map[string]map[string]map[string]string
+	// grantID -> subject|category|permissionID
+	byGrant map[string]map[string]string
 }
 
 // newUnscopedGrantMap returns an initialized unscopedGrantMap
 func newUnscopedGrantMap() *unscopedGrantMap {
 	u := unscopedGrantMap{}
 	u.grants = map[string]map[string]map[string]string{}
+	u.byGrant = map[string]map[string]string{}
 	return &u
 }
 
@@ -48,6 +51,12 @@ func (m *unscopedGrantMap) grant(subjType, subjID, category,
 		m.grants[subject][category] = map[string]string{}
 	}
 	m.grants[subject][category][permissionID] = grantID
+	m.byGrant[grantID] = map[string]string{
+		`subjType`:     subjType,
+		`subjID`:       subjID,
+		`category`:     category,
+		`permissionID`: permissionID,
+	}
 }
 
 // scopedGrantMap is the cache data structure for permission grants
@@ -60,12 +69,15 @@ type scopedGrantMap struct {
 	//	tool:${toolUUID}
 	//	team:${teamUUID}
 	grants map[string]map[string]map[string]map[string]string
+	// grantID -> subject|category|permissionID|objectID
+	byGrant map[string]map[string]string
 }
 
 // newScopedGrantMap return ans initialized scopedGrantMap
 func newScopedGrantMap() *scopedGrantMap {
 	s := scopedGrantMap{}
 	s.grants = map[string]map[string]map[string]map[string]string{}
+	s.byGrant = map[string]map[string]string{}
 	return &s
 }
 
@@ -92,6 +104,13 @@ func (m *scopedGrantMap) grant(subjType, subjID, category, objID,
 		m.grants[subject][category][permissionID] = map[string]string{}
 	}
 	m.grants[subject][category][permissionID][objID] = grantID
+	m.byGrant[grantID] = map[string]string{
+		`subjType`:     subjType,
+		`subjID`:       subjID,
+		`category`:     category,
+		`objID`:        objID,
+		`permissionID`: permissionID,
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
