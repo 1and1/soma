@@ -206,26 +206,26 @@ func (m *permissionMapping) removePermission(permissionID string) {
 // garbage collector.
 // Afterwards it resets the compactionCounter to zero.
 func (m *permissionMapping) compact() {
-	for permID, _ := range m.permAction {
+	for permID := range m.permAction {
 		nsl := make([]proto.Action, len(m.permAction[permID]))
 		copy(nsl, m.permAction[permID])
 		m.permAction[permID] = nsl
 	}
 
-	for permID, _ := range m.permSection {
+	for permID := range m.permSection {
 		nsl := make([]string, len(m.permSection[permID]))
 		copy(nsl, m.permSection[permID])
 		m.permSection[permID] = nsl
 	}
 
-	for sectID, _ := range m.section {
+	for sectID := range m.section {
 		nsl := make([]string, len(m.section[sectID]))
 		copy(nsl, m.section[sectID])
 		m.section[sectID] = nsl
 	}
 
-	for sectID, _ := range m.action {
-		for actID, _ := range m.action[sectID] {
+	for sectID := range m.action {
+		for actID := range m.action[sectID] {
 			nsl := make([]string, len(m.action[sectID][actID]))
 			copy(nsl, m.action[sectID][actID])
 			m.action[sectID][actID] = nsl
