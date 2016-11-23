@@ -113,4 +113,16 @@ func (m *sectionLookup) getCategory(category string) []*proto.Section {
 	return m.byCategory[category]
 }
 
+// compact copies all slices in the byCategory field into new slices
+// to free the underlying array, then resets compactionCounter to
+// zero
+func (m *sectionLookup) compact() {
+	for category, _ := range m.byCategory {
+		nsl := make([]*proto.Section, len(m.byCategory[category]))
+		copy(nsl, m.byCategory[category])
+		m.byCategory[category] = nsl
+	}
+	m.compactionCounter = 0
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

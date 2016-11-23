@@ -118,4 +118,15 @@ func (m *teamLookup) rmByName(teamName string) {
 	delete(m.byName, teamName)
 }
 
+// compact copies all embedded slices into new slices to free the
+// underlying array, then resets compactionCounter to zero
+func (m *teamLookup) compact() {
+	for teamID, _ := range m.members {
+		nsl := make([]string, len(m.members[teamID]))
+		copy(nsl, m.members[teamID])
+		m.members[teamID] = nsl
+	}
+	m.compactionCounter = 0
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
