@@ -12,15 +12,21 @@ import "github.com/1and1/soma/lib/proto"
 // sectionLookup is the cache data structure for permission sections,
 // allowing lookup by ID or name
 type sectionLookup struct {
-	byName map[string]*proto.Section
-	byID   map[string]*proto.Section
+	// see struct permissionMapping for detailed explanaition
+	// of this counter
+	compactionCounter int64
+	byName            map[string]*proto.Section
+	byID              map[string]*proto.Section
+	byCategory        map[string][]*proto.Section
 }
 
 // newSectionLookup returns an initialized sectionLookup
 func newSectionLookup() *sectionLookup {
 	s := sectionLookup{}
+	s.compactionCounter = 0
 	s.byName = map[string]*proto.Section{}
 	s.byID = map[string]*proto.Section{}
+	s.byCategory = map[string][]*proto.Section{}
 	return &s
 }
 
@@ -33,6 +39,11 @@ func (m *sectionLookup) add(ID, name, category string) {
 	}
 	m.byName[s.Name] = s
 	m.byID[s.Id] = s
+
+	if _, ok := m.byCategory[category]; !ok {
+		m.byCategory[category] = []*proto.Section{}
+	}
+	m.byCategory[category] = append(m.byCategory[category], s)
 }
 
 // rmByName removes a section from the cache. The section is identified
@@ -49,6 +60,15 @@ func (m *sectionLookup) rmByName(name string) {
 
 	delete(m.byID, s.Id)
 	delete(m.byName, s.Name)
+	for i, p := range m.byCategory[s.Category] {
+		if p.Id != s.Id {
+			continue
+		}
+		m.byCategory[s.Category] = append(m.byCategory[s.Category][:i],
+			m.byCategory[s.Category][i+1:]...)
+		m.compactionCounter++
+		break
+	}
 }
 
 // rmByID removes a section from the cache. The section is identified
@@ -65,6 +85,15 @@ func (m *sectionLookup) rmByID(id string) {
 
 	delete(m.byID, s.Id)
 	delete(m.byName, s.Name)
+	for i, p := range m.byCategory[s.Category] {
+		if p.Id != s.Id {
+			continue
+		}
+		m.byCategory[s.Category] = append(m.byCategory[s.Category][:i],
+			m.byCategory[s.Category][i+1:]...)
+		m.compactionCounter++
+		break
+	}
 }
 
 // getByID returns a section from the cache. The section is identified
@@ -77,6 +106,11 @@ func (m *sectionLookup) getByID(id string) *proto.Section {
 // identified by its name. Returns nil if the section was not found.
 func (m *sectionLookup) getByName(name string) *proto.Section {
 	return m.byName[name]
+}
+
+// getCategory returns all sections in that category
+func (m *sectionLookup) getCategory(category string) []*proto.Section {
+	return m.byCategory[category]
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
