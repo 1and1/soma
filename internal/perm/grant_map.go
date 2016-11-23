@@ -40,11 +40,10 @@ func (m *unscopedGrantMap) grant(subjType, subjID, category,
 	}
 	subject := fmt.Sprintf("%s:%s", subjType, subjID)
 
-	//
+	// ensure the validity of the deep chain
 	if _, ok := m.grants[subject]; !ok {
 		m.grants[subject] = map[string]map[string]string{}
 	}
-	//
 	if _, ok := m.grants[subject][category]; !ok {
 		m.grants[subject][category] = map[string]string{}
 	}
@@ -68,6 +67,31 @@ func newScopedGrantMap() *scopedGrantMap {
 	s := scopedGrantMap{}
 	s.grants = map[string]map[string]map[string]map[string]string{}
 	return &s
+}
+
+// grant records a grant of a permission on an object to a subject
+// into the cache
+func (m *scopedGrantMap) grant(subjType, subjID, category, objID,
+	permissionID, grantID string) {
+	// only accept these four types
+	switch subjType {
+	case `user`, `admin`, `tool`, `team`:
+	default:
+		return
+	}
+	subject := fmt.Sprintf("%s:%s", subjType, subjID)
+
+	// ensure the validity of the deep chain
+	if _, ok := m.grants[subject]; !ok {
+		m.grants[subject] = map[string]map[string]map[string]string{}
+	}
+	if _, ok := m.grants[subject][category]; !ok {
+		m.grants[subject][category] = map[string]map[string]string{}
+	}
+	if _, ok := m.grants[subject][category][permissionID]; !ok {
+		m.grants[subject][category][permissionID] = map[string]string{}
+	}
+	m.grants[subject][category][permissionID][objID] = grantID
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
