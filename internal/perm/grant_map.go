@@ -59,6 +59,17 @@ func (m *unscopedGrantMap) grant(subjType, subjID, category,
 	}
 }
 
+// revoke removes a grant of a permission from the cache
+func (m *unscopedGrantMap) revoke(grantID string) {
+	g, ok := m.byGrant[grantID]
+	if !ok {
+		return
+	}
+	subject := fmt.Sprintf("%s:%s", g[`subjType`], g[`subjID`])
+	delete(m.grants[subject][g[`category`]], g[`permissionID`])
+	delete(m.byGrant, grantID)
+}
+
 // scopedGrantMap is the cache data structure for permission grants
 // on an object.
 type scopedGrantMap struct {
@@ -111,6 +122,18 @@ func (m *scopedGrantMap) grant(subjType, subjID, category, objID,
 		`objID`:        objID,
 		`permissionID`: permissionID,
 	}
+}
+
+// revoke removes a grant of a permission from the cache
+func (m *scopedGrantMap) revoke(grantID string) {
+	g, ok := m.byGrant[grantID]
+	if !ok {
+		return
+	}
+	subject := fmt.Sprintf("%s:%s", g[`subjType`], g[`subjID`])
+	delete(m.grants[subject][g[`category`]][g[`permissionID`]],
+		g[`objID`])
+	delete(m.byGrant, grantID)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
