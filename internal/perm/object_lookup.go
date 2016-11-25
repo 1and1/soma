@@ -132,4 +132,40 @@ func (m *objectLookup) addNode(bucketID, nodeID string) {
 		m.byRepository[repoID][`node`], nodeID)
 }
 
+// rmNode removes a node from the cache
+func (m *objectLookup) rmNode(nodeID string) {
+	if _, ok := m.byNode[nodeID]; !ok {
+		return
+	}
+
+	// get repoId for bucket (can only have one repository)
+	repoId := m.byNode[nodeID][`repository`][0]
+	bucketID := m.byNode[nodeID][`bucket`][0]
+
+	// remove node from bucket
+	for i := range m.byBucket[bucketID][`node`] {
+		if nodeID != m.byBucket[bucketID][`node`][i] {
+			continue
+		}
+		m.byBucket[bucketID][`node`] = append(
+			m.byBucket[bucketID][`node`][:i],
+			m.byBucket[bucketID][`node`][i+1:]...)
+		m.compactionCounter++
+	}
+
+	// remove node from repository
+	for i := range m.byRepository[repoID][`node`] {
+		if nodeID != m.byRepository[repoID][`node`][i] {
+			continue
+		}
+		m.byRepository[repoID][`node`] = append(
+			m.byRepository[repoID][`node`][:i],
+			m.byRepository[repoID][`node`][i+1:]...)
+		m.compactionCounter++
+	}
+
+	// remove node
+	delete(m.byNode, nodeID)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
