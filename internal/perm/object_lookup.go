@@ -132,6 +132,42 @@ func (m *objectLookup) addNode(bucketID, nodeID string) {
 		m.byRepository[repoID][`node`], nodeID)
 }
 
+// rmGroup removes a group from the cache
+func (m *objectLookup) rmGroup(groupID string) {
+	if _, ok := m.byGroup[groupID]; !ok {
+		return
+	}
+
+	// get repoID/bucketID for group
+	repoID := m.byGroup[groupID][`repository`][0]
+	bucketID := m.byGroup[groupID][`bucket`][0]
+
+	// remove group from bucket
+	for i := range m.byBucket[bucketID][`group`] {
+		if groupID != m.byBucket[bucketID][`group`][i] {
+			continue
+		}
+		m.byBucket[bucketID][`group`] = append(
+			m.byBucket[bucketID][`group`][:i],
+			m.byBucket[bucketID][`group`][i+1:]...)
+		m.compactionCounter++
+	}
+
+	// remove group from repository
+	for i := range m.byRepository[repoID][`group`] {
+		if groupID != m.byRepository[repoID][`group`][i] {
+			continue
+		}
+		m.byRepository[repoID][`group`] = append(
+			m.byRepository[repoID][`group`][:i],
+			m.byRepository[repoID][`group`][i+1:]...)
+		m.compactionCounter++
+	}
+
+	// remove group
+	delete(m.byGroup, groupID)
+}
+
 // rmCluster removes a cluster from the cache
 func (m *objectLookup) rmCluster(clusterID string) {
 	if _, ok := m.byCluster[clusterID]; !ok {
@@ -153,7 +189,7 @@ func (m *objectLookup) rmCluster(clusterID string) {
 		m.compactionCounter++
 	}
 
-	// remove node from repository
+	// remove cluster from repository
 	for i := range m.byRepository[repoID][`cluster`] {
 		if clusterID != m.byRepository[repoID][`cluster`][i] {
 			continue
@@ -164,7 +200,7 @@ func (m *objectLookup) rmCluster(clusterID string) {
 		m.compactionCounter++
 	}
 
-	// remove node
+	// remove cluster
 	delete(m.byCluster, clusterID)
 }
 
