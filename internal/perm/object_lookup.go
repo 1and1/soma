@@ -24,7 +24,7 @@ type objectLookup struct {
 	byNode map[string]map[string][]string
 }
 
-// addRepository adds a new repository to the cache
+// addRepository inserts a new repository into the cache
 func (m *objectLookup) addRepository(repoID string) {
 	if _, ok := m.byRepository[repoID]; ok {
 		return
@@ -32,7 +32,7 @@ func (m *objectLookup) addRepository(repoID string) {
 	m.byRepository[repoID] = map[string][]string{}
 }
 
-// addBucket adds and links a new bucket to the cache
+// addBucket inserts a new bucket into the cache
 func (m *objectLookup) addBucket(repoID, bucketID string) {
 	if _, ok := m.byBucket[bucketID]; ok {
 		return
@@ -51,6 +51,7 @@ func (m *objectLookup) addBucket(repoID, bucketID string) {
 		m.byRepository[repoID][`bucket`], bucketID)
 }
 
+// addGroup inserts a new group into the cache
 func (m *objectLookup) addGroup(bucketID, groupID string) {
 	if _, ok := m.byGroup[groupID]; ok {
 		return
@@ -78,6 +79,7 @@ func (m *objectLookup) addGroup(bucketID, groupID string) {
 		m.byRepository[repoID][`group`], groupID)
 }
 
+// addCluster inserts a new cluster into the cache
 func (m *objectLookup) addCluster(bucketID, clusterID string) {
 	if _, ok := m.byCluster[clusterID]; ok {
 		return
@@ -105,6 +107,7 @@ func (m *objectLookup) addCluster(bucketID, clusterID string) {
 		m.byRepository[repoID][`cluster`], clusterID)
 }
 
+// addNode inserts a new node into the cache
 func (m *objectLookup) addNode(bucketID, nodeID string) {
 	if _, ok := m.byNode[nodeID]; ok {
 		return
@@ -130,6 +133,24 @@ func (m *objectLookup) addNode(bucketID, nodeID string) {
 	}
 	m.byRepository[repoID][`node`] = append(
 		m.byRepository[repoID][`node`], nodeID)
+}
+
+// rmRepository removes a repository from the cache
+func (m *objectLookup) rmRepository(repoID string) {
+	if _, ok := m.byRepository[repoID]; !ok {
+		return
+	}
+
+	// make a local copy of the buckets to iterate over; deleting
+	// the buckets will clean all groups/clusters/nodes in them
+	buckets := make([]string, len(m.byRepository[repoID][`bucket`]))
+	copy(buckets, m.byRepository[repoID][`bucket`])
+	for _, b := range buckets {
+		m.rmBucket(b)
+	}
+
+	// remove repository
+	delete(m.byRepository, repoID)
 }
 
 // rmBucket removes a bucket from the cache
