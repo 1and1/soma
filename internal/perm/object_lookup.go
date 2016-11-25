@@ -132,6 +132,48 @@ func (m *objectLookup) addNode(bucketID, nodeID string) {
 		m.byRepository[repoID][`node`], nodeID)
 }
 
+// rmBucket removes a bucket from the cache
+func (m *objectLookup) rmBucket(bucketID string) {
+	if _, ok := m.byBucket[bucketID]; !ok {
+		return
+	}
+
+	// make local copies to iterate over instead of
+	// iterating over the slice we modify
+	groups := make([]string, len(m.byBucket[bucketID][`group`]))
+	copy(groups, m.byBucket[bucketID][`group`])
+	for _, g := range groups {
+		m.rmGroup(g)
+	}
+
+	clusters := make([]string, len(m.byBucket[bucketID][`cluster`]))
+	copy(clusters, m.byBucket[bucketID][`cluster`])
+	for _, c := range clusters {
+		m.rmCluster(c)
+	}
+
+	nodes := make([]string, len(m.byBucket[bucketID][`node`]))
+	copy(nodes, m.byBucket[bucketID][`node`])
+	for _, n := range nodes {
+		m.rmNode(n)
+	}
+
+	// remove bucket from repository
+	repoID := m.byBucket[bucketID][`repository`][0]
+	for i := range m.byRepository[repoID][`bucket`] {
+		if bucketID != m.byRepository[repoID][`bucket`][i] {
+			continue
+		}
+		m.byRepository[repoID][`bucket`] = append(
+			m.byRepository[repoID][`bucket`][:i],
+			m.byRepository[repoID][`bucket`][i+1:]...)
+		m.compactionCounter++
+	}
+
+	// remove bucket
+	delete(m.byBucket, bucketID)
+}
+
 // rmGroup removes a group from the cache
 func (m *objectLookup) rmGroup(groupID string) {
 	if _, ok := m.byGroup[groupID]; !ok {
