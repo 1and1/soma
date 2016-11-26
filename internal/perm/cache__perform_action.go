@@ -59,9 +59,6 @@ func (c *Cache) performRightGrant(q *msg.Request) {
 func (c *Cache) performRightRevoke(q *msg.Request) {
 }
 
-func (c *Cache) performPermissionAdd(q *msg.Request) {
-}
-
 func (c *Cache) performPermissionRemove(q *msg.Request) {
 }
 
@@ -69,9 +66,6 @@ func (c *Cache) performPermissionMap(q *msg.Request) {
 }
 
 func (c *Cache) performPermissionUnmap(q *msg.Request) {
-}
-
-func (c *Cache) performCategoryAdd(q *msg.Request) {
 }
 
 func (c *Cache) performCategoryRemove(q *msg.Request) {

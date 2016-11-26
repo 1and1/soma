@@ -85,8 +85,6 @@ func (c *Cache) performRight(q *msg.Request) {
 
 func (c *Cache) performPermission(q *msg.Request) {
 	switch q.Action {
-	case `add`:
-		c.performPermissionAdd(q)
 	case `remove`:
 		c.performPermissionRemove(q)
 	case `map`:
@@ -98,8 +96,6 @@ func (c *Cache) performPermission(q *msg.Request) {
 
 func (c *Cache) performCategory(q *msg.Request) {
 	switch q.Action {
-	case `add`:
-		c.performCategoryAdd(q)
 	case `remove`:
 		c.performCategoryRemove(q)
 	}
