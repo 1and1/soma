@@ -78,12 +78,28 @@ func (c *Cache) performCategoryRemove(q *msg.Request) {
 }
 
 func (c *Cache) performSectionAdd(q *msg.Request) {
+	c.lock.Lock()
+	c.section.add(
+		q.SectionObj.Id,
+		q.SectionObj.Name,
+		q.SectionObj.Category,
+	)
+	c.lock.Unlock()
 }
 
 func (c *Cache) performSectionRemove(q *msg.Request) {
 }
 
 func (c *Cache) performActionAdd(q *msg.Request) {
+	c.lock.Lock()
+	c.action.add(
+		q.ActionObj.SectionId,
+		q.ActionObj.SectionName,
+		q.ActionObj.Id,
+		q.ActionObj.Name,
+		q.ActionObj.Category,
+	)
+	c.lock.Unlock()
 }
 
 func (c *Cache) performActionRemove(q *msg.Request) {
