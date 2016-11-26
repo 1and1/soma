@@ -185,6 +185,7 @@ func (m *permissionMapping) removePermission(permissionID string) {
 		for _, s := range sections {
 			m.unmapSection(s, permissionID)
 		}
+		delete(m.permSection, permissionID)
 	}
 
 	// check for mapped actions
@@ -198,6 +199,7 @@ func (m *permissionMapping) removePermission(permissionID string) {
 		for _, a := range actions {
 			m.unmapAction(a[0], a[1], permissionID)
 		}
+		delete(m.permAction, permissionID)
 	}
 }
 
