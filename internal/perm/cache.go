@@ -13,7 +13,11 @@
 // an action.
 package perm // import "github.com/1and1/soma/internal/perm"
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/1and1/soma/internal/msg"
+)
 
 // Cache is a permission cache for the SOMA supervisor
 type Cache struct {
@@ -57,6 +61,37 @@ func New() *Cache {
 	c.grantTeam = newScopedGrantMap()
 	c.grantMonitoring = newScopedGrantMap()
 	return &c
+}
+
+// Perform executes the request on the cache
+func (c *Cache) Perform(q *msg.Request) {
+	// delegate the request to per-section methods
+	switch q.Section {
+	case `repository`:
+		c.performRepository(q)
+	case `bucket`:
+		c.performBucket(q)
+	case `group`:
+		c.performGroup(q)
+	case `cluster`:
+		c.performCluster(q)
+	case `node`:
+		c.performNode(q)
+	case `user`:
+		c.performUser(q)
+	case `team`:
+		c.performTeam(q)
+	case `right`:
+		c.performRight(q)
+	case `category`:
+		c.performPermission(q)
+	case `section`:
+		c.performCategory(q)
+	case `action`:
+		c.performSection(q)
+	case `permission`:
+		c.performAction(q)
+	}
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
