@@ -30,6 +30,9 @@ type Cache struct {
 	user    *userLookup
 	team    *teamLookup
 
+	// semi-flat repository object lookup map
+	object *objectLookup
+
 	// keeps track which actions are mapped to which permissions
 	pmap *permissionMapping
 
