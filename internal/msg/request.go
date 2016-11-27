@@ -39,7 +39,7 @@ type Request struct {
 	System      proto.SystemOperation
 	Team        proto.Team
 	Tree        proto.Tree
-	User        proto.User
+	UserObj     proto.User
 	Workflow    proto.Workflow
 }
 

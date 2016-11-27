@@ -44,13 +44,13 @@ func (c *Cache) performNodeUnassign(q *msg.Request) {
 func (c *Cache) performUserAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.user.add(
-		q.User.Id,
-		q.User.UserName,
-		q.User.TeamId,
+		q.UserObj.Id,
+		q.UserObj.UserName,
+		q.UserObj.TeamId,
 	)
 	c.team.addMember(
-		q.User.TeamId,
-		q.User.Id,
+		q.UserObj.TeamId,
+		q.UserObj.Id,
 	)
 	c.lock.Unlock()
 }
