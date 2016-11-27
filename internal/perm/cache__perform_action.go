@@ -42,12 +42,29 @@ func (c *Cache) performNodeUnassign(q *msg.Request) {
 }
 
 func (c *Cache) performUserAdd(q *msg.Request) {
+	c.lock.Lock()
+	c.user.add(
+		q.User.Id,
+		q.User.UserName,
+		q.User.TeamId,
+	)
+	c.team.addMember(
+		q.User.TeamId,
+		q.User.Id,
+	)
+	c.lock.Unlock()
 }
 
 func (c *Cache) performUserRemove(q *msg.Request) {
 }
 
 func (c *Cache) performTeamAdd(q *msg.Request) {
+	c.lock.Lock()
+	c.team.add(
+		q.Team.Id,
+		q.Team.Name,
+	)
+	c.lock.Unlock()
 }
 
 func (c *Cache) performTeamRemove(q *msg.Request) {

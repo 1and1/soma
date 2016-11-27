@@ -22,8 +22,8 @@ type Request struct {
 
 	Super *Supervisor
 
-	Attribute   proto.Attribute
 	ActionObj   proto.Action
+	Attribute   proto.Attribute
 	Bucket      proto.Bucket
 	Category    proto.Category
 	Entity      proto.Entity
@@ -37,7 +37,9 @@ type Request struct {
 	SectionObj  proto.Section
 	State       proto.State
 	System      proto.SystemOperation
+	Team        proto.Team
 	Tree        proto.Tree
+	User        proto.User
 	Workflow    proto.Workflow
 }
 
