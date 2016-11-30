@@ -46,6 +46,7 @@ func insertRootToken(printOnly, verbose bool) {
 	fmt.Fprintf(os.Stderr, "The generated boostrap token was: %s\n", token)
 	if printOnly {
 		fmt.Fprintln(os.Stderr, "NO-EXECUTE: generated token was not inserted!")
+		fmt.Fprintln(os.Stderr, "INSERT INTO root.token ( token ) VALUES ( '%s'::varchar );", token)
 	}
 }
 
