@@ -107,7 +107,6 @@ func cmdUserAdd(c *cli.Context) error {
 		"employeenr",
 		"mailaddr",
 		"team",
-		"active",
 		"system"}
 	required := []string{
 		"firstname",
@@ -151,16 +150,6 @@ func cmdUserAdd(c *cli.Context) error {
 	}
 
 	// optional arguments
-	if _, ok := opts["active"]; ok {
-		if err := adm.ValidateBool(opts["active"][0],
-			&req.User.IsActive); err != nil {
-			return fmt.Errorf("Syntax error, active argument not"+
-				" boolean: %s, %s", opts["active"][0], err.Error())
-		}
-	} else {
-		req.User.IsActive = true
-	}
-
 	if _, ok := opts["system"]; ok {
 		if err := adm.ValidateBool(opts["system"][0],
 			&req.User.IsSystem); err != nil {
