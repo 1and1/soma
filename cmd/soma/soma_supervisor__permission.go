@@ -73,6 +73,10 @@ func (s *supervisor) permissionWrite(q *msg.Request) {
 		s.permissionUnmap(q, &result)
 	}
 
+	if result.IsOK() {
+		handlerMap[`supervisor`].(*supervisor).update <- msg.CacheUpdateFromRequest(q)
+	}
+
 	q.Reply <- result
 }
 
