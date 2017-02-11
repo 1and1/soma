@@ -27,20 +27,7 @@ func (c *Cache) performActionAdd(q *msg.Request) {
 // removing it from all permission maps
 func (c *Cache) performActionRemove(q *msg.Request) {
 	c.lock.Lock()
-	// unmap the action from all permissions
-	permIDs := c.pmap.getActionPermissionID(
-		q.ActionObj.SectionId,
-		q.ActionObj.Id,
-	)
-	for i := range permIDs {
-		c.pmap.unmapAction(
-			q.ActionObj.SectionId,
-			q.ActionObj.Id,
-			permIDs[i],
-		)
-	}
-	// remove the action
-	c.action.rmActionByID(
+	c.performActionRemoveTask(
 		q.ActionObj.SectionId,
 		q.ActionObj.Id,
 	)

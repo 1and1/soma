@@ -84,4 +84,26 @@ func (c *Cache) performRightGrantScopeMonitoring(q *msg.Request) {
 	}
 }
 
+// performActionRemoveTask implements performActionRemove in a
+// reusable way, ie. without locking
+func (c *Cache) performActionRemoveTask(sectionID, actionID string) {
+	// unmap the action from all permissions
+	permIDs := c.pmap.getActionPermissionID(
+		sectionID,
+		actionID,
+	)
+	for i := range permIDs {
+		c.pmap.unmapAction(
+			sectionID,
+			actionID,
+			permIDs[i],
+		)
+	}
+	// remove the action
+	c.action.rmActionByID(
+		sectionID,
+		actionID,
+	)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
