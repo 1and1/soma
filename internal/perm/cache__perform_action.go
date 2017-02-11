@@ -113,7 +113,12 @@ func (c *Cache) performSectionAdd(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performSectionRemove removes a section after removing all its
+// actions and permission mappings
 func (c *Cache) performSectionRemove(q *msg.Request) {
+	c.lock.Lock()
+	c.performSectionRemoveTask(q.SectionObj.Id)
+	c.lock.Unlock()
 }
 
 func (c *Cache) performTeamAdd(q *msg.Request) {

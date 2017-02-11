@@ -106,4 +106,29 @@ func (c *Cache) performActionRemoveTask(sectionID, actionID string) {
 	)
 }
 
+// performSectionRemoveTask implements performSectionRemove without
+// locking
+func (c *Cache) performSectionRemoveTask(sectionID string) {
+	// delete all member actions
+	actionIDs := c.action.getActionsBySectionID(sectionID)
+	for _, actionID := range actionIDs {
+		c.performActionRemoveTask(sectionID, actionID)
+	}
+	// delete section from action lookup
+	c.action.rmSectionByID(sectionID)
+
+	// unmap the section from all permissions
+	permIDs := c.pmap.getSectionPermissionID(
+		sectionID,
+	)
+	for i := range permIDs {
+		c.pmap.unmapSection(
+			sectionID,
+			permIDs[i],
+		)
+	}
+	// remove the section
+	c.section.rmByID(sectionID)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
