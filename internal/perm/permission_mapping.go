@@ -253,4 +253,15 @@ func (m *permissionMapping) getActionPermissionID(sectionID,
 	return res
 }
 
+// getSectionPermissionID returns all recorded permissionIDs
+// for a section
+func (m *permissionMapping) getSectionPermissionID(sectionID string) []string {
+	if _, ok := m.section[sectionID]; !ok {
+		return []string{}
+	}
+	res := make([]string, len(m.section[sectionID]))
+	copy(res, m.section[sectionID])
+	return res
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
