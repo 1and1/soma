@@ -5,6 +5,11 @@ SOMAVER != cat `git rev-parse --show-toplevel`/VERSION
 BRANCH != git rev-parse --symbolic-full-name --abbrev-ref HEAD
 GITHASH != git rev-parse --short HEAD
 
+# if GOPATH contains a symbolic link, then PWD and GOPATH can diverge
+# leading to go package loader errors
+GOPATH != /bin/realpath ${GOPATH}
+.export GOPATH
+
 all: install
 
 install: install_freebsd install_linux
