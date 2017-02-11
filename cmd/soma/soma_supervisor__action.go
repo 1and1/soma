@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2016, Jörg Pernfuß
+ * Copyright (c) 2016-2017, Jörg Pernfuß
  *
  * Use of this source code is governed by a 2-clause BSD license
  * that can be found in the LICENSE file.
@@ -180,6 +180,10 @@ func (s *supervisor) actionWrite(q *msg.Request) {
 		s.actionAdd(q, &result)
 	case `remove`:
 		s.actionRemove(q, &result)
+	}
+
+	if result.IsOK() {
+		handlerMap[`supervisor`].(*supervisor).input <- msg.CacheUpdateFromRequest(q)
 	}
 
 	q.Reply <- result
