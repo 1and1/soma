@@ -78,6 +78,18 @@ func (c *Cache) performRepositoryDestroy(q *msg.Request) {
 }
 
 func (c *Cache) performRightGrant(q *msg.Request) {
+	c.lock.Lock()
+	switch q.Grant.Category {
+	case `omnipotence`, `system`, `global`, `permission`, `operations`:
+		c.performRightGrantUnscoped(q)
+	case `repository`:
+		c.performRightGrantScopeRepository(q)
+	case `team`:
+		c.performRightGrantScopeTeam(q)
+	case `monitoring`:
+		c.performRightGrantScopeMonitoring(q)
+	}
+	c.lock.Unlock()
 }
 
 func (c *Cache) performRightRevoke(q *msg.Request) {
