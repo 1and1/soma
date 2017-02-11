@@ -68,11 +68,11 @@ func (c *Cache) Perform(q *msg.Request) {
 	// delegate the request to per-section methods
 	switch q.Section {
 	case `action`:
-		c.performSection(q)
+		c.performAction(q)
 	case `bucket`:
 		c.performBucket(q)
 	case `category`:
-		c.performPermission(q)
+		c.performCategory(q)
 	case `cluster`:
 		c.performCluster(q)
 	case `group`:
@@ -80,13 +80,13 @@ func (c *Cache) Perform(q *msg.Request) {
 	case `node`:
 		c.performNode(q)
 	case `permission`:
-		c.performAction(q)
+		c.performPermission(q)
 	case `repository`:
 		c.performRepository(q)
 	case `right`:
 		c.performRight(q)
 	case `section`:
-		c.performCategory(q)
+		c.performSection(q)
 	case `team`:
 		c.performTeam(q)
 	case `user`:
