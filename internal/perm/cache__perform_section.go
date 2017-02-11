@@ -11,12 +11,12 @@ import "github.com/1and1/soma/internal/msg"
 
 // These are the per-Section methods used in Cache.Perform
 
-func (c *Cache) performRepository(q *msg.Request) {
+func (c *Cache) performAction(q *msg.Request) {
 	switch q.Action {
-	case `create`:
-		c.performRepositoryCreate(q)
-	case `destroy`:
-		c.performRepositoryDestroy(q)
+	case `add`:
+		c.performActionAdd(q)
+	case `remove`:
+		c.performActionRemove(q)
 	}
 }
 
@@ -29,12 +29,10 @@ func (c *Cache) performBucket(q *msg.Request) {
 	}
 }
 
-func (c *Cache) performGroup(q *msg.Request) {
+func (c *Cache) performCategory(q *msg.Request) {
 	switch q.Action {
-	case `create`:
-		c.performGroupCreate(q)
-	case `destroy`:
-		c.performGroupDestroy(q)
+	case `remove`:
+		c.performCategoryRemove(q)
 	}
 }
 
@@ -47,39 +45,21 @@ func (c *Cache) performCluster(q *msg.Request) {
 	}
 }
 
+func (c *Cache) performGroup(q *msg.Request) {
+	switch q.Action {
+	case `create`:
+		c.performGroupCreate(q)
+	case `destroy`:
+		c.performGroupDestroy(q)
+	}
+}
+
 func (c *Cache) performNode(q *msg.Request) {
 	switch q.Action {
 	case `assign`:
 		c.performNodeAssign(q)
 	case `unassign`:
 		c.performNodeUnassign(q)
-	}
-}
-
-func (c *Cache) performUser(q *msg.Request) {
-	switch q.Action {
-	case `add`:
-		c.performUserAdd(q)
-	case `remove`:
-		c.performUserRemove(q)
-	}
-}
-
-func (c *Cache) performTeam(q *msg.Request) {
-	switch q.Action {
-	case `add`:
-		c.performTeamAdd(q)
-	case `remove`:
-		c.performTeamRemove(q)
-	}
-}
-
-func (c *Cache) performRight(q *msg.Request) {
-	switch q.Action {
-	case `grant`:
-		c.performRightGrant(q)
-	case `revoke`:
-		c.performRightRevoke(q)
 	}
 }
 
@@ -94,10 +74,21 @@ func (c *Cache) performPermission(q *msg.Request) {
 	}
 }
 
-func (c *Cache) performCategory(q *msg.Request) {
+func (c *Cache) performRepository(q *msg.Request) {
 	switch q.Action {
-	case `remove`:
-		c.performCategoryRemove(q)
+	case `create`:
+		c.performRepositoryCreate(q)
+	case `destroy`:
+		c.performRepositoryDestroy(q)
+	}
+}
+
+func (c *Cache) performRight(q *msg.Request) {
+	switch q.Action {
+	case `grant`:
+		c.performRightGrant(q)
+	case `revoke`:
+		c.performRightRevoke(q)
 	}
 }
 
@@ -110,12 +101,21 @@ func (c *Cache) performSection(q *msg.Request) {
 	}
 }
 
-func (c *Cache) performAction(q *msg.Request) {
+func (c *Cache) performTeam(q *msg.Request) {
 	switch q.Action {
 	case `add`:
-		c.performActionAdd(q)
+		c.performTeamAdd(q)
 	case `remove`:
-		c.performActionRemove(q)
+		c.performTeamRemove(q)
+	}
+}
+
+func (c *Cache) performUser(q *msg.Request) {
+	switch q.Action {
+	case `add`:
+		c.performUserAdd(q)
+	case `remove`:
+		c.performUserRemove(q)
 	}
 }
 
