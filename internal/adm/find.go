@@ -14,16 +14,16 @@ import (
 	"github.com/1and1/soma/lib/proto"
 )
 
-// FindRepoPropSrcId fetches the source id of a locally set
+// FindRepoPropSrcID fetches the source id of a locally set
 // property on a repository
-func FindRepoPropSrcId(pType, pName, view, repoId string,
+func FindRepoPropSrcID(pType, pName, view, repoID string,
 	id *string) error {
 	var (
 		err  error
 		res  *proto.Result
 		repo proto.Repository
 	)
-	res, err = fetchObjList(fmt.Sprintf("/repository/%s", repoId))
+	res, err = fetchObjList(fmt.Sprintf("/repository/%s", repoID))
 	if err != nil {
 		goto abort
 	}
@@ -39,23 +39,23 @@ func FindRepoPropSrcId(pType, pName, view, repoId string,
 		goto abort
 	}
 
-	return findPropSrcId(pType, pName, view, *repo.Properties, id)
+	return findPropSrcID(pType, pName, view, *repo.Properties, id)
 
 abort:
 	return fmt.Errorf("Failed to find source property: %s",
 		err.Error())
 }
 
-// FindBucketPropSrcId fetches the source id of a locally set
+// FindBucketPropSrcID fetches the source id of a locally set
 // property on a bucket
-func FindBucketPropSrcId(pType, pName, view, bucketId string,
+func FindBucketPropSrcID(pType, pName, view, bucketID string,
 	id *string) error {
 	var (
 		err    error
 		res    *proto.Result
 		bucket proto.Bucket
 	)
-	res, err = fetchObjList(fmt.Sprintf("/buckets/%s", bucketId))
+	res, err = fetchObjList(fmt.Sprintf("/buckets/%s", bucketID))
 	if err != nil {
 		goto abort
 	}
@@ -71,23 +71,23 @@ func FindBucketPropSrcId(pType, pName, view, bucketId string,
 		goto abort
 	}
 
-	return findPropSrcId(pType, pName, view, *bucket.Properties, id)
+	return findPropSrcID(pType, pName, view, *bucket.Properties, id)
 
 abort:
 	return fmt.Errorf("Failed to find source property: %s",
 		err.Error())
 }
 
-// FindGroupPropSrcId fetches the source id of a locally set
+// FindGroupPropSrcID fetches the source id of a locally set
 // property on a group
-func FindGroupPropSrcId(pType, pName, view, groupId string,
+func FindGroupPropSrcID(pType, pName, view, groupID string,
 	id *string) error {
 	var (
 		err   error
 		res   *proto.Result
 		group proto.Group
 	)
-	res, err = fetchObjList(fmt.Sprintf("/groups/%s", groupId))
+	res, err = fetchObjList(fmt.Sprintf("/groups/%s", groupID))
 	if err != nil {
 		goto abort
 	}
@@ -103,23 +103,23 @@ func FindGroupPropSrcId(pType, pName, view, groupId string,
 		goto abort
 	}
 
-	return findPropSrcId(pType, pName, view, *group.Properties, id)
+	return findPropSrcID(pType, pName, view, *group.Properties, id)
 
 abort:
 	return fmt.Errorf("Failed to find source property: %s",
 		err.Error())
 }
 
-// FindClusterPropSrcId fetches the source id of a locally set
+// FindClusterPropSrcID fetches the source id of a locally set
 // property on a cluster
-func FindClusterPropSrcId(pType, pName, view, clusterId string,
+func FindClusterPropSrcID(pType, pName, view, clusterID string,
 	id *string) error {
 	var (
 		err     error
 		res     *proto.Result
 		cluster proto.Cluster
 	)
-	res, err = fetchObjList(fmt.Sprintf("/clusters/%s", clusterId))
+	res, err = fetchObjList(fmt.Sprintf("/clusters/%s", clusterID))
 	if err != nil {
 		goto abort
 	}
@@ -135,23 +135,23 @@ func FindClusterPropSrcId(pType, pName, view, clusterId string,
 		goto abort
 	}
 
-	return findPropSrcId(pType, pName, view, *cluster.Properties, id)
+	return findPropSrcID(pType, pName, view, *cluster.Properties, id)
 
 abort:
 	return fmt.Errorf("Failed to find source property: %s",
 		err.Error())
 }
 
-// FindNodePropSrcId fetches the source id of a locally set
+// FindNodePropSrcID fetches the source id of a locally set
 // property on a node
-func FindNodePropSrcId(pType, pName, view, nodeId string,
+func FindNodePropSrcID(pType, pName, view, nodeID string,
 	id *string) error {
 	var (
 		err  error
 		res  *proto.Result
 		node proto.Node
 	)
-	res, err = fetchObjList(fmt.Sprintf("/nodes/%s", nodeId))
+	res, err = fetchObjList(fmt.Sprintf("/nodes/%s", nodeID))
 	if err != nil {
 		goto abort
 	}
@@ -167,7 +167,7 @@ func FindNodePropSrcId(pType, pName, view, nodeId string,
 		goto abort
 	}
 
-	return findPropSrcId(pType, pName, view, *node.Properties, id)
+	return findPropSrcID(pType, pName, view, *node.Properties, id)
 
 abort:
 	return fmt.Errorf("Failed to find source property: %s",
@@ -176,7 +176,7 @@ abort:
 
 // findPropSrcId browses through the provided slice of Properties
 // and returns the source id of the requested one
-func findPropSrcId(pType, pName, view string, props []proto.Property,
+func findPropSrcID(pType, pName, view string, props []proto.Property,
 	id *string) error {
 
 	for _, p := range props {

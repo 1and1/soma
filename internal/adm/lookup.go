@@ -21,7 +21,7 @@ import (
 // server with name s. Error is set if no such oncall duty was
 // found or an error occurred.
 // If s is already a UUID, then s is immediately returned.
-func LookupOncallId(s string) (string, error) {
+func LookupOncallID(s string) (string, error) {
 	if IsUUID(s) {
 		return s, nil
 	}
@@ -30,16 +30,16 @@ func LookupOncallId(s string) (string, error) {
 
 // LookupOncallDetails looks up the details for oncall duty s.
 func LookupOncallDetails(s string) (string, string, error) {
-	var oId string
+	var oID, o string
 	if !IsUUID(s) {
-		if o, err := LookupOncallId(s); err != nil {
+		var err error
+		if o, err = LookupOncallID(s); err != nil {
 			return ``, ``, err
-		} else {
-			oId = o
 		}
+		oID = o
 	}
 
-	return oncallDetailsById(oId)
+	return oncallDetailsById(oID)
 }
 
 // LookupOncallId looks up the UUID for a user on the server
@@ -288,11 +288,12 @@ func LookupActionId(a, s string) (string, error) {
 	if IsUUID(s) {
 		return a, nil
 	}
-	if sId, err := LookupSectionId(s); err != nil {
+	var sID string
+	var err error
+	if sID, err = LookupSectionId(s); err != nil {
 		return ``, err
-	} else {
-		return actionIdByName(a, sId)
 	}
+	return actionIdByName(a, sID)
 }
 
 // LookupNodeConfig looks up the node repo/bucket configuration
@@ -325,13 +326,13 @@ func LookupCheckConfigId(name, repo, instance string) (string, string, error) {
 		if IsUUID(name) {
 			return name, ``, nil
 		}
-		var repoId string
-		if r, err := LookupRepoId(repo); err != nil {
+		var repoID, r string
+		var err error
+		if r, err = LookupRepoId(repo); err != nil {
 			return ``, ``, err
-		} else {
-			repoId = r
 		}
-		return checkConfigIdByName(name, repoId)
+		repoID = r
+		return checkConfigIdByName(name, repoID)
 	} else if instance != `` {
 		return checkConfigIdByInstance(instance)
 	}
@@ -344,12 +345,12 @@ func LookupCustomPropertyId(s, repo string) (string, error) {
 	if IsUUID(s) {
 		return s, nil
 	}
-	var rId string
-	if r, err := LookupRepoId(repo); err != nil {
+	var rId, r string
+	var err error
+	if r, err = LookupRepoId(repo); err != nil {
 		return ``, err
-	} else {
-		rId = r
 	}
+	rId = r
 	return propertyIdByName(`custom`, s, rId)
 }
 
@@ -359,13 +360,13 @@ func LookupServicePropertyId(s, team string) (string, error) {
 	if IsUUID(s) {
 		return s, nil
 	}
-	var tId string
-	if t, err := LookupTeamId(team); err != nil {
+	var tID, t string
+	var err error
+	if t, err = LookupTeamId(team); err != nil {
 		return ``, err
-	} else {
-		tId = t
 	}
-	return propertyIdByName(`service`, s, tId)
+	tID = t
+	return propertyIdByName(`service`, s, tID)
 }
 
 // LookupTemplatePropertyId looks up the id of a service template

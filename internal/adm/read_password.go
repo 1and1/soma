@@ -15,11 +15,16 @@ const (
 	repeatToken    = `Repeat token: `
 	promptUser     = `Username: `
 
+	// unicode glyph: check mark
 	SUCCESS = "\xe2\x9c\x94"
+	// unicode glyph: cross
 	FAILURE = "\xe2\x9c\x98"
 
-	RED   = "\x1b[31m"
+	// terminal escapecode, red
+	RED = "\x1b[31m"
+	// terminal escapecode, green
 	GREEN = "\x1b[32m"
+	// terminal escapecode, reset color
 	CLEAR = "\x1b[0m"
 )
 

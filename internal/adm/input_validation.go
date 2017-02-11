@@ -54,11 +54,12 @@ func IsUUID(s string) bool {
 
 // isUint64 validates if a string is a uint64 number
 func isUint64(s string) (bool, uint64) {
-	if u, err := strconv.ParseUint(s, 10, 64); err != nil {
+	var err error
+	var u uint64
+	if u, err = strconv.ParseUint(s, 10, 64); err != nil {
 		return false, 0
-	} else {
-		return true, u
 	}
+	return true, u
 }
 
 // ValidateOncallNumber tests if a string is a 4 digit number
@@ -315,12 +316,12 @@ func ValidateCheckConstraints(repoId, teamId string,
 			oncall := proto.PropertyOncall{}
 			var err error
 			if prop.Oncall.Name != `` {
-				if oncall.Id, err = LookupOncallId(
+				if oncall.Id, err = LookupOncallID(
 					prop.Oncall.Name); err != nil {
 					return nil, err
 				}
 			} else if prop.Oncall.Id != `` {
-				if oncall.Id, err = LookupOncallId(
+				if oncall.Id, err = LookupOncallID(
 					prop.Oncall.Id); err != nil {
 					return nil, err
 				}
@@ -415,10 +416,9 @@ func VerifyPermissionTarget(target string) error {
 		`team`,
 	}) {
 		return nil
-	} else {
-		return fmt.Errorf("Permissions can not be granted to: %s",
-			target)
 	}
+	return fmt.Errorf("Permissions can not be granted to: %s",
+		target)
 }
 
 // fetchObjList is a helper for ValidateUnit and ValidateProvider
