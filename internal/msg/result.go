@@ -47,6 +47,14 @@ func FromRequest(rq *Request) Result {
 	}
 }
 
+func CacheUpdateFromRequest(rq *Request) Request {
+	return Request{
+		Section:      `cache`,
+		Action:       `update`,
+		CacheRequest: rq,
+	}
+}
+
 func (r *Result) RowCnt(i int64, err error) bool {
 	if err != nil {
 		r.ServerError(err)
