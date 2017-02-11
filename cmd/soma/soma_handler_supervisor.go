@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2016, Jörg Pernfuß
+ * Copyright (c) 2016-2017, Jörg Pernfuß
  *
  * Use of this source code is governed by a 2-clause BSD license
  * that can be found in the LICENSE file.
@@ -11,6 +11,7 @@ import (
 	"database/sql"
 
 	"github.com/1and1/soma/internal/msg"
+	"github.com/1and1/soma/internal/perm"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/auth"
 	log "github.com/Sirupsen/logrus"
@@ -40,6 +41,7 @@ type supervisor struct {
 	id_team               *svLockMap
 	id_permission         *svLockMap
 	id_userteam           *svLockMap
+	permCache             *perm.Cache
 	stmt_FToken           *sql.Stmt
 	stmt_FindUser         *sql.Stmt
 	stmt_CheckUser        *sql.Stmt
@@ -93,6 +95,9 @@ func (s *supervisor) run() {
 	s.global_permissions = s.newGlobalPermMap()
 	s.global_grants = s.newGlobalGrantMap()
 	s.limited_permissions = s.newLimitedPermMap()
+
+	// start permission cache
+	s.permCache = perm.New()
 
 	// load from database
 	s.startupLoad()
@@ -195,6 +200,9 @@ func (s *supervisor) process(q *msg.Request) {
 
 	case `action`:
 		s.action(q)
+
+	case `cache`:
+		s.cache(q)
 	}
 }
 
