@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2016, Jörg Pernfuß <joerg.pernfuss@1und1.de>
+ * Copyright (c) 2016-2017, Jörg Pernfuß <joerg.pernfuss@1und1.de>
  * All rights reserved
  *
  * Use of this source code is governed by a 2-clause BSD license
@@ -41,6 +41,8 @@ type Request struct {
 	Tree        proto.Tree
 	UserObj     proto.User
 	Workflow    proto.Workflow
+
+	CacheRequest *Request
 }
 
 type Filter struct {
