@@ -236,4 +236,21 @@ func (m *permissionMapping) compact() {
 	m.compactionCounter = 0
 }
 
+// getActionPermissionID returns all recorded permissionIDs
+// for an action
+func (m *permissionMapping) getActionPermissionID(sectionID,
+	actionID string) []string {
+	// nothing in this section is mapped yet
+	if _, ok := m.action[sectionID]; !ok {
+		return []string{}
+	}
+	// action is not mapped to a permission yet
+	if _, ok := m.action[sectionID][actionID]; !ok {
+		return []string{}
+	}
+	res := make([]string, len(m.action[sectionID][actionID]))
+	copy(res, m.action[sectionID][actionID])
+	return res
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
