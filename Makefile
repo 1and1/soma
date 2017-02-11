@@ -23,7 +23,13 @@ install_linux: generate
 generate:
 	@go generate ./cmd/...
 
-sanitize: build vet ineffassign misspell
+sanitize: build check
+
+sanitize-full: build check-full
+
+check: vet ineffassign misspell
+
+check-full: vet ineffassign misspell lint coroner
 
 build:
 	@go build ./...
@@ -68,3 +74,11 @@ misspell:
 	@misspell ./lib
 	@misspell ./internal
 	@misspell ./docs
+
+coroner:
+	@codecoroner funcs ./cmd/... ./lib/... ./internal/...
+
+lint:
+	@golint ./cmd/... | grep -v 'should have comment or be unexported'
+	@golint ./internal/... | grep -v 'should have comment or be unexported'
+	@golint ./lib/... | grep -v 'should have comment or be unexported'
