@@ -40,6 +40,7 @@ vet:
 	@go vet ./internal/db/
 	@go vet ./internal/help/
 	@go vet ./internal/msg/
+	@go vet ./internal/perm/
 	@go vet ./internal/stmt/
 	@go vet ./internal/tree/
 	@go tool vet -shadow ./cmd/eye/
@@ -53,6 +54,7 @@ vet:
 	@go tool vet -shadow ./internal/db/
 	@go tool vet -shadow ./internal/help/
 	@go tool vet -shadow ./internal/msg/
+	@go tool vet -shadow ./internal/perm/
 	@go tool vet -shadow ./internal/stmt/
 	@go tool vet -shadow ./internal/tree/
 
