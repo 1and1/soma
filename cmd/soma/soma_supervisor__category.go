@@ -69,7 +69,7 @@ func (s *supervisor) categoryWrite(q *msg.Request) {
 	}
 
 	if result.IsOK() {
-		handlerMap[`supervisor`].(*supervisor).input <- msg.CacheUpdateFromRequest(q)
+		handlerMap[`supervisor`].(*supervisor).update <- msg.CacheUpdateFromRequest(q)
 	}
 
 	q.Reply <- result

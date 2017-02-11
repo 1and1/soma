@@ -19,6 +19,7 @@ import (
 
 type supervisor struct {
 	input                 chan msg.Request
+	update                chan msg.Request
 	shutdown              chan bool
 	conn                  *sql.DB
 	seed                  []byte
@@ -151,9 +152,21 @@ func (s *supervisor) run() {
 
 runloop:
 	for {
+		// handle cache updates before handling user requests
+		select {
+		case req := <-s.update:
+			s.process(&req)
+			continue runloop
+		default:
+			// this empty default case makes this select non-blocking
+		}
+
+		// handle whatever request comes in
 		select {
 		case <-s.shutdown:
 			break runloop
+		case req := <-s.update:
+			s.process(&req)
 		case req := <-s.input:
 			s.process(&req)
 		}

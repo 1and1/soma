@@ -732,6 +732,7 @@ func spawnSupervisorHandler(appLog, reqLog, errLog *log.Logger) {
 	var supervisorHandler supervisor
 	var err error
 	supervisorHandler.input = make(chan msg.Request, 1024)
+	supervisorHandler.update = make(chan msg.Request, 1024)
 	supervisorHandler.shutdown = make(chan bool)
 	supervisorHandler.conn = conn
 	supervisorHandler.appLog = appLog
