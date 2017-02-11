@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2016, Jörg Pernfuß
+ * Copyright (c) 2016-2017, Jörg Pernfuß
  *
  * Use of this source code is governed by a 2-clause BSD license
  * that can be found in the LICENSE file.
@@ -54,6 +54,15 @@ func (c *Cache) performNodeUnassign(q *msg.Request) {
 }
 
 func (c *Cache) performPermissionMap(q *msg.Request) {
+	c.lock.Lock()
+	// map request can contain either actions or sections, not a mix
+	if q.Permission.Actions != nil {
+		c.performPermissionMapAction(q)
+	}
+	if q.Permission.Sections != nil {
+		c.performPermissionMapSection(q)
+	}
+	c.lock.Unlock()
 }
 
 func (c *Cache) performPermissionRemove(q *msg.Request) {
