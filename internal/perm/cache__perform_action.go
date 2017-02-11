@@ -73,10 +73,26 @@ func (c *Cache) performPermissionMap(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performPermissionRemove removes a permission from the cache
 func (c *Cache) performPermissionRemove(q *msg.Request) {
+	c.lock.Lock()
+	// this handles mappings to the permission
+	c.pmap.removePermission(q.Permission.Id)
+	c.lock.Unlock()
 }
 
+// performPermissionUnmap unmaps a section or action from the
+// permission
 func (c *Cache) performPermissionUnmap(q *msg.Request) {
+	c.lock.Lock()
+	// unmap request can contain either actions or sections, not a mix
+	if q.Permission.Actions != nil {
+		c.performPermissionUnmapAction(q)
+	}
+	if q.Permission.Sections != nil {
+		c.performPermissionUnmapSection(q)
+	}
+	c.lock.Unlock()
 }
 
 func (c *Cache) performRepositoryCreate(q *msg.Request) {

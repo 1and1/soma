@@ -32,6 +32,25 @@ func (c *Cache) performPermissionMapSection(q *msg.Request) {
 	}
 }
 
+func (c *Cache) performPermissionUnmapAction(q *msg.Request) {
+	for _, a := range *q.Permission.Actions {
+		c.pmap.unmapAction(
+			a.SectionId,
+			a.Id,
+			q.Permission.Id,
+		)
+	}
+}
+
+func (c *Cache) performPermissionUnmapSection(q *msg.Request) {
+	for _, s := range *q.Permission.Sections {
+		c.pmap.unmapSection(
+			s.Id,
+			q.Permission.Id,
+		)
+	}
+}
+
 func (c *Cache) performRightGrantUnscoped(q *msg.Request) {
 	c.grantGlobal.grant(
 		q.Grant.RecipientType,
