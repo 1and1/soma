@@ -131,4 +131,18 @@ func (m *actionLookup) rmSectionByName(sName string) {
 	delete(m.byName, sName)
 }
 
+// getActionsBySectionID returns all actionIDs for a specific section
+func (m *actionLookup) getActionsBySectionID(sID string) []string {
+	if _, ok := m.byID[sID]; !ok {
+		return []string{}
+	}
+	res := make([]string, len(m.byID[sID]))
+	i := 0
+	for aID := range m.byID[sID] {
+		res[i] = aID
+		i++
+	}
+	return res
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
