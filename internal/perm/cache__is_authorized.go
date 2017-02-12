@@ -24,7 +24,9 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		VerdictAdmin: false,
 	}
 	var user *proto.User
-	var subjType, category, permID string
+	var subjType, category, permID, actionID, sectionID string
+	var action *proto.Action
+	var sectionPermIDs, actionPermIDs, mergedPermIDs []string
 
 	// determine type of the request subject
 	switch {
@@ -40,14 +42,8 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
-	// look up the user
-	switch subjType {
-	case `user`:
-		if user = c.user.getByName(q.User); user == nil {
-			goto dispatch
-		}
-	default:
-		// XXX not implemented: admin, tool
+	// look up the user, also handles admin and tool accounts
+	if user = c.user.getByName(q.User); user == nil {
 		goto dispatch
 	}
 
@@ -80,9 +76,55 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		goto dispatch
 	}
 
-	// TODO: check if the user has a specific grant for the action
+	// check if the user has a specific grant for the action
+	// lookup sectionID and actionID of the Request
+	if action = c.action.getByName(
+		q.Section,
+		q.Action,
+	); action == nil {
+		goto dispatch
+	}
+	sectionID = action.SectionId
+	actionID = action.Id
+	// lookup all permissionIDs that map either section or action
+	sectionPermIDs = c.pmap.getSectionPermissionID(sectionID)
+	actionPermIDs = c.pmap.getActionPermissionID(sectionID, actionID)
+	mergedPermIDs = append(sectionPermIDs, actionPermIDs...)
+	for _, permID = range mergedPermIDs {
+		// check if the user has one the permissions that map the
+		// requested action
+		if c.grantGlobal.assess(
+			subjType,
+			user.Id,
+			category,
+			permID,
+		) {
+			result.Super.Verdict = 200
+			result.Super.VerdictAdmin = true
+			goto dispatch
+		}
+	}
 
-	// TODO: check if the user's team has a specific grant for the action
+	// check if the user's team has a specific grant for the action
+	switch subjType {
+	case `admin`, `tool`:
+		// admin and tool accounts do not inherit team rights
+		goto dispatch
+	}
+	for _, permID = range mergedPermIDs {
+		// check if the user has one the permissions that map the
+		// requested action
+		if c.grantGlobal.assess(
+			`team`,
+			user.TeamId,
+			category,
+			permID,
+		) {
+			result.Super.Verdict = 200
+			result.Super.VerdictAdmin = true
+			goto dispatch
+		}
+	}
 
 dispatch:
 	return result
