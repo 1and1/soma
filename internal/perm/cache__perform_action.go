@@ -94,9 +94,9 @@ func (c *Cache) performClusterDestroy(q *msg.Request) {
 // performGroupCreate adds a group to the object cache
 func (c *Cache) performGroupCreate(q *msg.Request) {
 	c.lock.Lock()
-	c.object.addCluster(
-		q.Cluster.BucketId,
-		q.Cluster.Id,
+	c.object.addGroup(
+		q.Group.BucketId,
+		q.Group.Id,
 	)
 	c.lock.Unlock()
 }
