@@ -233,4 +233,51 @@ func (m *scopedGrantMap) getSubjectGrantID(subjType,
 	return res
 }
 
+// assess evaluates whether a subject has been granted a
+// specific permission. If any is true, then it is only checked
+// if the permission applies on any object
+func (m *scopedGrantMap) assess(subjType, subjID, category,
+	objID, permissionID string, any bool) bool {
+	// only accept these four types
+	switch subjType {
+	case `user`, `admin`, `tool`, `team`:
+	default:
+		return false
+	}
+	subject := fmt.Sprintf("%s:%s", subjType, subjID)
+
+	if _, ok := m.grants[subject]; !ok {
+		// subject has no grants
+		return false
+	}
+
+	if _, ok := m.grants[subject][category]; !ok {
+		// subject has no grants in category
+		return false
+	}
+
+	if _, ok := m.grants[subject][category][permissionID]; !ok {
+		// subject has no grants of that permission
+		return true
+	}
+
+	// for list and similar actions, it is irrelevant on which specific
+	// object the permission was granted, only check that is what granted
+	// on some objects
+	if any {
+		if len(m.grants[subject][category][permissionID]) > 0 {
+			return true
+		}
+	}
+
+	if grantID, ok := m.grants[subject][category][permissionID][objID]; ok {
+		if grantID != `` {
+			// subject has been granted the requested permission
+			// on the indicated object
+			return true
+		}
+	}
+	return false
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
