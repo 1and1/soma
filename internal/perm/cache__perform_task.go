@@ -154,7 +154,7 @@ func (c *Cache) performSectionRemoveTask(sectionID string) {
 // without locking
 func (c *Cache) performPermissionRemoveTask(permID string) {
 	// retrieve category for this permission
-	category := m.pmap.getCategory(permID)
+	category := c.pmap.getCategory(permID)
 
 	// revoke all permission grants
 	switch category {
@@ -188,7 +188,7 @@ func (c *Cache) performPermissionRemoveTask(permID string) {
 // without locking
 func (c *Cache) performCategoryRemoveTask(category string) {
 	// retrieve permissions in this category
-	permIDs := m.pmap.getCategoryPermissionID(category)
+	permIDs := c.pmap.getCategoryPermissionID(category)
 
 	// remove all permissions in this category
 	for _, permID := range permIDs {
@@ -197,8 +197,8 @@ func (c *Cache) performCategoryRemoveTask(category string) {
 
 	// retrieve all sections and actions in this category
 	sectionIDs := c.section.getCategory(category)
-	for _, sectionID := range sectionIDs {
-		c.performSectionRemoveTask(sectionID)
+	for _, section := range sectionIDs {
+		c.performSectionRemoveTask(section.Id)
 	}
 	// no category to remove as categories are tracked implicitly
 }
