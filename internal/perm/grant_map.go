@@ -82,6 +82,21 @@ func (m *unscopedGrantMap) getPermissionGrantID(
 	return res
 }
 
+// getSubjectGrantID returns all grantIDs for a subjectID
+func (m *unscopedGrantMap) getSubjectGrantID(subjType,
+	subjID string) []string {
+	res := []string{}
+	for grantID, grant := range m.byGrant {
+		if grant[`subjType`] != subjType {
+			continue
+		}
+		if grant[`subjID`] == subjID {
+			res = append(res, grantID)
+		}
+	}
+	return res
+}
+
 // scopedGrantMap is the cache data structure for permission grants
 // on an object.
 type scopedGrantMap struct {
@@ -166,6 +181,21 @@ func (m *scopedGrantMap) getObjectGrantID(
 	res := []string{}
 	for grantID, grant := range m.byGrant {
 		if grant[`objID`] == objectID {
+			res = append(res, grantID)
+		}
+	}
+	return res
+}
+
+// getSubjectGrantID returns all grantIDs for a subjectID
+func (m *scopedGrantMap) getSubjectGrantID(subjType,
+	subjID string) []string {
+	res := []string{}
+	for grantID, grant := range m.byGrant {
+		if grant[`subjType`] != subjType {
+			continue
+		}
+		if grant[`subjID`] == subjID {
 			res = append(res, grantID)
 		}
 	}

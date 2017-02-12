@@ -262,7 +262,32 @@ func (c *Cache) performTeamAdd(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performTeamRemove removes a team
 func (c *Cache) performTeamRemove(q *msg.Request) {
+	c.lock.Lock()
+	// revoke all global grants for the team
+	grantIDs := c.grantGlobal.getSubjectGrantID(`team`, q.Team.Id)
+	for _, grantID := range grantIDs {
+		c.grantGlobal.revoke(grantID)
+	}
+	// revoke all monitoring grants for the team
+	grantIDs = c.grantMonitoring.getSubjectGrantID(`team`, q.Team.Id)
+	for _, grantID := range grantIDs {
+		c.grantMonitoring.revoke(grantID)
+	}
+	// revoke all repository grants for the team
+	grantIDs = c.grantRepository.getSubjectGrantID(`team`, q.Team.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// revoke all team grants for the team
+	grantIDs = c.grantTeam.getSubjectGrantID(`team`, q.Team.Id)
+	for _, grantID := range grantIDs {
+		c.grantTeam.revoke(grantID)
+	}
+	// remove team
+	c.team.rmByID(q.Team.Id)
+	c.lock.Unlock()
 }
 
 // performUserAdd registers a user
@@ -280,7 +305,38 @@ func (c *Cache) performUserAdd(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performUserRemove removes a user
 func (c *Cache) performUserRemove(q *msg.Request) {
+	c.lock.Lock()
+	u := c.user.getByID(q.UserObj.Id)
+	if u == nil {
+		return
+	}
+	// revoke all global grants for the user
+	grantIDs := c.grantGlobal.getSubjectGrantID(`user`, u.Id)
+	for _, grantID := range grantIDs {
+		c.grantGlobal.revoke(grantID)
+	}
+	// revoke all monitoring grants for the user
+	grantIDs = c.grantMonitoring.getSubjectGrantID(`user`, u.Id)
+	for _, grantID := range grantIDs {
+		c.grantMonitoring.revoke(grantID)
+	}
+	// revoke all repository grants for the user
+	grantIDs = c.grantRepository.getSubjectGrantID(`user`, u.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// revoke all team grants for the user
+	grantIDs = c.grantTeam.getSubjectGrantID(`user`, u.Id)
+	for _, grantID := range grantIDs {
+		c.grantTeam.revoke(grantID)
+	}
+	// remove user from team
+	c.team.rmMember(u.TeamId, u.Id)
+	// remove user
+	c.user.rmByID(u.Id)
+	c.lock.Unlock()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
