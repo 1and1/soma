@@ -97,6 +97,37 @@ func (m *unscopedGrantMap) getSubjectGrantID(subjType,
 	return res
 }
 
+// assess evaluates whether a subject has been granted a
+// specific permission
+func (m *unscopedGrantMap) assess(subjType, subjID, category,
+	permissionID string) bool {
+	// only accept these four types
+	switch subjType {
+	case `user`, `admin`, `tool`, `team`:
+	default:
+		return false
+	}
+	subject := fmt.Sprintf("%s:%s", subjType, subjID)
+
+	if _, ok := m.grants[subject]; !ok {
+		// subject has no grants
+		return false
+	}
+
+	if _, ok := m.grants[subject][category]; !ok {
+		// subject has no grants in category
+		return false
+	}
+
+	if grantID, ok := m.grants[subject][category][permissionID]; ok {
+		if grantID != `` {
+			// subject has been granted the requested permission
+			return true
+		}
+	}
+	return false
+}
+
 // scopedGrantMap is the cache data structure for permission grants
 // on an object.
 type scopedGrantMap struct {
