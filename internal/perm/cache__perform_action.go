@@ -125,7 +125,20 @@ func (c *Cache) performRightGrant(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performRightRevoke revokes a permission grant
 func (c *Cache) performRightRevoke(q *msg.Request) {
+	c.lock.Lock()
+	switch q.Grant.Category {
+	case `omnipotence`, `system`, `global`, `permission`, `operations`:
+		c.performRightRevokeUnscoped(q)
+	case `repository`:
+		c.performRightRevokeScopeRepository(q)
+	case `team`:
+		c.performRightRevokeScopeTeam(q)
+	case `monitoring`:
+		c.performRightRevokeScopeMonitoring(q)
+	}
+	c.lock.Unlock()
 }
 
 func (c *Cache) performSectionAdd(q *msg.Request) {

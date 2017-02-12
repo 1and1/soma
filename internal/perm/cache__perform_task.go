@@ -150,4 +150,24 @@ func (c *Cache) performSectionRemoveTask(sectionID string) {
 	c.section.rmByID(sectionID)
 }
 
+// performRightRevokeUnscoped revokes a global grant
+func (c *Cache) performRightRevokeUnscoped(q *msg.Request) {
+	c.grantGlobal.revoke(q.Grant.Id)
+}
+
+// performRightRevokeScopeRepository revokes a repo-scoped grant
+func (c *Cache) performRightRevokeScopeRepository(q *msg.Request) {
+	c.grantRepository.revoke(q.Grant.Id)
+}
+
+// performRightRevokeScopeTeam revokes a team-scoped grant
+func (c *Cache) performRightRevokeScopeTeam(q *msg.Request) {
+	c.grantTeam.revoke(q.Grant.Id)
+}
+
+// performRightRevokeScopeMonitoring revokes a monitoring-scoped grant
+func (c *Cache) performRightRevokeScopeMonitoring(q *msg.Request) {
+	c.grantMonitoring.revoke(q.Grant.Id)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
