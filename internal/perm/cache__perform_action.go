@@ -40,7 +40,14 @@ func (c *Cache) performBucketCreate(q *msg.Request) {
 func (c *Cache) performBucketDestroy(q *msg.Request) {
 }
 
+// performCategoryRemove removes an entire category from the
+// cache
 func (c *Cache) performCategoryRemove(q *msg.Request) {
+	c.lock.Lock()
+	c.performCategoryRemoveTask(
+		q.Category.Name,
+	)
+	c.lock.Unlock()
 }
 
 func (c *Cache) performClusterCreate(q *msg.Request) {

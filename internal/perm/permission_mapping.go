@@ -297,6 +297,18 @@ func (m *permissionMapping) getSectionPermissionID(sectionID string) []string {
 	return res
 }
 
+// getCategoryPermissionID returns all recorded permissionIDs
+// for a category
+func (m *permissionMapping) getCategoryPermissionID(
+	category string) []string {
+	if _, ok := m.byCategory[category]; !ok {
+		return []string{}
+	}
+	res := make([]string, len(m.byCategory[category]))
+	copy(res, m.byCategory[category])
+	return res
+}
+
 // getCategory returns the category for a permissionID
 func (m *permissionMapping) getCategory(permissionID string) string {
 	return m.byID[permissionID]

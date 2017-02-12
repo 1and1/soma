@@ -184,6 +184,25 @@ func (c *Cache) performPermissionRemoveTask(permID string) {
 	c.pmap.removePermission(permID)
 }
 
+// performCategoryRemoveTask implements performCategoryRemove
+// without locking
+func (c *Cache) performCategoryRemoveTask(category string) {
+	// retrieve permissions in this category
+	permIDs := m.pmap.getCategoryPermissionID(category)
+
+	// remove all permissions in this category
+	for _, permID := range permIDs {
+		c.performPermissionRemoveTask(permID)
+	}
+
+	// retrieve all sections and actions in this category
+	sectionIDs := c.section.getCategory(category)
+	for _, sectionID := range sectionIDs {
+		c.performSectionRemoveTask(sectionID)
+	}
+	// no category to remove as categories are tracked implicitly
+}
+
 // performRightRevokeUnscoped revokes a global grant
 func (c *Cache) performRightRevokeUnscoped(q *msg.Request) {
 	c.grantGlobal.revoke(q.Grant.Id)
