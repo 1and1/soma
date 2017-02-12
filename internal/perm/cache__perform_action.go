@@ -11,6 +11,7 @@ import "github.com/1and1/soma/internal/msg"
 
 // These are the per-Action methods used in Cache.Perform
 
+// performActionAdd registers an action
 func (c *Cache) performActionAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.action.add(
@@ -68,6 +69,7 @@ func (c *Cache) performNodeAssign(q *msg.Request) {
 func (c *Cache) performNodeUnassign(q *msg.Request) {
 }
 
+// performPermissionAdd registers a permission
 func (c *Cache) performPermissionAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.pmap.addPermission(
@@ -77,6 +79,7 @@ func (c *Cache) performPermissionAdd(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performPermissionMap maps a section or action to a permission
 func (c *Cache) performPermissionMap(q *msg.Request) {
 	c.lock.Lock()
 	// map request can contain either actions or sections, not a mix
@@ -116,6 +119,7 @@ func (c *Cache) performRepositoryCreate(q *msg.Request) {
 func (c *Cache) performRepositoryDestroy(q *msg.Request) {
 }
 
+// performRightGrant grants a permission
 func (c *Cache) performRightGrant(q *msg.Request) {
 	c.lock.Lock()
 	switch q.Grant.Category {
@@ -147,6 +151,7 @@ func (c *Cache) performRightRevoke(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performSectionAdd registers a section
 func (c *Cache) performSectionAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.section.add(
@@ -165,6 +170,7 @@ func (c *Cache) performSectionRemove(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performTeamAdd registers a team
 func (c *Cache) performTeamAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.team.add(
@@ -177,6 +183,7 @@ func (c *Cache) performTeamAdd(q *msg.Request) {
 func (c *Cache) performTeamRemove(q *msg.Request) {
 }
 
+// performUserAdd registers a user
 func (c *Cache) performUserAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.user.add(

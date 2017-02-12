@@ -288,7 +288,8 @@ func (m *permissionMapping) getActionPermissionID(sectionID,
 
 // getSectionPermissionID returns all recorded permissionIDs
 // for a section
-func (m *permissionMapping) getSectionPermissionID(sectionID string) []string {
+func (m *permissionMapping) getSectionPermissionID(
+	sectionID string) []string {
 	if _, ok := m.section[sectionID]; !ok {
 		return []string{}
 	}
