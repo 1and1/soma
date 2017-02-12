@@ -26,12 +26,15 @@ type Request struct {
 	Attribute   proto.Attribute
 	Bucket      proto.Bucket
 	Category    proto.Category
+	Cluster     proto.Cluster
 	Entity      proto.Entity
 	Environment proto.Environment
 	Grant       proto.Grant
+	Group       proto.Group
 	Instance    proto.Instance
 	Job         proto.Job
 	Monitoring  proto.Monitoring
+	Node        proto.Node
 	Permission  proto.Permission
 	Repository  proto.Repository
 	SectionObj  proto.Section
