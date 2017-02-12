@@ -94,4 +94,14 @@ func (c *Cache) Perform(q *msg.Request) {
 	}
 }
 
+// Compact frees up memory used by arrays that is no longer
+// reference by the slice built on top of them
+func (c *Cache) Compact() {
+	c.lock.Lock()
+	c.pmap.compact()
+	c.section.compact()
+	c.team.compact()
+	c.lock.Unlock()
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

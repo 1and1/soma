@@ -121,6 +121,10 @@ func (m *teamLookup) rmByName(teamName string) {
 // compact copies all embedded slices into new slices to free the
 // underlying array, then resets compactionCounter to zero
 func (m *teamLookup) compact() {
+	if m.compactionCounter < 10 {
+		return
+	}
+
 	for teamID := range m.members {
 		nsl := make([]string, len(m.members[teamID]))
 		copy(nsl, m.members[teamID])

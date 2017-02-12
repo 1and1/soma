@@ -235,6 +235,10 @@ func (m *permissionMapping) removePermission(permissionID string) {
 // garbage collector.
 // Afterwards it resets the compactionCounter to zero.
 func (m *permissionMapping) compact() {
+	if m.compactionCounter < 10 {
+		return
+	}
+
 	for permID := range m.permAction {
 		nsl := make([]proto.Action, len(m.permAction[permID]))
 		copy(nsl, m.permAction[permID])

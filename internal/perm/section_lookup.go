@@ -117,6 +117,10 @@ func (m *sectionLookup) getCategory(category string) []*proto.Section {
 // to free the underlying array, then resets compactionCounter to
 // zero
 func (m *sectionLookup) compact() {
+	if m.compactionCounter < 10 {
+		return
+	}
+
 	for category := range m.byCategory {
 		nsl := make([]*proto.Section, len(m.byCategory[category]))
 		copy(nsl, m.byCategory[category])
