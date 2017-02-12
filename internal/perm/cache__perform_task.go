@@ -150,6 +150,40 @@ func (c *Cache) performSectionRemoveTask(sectionID string) {
 	c.section.rmByID(sectionID)
 }
 
+// performPermissionRemoveTask implements performPermissionRemove
+// without locking
+func (c *Cache) performPermissionRemoveTask(permID string) {
+	// retrieve category for this permission
+	category := m.pmap.getCategory(permID)
+
+	// revoke all permission grants
+	switch category {
+	case `omnipotence`, `system`, `global`, `permission`, `operations`:
+		grantIDs := c.grantGlobal.getPermissionGrantID(permID)
+		for _, grantID := range grantIDs {
+			c.grantGlobal.revoke(grantID)
+		}
+	case `repository`:
+		grantIDs := c.grantRepository.getPermissionGrantID(permID)
+		for _, grantID := range grantIDs {
+			c.grantRepository.revoke(grantID)
+		}
+	case `team`:
+		grantIDs := c.grantTeam.getPermissionGrantID(permID)
+		for _, grantID := range grantIDs {
+			c.grantTeam.revoke(grantID)
+		}
+	case `monitoring`:
+		grantIDs := c.grantMonitoring.getPermissionGrantID(permID)
+		for _, grantID := range grantIDs {
+			c.grantMonitoring.revoke(grantID)
+		}
+	}
+
+	// remove permission incl. all mappings
+	c.pmap.removePermission(permID)
+}
+
 // performRightRevokeUnscoped revokes a global grant
 func (c *Cache) performRightRevokeUnscoped(q *msg.Request) {
 	c.grantGlobal.revoke(q.Grant.Id)

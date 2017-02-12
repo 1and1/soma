@@ -297,4 +297,9 @@ func (m *permissionMapping) getSectionPermissionID(sectionID string) []string {
 	return res
 }
 
+// getCategory returns the category for a permissionID
+func (m *permissionMapping) getCategory(permissionID string) string {
+	return m.byID[permissionID]
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

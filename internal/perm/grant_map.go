@@ -70,6 +70,18 @@ func (m *unscopedGrantMap) revoke(grantID string) {
 	delete(m.byGrant, grantID)
 }
 
+// getPermissionGrantID returns all grantIDs for a permissionID
+func (m *unscopedGrantMap) getPermissionGrantID(
+	permissionID string) []string {
+	res := []string{}
+	for grantID, grant := range m.byGrant {
+		if grant[`permissionID`] == permissionID {
+			res = append(res, grantID)
+		}
+	}
+	return res
+}
+
 // scopedGrantMap is the cache data structure for permission grants
 // on an object.
 type scopedGrantMap struct {
@@ -134,6 +146,18 @@ func (m *scopedGrantMap) revoke(grantID string) {
 	delete(m.grants[subject][g[`category`]][g[`permissionID`]],
 		g[`objID`])
 	delete(m.byGrant, grantID)
+}
+
+// getPermissionGrantID returns all grantIDs for a permissionID
+func (m *scopedGrantMap) getPermissionGrantID(
+	permissionID string) []string {
+	res := []string{}
+	for grantID, grant := range m.byGrant {
+		if grant[`permissionID`] == permissionID {
+			res = append(res, grantID)
+		}
+	}
+	return res
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

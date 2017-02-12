@@ -85,8 +85,7 @@ func (c *Cache) performPermissionMap(q *msg.Request) {
 // performPermissionRemove removes a permission from the cache
 func (c *Cache) performPermissionRemove(q *msg.Request) {
 	c.lock.Lock()
-	// this handles mappings to the permission
-	c.pmap.removePermission(q.Permission.Id)
+	c.performPermissionRemoveTask(q.Permission.Id)
 	c.lock.Unlock()
 }
 
