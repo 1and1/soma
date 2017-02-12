@@ -35,10 +35,27 @@ func (c *Cache) performActionRemove(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performBucketCreate adds a bucket to the object cache
 func (c *Cache) performBucketCreate(q *msg.Request) {
+	c.lock.Lock()
+	c.object.addBucket(
+		q.Bucket.RepositoryId,
+		q.Bucket.Id,
+	)
+	c.lock.Unlock()
 }
 
+// performBucketDestroy removes a bucket from the object cache
 func (c *Cache) performBucketDestroy(q *msg.Request) {
+	c.lock.Lock()
+	// revoke all grants on the object to be deleted
+	grantIDs := c.grantRepository.getObjectGrantID(q.Bucket.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// remove object
+	c.object.rmBucket(q.Bucket.Id)
+	c.lock.Unlock()
 }
 
 // performCategoryRemove removes an entire category from the
@@ -51,22 +68,73 @@ func (c *Cache) performCategoryRemove(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performClusterCreate adds a cluster to the object cache
 func (c *Cache) performClusterCreate(q *msg.Request) {
+	c.lock.Lock()
+	c.object.addCluster(
+		q.Cluster.BucketId,
+		q.Cluster.Id,
+	)
+	c.lock.Unlock()
 }
 
+// performClusterDestroy removes a cluster from the object cache
 func (c *Cache) performClusterDestroy(q *msg.Request) {
+	c.lock.Lock()
+	// revoke all grants on the object to be deleted
+	grantIDs := c.grantRepository.getObjectGrantID(q.Cluster.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// remove object
+	c.object.rmCluster(q.Cluster.Id)
+	c.lock.Unlock()
 }
 
+// performGroupCreate adds a group to the object cache
 func (c *Cache) performGroupCreate(q *msg.Request) {
+	c.lock.Lock()
+	c.object.addCluster(
+		q.Cluster.BucketId,
+		q.Cluster.Id,
+	)
+	c.lock.Unlock()
 }
 
+// performGroupDestroy removes a group from the object cache
 func (c *Cache) performGroupDestroy(q *msg.Request) {
+	c.lock.Lock()
+	// revoke all grants on the object to be deleted
+	grantIDs := c.grantRepository.getObjectGrantID(q.Group.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// remove object
+	c.object.rmGroup(q.Group.Id)
+	c.lock.Unlock()
 }
 
+// performNodeAssign adds a node to the object cache
 func (c *Cache) performNodeAssign(q *msg.Request) {
+	c.lock.Lock()
+	c.object.addNode(
+		q.Node.Config.BucketId,
+		q.Node.Id,
+	)
+	c.lock.Unlock()
 }
 
+// performNodeUnassign removes a node from the object cache
 func (c *Cache) performNodeUnassign(q *msg.Request) {
+	c.lock.Lock()
+	// revoke all grants on the object to be deleted
+	grantIDs := c.grantRepository.getObjectGrantID(q.Node.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// remove object
+	c.object.rmNode(q.Node.Id)
+	c.lock.Unlock()
 }
 
 // performPermissionAdd registers a permission
@@ -113,10 +181,24 @@ func (c *Cache) performPermissionUnmap(q *msg.Request) {
 	c.lock.Unlock()
 }
 
+// performRepositoryCreate adds a new repository to the object cache
 func (c *Cache) performRepositoryCreate(q *msg.Request) {
+	c.lock.Lock()
+	c.object.addRepository(q.Repository.Id)
+	c.lock.Unlock()
 }
 
+// performRepositoryDestroy removes a repository from the object cache
 func (c *Cache) performRepositoryDestroy(q *msg.Request) {
+	c.lock.Lock()
+	// revoke all grants on the object to be deleted
+	grantIDs := c.grantRepository.getObjectGrantID(q.Repository.Id)
+	for _, grantID := range grantIDs {
+		c.grantRepository.revoke(grantID)
+	}
+	// remove object
+	c.object.rmRepository(q.Repository.Id)
+	c.lock.Unlock()
 }
 
 // performRightGrant grants a permission

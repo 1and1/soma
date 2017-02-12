@@ -160,4 +160,16 @@ func (m *scopedGrantMap) getPermissionGrantID(
 	return res
 }
 
+// getObjectGrantID returns all grantIDs for an objectID
+func (m *scopedGrantMap) getObjectGrantID(
+	objectID string) []string {
+	res := []string{}
+	for grantID, grant := range m.byGrant {
+		if grant[`objID`] == objectID {
+			res = append(res, grantID)
+		}
+	}
+	return res
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
