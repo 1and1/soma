@@ -104,4 +104,9 @@ func (c *Cache) Compact() {
 	c.lock.Unlock()
 }
 
+// IsAuthorized checks if q describes an authorized request
+func (c *Cache) IsAuthorized(q *msg.Request) msg.Result {
+	return c.isAuthorized(q)
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
