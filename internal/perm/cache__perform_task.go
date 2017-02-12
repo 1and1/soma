@@ -13,96 +13,6 @@ import "github.com/1and1/soma/internal/msg"
 // Cache locking is performed by the action methods, tasks do not
 // lock the cache!
 
-func (c *Cache) performPermissionMapAction(q *msg.Request) {
-	for _, a := range *q.Permission.Actions {
-		c.pmap.mapAction(
-			a.SectionId,
-			a.Id,
-			q.Permission.Id,
-		)
-	}
-}
-
-func (c *Cache) performPermissionMapSection(q *msg.Request) {
-	for _, s := range *q.Permission.Sections {
-		c.pmap.mapSection(
-			s.Id,
-			q.Permission.Id,
-		)
-	}
-}
-
-func (c *Cache) performPermissionUnmapAction(q *msg.Request) {
-	for _, a := range *q.Permission.Actions {
-		c.pmap.unmapAction(
-			a.SectionId,
-			a.Id,
-			q.Permission.Id,
-		)
-	}
-}
-
-func (c *Cache) performPermissionUnmapSection(q *msg.Request) {
-	for _, s := range *q.Permission.Sections {
-		c.pmap.unmapSection(
-			s.Id,
-			q.Permission.Id,
-		)
-	}
-}
-
-func (c *Cache) performRightGrantUnscoped(q *msg.Request) {
-	c.grantGlobal.grant(
-		q.Grant.RecipientType,
-		q.Grant.RecipientId,
-		q.Grant.Category,
-		q.Grant.PermissionId,
-		q.Grant.Id,
-	)
-}
-
-func (c *Cache) performRightGrantScopeRepository(q *msg.Request) {
-	switch q.Grant.ObjectType {
-	case `repository`, `bucket`:
-		c.grantRepository.grant(
-			q.Grant.RecipientType,
-			q.Grant.RecipientId,
-			q.Grant.Category,
-			q.Grant.ObjectId,
-			q.Grant.PermissionId,
-			q.Grant.Id,
-		)
-	}
-}
-
-func (c *Cache) performRightGrantScopeTeam(q *msg.Request) {
-	switch q.Grant.ObjectType {
-	case `team`:
-		c.grantTeam.grant(
-			q.Grant.RecipientType,
-			q.Grant.RecipientId,
-			q.Grant.Category,
-			q.Grant.ObjectId,
-			q.Grant.PermissionId,
-			q.Grant.Id,
-		)
-	}
-}
-
-func (c *Cache) performRightGrantScopeMonitoring(q *msg.Request) {
-	switch q.Grant.ObjectType {
-	case `monitoring`:
-		c.grantMonitoring.grant(
-			q.Grant.RecipientType,
-			q.Grant.RecipientId,
-			q.Grant.Category,
-			q.Grant.ObjectId,
-			q.Grant.PermissionId,
-			q.Grant.Id,
-		)
-	}
-}
-
 // performActionRemoveTask implements performActionRemove in a
 // reusable way, ie. without locking
 func (c *Cache) performActionRemoveTask(sectionID, actionID string) {
@@ -125,29 +35,44 @@ func (c *Cache) performActionRemoveTask(sectionID, actionID string) {
 	)
 }
 
-// performSectionRemoveTask implements performSectionRemove without
-// locking
-func (c *Cache) performSectionRemoveTask(sectionID string) {
-	// delete all member actions
-	actionIDs := c.action.getActionsBySectionID(sectionID)
-	for _, actionID := range actionIDs {
-		c.performActionRemoveTask(sectionID, actionID)
-	}
-	// delete section from action lookup
-	c.action.rmSectionByID(sectionID)
+// performCategoryRemoveTask implements performCategoryRemove
+// without locking
+func (c *Cache) performCategoryRemoveTask(category string) {
+	// retrieve permissions in this category
+	permIDs := c.pmap.getCategoryPermissionID(category)
 
-	// unmap the section from all permissions
-	permIDs := c.pmap.getSectionPermissionID(
-		sectionID,
-	)
-	for i := range permIDs {
-		c.pmap.unmapSection(
-			sectionID,
-			permIDs[i],
+	// remove all permissions in this category
+	for _, permID := range permIDs {
+		c.performPermissionRemoveTask(permID)
+	}
+
+	// retrieve all sections and actions in this category
+	sectionIDs := c.section.getCategory(category)
+	for _, section := range sectionIDs {
+		c.performSectionRemoveTask(section.Id)
+	}
+	// no category to remove as categories are tracked implicitly
+}
+
+// performPermissionMapAction maps action to a permission
+func (c *Cache) performPermissionMapAction(q *msg.Request) {
+	for _, a := range *q.Permission.Actions {
+		c.pmap.mapAction(
+			a.SectionId,
+			a.Id,
+			q.Permission.Id,
 		)
 	}
-	// remove the section
-	c.section.rmByID(sectionID)
+}
+
+// performPermissionMapSection maps section to a permission
+func (c *Cache) performPermissionMapSection(q *msg.Request) {
+	for _, s := range *q.Permission.Sections {
+		c.pmap.mapSection(
+			s.Id,
+			q.Permission.Id,
+		)
+	}
 }
 
 // performPermissionRemoveTask implements performPermissionRemove
@@ -184,28 +109,87 @@ func (c *Cache) performPermissionRemoveTask(permID string) {
 	c.pmap.removePermission(permID)
 }
 
-// performCategoryRemoveTask implements performCategoryRemove
-// without locking
-func (c *Cache) performCategoryRemoveTask(category string) {
-	// retrieve permissions in this category
-	permIDs := c.pmap.getCategoryPermissionID(category)
-
-	// remove all permissions in this category
-	for _, permID := range permIDs {
-		c.performPermissionRemoveTask(permID)
+// performPermissionUnmapAction unmaps an action from a permission
+func (c *Cache) performPermissionUnmapAction(q *msg.Request) {
+	for _, a := range *q.Permission.Actions {
+		c.pmap.unmapAction(
+			a.SectionId,
+			a.Id,
+			q.Permission.Id,
+		)
 	}
-
-	// retrieve all sections and actions in this category
-	sectionIDs := c.section.getCategory(category)
-	for _, section := range sectionIDs {
-		c.performSectionRemoveTask(section.Id)
-	}
-	// no category to remove as categories are tracked implicitly
 }
 
-// performRightRevokeUnscoped revokes a global grant
-func (c *Cache) performRightRevokeUnscoped(q *msg.Request) {
-	c.grantGlobal.revoke(q.Grant.Id)
+// performPermissionUnmapSection unmaps a section from a permission
+func (c *Cache) performPermissionUnmapSection(q *msg.Request) {
+	for _, s := range *q.Permission.Sections {
+		c.pmap.unmapSection(
+			s.Id,
+			q.Permission.Id,
+		)
+	}
+}
+
+// performRightGrantScopeMonitoring grants a monitoring-scoped
+// permission
+func (c *Cache) performRightGrantScopeMonitoring(q *msg.Request) {
+	switch q.Grant.ObjectType {
+	case `monitoring`:
+		c.grantMonitoring.grant(
+			q.Grant.RecipientType,
+			q.Grant.RecipientId,
+			q.Grant.Category,
+			q.Grant.ObjectId,
+			q.Grant.PermissionId,
+			q.Grant.Id,
+		)
+	}
+}
+
+// performRightGrantScopeRepository grants a repo-scoped permission
+func (c *Cache) performRightGrantScopeRepository(q *msg.Request) {
+	switch q.Grant.ObjectType {
+	case `repository`, `bucket`:
+		c.grantRepository.grant(
+			q.Grant.RecipientType,
+			q.Grant.RecipientId,
+			q.Grant.Category,
+			q.Grant.ObjectId,
+			q.Grant.PermissionId,
+			q.Grant.Id,
+		)
+	}
+}
+
+// performRightGrantScopeTeam grants a team-scoped permission
+func (c *Cache) performRightGrantScopeTeam(q *msg.Request) {
+	switch q.Grant.ObjectType {
+	case `team`:
+		c.grantTeam.grant(
+			q.Grant.RecipientType,
+			q.Grant.RecipientId,
+			q.Grant.Category,
+			q.Grant.ObjectId,
+			q.Grant.PermissionId,
+			q.Grant.Id,
+		)
+	}
+}
+
+// performRightGrantUnscoped grants a unscoped permission
+func (c *Cache) performRightGrantUnscoped(q *msg.Request) {
+	c.grantGlobal.grant(
+		q.Grant.RecipientType,
+		q.Grant.RecipientId,
+		q.Grant.Category,
+		q.Grant.PermissionId,
+		q.Grant.Id,
+	)
+}
+
+// performRightRevokeScopeMonitoring revokes a monitoring-scoped grant
+func (c *Cache) performRightRevokeScopeMonitoring(q *msg.Request) {
+	c.grantMonitoring.revoke(q.Grant.Id)
 }
 
 // performRightRevokeScopeRepository revokes a repo-scoped grant
@@ -218,9 +202,34 @@ func (c *Cache) performRightRevokeScopeTeam(q *msg.Request) {
 	c.grantTeam.revoke(q.Grant.Id)
 }
 
-// performRightRevokeScopeMonitoring revokes a monitoring-scoped grant
-func (c *Cache) performRightRevokeScopeMonitoring(q *msg.Request) {
-	c.grantMonitoring.revoke(q.Grant.Id)
+// performRightRevokeUnscoped revokes a global grant
+func (c *Cache) performRightRevokeUnscoped(q *msg.Request) {
+	c.grantGlobal.revoke(q.Grant.Id)
+}
+
+// performSectionRemoveTask implements performSectionRemove without
+// locking
+func (c *Cache) performSectionRemoveTask(sectionID string) {
+	// delete all member actions
+	actionIDs := c.action.getActionsBySectionID(sectionID)
+	for _, actionID := range actionIDs {
+		c.performActionRemoveTask(sectionID, actionID)
+	}
+	// delete section from action lookup
+	c.action.rmSectionByID(sectionID)
+
+	// unmap the section from all permissions
+	permIDs := c.pmap.getSectionPermissionID(
+		sectionID,
+	)
+	for i := range permIDs {
+		c.pmap.unmapSection(
+			sectionID,
+			permIDs[i],
+		)
+	}
+	// remove the section
+	c.section.rmByID(sectionID)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
