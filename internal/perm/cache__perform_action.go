@@ -61,6 +61,15 @@ func (c *Cache) performNodeAssign(q *msg.Request) {
 func (c *Cache) performNodeUnassign(q *msg.Request) {
 }
 
+func (c *Cache) performPermissionAdd(q *msg.Request) {
+	c.lock.Lock()
+	c.pmap.addPermission(
+		q.Permission.Id,
+		q.Permission.Category,
+	)
+	c.lock.Unlock()
+}
+
 func (c *Cache) performPermissionMap(q *msg.Request) {
 	c.lock.Lock()
 	// map request can contain either actions or sections, not a mix

@@ -65,6 +65,8 @@ func (c *Cache) performNode(q *msg.Request) {
 
 func (c *Cache) performPermission(q *msg.Request) {
 	switch q.Action {
+	case `add`:
+		c.performPermissionAdd(q)
 	case `remove`:
 		c.performPermissionRemove(q)
 	case `map`:

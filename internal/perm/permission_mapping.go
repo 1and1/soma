@@ -28,6 +28,10 @@ type permissionMapping struct {
 	permSection map[string][]string
 	// permissionID -> []protoAction{Id:, SectionId:}
 	permAction map[string][]proto.Action
+	// permissionID -> category
+	byID map[string]string
+	// category -> []permissionID
+	byCategory map[string][]string
 }
 
 // newPermissionMapping returns an initialized permissionMapping
@@ -39,6 +43,8 @@ func newPermissionMapping() *permissionMapping {
 	p.action = map[string]map[string][]string{}
 	p.permSection = map[string][]string{}
 	p.permAction = map[string][]proto.Action{}
+	p.byID = map[string]string{}
+	p.byCategory = map[string][]string{}
 	return &p
 }
 
@@ -171,6 +177,13 @@ func (m *permissionMapping) unmapAction(sectionID, actionID,
 	}
 }
 
+// addPermission adds a permission to the datastructure, recording its
+// category
+func (m *permissionMapping) addPermission(permissionID, category string) {
+	m.byID[permissionID] = category
+	m.byCategory[category] = append(m.byCategory[category], permissionID)
+}
+
 // removePermission removes a permission from the mapping
 func (m *permissionMapping) removePermission(permissionID string) {
 
@@ -201,6 +214,20 @@ func (m *permissionMapping) removePermission(permissionID string) {
 		}
 		delete(m.permAction, permissionID)
 	}
+
+	// remove permissionID from category tracking
+	cat := m.byID[permissionID]
+	delete(m.byID, permissionID)
+	for i, p := range m.byCategory[cat] {
+		if p != permissionID {
+			continue
+		}
+		m.byCategory[cat] = append(m.byCategory[cat][:i],
+			m.byCategory[cat][i+1:]...)
+		m.compactionCounter++
+		break
+	}
+
 }
 
 // compact copies all slices in the struct over into new slices to
@@ -232,6 +259,12 @@ func (m *permissionMapping) compact() {
 			copy(nsl, m.action[sectID][actID])
 			m.action[sectID][actID] = nsl
 		}
+	}
+
+	for cat := range m.byCategory {
+		nsl := make([]string, len(m.byCategory[cat]))
+		copy(nsl, m.byCategory[cat])
+		m.byCategory[cat] = nsl
 	}
 	m.compactionCounter = 0
 }
