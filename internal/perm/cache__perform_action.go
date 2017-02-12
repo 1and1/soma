@@ -142,6 +142,7 @@ func (c *Cache) performPermissionAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.pmap.addPermission(
 		q.Permission.Id,
+		q.Permission.Name,
 		q.Permission.Category,
 	)
 	c.lock.Unlock()

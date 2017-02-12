@@ -28,10 +28,10 @@ type permissionMapping struct {
 	permSection map[string][]string
 	// permissionID -> []protoAction{Id:, SectionId:}
 	permAction map[string][]proto.Action
-	// permissionID -> category
-	byID map[string]string
-	// category -> []permissionID
-	byCategory map[string][]string
+	// permissionID -> *proto.Permission
+	byID map[string]proto.Permission
+	// category -> []*proto.Permission
+	byCategory map[string][]proto.Permission
 }
 
 // newPermissionMapping returns an initialized permissionMapping
@@ -43,8 +43,8 @@ func newPermissionMapping() *permissionMapping {
 	p.action = map[string]map[string][]string{}
 	p.permSection = map[string][]string{}
 	p.permAction = map[string][]proto.Action{}
-	p.byID = map[string]string{}
-	p.byCategory = map[string][]string{}
+	p.byID = map[string]proto.Permission{}
+	p.byCategory = map[string][]proto.Permission{}
 	return &p
 }
 
@@ -179,9 +179,18 @@ func (m *permissionMapping) unmapAction(sectionID, actionID,
 
 // addPermission adds a permission to the datastructure, recording its
 // category
-func (m *permissionMapping) addPermission(permissionID, category string) {
-	m.byID[permissionID] = category
-	m.byCategory[category] = append(m.byCategory[category], permissionID)
+func (m *permissionMapping) addPermission(permissionID, permissionName,
+	category string) {
+	m.byID[permissionID] = proto.Permission{
+		Id:       permissionID,
+		Name:     permissionName,
+		Category: category,
+	}
+	m.byCategory[category] = append(m.byCategory[category], proto.Permission{
+		Id:       permissionID,
+		Name:     permissionName,
+		Category: category,
+	})
 }
 
 // removePermission removes a permission from the mapping
@@ -218,12 +227,13 @@ func (m *permissionMapping) removePermission(permissionID string) {
 	// remove permissionID from category tracking
 	cat := m.byID[permissionID]
 	delete(m.byID, permissionID)
-	for i, p := range m.byCategory[cat] {
-		if p != permissionID {
+	for i, p := range m.byCategory[cat.Category] {
+		if p.Id != permissionID {
 			continue
 		}
-		m.byCategory[cat] = append(m.byCategory[cat][:i],
-			m.byCategory[cat][i+1:]...)
+		m.byCategory[cat.Category] = append(
+			m.byCategory[cat.Category][:i],
+			m.byCategory[cat.Category][i+1:]...)
 		m.compactionCounter++
 		break
 	}
@@ -266,7 +276,7 @@ func (m *permissionMapping) compact() {
 	}
 
 	for cat := range m.byCategory {
-		nsl := make([]string, len(m.byCategory[cat]))
+		nsl := make([]proto.Permission, len(m.byCategory[cat]))
 		copy(nsl, m.byCategory[cat])
 		m.byCategory[cat] = nsl
 	}
@@ -305,18 +315,22 @@ func (m *permissionMapping) getSectionPermissionID(
 // getCategoryPermissionID returns all recorded permissionIDs
 // for a category
 func (m *permissionMapping) getCategoryPermissionID(
-	category string) []string {
+	category string) []proto.Permission {
 	if _, ok := m.byCategory[category]; !ok {
-		return []string{}
+		return []proto.Permission{}
 	}
-	res := make([]string, len(m.byCategory[category]))
+	res := make([]proto.Permission, len(m.byCategory[category]))
 	copy(res, m.byCategory[category])
 	return res
 }
 
 // getCategory returns the category for a permissionID
 func (m *permissionMapping) getCategory(permissionID string) string {
-	return m.byID[permissionID]
+	perm, ok := m.byID[permissionID]
+	if !ok {
+		return ``
+	}
+	return perm.Category
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -42,8 +42,8 @@ func (c *Cache) performCategoryRemoveTask(category string) {
 	permIDs := c.pmap.getCategoryPermissionID(category)
 
 	// remove all permissions in this category
-	for _, permID := range permIDs {
-		c.performPermissionRemoveTask(permID)
+	for _, perm := range permIDs {
+		c.performPermissionRemoveTask(perm.Id)
 	}
 
 	// retrieve all sections and actions in this category
