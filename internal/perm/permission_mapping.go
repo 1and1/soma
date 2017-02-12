@@ -333,4 +333,15 @@ func (m *permissionMapping) getCategory(permissionID string) string {
 	return perm.Category
 }
 
+// getIDByName returns the permissionID of a permission
+func (m *permissionMapping) getIDByName(category,
+	permissionName string) string {
+	for _, perm := range m.byCategory[category] {
+		if perm.Name == permissionName {
+			return perm.Id
+		}
+	}
+	return ``
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

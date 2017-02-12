@@ -8,6 +8,8 @@
 package perm // import "github.com/1and1/soma/internal/perm"
 
 import (
+	"strings"
+
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/lib/proto"
 )
@@ -22,7 +24,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		VerdictAdmin: false,
 	}
 	var user *proto.User
-	var subjType string
+	var subjType, category, permID string
 
 	// determine type of the request subject
 	switch {
@@ -60,6 +62,27 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		result.Super.VerdictAdmin = true
 		goto dispatch
 	}
+
+	// check if the user has the system permission
+	category = c.section.getByName(q.Section).Category
+	permID = c.pmap.getIDByName(`system`, category)
+	if permID == `` {
+		goto dispatch
+	}
+	if c.grantGlobal.assess(
+		subjType,
+		user.Id,
+		`system`,
+		permID,
+	) {
+		result.Super.Verdict = 200
+		result.Super.VerdictAdmin = true
+		goto dispatch
+	}
+
+	// TODO: check if the user has a specific grant for the action
+
+	// TODO: check if the user's team has a specific grant for the action
 
 dispatch:
 	return result
