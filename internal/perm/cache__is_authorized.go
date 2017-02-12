@@ -22,19 +22,36 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		VerdictAdmin: false,
 	}
 	var user *proto.User
+	var subjType string
+
+	// determine type of the request subject
+	switch {
+	case strings.HasPrefix(q.User, `admin_`):
+		subjType = `admin`
+	case strings.HasPrefix(q.User, `tool_`):
+		subjType = `tool`
+	default:
+		subjType = `user`
+	}
 
 	// set readlock on the cache
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
 	// look up the user
-	if user = c.user.getByName(q.User); user == nil {
+	switch subjType {
+	case `user`:
+		if user = c.user.getByName(q.User); user == nil {
+			goto dispatch
+		}
+	default:
+		// XXX not implemented: admin, tool
 		goto dispatch
 	}
 
-	// check if the user has omnipotence
+	// check if the subject has omnipotence
 	if c.grantGlobal.assess(
-		`user`, // TODO lookup usertype
+		subjType,
 		user.Id,
 		`omnipotence`,
 		`00000000-0000-0000-0000-000000000000`,
