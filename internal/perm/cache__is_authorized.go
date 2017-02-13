@@ -24,9 +24,10 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		VerdictAdmin: false,
 	}
 	var user *proto.User
-	var subjType, category, permID, actionID, sectionID string
+	var subjType, category, permID, actionID, sectionID, objID string
 	var action *proto.Action
 	var sectionPermIDs, actionPermIDs, mergedPermIDs []string
+	var any bool
 
 	// determine type of the request subject
 	switch {
@@ -90,18 +91,36 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 	sectionPermIDs = c.pmap.getSectionPermissionID(sectionID)
 	actionPermIDs = c.pmap.getActionPermissionID(sectionID, actionID)
 	mergedPermIDs = append(sectionPermIDs, actionPermIDs...)
+	// check if we care about the specific object
+	switch q.Action {
+	case `list`, `search`:
+		any = true
+	}
+	// check if the user has one the permissions that map the
+	// requested action
 	for _, permID = range mergedPermIDs {
-		// check if the user has one the permissions that map the
-		// requested action
-		if c.grantGlobal.assess(
-			subjType,
-			user.Id,
-			category,
-			permID,
-		) {
-			result.Super.Verdict = 200
-			result.Super.VerdictAdmin = true
-			goto dispatch
+		switch q.Section {
+		case `monitoringsystem`:
+			switch {
+			case any:
+				// invalid uuid
+				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+			default:
+				objID = q.Monitoring.Id
+			}
+			if c.grantMonitoring.assess(subjType, user.Id, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = true
+				goto dispatch
+			}
+		default:
+			if c.grantGlobal.assess(subjType, user.Id, category,
+				permID) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = true
+				goto dispatch
+			}
 		}
 	}
 
@@ -111,18 +130,31 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		// admin and tool accounts do not inherit team rights
 		goto dispatch
 	}
+	// check if the user has one the permissions that map the
+	// requested action
 	for _, permID = range mergedPermIDs {
-		// check if the user has one the permissions that map the
-		// requested action
-		if c.grantGlobal.assess(
-			`team`,
-			user.TeamId,
-			category,
-			permID,
-		) {
-			result.Super.Verdict = 200
-			result.Super.VerdictAdmin = true
-			goto dispatch
+		switch q.Section {
+		case `monitoringsystem`:
+			switch {
+			case any:
+				// invalid uuid
+				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+			default:
+				objID = q.Monitoring.Id
+			}
+			if c.grantMonitoring.assess(`team`, user.TeamId, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = true
+				goto dispatch
+			}
+		default:
+			if c.grantGlobal.assess(`team`, user.TeamId, category,
+				permID) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = true
+				goto dispatch
+			}
 		}
 	}
 
