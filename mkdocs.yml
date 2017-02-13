@@ -4,22 +4,22 @@ pages:
   - 'Introduction': 'index.md'
   - 'Client Command Reference':
     - 'buckets':
-      - 'property add': 'somaadm/command_refernce/BucketsPropertyAdd.md'
+      - 'property add': 'somaadm/command_reference/BucketsPropertyAdd.md'
     - 'capabilities':
-      - 'declare': 'somaadm/command_refernce/CapabilitiesDeclare.md'
+      - 'declare': 'somaadm/command_reference/CapabilitiesDeclare.md'
     - 'checks':
-      - 'create': 'somaadm/command_refernce/ChecksCreate.md'
-      - 'delete': 'somaadm/command_refernce/ChecksDelete.md'
-      - 'list': 'somaadm/command_refernce/ChecksList.md'
-      - 'show': 'somaadm/command_refernce/ChecksShow.md'
+      - 'create': 'somaadm/command_reference/ChecksCreate.md'
+      - 'delete': 'somaadm/command_reference/ChecksDelete.md'
+      - 'list': 'somaadm/command_reference/ChecksList.md'
+      - 'show': 'somaadm/command_reference/ChecksShow.md'
     - 'servers':
-      - 'create': 'somaadm/command_refernce/ServersCreate.md'
-      - 'update': 'somaadm/command_refernce/ServersUpdate.md'
+      - 'create': 'somaadm/command_reference/ServersCreate.md'
+      - 'update': 'somaadm/command_reference/ServersUpdate.md'
     - 'users':
-      - 'password update': 'somaadm/command_refernce/UsersPasswordUpdate.md'
+      - 'password update': 'somaadm/command_reference/UsersPasswordUpdate.md'
     - 'ops':
-      - 'bootstrap': 'somaadm/command_refernce/OpsBootstrap.md'
-      - 'dumptoken': 'somaadm/command_refernce/OpsDumptoken.md'
-      - 'repository stop': 'somaadm/command_refernce/OpsRepositoryStop.md'
-      - 'repository rebuild': 'somaadm/command_refernce/OpsRepositoryRebuild.md'
-      - 'repository restart': 'somaadm/command_refernce/OpsRepositoryRestart.md'
+      - 'bootstrap': 'somaadm/command_reference/OpsBootstrap.md'
+      - 'dumptoken': 'somaadm/command_reference/OpsDumptoken.md'
+      - 'repository stop': 'somaadm/command_reference/OpsRepositoryStop.md'
+      - 'repository rebuild': 'somaadm/command_reference/OpsRepositoryRebuild.md'
+      - 'repository restart': 'somaadm/command_reference/OpsRepositoryRestart.md'
