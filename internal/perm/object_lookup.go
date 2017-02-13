@@ -303,4 +303,12 @@ func (m *objectLookup) rmNode(nodeID string) {
 	delete(m.byNode, nodeID)
 }
 
+// repoForBucket returns the repositoryID of a bucket
+func (m *objectLookup) repoForBucket(bucketID string) string {
+	if _, ok := m.byBucket[bucketID]; !ok {
+		return ``
+	}
+	return m.byBucket[bucketID][`repository`][0]
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -114,6 +114,45 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 				result.Super.VerdictAdmin = false
 				goto dispatch
 			}
+		case `repository`:
+			switch {
+			case any:
+				// invalid uuid
+				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+			default:
+				objID = q.Repository.Id
+			}
+			if c.grantRepository.assess(subjType, user.Id, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = false
+				goto dispatch
+			}
+		case `bucket`:
+			switch {
+			case any:
+				// invalid uuid
+				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+			default:
+				objID = q.Bucket.Id
+			}
+			if c.grantRepository.assess(subjType, user.Id, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = false
+				goto dispatch
+			}
+			// permission could be on the repository
+			objID = c.object.repoForBucket(q.Bucket.Id)
+			if objID == `` {
+				goto dispatch
+			}
+			if c.grantRepository.assess(subjType, user.Id, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = false
+				goto dispatch
+			}
 		default:
 			if c.grantGlobal.assess(subjType, user.Id, category,
 				permID) {
@@ -130,7 +169,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		// admin and tool accounts do not inherit team rights
 		goto dispatch
 	}
-	// check if the user has one the permissions that map the
+	// check if the team has one the permissions that map the
 	// requested action
 	for _, permID = range mergedPermIDs {
 		switch q.Section {
@@ -143,6 +182,45 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 				objID = q.Monitoring.Id
 			}
 			if c.grantMonitoring.assess(`team`, user.TeamId, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = false
+				goto dispatch
+			}
+		case `repository`:
+			switch {
+			case any:
+				// invalid uuid
+				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+			default:
+				objID = q.Repository.Id
+			}
+			if c.grantRepository.assess(subjType, user.Id, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = false
+				goto dispatch
+			}
+		case `bucket`:
+			switch {
+			case any:
+				// invalid uuid
+				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+			default:
+				objID = q.Bucket.Id
+			}
+			if c.grantRepository.assess(subjType, user.Id, category,
+				objID, permID, any) {
+				result.Super.Verdict = 200
+				result.Super.VerdictAdmin = false
+				goto dispatch
+			}
+			// permission could be on the repository
+			objID = c.object.repoForBucket(q.Bucket.Id)
+			if objID == `` {
+				goto dispatch
+			}
+			if c.grantRepository.assess(subjType, user.Id, category,
 				objID, permID, any) {
 				result.Super.Verdict = 200
 				result.Super.VerdictAdmin = false
