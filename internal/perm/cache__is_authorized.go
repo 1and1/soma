@@ -155,26 +155,32 @@ func (c *Cache) checkPermission(permIDs []string, any bool,
 permloop:
 	for _, permID := range permIDs {
 		// determine objID
-		switch {
-		case any:
+		if any {
 			// invalid uuid
 			objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-		case q.Section == `monitoringsystem`:
-			objID = q.Monitoring.Id
-		case q.Section == `repository`:
-			objID = q.Repository.Id
-		case q.Section == `bucket`:
-			objID = q.Bucket.Id
+		} else {
+			switch q.Section {
+			case `monitoringsystem`, `capability`:
+				objID = q.Monitoring.Id
+			case `repository`:
+				objID = q.Repository.Id
+			case `bucket`:
+				objID = q.Bucket.Id
+			case `node`, `property_service_team`:
+				objID = user.TeamId
+			}
 		}
 
 		// check authorization
 		switch q.Section {
-		case `monitoringsystem`:
+		case `monitoringsystem`, `capability`:
+			// per-monitoring sections
 			if c.grantMonitoring.assess(subjectType, subjectID,
 				category, objID, permID, any) {
 				return true
 			}
 		case `repository`, `bucket`:
+			// per-repository sections
 			if c.grantRepository.assess(subjectType, subjectID,
 				category, objID, permID, any) {
 				return true
@@ -190,7 +196,14 @@ permloop:
 					return true
 				}
 			}
+		case `node`, `property_service_team`:
+			// per-team sections
+			if c.grantTeam.assess(subjectType, subjectID,
+				category, objID, permID, any) {
+				return true
+			}
 		default:
+			// global sections
 			if c.grantGlobal.assess(subjectType, subjectID, category,
 				permID) {
 				return true
