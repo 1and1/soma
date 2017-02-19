@@ -195,7 +195,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 			default:
 				objID = q.Repository.Id
 			}
-			if c.grantRepository.assess(subjType, user.Id, category,
+			if c.grantRepository.assess(`team`, user.TeamId, category,
 				objID, permID, any) {
 				result.Super.Verdict = 200
 				result.Super.VerdictAdmin = false
@@ -209,7 +209,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 			default:
 				objID = q.Bucket.Id
 			}
-			if c.grantRepository.assess(subjType, user.Id, category,
+			if c.grantRepository.assess(`team`, user.TeamId, category,
 				objID, permID, any) {
 				result.Super.Verdict = 200
 				result.Super.VerdictAdmin = false
@@ -220,7 +220,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 			if objID == `` {
 				goto dispatch
 			}
-			if c.grantRepository.assess(subjType, user.Id, category,
+			if c.grantRepository.assess(`team`, user.TeamId, category,
 				objID, permID, any) {
 				result.Super.Verdict = 200
 				result.Super.VerdictAdmin = false
