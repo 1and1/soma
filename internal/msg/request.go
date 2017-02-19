@@ -36,6 +36,7 @@ type Request struct {
 	Monitoring  proto.Monitoring
 	Node        proto.Node
 	Permission  proto.Permission
+	Property    proto.Property
 	Repository  proto.Repository
 	SectionObj  proto.Section
 	State       proto.State
