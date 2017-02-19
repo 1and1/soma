@@ -162,12 +162,15 @@ permloop:
 			switch q.Section {
 			case `monitoringsystem`, `capability`:
 				objID = q.Monitoring.Id
-			case `repository`:
+			case `property_service_team`:
+				objID = q.Property.Service.TeamId
+			case `node`:
+				objID = q.Node.TeamId
+			case `repository`, `instance`, `node-config`,
+				`property_custom`:
 				objID = q.Repository.Id
-			case `bucket`:
+			case `bucket`, `clusters`, `checks`, `groups`:
 				objID = q.Bucket.Id
-			case `node`, `property_service_team`:
-				objID = user.TeamId
 			}
 		}
 
@@ -179,13 +182,15 @@ permloop:
 				category, objID, permID, any) {
 				return true
 			}
-		case `repository`, `bucket`:
+		case `repository`, `bucket`, `instance`, `node-config`,
+			`property_custom`, `clusters`, `checks`, `groups`:
 			// per-repository sections
 			if c.grantRepository.assess(subjectType, subjectID,
 				category, objID, permID, any) {
 				return true
 			}
-			if q.Section == `bucket` {
+			switch q.Section {
+			case `bucket`, `clusters`, `checks`, `groups`:
 				// permission could be on the repository
 				objID = c.object.repoForBucket(q.Bucket.Id)
 				if objID == `` {
