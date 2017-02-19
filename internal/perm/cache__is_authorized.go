@@ -24,8 +24,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 		VerdictAdmin: false,
 	}
 	var user *proto.User
-	var subjType, category, permID, actionID, sectionID, objID string
-	var action *proto.Action
+	var subjType, category, actionID, sectionID string
 	var sectionPermIDs, actionPermIDs, mergedPermIDs []string
 	var any bool
 
@@ -49,195 +48,154 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 	}
 
 	// check if the subject has omnipotence
-	if c.grantGlobal.assess(
-		subjType,
-		user.Id,
-		`omnipotence`,
-		`00000000-0000-0000-0000-000000000000`,
-	) {
+	if c.checkOmnipotence(subjType, user.Id) {
 		result.Super.Verdict = 200
 		result.Super.VerdictAdmin = true
 		goto dispatch
 	}
 
-	// check if the user has the system permission
+	// extract category
 	category = c.section.getByName(q.Section).Category
-	permID = c.pmap.getIDByName(`system`, category)
-	if permID == `` {
-		goto dispatch
-	}
-	if c.grantGlobal.assess(
-		subjType,
-		user.Id,
-		`system`,
-		permID,
-	) {
-		result.Super.Verdict = 200
-		result.Super.VerdictAdmin = true
-		goto dispatch
-	}
 
-	// check if the user has a specific grant for the action
-	// lookup sectionID and actionID of the Request
-	if action = c.action.getByName(
+	// lookup sectionID and actionID of the Request, abort for
+	// unknown actions
+	if action := c.action.getByName(
 		q.Section,
 		q.Action,
 	); action == nil {
 		goto dispatch
+	} else {
+		sectionID = action.SectionId
+		actionID = action.Id
 	}
-	sectionID = action.SectionId
-	actionID = action.Id
+
+	// check if the user has the correct system permission
+	if ok, invalid := c.checkSystem(category, subjType,
+		user.Id); invalid {
+		goto dispatch
+	} else if ok {
+		result.Super.Verdict = 200
+		result.Super.VerdictAdmin = true
+		goto dispatch
+	}
+
 	// lookup all permissionIDs that map either section or action
 	sectionPermIDs = c.pmap.getSectionPermissionID(sectionID)
 	actionPermIDs = c.pmap.getActionPermissionID(sectionID, actionID)
 	mergedPermIDs = append(sectionPermIDs, actionPermIDs...)
+
 	// check if we care about the specific object
 	switch q.Action {
 	case `list`, `search`:
 		any = true
 	}
+
 	// check if the user has one the permissions that map the
 	// requested action
-	for _, permID = range mergedPermIDs {
-		switch q.Section {
-		case `monitoringsystem`:
-			switch {
-			case any:
-				// invalid uuid
-				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-			default:
-				objID = q.Monitoring.Id
-			}
-			if c.grantMonitoring.assess(subjType, user.Id, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		case `repository`:
-			switch {
-			case any:
-				// invalid uuid
-				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-			default:
-				objID = q.Repository.Id
-			}
-			if c.grantRepository.assess(subjType, user.Id, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		case `bucket`:
-			switch {
-			case any:
-				// invalid uuid
-				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-			default:
-				objID = q.Bucket.Id
-			}
-			if c.grantRepository.assess(subjType, user.Id, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-			// permission could be on the repository
-			objID = c.object.repoForBucket(q.Bucket.Id)
-			if objID == `` {
-				goto dispatch
-			}
-			if c.grantRepository.assess(subjType, user.Id, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		default:
-			if c.grantGlobal.assess(subjType, user.Id, category,
-				permID) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		}
+	if c.checkPermission(mergedPermIDs, any, q, subjType, user.Id,
+		category) {
+		result.Super.Verdict = 200
+		result.Super.VerdictAdmin = false
+		goto dispatch
+	}
+
+	// admin and tool accounts do not inherit team rights,
+	// authorization check ends here
+	switch subjType {
+	case `admin`, `tool`:
+		goto dispatch
 	}
 
 	// check if the user's team has a specific grant for the action
-	switch subjType {
-	case `admin`, `tool`:
-		// admin and tool accounts do not inherit team rights
-		goto dispatch
-	}
-	// check if the team has one the permissions that map the
-	// requested action
-	for _, permID = range mergedPermIDs {
-		switch q.Section {
-		case `monitoringsystem`:
-			switch {
-			case any:
-				// invalid uuid
-				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-			default:
-				objID = q.Monitoring.Id
-			}
-			if c.grantMonitoring.assess(`team`, user.TeamId, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		case `repository`:
-			switch {
-			case any:
-				// invalid uuid
-				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-			default:
-				objID = q.Repository.Id
-			}
-			if c.grantRepository.assess(`team`, user.TeamId, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		case `bucket`:
-			switch {
-			case any:
-				// invalid uuid
-				objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
-			default:
-				objID = q.Bucket.Id
-			}
-			if c.grantRepository.assess(`team`, user.TeamId, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-			// permission could be on the repository
-			objID = c.object.repoForBucket(q.Bucket.Id)
-			if objID == `` {
-				goto dispatch
-			}
-			if c.grantRepository.assess(`team`, user.TeamId, category,
-				objID, permID, any) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		default:
-			if c.grantGlobal.assess(`team`, user.TeamId, category,
-				permID) {
-				result.Super.Verdict = 200
-				result.Super.VerdictAdmin = false
-				goto dispatch
-			}
-		}
+	if c.checkPermission(mergedPermIDs, any, q, `team`, user.TeamId,
+		category) {
+		result.Super.Verdict = 200
+		result.Super.VerdictAdmin = false
 	}
 
 dispatch:
 	return result
+}
+
+// checkOmnipotence returns true if the subject is omnipotent
+func (c *Cache) checkOmnipotence(subjectType, subjectID string) bool {
+	return c.grantGlobal.assess(
+		subjectType,
+		subjectID,
+		`omnipotence`,
+		`00000000-0000-0000-0000-000000000000`,
+	)
+}
+
+// checkSystem returns true,false if the subject has the system
+// permission for the category. If no system permission exists it
+// returns false,true
+func (c *Cache) checkSystem(category, subjectType,
+	subjectID string) (bool, bool) {
+	permID := c.pmap.getIDByName(`system`, category)
+	if permID == `` {
+		// there must be a system permission for every category,
+		// refuse authorization since the permission cache is broken
+		return false, true
+	}
+	return c.grantGlobal.assess(
+		subjectType,
+		subjectID,
+		`system`,
+		permID,
+	), false
+}
+
+func (c *Cache) checkPermission(permIDs []string, any bool,
+	q *msg.Request, subjectType, subjectID, category string) bool {
+	var objID string
+
+permloop:
+	for _, permID := range permIDs {
+		// determine objID
+		switch {
+		case any:
+			// invalid uuid
+			objID = `ffffffff-ffff-3fff-ffff-ffffffffffff`
+		case q.Section == `monitoringsystem`:
+			objID = q.Monitoring.Id
+		case q.Section == `repository`:
+			objID = q.Repository.Id
+		case q.Section == `bucket`:
+			objID = q.Bucket.Id
+		}
+
+		// check authorization
+		switch q.Section {
+		case `monitoringsystem`:
+			if c.grantMonitoring.assess(subjectType, subjectID,
+				category, objID, permID, any) {
+				return true
+			}
+		case `repository`, `bucket`:
+			if c.grantRepository.assess(subjectType, subjectID,
+				category, objID, permID, any) {
+				return true
+			}
+			if q.Section == `bucket` {
+				// permission could be on the repository
+				objID = c.object.repoForBucket(q.Bucket.Id)
+				if objID == `` {
+					continue permloop
+				}
+				if c.grantRepository.assess(subjectType, subjectID,
+					category, objID, permID, any) {
+					return true
+				}
+			}
+		default:
+			if c.grantGlobal.assess(subjectType, subjectID, category,
+				permID) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
