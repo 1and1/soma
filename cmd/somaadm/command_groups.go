@@ -671,7 +671,7 @@ func cmdGroupPropertyDelete(c *cli.Context, pType string) error {
 		}
 	}
 	var sourceId string
-	if err := adm.FindGroupPropSrcId(pType, c.Args().First(),
+	if err := adm.FindGroupPropSrcID(pType, c.Args().First(),
 		opts[`view`][0], groupId, &sourceId); err != nil {
 		return err
 	}

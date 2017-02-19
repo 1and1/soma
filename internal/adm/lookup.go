@@ -17,7 +17,7 @@ import (
 	resty "gopkg.in/resty.v0"
 )
 
-// LookupOncallId looks up the UUID for an oncall duty on the
+// LookupOncallID looks up the UUID for an oncall duty on the
 // server with name s. Error is set if no such oncall duty was
 // found or an error occurred.
 // If s is already a UUID, then s is immediately returned.

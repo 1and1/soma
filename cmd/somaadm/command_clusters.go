@@ -483,7 +483,7 @@ func cmdClusterPropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	if err := adm.FindClusterPropSrcId(pType, c.Args().First(),
+	if err := adm.FindClusterPropSrcID(pType, c.Args().First(),
 		opts[`view`][0], clusterId, &sourceId); err != nil {
 		return err
 	}

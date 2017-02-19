@@ -775,7 +775,7 @@ func cmdPropertyAdd(c *cli.Context, pType, oType string) error {
 			Attributes: []proto.ServiceAttribute{},
 		}
 	case `oncall`:
-		oncallId, err := adm.LookupOncallId(c.Args().First())
+		oncallId, err := adm.LookupOncallID(c.Args().First())
 		if err != nil {
 			return err
 		}

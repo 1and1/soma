@@ -106,7 +106,7 @@ func cmdOnCallDel(c *cli.Context) error {
 		return err
 	}
 
-	id, err := adm.LookupOncallId(c.Args().First())
+	id, err := adm.LookupOncallID(c.Args().First())
 	if err != nil {
 		return err
 	}
@@ -127,7 +127,7 @@ func cmdOnCallRename(c *cli.Context) error {
 		return err
 	}
 
-	id, err := adm.LookupOncallId(c.Args().First())
+	id, err := adm.LookupOncallID(c.Args().First())
 	if err != nil {
 		return err
 	}
@@ -171,7 +171,7 @@ func cmdOnCallUpdate(c *cli.Context) error {
 			" to update")
 	}
 
-	id, err := adm.LookupOncallId(c.Args().First())
+	id, err := adm.LookupOncallID(c.Args().First())
 	if err != nil {
 		return err
 	}
@@ -193,7 +193,7 @@ func cmdOnCallShow(c *cli.Context) error {
 		return err
 	}
 
-	id, err := adm.LookupOncallId(c.Args().First())
+	id, err := adm.LookupOncallID(c.Args().First())
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func cmdOnCallMemberAdd(c *cli.Context) error {
 	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
 		return err
 	}
-	if oncallId, err = adm.LookupOncallId(opts[`to`][0]); err != nil {
+	if oncallId, err = adm.LookupOncallID(opts[`to`][0]); err != nil {
 		return err
 	}
 
@@ -252,7 +252,7 @@ func cmdOnCallMemberDel(c *cli.Context) error {
 	if userId, err = adm.LookupUserId(c.Args().First()); err != nil {
 		return err
 	}
-	if oncallId, err = adm.LookupOncallId(
+	if oncallId, err = adm.LookupOncallID(
 		opts[`from`][0]); err != nil {
 		return err
 	}
@@ -266,7 +266,7 @@ func cmdOnCallMemberList(c *cli.Context) error {
 		return err
 	}
 
-	oncallId, err := adm.LookupOncallId(c.Args().First())
+	oncallId, err := adm.LookupOncallID(c.Args().First())
 	if err != nil {
 		return err
 	}

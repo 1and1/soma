@@ -626,7 +626,7 @@ func cmdNodePropertyDelete(c *cli.Context, pType string) error {
 			return err
 		}
 	}
-	if err = adm.FindNodePropSrcId(pType, c.Args().First(),
+	if err = adm.FindNodePropSrcID(pType, c.Args().First(),
 		opts[`view`][0], nodeId, &sourceId); err != nil {
 		return err
 	}

@@ -429,7 +429,7 @@ func cmdRepositoryPropertyDelete(c *cli.Context, pType string) error {
 		}
 	}
 	var sourceId string
-	if err := adm.FindRepoPropSrcId(pType, c.Args().First(),
+	if err := adm.FindRepoPropSrcID(pType, c.Args().First(),
 		opts[`view`][0], repositoryId, &sourceId); err != nil {
 		return err
 	}
