@@ -146,6 +146,8 @@ func (c *Cache) checkSystem(category, subjectType,
 	), false
 }
 
+// checkPermission returns true if the subject has a grant for the
+// requested action
 func (c *Cache) checkPermission(permIDs []string, any bool,
 	q *msg.Request, subjectType, subjectID, category string) bool {
 	var objID string
