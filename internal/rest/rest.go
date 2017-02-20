@@ -12,12 +12,12 @@ import "github.com/1and1/soma/internal/msg"
 
 type Rest struct {
 	isAuthorized func(*msg.Authorization) bool
-	handlerMap   map[string]interface{}
+	handlerMap   *map[string]interface{}
 }
 
 func New(
 	authorizationFunction func(*msg.Authorization) bool,
-	appHandlerMap map[string]interface{},
+	appHandlerMap *map[string]interface{},
 ) *Rest {
 	r := Rest{}
 	r.isAuthorized = authorizationFunction

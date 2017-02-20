@@ -10,11 +10,11 @@
 package soma
 
 type Soma struct {
-	handlerMap map[string]interface{}
+	handlerMap   *map[string]interface{}
 }
 
 func New(
-	appHandlerMap map[string]interface{},
+	appHandlerMap *map[string]interface{},
 ) *Soma {
 	s := Soma{}
 	s.handlerMap = appHandlerMap
