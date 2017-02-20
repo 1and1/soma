@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/1and1/soma/internal/rest"
 	"github.com/1and1/soma/internal/soma"
 	log "github.com/Sirupsen/logrus"
 	"github.com/asaskevich/govalidator"
@@ -74,6 +75,7 @@ func main() {
 		lfhGlobal, lfhApp, lfhReq, lfhErr         *reopen.FileWriter
 		app                                       *soma.Soma
 		hm                                        soma.HandlerMap
+		rst                                       *rest.Rest
 	)
 
 	// Daemon command line flags
@@ -217,9 +219,13 @@ func main() {
 	go pingDatabase(errLog)
 
 	hm = soma.HandlerMap{}
-	app = soma.New(&hm, conn)
+
+	app = soma.New(&hm, conn, &SomaCfg)
 	app.Start()
+
 	startHandlers(appLog, reqLog, errLog)
+
+	rst = rest.New(IsAuthorized, &hm)
 
 	router := httprouter.New()
 
@@ -309,7 +315,7 @@ func main() {
 	router.GET(`/status/:status`, Check(BasicAuth(StatusShow)))
 	router.GET(`/status/`, Check(BasicAuth(StatusList)))
 	router.GET(`/sync/datacenters/`, Check(BasicAuth(DatacenterSync)))
-	router.GET(`/sync/nodes/`, Check(BasicAuth(NodeSync)))
+	router.GET(`/sync/node/`, Check(BasicAuth(rst.NodeSync)))
 	router.GET(`/sync/servers/`, Check(BasicAuth(ServerSync)))
 	router.GET(`/sync/teams/`, Check(BasicAuth(TeamSync)))
 	router.GET(`/sync/users/`, Check(BasicAuth(UserSync)))
@@ -371,7 +377,7 @@ func main() {
 			router.DELETE(`/modes/:mode`, Check(BasicAuth(ModeRemove)))
 			router.DELETE(`/monitoring/:monitoring`, Check(BasicAuth(MonitoringRemove)))
 			router.DELETE(`/nodes/:node/property/:type/:source`, Check(BasicAuth(NodeRemoveProperty)))
-			router.DELETE(`/nodes/:node`, Check(BasicAuth(NodeRemove)))
+			router.DELETE(`/node/:nodeID`, Check(BasicAuth(rst.NodeRemove)))
 			router.DELETE(`/oncall/:oncall`, Check(BasicAuth(OncallRemove)))
 			router.DELETE(`/predicates/:predicate`, Check(BasicAuth(PredicateRemove)))
 			router.DELETE(`/property/custom/:repository/:custom`, Check(BasicAuth(PropertyRemove)))
@@ -423,7 +429,7 @@ func main() {
 			router.POST(`/modes/`, Check(BasicAuth(ModeAdd)))
 			router.POST(`/monitoring/`, Check(BasicAuth(MonitoringAdd)))
 			router.POST(`/nodes/:node/property/:type/`, Check(BasicAuth(NodeAddProperty)))
-			router.POST(`/nodes/`, Check(BasicAuth(NodeAdd)))
+			router.POST(`/nodes/`, Check(BasicAuth(rst.NodeAdd)))
 			router.POST(`/oncall/`, Check(BasicAuth(OncallAdd)))
 			router.POST(`/predicates/`, Check(BasicAuth(PredicateAdd)))
 			router.POST(`/property/custom/:repository/`, Check(BasicAuth(PropertyAdd)))
@@ -454,7 +460,7 @@ func main() {
 			router.PUT(`/environments/:environment`, Check(BasicAuth(EnvironmentRename)))
 			router.PUT(`/jobs/id/:jobid`, Check(BasicAuth(JobDelay)))
 			router.PUT(`/nodes/:node/config`, Check(BasicAuth(NodeAssign)))
-			router.PUT(`/nodes/:node`, Check(BasicAuth(NodeUpdate)))
+			router.PUT(`/node/:nodeID`, Check(BasicAuth(rst.NodeUpdate)))
 			router.PUT(`/servers/:server`, Check(BasicAuth(ServerUpdate)))
 			router.PUT(`/states/:state`, Check(BasicAuth(StateRename)))
 			router.PUT(`/teams/:team`, Check(BasicAuth(TeamUpdate)))
