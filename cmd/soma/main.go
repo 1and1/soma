@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/1and1/soma/internal/soma"
 	log "github.com/Sirupsen/logrus"
 	"github.com/asaskevich/govalidator"
 	"github.com/client9/reopen"
@@ -26,7 +27,7 @@ var (
 	// lookup table for go routine input channels
 	handlerMap = make(map[string]interface{})
 	// config file runtime configuration
-	SomaCfg SomaConfig
+	SomaCfg soma.Config
 	// this offset influences the biggest date representable in
 	// the system without overflow
 	unixToInternalOffset int64 = 62135596800
@@ -95,7 +96,7 @@ func main() {
 	if configFile, err = filepath.EvalSymlinks(configFile); err != nil {
 		log.Fatal(err)
 	}
-	err = SomaCfg.readConfigFile(configFile)
+	err = SomaCfg.ReadConfigFile(configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -188,10 +189,10 @@ func main() {
 	/*
 	 * Construct listen address
 	 */
-	SomaCfg.Daemon.url = &url.URL{}
-	SomaCfg.Daemon.url.Host = fmt.Sprintf("%s:%s", SomaCfg.Daemon.Listen, SomaCfg.Daemon.Port)
+	SomaCfg.Daemon.Url = &url.URL{}
+	SomaCfg.Daemon.Url.Host = fmt.Sprintf("%s:%s", SomaCfg.Daemon.Listen, SomaCfg.Daemon.Port)
 	if SomaCfg.Daemon.Tls {
-		SomaCfg.Daemon.url.Scheme = "https"
+		SomaCfg.Daemon.Url.Scheme = "https"
 		if ok, pt := govalidator.IsFilePath(SomaCfg.Daemon.Cert); !ok {
 			errLog.Fatal("Missing required certificate configuration config/daemon/cert-file")
 		} else {
@@ -207,7 +208,7 @@ func main() {
 			}
 		}
 	} else {
-		SomaCfg.Daemon.url.Scheme = "http"
+		SomaCfg.Daemon.Url.Scheme = "http"
 	}
 
 	connectToDatabase(appLog, errLog)
@@ -458,12 +459,12 @@ func main() {
 
 	if SomaCfg.Daemon.Tls {
 		errLog.Fatal(http.ListenAndServeTLS(
-			SomaCfg.Daemon.url.Host,
+			SomaCfg.Daemon.Url.Host,
 			SomaCfg.Daemon.Cert,
 			SomaCfg.Daemon.Key,
 			router))
 	} else {
-		errLog.Fatal(http.ListenAndServe(SomaCfg.Daemon.url.Host, router))
+		errLog.Fatal(http.ListenAndServe(SomaCfg.Daemon.Url.Host, router))
 	}
 }
 

@@ -1,4 +1,12 @@
-package main
+/*-
+ * Copyright (c) 2015-2017, Jörg Pernfuß
+ * Copyright (c) 2016, 1&1 Internet SE
+ *
+ * Use of this source code is governed by a 2-clause BSD license
+ * that can be found in the LICENSE file.
+ */
+
+package soma
 
 import (
 	"bytes"
@@ -13,28 +21,28 @@ import (
 	"github.com/nahanni/go-ucl"
 )
 
-type SomaConfig struct {
-	Environment   string         `json:"environment"`
-	ReadOnly      bool           `json:"readonly,string"`
-	OpenInstance  bool           `json:"open.door.policy,string"`
-	LifeCycleTick uint64         `json:"lifecycle.tick.seconds,string"`
-	PokePath      string         `json:"notify.path.element"`
-	PokeBatchSize uint64         `json:"notify.batch.size,string"`
-	PokeTimeout   uint64         `json:"notify.timeout.ms,string"`
-	Observer      bool           `json:"observer,string"`
-	ObserverRepo  string         `json:"-"`
-	NoPoke        bool           `json:"no.poke,string"`
-	PrintChannels bool           `json:"startup.print.channel.errors,string"`
-	ShutdownDelay uint64         `json:"shutdown.delay.seconds,string"`
-	InstanceName  string         `json:"instance.name"`
-	LogPath       string         `json:"log.path"`
-	Database      SomaDbConfig   `json:"database"`
-	Daemon        SomaDaemon     `json:"daemon"`
-	Auth          SomaAuthConfig `json:"authentication"`
-	Ldap          SomaLdapConfig `json:"ldap"`
+type Config struct {
+	Environment   string     `json:"environment"`
+	ReadOnly      bool       `json:"readonly,string"`
+	OpenInstance  bool       `json:"open.door.policy,string"`
+	LifeCycleTick uint64     `json:"lifecycle.tick.seconds,string"`
+	PokePath      string     `json:"notify.path.element"`
+	PokeBatchSize uint64     `json:"notify.batch.size,string"`
+	PokeTimeout   uint64     `json:"notify.timeout.ms,string"`
+	Observer      bool       `json:"observer,string"`
+	ObserverRepo  string     `json:"-"`
+	NoPoke        bool       `json:"no.poke,string"`
+	PrintChannels bool       `json:"startup.print.channel.errors,string"`
+	ShutdownDelay uint64     `json:"shutdown.delay.seconds,string"`
+	InstanceName  string     `json:"instance.name"`
+	LogPath       string     `json:"log.path"`
+	Database      DbConfig   `json:"database"`
+	Daemon        Daemon     `json:"daemon"`
+	Auth          AuthConfig `json:"authentication"`
+	Ldap          LdapConfig `json:"ldap"`
 }
 
-type SomaDbConfig struct {
+type DbConfig struct {
 	Host    string `json:"host"`
 	User    string `json:"user"`
 	Name    string `json:"database"`
@@ -44,16 +52,16 @@ type SomaDbConfig struct {
 	TlsMode string `json:"tlsmode"`
 }
 
-type SomaDaemon struct {
-	url    *url.URL
-	Listen string `json:"listen"`
-	Port   string `json:"port"`
-	Tls    bool   `json:"tls,string"`
-	Cert   string `json:"cert.file"`
-	Key    string `json:"key.file"`
+type Daemon struct {
+	Url    *url.URL `json:"-"`
+	Listen string   `json:"listen"`
+	Port   string   `json:"port"`
+	Tls    bool     `json:"tls,string"`
+	Cert   string   `json:"cert.file"`
+	Key    string   `json:"key.file"`
 }
 
-type SomaAuthConfig struct {
+type AuthConfig struct {
 	KexExpirySeconds     uint64 `json:"kex.expiry,string"`
 	TokenExpirySeconds   uint64 `json:"token.expiry,string"`
 	CredentialExpiryDays uint64 `json:"credential.expiry,string"`
@@ -63,7 +71,7 @@ type SomaAuthConfig struct {
 	TokenKey  string `json:"token.key"`
 }
 
-type SomaLdapConfig struct {
+type LdapConfig struct {
 	Attribute  string `json:"uid.attribute"`
 	BaseDN     string `json:"base.dn"`
 	UserDN     string `json:"user.dn"`
@@ -74,7 +82,7 @@ type SomaLdapConfig struct {
 	SkipVerify bool   `json:"insecure,string"`
 }
 
-func (c *SomaConfig) readConfigFile(fname string) error {
+func (c *Config) ReadConfigFile(fname string) error {
 	file, err := ioutil.ReadFile(fname)
 	if err != nil {
 		return err
@@ -153,7 +161,7 @@ func (c *SomaConfig) readConfigFile(fname string) error {
 	return nil
 }
 
-func (c *SomaConfig) verifyPathWritable(path string) error {
+func (c *Config) verifyPathWritable(path string) error {
 	return unix.Access(path, unix.W_OK)
 }
 
