@@ -34,7 +34,7 @@ func validateLdapCredentials(user, password string) (bool, error) {
 		`,`,
 	)
 
-	if SomaCfg.Ldap.Tls {
+	if SomaCfg.Ldap.TLS {
 		conf := &tls.Config{
 			InsecureSkipVerify: SomaCfg.Ldap.SkipVerify,
 			ServerName:         SomaCfg.Ldap.Address,

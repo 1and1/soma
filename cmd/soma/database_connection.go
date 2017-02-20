@@ -24,7 +24,7 @@ func connectToDatabase(appLog, errLog *log.Logger) {
 		SomaCfg.Database.Pass,
 		SomaCfg.Database.Host,
 		SomaCfg.Database.Port,
-		SomaCfg.Database.TlsMode,
+		SomaCfg.Database.TLSMode,
 		SomaCfg.Database.Timeout,
 	)
 
@@ -101,7 +101,7 @@ func newDatabaseConnection() (*sql.DB, error) {
 		SomaCfg.Database.Pass,
 		SomaCfg.Database.Host,
 		SomaCfg.Database.Port,
-		SomaCfg.Database.TlsMode,
+		SomaCfg.Database.TLSMode,
 		SomaCfg.Database.Timeout,
 	)
 

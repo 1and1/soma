@@ -189,10 +189,10 @@ func main() {
 	/*
 	 * Construct listen address
 	 */
-	SomaCfg.Daemon.Url = &url.URL{}
-	SomaCfg.Daemon.Url.Host = fmt.Sprintf("%s:%s", SomaCfg.Daemon.Listen, SomaCfg.Daemon.Port)
-	if SomaCfg.Daemon.Tls {
-		SomaCfg.Daemon.Url.Scheme = "https"
+	SomaCfg.Daemon.URL = &url.URL{}
+	SomaCfg.Daemon.URL.Host = fmt.Sprintf("%s:%s", SomaCfg.Daemon.Listen, SomaCfg.Daemon.Port)
+	if SomaCfg.Daemon.TLS {
+		SomaCfg.Daemon.URL.Scheme = "https"
 		if ok, pt := govalidator.IsFilePath(SomaCfg.Daemon.Cert); !ok {
 			errLog.Fatal("Missing required certificate configuration config/daemon/cert-file")
 		} else {
@@ -208,7 +208,7 @@ func main() {
 			}
 		}
 	} else {
-		SomaCfg.Daemon.Url.Scheme = "http"
+		SomaCfg.Daemon.URL.Scheme = "http"
 	}
 
 	connectToDatabase(appLog, errLog)
@@ -457,14 +457,14 @@ func main() {
 		}
 	}
 
-	if SomaCfg.Daemon.Tls {
+	if SomaCfg.Daemon.TLS {
 		errLog.Fatal(http.ListenAndServeTLS(
-			SomaCfg.Daemon.Url.Host,
+			SomaCfg.Daemon.URL.Host,
 			SomaCfg.Daemon.Cert,
 			SomaCfg.Daemon.Key,
 			router))
 	} else {
-		errLog.Fatal(http.ListenAndServe(SomaCfg.Daemon.Url.Host, router))
+		errLog.Fatal(http.ListenAndServe(SomaCfg.Daemon.URL.Host, router))
 	}
 }
 

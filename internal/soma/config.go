@@ -21,6 +21,7 @@ import (
 	"github.com/nahanni/go-ucl"
 )
 
+// Config represents the configuration of a SOMA application
 type Config struct {
 	Environment   string     `json:"environment"`
 	ReadOnly      bool       `json:"readonly,string"`
@@ -42,6 +43,7 @@ type Config struct {
 	Ldap          LdapConfig `json:"ldap"`
 }
 
+// DbConfig provides the database credentials for SOMA
 type DbConfig struct {
 	Host    string `json:"host"`
 	User    string `json:"user"`
@@ -49,18 +51,20 @@ type DbConfig struct {
 	Port    string `json:"port"`
 	Pass    string `json:"password"`
 	Timeout string `json:"timeout"`
-	TlsMode string `json:"tlsmode"`
+	TLSMode string `json:"tlsmode"`
 }
 
+// Daemon represents a listen address configuration
 type Daemon struct {
-	Url    *url.URL `json:"-"`
+	URL    *url.URL `json:"-"`
 	Listen string   `json:"listen"`
 	Port   string   `json:"port"`
-	Tls    bool     `json:"tls,string"`
+	TLS    bool     `json:"tls,string"`
 	Cert   string   `json:"cert.file"`
 	Key    string   `json:"key.file"`
 }
 
+// AuthConfig stores authentication settings for SOMA
 type AuthConfig struct {
 	KexExpirySeconds     uint64 `json:"kex.expiry,string"`
 	TokenExpirySeconds   uint64 `json:"token.expiry,string"`
@@ -71,17 +75,19 @@ type AuthConfig struct {
 	TokenKey  string `json:"token.key"`
 }
 
+// LdapConfig stores the information required to access LDAP
 type LdapConfig struct {
 	Attribute  string `json:"uid.attribute"`
 	BaseDN     string `json:"base.dn"`
 	UserDN     string `json:"user.dn"`
 	Address    string `json:"address"`
 	Port       uint64 `json:"port,string"`
-	Tls        bool   `json:"tls,string"`
+	TLS        bool   `json:"tls,string"`
 	Cert       string `json:"cert.file"`
 	SkipVerify bool   `json:"insecure,string"`
 }
 
+// ReadConfigFile assembles soma.Config from a file
 func (c *Config) ReadConfigFile(fname string) error {
 	file, err := ioutil.ReadFile(fname)
 	if err != nil {
@@ -99,11 +105,11 @@ func (c *Config) ReadConfigFile(fname string) error {
 	}
 
 	// take detour via JSON to load UCL into struct
-	uclJson, err := json.Marshal(uclData)
+	uclJSON, err := json.Marshal(uclData)
 	if err != nil {
 		log.Fatal(err)
 	}
-	json.Unmarshal([]byte(uclJson), &c)
+	json.Unmarshal([]byte(uclJSON), &c)
 
 	if c.InstanceName == `` {
 		log.Println(`Setting default value for instance.name: huxley`)
@@ -150,7 +156,7 @@ func (c *Config) ReadConfigFile(fname string) error {
 		c.PokePath = `/deployments/id`
 	}
 
-	if c.Auth.Activation == `ldap` && !c.Ldap.Tls {
+	if c.Auth.Activation == `ldap` && !c.Ldap.TLS {
 		log.Println(`Account activation via LDAP configured, but LDAP/TLS disabled!`)
 	}
 	if c.ShutdownDelay == 0 {
