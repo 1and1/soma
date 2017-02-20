@@ -8,16 +8,19 @@
 // Package rest implements the REST routes to access SOMA.
 package rest // import "github.com/1and1/soma/internal/rest"
 
-import "github.com/1and1/soma/internal/msg"
+import (
+	"github.com/1and1/soma/internal/msg"
+	"github.com/1and1/soma/internal/soma"
+)
 
 type Rest struct {
 	isAuthorized func(*msg.Authorization) bool
-	handlerMap   *map[string]interface{}
+	handlerMap   *soma.HandlerMap
 }
 
 func New(
 	authorizationFunction func(*msg.Authorization) bool,
-	appHandlerMap *map[string]interface{},
+	appHandlerMap *soma.HandlerMap,
 ) *Rest {
 	r := Rest{}
 	r.isAuthorized = authorizationFunction

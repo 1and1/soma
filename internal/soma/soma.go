@@ -9,16 +9,25 @@
 // service.
 package soma
 
+import "database/sql"
+
+// Soma application struct
 type Soma struct {
-	handlerMap   *map[string]interface{}
+	handlerMap   *HandlerMap
+	dbConnection *sql.DB
 }
 
+// New returns a new SOMA application
 func New(
-	appHandlerMap *map[string]interface{},
+	appHandlerMap *HandlerMap,
+	dbConnection *sql.DB,
 ) *Soma {
 	s := Soma{}
 	s.handlerMap = appHandlerMap
 	return &s
+}
+
+func (s *Soma) Start() {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

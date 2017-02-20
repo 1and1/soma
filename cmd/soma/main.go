@@ -72,6 +72,8 @@ func main() {
 		err                                       error
 		appLog, reqLog, errLog                    *log.Logger
 		lfhGlobal, lfhApp, lfhReq, lfhErr         *reopen.FileWriter
+		app                                       *soma.Soma
+		hm                                        soma.HandlerMap
 	)
 
 	// Daemon command line flags
@@ -214,6 +216,9 @@ func main() {
 	connectToDatabase(appLog, errLog)
 	go pingDatabase(errLog)
 
+	hm = soma.HandlerMap{}
+	app = soma.New(&hm, conn)
+	app.Start()
 	startHandlers(appLog, reqLog, errLog)
 
 	router := httprouter.New()
