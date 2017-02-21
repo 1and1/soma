@@ -13,6 +13,8 @@ import (
 	"log"
 
 	"github.com/1and1/soma/internal/msg"
+	"github.com/1and1/soma/internal/stmt"
+	uuid "github.com/satori/go.uuid"
 )
 
 // NodeWrite handles write requests for nodes
@@ -61,7 +63,7 @@ runloop:
 // process is the request dispatcher
 func (w *NodeWrite) process(q *msg.Request) {
 	result := msg.FromRequest(q)
-	msgRequest(r.reqLog, q)
+	msgRequest(w.reqLog, q)
 
 	switch q.Action {
 	case `add`:
