@@ -193,7 +193,7 @@ SET    node_asset_id = $1::numeric,
        node_deleted = $6::boolean
 WHERE  node_id = $7::uuid;`
 
-	NodeDel = `
+	NodeRemove = `
 UPDATE soma.nodes
 SET    node_deleted = 'yes'
 WHERE  node_id = $1
