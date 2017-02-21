@@ -12,13 +12,13 @@ package stmt
 const (
 	NodeStatements = ``
 
-	ListNodes = `
+	NodeList = `
 SELECT node_id,
        node_name
 FROM   soma.nodes
 WHERE  node_online;`
 
-	ShowNodes = `
+	NodeShow = `
 SELECT node_id,
        node_asset_id,
        node_name,
@@ -30,7 +30,7 @@ SELECT node_id,
 FROM   soma.nodes
 WHERE  node_id = $1;`
 
-	ShowConfigNodes = `
+	NodeShowConfig = `
 SELECT nodes.node_id,
        nodes.node_name,
        buckets.bucket_id,
@@ -47,7 +47,7 @@ SELECT snba.bucket_id
 FROM   soma.node_bucket_assignment snba
 WHERE  snba.node_id = $1;`
 
-	SyncNodes = `
+	NodeSync = `
 SELECT node_id,
        node_asset_id,
        node_name,
@@ -206,24 +206,24 @@ AND         node_deleted;`
 )
 
 func init() {
-	m[ListNodes] = `ListNodes`
 	m[NodeAdd] = `NodeAdd`
 	m[NodeBucketId] = `NodeBucketId`
 	m[NodeCstProps] = `NodeCstProps`
 	m[NodeCustomPropertyForDelete] = `NodeCustomPropertyForDelete`
-	m[NodeDel] = `NodeDel`
 	m[NodeDetails] = `NodeDetails`
+	m[NodeList] = `NodeList`
 	m[NodeOncProps] = `NodeOncProps`
 	m[NodeOncallPropertyForDelete] = `NodeOncallPropertyForDelete`
 	m[NodePurge] = `NodePurge`
+	m[NodeRemove] = `NodeRemove`
 	m[NodeServicePropertyForDelete] = `NodeServicePropertyForDelete`
+	m[NodeShowConfig] = `NodeShowConfig`
+	m[NodeShow] = `NodeShow`
 	m[NodeSvcProps] = `NodeSvcProps`
+	m[NodeSync] = `NodeSync`
 	m[NodeSysProps] = `NodeSysProps`
 	m[NodeSystemPropertyForDelete] = `NodeSystemPropertyForDelete`
 	m[NodeUpdate] = `NodeUpdate`
-	m[ShowConfigNodes] = `ShowConfigNodes`
-	m[ShowNodes] = `ShowNodes`
-	m[SyncNodes] = `SyncNodes`
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
