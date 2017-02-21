@@ -27,7 +27,6 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	spawnMetricReadHandler(appLog, reqLog, errLog)
 	spawnModeReadHandler(appLog, reqLog, errLog)
 	spawnMonitoringRead(appLog, reqLog, errLog)
-	spawnNodeReadHandler(appLog, reqLog, errLog)
 	spawnObjectStateReadHandler(appLog, reqLog, errLog)
 	spawnOncallReadHandler(appLog, reqLog, errLog)
 	spawnOutputTreeHandler(appLog, reqLog, errLog)
@@ -61,7 +60,6 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 			spawnMetricWriteHandler(appLog, reqLog, errLog)
 			spawnModeWriteHandler(appLog, reqLog, errLog)
 			spawnMonitoringWrite(appLog, reqLog, errLog)
-			spawnNodeWriteHandler(appLog, reqLog, errLog)
 			spawnObjectStateWriteHandler(appLog, reqLog, errLog)
 			spawnOncallWriteHandler(appLog, reqLog, errLog)
 			spawnPredicateWriteHandler(appLog, reqLog, errLog)
@@ -317,30 +315,6 @@ func spawnTeamWriteHandler(appLog, reqLog, errLog *log.Logger) {
 	teamWriteHandler.errLog = errLog
 	handlerMap["teamWriteHandler"] = &teamWriteHandler
 	go teamWriteHandler.run()
-}
-
-func spawnNodeReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var nodeReadHandler somaNodeReadHandler
-	nodeReadHandler.input = make(chan somaNodeRequest, 64)
-	nodeReadHandler.shutdown = make(chan bool)
-	nodeReadHandler.conn = conn
-	nodeReadHandler.appLog = appLog
-	nodeReadHandler.reqLog = reqLog
-	nodeReadHandler.errLog = errLog
-	handlerMap["nodeReadHandler"] = &nodeReadHandler
-	go nodeReadHandler.run()
-}
-
-func spawnNodeWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var nodeWriteHandler somaNodeWriteHandler
-	nodeWriteHandler.input = make(chan somaNodeRequest, 64)
-	nodeWriteHandler.shutdown = make(chan bool)
-	nodeWriteHandler.conn = conn
-	nodeWriteHandler.appLog = appLog
-	nodeWriteHandler.reqLog = reqLog
-	nodeWriteHandler.errLog = errLog
-	handlerMap["nodeWriteHandler"] = &nodeWriteHandler
-	go nodeWriteHandler.run()
 }
 
 func spawnServerReadHandler(appLog, reqLog, errLog *log.Logger) {

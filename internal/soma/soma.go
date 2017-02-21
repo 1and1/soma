@@ -9,7 +9,10 @@
 // service.
 package soma
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 const (
 	// Rfc3339Milli is a format string for millisecond precision RFC3339
@@ -31,6 +34,9 @@ type Soma struct {
 	handlerMap   *HandlerMap
 	dbConnection *sql.DB
 	conf         *Config
+	appLog       *log.Logger
+	reqLog       *log.Logger
+	errLog       *log.Logger
 }
 
 // New returns a new SOMA application
@@ -38,16 +44,16 @@ func New(
 	appHandlerMap *HandlerMap,
 	dbConnection *sql.DB,
 	conf *Config,
+	appLog, reqLog, errLog *log.Logger,
 ) *Soma {
 	s := Soma{}
 	s.handlerMap = appHandlerMap
 	s.dbConnection = dbConnection
 	s.conf = conf
+	s.appLog = appLog
+	s.reqLog = reqLog
+	s.errLog = errLog
 	return &s
-}
-
-// Start launches all application handlers
-func (s *Soma) Start() {
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

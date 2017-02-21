@@ -220,7 +220,7 @@ func main() {
 
 	hm = soma.HandlerMap{}
 
-	app = soma.New(&hm, conn, &SomaCfg)
+	app = soma.New(&hm, conn, &SomaCfg, appLog, reqLog, errLog)
 	app.Start()
 
 	startHandlers(appLog, reqLog, errLog)
