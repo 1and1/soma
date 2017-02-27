@@ -1,0 +1,19 @@
+site_name: SOMA
+
+pages:
+  - 'Introduction': 'index.md'
+  - 'Client Command Reference':
+    - 'buckets property add': 'somaadm/command_reference/BucketsPropertyAdd.md'
+    - 'capabilities declare': 'somaadm/command_reference/CapabilitiesDeclare.md'
+    - 'checks create': 'somaadm/command_reference/ChecksCreate.md'
+    - 'checks delete': 'somaadm/command_reference/ChecksDelete.md'
+    - 'checks list': 'somaadm/command_reference/ChecksList.md'
+    - 'checks show': 'somaadm/command_reference/ChecksShow.md'
+    - 'servers create': 'somaadm/command_reference/ServersCreate.md'
+    - 'servers update': 'somaadm/command_reference/ServersUpdate.md'
+    - 'users password update': 'somaadm/command_reference/UsersPasswordUpdate.md'
+    - 'ops bootstrap': 'somaadm/command_reference/OpsBootstrap.md'
+    - 'ops dumptoken': 'somaadm/command_reference/OpsDumptoken.md'
+    - 'ops repository stop': 'somaadm/command_reference/OpsRepositoryStop.md'
+    - 'ops repository rebuild': 'somaadm/command_reference/OpsRepositoryRebuild.md'
+    - 'ops repository restart': 'somaadm/command_reference/OpsRepositoryRestart.md'
