@@ -208,9 +208,9 @@ func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
 		DispatchBadRequest(&w,
 			fmt.Errorf("Mismatched cluster ids: %s, %s",
 				params.ByName(`cluster`),
-				cReq.Group.Id))
+				cReq.Cluster.Id))
 		return
-	case cReq.Group.BucketId == ``:
+	case cReq.Cluster.BucketId == ``:
 		DispatchBadRequest(&w,
 			fmt.Errorf(`Missing bucketId in bucket property delete request`))
 		return
