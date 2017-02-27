@@ -217,7 +217,8 @@ func DeletePropertyFromCluster(w http.ResponseWriter, r *http.Request,
 	}
 
 	cluster := proto.Cluster{
-		Id: params.ByName(`cluster`),
+		Id:       params.ByName(`cluster`),
+		BucketId: cReq.Cluster.BucketId,
 		Properties: &[]proto.Property{
 			proto.Property{
 				Type:             params.ByName(`type`),
