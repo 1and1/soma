@@ -159,7 +159,7 @@ func registerGroups(app cli.App) *cli.App {
 									{
 										Name:         `service`,
 										Usage:        `Delete a service property from a group`,
-										Action:       runtime(cmdGroupOncallPropertyDelete),
+										Action:       runtime(cmdGroupServicePropertyDelete),
 										BashComplete: cmpl.InFromView,
 									},
 									{
