@@ -207,7 +207,8 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				result.SetNotFound()
+				// node is unassigned, no error
+				goto propertyshow
 			} else {
 				_ = result.SetRequestError(err)
 			}
@@ -220,6 +221,7 @@ func (r *somaNodeReadHandler) process(q *somaNodeRequest) {
 		node.Properties = &[]proto.Property{}
 
 		// oncall properties
+	propertyshow:
 		rows, err = r.ponc_stmt.Query(q.Node.Id)
 		if result.SetRequestError(err) {
 			goto dispatch
