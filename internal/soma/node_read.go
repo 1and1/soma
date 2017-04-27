@@ -10,11 +10,11 @@ package soma
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
 	"github.com/1and1/soma/lib/proto"
+	"github.com/Sirupsen/logrus"
 )
 
 // NodeRead handles read requests for nodes
@@ -30,9 +30,9 @@ type NodeRead struct {
 	stmtPropService *sql.Stmt
 	stmtPropSystem  *sql.Stmt
 	stmtPropCustom  *sql.Stmt
-	appLog          *log.Logger
-	reqLog          *log.Logger
-	errLog          *log.Logger
+	appLog          *logrus.Logger
+	reqLog          *logrus.Logger
+	errLog          *logrus.Logger
 }
 
 // run is the event loop for NodeRead

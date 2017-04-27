@@ -10,10 +10,10 @@ package soma
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
+	"github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -26,9 +26,9 @@ type NodeWrite struct {
 	stmtPurge  *sql.Stmt
 	stmtRemove *sql.Stmt
 	stmtUpdate *sql.Stmt
-	appLog     *log.Logger
-	reqLog     *log.Logger
-	errLog     *log.Logger
+	appLog     *logrus.Logger
+	reqLog     *logrus.Logger
+	errLog     *logrus.Logger
 }
 
 // run is the event loop for NodeWrite

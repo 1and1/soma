@@ -8,12 +8,11 @@
 package soma
 
 import (
-	"log"
-
 	"github.com/1and1/soma/internal/msg"
+	"github.com/Sirupsen/logrus"
 )
 
-func msgRequest(l *log.Logger, q *msg.Request) {
+func msgRequest(l *logrus.Logger, q *msg.Request) {
 	l.Printf(LogStrSRq,
 		q.Section,
 		q.Action,

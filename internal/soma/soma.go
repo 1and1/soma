@@ -11,7 +11,8 @@ package soma
 
 import (
 	"database/sql"
-	"log"
+
+	"github.com/Sirupsen/logrus"
 )
 
 const (
@@ -34,9 +35,9 @@ type Soma struct {
 	handlerMap   *HandlerMap
 	dbConnection *sql.DB
 	conf         *Config
-	appLog       *log.Logger
-	reqLog       *log.Logger
-	errLog       *log.Logger
+	appLog       *logrus.Logger
+	reqLog       *logrus.Logger
+	errLog       *logrus.Logger
 }
 
 // New returns a new SOMA application
@@ -44,7 +45,7 @@ func New(
 	appHandlerMap *HandlerMap,
 	dbConnection *sql.DB,
 	conf *Config,
-	appLog, reqLog, errLog *log.Logger,
+	appLog, reqLog, errLog *logrus.Logger,
 ) *Soma {
 	s := Soma{}
 	s.handlerMap = appHandlerMap
