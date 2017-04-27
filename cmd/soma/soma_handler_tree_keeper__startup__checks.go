@@ -149,6 +149,9 @@ func (tk *treeKeeper) startupChecks() {
 	// ordering.
 	for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
 		tk.startupScopedChecks(typ, &ld)
+		if tk.broken {
+			return
+		}
 	}
 
 	//
