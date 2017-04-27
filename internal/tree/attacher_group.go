@@ -26,6 +26,7 @@ func (teg *Group) Attach(a AttachRequest) {
 	}
 
 	teg.Parent.(Propertier).syncProperty(teg.Id.String())
+	teg.Parent.(Checker).syncCheck(teg.Id.String())
 }
 
 func (teg *Group) ReAttach(a AttachRequest) {
@@ -59,6 +60,7 @@ func (teg *Group) ReAttach(a AttachRequest) {
 	}
 	teg.actionUpdate()
 	teg.Parent.(Propertier).syncProperty(teg.Id.String())
+	teg.Parent.(Checker).syncCheck(teg.Id.String())
 }
 
 func (teg *Group) Destroy() {

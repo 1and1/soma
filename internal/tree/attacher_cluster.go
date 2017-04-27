@@ -26,6 +26,7 @@ func (tec *Cluster) Attach(a AttachRequest) {
 	}
 
 	tec.Parent.(Propertier).syncProperty(tec.Id.String())
+	tec.Parent.(Checker).syncCheck(tec.Id.String())
 }
 
 func (tec *Cluster) ReAttach(a AttachRequest) {
@@ -59,6 +60,7 @@ func (tec *Cluster) ReAttach(a AttachRequest) {
 	}
 	tec.actionUpdate()
 	tec.Parent.(Propertier).syncProperty(tec.Id.String())
+	tec.Parent.(Checker).syncCheck(tec.Id.String())
 }
 
 func (tec *Cluster) Destroy() {
