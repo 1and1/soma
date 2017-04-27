@@ -20,7 +20,7 @@ import (
 // NodeRead handles read requests for nodes
 type NodeRead struct {
 	Input           chan msg.Request
-	Shutdown        chan bool
+	Shutdown        chan struct{}
 	conn            *sql.DB
 	stmtList        *sql.Stmt
 	stmtShow        *sql.Stmt
@@ -320,7 +320,7 @@ func (r *NodeRead) showConfig(q *msg.Request, mr *msg.Result) {
 
 // shutdown signals the handler to shut down
 func (r *NodeRead) shutdownNow() {
-	r.Shutdown <- true
+	close(r.Shutdown)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

@@ -20,7 +20,7 @@ import (
 // NodeWrite handles write requests for nodes
 type NodeWrite struct {
 	Input      chan msg.Request
-	Shutdown   chan bool
+	Shutdown   chan struct{}
 	conn       *sql.DB
 	stmtAdd    *sql.Stmt
 	stmtPurge  *sql.Stmt
@@ -172,7 +172,7 @@ func (w *NodeWrite) purge(q *msg.Request, mr *msg.Result) {
 
 // shutdown signals the handler to shut down
 func (w *NodeWrite) shutdownNow() {
-	w.Shutdown <- true
+	close(w.Shutdown)
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

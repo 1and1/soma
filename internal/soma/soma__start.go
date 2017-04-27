@@ -24,7 +24,7 @@ func (s *Soma) Start() {
 func (s *Soma) startNodeRead() {
 	nodeRead := NodeRead{}
 	nodeRead.Input = make(chan msg.Request, 64)
-	nodeRead.Shutdown = make(chan bool)
+	nodeRead.Shutdown = make(chan struct{})
 	nodeRead.conn = s.dbConnection
 	nodeRead.appLog = s.appLog
 	nodeRead.reqLog = s.reqLog
@@ -37,7 +37,7 @@ func (s *Soma) startNodeRead() {
 func (s *Soma) startNodeWrite() {
 	nodeWrite := NodeWrite{}
 	nodeWrite.Input = make(chan msg.Request, 64)
-	nodeWrite.Shutdown = make(chan bool)
+	nodeWrite.Shutdown = make(chan struct{})
 	nodeWrite.conn = s.dbConnection
 	nodeWrite.appLog = s.appLog
 	nodeWrite.reqLog = s.reqLog
