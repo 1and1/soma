@@ -26,6 +26,7 @@ func (ten *Node) Attach(a AttachRequest) {
 	}
 
 	ten.Parent.(Propertier).syncProperty(ten.Id.String())
+	ten.Parent.(Checker).syncCheck(ten.Id.String())
 }
 
 func (ten *Node) ReAttach(a AttachRequest) {
@@ -59,6 +60,7 @@ func (ten *Node) ReAttach(a AttachRequest) {
 	}
 	ten.actionUpdate()
 	ten.Parent.(Propertier).syncProperty(ten.Id.String())
+	ten.Parent.(Checker).syncCheck(ten.Id.String())
 }
 
 func (ten *Node) Destroy() {
