@@ -770,7 +770,7 @@ SELECT $1::uuid,
        $3::uuid;`
 
 	TxBucketRemoveNode = `
-DELETE FROM soma.node_bucket_assignment (
+DELETE FROM soma.node_bucket_assignment
 WHERE       node_id = $1::uuid
 AND         bucket_id = $2::uuid
 AND         organizational_team_id = $3::uuid;`
@@ -795,7 +795,7 @@ SELECT $1::uuid,
        $8::boolean;`
 
 	TxBucketPropertyOncallDelete = `
-DELETE FROM soma.bucket_oncall_properties (
+DELETE FROM soma.bucket_oncall_properties
 WHERE       instance_id = $1::uuid;`
 
 	TxBucketPropertyServiceCreate = `
