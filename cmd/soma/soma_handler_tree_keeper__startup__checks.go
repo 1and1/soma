@@ -705,6 +705,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 		cstrType, value1, value2, value3            string
 		levelNumeric, numVal                        int64
 		treeCheck                                   *tree.Check
+		nullBucketID                                sql.NullString
 	)
 
 	// 1. identify check configurations to load:
@@ -724,7 +725,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 		conf.ObjectType = typ
 		if err = configRows.Scan(
 			&conf.Id,
-			&conf.BucketId,
+			&nullBucketID,
 			&conf.Name,
 			&conf.ObjectId,
 			&conf.Inheritance,
@@ -735,6 +736,9 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 			&conf.ExternalId,
 		); err != nil {
 			goto fail
+		}
+		if nullBucketID.Valid {
+			conf.BucketId = nullBucketID.String
 		}
 		tk.startLog.Printf("TK[%s]: rebuild processing check configuration %s", tk.repoName, conf.Id)
 		// 2. assemble proto.CheckConfig object:
