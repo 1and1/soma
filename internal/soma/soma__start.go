@@ -12,10 +12,12 @@ import "github.com/1and1/soma/internal/msg"
 // Start launches all application handlers
 func (s *Soma) Start() {
 	s.startNodeRead()
+	s.startViewRead()
 
 	if !s.conf.ReadOnly {
 		if !s.conf.Observer {
 			s.startNodeWrite()
+			s.startViewWrite()
 		}
 	}
 }
@@ -33,6 +35,19 @@ func (s *Soma) startNodeRead() {
 	go nodeRead.run()
 }
 
+// startViewRead
+func (s *Soma) startViewRead() {
+	viewRead := ViewRead{}
+	viewRead.Input = make(chan msg.Request, 64)
+	viewRead.Shutdown = make(chan struct{})
+	viewRead.conn = s.dbConnection
+	viewRead.appLog = s.appLog
+	viewRead.reqLog = s.reqLog
+	viewRead.errLog = s.errLog
+	s.handlerMap.Add(`view_r`, &viewRead)
+	go viewRead.run()
+}
+
 // startNodeWrite
 func (s *Soma) startNodeWrite() {
 	nodeWrite := NodeWrite{}
@@ -44,6 +59,19 @@ func (s *Soma) startNodeWrite() {
 	nodeWrite.errLog = s.errLog
 	s.handlerMap.Add(`node_w`, &nodeWrite)
 	go nodeWrite.run()
+}
+
+// startViewWrite
+func (s *Soma) startViewWrite() {
+	viewWrite := ViewWrite{}
+	viewWrite.Input = make(chan msg.Request, 64)
+	viewWrite.Shutdown = make(chan struct{})
+	viewWrite.conn = s.dbConnection
+	viewWrite.appLog = s.appLog
+	viewWrite.reqLog = s.reqLog
+	viewWrite.errLog = s.errLog
+	s.handlerMap.Add(`view_w`, &viewWrite)
+	go viewWrite.run()
 }
 
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix

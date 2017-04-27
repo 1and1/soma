@@ -44,6 +44,7 @@ type Request struct {
 	Team        proto.Team
 	Tree        proto.Tree
 	UserObj     proto.User
+	View        proto.View
 	Workflow    proto.Workflow
 
 	CacheRequest *Request
