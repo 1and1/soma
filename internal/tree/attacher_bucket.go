@@ -28,6 +28,7 @@ func (teb *Bucket) Attach(a AttachRequest) {
 	}
 
 	teb.Parent.(Propertier).syncProperty(teb.Id.String())
+	teb.Parent.(Checker).syncCheck(teb.Id.String())
 }
 
 func (teb *Bucket) Destroy() {
