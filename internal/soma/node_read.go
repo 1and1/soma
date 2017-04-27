@@ -173,18 +173,14 @@ func (r *NodeRead) sync(q *msg.Request, mr *msg.Result) {
 // show returns the details for a specific node
 func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 	var (
-		rows                                    *sql.Rows
-		err                                     error
-		nodeID, nodeName, nodeTeam, nodeServer  string
-		repositoryID, bucketID, instanceID      string
-		view, oncallID, oncallName, serviceName string
-		systemProp, sourceInstanceID            string
-		nodeState, value                        string
-		nodeOnline, nodeDeleted                 bool
-		nodeAsset                               int
-		node                                    proto.Node
-		tx                                      *sql.Tx
-		checkConfigs                            *[]proto.CheckConfig
+		err                                    error
+		nodeID, nodeName, nodeTeam, nodeServer string
+		repositoryID, bucketID, nodeState      string
+		nodeOnline, nodeDeleted                bool
+		nodeAsset                              int
+		node                                   proto.Node
+		tx                                     *sql.Tx
+		checkConfigs                           *[]proto.CheckConfig
 	)
 
 	r.reqLog.Printf("R: node/show")
@@ -204,9 +200,7 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 		mr.Clear(q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+		goto fail
 	}
 	node = proto.Node{
 		Id:        nodeID,
@@ -235,9 +229,7 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 		mr.OK()
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+		goto fail
 	}
 	// node is assigned in this codepath
 	node.Config = &proto.NodeConfig{
@@ -249,147 +241,35 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 	node.Properties = &[]proto.Property{}
 
 	// oncall properties
-	if rows, err = r.stmtPropOncall.Query(
-		q.Node.Id,
-	); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
-	}
-
-	for rows.Next() {
-		if err = rows.Scan(
-			&instanceID,
-			&sourceInstanceID,
-			&view,
-			&oncallID,
-			&oncallName,
-		); err != nil {
-			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
-			return
-		}
-		*node.Properties = append(*node.Properties, proto.Property{
-			Type:             `oncall`,
-			RepositoryId:     repositoryID,
-			BucketId:         bucketID,
-			InstanceId:       instanceID,
-			SourceInstanceId: sourceInstanceID,
-			View:             view,
-			Oncall: &proto.PropertyOncall{
-				Id:   oncallID,
-				Name: oncallName,
-			},
-		})
-	}
-	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+	if err = r.oncallProperties(&node); err != nil {
+		goto fail
 	}
 
 	// service properties
-	if rows, err = r.stmtPropService.Query(
-		q.Node.Id,
-	); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
-	}
-
-	for rows.Next() {
-		if err = rows.Scan(
-			&instanceID,
-			&sourceInstanceID,
-			&view,
-			&serviceName,
-		); err != nil {
-			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
-			return
-		}
-		*node.Properties = append(*node.Properties, proto.Property{
-			Type:             `service`,
-			RepositoryId:     repositoryID,
-			BucketId:         bucketID,
-			InstanceId:       instanceID,
-			SourceInstanceId: sourceInstanceID,
-			View:             view,
-			Service: &proto.PropertyService{
-				Name: serviceName,
-			},
-		})
-	}
-	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+	if err = r.serviceProperties(&node); err != nil {
+		goto fail
 	}
 
 	// system properties
-	if rows, err = r.stmtPropSystem.Query(
-		q.Node.Id,
-	); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
-	}
-
-	for rows.Next() {
-		if err = rows.Scan(
-			&instanceID,
-			&sourceInstanceID,
-			&view,
-			&systemProp,
-			&value,
-		); err != nil {
-			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
-			return
-		}
-		*node.Properties = append(*node.Properties, proto.Property{
-			Type:             `system`,
-			RepositoryId:     repositoryID,
-			BucketId:         bucketID,
-			InstanceId:       instanceID,
-			SourceInstanceId: sourceInstanceID,
-			View:             view,
-			System: &proto.PropertySystem{
-				Name:  systemProp,
-				Value: value,
-			},
-		})
-	}
-	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+	if err = r.systemProperties(&node); err != nil {
+		goto fail
 	}
 
 	// custom properties
 	if err = r.customProperties(&node); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+		goto fail
 	}
 
 	// add check configuration and instance information
 	if tx, err = r.conn.Begin(); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+		goto fail
 	}
 	if checkConfigs, err = exportCheckConfigObjectTX(
 		tx,
 		q.Node.Id,
 	); err != nil {
 		tx.Rollback()
-		mr.ServerError(err)
-		mr.Clear(q.Section)
-		return
+		goto fail
 	}
 	if checkConfigs != nil && len(*checkConfigs) > 0 {
 		node.Details = &proto.Details{
@@ -399,6 +279,11 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 
 	mr.Node = append(mr.Node, node)
 	mr.OK()
+	return
+
+fail:
+	mr.ServerError(err)
+	mr.Clear(q.Section)
 }
 
 // showConfig returns the repository configuration of the node

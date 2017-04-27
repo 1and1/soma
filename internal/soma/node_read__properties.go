@@ -14,7 +14,134 @@ import (
 	"github.com/1and1/soma/lib/proto"
 )
 
-// customProperties adds the custom properties to the node result
+// oncallProperties adds the oncall properties of the node
+func (r *NodeRead) oncallProperties(node *proto.Node) error {
+	var (
+		rows                               *sql.Rows
+		err                                error
+		instanceID, sourceInstanceID, view string
+		oncallID, oncallName               string
+	)
+
+	if rows, err = r.stmtPropOncall.Query(
+		node.Id,
+	); err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&instanceID,
+			&sourceInstanceID,
+			&view,
+			&oncallID,
+			&oncallName,
+		); err != nil {
+			rows.Close()
+			return err
+		}
+		*node.Properties = append(*node.Properties, proto.Property{
+			Type:             `oncall`,
+			RepositoryId:     node.Config.RepositoryId,
+			BucketId:         node.Config.BucketId,
+			InstanceId:       instanceID,
+			SourceInstanceId: sourceInstanceID,
+			View:             view,
+			Oncall: &proto.PropertyOncall{
+				Id:   oncallID,
+				Name: oncallName,
+			},
+		})
+	}
+	err = rows.Err()
+	return err
+}
+
+// serviceProperties adds the service properties of the node
+func (r *NodeRead) serviceProperties(node *proto.Node) error {
+	var (
+		rows                               *sql.Rows
+		err                                error
+		instanceID, sourceInstanceID, view string
+		serviceName                        string
+	)
+
+	if rows, err = r.stmtPropService.Query(
+		node.Id,
+	); err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&instanceID,
+			&sourceInstanceID,
+			&view,
+			&serviceName,
+		); err != nil {
+			rows.Close()
+			return err
+		}
+		*node.Properties = append(*node.Properties, proto.Property{
+			Type:             `service`,
+			RepositoryId:     node.Config.RepositoryId,
+			BucketId:         node.Config.BucketId,
+			InstanceId:       instanceID,
+			SourceInstanceId: sourceInstanceID,
+			View:             view,
+			Service: &proto.PropertyService{
+				Name: serviceName,
+			},
+		})
+	}
+	err = rows.Err()
+	return err
+}
+
+// systemProperties adds the system properties of the node
+func (r *NodeRead) systemProperties(node *proto.Node) error {
+	var (
+		rows                               *sql.Rows
+		err                                error
+		instanceID, sourceInstanceID, view string
+		value, systemProp                  string
+	)
+
+	if rows, err = r.stmtPropSystem.Query(
+		node.Id,
+	); err != nil {
+		return err
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(
+			&instanceID,
+			&sourceInstanceID,
+			&view,
+			&systemProp,
+			&value,
+		); err != nil {
+			rows.Close()
+			return err
+		}
+		*node.Properties = append(*node.Properties, proto.Property{
+			Type:             `system`,
+			RepositoryId:     node.Config.RepositoryId,
+			BucketId:         node.Config.BucketId,
+			InstanceId:       instanceID,
+			SourceInstanceId: sourceInstanceID,
+			View:             view,
+			System: &proto.PropertySystem{
+				Name:  systemProp,
+				Value: value,
+			},
+		})
+	}
+	err = rows.Err()
+	return err
+}
+
+// customProperties adds the custom properties of the node
 func (r *NodeRead) customProperties(node *proto.Node) error {
 	var (
 		rows                               *sql.Rows
