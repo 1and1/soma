@@ -318,4 +318,9 @@ func (r *NodeRead) showConfig(q *msg.Request, mr *msg.Result) {
 	mr.OK()
 }
 
+// shutdown signals the handler to shut down
+func (r *NodeRead) shutdownNow() {
+	r.Shutdown <- true
+}
+
 // vim: ts=4 sw=4 sts=4 noet fenc=utf-8 ffs=unix
