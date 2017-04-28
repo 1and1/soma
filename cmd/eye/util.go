@@ -112,7 +112,7 @@ func Itemize(details *proto.Deployment) (string, *ConfigurationItem, error) {
 	}
 
 	// construct item.Metadata.Source
-	if details.Service != nil {
+	if details.Service != nil && details.Service != `` {
 		item.Metadata.Source = fmt.Sprintf("%s, %s", details.Service.Name, details.CheckConfig.Name)
 	} else {
 		item.Metadata.Source = fmt.Sprintf("System (%s), %s", details.Node.Name, details.CheckConfig.Name)
