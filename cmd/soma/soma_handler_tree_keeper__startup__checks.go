@@ -568,17 +568,17 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					)
 					if !tk.rebuild {
 						// drain after each check
-						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+						drained := tk.drain(`action`)
+						if drained != len(ckOrder[objKey][ck].Items) {
 							log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 								tk.repoName,
-								`CheckCountMismatch`,
+								fmt.Sprintf("CheckCountMismatch [D:%d/L:%d]", drained, len(ckOrder[objKey][ck].Items)),
 								`SetCheck`,
 								typ,
 								objKey,
 								ck,
 							)
-							tk.broken = true
-							return
+							goto fail
 						}
 						if tk.drain(`error`) > 0 {
 							goto fail
@@ -605,18 +605,18 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 						)
 						if !tk.rebuild {
 							// drain after each check
-							if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+							drained := tk.drain(`action`)
+							if drained != len(ckOrder[objKey][ck].Items) {
 								if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 									log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 										tk.repoName,
-										`CheckCountMismatch`,
+										fmt.Sprintf("CheckCountMismatch [D:%d/L:%d]", drained, len(ckOrder[objKey][ck].Items)),
 										`SetCheck`,
 										typ,
 										objKey,
 										ck,
 									)
-									tk.broken = true
-									return
+									goto fail
 								}
 							}
 							if tk.drain(`error`) > 0 {
@@ -646,17 +646,17 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 					)
 					if !tk.rebuild {
 						// drain after each check
-						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+						drained := tk.drain(`action`)
+						if drained != len(ckOrder[objKey][ck].Items) {
 							log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 								tk.repoName,
-								`CheckCountMismatch`,
+								fmt.Sprintf("CheckCountMismatch [D:%d/L:%d]", drained, len(ckOrder[objKey][ck].Items)),
 								`SetCheck`,
 								typ,
 								objKey,
 								ck,
 							)
-							tk.broken = true
-							return
+							goto fail
 						}
 						if tk.drain(`error`) > 0 {
 							goto fail
@@ -681,17 +681,17 @@ func (tk *treeKeeper) startupScopedChecks(typ string, ld *tkLoaderChecks) {
 				)
 				if !tk.rebuild {
 					// drain after each check
-					if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
+					drained := tk.drain(`action`)
+					if drained != len(ckOrder[objKey][ck].Items) {
 						log.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
 							tk.repoName,
-							`CheckCountMismatch`,
+							fmt.Sprintf("CheckCountMismatch [D:%d/L:%d]", drained, len(ckOrder[objKey][ck].Items)),
 							`SetCheck`,
 							typ,
 							objKey,
 							ck,
 						)
-						tk.broken = true
-						return
+						goto fail
 					}
 					if tk.drain(`error`) > 0 {
 						goto fail
