@@ -13,6 +13,7 @@ import (
 
 	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/stmt"
+	"github.com/1and1/soma/lib/proto"
 	"github.com/Sirupsen/logrus"
 )
 
@@ -72,10 +73,59 @@ func (r *ViewRead) process(q *msg.Request) {
 
 // list returns all views
 func (r *ViewRead) list(q *msg.Request, mr *msg.Result) {
+	var (
+		view string
+		rows *sql.Rows
+		err  error
+	)
+
+	if rows, err = r.stmtList.Query(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+
+	for rows.Next() {
+		if err = rows.Scan(&view); err != nil {
+			rows.Close()
+			mr.ServerError(err)
+			mr.Clear(q.Section)
+			return
+		}
+		mr.View = append(mr.View, proto.View{
+			Name: view,
+		})
+	}
+	if err = rows.Err(); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	mr.OK()
 }
 
 // show returns the details of a specific view
 func (r *ViewRead) show(q *msg.Request, mr *msg.Result) {
+	var (
+		view string
+		err  error
+	)
+
+	if err = r.stmtShow.QueryRow(
+		q.View.Name,
+	).Scan(
+		&view,
+	); err == sql.ErrNoRows {
+		mr.NotFound(err)
+		mr.Clear(q.Section)
+		return
+	} else if err != nil {
+		mr.ServerError(err)
+		mr.Clear(q.Section)
+		return
+	}
+	mr.View = append(mr.View, proto.View{
+		Name: view,
+	})
+	mr.OK()
 }
 
 // shutdown signals the handler to shut down
