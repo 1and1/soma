@@ -96,7 +96,6 @@ func (r *NodeRead) list(q *msg.Request, mr *msg.Result) {
 		nodeID, nodeName string
 	)
 
-	r.reqLog.Printf("R: node/list")
 	if rows, err = r.stmtList.Query(); err != nil {
 		mr.ServerError(err)
 		return
@@ -131,7 +130,6 @@ func (r *NodeRead) sync(q *msg.Request, mr *msg.Result) {
 		nodeOnline, nodeDeleted                bool
 	)
 
-	r.reqLog.Printf(`R: node/sync`)
 	if rows, err = r.stmtSync.Query(); err != nil {
 		mr.ServerError(err)
 		return
@@ -183,7 +181,6 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 		checkConfigs                           *[]proto.CheckConfig
 	)
 
-	r.reqLog.Printf("R: node/show")
 	if err = r.stmtShow.QueryRow(
 		q.Node.Id,
 	).Scan(
