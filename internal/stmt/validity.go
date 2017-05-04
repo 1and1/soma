@@ -42,7 +42,9 @@ WHERE  NOT EXISTS (
 
 	ValidityDel = `
 DELETE FROM soma.system_property_validity
-WHERE       system_property = $1::varchar;`
+WHERE       system_property = $1::varchar
+AND         object_type = $2::varchar
+AND         inherited = $3::boolean;`
 )
 
 func init() {
