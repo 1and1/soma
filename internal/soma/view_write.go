@@ -77,14 +77,57 @@ func (w *ViewWrite) process(q *msg.Request) {
 
 // add inserts a new view
 func (w *ViewWrite) add(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtAdd.Exec(
+		q.View.Name,
+	); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.View = append(mr.View, q.View)
+	}
 }
 
 // remove deletes a view
 func (w *ViewWrite) remove(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRemove.Exec(
+		q.View.Name,
+	); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Node = append(mr.Node, q.Node)
+	}
 }
 
 // rename changes a view's name
 func (w *ViewWrite) rename(q *msg.Request, mr *msg.Result) {
+	var (
+		err error
+		res sql.Result
+	)
+
+	if res, err = w.stmtRename.Exec(
+		q.View.Name,
+		q.Update.View.Name,
+	); err != nil {
+		mr.ServerError(err)
+		return
+	}
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Node = append(mr.Node, q.Node)
+	}
 }
 
 // shutdown signals the handler to shut down
