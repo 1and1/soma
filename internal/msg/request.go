@@ -59,6 +59,7 @@ type UpdateData struct {
 	Entity      proto.Entity
 	Environment proto.Environment
 	State       proto.State
+	View        proto.View
 }
 
 type Flags struct {
