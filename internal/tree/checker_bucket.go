@@ -114,10 +114,13 @@ func (teb *Bucket) syncCheck(childId string) {
 		if !teb.Checks[check].Inheritance {
 			continue
 		}
-		f := Check{}
-		f = teb.Checks[check]
-		f.Inherited = true
-		teb.Children[childId].(Checker).setCheckInherited(f)
+		// build a pristine version for inheritance
+		f := teb.Checks[check]
+		c := f.Clone()
+		c.Inherited = true
+		c.Id = uuid.Nil
+		c.Items = nil
+		teb.Children[childId].(Checker).setCheckInherited(c)
 	}
 }
 
