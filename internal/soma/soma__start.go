@@ -12,11 +12,13 @@ import "github.com/1and1/soma/internal/msg"
 // Start launches all application handlers
 func (s *Soma) Start() {
 	s.startNodeRead()
+	s.startValidityRead()
 	s.startViewRead()
 
 	if !s.conf.ReadOnly {
 		if !s.conf.Observer {
 			s.startNodeWrite()
+			s.startValidityWrite()
 			s.startViewWrite()
 		}
 	}
@@ -33,6 +35,17 @@ func (s *Soma) startNodeRead() {
 	nodeRead.errLog = s.errLog
 	s.handlerMap.Add(`node_r`, &nodeRead)
 	go nodeRead.run()
+}
+
+// startValidityRead
+func (s *Soma) startValidityRead() {
+	validityRead := newValidityRead()
+	validityRead.register(
+		s.dbConnection,
+		s.exportLogger()...,
+	)
+	s.handlerMap.Add(`validity_r`, &validityRead)
+	go validityRead.run()
 }
 
 // startViewRead
@@ -59,6 +72,17 @@ func (s *Soma) startNodeWrite() {
 	nodeWrite.errLog = s.errLog
 	s.handlerMap.Add(`node_w`, &nodeWrite)
 	go nodeWrite.run()
+}
+
+// startValidityWrite
+func (s *Soma) startValidityWrite() {
+	validityWrite := newValidityWrite()
+	validityWrite.register(
+		s.dbConnection,
+		s.exportLogger()...,
+	)
+	s.handlerMap.Add(`validity_w`, &validityWrite)
+	go validityWrite.run()
 }
 
 // startViewWrite
