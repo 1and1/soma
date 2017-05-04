@@ -129,10 +129,13 @@ func (tec *Cluster) syncCheck(childId string) {
 		if !tec.Checks[check].Inheritance {
 			continue
 		}
-		f := Check{}
-		f = tec.Checks[check]
-		f.Inherited = true
-		tec.Children[childId].(Checker).setCheckInherited(f)
+		// build a pristine version for inheritance
+		f := tec.Checks[check]
+		c := f.Clone()
+		c.Inherited = true
+		c.Id = uuid.Nil
+		c.Items = nil
+		tec.Children[childId].(Checker).setCheckInherited(c)
 	}
 }
 

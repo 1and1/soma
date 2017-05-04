@@ -154,10 +154,13 @@ func (teg *Group) syncCheck(childId string) {
 		if !teg.Checks[check].Inheritance {
 			continue
 		}
-		f := Check{}
-		f = teg.Checks[check]
-		f.Inherited = true
-		teg.Children[childId].(Checker).setCheckInherited(f)
+		// build a pristine version for inheritance
+		f := teg.Checks[check]
+		c := f.Clone()
+		c.Inherited = true
+		c.Id = uuid.Nil
+		c.Items = nil
+		teg.Children[childId].(Checker).setCheckInherited(c)
 	}
 }
 

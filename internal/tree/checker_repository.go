@@ -127,10 +127,13 @@ func (ter *Repository) syncCheck(childId string) {
 		if !ter.Checks[check].Inheritance {
 			continue
 		}
-		f := Check{}
-		f = ter.Checks[check]
-		f.Inherited = true
-		ter.Children[childId].(Checker).setCheckInherited(f)
+		// build a pristine version for inheritance
+		f := ter.Checks[check]
+		c := f.Clone()
+		c.Inherited = true
+		c.Id = uuid.Nil
+		c.Items = nil
+		ter.Children[childId].(Checker).setCheckInherited(c)
 	}
 }
 
