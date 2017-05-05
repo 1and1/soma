@@ -70,9 +70,7 @@ runloop:
 		case <-w.Shutdown:
 			break runloop
 		case req := <-w.Input:
-			go func() {
-				w.process(&req)
-			}()
+			w.process(&req)
 		}
 	}
 }
