@@ -295,13 +295,13 @@ func (c *Cache) performTeamRemove(q *msg.Request) {
 func (c *Cache) performUserAdd(q *msg.Request) {
 	c.lock.Lock()
 	c.user.add(
-		q.UserObj.Id,
-		q.UserObj.UserName,
-		q.UserObj.TeamId,
+		q.User.Id,
+		q.User.UserName,
+		q.User.TeamId,
 	)
 	c.team.addMember(
-		q.UserObj.TeamId,
-		q.UserObj.Id,
+		q.User.TeamId,
+		q.User.Id,
 	)
 	c.lock.Unlock()
 }
@@ -309,7 +309,7 @@ func (c *Cache) performUserAdd(q *msg.Request) {
 // performUserRemove removes a user
 func (c *Cache) performUserRemove(q *msg.Request) {
 	c.lock.Lock()
-	u := c.user.getByID(q.UserObj.Id)
+	u := c.user.getByID(q.User.Id)
 	if u == nil {
 		return
 	}
