@@ -16,7 +16,7 @@ func msgRequest(l *logrus.Logger, q *msg.Request) {
 	l.Infof(LogStrSRq,
 		q.Section,
 		q.Action,
-		q.User,
+		q.AuthUser,
 		q.RemoteAddr,
 	)
 }

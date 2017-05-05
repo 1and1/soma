@@ -184,7 +184,7 @@ func (s *supervisor) sectionAdd(q *msg.Request, r *msg.Result) {
 		q.SectionObj.Id,
 		q.SectionObj.Name,
 		q.SectionObj.Category,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		r.ServerError(err)
 		return

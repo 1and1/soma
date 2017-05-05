@@ -131,7 +131,7 @@ func (s *supervisor) rightGrantGlobal(q *msg.Request) {
 		teamID,
 		q.Grant.PermissionId,
 		q.Grant.Category,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		result.ServerError(err)
 		goto dispatch
@@ -209,7 +209,7 @@ func (s *supervisor) rightGrantRepository(q *msg.Request) {
 		groupID,
 		clusterID,
 		nodeID,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		result.ServerError(err)
 		goto dispatch
@@ -251,7 +251,7 @@ func (s *supervisor) rightGrantTeam(q *msg.Request) {
 		q.Grant.Category,
 		q.Grant.PermissionId,
 		q.Grant.ObjectId,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		result.ServerError(err)
 		goto dispatch
@@ -293,7 +293,7 @@ func (s *supervisor) rightGrantMonitoring(q *msg.Request) {
 		q.Grant.Category,
 		q.Grant.PermissionId,
 		q.Grant.ObjectId,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		result.ServerError(err)
 		goto dispatch

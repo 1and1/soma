@@ -38,7 +38,7 @@ func logrotate(sigChan chan os.Signal) {
 						Action:     `shutdown`,
 						Reply:      returnChannel,
 						RemoteAddr: `::1`,
-						User:       `root`,
+						AuthUser:   `root`,
 					}
 					<-returnChannel
 					break fileloop

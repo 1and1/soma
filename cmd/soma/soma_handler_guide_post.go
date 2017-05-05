@@ -121,7 +121,7 @@ func (g *guidePost) process(q *treeRequest) {
 		`pending`,
 		q.Action,
 		repoId,
-		q.User,
+		q.AuthUser,
 		string(j),
 	); err != nil {
 		goto bailout
@@ -131,7 +131,7 @@ func (g *guidePost) process(q *treeRequest) {
 	rowCnt, _ = res.RowsAffected()
 	if rowCnt == 0 {
 		err = fmt.Errorf("No rows affected while saving job for user %s",
-			q.User)
+			q.AuthUser)
 		nf = false
 		goto bailout
 	}

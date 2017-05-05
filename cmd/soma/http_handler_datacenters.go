@@ -15,7 +15,7 @@ func DatacenterList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `datacenter`,
 		Action:     `list`,
@@ -40,7 +40,7 @@ func DatacenterSync(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `datacenter`,
 		Action:     `sync`,
@@ -65,7 +65,7 @@ func DatacenterShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `datacenter`,
 		Action:     `show`,
@@ -93,7 +93,7 @@ func DatacenterAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `datacenter`,
 		Action:     `add`,
@@ -127,7 +127,7 @@ func DatacenterRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `datacenter`,
 		Action:     `remove`,
@@ -155,7 +155,7 @@ func DatacenterRename(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `datacenter`,
 		Action:     `rename`,

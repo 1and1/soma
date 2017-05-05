@@ -25,7 +25,7 @@ func MonitoringList(w http.ResponseWriter, r *http.Request,
 
 	// check for operations runtime privileges
 	admin := IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `runtime`,
 		Action:     `monitoringsystem_list_all`,
@@ -38,7 +38,7 @@ func MonitoringList(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,
 		Action:     `list`,
@@ -55,7 +55,7 @@ authorized:
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Flag: msg.Flags{
 			Unscoped: admin,
 		},
@@ -71,7 +71,7 @@ func MonitoringSearch(w http.ResponseWriter, r *http.Request,
 
 	// check for operations runtime privileges
 	admin := IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `runtime`,
 		Action:     `monitoringsystem_list_all`,
@@ -84,7 +84,7 @@ func MonitoringSearch(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,
 		Action:     `search`,
@@ -112,7 +112,7 @@ authorized:
 		Action:     `search`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Flag: msg.Flags{
 			Unscoped: admin,
 		},
@@ -130,7 +130,7 @@ func MonitoringShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `monitoringsystem`,
 		Action:       `show`,
@@ -147,7 +147,7 @@ func MonitoringShow(w http.ResponseWriter, r *http.Request,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Monitoring: proto.Monitoring{
 			Id: params.ByName(`monitoring`),
 		},
@@ -162,7 +162,7 @@ func MonitoringAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,
 		Action:     `add`,
@@ -190,7 +190,7 @@ func MonitoringAdd(w http.ResponseWriter, r *http.Request,
 		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Monitoring: proto.Monitoring{
 			Name:     cReq.Monitoring.Name,
 			Mode:     cReq.Monitoring.Mode,
@@ -209,7 +209,7 @@ func MonitoringRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `monitoringsystem`,
 		Action:     `remove`,
@@ -225,7 +225,7 @@ func MonitoringRemove(w http.ResponseWriter, r *http.Request,
 		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Monitoring: proto.Monitoring{
 			Id: params.ByName(`monitoring`),
 		},

@@ -15,7 +15,7 @@ func MetricList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `metric`,
 		Action:     `list`,
@@ -40,7 +40,7 @@ func MetricShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `metric`,
 		Action:     `show`,
@@ -68,7 +68,7 @@ func MetricAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `metric`,
 		Action:     `add`,
@@ -101,7 +101,7 @@ func MetricRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `metric`,
 		Action:     `remove`,

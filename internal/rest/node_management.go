@@ -23,7 +23,7 @@ func (x *Rest) NodeAdd(w http.ResponseWriter, r *http.Request,
 	defer panicCatcher(w)
 
 	if !x.isAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node-mgmt`,
 		Action:     `add`,
@@ -52,7 +52,7 @@ func (x *Rest) NodeAdd(w http.ResponseWriter, r *http.Request,
 		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Node: proto.Node{
 			AssetId:   cReq.Node.AssetId,
 			Name:      cReq.Node.Name,
@@ -73,7 +73,7 @@ func (x *Rest) NodeSync(w http.ResponseWriter, r *http.Request,
 	defer panicCatcher(w)
 
 	if !x.isAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node-mgmt`,
 		Action:     `sync`,
@@ -89,7 +89,7 @@ func (x *Rest) NodeSync(w http.ResponseWriter, r *http.Request,
 		Action:     `sync`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 	}
 	result := <-returnChannel
 	sendMsgResult(&w, &result)
@@ -101,7 +101,7 @@ func (x *Rest) NodeUpdate(w http.ResponseWriter, r *http.Request,
 	defer panicCatcher(w)
 
 	if !x.isAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node-mgmt`,
 		Action:     `update`,
@@ -125,7 +125,7 @@ func (x *Rest) NodeUpdate(w http.ResponseWriter, r *http.Request,
 		Action:     `update`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Node: proto.Node{
 			Id:        cReq.Node.Id,
 			AssetId:   cReq.Node.AssetId,
@@ -157,7 +157,7 @@ func (x *Rest) NodeRemove(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !x.isAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node-mgmt`,
 		Action:     action,
@@ -174,7 +174,7 @@ func (x *Rest) NodeRemove(w http.ResponseWriter, r *http.Request,
 		Action:     action,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Node: proto.Node{
 			Id: params.ByName(`nodeID`),
 		},

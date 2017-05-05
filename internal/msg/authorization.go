@@ -12,7 +12,7 @@ import "github.com/1and1/soma/lib/proto"
 
 // Authorization struct
 type Authorization struct {
-	User         string
+	AuthUser     string
 	RemoteAddr   string
 	Section      string
 	Action       string

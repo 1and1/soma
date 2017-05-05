@@ -144,7 +144,7 @@ func (s *supervisor) requestLog(q *msg.Request) {
 			q.Section,
 		),
 		q.Action,
-		q.User,
+		q.AuthUser,
 		q.RemoteAddr,
 	)
 }

@@ -15,7 +15,7 @@ func ValidityList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `validity`,
 		Action:     `list`,
@@ -40,7 +40,7 @@ func ValidityShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `validity`,
 		Action:     `show`,
@@ -68,7 +68,7 @@ func ValidityAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `validity`,
 		Action:     `add`,
@@ -101,7 +101,7 @@ func ValidityRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `validity`,
 		Action:     `remove`,

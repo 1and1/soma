@@ -22,7 +22,7 @@ func InstanceShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `instance`,
 		Action:     `show`,
@@ -38,7 +38,7 @@ func InstanceShow(w http.ResponseWriter, r *http.Request,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Instance: proto.Instance{
 			Id: params.ByName(`instance`),
 		},
@@ -54,7 +54,7 @@ func InstanceVersions(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `instance`,
 		Action:     `versions`,
@@ -70,7 +70,7 @@ func InstanceVersions(w http.ResponseWriter, r *http.Request,
 		Action:     `versions`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Instance: proto.Instance{
 			Id: params.ByName(`instance`),
 		},
@@ -87,7 +87,7 @@ func InstanceList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `instance`,
 		Action:       `list`,
@@ -123,7 +123,7 @@ func InstanceList(w http.ResponseWriter, r *http.Request,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Instance: proto.Instance{
 			ObjectId:   params.ByName(listT),
 			ObjectType: listT,
@@ -140,7 +140,7 @@ func InstanceListAll(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `runtime`,
 		Action:     `instance_list_all`,
@@ -156,7 +156,7 @@ func InstanceListAll(w http.ResponseWriter, r *http.Request,
 		Action:     `instance_list_all`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)

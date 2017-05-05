@@ -14,7 +14,7 @@ type Request struct {
 	Section    string
 	Action     string
 	RemoteAddr string
-	User       string
+	AuthUser   string
 	Reply      chan Result
 	Search     Filter
 	Update     UpdateData

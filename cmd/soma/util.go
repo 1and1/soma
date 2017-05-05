@@ -218,7 +218,7 @@ func msgRequest(l *log.Logger, q *msg.Request) {
 	l.Printf(LogStrSRq,
 		q.Section,
 		q.Action,
-		q.User,
+		q.AuthUser,
 		q.RemoteAddr,
 	)
 }

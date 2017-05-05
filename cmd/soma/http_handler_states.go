@@ -22,7 +22,7 @@ func StateList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `state`,
 		Action:     `list`,
@@ -38,7 +38,7 @@ func StateList(w http.ResponseWriter, r *http.Request,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
@@ -50,7 +50,7 @@ func StateShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `state`,
 		Action:     `show`,
@@ -66,7 +66,7 @@ func StateShow(w http.ResponseWriter, r *http.Request,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		State: proto.State{
 			Name: params.ByName(`state`),
 		},
@@ -81,7 +81,7 @@ func StateAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `state`,
 		Action:     `add`,
@@ -103,7 +103,7 @@ func StateAdd(w http.ResponseWriter, r *http.Request,
 		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		State: proto.State{
 			Name: cReq.State.Name,
 		},
@@ -118,7 +118,7 @@ func StateRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `state`,
 		Action:     `remove`,
@@ -134,7 +134,7 @@ func StateRemove(w http.ResponseWriter, r *http.Request,
 		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		State: proto.State{
 			Name: params.ByName(`state`),
 		},
@@ -149,7 +149,7 @@ func StateRename(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `state`,
 		Action:     `rename`,
@@ -171,7 +171,7 @@ func StateRename(w http.ResponseWriter, r *http.Request,
 		Action:     `rename`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Update: msg.UpdateData{
 			State: proto.State{
 				Name: cReq.State.Name,

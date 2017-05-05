@@ -17,7 +17,7 @@ func GroupList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `list`,
@@ -62,7 +62,7 @@ func GroupShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `show`,
@@ -91,7 +91,7 @@ func GroupListMember(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `list_member`,
@@ -127,7 +127,7 @@ func GroupCreate(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `create`,
@@ -148,7 +148,7 @@ func GroupCreate(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      "create_group",
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: "add",
@@ -172,7 +172,7 @@ func GroupAddMember(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `add_member`,
@@ -197,7 +197,7 @@ func GroupAddMember(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      rAct,
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: "member",
@@ -243,7 +243,7 @@ func GroupAddProperty(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `add_property`,
@@ -259,7 +259,7 @@ func GroupAddProperty(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "group",
 		Action:      fmt.Sprintf("add_%s_property_to_group", params.ByName("type")),
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Group: somaGroupRequest{
 			action: fmt.Sprintf("%s_property_new", params.ByName("type")),
@@ -305,7 +305,7 @@ func GroupRemoveProperty(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `group`,
 		Action:     `remove_property`,
@@ -322,8 +322,8 @@ func GroupRemoveProperty(w http.ResponseWriter, r *http.Request,
 		RequestType: `group`,
 		Action: fmt.Sprintf("delete_%s_property_from_group",
 			params.ByName(`type`)),
-		User:  params.ByName(`AuthenticatedUser`),
-		reply: returnChannel,
+		AuthUser: params.ByName(`AuthenticatedUser`),
+		reply:    returnChannel,
 		Group: somaGroupRequest{
 			action: fmt.Sprintf("%s_property_remove",
 				params.ByName(`type`)),

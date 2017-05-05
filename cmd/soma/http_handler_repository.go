@@ -17,7 +17,7 @@ func RepositoryList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `repository`,
 		Action:     `list`,
@@ -61,7 +61,7 @@ func RepositoryShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `repository`,
 		Action:     `show`,
@@ -89,7 +89,7 @@ func RepositoryCreate(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `repository`,
 		Action:     `create`,
@@ -135,7 +135,7 @@ func RepositoryAddProperty(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `repository`,
 		Action:       `add_property`,
@@ -179,7 +179,7 @@ func RepositoryAddProperty(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "repository",
 		Action:      fmt.Sprintf("add_%s_property_to_repository", params.ByName("type")),
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Repository: somaRepositoryRequest{
 			action:     fmt.Sprintf("%s_property_new", params.ByName("type")),
@@ -196,7 +196,7 @@ func RepositoryRemoveProperty(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `repository`,
 		Action:       `remove_property`,
@@ -223,8 +223,8 @@ func RepositoryRemoveProperty(w http.ResponseWriter, r *http.Request,
 		RequestType: "repository",
 		Action: fmt.Sprintf("delete_%s_property_from_repository",
 			params.ByName("type")),
-		User:  params.ByName(`AuthenticatedUser`),
-		reply: returnChannel,
+		AuthUser: params.ByName(`AuthenticatedUser`),
+		reply:    returnChannel,
 		Repository: somaRepositoryRequest{
 			action: fmt.Sprintf("%s_property_remove",
 				params.ByName("type")),

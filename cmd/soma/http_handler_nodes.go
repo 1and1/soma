@@ -16,7 +16,7 @@ func NodeList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node`,
 		Action:     `list`,
@@ -60,7 +60,7 @@ func NodeShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node`,
 		Action:     `show`,
@@ -89,7 +89,7 @@ func NodeShowConfig(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node`,
 		Action:     `config`,
@@ -124,7 +124,7 @@ func NodeAssign(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `node`,
 		Action:       `assign`,
@@ -141,7 +141,7 @@ func NodeAssign(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "node",
 		Action:      "assign_node",
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Node: somaNodeRequest{
 			action: "assign",
@@ -187,7 +187,7 @@ func NodeAddProperty(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `node`,
 		Action:     `add_property`,
@@ -202,7 +202,7 @@ func NodeAddProperty(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "node",
 		Action:      fmt.Sprintf("add_%s_property_to_node", params.ByName("type")),
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Node: somaNodeRequest{
 			action: fmt.Sprintf("%s_property_new", params.ByName("type")),
@@ -244,7 +244,7 @@ func NodeRemoveProperty(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `node`,
 		Action:       `remove_property`,
@@ -278,8 +278,8 @@ func NodeRemoveProperty(w http.ResponseWriter, r *http.Request,
 		RequestType: `node`,
 		Action: fmt.Sprintf("delete_%s_property_from_node",
 			params.ByName(`type`)),
-		User:  params.ByName(`AuthenticatedUser`),
-		reply: returnChannel,
+		AuthUser: params.ByName(`AuthenticatedUser`),
+		reply:    returnChannel,
 		Node: somaNodeRequest{
 			action: fmt.Sprintf("%s_property_remove",
 				params.ByName(`type`)),

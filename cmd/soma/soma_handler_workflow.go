@@ -73,7 +73,7 @@ func (r *workflowRead) process(q *msg.Request) {
 
 	switch q.Action {
 	case `summary`:
-		r.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User,
+		r.reqLog.Printf(LogStrArg, q.Section, q.Action, q.AuthUser,
 			q.RemoteAddr, q.Job.Id)
 		summary := proto.WorkflowSummary{}
 
@@ -129,7 +129,7 @@ func (r *workflowRead) process(q *msg.Request) {
 		result.OK()
 
 	case `list`:
-		r.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User,
+		r.reqLog.Printf(LogStrArg, q.Section, q.Action, q.AuthUser,
 			q.RemoteAddr, q.Job.Id)
 		workflow := proto.Workflow{
 			Instances: &[]proto.Instance{},

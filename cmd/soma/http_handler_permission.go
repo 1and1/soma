@@ -24,7 +24,7 @@ func PermissionList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `permission`,
 		Action:     `list`,
@@ -40,7 +40,7 @@ func PermissionList(w http.ResponseWriter, r *http.Request,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
 			Category: params.ByName(`category`),
 		},
@@ -55,7 +55,7 @@ func PermissionShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `permission`,
 		Action:     `show`,
@@ -71,7 +71,7 @@ func PermissionShow(w http.ResponseWriter, r *http.Request,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
 			Id:       params.ByName(`permission`),
 			Category: params.ByName(`category`),
@@ -87,7 +87,7 @@ func PermissionSearch(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `permission`,
 		Action:     `search`,
@@ -109,7 +109,7 @@ func PermissionSearch(w http.ResponseWriter, r *http.Request,
 		Action:     `search/name`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
 			Name:     cReq.Filter.Permission.Name,
 			Category: cReq.Filter.Permission.Category,
@@ -127,7 +127,7 @@ func PermissionAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `permission`,
 		Action:     `add`,
@@ -165,7 +165,7 @@ func PermissionAdd(w http.ResponseWriter, r *http.Request,
 		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
 			Name:     cReq.Permission.Name,
 			Category: cReq.Permission.Category,
@@ -181,7 +181,7 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `permission`,
 		Action:     `remove`,
@@ -207,7 +207,7 @@ func PermissionRemove(w http.ResponseWriter, r *http.Request,
 		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
 			Id:       params.ByName(`permission`),
 			Category: params.ByName(`category`),
@@ -223,7 +223,7 @@ func PermissionEdit(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `permission`,
 		Action:     `edit`,
@@ -297,7 +297,7 @@ func PermissionEdit(w http.ResponseWriter, r *http.Request,
 		Action:     task,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Permission: proto.Permission{
 			Id:       cReq.Permission.Id,
 			Name:     cReq.Permission.Name,

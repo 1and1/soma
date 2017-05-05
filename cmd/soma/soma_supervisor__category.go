@@ -191,7 +191,7 @@ func (s *supervisor) categoryAddTx(q *msg.Request,
 	// create requested category
 	if res, err = txMap[`category_add_tx_cat`].Exec(
 		q.Category.Name,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		return res, err
 	}
@@ -199,7 +199,7 @@ func (s *supervisor) categoryAddTx(q *msg.Request,
 	// create grant category for requested category
 	if res, err = txMap[`category_add_tx_cat`].Exec(
 		fmt.Sprintf("%s:grant", q.Category.Name),
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		return res, err
 	}
@@ -211,7 +211,7 @@ func (s *supervisor) categoryAddTx(q *msg.Request,
 		permID,
 		q.Category.Name,
 		`system`,
-		q.User,
+		q.AuthUser,
 	)
 }
 

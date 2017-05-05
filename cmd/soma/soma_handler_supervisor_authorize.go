@@ -34,7 +34,7 @@ func (s *supervisor) authorize_global(q *msg.Request) (uint16, bool) {
 		ok                 bool
 	)
 	// unknown user
-	if userUUID, ok = s.id_user_rev.get(q.User); !ok {
+	if userUUID, ok = s.id_user_rev.get(q.AuthUser); !ok {
 		return 403, false
 	}
 	// user has omnipotence
@@ -69,7 +69,7 @@ func IsAuthorized(request *msg.Authorization) bool {
 	handler.input <- msg.Request{
 		Section:    `authorize`,
 		Action:     `request`,
-		User:       request.User,
+		AuthUser:   request.AuthUser,
 		RemoteAddr: request.RemoteAddr,
 		Reply:      returnChannel,
 		Super: &msg.Supervisor{
@@ -85,7 +85,7 @@ func IsAuthorized(request *msg.Authorization) bool {
 	log.Printf(LogStrErr, `authorize`, `request`,
 		result.Super.Verdict,
 		fmt.Sprintf("Forbidden: %s, %s, %s/%s",
-			request.User,
+			request.AuthUser,
 			request.RemoteAddr,
 			request.Section,
 			request.Action),

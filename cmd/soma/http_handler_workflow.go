@@ -24,7 +24,7 @@ func WorkflowSummary(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `workflow`,
 		Action:     `summary`,
@@ -40,7 +40,7 @@ func WorkflowSummary(w http.ResponseWriter, r *http.Request,
 		Action:     `summary`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
@@ -52,7 +52,7 @@ func WorkflowList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `workflow`,
 		Action:     `list`,
@@ -79,7 +79,7 @@ func WorkflowList(w http.ResponseWriter, r *http.Request,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Workflow: proto.Workflow{
 			Status: cReq.Filter.Workflow.Status,
 		},
@@ -94,7 +94,7 @@ func WorkflowRetry(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `workflow`,
 		Action:     `retry`,
@@ -121,7 +121,7 @@ func WorkflowRetry(w http.ResponseWriter, r *http.Request,
 		Action:     `retry`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Workflow: proto.Workflow{
 			InstanceId: cReq.Workflow.InstanceId,
 		},
@@ -136,7 +136,7 @@ func WorkflowSet(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `workflow`,
 		Action:     `set`,
@@ -170,7 +170,7 @@ func WorkflowSet(w http.ResponseWriter, r *http.Request,
 		Action:     `set`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Workflow: proto.Workflow{
 			InstanceConfigId: params.ByName(`instanceconfig`),
 			Status:           cReq.Workflow.Status,

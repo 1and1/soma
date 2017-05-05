@@ -81,7 +81,7 @@ func (i *instance) process(q *msg.Request) {
 
 	switch q.Action {
 	case `show`:
-		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
+		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.AuthUser,
 			q.RemoteAddr)
 
 		if err = i.stmt_show.QueryRow(q.Instance.Id).Scan(
@@ -140,7 +140,7 @@ func (i *instance) process(q *msg.Request) {
 		}}
 		result.OK()
 	case `versions`:
-		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
+		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.AuthUser,
 			q.RemoteAddr)
 
 		if rows, err = i.stmt_vers.Query(q.Instance.Id); err != nil {
@@ -214,7 +214,7 @@ func (i *instance) process(q *msg.Request) {
 		fallthrough
 	case `instance_list_all`:
 		// section: runtime
-		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User,
+		i.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.AuthUser,
 			q.RemoteAddr)
 
 		if rows, err = i.stmt_list.Query(

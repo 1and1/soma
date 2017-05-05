@@ -69,8 +69,8 @@ func (j *jobsRead) process(q *msg.Request) {
 
 	switch q.Action {
 	case `list`:
-		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User, q.RemoteAddr)
-		if rows, err = j.listscp_stmt.Query(q.User); err != nil {
+		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.AuthUser, q.RemoteAddr)
+		if rows, err = j.listscp_stmt.Query(q.AuthUser); err != nil {
 			result.ServerError(err)
 			goto dispatch
 		}
@@ -96,7 +96,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		result.OK()
 	case `job_list_all`:
 		// section: runtime
-		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.User, q.RemoteAddr)
+		j.reqLog.Printf(LogStrSRq, q.Section, q.Action, q.AuthUser, q.RemoteAddr)
 		if rows, err = j.listall_stmt.Query(); err != nil {
 			result.ServerError(err)
 			goto dispatch
@@ -122,7 +122,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		}
 		result.OK()
 	case `show`:
-		j.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User, q.RemoteAddr, q.Job.Id)
+		j.reqLog.Printf(LogStrArg, q.Section, q.Action, q.AuthUser, q.RemoteAddr, q.Job.Id)
 		if err = j.showid_stmt.QueryRow(q.Job.Id).Scan(
 			&jobId,
 			&jobStatus,
@@ -171,7 +171,7 @@ func (j *jobsRead) process(q *msg.Request) {
 		result.OK()
 	case `search/idlist`:
 		idList = fmt.Sprintf("{%s}", strings.Join(q.Search.Job.IdList, `,`))
-		j.reqLog.Printf(LogStrArg, q.Section, q.Action, q.User, q.RemoteAddr, idList)
+		j.reqLog.Printf(LogStrArg, q.Section, q.Action, q.AuthUser, q.RemoteAddr, idList)
 		if rows, err = j.showlist_stmt.Query(idList); err != nil {
 			result.ServerError(err)
 			goto dispatch

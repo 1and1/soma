@@ -60,7 +60,7 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      treeT,
 		Action:       `tree`,
@@ -80,7 +80,7 @@ func OutputTree(w http.ResponseWriter, r *http.Request,
 		Action:     `output_tree`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Tree: proto.Tree{
 			Id:   params.ByName(treeT),
 			Type: treeT,

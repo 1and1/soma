@@ -117,7 +117,7 @@ func (w *NodeWrite) add(q *msg.Request, mr *msg.Result) {
 		q.Node.State,
 		q.Node.IsOnline,
 		false,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		mr.ServerError(err)
 		return

@@ -15,7 +15,7 @@ func RightSearch(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `right`,
 		Action:     `search`,
@@ -37,7 +37,7 @@ func RightSearch(w http.ResponseWriter, r *http.Request,
 		Action:     `search`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Grant: proto.Grant{
 			RecipientType: crq.Filter.Grant.RecipientType,
 			RecipientId:   crq.Filter.Grant.RecipientId,
@@ -73,7 +73,7 @@ func RightGrant(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `right`,
 		Action:     `grant`,
@@ -90,7 +90,7 @@ func RightGrant(w http.ResponseWriter, r *http.Request,
 		Action:     `grant`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Grant:      *cReq.Grant,
 	}
 	result := <-returnChannel
@@ -109,7 +109,7 @@ func RightRevoke(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `right`,
 		Action:     `revoke`,
@@ -126,7 +126,7 @@ func RightRevoke(w http.ResponseWriter, r *http.Request,
 		Action:     `revoke`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Grant:      grant,
 	}
 	result := <-returnChannel

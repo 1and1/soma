@@ -17,7 +17,7 @@ func BucketList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `list`,
@@ -65,7 +65,7 @@ func BucketShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `show`,
@@ -107,7 +107,7 @@ func BucketCreate(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `bucket`,
 		Action:       `create`,
@@ -122,7 +122,7 @@ func BucketCreate(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "bucket",
 		Action:      "create_bucket",
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Bucket: somaBucketRequest{
 			action: "add",
@@ -139,7 +139,7 @@ func BucketAddProperty(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `add_property`,
@@ -183,7 +183,7 @@ func BucketAddProperty(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "bucket",
 		Action:      fmt.Sprintf("add_%s_property_to_bucket", params.ByName("type")),
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Bucket: somaBucketRequest{
 			action: fmt.Sprintf("%s_property_new", params.ByName("type")),
@@ -200,7 +200,7 @@ func BucketRemoveProperty(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `bucket`,
 		Action:     `remove_property`,
@@ -227,8 +227,8 @@ func BucketRemoveProperty(w http.ResponseWriter, r *http.Request,
 		RequestType: `bucket`,
 		Action: fmt.Sprintf("delete_%s_property_from_bucket",
 			params.ByName("type")),
-		User:  params.ByName(`AuthenticatedUser`),
-		reply: returnChannel,
+		AuthUser: params.ByName(`AuthenticatedUser`),
+		reply:    returnChannel,
 		Bucket: somaBucketRequest{
 			action: fmt.Sprintf("%s_property_remove",
 				params.ByName("type")),

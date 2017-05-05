@@ -22,7 +22,7 @@ func AttributeList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `attribute`,
 		Action:     `list`,
@@ -38,7 +38,7 @@ func AttributeList(w http.ResponseWriter, r *http.Request,
 		Action:     `list`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 	}
 	result := <-returnChannel
 	SendMsgResult(&w, &result)
@@ -50,7 +50,7 @@ func AttributeShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `attribute`,
 		Action:     `show`,
@@ -66,7 +66,7 @@ func AttributeShow(w http.ResponseWriter, r *http.Request,
 		Action:     `show`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Attribute: proto.Attribute{
 			Name: params.ByName(`attribute`),
 		},
@@ -81,7 +81,7 @@ func AttributeAdd(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `attribute`,
 		Action:     `add`,
@@ -103,7 +103,7 @@ func AttributeAdd(w http.ResponseWriter, r *http.Request,
 		Action:     `add`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Attribute: proto.Attribute{
 			Name:        cReq.Attribute.Name,
 			Cardinality: cReq.Attribute.Cardinality,
@@ -119,7 +119,7 @@ func AttributeRemove(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `attribute`,
 		Action:     `remove`,
@@ -135,7 +135,7 @@ func AttributeRemove(w http.ResponseWriter, r *http.Request,
 		Action:     `remove`,
 		Reply:      returnChannel,
 		RemoteAddr: extractAddress(r.RemoteAddr),
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		Attribute: proto.Attribute{
 			Name: params.ByName(`attribute`),
 		},

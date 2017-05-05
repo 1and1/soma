@@ -156,7 +156,7 @@ func (s *supervisor) permissionAddTx(q *msg.Request,
 		q.Permission.Id,
 		q.Permission.Name,
 		q.Permission.Category,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		return res, err
 	}
@@ -165,7 +165,7 @@ func (s *supervisor) permissionAddTx(q *msg.Request,
 		grantPermID,
 		q.Permission.Name,
 		grantCategory,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		return res, err
 	}

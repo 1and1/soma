@@ -18,7 +18,7 @@ func CheckConfigurationList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `check`,
 		Action:     `list`,
@@ -67,7 +67,7 @@ func CheckConfigurationShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `check`,
 		Action:       `show`,
@@ -105,7 +105,7 @@ func CheckConfigurationCreate(w http.ResponseWriter, r *http.Request,
 	cReq.CheckConfig.Id = uuid.Nil.String()
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `check`,
 		Action:       `create`,
@@ -122,7 +122,7 @@ func CheckConfigurationCreate(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "check",
 		Action:      fmt.Sprintf("add_check_to_%s", cReq.CheckConfig.ObjectType),
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		CheckConfig: somaCheckConfigRequest{
 			action:      "check_configuration_new",
@@ -139,7 +139,7 @@ func CheckConfigurationDestroy(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:         params.ByName(`AuthenticatedUser`),
+		AuthUser:     params.ByName(`AuthenticatedUser`),
 		RemoteAddr:   extractAddress(r.RemoteAddr),
 		Section:      `check`,
 		Action:       `destroy`,
@@ -154,7 +154,7 @@ func CheckConfigurationDestroy(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: `check`,
 		Action:      `remove_check`,
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		CheckConfig: somaCheckConfigRequest{
 			action: `check_configuration_delete`,

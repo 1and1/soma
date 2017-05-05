@@ -49,7 +49,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 
 	// late authorization after Request check
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `runtime`,
 		Action:     cReq.SystemOperation.Request,
@@ -67,7 +67,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			Action:     cReq.SystemOperation.Request,
 			Reply:      returnChannel,
 			RemoteAddr: extractAddress(r.RemoteAddr),
-			User:       params.ByName(`AuthenticatedUser`),
+			AuthUser:   params.ByName(`AuthenticatedUser`),
 			System:     *sys,
 		}
 	case `repository_rebuild`, `repository_restart`:
@@ -77,7 +77,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			Action:     cReq.SystemOperation.Request,
 			Reply:      returnChannel,
 			RemoteAddr: extractAddress(r.RemoteAddr),
-			User:       params.ByName(`AuthenticatedUser`),
+			AuthUser:   params.ByName(`AuthenticatedUser`),
 			System:     *sys,
 		}
 	case `shutdown`:
@@ -87,7 +87,7 @@ func SystemOperation(w http.ResponseWriter, r *http.Request,
 			Action:     cReq.SystemOperation.Request,
 			Reply:      returnChannel,
 			RemoteAddr: extractAddress(r.RemoteAddr),
-			User:       params.ByName(`AuthenticatedUser`),
+			AuthUser:   params.ByName(`AuthenticatedUser`),
 		}
 	}
 	result := <-returnChannel

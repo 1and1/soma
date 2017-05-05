@@ -199,7 +199,7 @@ func (s *supervisor) actionAdd(q *msg.Request, r *msg.Result) {
 		q.ActionObj.Id,
 		q.ActionObj.Name,
 		q.ActionObj.SectionId,
-		q.User,
+		q.AuthUser,
 	); err != nil {
 		r.ServerError(err)
 		return

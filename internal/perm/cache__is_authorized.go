@@ -30,9 +30,9 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 
 	// determine type of the request subject
 	switch {
-	case strings.HasPrefix(q.User, `admin_`):
+	case strings.HasPrefix(q.AuthUser, `admin_`):
 		subjType = `admin`
-	case strings.HasPrefix(q.User, `tool_`):
+	case strings.HasPrefix(q.AuthUser, `tool_`):
 		subjType = `tool`
 	default:
 		subjType = `user`
@@ -43,7 +43,7 @@ func (c *Cache) isAuthorized(q *msg.Request) msg.Result {
 	defer c.lock.RUnlock()
 
 	// look up the user, also handles admin and tool accounts
-	if user = c.user.getByName(q.User); user == nil {
+	if user = c.user.getByName(q.AuthUser); user == nil {
 		goto dispatch
 	}
 

@@ -20,7 +20,7 @@ import (
 type treeRequest struct {
 	RequestType string
 	Action      string
-	User        string
+	AuthUser    string
 	JobId       uuid.UUID
 	reply       chan somaResult
 	Repository  somaRepositoryRequest
@@ -542,7 +542,7 @@ actionloop:
 			}
 		case `create`, `update`, `delete`, `node_assignment`,
 			`member_new`, `member_removed`:
-			if err = tk.txTree(a, stm, q.User); err != nil {
+			if err = tk.txTree(a, stm, q.AuthUser); err != nil {
 				break actionloop
 			}
 		default:

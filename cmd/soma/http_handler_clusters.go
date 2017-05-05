@@ -17,7 +17,7 @@ func ClusterList(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `list`,
@@ -64,7 +64,7 @@ func ClusterShow(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `show`,
@@ -93,7 +93,7 @@ func ClusterListMember(w http.ResponseWriter, r *http.Request,
 	defer PanicCatcher(w)
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `list_member`,
@@ -129,7 +129,7 @@ func ClusterCreate(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `create`,
@@ -150,7 +150,7 @@ func ClusterCreate(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      "create_cluster",
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  "add",
@@ -174,7 +174,7 @@ func ClusterAddMember(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `add_member`,
@@ -190,7 +190,7 @@ func ClusterAddMember(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      "add_node_to_cluster",
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  "member",
@@ -236,7 +236,7 @@ func ClusterAddProperty(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `add_property`,
@@ -252,7 +252,7 @@ func ClusterAddProperty(w http.ResponseWriter, r *http.Request,
 	handler.input <- treeRequest{
 		RequestType: "cluster",
 		Action:      fmt.Sprintf("add_%s_property_to_cluster", params.ByName("type")),
-		User:        params.ByName(`AuthenticatedUser`),
+		AuthUser:    params.ByName(`AuthenticatedUser`),
 		reply:       returnChannel,
 		Cluster: somaClusterRequest{
 			action:  fmt.Sprintf("%s_property_new", params.ByName("type")),
@@ -298,7 +298,7 @@ func ClusterRemoveProperty(w http.ResponseWriter, r *http.Request,
 	}
 
 	if !IsAuthorized(&msg.Authorization{
-		User:       params.ByName(`AuthenticatedUser`),
+		AuthUser:   params.ByName(`AuthenticatedUser`),
 		RemoteAddr: extractAddress(r.RemoteAddr),
 		Section:    `cluster`,
 		Action:     `remove_property`,
@@ -315,8 +315,8 @@ func ClusterRemoveProperty(w http.ResponseWriter, r *http.Request,
 		RequestType: `cluster`,
 		Action: fmt.Sprintf("delete_%s_property_from_cluster",
 			params.ByName(`type`)),
-		User:  params.ByName(`AuthenticatedUser`),
-		reply: returnChannel,
+		AuthUser: params.ByName(`AuthenticatedUser`),
+		reply:    returnChannel,
 		Cluster: somaClusterRequest{
 			action: fmt.Sprintf("%s_property_remove",
 				params.ByName(`type`)),
