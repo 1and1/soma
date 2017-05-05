@@ -38,6 +38,7 @@ type Result struct {
 	State       []proto.State
 	System      []proto.SystemOperation
 	Tree        proto.Tree
+	User        []proto.User
 	Validity    []proto.Validity
 	View        []proto.View
 	Workflow    []proto.Workflow
@@ -119,6 +120,8 @@ func (r *Result) Clear(s string) {
 		r.Workflow = []proto.Workflow{}
 	case `view`:
 		r.View = []proto.View{}
+	case `user`:
+		r.User = []proto.User{}
 	case `validity`:
 		r.Validity = []proto.Validity{}
 	}
