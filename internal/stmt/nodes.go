@@ -18,6 +18,13 @@ SELECT node_id,
 FROM   soma.nodes
 WHERE  node_online;`
 
+	// XXX compat to keep old code compiling
+	ListNodes       = NodeList
+	ShowNodes       = NodeShow
+	ShowConfigNodes = NodeShowConfig
+	SyncNodes       = NodeSync
+	NodeDel         = NodeRemove
+
 	NodeShow = `
 SELECT node_id,
        node_asset_id,
