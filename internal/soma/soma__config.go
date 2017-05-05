@@ -37,6 +37,7 @@ type Config struct {
 	ShutdownDelay uint64     `json:"shutdown.delay.seconds,string"`
 	InstanceName  string     `json:"instance.name"`
 	LogPath       string     `json:"log.path"`
+	QueueLen      int        `json:"handler.queue.length,string"`
 	Database      DbConfig   `json:"database"`
 	Daemon        Daemon     `json:"daemon"`
 	Auth          AuthConfig `json:"authentication"`

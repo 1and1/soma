@@ -31,6 +31,23 @@ type NodeWrite struct {
 	errLog     *logrus.Logger
 }
 
+// newNodeWrite return a new NodeWrite handler with input buffer of
+// length
+func newNodeWrite(length int) (w *NodeWrite) {
+	w = &NodeWrite{}
+	w.Input = make(chan msg.Request, length)
+	w.Shutdown = make(chan struct{})
+	return
+}
+
+// register initializes resources provided by the Soma app
+func (w *NodeWrite) register(c *sql.DB, l ...*logrus.Logger) {
+	w.conn = c
+	w.appLog = l[0]
+	w.reqLog = l[1]
+	w.reqLog = l[2]
+}
+
 // run is the event loop for NodeWrite
 func (w *NodeWrite) run() {
 	var err error

@@ -35,6 +35,22 @@ type NodeRead struct {
 	errLog          *logrus.Logger
 }
 
+// newNodeRead return a new NodeRead handler with input buffer of length
+func newNodeRead(length int) (r *NodeRead) {
+	r = &NodeRead{}
+	r.Input = make(chan msg.Request, length)
+	r.Shutdown = make(chan struct{})
+	return
+}
+
+// register initializes resources provided by the Soma app
+func (r *NodeRead) register(c *sql.DB, l ...*logrus.Logger) {
+	r.conn = c
+	r.appLog = l[0]
+	r.reqLog = l[1]
+	r.reqLog = l[2]
+}
+
 // run is the event loop for NodeRead
 func (r *NodeRead) run() {
 	var err error

@@ -29,10 +29,11 @@ type ValidityRead struct {
 	errLog   *logrus.Logger
 }
 
-// newValidityRead returns a new ValidityRead handler
-func newValidityRead() (r ValidityRead) {
-	r = ValidityRead{}
-	r.Input = make(chan msg.Request, 64)
+// newValidityRead returns a new ValidityRead handler with input buffer
+// of length
+func newValidityRead(length int) (r *ValidityRead) {
+	r = &ValidityRead{}
+	r.Input = make(chan msg.Request, length)
 	r.Shutdown = make(chan struct{})
 	return
 }

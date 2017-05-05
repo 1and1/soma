@@ -29,6 +29,23 @@ type ViewWrite struct {
 	errLog     *logrus.Logger
 }
 
+// newViewWrite return a new ViewWrite handler with input buffer of
+// length
+func newViewWrite(length int) (w *ViewWrite) {
+	w = &ViewWrite{}
+	w.Input = make(chan msg.Request, length)
+	w.Shutdown = make(chan struct{})
+	return
+}
+
+// register initializes resources provided by the Soma app
+func (w *ViewWrite) register(c *sql.DB, l ...*logrus.Logger) {
+	w.conn = c
+	w.appLog = l[0]
+	w.reqLog = l[1]
+	w.reqLog = l[2]
+}
+
 // run is the event loop for NodeWrite
 func (w *ViewWrite) run() {
 	var err error

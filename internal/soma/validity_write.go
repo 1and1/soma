@@ -28,10 +28,11 @@ type ValidityWrite struct {
 	errLog     *logrus.Logger
 }
 
-// newValidityWrite returns a new ValidityWrite handler
-func newValidityWrite() (w ValidityWrite) {
-	w = ValidityWrite{}
-	w.Input = make(chan msg.Request, 64)
+// newValidityWrite returns a new ValidityWrite handler with input
+// buffer of length
+func newValidityWrite(length int) (w *ValidityWrite) {
+	w = &ValidityWrite{}
+	w.Input = make(chan msg.Request, length)
 	w.Shutdown = make(chan struct{})
 	return
 }

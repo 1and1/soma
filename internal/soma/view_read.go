@@ -29,6 +29,22 @@ type ViewRead struct {
 	errLog   *logrus.Logger
 }
 
+// newViewRead return a new ViewRead handler with input buffer of length
+func newViewRead(length int) (r *ViewRead) {
+	r = &ViewRead{}
+	r.Input = make(chan msg.Request, length)
+	r.Shutdown = make(chan struct{})
+	return
+}
+
+// register initializes resources provided by the Soma app
+func (r *ViewRead) register(c *sql.DB, l ...*logrus.Logger) {
+	r.conn = c
+	r.appLog = l[0]
+	r.reqLog = l[1]
+	r.reqLog = l[2]
+}
+
 // run is the event loop for ViewRead
 func (r *ViewRead) run() {
 	var err error
