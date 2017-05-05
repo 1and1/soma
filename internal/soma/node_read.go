@@ -48,7 +48,7 @@ func (r *NodeRead) register(c *sql.DB, l ...*logrus.Logger) {
 	r.conn = c
 	r.appLog = l[0]
 	r.reqLog = l[1]
-	r.reqLog = l[2]
+	r.errLog = l[2]
 }
 
 // run is the event loop for NodeRead

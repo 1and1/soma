@@ -43,7 +43,7 @@ func (w *ViewWrite) register(c *sql.DB, l ...*logrus.Logger) {
 	w.conn = c
 	w.appLog = l[0]
 	w.reqLog = l[1]
-	w.reqLog = l[2]
+	w.errLog = l[2]
 }
 
 // run is the event loop for NodeWrite
