@@ -14,6 +14,7 @@ func (s *Soma) Start() {
 	// TODO: start supervisor completely
 
 	s.handlerMap.Add(`node_r`, newNodeRead(s.conf.QueueLen))
+	s.handlerMap.Add(`unit_r`, newUnitRead(s.conf.QueueLen))
 	s.handlerMap.Add(`user_r`, newUserRead(s.conf.QueueLen))
 	s.handlerMap.Add(`validity_r`, newValidityRead(s.conf.QueueLen))
 	s.handlerMap.Add(`view_r`, newViewRead(s.conf.QueueLen))
@@ -21,6 +22,7 @@ func (s *Soma) Start() {
 	if !s.conf.ReadOnly {
 		if !s.conf.Observer {
 			s.handlerMap.Add(`node_w`, newNodeWrite(s.conf.QueueLen))
+			s.handlerMap.Add(`unit_w`, newUnitWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`user_w`, newUserWrite(s.conf.QueueLen, s))
 			s.handlerMap.Add(`validity_w`, newValidityWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`view_w`, newViewWrite(s.conf.QueueLen))
