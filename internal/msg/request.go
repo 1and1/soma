@@ -39,6 +39,7 @@ type Request struct {
 	Property    proto.Property
 	Repository  proto.Repository
 	SectionObj  proto.Section
+	Server      proto.Server
 	State       proto.State
 	Status      proto.Status
 	System      proto.SystemOperation
@@ -56,6 +57,7 @@ type Request struct {
 type Filter struct {
 	IsDetailed bool
 	Job        proto.JobFilter
+	Server     proto.Server
 }
 
 type UpdateData struct {
