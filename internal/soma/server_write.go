@@ -180,7 +180,9 @@ func (w *ServerWrite) purge(q *msg.Request, mr *msg.Result) {
 		mr.ServerError(err)
 		return
 	}
-	mr.Server = append(mr.Server, q.Server)
+	if mr.RowCnt(res.RowsAffected()) {
+		mr.Server = append(mr.Server, q.Server)
+	}
 }
 
 // update refreshes a servers details
