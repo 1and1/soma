@@ -37,6 +37,7 @@ type Result struct {
 	SectionObj  []proto.Section
 	State       []proto.State
 	System      []proto.SystemOperation
+	Team        []proto.Team
 	Tree        proto.Tree
 	Unit        []proto.Unit
 	User        []proto.User
@@ -117,6 +118,8 @@ func (r *Result) Clear(s string) {
 		r.State = []proto.State{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
+	case `team`:
+		r.Team = []proto.Team{}
 	case `unit`:
 		r.Unit = []proto.Unit{}
 	case `user`:
