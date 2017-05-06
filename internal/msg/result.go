@@ -36,6 +36,7 @@ type Result struct {
 	Permission  []proto.Permission
 	SectionObj  []proto.Section
 	State       []proto.State
+	Status      []proto.Status
 	System      []proto.SystemOperation
 	Team        []proto.Team
 	Tree        proto.Tree
@@ -116,6 +117,8 @@ func (r *Result) Clear(s string) {
 		r.SectionObj = []proto.Section{}
 	case `state`:
 		r.State = []proto.State{}
+	case `status`:
+		r.Status = []proto.Status{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
 	case `team`:

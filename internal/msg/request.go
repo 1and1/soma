@@ -40,6 +40,7 @@ type Request struct {
 	Repository  proto.Repository
 	SectionObj  proto.Section
 	State       proto.State
+	Status      proto.Status
 	System      proto.SystemOperation
 	Team        proto.Team
 	Tree        proto.Tree
