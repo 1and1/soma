@@ -23,8 +23,8 @@ type Result struct {
 
 	Super *Supervisor
 
-	Attribute   []proto.Attribute
 	ActionObj   []proto.Action
+	Attribute   []proto.Attribute
 	Category    []proto.Category
 	Entity      []proto.Entity
 	Environment []proto.Environment
@@ -117,16 +117,16 @@ func (r *Result) Clear(s string) {
 		r.State = []proto.State{}
 	case `system`:
 		r.System = []proto.SystemOperation{}
-	case `workflow`:
-		r.Workflow = []proto.Workflow{}
-	case `view`:
-		r.View = []proto.View{}
 	case `unit`:
 		r.Unit = []proto.Unit{}
 	case `user`:
 		r.User = []proto.User{}
 	case `validity`:
 		r.Validity = []proto.Validity{}
+	case `view`:
+		r.View = []proto.View{}
+	case `workflow`:
+		r.Workflow = []proto.Workflow{}
 	}
 }
 
