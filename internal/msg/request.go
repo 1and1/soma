@@ -43,6 +43,7 @@ type Request struct {
 	System      proto.SystemOperation
 	Team        proto.Team
 	Tree        proto.Tree
+	Unit        proto.Unit
 	User        proto.User
 	Validity    proto.Validity
 	View        proto.View
