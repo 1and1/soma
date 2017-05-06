@@ -46,7 +46,7 @@ func (w *ViewWrite) register(c *sql.DB, l ...*logrus.Logger) {
 	w.errLog = l[2]
 }
 
-// run is the event loop for NodeWrite
+// run is the event loop for ViewWrite
 func (w *ViewWrite) run() {
 	var err error
 
