@@ -178,9 +178,12 @@ func (r *Result) Forbidden(err error) {
 	r.SetError(err)
 }
 
-func (r *Result) NotFound(err error) {
+func (r *Result) NotFound(err error, section ...string) {
 	r.Code = 404
 	r.SetError(err)
+	if len(section) > 0 {
+		r.Clear(section[0])
+	}
 }
 
 func (r *Result) Conflict(err error) {
@@ -188,9 +191,12 @@ func (r *Result) Conflict(err error) {
 	r.SetError(err)
 }
 
-func (r *Result) ServerError(err error) {
+func (r *Result) ServerError(err error, section ...string) {
 	r.Code = 500
 	r.SetError(err)
+	if len(section) > 0 {
+		r.Clear(section[0])
+	}
 }
 
 func (r *Result) NotImplemented(err error) {
