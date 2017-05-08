@@ -15,6 +15,8 @@ func (s *Soma) Start() {
 
 	s.handlerMap.Add(`node_r`, newNodeRead(s.conf.QueueLen))
 	s.handlerMap.Add(`provider_r`, newProviderRead(s.conf.QueueLen))
+	s.handlerMap.Add(`server_r`, newServerRead(s.conf.QueueLen))
+	s.handlerMap.Add(`status_r`, newStatusRead(s.conf.QueueLen))
 	s.handlerMap.Add(`team_r`, newTeamRead(s.conf.QueueLen))
 	s.handlerMap.Add(`unit_r`, newUnitRead(s.conf.QueueLen))
 	s.handlerMap.Add(`user_r`, newUserRead(s.conf.QueueLen))
@@ -25,6 +27,8 @@ func (s *Soma) Start() {
 		if !s.conf.Observer {
 			s.handlerMap.Add(`node_w`, newNodeWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`provider_w`, newProviderWrite(s.conf.QueueLen))
+			s.handlerMap.Add(`server_w`, newServerWrite(s.conf.QueueLen))
+			s.handlerMap.Add(`status_w`, newStatusWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`team_w`, newTeamWrite(s.conf.QueueLen, s))
 			s.handlerMap.Add(`unit_w`, newUnitWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`user_w`, newUserWrite(s.conf.QueueLen, s))
