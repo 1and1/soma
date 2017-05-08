@@ -34,6 +34,7 @@ type Result struct {
 	Monitoring  []proto.Monitoring
 	Node        []proto.Node
 	Permission  []proto.Permission
+	Provider    []proto.Provider
 	SectionObj  []proto.Section
 	Server      []proto.Server
 	State       []proto.State
@@ -114,6 +115,8 @@ func (r *Result) Clear(s string) {
 		r.Node = []proto.Node{}
 	case `permission`:
 		r.Permission = []proto.Permission{}
+	case `provider`:
+		r.Provider = []proto.Provider{}
 	case `section`:
 		r.SectionObj = []proto.Section{}
 	case `server`:

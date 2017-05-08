@@ -37,6 +37,7 @@ type Request struct {
 	Node        proto.Node
 	Permission  proto.Permission
 	Property    proto.Property
+	Provider    proto.Provider
 	Repository  proto.Repository
 	SectionObj  proto.Section
 	Server      proto.Server
