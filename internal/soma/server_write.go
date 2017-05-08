@@ -172,9 +172,12 @@ func (w *ServerWrite) remove(q *msg.Request, mr *msg.Result) {
 
 // purge deletes servers marked as deleted from the database
 func (w *ServerWrite) purge(q *msg.Request, mr *msg.Result) {
-	var err error
+	var (
+		err error
+		res sql.Result
+	)
 
-	if _, err = w.stmtPurge.Exec(
+	if res, err = w.stmtPurge.Exec(
 		q.Server.Id,
 	); err != nil {
 		mr.ServerError(err)
