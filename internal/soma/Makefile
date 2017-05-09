@@ -6,3 +6,4 @@ validate:
 	@go tool vet -shadow .
 	@golint .
 	@ineffassign .
+	@gofmt -w .
