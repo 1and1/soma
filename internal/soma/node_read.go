@@ -113,15 +113,14 @@ func (r *NodeRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
 	for rows.Next() {
 		if err = rows.Scan(&nodeID, &nodeName); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Node = append(mr.Node, proto.Node{
@@ -130,7 +129,7 @@ func (r *NodeRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -147,7 +146,7 @@ func (r *NodeRead) sync(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtSync.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -162,8 +161,7 @@ func (r *NodeRead) sync(q *msg.Request, mr *msg.Result) {
 			&nodeDeleted,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Node = append(mr.Node, proto.Node{
@@ -177,8 +175,7 @@ func (r *NodeRead) sync(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -209,8 +206,7 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 		&nodeOnline,
 		&nodeDeleted,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
 		goto fail
@@ -295,8 +291,7 @@ func (r *NodeRead) show(q *msg.Request, mr *msg.Result) {
 	return
 
 fail:
-	mr.ServerError(err)
-	mr.Clear(q.Section)
+	mr.ServerError(err, q.Section)
 }
 
 // showConfig returns the repository configuration of the node
@@ -314,10 +309,10 @@ func (r *NodeRead) showConfig(q *msg.Request, mr *msg.Result) {
 		&repositoryID,
 	); err == sql.ErrNoRows {
 		// TODO need a better way to transport 'unassigned'
-		mr.NotFound(err)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.Node = append(mr.Node, proto.Node{

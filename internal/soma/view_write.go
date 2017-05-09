@@ -100,7 +100,7 @@ func (w *ViewWrite) add(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtAdd.Exec(
 		q.View.Name,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -118,7 +118,7 @@ func (w *ViewWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.View.Name,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -137,7 +137,7 @@ func (w *ViewWrite) rename(q *msg.Request, mr *msg.Result) {
 		q.View.Name,
 		q.Update.View.Name,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

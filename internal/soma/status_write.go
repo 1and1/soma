@@ -96,7 +96,7 @@ func (w *StatusWrite) add(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtAdd.Exec(
 		q.Status.Name,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -114,7 +114,7 @@ func (w *StatusWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.Status.Name,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

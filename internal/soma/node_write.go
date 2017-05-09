@@ -117,7 +117,7 @@ func (w *NodeWrite) add(q *msg.Request, mr *msg.Result) {
 		false,
 		q.AuthUser,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -135,7 +135,7 @@ func (w *NodeWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.Node.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -159,7 +159,7 @@ func (w *NodeWrite) update(q *msg.Request, mr *msg.Result) {
 		q.Node.IsDeleted,
 		q.Node.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -177,7 +177,7 @@ func (w *NodeWrite) purge(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtPurge.Exec(
 		q.Node.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

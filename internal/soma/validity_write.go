@@ -98,7 +98,7 @@ func (w *ValidityWrite) add(q *msg.Request, mr *msg.Result) {
 		q.Validity.ObjectType,
 		q.Validity.Inherited,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -118,7 +118,7 @@ func (w *ValidityWrite) remove(q *msg.Request, mr *msg.Result) {
 		q.Validity.ObjectType,
 		q.Validity.Inherited,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

@@ -98,7 +98,7 @@ func (r *ValidityRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -108,8 +108,7 @@ func (r *ValidityRead) list(q *msg.Request, mr *msg.Result) {
 			&objectType,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Validity = append(mr.Validity, proto.Validity{
@@ -118,7 +117,7 @@ func (r *ValidityRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -136,7 +135,7 @@ func (r *ValidityRead) show(q *msg.Request, mr *msg.Result) {
 	if rows, err = r.stmtShow.Query(
 		q.Validity.SystemProperty,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -147,8 +146,7 @@ func (r *ValidityRead) show(q *msg.Request, mr *msg.Result) {
 			&isInherited,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Validity = append(mr.Validity, proto.Validity{
@@ -159,7 +157,7 @@ func (r *ValidityRead) show(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()

@@ -97,15 +97,14 @@ func (r *StatusRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
 	for rows.Next() {
 		if err = rows.Scan(&status); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Status = append(mr.Status, proto.Status{
@@ -113,7 +112,7 @@ func (r *StatusRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -131,12 +130,10 @@ func (r *StatusRead) show(q *msg.Request, mr *msg.Result) {
 	).Scan(
 		&status,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 

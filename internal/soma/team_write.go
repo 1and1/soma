@@ -123,7 +123,7 @@ func (w *TeamWrite) add(q *msg.Request, mr *msg.Result) {
 		q.Team.LdapId,
 		q.Team.IsSystem,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -141,7 +141,7 @@ func (w *TeamWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.Team.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -162,7 +162,7 @@ func (w *TeamWrite) update(q *msg.Request, mr *msg.Result) {
 		q.Team.IsSystem,
 		q.Team.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

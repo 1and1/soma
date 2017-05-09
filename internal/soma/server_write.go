@@ -114,7 +114,7 @@ func (w *ServerWrite) add(q *msg.Request, mr *msg.Result) {
 		q.Server.IsOnline,
 		false,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -144,7 +144,7 @@ func (w *ServerWrite) insertNull(q *msg.Request, mr *msg.Result) {
 		q.Server.IsOnline,
 		q.Server.IsDeleted,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -162,7 +162,7 @@ func (w *ServerWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.Server.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -180,7 +180,7 @@ func (w *ServerWrite) purge(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtPurge.Exec(
 		q.Server.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -204,7 +204,7 @@ func (w *ServerWrite) update(q *msg.Request, mr *msg.Result) {
 		q.Server.IsOnline,
 		q.Server.IsDeleted,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

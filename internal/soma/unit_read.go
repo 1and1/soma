@@ -97,15 +97,14 @@ func (r *UnitRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
 	for rows.Next() {
 		if err = rows.Scan(&unit); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Unit = append(mr.Unit, proto.Unit{
@@ -113,7 +112,7 @@ func (r *UnitRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -132,12 +131,10 @@ func (r *UnitRead) show(q *msg.Request, mr *msg.Result) {
 		&unit,
 		&name,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.Unit = append(mr.Unit, proto.Unit{

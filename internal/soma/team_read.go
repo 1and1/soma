@@ -102,7 +102,7 @@ func (r *TeamRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -112,8 +112,7 @@ func (r *TeamRead) list(q *msg.Request, mr *msg.Result) {
 			&teamName,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Team = append(mr.Team, proto.Team{
@@ -122,7 +121,7 @@ func (r *TeamRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -145,12 +144,10 @@ func (r *TeamRead) show(q *msg.Request, mr *msg.Result) {
 		&ldapID,
 		&systemFlag,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.Team = append(mr.Team, proto.Team{
@@ -173,7 +170,7 @@ func (r *TeamRead) sync(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtSync.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -185,8 +182,7 @@ func (r *TeamRead) sync(q *msg.Request, mr *msg.Result) {
 			&systemFlag,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Team = append(mr.Team, proto.Team{

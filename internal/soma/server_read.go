@@ -110,7 +110,7 @@ func (r *ServerRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -121,8 +121,7 @@ func (r *ServerRead) list(q *msg.Request, mr *msg.Result) {
 			&serverAssetID,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.Server = append(mr.Server, proto.Server{
@@ -132,7 +131,7 @@ func (r *ServerRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -159,12 +158,10 @@ func (r *ServerRead) show(q *msg.Request, mr *msg.Result) {
 		&serverOnline,
 		&serverDeleted,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.Server = append(mr.Server, proto.Server{
@@ -191,7 +188,7 @@ func (r *ServerRead) sync(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtSync.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -206,8 +203,7 @@ func (r *ServerRead) sync(q *msg.Request, mr *msg.Result) {
 			&serverDeleted,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 
@@ -222,7 +218,7 @@ func (r *ServerRead) sync(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -243,12 +239,10 @@ func (r *ServerRead) searchByName(q *msg.Request, mr *msg.Result) {
 		&serverName,
 		&serverAssetID,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.Server = append(mr.Server, proto.Server{
@@ -274,12 +268,10 @@ func (r *ServerRead) searchByAssetID(q *msg.Request, mr *msg.Result) {
 		&serverName,
 		&serverAssetID,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.Server = append(mr.Server, proto.Server{

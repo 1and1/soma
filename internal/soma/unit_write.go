@@ -97,7 +97,7 @@ func (w *UnitWrite) add(q *msg.Request, mr *msg.Result) {
 		q.Unit.Unit,
 		q.Unit.Name,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -115,7 +115,7 @@ func (w *UnitWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.Unit.Unit,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

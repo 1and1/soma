@@ -133,7 +133,7 @@ func (w *UserWrite) add(q *msg.Request, mr *msg.Result) {
 		false,
 		q.User.TeamId,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -158,7 +158,7 @@ func (w *UserWrite) update(q *msg.Request, mr *msg.Result) {
 		q.User.TeamId,
 		q.User.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -176,7 +176,7 @@ func (w *UserWrite) remove(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtRemove.Exec(
 		q.User.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {
@@ -194,7 +194,7 @@ func (w *UserWrite) purge(q *msg.Request, mr *msg.Result) {
 	if res, err = w.stmtPurge.Exec(
 		q.User.Id,
 	); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	if mr.RowCnt(res.RowsAffected()) {

@@ -102,7 +102,7 @@ func (r *UserRead) list(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtList.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -112,8 +112,7 @@ func (r *UserRead) list(q *msg.Request, mr *msg.Result) {
 			&userName,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 		mr.User = append(mr.User, proto.User{
@@ -122,7 +121,7 @@ func (r *UserRead) list(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
@@ -153,12 +152,10 @@ func (r *UserRead) show(q *msg.Request, mr *msg.Result) {
 		&isDeleted,
 		&team,
 	); err == sql.ErrNoRows {
-		mr.NotFound(err)
-		mr.Clear(q.Section)
+		mr.NotFound(err, q.Section)
 		return
 	} else if err != nil {
-		mr.ServerError(err)
-		mr.Clear(q.Section)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -190,7 +187,7 @@ func (r *UserRead) sync(q *msg.Request, mr *msg.Result) {
 	)
 
 	if rows, err = r.stmtSync.Query(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 
@@ -206,8 +203,7 @@ func (r *UserRead) sync(q *msg.Request, mr *msg.Result) {
 			&team,
 		); err != nil {
 			rows.Close()
-			mr.ServerError(err)
-			mr.Clear(q.Section)
+			mr.ServerError(err, q.Section)
 			return
 		}
 
@@ -223,7 +219,7 @@ func (r *UserRead) sync(q *msg.Request, mr *msg.Result) {
 		})
 	}
 	if err = rows.Err(); err != nil {
-		mr.ServerError(err)
+		mr.ServerError(err, q.Section)
 		return
 	}
 	mr.OK()
