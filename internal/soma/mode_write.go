@@ -18,14 +18,14 @@ import (
 
 // ModeWrite handles write requests for modes
 type ModeWrite struct {
-	Input       chan msg.Request
-	Shutdown    chan struct{}
-	conn        *sql.DB
-	stmtCreate  *sql.Stmt
-	stmtDestroy *sql.Stmt
-	appLog      *logrus.Logger
-	reqLog      *logrus.Logger
-	errLog      *logrus.Logger
+	Input      chan msg.Request
+	Shutdown   chan struct{}
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	appLog     *logrus.Logger
+	reqLog     *logrus.Logger
+	errLog     *logrus.Logger
 }
 
 // newModeWrite return a new ModeWrite handler with input buffer of
@@ -50,8 +50,8 @@ func (w *ModeWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.ModeAdd: w.stmtCreate,
-		stmt.ModeDel: w.stmtDestroy,
+		stmt.ModeAdd: w.stmtAdd,
+		stmt.ModeDel: w.stmtRemove,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`mode`, err, stmt.Name(statement))
@@ -76,24 +76,24 @@ func (w *ModeWrite) process(q *msg.Request) {
 	msgRequest(w.reqLog, q)
 
 	switch q.Action {
-	case `create`:
-		w.create(q, &result)
-	case `destroy`:
-		w.destroy(q, &result)
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
 	default:
 		result.UnknownRequest(q)
 	}
 	q.Reply <- result
 }
 
-// create inserts a new mode
-func (w *ModeWrite) create(q *msg.Request, mr *msg.Result) {
+// add inserts a new mode
+func (w *ModeWrite) add(q *msg.Request, mr *msg.Result) {
 	var (
 		res sql.Result
 		err error
 	)
 
-	if res, err = w.stmtCreate.Exec(
+	if res, err = w.stmtAdd.Exec(
 		q.Mode.Mode,
 	); err != nil {
 		mr.ServerError(err, q.Section)
@@ -104,14 +104,14 @@ func (w *ModeWrite) create(q *msg.Request, mr *msg.Result) {
 	}
 }
 
-// destroy deletes a mode
-func (w *ModeWrite) destroy(q *msg.Request, mr *msg.Result) {
+// remove deletes a mode
+func (w *ModeWrite) remove(q *msg.Request, mr *msg.Result) {
 	var (
 		res sql.Result
 		err error
 	)
 
-	if res, err = w.stmtDestroy.Exec(
+	if res, err = w.stmtRemove.Exec(
 		q.Mode.Mode,
 	); err != nil {
 		mr.ServerError(err, q.Section)

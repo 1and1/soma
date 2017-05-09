@@ -18,14 +18,14 @@ import (
 
 // PredicateWrite handles write requests for predicates
 type PredicateWrite struct {
-	Input       chan msg.Request
-	Shutdown    chan struct{}
-	conn        *sql.DB
-	stmtCreate  *sql.Stmt
-	stmtDestroy *sql.Stmt
-	appLog      *logrus.Logger
-	reqLog      *logrus.Logger
-	errLog      *logrus.Logger
+	Input      chan msg.Request
+	Shutdown   chan struct{}
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtRemove *sql.Stmt
+	appLog     *logrus.Logger
+	reqLog     *logrus.Logger
+	errLog     *logrus.Logger
 }
 
 // newPredicateWrite return a new PredicateWrite handler with input
@@ -50,8 +50,8 @@ func (w *PredicateWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.PredicateAdd: w.stmtCreate,
-		stmt.PredicateDel: w.stmtDestroy,
+		stmt.PredicateAdd: w.stmtAdd,
+		stmt.PredicateDel: w.stmtRemove,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`predicate`, err, stmt.Name(statement))
@@ -76,24 +76,24 @@ func (w *PredicateWrite) process(q *msg.Request) {
 	msgRequest(w.reqLog, q)
 
 	switch q.Action {
-	case `create`:
-		w.create(q, &result)
-	case `destroy`:
-		w.destroy(q, &result)
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
 	default:
 		result.UnknownRequest(q)
 	}
 	q.Reply <- result
 }
 
-// create inserts a new predicate
-func (w *PredicateWrite) create(q *msg.Request, mr *msg.Result) {
+// add inserts a new predicate
+func (w *PredicateWrite) add(q *msg.Request, mr *msg.Result) {
 	var (
 		err error
 		res sql.Result
 	)
 
-	if res, err = w.stmtCreate.Exec(
+	if res, err = w.stmtAdd.Exec(
 		q.Predicate.Symbol,
 	); err != nil {
 		mr.ServerError(err, q.Section)
@@ -104,14 +104,14 @@ func (w *PredicateWrite) create(q *msg.Request, mr *msg.Result) {
 	}
 }
 
-// destroy removes a predicate
-func (w *PredicateWrite) destroy(q *msg.Request, mr *msg.Result) {
+// remove removes a predicate
+func (w *PredicateWrite) remove(q *msg.Request, mr *msg.Result) {
 	var (
 		err error
 		res sql.Result
 	)
 
-	if res, err = w.stmtDestroy.Exec(
+	if res, err = w.stmtRemove.Exec(
 		q.Predicate.Symbol,
 	); err != nil {
 		mr.ServerError(err, q.Section)

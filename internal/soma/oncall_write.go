@@ -20,15 +20,15 @@ import (
 
 // OncallWrite handles write requests for oncall
 type OncallWrite struct {
-	Input       chan msg.Request
-	Shutdown    chan struct{}
-	conn        *sql.DB
-	stmtCreate  *sql.Stmt
-	stmtUpdate  *sql.Stmt
-	stmtDestroy *sql.Stmt
-	appLog      *logrus.Logger
-	reqLog      *logrus.Logger
-	errLog      *logrus.Logger
+	Input      chan msg.Request
+	Shutdown   chan struct{}
+	conn       *sql.DB
+	stmtAdd    *sql.Stmt
+	stmtUpdate *sql.Stmt
+	stmtRemove *sql.Stmt
+	appLog     *logrus.Logger
+	reqLog     *logrus.Logger
+	errLog     *logrus.Logger
 }
 
 // newOncallWrite return a new OncallWrite handler with input buffer of
@@ -53,9 +53,9 @@ func (w *OncallWrite) run() {
 	var err error
 
 	for statement, prepStmt := range map[string]*sql.Stmt{
-		stmt.OncallAdd:    w.stmtCreate,
+		stmt.OncallAdd:    w.stmtAdd,
 		stmt.OncallUpdate: w.stmtUpdate,
-		stmt.OncallDel:    w.stmtDestroy,
+		stmt.OncallDel:    w.stmtRemove,
 	} {
 		if prepStmt, err = w.conn.Prepare(statement); err != nil {
 			w.errLog.Fatal(`oncall`, err, stmt.Name(statement))
@@ -80,10 +80,10 @@ func (w *OncallWrite) process(q *msg.Request) {
 	msgRequest(w.reqLog, q)
 
 	switch q.Action {
-	case `create`:
-		w.create(q, &result)
-	case `destroy`:
-		w.destroy(q, &result)
+	case `add`:
+		w.add(q, &result)
+	case `remove`:
+		w.remove(q, &result)
 	case `update`:
 		w.update(q, &result)
 	default:
@@ -92,15 +92,15 @@ func (w *OncallWrite) process(q *msg.Request) {
 	q.Reply <- result
 }
 
-// create inserts a new oncall
-func (w *OncallWrite) create(q *msg.Request, mr *msg.Result) {
+// add inserts a new oncall
+func (w *OncallWrite) add(q *msg.Request, mr *msg.Result) {
 	var (
 		res sql.Result
 		err error
 	)
 
 	q.Oncall.Id = uuid.NewV4().String()
-	if res, err = w.stmtCreate.Exec(
+	if res, err = w.stmtAdd.Exec(
 		q.Oncall.Id,
 		q.Oncall.Name,
 		q.Oncall.Number,
@@ -113,14 +113,14 @@ func (w *OncallWrite) create(q *msg.Request, mr *msg.Result) {
 	}
 }
 
-// destroy removes an oncall entry
-func (w *OncallWrite) destroy(q *msg.Request, mr *msg.Result) {
+// remove removes an oncall entry
+func (w *OncallWrite) remove(q *msg.Request, mr *msg.Result) {
 	var (
 		res sql.Result
 		err error
 	)
 
-	if res, err = w.stmtDestroy.Exec(
+	if res, err = w.stmtRemove.Exec(
 		q.Oncall.Id,
 	); err != nil {
 		mr.ServerError(err, q.Section)
