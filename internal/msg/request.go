@@ -33,9 +33,12 @@ type Request struct {
 	Group       proto.Group
 	Instance    proto.Instance
 	Job         proto.Job
+	Mode        proto.Mode
 	Monitoring  proto.Monitoring
 	Node        proto.Node
+	Oncall      proto.Oncall
 	Permission  proto.Permission
+	Predicate   proto.Predicate
 	Property    proto.Property
 	Provider    proto.Provider
 	Repository  proto.Repository

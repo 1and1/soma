@@ -31,9 +31,12 @@ type Result struct {
 	Grant       []proto.Grant
 	Instance    []proto.Instance
 	Job         []proto.Job
+	Mode        []proto.Mode
 	Monitoring  []proto.Monitoring
 	Node        []proto.Node
+	Oncall      []proto.Oncall
 	Permission  []proto.Permission
+	Predicate   []proto.Predicate
 	Provider    []proto.Provider
 	SectionObj  []proto.Section
 	Server      []proto.Server
@@ -109,12 +112,18 @@ func (r *Result) Clear(s string) {
 		r.Instance = []proto.Instance{}
 	case `job`:
 		r.Job = []proto.Job{}
+	case `mode`:
+		r.Mode = []proto.Mode{}
 	case `monitoringsystem`:
 		r.Monitoring = []proto.Monitoring{}
 	case `node`:
 		r.Node = []proto.Node{}
+	case `oncall`:
+		r.Oncall = []proto.Oncall{}
 	case `permission`:
 		r.Permission = []proto.Permission{}
+	case `predicate`:
+		r.Predicate = []proto.Predicate{}
 	case `provider`:
 		r.Provider = []proto.Provider{}
 	case `section`:
