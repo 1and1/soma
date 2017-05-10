@@ -31,6 +31,8 @@ type Result struct {
 	Grant       []proto.Grant
 	Instance    []proto.Instance
 	Job         []proto.Job
+	Level       []proto.Level
+	Metric      []proto.Metric
 	Mode        []proto.Mode
 	Monitoring  []proto.Monitoring
 	Node        []proto.Node
@@ -112,6 +114,10 @@ func (r *Result) Clear(s string) {
 		r.Instance = []proto.Instance{}
 	case `job`:
 		r.Job = []proto.Job{}
+	case `level`:
+		r.Level = []proto.Level{}
+	case `metric`:
+		r.Metric = []proto.Metric{}
 	case `mode`:
 		r.Mode = []proto.Mode{}
 	case `monitoringsystem`:
@@ -172,9 +178,12 @@ func (r *Result) Partial() {
 	r.Error = nil
 }
 
-func (r *Result) BadRequest(err error) {
+func (r *Result) BadRequest(err error, section ...string) {
 	r.Code = 400
 	r.SetError(err)
+	if len(section) > 0 {
+		r.Clear(section[0])
+	}
 }
 
 func (r *Result) Unauthorized(err error) {

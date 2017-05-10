@@ -33,6 +33,8 @@ type Request struct {
 	Group       proto.Group
 	Instance    proto.Instance
 	Job         proto.Job
+	Level       proto.Level
+	Metric      proto.Metric
 	Mode        proto.Mode
 	Monitoring  proto.Monitoring
 	Node        proto.Node
