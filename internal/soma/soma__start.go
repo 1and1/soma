@@ -31,7 +31,7 @@ func (s *Soma) Start() {
 	if !s.conf.ReadOnly {
 		if !s.conf.Observer {
 			s.handlerMap.Add(`capability_w`, newCapabilityWrite(s.conf.QueueLen))
-			s.handlerMap.Add(`datacenter_r`, newDatacenterWrite(s.conf.QueueLen))
+			s.handlerMap.Add(`datacenter_w`, newDatacenterWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`mode_w`, newModeWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`node_w`, newNodeWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`oncall_w`, newOncallWrite(s.conf.QueueLen))
