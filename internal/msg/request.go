@@ -25,6 +25,7 @@ type Request struct {
 	ActionObj   proto.Action
 	Attribute   proto.Attribute
 	Bucket      proto.Bucket
+	Capability  proto.Capability
 	Category    proto.Category
 	Cluster     proto.Cluster
 	Datacenter  proto.Datacenter
