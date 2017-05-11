@@ -26,6 +26,7 @@ type Result struct {
 	ActionObj   []proto.Action
 	Attribute   []proto.Attribute
 	Category    []proto.Category
+	Datacenter  []proto.Datacenter
 	Entity      []proto.Entity
 	Environment []proto.Environment
 	Grant       []proto.Grant
@@ -104,6 +105,8 @@ func (r *Result) Clear(s string) {
 		r.Attribute = []proto.Attribute{}
 	case `category`:
 		r.Category = []proto.Category{}
+	case `datacenter`:
+		r.Datacenter = []proto.Datacenter{}
 	case `entity`:
 		r.Entity = []proto.Entity{}
 	case `environment`:

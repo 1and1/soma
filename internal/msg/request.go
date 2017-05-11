@@ -27,6 +27,7 @@ type Request struct {
 	Bucket      proto.Bucket
 	Category    proto.Category
 	Cluster     proto.Cluster
+	Datacenter  proto.Datacenter
 	Entity      proto.Entity
 	Environment proto.Environment
 	Grant       proto.Grant
@@ -67,6 +68,7 @@ type Filter struct {
 }
 
 type UpdateData struct {
+	Datacenter  proto.Datacenter
 	Entity      proto.Entity
 	Environment proto.Environment
 	State       proto.State

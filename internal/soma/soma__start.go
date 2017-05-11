@@ -13,6 +13,7 @@ func (s *Soma) Start() {
 	// TODO: start grimReaper completely
 	// TODO: start supervisor completely
 
+	s.handlerMap.Add(`datacenter_r`, newDatacenterRead(s.conf.QueueLen))
 	s.handlerMap.Add(`mode_r`, newModeRead(s.conf.QueueLen))
 	s.handlerMap.Add(`node_r`, newNodeRead(s.conf.QueueLen))
 	s.handlerMap.Add(`oncall_r`, newOncallRead(s.conf.QueueLen))
@@ -28,6 +29,7 @@ func (s *Soma) Start() {
 
 	if !s.conf.ReadOnly {
 		if !s.conf.Observer {
+			s.handlerMap.Add(`datacenter_r`, newDatacenterWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`mode_w`, newModeWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`node_w`, newNodeWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`oncall_w`, newOncallWrite(s.conf.QueueLen))
