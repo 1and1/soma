@@ -325,6 +325,9 @@ func (r *somaClusterReadHandler) process(q *somaClusterRequest) {
 
 		resC.Id = q.Cluster.Id
 		for rows.Next() {
+			if resC.Members == nil {
+				resC.Members = &[]proto.Node{}
+			}
 			err := rows.Scan(&mNodeId, &mNodeName, &clusterName)
 			if err == nil {
 				resC.Name = clusterName

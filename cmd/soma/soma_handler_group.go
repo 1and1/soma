@@ -359,6 +359,9 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 			Id: q.Group.Id,
 		}
 		for rows.Next() {
+			if resG.MemberGroups == nil {
+				resG.MemberGroups = &[]proto.Group{}
+			}
 			err := rows.Scan(&mGroupId, &mGroupName, &groupName)
 			if err == nil {
 				resG.Name = groupName
@@ -377,6 +380,9 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		for rows.Next() {
+			if resG.MemberClusters == nil {
+				resG.MemberClusters = &[]proto.Cluster{}
+			}
 			err := rows.Scan(&mClusterId, &mClusterName, &groupName)
 			if err == nil {
 				*resG.MemberClusters = append(*resG.MemberClusters, proto.Cluster{
@@ -394,6 +400,9 @@ func (r *somaGroupReadHandler) process(q *somaGroupRequest) {
 		}
 
 		for rows.Next() {
+			if resG.MemberNodes == nil {
+				resG.MemberNodes = &[]proto.Node{}
+			}
 			err = rows.Scan(&mNodeId, &mNodeName, &groupName)
 			if err == nil {
 				*resG.MemberNodes = append(*resG.MemberNodes, proto.Node{
