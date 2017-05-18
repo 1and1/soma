@@ -41,6 +41,7 @@ type Result struct {
 	Oncall      []proto.Oncall
 	Permission  []proto.Permission
 	Predicate   []proto.Predicate
+	Property    []proto.Property
 	Provider    []proto.Provider
 	SectionObj  []proto.Section
 	Server      []proto.Server
@@ -136,6 +137,8 @@ func (r *Result) Clear(s string) {
 		r.Permission = []proto.Permission{}
 	case `predicate`:
 		r.Predicate = []proto.Predicate{}
+	case `property`:
+		r.Property = []proto.Property{}
 	case `provider`:
 		r.Provider = []proto.Provider{}
 	case `section`:
