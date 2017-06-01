@@ -30,6 +30,8 @@ func (s *Soma) Start() {
 	s.handlerMap.Add(`view_r`, newViewRead(s.conf.QueueLen))
 
 	if !s.conf.ReadOnly {
+		s.handlerMap.Add(`lifecycle`, newLifeCycle(s))
+
 		if !s.conf.Observer {
 			s.handlerMap.Add(`capability_w`, newCapabilityWrite(s.conf.QueueLen))
 			s.handlerMap.Add(`datacenter_w`, newDatacenterWrite(s.conf.QueueLen))
