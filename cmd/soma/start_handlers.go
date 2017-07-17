@@ -46,7 +46,6 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 	if !SomaCfg.ReadOnly {
 		spawnForestCustodian(appLog, reqLog, errLog)
 		spawnGuidePost(appLog, reqLog, errLog)
-		spawnLifeCycle(appLog, reqLog, errLog)
 
 		if !SomaCfg.Observer {
 			spawnAttributeWrite(appLog, reqLog, errLog)
@@ -641,17 +640,6 @@ func spawnCheckConfigurationReadHandler(appLog, reqLog, errLog *log.Logger) {
 	checkConfigurationReadHandler.errLog = errLog
 	handlerMap["checkConfigurationReadHandler"] = &checkConfigurationReadHandler
 	go checkConfigurationReadHandler.run()
-}
-
-func spawnLifeCycle(appLog, reqLog, errLog *log.Logger) {
-	var lifeCycleHandler lifeCycle
-	lifeCycleHandler.shutdown = make(chan bool)
-	lifeCycleHandler.conn = conn
-	lifeCycleHandler.appLog = appLog
-	lifeCycleHandler.reqLog = reqLog
-	lifeCycleHandler.errLog = errLog
-	handlerMap["lifeCycle"] = &lifeCycleHandler
-	go lifeCycleHandler.run()
 }
 
 func spawnDeploymentHandler(appLog, reqLog, errLog *log.Logger) {
