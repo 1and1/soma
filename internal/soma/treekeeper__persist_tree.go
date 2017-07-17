@@ -6,7 +6,7 @@
  * that can be found in the LICENSE file.
  */
 
-package main
+package soma
 
 import (
 	"database/sql"
@@ -15,7 +15,7 @@ import (
 	"github.com/1and1/soma/internal/tree"
 )
 
-func (tk *treeKeeper) txTree(a *tree.Action,
+func (tk *TreeKeeper) txTree(a *tree.Action,
 	stm map[string]*sql.Stmt, user string) error {
 	switch a.Action {
 	case `create`:
@@ -33,7 +33,7 @@ func (tk *treeKeeper) txTree(a *tree.Action,
 	}
 }
 
-func (tk *treeKeeper) txTreeCreate(a *tree.Action,
+func (tk *TreeKeeper) txTreeCreate(a *tree.Action,
 	stm map[string]*sql.Stmt, user string) error {
 	var err error
 	switch a.Type {
@@ -70,7 +70,7 @@ func (tk *treeKeeper) txTreeCreate(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txTreeUpdate(a *tree.Action,
+func (tk *TreeKeeper) txTreeUpdate(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err          error
@@ -98,7 +98,7 @@ func (tk *treeKeeper) txTreeUpdate(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txTreeDelete(a *tree.Action,
+func (tk *TreeKeeper) txTreeDelete(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var err error
 	switch a.Type {
@@ -124,7 +124,7 @@ func (tk *treeKeeper) txTreeDelete(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txTreeMemberNew(a *tree.Action,
+func (tk *TreeKeeper) txTreeMemberNew(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err               error
@@ -168,7 +168,7 @@ exit:
 	return err
 }
 
-func (tk *treeKeeper) txTreeMemberRemoved(a *tree.Action,
+func (tk *TreeKeeper) txTreeMemberRemoved(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err       error

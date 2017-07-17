@@ -6,7 +6,7 @@
  * that can be found in the LICENSE file.
  */
 
-package main
+package soma
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ import (
 	"github.com/1and1/soma/lib/proto"
 )
 
-func (tk *treeKeeper) txCheckConfig(conf proto.CheckConfig,
+func (tk *TreeKeeper) txCheckConfig(conf proto.CheckConfig,
 	stm map[string]*sql.Stmt) error {
 	var (
 		nullBucket sql.NullString
@@ -101,15 +101,15 @@ constrloop:
 				break constrloop
 			}
 		case "service":
-			if constr.Service.TeamId != tk.team {
+			if constr.Service.TeamId != tk.meta.teamID {
 				err = fmt.Errorf(
 					"Service constraint has mismatched TeamID values: %s/%s",
-					tk.team, constr.Service.TeamId)
+					tk.meta.teamID, constr.Service.TeamId)
 				break constrloop
 			}
 			if _, err = stm[`CreateCheckConfigurationConstraintService`].Exec(
 				conf.Id,
-				tk.team,
+				tk.meta.teamID,
 				constr.Service.Name,
 			); err != nil {
 				break constrloop
@@ -130,7 +130,7 @@ constrloop:
 	return nil
 }
 
-func (tk *treeKeeper) txCheck(a *tree.Action,
+func (tk *TreeKeeper) txCheck(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	switch a.Action {
 	case `check_new`:
@@ -142,7 +142,7 @@ func (tk *treeKeeper) txCheck(a *tree.Action,
 	}
 }
 
-func (tk *treeKeeper) txCheckNew(a *tree.Action,
+func (tk *TreeKeeper) txCheckNew(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var id string
 	bucket := sql.NullString{String: a.Bucket.Id, Valid: true}
@@ -175,14 +175,14 @@ func (tk *treeKeeper) txCheckNew(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txCheckRemoved(a *tree.Action,
+func (tk *TreeKeeper) txCheckRemoved(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	statement := stm[`DeleteCheck`]
 	_, err := statement.Exec(a.Check.CheckId)
 	return err
 }
 
-func (tk *treeKeeper) txCheckInstance(a *tree.Action,
+func (tk *TreeKeeper) txCheckInstance(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	switch a.Type {
 	case `repository`, `bucket`:
@@ -206,7 +206,7 @@ func (tk *treeKeeper) txCheckInstance(a *tree.Action,
 	}
 }
 
-func (tk *treeKeeper) txCheckInstanceCreate(a *tree.Action,
+func (tk *TreeKeeper) txCheckInstanceCreate(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	statement := stm[`CreateCheckInstance`]
 	_, err := statement.Exec(
@@ -219,7 +219,7 @@ func (tk *treeKeeper) txCheckInstanceCreate(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txCheckInstanceConfigCreate(a *tree.Action,
+func (tk *TreeKeeper) txCheckInstanceConfigCreate(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	statement := stm[`CreateCheckInstanceConfiguration`]
 	_, err := statement.Exec(
@@ -240,7 +240,7 @@ func (tk *treeKeeper) txCheckInstanceConfigCreate(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txCheckInstanceDelete(a *tree.Action,
+func (tk *TreeKeeper) txCheckInstanceDelete(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	statement := stm[`DeleteCheckInstance`]
 	_, err := statement.Exec(

@@ -1,4 +1,4 @@
-package main
+package soma
 
 import (
 	"database/sql"
@@ -9,15 +9,15 @@ import (
 	"github.com/1and1/soma/lib/proto"
 )
 
-func (tk *treeKeeper) orderDeploymentDetails() {
+func (tk *TreeKeeper) orderDeploymentDetails() {
 
 	var (
 		computed *sql.Rows
 		err      error
 	)
-	if computed, err = tk.stmt_GetComputed.Query(tk.repoId); err != nil {
-		tk.log.Println("tk.stmt_GetComputed.Query(): ", err)
-		tk.broken = true
+	if computed, err = tk.stmt_GetComputed.Query(tk.meta.repoID); err != nil {
+		tk.treeLog.Println("tk.stmt_GetComputed.Query(): ", err)
+		tk.status.isBroken = true
 		return
 	}
 	defer computed.Close()
@@ -43,7 +43,7 @@ deployments:
 		if err == sql.ErrNoRows {
 			continue deployments
 		} else if err != nil {
-			tk.log.Println("tk.stmt_GetComputed.Query().Scan(): ", err)
+			tk.treeLog.Println("tk.stmt_GetComputed.Query().Scan(): ", err)
 			break deployments
 		}
 
@@ -57,7 +57,7 @@ deployments:
 		if err == sql.ErrNoRows {
 			noPrevious = true
 		} else if err != nil {
-			tk.log.Println("tk.stmt_GetPrevious.QueryRow(): ", err)
+			tk.treeLog.Println("tk.stmt_GetPrevious.QueryRow(): ", err)
 			break deployments
 		}
 
@@ -68,7 +68,7 @@ deployments:
 			// open multi statement transaction
 			txMap := map[string]*sql.Stmt{}
 			if tx, err = tk.conn.Begin(); err != nil {
-				tk.log.Println("TreeKeeper/Order sql.Begin: ", err)
+				tk.treeLog.Println("TreeKeeper/Order sql.Begin: ", err)
 				break deployments
 			}
 
@@ -78,7 +78,7 @@ deployments:
 				`UpdateInstance`: stmt.TreekeeperUpdateCheckInstance,
 			} {
 				if txMap[name], err = tx.Prepare(statement); err != nil {
-					tk.log.Println(`treekeeper/order/tx`, err, stmt.Name(statement))
+					tk.treeLog.Println(`treekeeper/order/tx`, err, stmt.Name(statement))
 					tx.Rollback()
 					break deployments
 				}
@@ -117,7 +117,7 @@ deployments:
 		prvDetails := proto.Deployment{}
 		err = json.Unmarshal([]byte(currentDeploymentDetailsJSON), &curDetails)
 		if err != nil {
-			tk.log.Printf("Error unmarshal/deploymentdetails %s: %s",
+			tk.treeLog.Printf("Error unmarshal/deploymentdetails %s: %s",
 				currentChkInstanceConfigId,
 				err.Error(),
 			)
@@ -126,7 +126,7 @@ deployments:
 		}
 		err = json.Unmarshal([]byte(previousDeploymentDetailsJSON), &prvDetails)
 		if err != nil {
-			tk.log.Printf("Error unmarshal/deploymentdetails %s: %s",
+			tk.treeLog.Printf("Error unmarshal/deploymentdetails %s: %s",
 				previousChkInstanceConfigId,
 				err.Error(),
 			)
@@ -146,7 +146,7 @@ deployments:
 		// open multi statement transaction
 		txMap := map[string]*sql.Stmt{}
 		if tx, err = tk.conn.Begin(); err != nil {
-			tk.log.Println("TreeKeeper/Order sql.Begin: ", err)
+			tk.treeLog.Println("TreeKeeper/Order sql.Begin: ", err)
 			break deployments
 		}
 
@@ -157,7 +157,7 @@ deployments:
 			`SetDependency`:  stmt.TreekeeperSetDependency,
 		} {
 			if txMap[name], err = tx.Prepare(statement); err != nil {
-				tk.log.Println(`treekeeper/order/tx`, err, stmt.Name(statement))
+				tk.treeLog.Println(`treekeeper/order/tx`, err, stmt.Name(statement))
 				tx.Rollback()
 				break deployments
 			}
@@ -196,7 +196,7 @@ deployments:
 	}
 	// mark the tree as broken to prevent further data processing
 	if err != nil {
-		tk.broken = true
+		tk.status.isBroken = true
 	}
 }
 

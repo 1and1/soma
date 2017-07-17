@@ -6,57 +6,58 @@
  * that can be found in the LICENSE file.
  */
 
-package main
+package soma
 
 import (
+	"github.com/1and1/soma/internal/msg"
 	"github.com/1and1/soma/internal/tree"
 	"github.com/1and1/soma/lib/proto"
 	"github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) addProperty(q *treeRequest) {
+func (tk *TreeKeeper) addProperty(q *msg.Request) {
 	prop, id := tk.convProperty(`add`, q)
 	tk.tree.Find(tree.FindRequest{
-		ElementType: q.RequestType,
+		ElementType: q.Section,
 		ElementId:   id,
 	}, true).(tree.Propertier).SetProperty(prop)
 }
 
-func (tk *treeKeeper) rmProperty(q *treeRequest) {
+func (tk *TreeKeeper) rmProperty(q *msg.Request) {
 	prop, id := tk.convProperty(`rm`, q)
 	tk.tree.Find(tree.FindRequest{
-		ElementType: q.RequestType,
+		ElementType: q.Section,
 		ElementId:   id,
 	}, true).(tree.Propertier).DeleteProperty(prop)
 }
 
-func (tk *treeKeeper) convProperty(task string, q *treeRequest) (
+func (tk *TreeKeeper) convProperty(task string, q *msg.Request) (
 	tree.Property, string) {
 
 	var prop tree.Property
 	var id string
 
-	switch q.RequestType {
+	switch q.Section {
 	case `node`:
-		id = q.Node.Node.Id
-		prop = tk.pTT(task, (*q.Node.Node.Properties)[0])
+		id = q.Node.Id
+		prop = tk.pTT(task, (*q.Node.Properties)[0])
 	case `cluster`:
-		id = q.Cluster.Cluster.Id
-		prop = tk.pTT(task, (*q.Cluster.Cluster.Properties)[0])
+		id = q.Cluster.Id
+		prop = tk.pTT(task, (*q.Cluster.Properties)[0])
 	case `group`:
-		id = q.Group.Group.Id
-		prop = tk.pTT(task, (*q.Group.Group.Properties)[0])
+		id = q.Group.Id
+		prop = tk.pTT(task, (*q.Group.Properties)[0])
 	case `bucket`:
-		id = q.Bucket.Bucket.Id
-		prop = tk.pTT(task, (*q.Bucket.Bucket.Properties)[0])
+		id = q.Bucket.Id
+		prop = tk.pTT(task, (*q.Bucket.Properties)[0])
 	case `repository`:
-		id = q.Repository.Repository.Id
-		prop = tk.pTT(task, (*q.Repository.Repository.Properties)[0])
+		id = q.Repository.Id
+		prop = tk.pTT(task, (*q.Repository.Properties)[0])
 	}
 	return prop, id
 }
 
-func (tk *treeKeeper) pTT(task string, pp proto.Property) tree.Property {
+func (tk *TreeKeeper) pTT(task string, pp proto.Property) tree.Property {
 	switch pp.Type {
 	case `custom`:
 		customId, _ := uuid.FromString(pp.Custom.Id)

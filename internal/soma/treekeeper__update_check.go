@@ -6,7 +6,7 @@
  * that can be found in the LICENSE file.
  */
 
-package main
+package soma
 
 import (
 	"github.com/1and1/soma/internal/tree"
@@ -14,7 +14,7 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) addCheck(config *proto.CheckConfig) error {
+func (tk *TreeKeeper) addCheck(config *proto.CheckConfig) error {
 	if chk, err := tk.convertCheck(config); err == nil {
 		tk.tree.Find(tree.FindRequest{
 			ElementType: config.ObjectType,
@@ -26,7 +26,7 @@ func (tk *treeKeeper) addCheck(config *proto.CheckConfig) error {
 	}
 }
 
-func (tk *treeKeeper) rmCheck(config *proto.CheckConfig) error {
+func (tk *TreeKeeper) rmCheck(config *proto.CheckConfig) error {
 	if chk, err := tk.convertCheckForDelete(config); err == nil {
 		tk.tree.Find(tree.FindRequest{
 			ElementType: config.ObjectType,
@@ -38,7 +38,7 @@ func (tk *treeKeeper) rmCheck(config *proto.CheckConfig) error {
 	}
 }
 
-func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error) {
+func (tk *TreeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error) {
 	treechk := &tree.Check{
 		Id:            uuid.Nil,
 		SourceId:      uuid.Nil,
@@ -49,7 +49,7 @@ func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error)
 	}
 	treechk.CapabilityId, _ = uuid.FromString(conf.CapabilityId)
 	treechk.ConfigId, _ = uuid.FromString(conf.Id)
-	if err := tk.get_view.QueryRow(conf.CapabilityId).Scan(&treechk.View); err != nil {
+	if err := tk.stmtGetView.QueryRow(conf.CapabilityId).Scan(&treechk.View); err != nil {
 		return &tree.Check{}, err
 	}
 
@@ -93,7 +93,7 @@ func (tk *treeKeeper) convertCheck(conf *proto.CheckConfig) (*tree.Check, error)
 	return treechk, nil
 }
 
-func (tk *treeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*tree.Check, error) {
+func (tk *TreeKeeper) convertCheckForDelete(conf *proto.CheckConfig) (*tree.Check, error) {
 	var err error
 	treechk := &tree.Check{
 		Id:            uuid.Nil,

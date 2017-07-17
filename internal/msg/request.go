@@ -8,7 +8,10 @@
 
 package msg
 
-import "github.com/1and1/soma/lib/proto"
+import (
+	"github.com/1and1/soma/lib/proto"
+	uuid "github.com/satori/go.uuid"
+)
 
 type Request struct {
 	Section    string
@@ -16,6 +19,7 @@ type Request struct {
 	RemoteAddr string
 	AuthUser   string
 	Reply      chan Result
+	JobID      uuid.UUID
 	Search     Filter
 	Update     UpdateData
 	Flag       Flags
@@ -27,6 +31,7 @@ type Request struct {
 	Bucket      proto.Bucket
 	Capability  proto.Capability
 	Category    proto.Category
+	CheckConfig proto.CheckConfig
 	Cluster     proto.Cluster
 	Datacenter  proto.Datacenter
 	Entity      proto.Entity

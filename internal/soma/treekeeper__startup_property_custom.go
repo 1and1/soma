@@ -1,4 +1,4 @@
-package main
+package soma
 
 import (
 	"database/sql"
@@ -7,84 +7,85 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupSystemProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
+func (tk *TreeKeeper) startupCustomProperties(stMap map[string]*sql.Stmt) {
+	if tk.status.isBroken {
 		return
 	}
 
 	var (
-		err                                                       error
-		instanceId, srcInstanceId, objectId, view, systemProperty string
-		inInstanceId, inObjectType, inObjId, sourceType, value    string
-		inheritance, childrenOnly                                 bool
-		rows, instance_rows                                       *sql.Rows
+		err                                                        error
+		instanceId, srcInstanceId, objectId, view, customId        string
+		inInstanceId, inObjectType, inObjId, customProperty, value string
+		inheritance, childrenOnly                                  bool
+		rows, instance_rows                                        *sql.Rows
 	)
 
 	for loopType, loopStmt := range map[string]string{
-		`repository`: `LoadPropRepoSystem`,
-		`bucket`:     `LoadPropBuckSystem`,
-		`group`:      `LoadPropGrpSystem`,
-		`cluster`:    `LoadPropClrSystem`,
-		`node`:       `LoadPropNodeSystem`,
+		`repository`: `LoadPropRepoCustom`,
+		`bucket`:     `LoadPropBuckCustom`,
+		`group`:      `LoadPropGrpCustom`,
+		`cluster`:    `LoadPropClrCustom`,
+		`node`:       `LoadPropNodeCustom`,
 	} {
 
-		tk.startLog.Printf("TK[%s]: loading %s system properties\n", tk.repoName, loopType)
-		rows, err = stMap[loopStmt].Query(tk.repoId)
+		tk.startLog.Printf("TK[%s]: loading %s custom properties\n", tk.meta.repoName, loopType)
+		rows, err = stMap[loopStmt].Query(tk.meta.repoID)
 		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading %s system properties: %s", tk.repoName, loopType, err.Error())
-			tk.broken = true
+			tk.startLog.Printf("TK[%s] Error loading %s custom properties: %s", tk.meta.repoName, loopType, err.Error())
+			tk.status.isBroken = true
 			return
 		}
 		defer rows.Close()
 
-	systemloop:
-		// load all system properties defined directly on objects
+	customloop:
+		// load all custom properties defined directly on objects
 		for rows.Next() {
 			err = rows.Scan(
 				&instanceId,
 				&srcInstanceId,
 				&objectId,
 				&view,
-				&systemProperty,
-				&sourceType,
+				&customId,
 				&inheritance,
 				&childrenOnly,
 				&value,
+				&customProperty,
 			)
 			if err != nil {
 				if err == sql.ErrNoRows {
-					break systemloop
+					break customloop
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+				tk.status.isBroken = true
 				return
 			}
 
 			// build the property
-			prop := tree.PropertySystem{
+			prop := tree.PropertyCustom{
 				Inheritance:  inheritance,
 				ChildrenOnly: childrenOnly,
 				View:         view,
-				Key:          systemProperty,
+				Key:          customProperty,
 				Value:        value,
 			}
 			prop.Id, _ = uuid.FromString(instanceId)
+			prop.CustomId, _ = uuid.FromString(customId)
 			prop.Instances = make([]tree.PropertyInstance, 0)
 
-			instance_rows, err = stMap[`LoadPropSystemInstance`].Query(
-				tk.repoId,
+			instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
+				tk.meta.repoID,
 				srcInstanceId,
 			)
 			if err != nil {
-				tk.startLog.Printf("TK[%s] Error loading %s system properties: %s", tk.repoName, loopType, err.Error())
-				tk.broken = true
+				tk.startLog.Printf("TK[%s] Error loading %s custom properties: %s", tk.meta.repoName, loopType, err.Error())
+				tk.status.isBroken = true
 				return
 			}
 			defer instance_rows.Close()
 
 		inproploop:
 			// load all all ids for properties that were inherited from the
-			// current group system property so the IDs can be set correctly
+			// current object custom property so the IDs can be set correctly
 			for instance_rows.Next() {
 				err = instance_rows.Scan(
 					&inInstanceId,
@@ -95,20 +96,20 @@ func (tk *treeKeeper) startupSystemProperties(stMap map[string]*sql.Stmt) {
 					if err == sql.ErrNoRows {
 						break inproploop
 					}
-					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-					tk.broken = true
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+					tk.status.isBroken = true
 					return
 				}
 
 				var propObjectId, propInstanceId uuid.UUID
 				if propObjectId, err = uuid.FromString(inObjId); err != nil {
-					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-					tk.broken = true
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+					tk.status.isBroken = true
 					return
 				}
 				if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-					tk.broken = true
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+					tk.status.isBroken = true
 					return
 				}
 				if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
@@ -126,9 +127,10 @@ func (tk *treeKeeper) startupSystemProperties(stMap map[string]*sql.Stmt) {
 				prop.Instances = append(prop.Instances, pi)
 			}
 
-			// lookup the group and set the prepared property
+			// lookup the object and set the prepared property
 			tk.tree.Find(tree.FindRequest{
-				ElementId: objectId,
+				ElementType: loopType,
+				ElementId:   objectId,
 			}, true).SetProperty(&prop)
 
 			// throw away all generated actions, we do this for every

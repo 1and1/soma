@@ -189,6 +189,7 @@ func main() {
 		// TODO NewCustomTimer(Histogram, Meter) so there is access
 		// to Histogram.Clear()
 		metrics.NewTimer())
+	soma.Metrics = Metrics
 
 	/*
 	 * Construct listen address

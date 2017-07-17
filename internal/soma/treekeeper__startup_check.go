@@ -1,4 +1,4 @@
-package main
+package soma
 
 import (
 	"database/sql"
@@ -11,11 +11,11 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupChecks(stMap map[string]*sql.Stmt) {
-	if tk.broken {
+func (tk *TreeKeeper) startupChecks(stMap map[string]*sql.Stmt) {
+	if tk.status.isBroken {
 		return
 	}
-	tk.startLog.Printf("TK[%s]: loading checks\n", tk.repoName)
+	tk.startLog.Printf("TK[%s]: loading checks\n", tk.meta.repoName)
 
 	//
 	// load checks for the entire tree, in order from root to leaf.
@@ -29,14 +29,14 @@ func (tk *treeKeeper) startupChecks(stMap map[string]*sql.Stmt) {
 	// if this a checks level rebuild, then we need to populate the
 	// tree again with the original CheckConfigs since all checks that
 	// could be loaded have been deleted
-	if tk.rebuild && tk.rbLevel == `checks` {
-		tk.startLog.Printf("TK[%s]: starting checks rebuild", tk.repoId)
+	if tk.status.requiresRebuild && tk.status.rebuildLevel == `checks` {
+		tk.startLog.Printf("TK[%s]: starting checks rebuild", tk.meta.repoID)
 		for _, typ := range []string{`repository`, `bucket`, `group`, `cluster`, `node`} {
 			tk.startupScopedReapplyCheckConfig(typ, stMap)
 		}
 	}
 
-	if !tk.rebuild {
+	if !tk.status.requiresRebuild {
 		// recompute instances with preloaded IDs
 		tk.tree.ComputeCheckInstances()
 
@@ -49,45 +49,45 @@ func (tk *treeKeeper) startupChecks(stMap map[string]*sql.Stmt) {
 		// instances diverge!
 		// If requested, print all encountered messages instead of
 		// simply bailing out.
-		if SomaCfg.PrintChannels {
-			if len(tk.actionChan) > 0 {
-				tk.broken = true
-				for i := len(tk.actionChan); i > 0; i-- {
-					a := <-tk.actionChan
+		if tk.soma.conf.PrintChannels {
+			if len(tk.actions) > 0 {
+				tk.status.isBroken = true
+				for i := len(tk.actions); i > 0; i-- {
+					a := <-tk.actions
 					jBxX, _ := json.Marshal(a)
-					tk.startLog.Printf("TK[%s], startupChecks(): leftover action in channel: %s", tk.repoName, string(jBxX))
+					tk.startLog.Printf("TK[%s], startupChecks(): leftover action in channel: %s", tk.meta.repoName, string(jBxX))
 				}
 			}
-			if len(tk.errChan) > 0 {
-				tk.broken = true
-				for i := len(tk.errChan); i > 0; i-- {
-					e := <-tk.errChan
+			if len(tk.errors) > 0 {
+				tk.status.isBroken = true
+				for i := len(tk.errors); i > 0; i-- {
+					e := <-tk.errors
 					jBxX, _ := json.Marshal(e)
-					tk.startLog.Printf("TK[%s], startupChecks(): error in channel: %s", tk.repoName, string(jBxX))
+					tk.startLog.Printf("TK[%s], startupChecks(): error in channel: %s", tk.meta.repoName, string(jBxX))
 				}
 			}
-			if tk.broken {
+			if tk.status.isBroken {
 				return
 			}
 		}
 		// drain the action channel
 		if tk.drain(`action`) > 0 {
-			tk.broken = true
-			tk.startLog.Printf("TK[%s], startupChecks(): leftovers in actionChannel after drain", tk.repoName)
+			tk.status.isBroken = true
+			tk.startLog.Printf("TK[%s], startupChecks(): leftovers in actionChannel after drain", tk.meta.repoName)
 			return
 		}
 
 		// drain the error channel
 		if tk.drain(`error`) > 0 {
-			tk.broken = true
-			tk.startLog.Printf("TK[%s], startupChecks(): leftovers in errorChannel after drain", tk.repoName)
+			tk.status.isBroken = true
+			tk.startLog.Printf("TK[%s], startupChecks(): leftovers in errorChannel after drain", tk.meta.repoName)
 			return
 		}
 	}
 }
 
-func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt) {
-	if tk.broken {
+func (tk *TreeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt) {
+	if tk.status.isBroken {
 		return
 	}
 
@@ -123,7 +123,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 		}
 	}
 
-	if ckRows, err = stMap[`LoadChecks`].Query(tk.repoId, typ); err == sql.ErrNoRows {
+	if ckRows, err = stMap[`LoadChecks`].Query(tk.meta.repoID, typ); err == sql.ErrNoRows {
 		// go directly to loading instances since there are no source
 		// checks on this type
 		goto directinstances
@@ -150,7 +150,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 		// save CheckConfig
 		victim = proto.CheckConfig{
 			Id:           configId,
-			RepositoryId: tk.repoId,
+			RepositoryId: tk.meta.repoID,
 			CapabilityId: capabilityId,
 			ObjectId:     objId,
 			ObjectType:   objType,
@@ -167,7 +167,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 	// iterate over the loaded checks and continue assembly with values
 	// from the stored checkconfiguration
 	for checkId, _ = range cfgMap {
-		if err = stMap[`LoadConfig`].QueryRow(cfgMap[checkId].Id, tk.repoId).Scan(
+		if err = stMap[`LoadConfig`].QueryRow(cfgMap[checkId].Id, tk.meta.repoID).Scan(
 			&nullBucketId,
 			&cfgName,
 			&cfgObjId,
@@ -283,7 +283,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 							Custom: &proto.PropertyCustom{
 								Id:           value1,
 								Name:         value2,
-								RepositoryId: tk.repoId,
+								RepositoryId: tk.meta.repoID,
 								Value:        value3,
 							},
 						},
@@ -369,7 +369,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 		ckItem.ItemId, _ = uuid.FromString(checkId)
 		ckTree.Items = []tree.CheckItem{ckItem}
 		tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
-			tk.repoName,
+			tk.meta.repoName,
 			`AssociateCheck`,
 			ckItem.ObjectType,
 			ckItem.ObjectId,
@@ -377,7 +377,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 			ckItem.ItemId,
 		)
 
-		if itRows, err = stMap[`LoadItems`].Query(tk.repoId, checkId); err != nil {
+		if itRows, err = stMap[`LoadItems`].Query(tk.meta.repoID, checkId); err != nil {
 			goto fail
 		}
 
@@ -397,7 +397,7 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 			ckItem.ItemId, _ = uuid.FromString(itemId)
 			ckTree.Items = append(ckTree.Items, ckItem)
 			tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, SrcCheckId=%s, CheckId=%s",
-				tk.repoName,
+				tk.meta.repoName,
 				`AssociateCheck`,
 				objType,
 				objId,
@@ -431,24 +431,24 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
 					tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-						tk.repoName,
+						tk.meta.repoName,
 						`SetCheck`,
 						typ,
 						objKey,
 						ck,
 					)
-					if !tk.rebuild {
+					if !tk.status.requiresRebuild {
 						// drain after each check
 						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 							tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-								tk.repoName,
+								tk.meta.repoName,
 								`CheckCountMismatch`,
 								`SetCheck`,
 								typ,
 								objKey,
 								ck,
 							)
-							tk.broken = true
+							tk.status.isBroken = true
 							return
 						}
 						if tk.drain(`error`) > 0 {
@@ -468,25 +468,25 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 							ElementId:   cfgMap[ck].ObjectId,
 						}, true).SetCheck(ckOrder[objKey][ck])
 						tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-							tk.repoName,
+							tk.meta.repoName,
 							`SetCheck`,
 							typ,
 							objKey,
 							ck,
 						)
-						if !tk.rebuild {
+						if !tk.status.requiresRebuild {
 							// drain after each check
 							if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 								if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 									tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-										tk.repoName,
+										tk.meta.repoName,
 										`CheckCountMismatch`,
 										`SetCheck`,
 										typ,
 										objKey,
 										ck,
 									)
-									tk.broken = true
+									tk.status.isBroken = true
 									return
 								}
 							}
@@ -509,24 +509,24 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 						ElementId:   cfgMap[ck].ObjectId,
 					}, true).SetCheck(ckOrder[objKey][ck])
 					tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-						tk.repoName,
+						tk.meta.repoName,
 						`SetCheck`,
 						typ,
 						objKey,
 						ck,
 					)
-					if !tk.rebuild {
+					if !tk.status.requiresRebuild {
 						// drain after each check
 						if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 							tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-								tk.repoName,
+								tk.meta.repoName,
 								`CheckCountMismatch`,
 								`SetCheck`,
 								typ,
 								objKey,
 								ck,
 							)
-							tk.broken = true
+							tk.status.isBroken = true
 							return
 						}
 						if tk.drain(`error`) > 0 {
@@ -544,24 +544,24 @@ func (tk *treeKeeper) startupScopedChecks(typ string, stMap map[string]*sql.Stmt
 					ElementId:   cfgMap[ck].ObjectId,
 				}, true).SetCheck(ckOrder[objKey][ck])
 				tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-					tk.repoName,
+					tk.meta.repoName,
 					`SetCheck`,
 					typ,
 					objKey,
 					ck,
 				)
-				if !tk.rebuild {
+				if !tk.status.requiresRebuild {
 					// drain after each check
 					if tk.drain(`action`) != len(ckOrder[objKey][ck].Items) {
 						tk.startLog.Printf("TK[%s]: Error=%s, Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s",
-							tk.repoName,
+							tk.meta.repoName,
 							`CheckCountMismatch`,
 							`SetCheck`,
 							typ,
 							objKey,
 							ck,
 						)
-						tk.broken = true
+						tk.status.isBroken = true
 						return
 					}
 					if tk.drain(`error`) > 0 {
@@ -581,8 +581,8 @@ directinstances:
 
 	// iterate over all checks on this object type and load the check
 	// instances they have created
-	if tckRows, err = stMap[`LoadChecksForType`].Query(tk.repoId, typ); err != nil {
-		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `loadTypeChecks.Query()`, tk.repoId, typ)
+	if tckRows, err = stMap[`LoadChecksForType`].Query(tk.meta.repoID, typ); err != nil {
+		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `loadTypeChecks.Query()`, tk.meta.repoID, typ)
 		goto fail
 	}
 
@@ -600,7 +600,7 @@ directinstances:
 		// lookup instances for that check
 		if inRows, err = stMap[`LoadInstances`].Query(checkId); err != nil {
 			tckRows.Close()
-			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `loadInstances.Query()`, tk.repoId, typ, checkId)
+			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `loadInstances.Query()`, tk.meta.repoID, typ, checkId)
 			goto fail
 		}
 
@@ -630,7 +630,7 @@ directinstances:
 				// configuration
 				tckRows.Close()
 				inRows.Close()
-				errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s, instanceId=%s", `loadInstConfig.QueryRow()`, tk.repoId, typ, checkId, itemId)
+				errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s, instanceId=%s", `loadInstConfig.QueryRow()`, tk.meta.repoID, typ, checkId, itemId)
 				goto fail
 			}
 
@@ -648,7 +648,7 @@ directinstances:
 				if err = json.Unmarshal([]byte(instSvcCfg), &ckInstance.InstanceServiceConfig); err != nil {
 					tckRows.Close()
 					inRows.Close()
-					errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s, instanceId=%s, instCfgId=%s", `json.Unmarshal(InstanceServiceConfig)`, tk.repoId, typ, checkId, itemId, itemCfgId)
+					errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s, instanceId=%s, instCfgId=%s", `json.Unmarshal(InstanceServiceConfig)`, tk.meta.repoID, typ, checkId, itemId, itemCfgId)
 					goto fail
 				}
 			}
@@ -663,7 +663,7 @@ directinstances:
 				ElementId:   objId,
 			}, true).LoadInstance(ckInstance)
 			tk.startLog.Printf("TK[%s]: Action=%s, ObjectType=%s, ObjectId=%s, CheckId=%s, InstanceId=%s",
-				tk.repoName,
+				tk.meta.repoName,
 				`LoadInstance`,
 				typ,
 				objId,
@@ -673,12 +673,12 @@ directinstances:
 		}
 		if err = inRows.Err(); err != nil {
 			inRows.Close()
-			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `checkInstanceRows.Iterate.Error`, tk.repoId, typ, checkId)
+			errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s, checkId=%s", `checkInstanceRows.Iterate.Error`, tk.meta.repoID, typ, checkId)
 			goto fail
 		}
 	}
 	if err = tckRows.Err(); err != nil {
-		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `checksForType.Iterate.Error()`, tk.repoId, typ)
+		errLocation = fmt.Sprintf("Function=%s, repoId=%s, objType=%s", `checksForType.Iterate.Error()`, tk.meta.repoID, typ)
 		goto fail
 	}
 
@@ -686,15 +686,15 @@ done:
 	return
 
 fail:
-	tk.broken = true
+	tk.status.isBroken = true
 	if err != nil {
 		tk.startLog.Println(`BROKEN REPOSITORY ERROR: `, errLocation, err)
 	}
 	return
 }
 
-func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[string]*sql.Stmt) {
-	if tk.broken {
+func (tk *TreeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[string]*sql.Stmt) {
+	if tk.status.isBroken {
 		return
 	}
 
@@ -711,8 +711,8 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 	// 1. identify check configurations to load:
 	//    select configuration_id from soma.check_configurations where
 	//    configuration_object_type = typ and repository_id =
-	//    tk.repoId and not deleted
-	if configRows, err = stMap[`LoadAllConfigsForType`].Query(typ, tk.repoId); err != nil {
+	//    tk.meta.repoID and not deleted
+	if configRows, err = stMap[`LoadAllConfigsForType`].Query(typ, tk.meta.repoID); err != nil {
 		goto fail
 	}
 	defer configRows.Close()
@@ -721,7 +721,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 		conf := proto.CheckConfig{}
 		conf.Thresholds = []proto.CheckConfigThreshold{}
 		conf.Constraints = []proto.CheckConfigConstraint{}
-		conf.RepositoryId = tk.repoId
+		conf.RepositoryId = tk.meta.repoID
 		conf.ObjectType = typ
 		if err = configRows.Scan(
 			&conf.Id,
@@ -740,7 +740,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 		if nullBucketID.Valid {
 			conf.BucketId = nullBucketID.String
 		}
-		tk.startLog.Printf("TK[%s]: rebuild processing check configuration %s", tk.repoName, conf.Id)
+		tk.startLog.Printf("TK[%s]: rebuild processing check configuration %s", tk.meta.repoName, conf.Id)
 		// 2. assemble proto.CheckConfig object:
 		//    + thresholds
 		if threshRows, err = stMap[`LoadThreshold`].Query(conf.Id); err != nil {
@@ -813,7 +813,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 							Custom: &proto.PropertyCustom{
 								Id:           value1,
 								Name:         value2,
-								RepositoryId: tk.repoId,
+								RepositoryId: tk.meta.repoID,
 								Value:        value3,
 							},
 						},
@@ -889,7 +889,7 @@ func (tk *treeKeeper) startupScopedReapplyCheckConfig(typ string, stMap map[stri
 	return
 
 fail:
-	tk.broken = true
+	tk.status.isBroken = true
 	if err != nil {
 		tk.startLog.Printf("Error during rebuild loading of checks: %s", err)
 	}
@@ -897,8 +897,8 @@ fail:
 
 // orderGroups orders the groups in a repository so they can be
 // processed from root to leaf
-func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string][]string, map[string]string) {
-	if tk.broken {
+func (tk *TreeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string][]string, map[string]string) {
+	if tk.status.isBroken {
 		return fmt.Errorf("Broken tree detected"), nil, nil
 	}
 
@@ -919,8 +919,8 @@ func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string
 	grOrder = map[string][]string{}
 
 	// load groups in this repository
-	if stRows, err = stMap[`LoadGroupState`].Query(tk.repoId); err != nil {
-		tk.broken = true
+	if stRows, err = stMap[`LoadGroupState`].Query(tk.meta.repoID); err != nil {
+		tk.status.isBroken = true
 		return err, nil, nil
 	}
 	defer stRows.Close()
@@ -928,13 +928,13 @@ func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string
 	for stRows.Next() {
 		if err = stRows.Scan(&groupId, &groupState); err != nil {
 			// error loading group state
-			tk.broken = true
+			tk.status.isBroken = true
 			return err, nil, nil
 		}
 		grStateMap[groupId] = groupState
 	}
 	if err = stRows.Err(); err != nil {
-		tk.broken = true
+		tk.status.isBroken = true
 		return err, nil, nil
 	}
 	if len(grStateMap) == 0 {
@@ -943,8 +943,8 @@ func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string
 	}
 
 	// load relations between groups in this repository
-	if rlRows, err = stMap[`LoadGroupRelations`].Query(tk.repoId); err != nil {
-		tk.broken = true
+	if rlRows, err = stMap[`LoadGroupRelations`].Query(tk.meta.repoID); err != nil {
+		tk.status.isBroken = true
 		return err, nil, nil
 	}
 	defer rlRows.Close()
@@ -952,7 +952,7 @@ func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string
 	for rlRows.Next() {
 		if err = rlRows.Scan(&groupId, &childId); err != nil {
 			// error loading relations
-			tk.broken = true
+			tk.status.isBroken = true
 			return err, nil, nil
 		}
 		// every group can only be child to one parent group, but
@@ -961,7 +961,7 @@ func (tk *treeKeeper) orderGroups(stMap map[string]*sql.Stmt) (error, map[string
 		grRelMap[childId] = groupId
 	}
 	if err = rlRows.Err(); err != nil {
-		tk.broken = true
+		tk.status.isBroken = true
 		return err, nil, nil
 	}
 
@@ -1037,7 +1037,7 @@ orderloop:
 	}
 	if sameCount >= 3 || len(grRelMap) != 0 {
 		// breaker went off or we have unordered grRelMap left
-		tk.broken = true
+		tk.status.isBroken = true
 		return fmt.Errorf("Failed to order groups"), nil, nil
 	}
 

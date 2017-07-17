@@ -6,7 +6,7 @@
  * that can be found in the LICENSE file.
  */
 
-package main
+package soma
 
 import (
 	"database/sql"
@@ -15,7 +15,7 @@ import (
 	"github.com/1and1/soma/internal/tree"
 )
 
-func (tk *treeKeeper) txProperty(a *tree.Action,
+func (tk *TreeKeeper) txProperty(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	switch a.Action {
 	case `property_new`:
@@ -29,7 +29,7 @@ func (tk *treeKeeper) txProperty(a *tree.Action,
 
 //
 // PROPERTY NEW
-func (tk *treeKeeper) txPropertyNew(a *tree.Action,
+func (tk *TreeKeeper) txPropertyNew(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	if _, err := stm[`PropertyInstanceCreate`].Exec(
 		a.Property.InstanceId,
@@ -54,7 +54,7 @@ func (tk *treeKeeper) txPropertyNew(a *tree.Action,
 	return fmt.Errorf(`Impossible property type`)
 }
 
-func (tk *treeKeeper) txPropertyNewCustom(a *tree.Action,
+func (tk *TreeKeeper) txPropertyNewCustom(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
@@ -91,7 +91,7 @@ func (tk *treeKeeper) txPropertyNewCustom(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txPropertyNewSystem(a *tree.Action,
+func (tk *TreeKeeper) txPropertyNewSystem(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
@@ -131,7 +131,7 @@ func (tk *treeKeeper) txPropertyNewSystem(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txPropertyNewService(a *tree.Action,
+func (tk *TreeKeeper) txPropertyNewService(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
@@ -169,7 +169,7 @@ func (tk *treeKeeper) txPropertyNewService(a *tree.Action,
 	return err
 }
 
-func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
+func (tk *TreeKeeper) txPropertyNewOncall(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	var (
 		err       error
@@ -208,7 +208,7 @@ func (tk *treeKeeper) txPropertyNewOncall(a *tree.Action,
 
 //
 // PROPERTY DELETE
-func (tk *treeKeeper) txPropertyDelete(a *tree.Action,
+func (tk *TreeKeeper) txPropertyDelete(a *tree.Action,
 	stm map[string]*sql.Stmt) error {
 	if _, err := stm[`PropertyInstanceDelete`].Exec(
 		a.Property.InstanceId,

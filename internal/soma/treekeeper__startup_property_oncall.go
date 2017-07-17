@@ -1,4 +1,4 @@
-package main
+package soma
 
 import (
 	"database/sql"
@@ -7,85 +7,85 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (tk *treeKeeper) startupCustomProperties(stMap map[string]*sql.Stmt) {
-	if tk.broken {
+func (tk *TreeKeeper) startupOncallProperties(stMap map[string]*sql.Stmt) {
+	if tk.status.isBroken {
 		return
 	}
 
 	var (
-		err                                                        error
-		instanceId, srcInstanceId, objectId, view, customId        string
-		inInstanceId, inObjectType, inObjId, customProperty, value string
-		inheritance, childrenOnly                                  bool
-		rows, instance_rows                                        *sql.Rows
+		err                                                           error
+		instanceId, srcInstanceId, objectId, view, oncallId           string
+		inInstanceId, inObjectType, inObjId, oncallName, oncallNumber string
+		inheritance, childrenOnly                                     bool
+		rows, instance_rows                                           *sql.Rows
 	)
 
 	for loopType, loopStmt := range map[string]string{
-		`repository`: `LoadPropRepoCustom`,
-		`bucket`:     `LoadPropBuckCustom`,
-		`group`:      `LoadPropGrpCustom`,
-		`cluster`:    `LoadPropClrCustom`,
-		`node`:       `LoadPropNodeCustom`,
+		`repository`: `LoadPropRepoOncall`,
+		`bucket`:     `LoadPropBuckOncall`,
+		`group`:      `LoadPropGrpOncall`,
+		`cluster`:    `LoadPropClrOncall`,
+		`node`:       `LoadPropNodeOncall`,
 	} {
 
-		tk.startLog.Printf("TK[%s]: loading %s custom properties\n", tk.repoName, loopType)
-		rows, err = stMap[loopStmt].Query(tk.repoId)
+		tk.startLog.Printf("TK[%s]: loading %s oncall properties\n", tk.meta.repoName, loopType)
+		rows, err = stMap[loopStmt].Query(tk.meta.repoID)
 		if err != nil {
-			tk.startLog.Printf("TK[%s] Error loading %s custom properties: %s", tk.repoName, loopType, err.Error())
-			tk.broken = true
+			tk.startLog.Printf("TK[%s] Error loading %s oncall properties: %s", tk.meta.repoName, loopType, err.Error())
+			tk.status.isBroken = true
 			return
 		}
 		defer rows.Close()
 
-	customloop:
-		// load all custom properties defined directly on objects
+	oncallloop:
+		// load all oncall properties defined directly on objects
 		for rows.Next() {
 			err = rows.Scan(
 				&instanceId,
 				&srcInstanceId,
 				&objectId,
 				&view,
-				&customId,
+				&oncallId,
 				&inheritance,
 				&childrenOnly,
-				&value,
-				&customProperty,
+				&oncallName,
+				&oncallNumber,
 			)
 			if err != nil {
 				if err == sql.ErrNoRows {
-					break customloop
+					break oncallloop
 				}
-				tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-				tk.broken = true
+				tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+				tk.status.isBroken = true
 				return
 			}
 
 			// build the property
-			prop := tree.PropertyCustom{
+			prop := tree.PropertyOncall{
 				Inheritance:  inheritance,
 				ChildrenOnly: childrenOnly,
 				View:         view,
-				Key:          customProperty,
-				Value:        value,
+				Name:         oncallName,
+				Number:       oncallNumber,
 			}
 			prop.Id, _ = uuid.FromString(instanceId)
-			prop.CustomId, _ = uuid.FromString(customId)
+			prop.OncallId, _ = uuid.FromString(oncallId)
 			prop.Instances = make([]tree.PropertyInstance, 0)
 
-			instance_rows, err = stMap[`LoadPropCustomInstance`].Query(
-				tk.repoId,
+			instance_rows, err = stMap[`LoadPropOncallInstance`].Query(
+				tk.meta.repoID,
 				srcInstanceId,
 			)
 			if err != nil {
-				tk.startLog.Printf("TK[%s] Error loading %s custom properties: %s", tk.repoName, loopType, err.Error())
-				tk.broken = true
+				tk.startLog.Printf("TK[%s] Error loading %s oncall properties: %s", tk.meta.repoName, loopType, err.Error())
+				tk.status.isBroken = true
 				return
 			}
 			defer instance_rows.Close()
 
 		inproploop:
 			// load all all ids for properties that were inherited from the
-			// current object custom property so the IDs can be set correctly
+			// current oncall property so the IDs can be set correctly
 			for instance_rows.Next() {
 				err = instance_rows.Scan(
 					&inInstanceId,
@@ -96,20 +96,20 @@ func (tk *treeKeeper) startupCustomProperties(stMap map[string]*sql.Stmt) {
 					if err == sql.ErrNoRows {
 						break inproploop
 					}
-					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-					tk.broken = true
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+					tk.status.isBroken = true
 					return
 				}
 
 				var propObjectId, propInstanceId uuid.UUID
 				if propObjectId, err = uuid.FromString(inObjId); err != nil {
-					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-					tk.broken = true
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+					tk.status.isBroken = true
 					return
 				}
 				if propInstanceId, err = uuid.FromString(inInstanceId); err != nil {
-					tk.startLog.Printf("TK[%s] Error: %s\n", tk.repoName, err.Error())
-					tk.broken = true
+					tk.startLog.Printf("TK[%s] Error: %s\n", tk.meta.repoName, err.Error())
+					tk.status.isBroken = true
 					return
 				}
 				if uuid.Equal(uuid.Nil, propObjectId) || uuid.Equal(uuid.Nil, propInstanceId) {
