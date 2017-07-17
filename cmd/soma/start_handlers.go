@@ -13,34 +13,18 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 
 	spawnAttributeRead(appLog, reqLog, errLog)
 	spawnBucketReadHandler(appLog, reqLog, errLog)
-	spawnCapabilityReadHandler(appLog, reqLog, errLog)
 	spawnCheckConfigurationReadHandler(appLog, reqLog, errLog)
 	spawnClusterReadHandler(appLog, reqLog, errLog)
-	spawnDatacenterReadHandler(appLog, reqLog, errLog)
 	spawnEntityRead(appLog, reqLog, errLog)
 	spawnEnvironmentReadHandler(appLog, reqLog, errLog)
 	spawnGroupReadHandler(appLog, reqLog, errLog)
 	spawnHostDeploymentHandler(appLog, reqLog, errLog)
 	spawnInstanceReadHandler(appLog, reqLog, errLog)
 	spawnJobReadHandler(appLog, reqLog, errLog)
-	spawnLevelReadHandler(appLog, reqLog, errLog)
-	spawnMetricReadHandler(appLog, reqLog, errLog)
-	spawnModeReadHandler(appLog, reqLog, errLog)
 	spawnMonitoringRead(appLog, reqLog, errLog)
 	spawnObjectStateReadHandler(appLog, reqLog, errLog)
-	spawnOncallReadHandler(appLog, reqLog, errLog)
 	spawnOutputTreeHandler(appLog, reqLog, errLog)
-	spawnPredicateReadHandler(appLog, reqLog, errLog)
-	spawnPropertyReadHandler(appLog, reqLog, errLog)
-	spawnProviderReadHandler(appLog, reqLog, errLog)
 	spawnRepositoryReadHandler(appLog, reqLog, errLog)
-	spawnServerReadHandler(appLog, reqLog, errLog)
-	spawnStatusReadHandler(appLog, reqLog, errLog)
-	spawnTeamReadHandler(appLog, reqLog, errLog)
-	spawnUnitReadHandler(appLog, reqLog, errLog)
-	spawnUserReadHandler(appLog, reqLog, errLog)
-	spawnValidityReadHandler(appLog, reqLog, errLog)
-	spawnViewReadHandler(appLog, reqLog, errLog)
 	spawnWorkflowReadHandler(appLog, reqLog, errLog)
 
 	if !SomaCfg.ReadOnly {
@@ -49,55 +33,14 @@ func startHandlers(appLog, reqLog, errLog *log.Logger) {
 
 		if !SomaCfg.Observer {
 			spawnAttributeWrite(appLog, reqLog, errLog)
-			spawnCapabilityWriteHandler(appLog, reqLog, errLog)
-			spawnDatacenterWriteHandler(appLog, reqLog, errLog)
 			spawnDeploymentHandler(appLog, reqLog, errLog)
 			spawnEntityWrite(appLog, reqLog, errLog)
 			spawnEnvironmentWriteHandler(appLog, reqLog, errLog)
-			spawnJobDelay(appLog, reqLog, errLog)
-			spawnLevelWriteHandler(appLog, reqLog, errLog)
-			spawnMetricWriteHandler(appLog, reqLog, errLog)
-			spawnModeWriteHandler(appLog, reqLog, errLog)
 			spawnMonitoringWrite(appLog, reqLog, errLog)
 			spawnObjectStateWriteHandler(appLog, reqLog, errLog)
-			spawnOncallWriteHandler(appLog, reqLog, errLog)
-			spawnPredicateWriteHandler(appLog, reqLog, errLog)
-			spawnPropertyWriteHandler(appLog, reqLog, errLog)
-			spawnProviderWriteHandler(appLog, reqLog, errLog)
-			spawnServerWriteHandler(appLog, reqLog, errLog)
-			spawnStatusWriteHandler(appLog, reqLog, errLog)
-			spawnTeamWriteHandler(appLog, reqLog, errLog)
-			spawnUnitWriteHandler(appLog, reqLog, errLog)
-			spawnUserWriteHandler(appLog, reqLog, errLog)
-			spawnValidityWriteHandler(appLog, reqLog, errLog)
-			spawnViewWriteHandler(appLog, reqLog, errLog)
 			spawnWorkflowWriteHandler(appLog, reqLog, errLog)
 		}
 	}
-}
-
-func spawnViewReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var viewReadHandler somaViewReadHandler
-	viewReadHandler.input = make(chan somaViewRequest)
-	viewReadHandler.shutdown = make(chan bool)
-	viewReadHandler.conn = conn
-	viewReadHandler.appLog = appLog
-	viewReadHandler.reqLog = reqLog
-	viewReadHandler.errLog = errLog
-	handlerMap["viewReadHandler"] = &viewReadHandler
-	go viewReadHandler.run()
-}
-
-func spawnViewWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var viewWriteHandler somaViewWriteHandler
-	viewWriteHandler.input = make(chan somaViewRequest, 64)
-	viewWriteHandler.shutdown = make(chan bool)
-	viewWriteHandler.conn = conn
-	viewWriteHandler.appLog = appLog
-	viewWriteHandler.reqLog = reqLog
-	viewWriteHandler.errLog = errLog
-	handlerMap["viewWriteHandler"] = &viewWriteHandler
-	go viewWriteHandler.run()
 }
 
 func spawnEnvironmentReadHandler(appLog, reqLog, errLog *log.Logger) {
@@ -172,294 +115,6 @@ func spawnEntityWrite(appLog, reqLog, errLog *log.Logger) {
 	go handler.run()
 }
 
-func spawnDatacenterReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var datacenterReadHandler somaDatacenterReadHandler
-	datacenterReadHandler.input = make(chan somaDatacenterRequest)
-	datacenterReadHandler.shutdown = make(chan bool)
-	datacenterReadHandler.conn = conn
-	datacenterReadHandler.appLog = appLog
-	datacenterReadHandler.reqLog = reqLog
-	datacenterReadHandler.errLog = errLog
-	handlerMap["datacenterReadHandler"] = &datacenterReadHandler
-	go datacenterReadHandler.run()
-}
-
-func spawnDatacenterWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var datacenterWriteHandler somaDatacenterWriteHandler
-	datacenterWriteHandler.input = make(chan somaDatacenterRequest, 64)
-	datacenterWriteHandler.shutdown = make(chan bool)
-	datacenterWriteHandler.conn = conn
-	datacenterWriteHandler.appLog = appLog
-	datacenterWriteHandler.reqLog = reqLog
-	datacenterWriteHandler.errLog = errLog
-	handlerMap["datacenterWriteHandler"] = &datacenterWriteHandler
-	go datacenterWriteHandler.run()
-}
-
-func spawnLevelReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var levelReadHandler somaLevelReadHandler
-	levelReadHandler.input = make(chan somaLevelRequest, 64)
-	levelReadHandler.shutdown = make(chan bool)
-	levelReadHandler.conn = conn
-	levelReadHandler.appLog = appLog
-	levelReadHandler.reqLog = reqLog
-	levelReadHandler.errLog = errLog
-	handlerMap["levelReadHandler"] = &levelReadHandler
-	go levelReadHandler.run()
-}
-
-func spawnLevelWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var levelWriteHandler somaLevelWriteHandler
-	levelWriteHandler.input = make(chan somaLevelRequest, 64)
-	levelWriteHandler.shutdown = make(chan bool)
-	levelWriteHandler.conn = conn
-	levelWriteHandler.appLog = appLog
-	levelWriteHandler.reqLog = reqLog
-	levelWriteHandler.errLog = errLog
-	handlerMap["levelWriteHandler"] = &levelWriteHandler
-	go levelWriteHandler.run()
-}
-
-func spawnPredicateReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var predicateReadHandler somaPredicateReadHandler
-	predicateReadHandler.input = make(chan somaPredicateRequest, 64)
-	predicateReadHandler.shutdown = make(chan bool)
-	predicateReadHandler.conn = conn
-	predicateReadHandler.appLog = appLog
-	predicateReadHandler.reqLog = reqLog
-	predicateReadHandler.errLog = errLog
-	handlerMap["predicateReadHandler"] = &predicateReadHandler
-	go predicateReadHandler.run()
-}
-
-func spawnPredicateWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var predicateWriteHandler somaPredicateWriteHandler
-	predicateWriteHandler.input = make(chan somaPredicateRequest, 64)
-	predicateWriteHandler.shutdown = make(chan bool)
-	predicateWriteHandler.conn = conn
-	predicateWriteHandler.appLog = appLog
-	predicateWriteHandler.reqLog = reqLog
-	predicateWriteHandler.errLog = errLog
-	handlerMap["predicateWriteHandler"] = &predicateWriteHandler
-	go predicateWriteHandler.run()
-}
-
-func spawnStatusReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var statusReadHandler somaStatusReadHandler
-	statusReadHandler.input = make(chan somaStatusRequest, 64)
-	statusReadHandler.shutdown = make(chan bool)
-	statusReadHandler.conn = conn
-	statusReadHandler.appLog = appLog
-	statusReadHandler.reqLog = reqLog
-	statusReadHandler.errLog = errLog
-	handlerMap["statusReadHandler"] = &statusReadHandler
-	go statusReadHandler.run()
-}
-
-func spawnStatusWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var statusWriteHandler somaStatusWriteHandler
-	statusWriteHandler.input = make(chan somaStatusRequest, 64)
-	statusWriteHandler.shutdown = make(chan bool)
-	statusWriteHandler.conn = conn
-	statusWriteHandler.appLog = appLog
-	statusWriteHandler.reqLog = reqLog
-	statusWriteHandler.errLog = errLog
-	handlerMap["statusWriteHandler"] = &statusWriteHandler
-	go statusWriteHandler.run()
-}
-
-func spawnOncallReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var oncallReadHandler somaOncallReadHandler
-	oncallReadHandler.input = make(chan somaOncallRequest, 64)
-	oncallReadHandler.shutdown = make(chan bool)
-	oncallReadHandler.conn = conn
-	oncallReadHandler.appLog = appLog
-	oncallReadHandler.reqLog = reqLog
-	oncallReadHandler.errLog = errLog
-	handlerMap["oncallReadHandler"] = &oncallReadHandler
-	go oncallReadHandler.run()
-}
-
-func spawnOncallWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var oncallWriteHandler somaOncallWriteHandler
-	oncallWriteHandler.input = make(chan somaOncallRequest, 64)
-	oncallWriteHandler.shutdown = make(chan bool)
-	oncallWriteHandler.conn = conn
-	oncallWriteHandler.appLog = appLog
-	oncallWriteHandler.reqLog = reqLog
-	oncallWriteHandler.errLog = errLog
-	handlerMap["oncallWriteHandler"] = &oncallWriteHandler
-	go oncallWriteHandler.run()
-}
-
-func spawnTeamReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var teamReadHandler somaTeamReadHandler
-	teamReadHandler.input = make(chan somaTeamRequest, 64)
-	teamReadHandler.shutdown = make(chan bool)
-	teamReadHandler.conn = conn
-	teamReadHandler.appLog = appLog
-	teamReadHandler.reqLog = reqLog
-	teamReadHandler.errLog = errLog
-	handlerMap["teamReadHandler"] = &teamReadHandler
-	go teamReadHandler.run()
-}
-
-func spawnTeamWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var teamWriteHandler somaTeamWriteHandler
-	teamWriteHandler.input = make(chan somaTeamRequest, 64)
-	teamWriteHandler.shutdown = make(chan bool)
-	teamWriteHandler.conn = conn
-	teamWriteHandler.appLog = appLog
-	teamWriteHandler.reqLog = reqLog
-	teamWriteHandler.errLog = errLog
-	handlerMap["teamWriteHandler"] = &teamWriteHandler
-	go teamWriteHandler.run()
-}
-
-func spawnServerReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var serverReadHandler somaServerReadHandler
-	serverReadHandler.input = make(chan somaServerRequest, 64)
-	serverReadHandler.shutdown = make(chan bool)
-	serverReadHandler.conn = conn
-	serverReadHandler.appLog = appLog
-	serverReadHandler.reqLog = reqLog
-	serverReadHandler.errLog = errLog
-	handlerMap["serverReadHandler"] = &serverReadHandler
-	go serverReadHandler.run()
-}
-
-func spawnServerWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var serverWriteHandler somaServerWriteHandler
-	serverWriteHandler.input = make(chan somaServerRequest, 64)
-	serverWriteHandler.shutdown = make(chan bool)
-	serverWriteHandler.conn = conn
-	serverWriteHandler.appLog = appLog
-	serverWriteHandler.reqLog = reqLog
-	serverWriteHandler.errLog = errLog
-	handlerMap["serverWriteHandler"] = &serverWriteHandler
-	go serverWriteHandler.run()
-}
-
-func spawnUnitReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var unitReadHandler somaUnitReadHandler
-	unitReadHandler.input = make(chan somaUnitRequest, 64)
-	unitReadHandler.shutdown = make(chan bool)
-	unitReadHandler.conn = conn
-	unitReadHandler.appLog = appLog
-	unitReadHandler.reqLog = reqLog
-	unitReadHandler.errLog = errLog
-	handlerMap["unitReadHandler"] = &unitReadHandler
-	go unitReadHandler.run()
-}
-
-func spawnUnitWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var unitWriteHandler somaUnitWriteHandler
-	unitWriteHandler.input = make(chan somaUnitRequest, 64)
-	unitWriteHandler.shutdown = make(chan bool)
-	unitWriteHandler.conn = conn
-	unitWriteHandler.appLog = appLog
-	unitWriteHandler.reqLog = reqLog
-	unitWriteHandler.errLog = errLog
-	handlerMap["unitWriteHandler"] = &unitWriteHandler
-	go unitWriteHandler.run()
-}
-
-func spawnProviderReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var providerReadHandler somaProviderReadHandler
-	providerReadHandler.input = make(chan somaProviderRequest, 64)
-	providerReadHandler.shutdown = make(chan bool)
-	providerReadHandler.conn = conn
-	providerReadHandler.appLog = appLog
-	providerReadHandler.reqLog = reqLog
-	providerReadHandler.errLog = errLog
-	handlerMap["providerReadHandler"] = &providerReadHandler
-	go providerReadHandler.run()
-}
-
-func spawnProviderWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var providerWriteHandler somaProviderWriteHandler
-	providerWriteHandler.input = make(chan somaProviderRequest, 64)
-	providerWriteHandler.shutdown = make(chan bool)
-	providerWriteHandler.conn = conn
-	providerWriteHandler.appLog = appLog
-	providerWriteHandler.reqLog = reqLog
-	providerWriteHandler.errLog = errLog
-	handlerMap["providerWriteHandler"] = &providerWriteHandler
-	go providerWriteHandler.run()
-}
-
-func spawnMetricReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var metricReadHandler somaMetricReadHandler
-	metricReadHandler.input = make(chan somaMetricRequest, 64)
-	metricReadHandler.shutdown = make(chan bool)
-	metricReadHandler.conn = conn
-	metricReadHandler.appLog = appLog
-	metricReadHandler.reqLog = reqLog
-	metricReadHandler.errLog = errLog
-	handlerMap["metricReadHandler"] = &metricReadHandler
-	go metricReadHandler.run()
-}
-
-func spawnMetricWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var metricWriteHandler somaMetricWriteHandler
-	metricWriteHandler.input = make(chan somaMetricRequest, 64)
-	metricWriteHandler.shutdown = make(chan bool)
-	metricWriteHandler.conn = conn
-	metricWriteHandler.appLog = appLog
-	metricWriteHandler.reqLog = reqLog
-	metricWriteHandler.errLog = errLog
-	handlerMap["metricWriteHandler"] = &metricWriteHandler
-	go metricWriteHandler.run()
-}
-
-func spawnModeReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var modeReadHandler somaModeReadHandler
-	modeReadHandler.input = make(chan somaModeRequest, 64)
-	modeReadHandler.shutdown = make(chan bool)
-	modeReadHandler.conn = conn
-	modeReadHandler.appLog = appLog
-	modeReadHandler.reqLog = reqLog
-	modeReadHandler.errLog = errLog
-	handlerMap["modeReadHandler"] = &modeReadHandler
-	go modeReadHandler.run()
-}
-
-func spawnModeWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var modeWriteHandler somaModeWriteHandler
-	modeWriteHandler.input = make(chan somaModeRequest, 64)
-	modeWriteHandler.shutdown = make(chan bool)
-	modeWriteHandler.conn = conn
-	modeWriteHandler.appLog = appLog
-	modeWriteHandler.reqLog = reqLog
-	modeWriteHandler.errLog = errLog
-	handlerMap["modeWriteHandler"] = &modeWriteHandler
-	go modeWriteHandler.run()
-}
-
-func spawnUserReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var userReadHandler somaUserReadHandler
-	userReadHandler.input = make(chan somaUserRequest, 64)
-	userReadHandler.shutdown = make(chan bool)
-	userReadHandler.conn = conn
-	userReadHandler.appLog = appLog
-	userReadHandler.reqLog = reqLog
-	userReadHandler.errLog = errLog
-	handlerMap["userReadHandler"] = &userReadHandler
-	go userReadHandler.run()
-}
-
-func spawnUserWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var userWriteHandler somaUserWriteHandler
-	userWriteHandler.input = make(chan somaUserRequest, 64)
-	userWriteHandler.shutdown = make(chan bool)
-	userWriteHandler.conn = conn
-	userWriteHandler.appLog = appLog
-	userWriteHandler.reqLog = reqLog
-	userWriteHandler.errLog = errLog
-	handlerMap["userWriteHandler"] = &userWriteHandler
-	go userWriteHandler.run()
-}
-
 func spawnMonitoringRead(appLog, reqLog, errLog *log.Logger) {
 	var handler monitoringRead
 	handler.input = make(chan msg.Request, 64)
@@ -482,54 +137,6 @@ func spawnMonitoringWrite(appLog, reqLog, errLog *log.Logger) {
 	handler.errLog = errLog
 	handlerMap[`monitoring_w`] = &handler
 	go handler.run()
-}
-
-func spawnCapabilityReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var capabilityReadHandler somaCapabilityReadHandler
-	capabilityReadHandler.input = make(chan somaCapabilityRequest, 64)
-	capabilityReadHandler.shutdown = make(chan bool)
-	capabilityReadHandler.conn = conn
-	capabilityReadHandler.appLog = appLog
-	capabilityReadHandler.reqLog = reqLog
-	capabilityReadHandler.errLog = errLog
-	handlerMap["capabilityReadHandler"] = &capabilityReadHandler
-	go capabilityReadHandler.run()
-}
-
-func spawnCapabilityWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var capabilityWriteHandler somaCapabilityWriteHandler
-	capabilityWriteHandler.input = make(chan somaCapabilityRequest, 64)
-	capabilityWriteHandler.shutdown = make(chan bool)
-	capabilityWriteHandler.conn = conn
-	capabilityWriteHandler.appLog = appLog
-	capabilityWriteHandler.reqLog = reqLog
-	capabilityWriteHandler.errLog = errLog
-	handlerMap["capabilityWriteHandler"] = &capabilityWriteHandler
-	go capabilityWriteHandler.run()
-}
-
-func spawnPropertyReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var propertyReadHandler somaPropertyReadHandler
-	propertyReadHandler.input = make(chan somaPropertyRequest, 64)
-	propertyReadHandler.shutdown = make(chan bool)
-	propertyReadHandler.conn = conn
-	propertyReadHandler.appLog = appLog
-	propertyReadHandler.reqLog = reqLog
-	propertyReadHandler.errLog = errLog
-	handlerMap["propertyReadHandler"] = &propertyReadHandler
-	go propertyReadHandler.run()
-}
-
-func spawnPropertyWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var propertyWriteHandler somaPropertyWriteHandler
-	propertyWriteHandler.input = make(chan somaPropertyRequest, 64)
-	propertyWriteHandler.shutdown = make(chan bool)
-	propertyWriteHandler.conn = conn
-	propertyWriteHandler.appLog = appLog
-	propertyWriteHandler.reqLog = reqLog
-	propertyWriteHandler.errLog = errLog
-	handlerMap["propertyWriteHandler"] = &propertyWriteHandler
-	go propertyWriteHandler.run()
 }
 
 func spawnAttributeRead(appLog, reqLog, errLog *log.Logger) {
@@ -666,30 +273,6 @@ func spawnHostDeploymentHandler(appLog, reqLog, errLog *log.Logger) {
 	go hostDeploymentHandler.run()
 }
 
-func spawnValidityReadHandler(appLog, reqLog, errLog *log.Logger) {
-	var validityReadHandler somaValidityReadHandler
-	validityReadHandler.input = make(chan somaValidityRequest, 64)
-	validityReadHandler.shutdown = make(chan bool)
-	validityReadHandler.conn = conn
-	validityReadHandler.appLog = appLog
-	validityReadHandler.reqLog = reqLog
-	validityReadHandler.errLog = errLog
-	handlerMap["validityReadHandler"] = &validityReadHandler
-	go validityReadHandler.run()
-}
-
-func spawnValidityWriteHandler(appLog, reqLog, errLog *log.Logger) {
-	var validityWriteHandler somaValidityWriteHandler
-	validityWriteHandler.input = make(chan somaValidityRequest, 64)
-	validityWriteHandler.shutdown = make(chan bool)
-	validityWriteHandler.conn = conn
-	validityWriteHandler.appLog = appLog
-	validityWriteHandler.reqLog = reqLog
-	validityWriteHandler.errLog = errLog
-	handlerMap["validityWriteHandler"] = &validityWriteHandler
-	go validityWriteHandler.run()
-}
-
 func spawnSupervisorHandler(appLog, reqLog, errLog *log.Logger) {
 	var supervisorHandler supervisor
 	var err error
@@ -719,18 +302,6 @@ func spawnSupervisorHandler(appLog, reqLog, errLog *log.Logger) {
 	supervisorHandler.activation = SomaCfg.Auth.Activation
 	handlerMap[`supervisor`] = &supervisorHandler
 	go supervisorHandler.run()
-}
-
-func spawnJobDelay(appLog, reqLog, errLog *log.Logger) {
-	var handler jobDelay
-	handler.input = make(chan waitSpec, 128)
-	handler.shutdown = make(chan bool)
-	handler.notify = make(chan string, 256)
-	handler.appLog = appLog
-	handler.reqLog = reqLog
-	handler.errLog = errLog
-	handlerMap[`jobDelay`] = &handler
-	go handler.run()
 }
 
 func spawnJobReadHandler(appLog, reqLog, errLog *log.Logger) {
